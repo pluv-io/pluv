@@ -1,18 +1,18 @@
 {
   "name": "@pluv/tsconfig",
-  "version": "0.0.0",
-	"description": "@pluv/io internal tsconfigs",
+  "version": "0.1.0",
+  "description": "@pluv/io internal tsconfigs",
   "author": "leedavidcs",
-	"license": "MIT",
-	"homepage": "https://github.com/pluv-io/pluv",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/pluv-io/pluv.git",
-		"directory": "packages/tsconfig"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
+  "license": "MIT",
+  "homepage": "https://github.com/pluv-io/pluv",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pluv-io/pluv.git",
+    "directory": "packages/tsconfig"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "base.json",
     "cli.json",
