@@ -1,0 +1,14 @@
+{
+	"extends": "@pluv/tsconfig/node.json",
+	"include": ["**/*.ts"],
+	"compilerOptions": {
+		"baseUrl": ".",
+		"types": ["@types/node"],
+		"paths": {
+			"@pluv/io": ["../../packages/io/dist"],
+			"@pluv/platform-node": ["../../packages/platform-node/dist"],
+			"@pluv/types": ["../../packages/types/dist"],
+			"ws": ["./node_modules/@types/ws"]
+		}
+	}
+}

@@ -1,0 +1,22 @@
+packages:
+  - "apps/server-cloudflare"
+  - "apps/server-node"
+  - "apps/web"
+
+  - "packages/cli"
+  - "packages/client"
+  - "packages/crdt-yjs"
+  - "packages/eslint-config-pluv"
+  - "packages/io"
+  - "packages/persistance-redis"
+  - "packages/platform-cloudflare"
+  - "packages/platform-node"
+  - "packages/pubsub-redis"
+  - "packages/react"
+  - "packages/tsconfig"
+  - "packages/types"
+
+  - "internal/cloudflare-utils"
+  - "internal/tailwind-config"
+
+  - "tests/e2e"

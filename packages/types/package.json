@@ -1,0 +1,30 @@
+{
+	"name": "@pluv/types",
+	"version": "0.0.0",
+	"description": "@pluv/io shared types",
+	"author": "leedavidcs",
+	"license": "MIT",
+	"homepage": "https://github.com/pluv-io/pluv",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/pluv-io/pluv.git",
+		"directory": "packages/types"
+	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"build": "tsup src/index.ts --format esm,cjs --dts",
+		"dev": "tsup src/index.ts --format esm,cjs --watch --dts",
+		"lint": "eslint src/**/*.ts* --fix",
+		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+	},
+	"devDependencies": {
+		"@pluv/tsconfig": "workspace:^",
+		"eslint-config-pluv": "workspace:^",
+		"tsup": "^6.5.0",
+		"typescript": "^4.9.4"
+	}
+}

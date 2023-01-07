@@ -1,0 +1,23 @@
+{
+  "name": "@pluv-apps/server-cloudflare",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "deploy": "wrangler publish",
+    "dev": "wrangler dev --port 8787"
+  },
+  "dependencies": {
+    "@pluv-internal/cloudflare-utils": "workspace:^",
+    "@pluv/io": "workspace:^",
+    "@pluv/platform-cloudflare": "workspace:^",
+    "zod": "^3.20.2"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^3.18.0",
+    "@pluv/tsconfig": "workspace:^",
+    "typescript": "^4.9.4",
+    "wrangler": "2.6.2"
+  }
+}

@@ -1,0 +1,49 @@
+name: 🐞 Bug Report
+description: Create a bug report for the core packages
+title: 'bug: '
+labels: ['🐛 bug: unconfirmed']
+body:
+  - type: textarea
+    attributes:
+      label: Provide environment information
+      description: |
+        Run this command in your project root and paste the results:
+
+        ```terminal
+        npx envinfo --system --binaries --browsers --npmPackages "@pluv/client,@pluv/io,@pluv/persistance-redis,@pluv/platform-cloudflare,@pluv/platform-node,@pluv/pubsub-redis,@pluv/react,pluv,react,typescript"
+        ```
+      placeholder: |
+        ``` 
+        <Paste result here> 
+        ```
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: Please describe the bug as clear and concise as possible, as well as the behavior you were expecting whilst encountering the bug.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Link to reproduction
+      description: Please provide a link to a reproduction of the bug. This can be a link to a repository or a Stackblitz/CodeSandbox etc. Feel free to use our minimal reproduction template https://stackblitz.com/github/trpc/examples-next-minimal-starter
+      placeholder: https://stackblitz.com/github/trpc/examples-next-minimal-starter
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: To reproduce
+      description: Describe how to reproduce your bug. Can be either code or a link to a reproduction repo, Stackblitz etc.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: Add any other information related to the bug here.
+  - type: checkboxes
+    attributes:
+      label: 👨‍👧‍👦 Contributing
+      description: We love contributors in any shape or form. Would you be willing to implement a fix?
+      options:
+        - label: 🙋‍♂️ Yes, I'd be down to file a PR fixing this bug!

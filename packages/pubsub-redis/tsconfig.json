@@ -1,0 +1,8 @@
+{
+	"extends": "@pluv/tsconfig/library.json",
+	"include": ["**/*.ts"],
+	"exclude": ["node_modules"],
+	"compilerOptions": {
+		"types": ["@types/node"]
+	}
+}

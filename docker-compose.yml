@@ -1,0 +1,15 @@
+version: "3"
+services:
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+  redis-cluster:
+    image: grokzen/redis-cluster:latest
+    ports:
+      - "7006:7000"
+      - "7001:7001"
+      - "7002:7002"
+      - "7003:7003"
+      - "7004:7004"
+      - "7005:7005"

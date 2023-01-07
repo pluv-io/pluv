@@ -1,0 +1,32 @@
+{
+  "name": "eslint-config-pluv",
+  "version": "0.0.0",
+  "description": "@pluv/io eslint config",
+	"author": "leedavidcs",
+	"license": "MIT",
+	"homepage": "https://github.com/pluv-io/pluv",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/pluv-io/pluv.git",
+		"directory": "packages/eslint-config-pluv"
+	},
+  "main": "index.js",
+	"publishConfig": {
+		"access": "public"
+	},
+  "dependencies": {
+    "eslint": "^8.31.0",
+    "eslint-config-next": "^13.1.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-turbo": "^0.0.7",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "7.31.11",
+    "eslint-plugin-tailwindcss": "^3.8.0",
+    "prettier": "^2.8.1",
+    "prettier-plugin-tailwindcss": "^0.2.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.2.4",
+    "typescript": "^4.9.4"
+  }
+}

@@ -1,0 +1,32 @@
+{
+    "name": "pluv-monorepo",
+    "private": true,
+    "engines": {
+        "node": ">=14.0.0"
+    },
+    "packageManager": "pnpm@7.12.2",
+    "scripts": {
+        "build": "turbo run build",
+        "changeset": "changeset",
+        "clean": "turbo run clean && rm -rf node_modules",
+        "commit": "cz",
+        "dev": "turbo run dev --parallel",
+        "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+        "husky": "husky",
+        "lint": "turbo run lint",
+        "release": "turbo run build --filter=./packages/* && changeset publish",
+        "services:start": "docker compose up -d",
+        "services:stop": "docker compose down",
+        "test": "turbo run test",
+        "turbo": "turbo",
+        "version-packages": "changeset version"
+    },
+    "devDependencies": {
+        "@changesets/cli": "^2.26.0",
+        "commitizen": "^4.2.6",
+        "cz-conventional-changelog": "^3.3.0",
+        "eslint-config-pluv": "workspace:^",
+        "prettier": "^2.8.1",
+        "turbo": "^1.6.3"
+    }
+}

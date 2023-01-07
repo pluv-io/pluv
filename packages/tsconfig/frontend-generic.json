@@ -1,0 +1,11 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"display": "Frontend Generic",
+	"extends": "./base.json",
+	"compilerOptions": {
+		"lib": ["DOM", "ES2015"],
+		"module": "ESNext",
+		"target": "es6"
+	}
+}
+  

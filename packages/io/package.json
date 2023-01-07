@@ -1,0 +1,43 @@
+{
+	"name": "@pluv/io",
+	"version": "0.0.0",
+	"description": "@pluv/io server-side websocket manager",
+	"author": "leedavidcs",
+	"license": "MIT",
+	"homepage": "https://github.com/pluv-io/pluv",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/pluv-io/pluv.git",
+		"directory": "packages/server"
+	},
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"build": "tsup src/index.ts --format esm,cjs --dts",
+		"dev": "tsup src/index.ts --format esm,cjs --watch --dts",
+		"lint": "eslint src/**/*.ts* --fix",
+		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+	},
+	"dependencies": {
+		"@panva/hkdf": "^1.0.2",
+		"@pluv/crdt-yjs": "workspace:^",
+		"@pluv/types": "workspace:^",
+		"chalk": "^4.1.2",
+		"jose": "^4.11.2",
+		"wonka": "^6.1.2"
+	},
+	"peerDependencies": {
+		"yjs": "^13.0.0"
+	},
+	"devDependencies": {
+		"@pluv/tsconfig": "workspace:^",
+		"eslint-config-pluv": "workspace:^",
+		"tsup": "^6.5.0",
+		"typescript": "^4.9.4",
+		"yjs": "^13.5.44"
+	}
+}
