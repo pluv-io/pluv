@@ -8,6 +8,8 @@
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
   "ignore": [
-    "@pluv-apps/*"
+    "@pluv-apps/*",
+    "@pluv-internal/*",
+    "@pluv-tests/*"
   ]
 }
