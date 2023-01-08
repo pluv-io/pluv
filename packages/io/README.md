@@ -40,36 +40,36 @@
 Pluv.IO allows you to build real-time collaborate features with a fully end-to-end type-safe api.
 
 ### Features
-- [x] Automatic type safety
-- [x] Basic events
-- [x] Rooms
-- [x] Authentication
-- [x] Awareness + Presence
-- [x] [CRDTs](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type) (with [Yjs](https://docs.yjs.dev/))
-  - [x] **Shared Types**
-    - [x] [Map](https://docs.yjs.dev/api/shared-types/y.map)
-    - [x] [Array](https://docs.yjs.dev/api/shared-types/y.array)
-    - [x] [Text](https://docs.yjs.dev/api/shared-types/y.text)
-    - [ ] [XmlFragment](https://docs.yjs.dev/api/shared-types/y.xmlfragment)
-    - [ ] [XmlElement](https://docs.yjs.dev/api/shared-types/y.xmlelement)
-    - [ ] [XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext)
-- [ ] Studio (admin & developer panel)
+- ✅ Automatic type safety
+- ✅ Basic events
+- ✅ Rooms
+- ✅ Authentication
+- ✅ Awareness + Presence
+- ✅ [CRDTs](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type) (with [Yjs](https://docs.yjs.dev/))
+  - ✅ **Shared Types**
+    - ✅ [Map](https://docs.yjs.dev/api/shared-types/y.map)
+    - ✅ [Array](https://docs.yjs.dev/api/shared-types/y.array)
+    - ✅ [Text](https://docs.yjs.dev/api/shared-types/y.text)
+    - ⬜ [XmlFragment](https://docs.yjs.dev/api/shared-types/y.xmlfragment)
+    - ⬜ [XmlElement](https://docs.yjs.dev/api/shared-types/y.xmlelement)
+    - ⬜ [XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext)
+- ⬜ Studio (admin & developer panel)
 
 ### Runtimes
-- [x] [Cloudflare Workers](https://workers.cloudflare.com/)
-- [x] [Node.js](https://nodejs.org/)
-  - [x] **PubSubs**
-    - [x] [Redis](https://redis.io/)
-    - [ ] [RabbitMQ](https://www.rabbitmq.com/)
-    - [ ] [Kafka](https://kafka.apache.org/)
-  - [x] **CRDT State Persistance**
-    - [x] [Redis](https://redis.io/)
-    - [ ] [Prisma](https://www.prisma.io/)
+- ✅ [Cloudflare Workers](https://workers.cloudflare.com/)
+- ✅ [Node.js](https://nodejs.org/)
+  - ✅ **PubSubs**
+    - ✅ [Redis](https://redis.io/)
+    - ⬜ [RabbitMQ](https://www.rabbitmq.com/)
+    - ⬜ [Kafka](https://kafka.apache.org/)
+  - ✅ **CRDT State Persistance**
+    - ✅ [Redis](https://redis.io/)
+    - ⬜ [Prisma](https://www.prisma.io/)
 
 ### Frontends
-- [x] [React.js](https://beta.reactjs.org/)
-- [ ] [Vue.js](https://vuejs.org/)
-- [ ] [Svelte](https://svelte.dev/)
+- ✅ [React.js](https://beta.reactjs.org/)
+- ⬜ [Vue.js](https://vuejs.org/)
+- ⬜ [Svelte](https://svelte.dev/)
 
 ## Usage
 
