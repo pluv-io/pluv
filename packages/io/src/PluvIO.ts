@@ -9,6 +9,8 @@ import type {
     JsonObject,
     Spread,
     BaseIOAuthorize,
+    MaybePromise,
+    Maybe,
 } from "@pluv/types";
 import chalk from "chalk";
 import type { AbstractPlatform } from "./AbstractPlatform";
@@ -49,6 +51,7 @@ export interface PluvIOConfig<
     context?: TContext;
     debug?: boolean;
     events?: InferEventConfig<TContext, TInput, TOutput>;
+    initialStorage?: (room: string) => MaybePromise<Maybe<string>>;
     platform: TPlatform;
     room?: string;
 }
@@ -61,6 +64,15 @@ export class PluvIO<
     TOutput extends EventRecord<string, any> = {}
 > implements IOLike<TAuthorize, TInput, TOutput>
 {
+    private _context: TContext = {} as TContext;
+    private _initialStorage:
+        | ((room: string) => MaybePromise<Maybe<string>>)
+        | null = null;
+    private _rooms = new Map<
+        string,
+        IORoom<TPlatform, TAuthorize, TContext, TInput, TOutput>
+    >();
+
     readonly _authorize: TAuthorize | null = null;
     readonly _debug: boolean;
     readonly _events: InferEventConfig<TContext, TInput, TOutput> = {
@@ -138,12 +150,6 @@ export class PluvIO<
 
     readonly room: string | null = null;
 
-    private _context: TContext = {} as TContext;
-    private _rooms = new Map<
-        string,
-        IORoom<TPlatform, TAuthorize, TContext, TInput, TOutput>
-    >();
-
     constructor(
         options: PluvIOConfig<TPlatform, TAuthorize, TContext, TInput, TOutput>
     ) {
@@ -152,6 +158,7 @@ export class PluvIO<
             context,
             debug = false,
             events,
+            initialStorage,
             platform,
             room,
         } = options;
@@ -162,6 +169,7 @@ export class PluvIO<
         if (authorize) this._authorize = authorize;
         if (context) this._context = context;
         if (events) this._events = events;
+        if (initialStorage) this._initialStorage = initialStorage;
         if (room) this.room = room;
     }
 
@@ -255,6 +263,7 @@ export class PluvIO<
             context: this._context,
             debug: this._debug,
             events: this._events,
+            initialStorage: () => this._initialStorage?.(room),
             onDestroy: () => {
                 this._logDebug(`${chalk.blue("Deleting empty room:")} ${room}`);
 

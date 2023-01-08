@@ -105,7 +105,7 @@ export type PluvRoomOptions<
 > = {
     debug?: boolean | PluvRoomDebug<TIO>;
     onAuthorizationFail?: (error: Error) => void;
-} & CrdtManagerOptions<TStorage> &
+} & Omit<CrdtManagerOptions<TStorage>, "encodedState"> &
     UsersManagerConfig<TPresence>;
 
 export type RoomConfig<

@@ -12,6 +12,8 @@ import type {
     IOAuthorize,
     IOLike,
     JsonObject,
+    Maybe,
+    MaybePromise,
 } from "@pluv/types";
 import chalk from "chalk";
 import type { AbstractPlatform, InferWebSocketType } from "./AbstractPlatform";
@@ -49,6 +51,7 @@ export interface IORoomConfig<
     context: TContext;
     debug: boolean;
     events: InferEventConfig<TContext, TInput, TOutput>;
+    initialStorage?: () => MaybePromise<Maybe<string>>;
     onDestroy?: () => void;
     platform: TPlatform;
 }
@@ -75,6 +78,7 @@ export class IORoom<
     private readonly _platform: TPlatform;
 
     private _doc: YjsDoc<any> = doc();
+    private _initialStorage: (() => MaybePromise<Maybe<string>>) | null = null;
     private _listeners: IORoomListeners;
     private _sessions = new Map<string, WebSocketSession>();
     private _uninitialize: (() => Promise<void>) | null = null;
@@ -88,8 +92,15 @@ export class IORoom<
         room: string,
         config: IORoomConfig<TPlatform, TAuthorize, TContext, TInput, TOutput>
     ) {
-        const { authorize, context, debug, events, onDestroy, platform } =
-            config;
+        const {
+            authorize,
+            context,
+            debug,
+            events,
+            initialStorage,
+            onDestroy,
+            platform,
+        } = config;
 
         this._context = context;
         this._debug = debug;
@@ -103,6 +114,7 @@ export class IORoom<
         };
 
         if (authorize) this._authorize = authorize;
+        if (initialStorage) this._initialStorage = initialStorage;
     }
 
     public broadcast(message: BroadcastMessage<this>): Promise<void> {
@@ -344,17 +356,22 @@ export class IORoom<
     }
 
     private _emitStorageReceived(session: WebSocketSession): void {
-        this._platform.persistance.getStorageState(this.room).then((_state) => {
-            const state = _state ?? this._doc.encodeStateAsUpdate();
+        this._platform.persistance
+            .getStorageState(this.room)
+            .then(async (_state) => {
+                const state =
+                    _state ??
+                    (await this._initialStorage?.()) ??
+                    this._doc.encodeStateAsUpdate();
 
-            this._sendSelfMessage(
-                {
-                    type: "$STORAGE_RECEIVED",
-                    data: { state },
-                },
-                session
-            );
-        });
+                this._sendSelfMessage(
+                    {
+                        type: "$STORAGE_RECEIVED",
+                        data: { state },
+                    },
+                    session
+                );
+            });
     }
 
     private _emitUserJoined(session: WebSocketSession): void {
