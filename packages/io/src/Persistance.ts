@@ -46,6 +46,10 @@ export class Persistance extends AbstractPersistance {
         return Promise.resolve();
     }
 
+    public getSize(room: string): Promise<number> {
+        return Promise.resolve(this._users.get(room)?.size ?? 0);
+    }
+
     public getStorageState(room: string): Promise<string | null> {
         const storage = this._storages.get(room) ?? null;
 
