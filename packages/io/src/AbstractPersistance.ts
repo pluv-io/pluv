@@ -16,6 +16,8 @@ export abstract class AbstractPersistance {
 
     public abstract deleteUsers(room: string): Promise<void>;
 
+    public abstract getSize(room: string): Promise<number>;
+
     public abstract getStorageState(room: string): Promise<string | null>;
 
     public abstract getUser(

@@ -42,7 +42,7 @@ export class PersistanceRedis extends AbstractPersistance {
     }
 
     public async deleteUser(room: string, connectionId: string): Promise<void> {
-        const size = await this._client.scard(this._getRoomUsersKey(room));
+        const size = await this.getSize(room);
 
         let multi = this._client
             .multi()
@@ -70,6 +70,10 @@ export class PersistanceRedis extends AbstractPersistance {
                 );
             }, this._client.multi().del(this._getRoomUsersKey(room)))
             .exec();
+    }
+
+    public async getSize(room: string): Promise<number> {
+        return await this._client.scard(this._getRoomUsersKey(room));
     }
 
     public async getStorageState(room: string): Promise<string | null> {

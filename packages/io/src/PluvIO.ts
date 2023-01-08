@@ -40,21 +40,25 @@ export interface PluvIORegisterOptions {
     token?: string;
 }
 
-export interface PluvIOConfig<
+interface PluvIOListeners {
+    onRoomDeleted: (room: string, encodedState: string) => void;
+    onStorageChanged: (room: string, encodedState: string) => void;
+}
+
+export type PluvIOConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any> | null = null,
     TContext extends JsonObject = {},
     TInput extends EventRecord<string, any> = {},
     TOutput extends EventRecord<string, any> = {}
-> {
+> = Partial<PluvIOListeners> & {
     authorize?: TAuthorize;
     context?: TContext;
     debug?: boolean;
     events?: InferEventConfig<TContext, TInput, TOutput>;
     initialStorage?: (room: string) => MaybePromise<Maybe<string>>;
     platform: TPlatform;
-    room?: string;
-}
+};
 
 export class PluvIO<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -68,6 +72,7 @@ export class PluvIO<
     private _initialStorage:
         | ((room: string) => MaybePromise<Maybe<string>>)
         | null = null;
+    private _listeners: PluvIOListeners;
     private _rooms = new Map<
         string,
         IORoom<TPlatform, TAuthorize, TContext, TInput, TOutput>
@@ -89,7 +94,7 @@ export class PluvIO<
             options: { type: "self" },
         },
         $GET_OTHERS: {
-            resolver: (data, { session, sessions }) => {
+            resolver: (data, { room, session, sessions }) => {
                 const others = Array.from(sessions.entries())
                     .filter(([, wsSession]) => wsSession.id !== session?.id)
                     .reduce<{
@@ -104,7 +109,7 @@ export class PluvIO<
                             [connectionId]: {
                                 connectionId,
                                 presence,
-                                room: this.room,
+                                room,
                                 user: user as InferIOAuthorizeUser<TAuthorize>,
                             },
                         }),
@@ -140,15 +145,17 @@ export class PluvIO<
                 const updated = doc.applyUpdate(update);
                 const state = updated.encodeStateAsUpdate();
 
-                this._platform.persistance.setStorageState(room, state);
+                this._platform.persistance
+                    .setStorageState(room, state)
+                    .then(() => {
+                        this._listeners.onStorageChanged(room, state);
+                    });
 
                 return { $STORAGE_UPDATED: { state } };
             },
         },
     } as InferEventConfig<TContext, TInput, TOutput>;
     readonly _platform: TPlatform;
-
-    readonly room: string | null = null;
 
     constructor(
         options: PluvIOConfig<TPlatform, TAuthorize, TContext, TInput, TOutput>
@@ -159,8 +166,9 @@ export class PluvIO<
             debug = false,
             events,
             initialStorage,
+            onRoomDeleted,
+            onStorageChanged,
             platform,
-            room,
         } = options;
 
         this._debug = debug;
@@ -170,7 +178,15 @@ export class PluvIO<
         if (context) this._context = context;
         if (events) this._events = events;
         if (initialStorage) this._initialStorage = initialStorage;
-        if (room) this.room = room;
+
+        this._listeners = {
+            onRoomDeleted: (room, encodedState) => {
+                return onRoomDeleted?.(room, encodedState);
+            },
+            onStorageChanged: (room, encodedState) => {
+                return onStorageChanged?.(room, encodedState);
+            },
+        };
     }
 
     public async createToken(
@@ -239,10 +255,6 @@ export class PluvIO<
     public getRoom(
         room: string
     ): IORoom<TPlatform, TAuthorize, TContext, TInput, TOutput> {
-        if (this.room) {
-            throw new Error("IO cannot getRoom from within a room.");
-        }
-
         if (!/^[a-z0-9]+[a-z0-9\-_]+[a-z0-9]+$/i.test(room)) {
             throw new Error("Unsupported room name");
         }
@@ -264,7 +276,7 @@ export class PluvIO<
             debug: this._debug,
             events: this._events,
             initialStorage: () => this._initialStorage?.(room),
-            onDestroy: () => {
+            onDestroy: (encodedState) => {
                 this._logDebug(`${chalk.blue("Deleting empty room:")} ${room}`);
 
                 this._rooms.delete(room);
@@ -277,6 +289,12 @@ export class PluvIO<
                         `${chalk.blue("Rooms available:")} ${rooms.join(", ")}`
                     );
                 }
+
+                this._platform.persistance.getSize(room).then((size) => {
+                    if (size) return;
+
+                    this._listeners.onRoomDeleted(room, encodedState);
+                });
             },
             platform,
         });
@@ -309,7 +327,6 @@ export class PluvIO<
             undefined) as InferIOAuthorize<TIO1>;
         const debug = first._debug;
         const platform = first._platform as InferIOPlatform<TIO1>;
-        const room = first.room ?? undefined;
 
         const events1 = first._events;
         const events2 = second._events;
@@ -321,7 +338,6 @@ export class PluvIO<
             debug,
             events,
             platform,
-            room,
         });
     }
 
