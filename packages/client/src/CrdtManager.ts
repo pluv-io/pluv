@@ -5,7 +5,7 @@ import type { AbstractType } from "yjs";
 export interface CrdtManagerOptions<
     TStorage extends Record<string, AbstractType<any>> = {}
 > {
-    encodedState?: string | Uint8Array;
+    encodedState?: string | Uint8Array | null;
     initialStorage?: () => TStorage;
 }
 

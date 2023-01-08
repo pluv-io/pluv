@@ -4,6 +4,8 @@ import type {
     BaseUser,
     IOAuthorize,
     JsonObject,
+    Maybe,
+    MaybePromise,
 } from "@pluv/types";
 import type { AbstractPlatform } from "./AbstractPlatform";
 import { PluvIO } from "./PluvIO";
@@ -17,6 +19,7 @@ export interface CreateIOParams<
     authorize?: IOAuthorize<TAuthorizeUser, TAuthorizeRequired>;
     context?: TContext;
     debug?: boolean;
+    initialStorage?: (room: string) => MaybePromise<Maybe<string>>;
     platform: TPlatform;
 }
 
@@ -39,7 +42,7 @@ export const createIO = <
     BaseClientEventRecord,
     BaseIOEventRecord<IOAuthorize<TAuthorizeUser, TAuthorizeRequired>>
 > => {
-    const { authorize, context, debug, platform } = params;
+    const { authorize, context, debug, initialStorage, platform } = params;
 
     return new PluvIO<
         TPlatform,
@@ -47,5 +50,5 @@ export const createIO = <
         TContext,
         BaseClientEventRecord,
         BaseIOEventRecord<IOAuthorize<TAuthorizeUser, TAuthorizeRequired>>
-    >({ authorize, context, debug, platform });
+    >({ authorize, context, debug, initialStorage, platform });
 };
