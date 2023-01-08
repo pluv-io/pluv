@@ -37,24 +37,23 @@ interface BroadcastParams<TIO extends IORoom<any, any, any, any, any>> {
 }
 
 interface IORoomListeners {
-    onDestroy: () => void;
+    onDestroy: (encodedState: string) => void;
 }
 
-export interface IORoomConfig<
+export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TInput extends EventRecord<string, any> = {},
     TOutput extends EventRecord<string, any> = {}
-> {
+> = Partial<IORoomListeners> & {
     authorize?: TAuthorize;
     context: TContext;
     debug: boolean;
     events: InferEventConfig<TContext, TInput, TOutput>;
     initialStorage?: () => MaybePromise<Maybe<string>>;
-    onDestroy?: () => void;
     platform: TPlatform;
-}
+};
 
 interface SendMessageSender {
     id: string | null;
@@ -110,7 +109,7 @@ export class IORoom<
         this.room = room;
 
         this._listeners = {
-            onDestroy: () => onDestroy?.(),
+            onDestroy: (encodedState) => onDestroy?.(encodedState),
         };
 
         if (authorize) this._authorize = authorize;
@@ -267,30 +266,34 @@ export class IORoom<
             );
             this._sessions.delete(session.id);
 
-            this._platform.persistance.deleteUser(this.room, session.id);
+            this._platform.persistance
+                .deleteUser(this.room, session.id)
+                .finally(() => {
+                    this._broadcast({
+                        message: {
+                            type: "$EXIT",
+                            data: { sessionId: session.id },
+                        },
+                        senderId: session.id,
+                    });
 
-            this._broadcast({
-                message: {
-                    type: "$EXIT",
-                    data: { sessionId: session.id },
-                },
-                senderId: session.id,
-            });
+                    uninitializeWs();
 
-            uninitializeWs();
+                    const size = this._getSessionsSize();
 
-            const size = this._getSessionsSize();
+                    this._logDebug(
+                        `${chalk.blue(
+                            `Unregistered connection for room ${this.room}:`
+                        )} ${sessionId}`
+                    );
+                    this._logDebug(
+                        `${chalk.blue(`Room ${this.room} size:`)} ${size}`
+                    );
 
-            this._logDebug(
-                `${chalk.blue(
-                    `Unregistered connection for room ${this.room}:`
-                )} ${sessionId}`
-            );
-            this._logDebug(`${chalk.blue(`Room ${this.room} size:`)} ${size}`);
+                    if (size) return;
 
-            if (size) return;
-
-            this._uninitialize();
+                    this._uninitialize?.();
+                });
         };
 
         pluvWs.addEventListener("close", closeHandler);
@@ -476,10 +479,12 @@ export class IORoom<
         this._uninitialize = async () => {
             this._platform.pubSub.unsubscribe(pubSubId);
 
+            const encodedState = this._doc.encodeStateAsUpdate();
+
             this._doc.destroy();
             this._doc = doc();
 
-            this._listeners.onDestroy();
+            this._listeners.onDestroy(encodedState);
         };
     }
 

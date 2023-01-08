@@ -48,8 +48,15 @@ This will start a watcher in parallel which builds all `packages/*` on any file 
 
 ### Testing
 
+Install [docker](https://www.docker.com/) and [docker-compose](https://docs.docker.com/compose/) if you haven't already.
+
 ```bash
 # in project root directory
+
+# spin up services needed for tests
+pnpm services:start
+
+# run tests
 pnpm test
 ```
 
