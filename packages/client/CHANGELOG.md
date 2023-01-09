@@ -1,5 +1,12 @@
 # @pluv/client
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [b45d642]
+  - @pluv/crdt-yjs@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
