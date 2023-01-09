@@ -15,6 +15,14 @@
       "depTypeList": ["dependencies"],
       "updateTypes": ["patch", "minor"],
       "excludePackageNames": ["chalk", "nanoid"]
+    },
+    {
+      "groupName": "ESM devDependencies & dependencies (major)",
+      "depTypeList": ["dependencies", "devDependencies"],
+      "updateTypes": ["major"],
+      "matchPackageNames": [
+        "chalk"
+      ]
     }
   ]
 }
