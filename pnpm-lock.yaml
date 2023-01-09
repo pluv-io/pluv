@@ -26,7 +26,7 @@ importers:
       '@pluv/platform-cloudflare': workspace:^
       '@pluv/tsconfig': workspace:^
       typescript: ^4.9.4
-      wrangler: 2.6.2
+      wrangler: 2.7.0
       zod: ^3.20.2
     dependencies:
       '@pluv-internal/cloudflare-utils': link:../../internal/cloudflare-utils
@@ -37,7 +37,7 @@ importers:
       '@cloudflare/workers-types': 3.18.0
       '@pluv/tsconfig': link:../../packages/tsconfig
       typescript: 4.9.4
-      wrangler: 2.6.2
+      wrangler: 2.7.0
 
   apps/server-node:
     specifiers:
@@ -60,7 +60,7 @@ importers:
       ts-node: ^10.9.1
       ts-node-dev: ^2.0.0
       typescript: ^4.9.4
-      wrangler: 2.6.2
+      wrangler: 2.7.0
       ws: ^8.12.0
       zod: ^3.20.2
     dependencies:
@@ -86,7 +86,7 @@ importers:
       ts-node: 10.9.1_awa2wsr5thmg3i7jqycphctjfq
       ts-node-dev: 2.0.0_awa2wsr5thmg3i7jqycphctjfq
       typescript: 4.9.4
-      wrangler: 2.6.2
+      wrangler: 2.7.0
 
   apps/web:
     specifiers:
@@ -4817,48 +4817,6 @@ packages:
     engines: {node: '>=4'}
     dev: true
 
-  /miniflare/2.10.0:
-    resolution: {integrity: sha512-WPveqChVDdmDGv+wFqXjFqEZlZ5/aBlAKX37h/e4TAjl2XsK5nPfQATP8jZXwNDEC5iE29bYZymOqeZkp+t7OA==}
-    engines: {node: '>=16.13'}
-    hasBin: true
-    peerDependencies:
-      '@miniflare/storage-redis': 2.10.0
-      cron-schedule: ^3.0.4
-      ioredis: ^4.27.9
-    peerDependenciesMeta:
-      '@miniflare/storage-redis':
-        optional: true
-      cron-schedule:
-        optional: true
-      ioredis:
-        optional: true
-    dependencies:
-      '@miniflare/cache': 2.10.0
-      '@miniflare/cli-parser': 2.10.0
-      '@miniflare/core': 2.10.0
-      '@miniflare/d1': 2.10.0
-      '@miniflare/durable-objects': 2.10.0
-      '@miniflare/html-rewriter': 2.10.0
-      '@miniflare/http-server': 2.10.0
-      '@miniflare/kv': 2.10.0
-      '@miniflare/queues': 2.10.0
-      '@miniflare/r2': 2.10.0
-      '@miniflare/runner-vm': 2.10.0
-      '@miniflare/scheduler': 2.10.0
-      '@miniflare/shared': 2.10.0
-      '@miniflare/sites': 2.10.0
-      '@miniflare/storage-file': 2.10.0
-      '@miniflare/storage-memory': 2.10.0
-      '@miniflare/web-sockets': 2.10.0
-      kleur: 4.1.5
-      semiver: 1.1.0
-      source-map-support: 0.5.21
-      undici: 5.9.1
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: true
-
   /miniflare/2.10.0_ioredis@5.2.4:
     resolution: {integrity: sha512-WPveqChVDdmDGv+wFqXjFqEZlZ5/aBlAKX37h/e4TAjl2XsK5nPfQATP8jZXwNDEC5iE29bYZymOqeZkp+t7OA==}
     engines: {node: '>=16.13'}
@@ -4893,6 +4851,48 @@ packages:
       '@miniflare/storage-memory': 2.10.0
       '@miniflare/web-sockets': 2.10.0
       ioredis: 5.2.4
+      kleur: 4.1.5
+      semiver: 1.1.0
+      source-map-support: 0.5.21
+      undici: 5.9.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: true
+
+  /miniflare/2.11.0:
+    resolution: {integrity: sha512-QA18I1VQXdCo4nBtPJUcUDxW8c9xbc5ex5F61jwhkGVOISSnYdEheolESmjr8MYk28xwi0XD1ozS4rLaTONd+w==}
+    engines: {node: '>=16.13'}
+    hasBin: true
+    peerDependencies:
+      '@miniflare/storage-redis': 2.11.0
+      cron-schedule: ^3.0.4
+      ioredis: ^4.27.9
+    peerDependenciesMeta:
+      '@miniflare/storage-redis':
+        optional: true
+      cron-schedule:
+        optional: true
+      ioredis:
+        optional: true
+    dependencies:
+      '@miniflare/cache': 2.11.0
+      '@miniflare/cli-parser': 2.11.0
+      '@miniflare/core': 2.11.0
+      '@miniflare/d1': 2.11.0
+      '@miniflare/durable-objects': 2.11.0
+      '@miniflare/html-rewriter': 2.11.0
+      '@miniflare/http-server': 2.11.0
+      '@miniflare/kv': 2.11.0
+      '@miniflare/queues': 2.11.0
+      '@miniflare/r2': 2.11.0
+      '@miniflare/runner-vm': 2.11.0
+      '@miniflare/scheduler': 2.11.0
+      '@miniflare/shared': 2.11.0
+      '@miniflare/sites': 2.11.0
+      '@miniflare/storage-file': 2.11.0
+      '@miniflare/storage-memory': 2.11.0
+      '@miniflare/web-sockets': 2.11.0
       kleur: 4.1.5
       semiver: 1.1.0
       source-map-support: 0.5.21
@@ -6909,36 +6909,6 @@ packages:
     resolution: {integrity: sha512-Hz/mrNwitNRh/HUAtM/VT/5VH+ygD6DV7mYKZAtHOrbs8U7lvPS6xf7EJKMF0uW1KJCl0H701g3ZGus+muE5vQ==}
     engines: {node: '>=0.10.0'}
 
-  /wrangler/2.6.2:
-    resolution: {integrity: sha512-+in4oEQXDs6+vE+1c6niBd3IrW1DMRTbauR6G0u3TpD6UaXOLwLdBxRLEbN3m82dN+WNm7l1MbFZrKc/TnWjhw==}
-    engines: {node: '>=16.13.0'}
-    hasBin: true
-    dependencies:
-      '@cloudflare/kv-asset-handler': 0.2.0
-      '@esbuild-plugins/node-globals-polyfill': 0.1.1_esbuild@0.14.51
-      '@esbuild-plugins/node-modules-polyfill': 0.1.4_esbuild@0.14.51
-      '@miniflare/core': 2.10.0
-      '@miniflare/d1': 2.10.0
-      '@miniflare/durable-objects': 2.10.0
-      blake3-wasm: 2.1.5
-      chokidar: 3.5.3
-      esbuild: 0.14.51
-      miniflare: 2.10.0
-      nanoid: 3.3.4
-      path-to-regexp: 6.2.1
-      selfsigned: 2.1.1
-      source-map: 0.7.4
-      xxhash-wasm: 1.0.2
-    optionalDependencies:
-      fsevents: 2.3.2
-    transitivePeerDependencies:
-      - '@miniflare/storage-redis'
-      - bufferutil
-      - cron-schedule
-      - ioredis
-      - utf-8-validate
-    dev: true
-
   /wrangler/2.6.2_ioredis@5.2.4:
     resolution: {integrity: sha512-+in4oEQXDs6+vE+1c6niBd3IrW1DMRTbauR6G0u3TpD6UaXOLwLdBxRLEbN3m82dN+WNm7l1MbFZrKc/TnWjhw==}
     engines: {node: '>=16.13.0'}
@@ -6954,6 +6924,36 @@ packages:
       chokidar: 3.5.3
       esbuild: 0.14.51
       miniflare: 2.10.0_ioredis@5.2.4
+      nanoid: 3.3.4
+      path-to-regexp: 6.2.1
+      selfsigned: 2.1.1
+      source-map: 0.7.4
+      xxhash-wasm: 1.0.2
+    optionalDependencies:
+      fsevents: 2.3.2
+    transitivePeerDependencies:
+      - '@miniflare/storage-redis'
+      - bufferutil
+      - cron-schedule
+      - ioredis
+      - utf-8-validate
+    dev: true
+
+  /wrangler/2.7.0:
+    resolution: {integrity: sha512-/i1ctpQFhEI0gh5/VRaF1DEyulrzIq9lndrRspv//f95UShuf6vbt0qatSHgttBJsZ18W4u40xlWKom9S6KYwg==}
+    engines: {node: '>=16.13.0'}
+    hasBin: true
+    dependencies:
+      '@cloudflare/kv-asset-handler': 0.2.0
+      '@esbuild-plugins/node-globals-polyfill': 0.1.1_esbuild@0.14.51
+      '@esbuild-plugins/node-modules-polyfill': 0.1.4_esbuild@0.14.51
+      '@miniflare/core': 2.11.0
+      '@miniflare/d1': 2.11.0
+      '@miniflare/durable-objects': 2.11.0
+      blake3-wasm: 2.1.5
+      chokidar: 3.5.3
+      esbuild: 0.14.51
+      miniflare: 2.11.0
       nanoid: 3.3.4
       path-to-regexp: 6.2.1
       selfsigned: 2.1.1
