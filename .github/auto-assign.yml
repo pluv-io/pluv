@@ -14,4 +14,7 @@ numberOfReviewers: 0
 
 # A list of keywords to be skipped the process if PR's title include it
 skipKeywords:
-  - renovate, wip
+  - draft, wip
+
+excludeLabels:
+  - renovate
