@@ -39,7 +39,72 @@
 
 Pluv.IO allows you to build real-time collaborate features with a fully end-to-end type-safe api.
 
+### Why
+
+So you can do this:
+
+```tsx
+usePluvEvent("RECEIVE_MESSAGE", ({ data }) => {
+  setMessages([...messages, data.message]);
+});
+
+usePluvBroadcast({
+  type: "SEND_MESSAGE",
+  data: { message: "Hello world!" },
+});
+```
+
+And this:
+
+```tsx
+const [myCursor, updatePresence] = usePluvMyPresence((me) => me.presence.cursor);
+const cursors = usePluvOthers((others) => {
+  return others.map((other) => other.presence.cursor);
+});
+
+useEffect(() => {
+  const updateCursor = (e: MouseEvent) => {
+    updatePresence({ cursor: { x: e.pageX, y: e.pageY } });
+  };
+
+  window.addEventListener("mousemove", updateCursor);
+
+  return () => {
+    window.removeEventListener("mousemove", updateCursor);
+  };
+}, [updatePresence]);
+
+return (
+  <div>
+    <div style={{ top: myCursor?.y, left: myCursor?.x }} />
+    {cursors.map((cursor, i) => (
+      <div key={i} style={{ top: cursor?.y, left: cursor?.x }} />
+    ))}
+  </div>
+);
+```
+
+Also this:
+
+
+```tsx
+const [messages, sharedType] = usePluvStorage("messages");
+
+sharedType?.push(["Hello world!"]);
+
+return (
+  <div>
+    {messages?.map((message, i) => (
+      <div key={i}>{message}</div>
+    ))}
+  </div>
+);
+```
+
+And more. With great **E2E type-safety**, **intellisense** and the **[yjs](https://docs.yjs.dev/) ecosystem**.
+
 ### Features
+
 - ✅ Automatic type safety
 - ✅ Basic events
 - ✅ Rooms
@@ -56,6 +121,7 @@ Pluv.IO allows you to build real-time collaborate features with a fully end-to-e
 - ⬜ Studio (admin & developer panel)
 
 ### Runtimes
+
 - ✅ [Cloudflare Workers](https://workers.cloudflare.com/)
 - ✅ [Node.js](https://nodejs.org/)
   - ✅ **PubSubs**
@@ -67,6 +133,7 @@ Pluv.IO allows you to build real-time collaborate features with a fully end-to-e
     - ⬜ [Prisma](https://www.prisma.io/)
 
 ### Frontends
+
 - ✅ [React.js](https://beta.reactjs.org/)
 - ⬜ [Vue.js](https://vuejs.org/)
 - ⬜ [Svelte](https://svelte.dev/)
@@ -88,6 +155,7 @@ Before diving into documentation, check out usage instructions for your selected
 * [Authentication](https://github.com/pluv-io/pluv/blob/master/docs/authentication.md)
 * [CRDT Storage](https://github.com/pluv-io/pluv/blob/master/docs/crdt-storage.md)
 * [Creating Rooms](https://github.com/pluv-io/pluv/blob/master/docs/creating-rooms.md)
+* [`createIO` API](https://github.com/pluv-io/pluv/blob/master/docs/create-io-api.md)
 * [Custom Events](https://github.com/pluv-io/pluv/blob/master/docs/custom-events.md)
 * [Presence](https://github.com/pluv-io/pluv/blob/master/docs/presence.md)
 * [PubSubs and Persistance](https://github.com/pluv-io/pluv/blob/master/docs/pubsubs-and-persistance.md)
