@@ -49,7 +49,7 @@ export const createIO = <
         debug,
         initialStorage,
         onRoomDeleted,
-        onStorageChanged,
+        onStorageUpdated,
         platform,
     } = params;
 
@@ -65,7 +65,7 @@ export const createIO = <
         debug,
         initialStorage,
         onRoomDeleted,
-        onStorageChanged,
+        onStorageUpdated,
         platform,
     });
 };
