@@ -2,25 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base", ":preserveSemverRanges"],
   "updateInternalDeps": true,
-  "packageRules": [
-    {
-      "groupName": "devDependencies (non-major)",
-      "automerge": "true",
-      "depTypeList": ["devDependencies"],
-      "matchUpdateTypes": ["patch", "minor"]
-    },
-    {
-      "groupName": "dependencies (non-major)",
-      "depTypeList": ["dependencies"],
-      "updateTypes": ["patch", "minor"]
-    },
-    {
-      "groupName": "ESM devDependencies & dependencies (major)",
-      "depTypeList": ["dependencies", "devDependencies"],
-      "updateTypes": ["major"],
-      "matchPackageNames": [
-        "chalk"
-      ]
-    }
-  ]
+  "major": {
+    "enabled": false
+  }
 }
