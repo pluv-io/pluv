@@ -29,6 +29,7 @@ export type {
     JWT,
     JWTEncodeParams,
 } from "./authorize";
+export type { CreateIOParams } from "./createIO";
 export { createIO } from "./createIO";
 export type { IORoom } from "./IORoom";
 export type { InferIORoom, PluvIO } from "./PluvIO";

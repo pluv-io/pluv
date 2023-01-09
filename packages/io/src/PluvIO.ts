@@ -40,7 +40,7 @@ export interface PluvIORegisterOptions {
     token?: string;
 }
 
-interface PluvIOListeners {
+export interface PluvIOListeners {
     onRoomDeleted: (room: string, encodedState: string) => void;
     onStorageChanged: (room: string, encodedState: string) => void;
 }
