@@ -42,7 +42,7 @@ export interface PluvIORegisterOptions {
 
 export interface PluvIOListeners {
     onRoomDeleted: (room: string, encodedState: string) => void;
-    onStorageChanged: (room: string, encodedState: string) => void;
+    onStorageUpdated: (room: string, encodedState: string) => void;
 }
 
 export type PluvIOConfig<
@@ -148,7 +148,7 @@ export class PluvIO<
                 this._platform.persistance
                     .setStorageState(room, state)
                     .then(() => {
-                        this._listeners.onStorageChanged(room, state);
+                        this._listeners.onStorageUpdated(room, state);
                     });
 
                 return { $STORAGE_UPDATED: { state } };
@@ -167,7 +167,7 @@ export class PluvIO<
             events,
             initialStorage,
             onRoomDeleted,
-            onStorageChanged,
+            onStorageUpdated,
             platform,
         } = options;
 
@@ -183,8 +183,8 @@ export class PluvIO<
             onRoomDeleted: (room, encodedState) => {
                 return onRoomDeleted?.(room, encodedState);
             },
-            onStorageChanged: (room, encodedState) => {
-                return onStorageChanged?.(room, encodedState);
+            onStorageUpdated: (room, encodedState) => {
+                return onStorageUpdated?.(room, encodedState);
             },
         };
     }
