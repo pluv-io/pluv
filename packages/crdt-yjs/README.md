@@ -23,14 +23,6 @@
   <img src="https://img.shields.io/badge/docs-coming%20soon!-blue" alt="Docs coming soon!" />
 </p>
 
-<p align="center">
-  <a href="#intro">Intro</a> •
-  <a href="#usage">Usage</a> •
-  <a href="#credits">Credits</a> •
-  <a href="#related">Related</a> •
-  <a href="#license">License</a>
-</p>
-
 <img src="https://github.com/pluv-io/pluv/blob/master/assets/demo-events.gif?raw=true" alt="Demo" />
 
 ## `@pluv/crdt-yjs`

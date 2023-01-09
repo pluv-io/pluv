@@ -95,13 +95,13 @@ Before diving into documentation, check out usage instructions for your selected
 
 ## Related
 
-- [@pluv/client](https://github.com/pluv-io/pluv/tree/master/packages/client) - Framework agnostic client
-- [@pluv/crdt-yjs](https://github.com/pluv-io/pluv/tree/master/packages/crdt-yjs) - Yjs for Pluv.IO
-- [@pluv/persistance-redis](https://github.com/pluv-io/pluv/tree/master/packages/persistance-redis) - Persistance for storage on distributed systems (Node.js only)
-- [@pluv/platform-cloudflare](https://github.com/pluv-io/pluv/tree/master/packages/platform-cloudflare) - Adapter to run @pluv/io on Cloudflare Workers
-- [@pluv/platform-node](https://github.com/pluv-io/pluv/tree/master/packages/platform-node) - Adapter to run @pluv/io on Node.js
-- [@pluv/pubsub-redis](https://github.com/pluv-io/pluv/tree/master/packages/pubsub-redis) - PubSub for rooms across distributed systems
-- [@pluv/react](https://github.com/pluv-io/pluv/tree/master/packages/react) - Integrate @pluv/client with React.js
+- [@pluv/client](https://www.npmjs.com/package/@pluv/client) - Framework agnostic client
+- [@pluv/crdt-yjs](https://www.npmjs.com/package/@pluv/crdt-yjs) - Yjs for Pluv.IO
+- [@pluv/persistance-redis](https://www.npmjs.com/package/@pluv/persistance-redis) - Persistance for storage on distributed systems (Node.js only)
+- [@pluv/platform-cloudflare](https://www.npmjs.com/package/@pluv/platform-cloudflare) - Adapter to run @pluv/io on Cloudflare Workers
+- [@pluv/platform-node](https://www.npmjs.com/package/@pluv/platform-node) - Adapter to run @pluv/io on Node.js
+- [@pluv/pubsub-redis](https://www.npmjs.com/package/@pluv/pubsub-redis) - PubSub for rooms across distributed systems
+- [@pluv/react](https://www.npmjs.com/package/@pluv/react) - Integrate @pluv/client with React.js
 
 ## Credits
 
