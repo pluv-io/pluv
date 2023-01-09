@@ -7,14 +7,12 @@
       "groupName": "devDependencies (non-major)",
       "automerge": "true",
       "depTypeList": ["devDependencies"],
-      "updateTypes": ["patch", "minor"],
-      "excludePackageNames": ["@cloudflare/workers-types"]
+      "matchUpdateTypes": ["patch", "minor"]
     },
     {
       "groupName": "dependencies (non-major)",
       "depTypeList": ["dependencies"],
-      "updateTypes": ["patch", "minor"],
-      "excludePackageNames": ["chalk", "nanoid"]
+      "updateTypes": ["patch", "minor"]
     },
     {
       "groupName": "ESM devDependencies & dependencies (major)",
