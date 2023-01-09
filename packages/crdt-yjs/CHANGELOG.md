@@ -1,5 +1,11 @@
 # @pluv/crdt-yjs
 
+## 0.1.2
+
+### Patch Changes
+
+- b45d642: Fixed links on README
+
 ## 0.1.1
 
 ### Patch Changes
