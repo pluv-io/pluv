@@ -26,7 +26,7 @@
         "commitizen": "^4.2.6",
         "cz-conventional-changelog": "^3.3.0",
         "eslint-config-pluv": "workspace:^",
-        "prettier": "^2.8.1",
+        "prettier": "^2.8.2",
         "turbo": "^1.6.3"
     }
 }

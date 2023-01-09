@@ -24,7 +24,7 @@
 	},
 	"dependencies": {
 		"@pluv/types": "workspace:^",
-		"js-base64": "^3.7.3"
+		"js-base64": "^3.7.4"
 	},
 	"peerDependencies": {
 		"yjs": "^13.0.0"
