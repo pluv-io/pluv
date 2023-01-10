@@ -3,6 +3,9 @@ import type {
     Array as YArray,
     Map as YMap,
     Text as YText,
+    XmlElement as YXmlElement,
+    XmlFragment as YXmlFragment,
+    XmlText as YXmlText,
 } from "yjs";
 import type { YjsDoc } from "./doc";
 import type { unstable__YObject } from "./object";
@@ -34,7 +37,7 @@ export type InferYjsSharedTypeJson<TShared extends unknown> =
             ? { [P in keyof IObject]: InferYjsSharedTypeJson<IObject[P]> }
             : TShared extends YMap<infer IItem>
             ? Record<string, InferYjsSharedTypeJson<IItem>>
-            : TShared extends YText
+            : TShared extends YText | YXmlElement | YXmlFragment | YXmlText
             ? string
             : never
         : TShared;
