@@ -1,3 +1,6 @@
+> **Disclaimer:**
+> This package is currently in preview and may have breaking changes between versions. Please wait for a `v1.0.0` stable release before using this in production.
+
 <h1 align="center">
   <br>
   <img src="https://github.com/pluv-io/pluv/blob/master/assets/pluv-icon-192x192.png?raw=true" alt="Pluv.IO" width="180" style="border-radius:16px">
@@ -20,7 +23,7 @@
   <a href="https://commitizen.github.io/cz-cli/">
     <img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly" />
   </a>
-  <img src="https://img.shields.io/badge/docs-coming%20soon!-blue" alt="Docs coming soon!" />
+  <img src="https://img.shields.io/badge/website-coming%20soon!-blue" alt="Website coming soon!" />
 </p>
 
 <p align="center">
@@ -33,13 +36,11 @@
 
 <img src="https://github.com/pluv-io/pluv/blob/master/assets/demo-events.gif?raw=true" alt="Demo" />
 
-<h3 align="center">Documentation Website coming soon!</h3>
-
 ## Intro
 
 Pluv.IO allows you to build real-time collaborate features with a fully end-to-end type-safe api.
 
-### Why
+### Why?
 
 So you can do this:
 
@@ -101,7 +102,7 @@ return (
 );
 ```
 
-And more. With great **E2E type-safety**, **intellisense** and the **[yjs](https://docs.yjs.dev/) ecosystem**.
+And more. With **E2E type-safety**, **great intellisense** and the **[yjs](https://docs.yjs.dev/) ecosystem**.
 
 ### Features
 
@@ -142,7 +143,7 @@ And more. With great **E2E type-safety**, **intellisense** and the **[yjs](https
 
 Before diving into documentation, check out usage instructions for your selected platform:
 
-> **Note**
+> **Note:**
 > `@pluv/io`, `@pluv/client`, `@pluv/crdt-yjs` and `@pluv/react` all require [yjs](https://docs.yjs.dev/) as a peer dependency.
 
 ### Platforms
