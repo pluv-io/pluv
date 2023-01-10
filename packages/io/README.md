@@ -19,11 +19,17 @@
   <a href="https://github.com/pluv-io/pluv/blob/master/LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/pluv-io/pluv" alt="License MIT" />
   </a>
-  <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript">
   <a href="https://commitizen.github.io/cz-cli/">
     <img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly" />
   </a>
   <img src="https://img.shields.io/badge/website-coming%20soon!-blue" alt="Website coming soon!" />
+</p>
+
+<p align="center">
+  <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript">
+  <a href="https://openbase.com/js/@pluv/io?utm_source=embedded&amp;utm_medium=badge&amp;utm_campaign=rate-badge">
+    <img src="https://badges.openbase.com/js/featured/@pluv/io.svg?token=FdWfpo90mCUb7InAjDG0KeXM/uH+KdHK3us2pNRgWf0=" alt="Featured on Openbase" />
+  </a>
 </p>
 
 <p align="center">
