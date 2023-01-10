@@ -26,7 +26,9 @@
   <img src="https://img.shields.io/badge/docs-coming%20soon!-blue" alt="Docs coming soon!" />
 </p>
 
-<img src="https://github.com/pluv-io/pluv/blob/master/assets/demo-events.gif?raw=true" alt="Demo" />
+<p align="center">
+  <img src="https://github.com/pluv-io/pluv/blob/master/assets/demo-events.gif?raw=true" alt="Demo" />
+</p>
 
 ## `@pluv/react`
 
