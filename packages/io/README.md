@@ -40,7 +40,9 @@
   <a href="#license">License</a>
 </p>
 
-<img src="https://github.com/pluv-io/pluv/blob/master/assets/demo-events.gif?raw=true" alt="Demo" />
+<p align="center">
+  <img src="https://github.com/pluv-io/pluv/blob/master/assets/demo-events.gif?raw=true" alt="Demo" />
+</p>
 
 ## Intro
 
