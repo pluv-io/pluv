@@ -1,5 +1,14 @@
 # @pluv/io
 
+## 0.2.2
+
+### Patch Changes
+
+- fe80d7b: added preview disclaimer about breaking changes in the readme
+- Updated dependencies [fe80d7b]
+  - @pluv/crdt-yjs@0.1.3
+  - @pluv/types@0.1.2
+
 ## 0.2.1
 
 ### Patch Changes

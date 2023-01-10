@@ -1,5 +1,13 @@
 # @pluv/pubsub-redis
 
+## 0.1.3
+
+### Patch Changes
+
+- fe80d7b: added preview disclaimer about breaking changes in the readme
+- Updated dependencies [fe80d7b]
+  - @pluv/io@0.2.2
+
 ## 0.1.2
 
 ### Patch Changes

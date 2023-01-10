@@ -1,5 +1,11 @@
 # eslint-config-pluv
 
+## 0.1.2
+
+### Patch Changes
+
+- fe80d7b: added preview disclaimer about breaking changes in the readme
+
 ## 0.1.1
 
 ### Patch Changes
