@@ -3,9 +3,6 @@ import { createBundle, createClient, y } from "@pluv/react";
 import { z } from "zod";
 
 const client = createClient<typeof io>({
-    authEndpoint: (roomName) => {
-        return `http://localhost:8787/api/authorize?roomName=${roomName}`;
-    },
     wsEndpoint: (roomName) => {
         return `ws://localhost:8787/api/room/${roomName}/websocket`;
     },

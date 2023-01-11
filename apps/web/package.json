@@ -10,7 +10,6 @@
     },
     "dependencies": {
         "@pluv-apps/server-cloudflare": "workspace:^",
-        "@pluv-apps/server-node": "workspace:^",
         "@pluv/io": "workspace:^",
         "@pluv/platform-node": "workspace:^",
         "@pluv/react": "workspace:^",
