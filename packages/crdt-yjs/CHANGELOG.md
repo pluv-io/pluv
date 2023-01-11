@@ -1,5 +1,15 @@
 # @pluv/crdt-yjs
 
+## 0.2.0
+
+### Minor Changes
+
+- 6858682: Added support for yjs xml types including XmlElement, XmlFragment and XmlText
+
+### Patch Changes
+
+- @pluv/types@0.1.2
+
 ## 0.1.3
 
 ### Patch Changes

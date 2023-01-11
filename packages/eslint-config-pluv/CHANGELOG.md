@@ -1,5 +1,11 @@
 # eslint-config-pluv
 
+## 0.1.3
+
+### Patch Changes
+
+- 880a69c: fix(deps): update dependency eslint-plugin-react to v7.32.0
+
 ## 0.1.2
 
 ### Patch Changes
