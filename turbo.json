@@ -31,5 +31,6 @@
         "CI"
       ]
     }
-  }
+  },
+  "globalEnv": ["PLUV_AUTH_SECRET"]
 }
