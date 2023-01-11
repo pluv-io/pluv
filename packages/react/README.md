@@ -132,12 +132,9 @@ export const MyRoom: FC<Record<string, never>> = () => {
     return (
         <button
             onClick={() => {
-                broadcast({
-                    type: "SEND_MESSAGE",
-                    data: {
-                        // TypeScript will require that message is typed as string
-                        message: "Hello world!",
-                    }
+                broadcast("SEND_MESSAGE", {
+                    // TypeScript will require that message is typed as string
+                    message: "Hello world!",
                 });
             }}
             type="button"

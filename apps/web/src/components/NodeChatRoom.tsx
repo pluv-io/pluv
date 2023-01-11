@@ -68,10 +68,7 @@ export const NodeChatRoom: FC<NodeChatRoomProps> = () => {
                             if (!event.shiftKey) return;
                             if (event.key.toLowerCase() !== "enter") return;
 
-                            broadcast({
-                                type: "SEND_MESSAGE",
-                                data: { message },
-                            });
+                            broadcast("SEND_MESSAGE", { message });
 
                             sharedType?.unshift([
                                 y.unstable__object({
@@ -91,10 +88,7 @@ export const NodeChatRoom: FC<NodeChatRoomProps> = () => {
                             "hover:bg-indigo-50 focus:bg-indigo-100"
                         )}
                         onClick={() => {
-                            broadcast({
-                                type: "SEND_MESSAGE",
-                                data: { message },
-                            });
+                            broadcast("SEND_MESSAGE", { message });
 
                             sharedType?.unshift([
                                 y.unstable__object({

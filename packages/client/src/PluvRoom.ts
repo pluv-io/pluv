@@ -201,11 +201,16 @@ export class PluvRoom<
         return this._state.webSocket;
     }
 
-    public broadcast(message: Id<InferEventMessage<InferIOInput<TIO>>>): void {
+    public broadcast<TEvent extends keyof InferIOInput<TIO>>(
+        event: TEvent,
+        data: Id<InferIOInput<TIO>[TEvent]>
+    ): void {
         if (!this._state.webSocket) return;
         if (this._state.connection.state !== ConnectionState.Open) return;
 
-        this._sendMessage(message);
+        const type = event.toString();
+
+        this._sendMessage({ data, type });
     }
 
     public async connect(): Promise<void> {
@@ -291,10 +296,10 @@ export class PluvRoom<
     }
 
     public event = <TEvent extends keyof InferIOOutput<TIO>>(
-        name: TEvent,
+        event: TEvent,
         callback: EventNotifierSubscriptionCallback<TIO, TEvent>
     ): (() => void) => {
-        return this._eventNotifier.subscribe(name, callback);
+        return this._eventNotifier.subscribe(event, callback);
     };
 
     public getConnection(): WebSocketConnection {

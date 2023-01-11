@@ -92,20 +92,9 @@ export const MyRoom: FC<Record<string, never>> = () => {
     });
 
     // These are also typed
-    broadcast({
-        type: "SEND_MESSAGE",
-        data: { message: "hello world" },
-    });
-
-    broadcast({
-        type: "ADD_GROCERY_LIST_ITEM",
-        data: { name: "Milk", count: 2 },
-    });
-
-    broadcast({
-        type: "FLIP_SWITCH",
-        data: { on: false },
-    });
+    broadcast("SEND_MESSAGE", { message: "hello world" });
+    broadcast("ADD_GROCERY_LIST_ITEM", { name: "Milk", count: 2 });
+    broadcast("FLIP_SWITCH", { on: false });
 
     return <div />;
 };
