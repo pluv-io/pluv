@@ -71,10 +71,7 @@ export const CloudflareChatRoom: FC<CloudflareChatRoomProps> = () => {
                             if (!event.shiftKey) return;
                             if (event.key.toLowerCase() !== "enter") return;
 
-                            broadcast({
-                                type: "SEND_MESSAGE",
-                                data: { message },
-                            });
+                            broadcast("SEND_MESSAGE", { message });
 
                             sharedType?.unshift([
                                 y.unstable__object({
@@ -94,10 +91,7 @@ export const CloudflareChatRoom: FC<CloudflareChatRoomProps> = () => {
                             "hover:bg-indigo-50 focus:bg-indigo-100"
                         )}
                         onClick={() => {
-                            broadcast({
-                                type: "SEND_MESSAGE",
-                                data: { message },
-                            });
+                            broadcast("SEND_MESSAGE", { message });
 
                             sharedType?.unshift([
                                 y.unstable__object({

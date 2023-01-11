@@ -8,7 +8,6 @@ import type {
 import type { PluvRoom } from "@pluv/client";
 import type {
     Id,
-    InferEventMessage,
     InferIOInput,
     InferIOOutput,
     InputZodLike,
@@ -68,9 +67,10 @@ export interface CreateRoomBundle<
     PluvRoomProvider: FC<PluvRoomProviderProps<TIO, TPresence, TStorage>>;
 
     // hooks
-    usePluvBroadcast: <
-        TMessage extends Id<InferEventMessage<InferIOInput<TIO>>>
-    >() => (message: TMessage) => void;
+    usePluvBroadcast: () => <TEvent extends keyof InferIOInput<TIO>>(
+        event: TEvent,
+        data: Id<InferIOInput<TIO>[TEvent]>
+    ) => void;
     usePluvConnection: <T extends unknown = WebSocketConnection>(
         selector: (connection: WebSocketConnection) => T,
         options?: SubscriptionHookOptions<Id<T>>
@@ -185,14 +185,18 @@ export const createRoomBundle = <
 
     const usePluvRoom = () => useContext(PluvRoomContext);
 
-    const usePluvBroadcast = <
-        TMessage extends Id<InferEventMessage<InferIOInput<TIO>>>
-    >(): ((message: TMessage) => void) => {
+    const usePluvBroadcast = (): (<TEvent extends keyof InferIOInput<TIO>>(
+        event: TEvent,
+        data: Id<InferIOInput<TIO>[TEvent]>
+    ) => void) => {
         const room = usePluvRoom();
 
         return useCallback(
-            (message: TMessage) => {
-                room.broadcast(message);
+            <TEvent extends keyof InferIOInput<TIO>>(
+                event: TEvent,
+                data: Id<InferIOInput<TIO>[TEvent]>
+            ) => {
+                room.broadcast(event, data);
             },
             [room]
         );
@@ -281,10 +285,10 @@ export const createRoomBundle = <
                             ? value(oldMyPresence)
                             : value;
 
-                    room.broadcast({
-                        type: "$UPDATE_PRESENCE",
-                        data: { presence },
-                    } as Id<InferEventMessage<InferIOInput<TIO>>>);
+                    room.broadcast(
+                        "$UPDATE_PRESENCE" as keyof InferIOInput<TIO>,
+                        { presence } as any
+                    );
                 },
                 [room]
             );

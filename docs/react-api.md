@@ -152,12 +152,9 @@ const io = createIO({
 ```ts
 const broadcast = usePluvBroadcast();
 
-broadcast({
-    type: "SEND_MESSAGE",
-    data: {
-        // TypeScript will require that message is typed as string
-        message: "Hello world!",
-    }
+broadcast("SEND_MESSAGE", {
+    // TypeScript will require that message is typed as string
+    message: "Hello world!",
 });
 ```
 
