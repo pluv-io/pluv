@@ -1,5 +1,17 @@
 # @pluv/client
 
+## 0.2.0
+
+### Minor Changes
+
+- 95b5ef8: breaking: update PluvRoom.broadcast api
+
+### Patch Changes
+
+- Updated dependencies [6858682]
+  - @pluv/crdt-yjs@0.2.0
+  - @pluv/types@0.1.2
+
 ## 0.1.3
 
 ### Patch Changes

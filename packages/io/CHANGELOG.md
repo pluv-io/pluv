@@ -1,5 +1,15 @@
 # @pluv/io
 
+## 0.2.3
+
+### Patch Changes
+
+- 95b5ef8: breaking: update PluvRoom.broadcast api
+- e23fbbe: update demo gif in README
+- Updated dependencies [6858682]
+  - @pluv/crdt-yjs@0.2.0
+  - @pluv/types@0.1.2
+
 ## 0.2.2
 
 ### Patch Changes
