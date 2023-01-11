@@ -6,8 +6,8 @@ Pluv.IO uses [yjs](https://yjs.dev/) to enable easy shared data manipulation bet
 
 Install yjs
 
-> **Note**
-> Yjs is a peer dependency of pluv packages, so make sure to install wherever the server and/or client are located (in both places if these are separate). This is currently necessary even if you are not using yjs in your setup.
+> **Note:**
+> Yjs is a peer dependency of pluv packages, so make sure to install `yjs` wherever the server and/or client are located (in both places if these are separate). This is currently necessary even if you are not using yjs in your project.
 
 ```bash
 $ npm install yjs
