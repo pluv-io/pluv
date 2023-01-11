@@ -124,9 +124,9 @@ And more. With **E2E type-safety**, **great intellisense** and the **[yjs](https
     - ✅ [Map](https://docs.yjs.dev/api/shared-types/y.map)
     - ✅ [Array](https://docs.yjs.dev/api/shared-types/y.array)
     - ✅ [Text](https://docs.yjs.dev/api/shared-types/y.text)
-    - ⬜ [XmlFragment](https://docs.yjs.dev/api/shared-types/y.xmlfragment)
-    - ⬜ [XmlElement](https://docs.yjs.dev/api/shared-types/y.xmlelement)
-    - ⬜ [XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext)
+    - ✅ [XmlFragment](https://docs.yjs.dev/api/shared-types/y.xmlfragment)
+    - ✅ [XmlElement](https://docs.yjs.dev/api/shared-types/y.xmlelement)
+    - ✅ [XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext)
 - ⬜ Studio (admin & developer panel)
 
 ### Runtimes
