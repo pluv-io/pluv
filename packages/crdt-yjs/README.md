@@ -54,6 +54,11 @@ pnpm add @pluv/crdt-yjs yjs
 
 ```ts
 import { createClient, y } from "@pluv/client";
+import type {
+    Array as YArray,
+    Map as YMap,
+    XmlFragment as YXmlFragment,
+} from "yjs";
 import { z } from "zod";
 // Import the PluvIO instance as a type from your server file
 import { type io } from "./server";
@@ -63,13 +68,21 @@ const client = createClient<typeof io>({ /* client config here */ });
 type Presence = {};
 
 interface Storage {
-    groceryList: { [food: string]: number };
-    messages: readonly { name: string; message: string }[]
+    editor: YXmlFragment;
+    groceryList: YMap<string, number>;
+    messages: YArray<{ name: string; message: string }>;
 }
 
 // Create a room to join
 const room = client.createRoom<Presence, Storage>("my-room", {
     initialStorage: () => ({
+        editor: y.xmlFragment({
+            children: [
+                y.xmlElement("paragraph", {
+                  children: [y.xmlText("Hello World!")],
+                }),
+            ]
+        }),
         groceryList: y.map([
             ["apricots", 2],
             ["bread", 3],

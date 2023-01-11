@@ -5,6 +5,11 @@ export { map } from "./map";
 export type { unstable__YObject } from "./object";
 export { unstable__object } from "./object";
 export { text } from "./text";
+export type { XmlElementParams } from "./xmlElement";
+export { xmlElement } from "./xmlElement";
+export type { XmlFragmentParams } from "./xmlFragment";
+export { xmlFragment } from "./xmlFragment";
+export { xmlText } from "./xmlText";
 export type {
     InferYjsDocJson,
     InferYjsDocSharedType,

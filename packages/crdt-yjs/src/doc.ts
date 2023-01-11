@@ -1,7 +1,7 @@
-import type { JsonObject } from "@pluv/types";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import type { AbstractType, Map as YMap, Transaction } from "yjs";
 import { applyUpdate, Doc as YDoc, encodeStateAsUpdate } from "yjs";
+import type { InferYjsDocJson } from "./types";
 
 export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
     public value: YDoc = new YDoc();
@@ -70,8 +70,8 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
         };
     }
 
-    public toJSON(): JsonObject {
-        return this._storage.toJSON();
+    public toJSON(): InferYjsDocJson<this> {
+        return this._storage.toJSON() as InferYjsDocJson<this>;
     }
 
     public static fromUint8Array(u8a: Uint8Array): string {
