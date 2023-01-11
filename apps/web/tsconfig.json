@@ -6,7 +6,6 @@
 		"baseUrl": ".",
 		"paths": {
 			"@pluv-apps/server-cloudflare": ["../server-cloudflare/src"],
-			"@pluv-apps/server-node": ["../server-node/src"],
 			"@pluv-internal/cloudflare-utils": ["../../internal/cloudflare-utils/dist"],
 			"@pluv/authorize": ["../../packages/authorize/dist"],
 			"@pluv/client": ["../../packages/client/dist"],
