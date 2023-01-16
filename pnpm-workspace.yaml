@@ -17,6 +17,8 @@ packages:
   - "packages/types"
 
   - "internal/cloudflare-utils"
+  - "internal/rainfall"
+  - "internal/react-hooks"
   - "internal/tailwind-config"
 
   - "tests/e2e"

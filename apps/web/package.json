@@ -10,9 +10,12 @@
     },
     "dependencies": {
         "@pluv-apps/server-cloudflare": "workspace:^",
+        "@pluv-internal/rainfall": "workspace:^",
+        "@pluv-internal/react-hooks": "workspace:^",
         "@pluv/io": "workspace:^",
         "@pluv/platform-node": "workspace:^",
         "@pluv/react": "workspace:^",
+        "@seznam/compose-react-refs": "^1.0.6",
         "@types/node": "^18.11.18",
         "@types/react": "18.0.26",
         "@types/ws": "^8.5.4",
