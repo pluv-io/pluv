@@ -1,0 +1,26 @@
+{
+	"name": "@pluv-internal/react-hooks",
+	"version": "0.0.0",
+	"private": true,
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"scripts": {
+		"build": "tsup src/index.ts --format esm,cjs --dts",
+		"dev": "tsup src/index.ts --format esm,cjs --watch --dts",
+		"lint": "eslint src/**/*.ts* --fix",
+		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {
+		"@react-hookz/web": "^22.0.0"
+	},
+	"devDependencies": {
+		"@pluv/tsconfig": "workspace:^",
+		"eslint-config-pluv": "workspace:^",
+		"tsup": "^6.5.0",
+		"typescript": "^4.9.4"
+	}
+}
