@@ -26,7 +26,7 @@ importers:
       '@pluv/platform-cloudflare': workspace:^
       '@pluv/tsconfig': workspace:^
       typescript: ^4.9.4
-      wrangler: 2.7.1
+      wrangler: 2.8.0
       zod: ^3.20.2
     dependencies:
       '@pluv-internal/cloudflare-utils': link:../../internal/cloudflare-utils
@@ -37,7 +37,7 @@ importers:
       '@cloudflare/workers-types': 3.18.0
       '@pluv/tsconfig': link:../../packages/tsconfig
       typescript: 4.9.4
-      wrangler: 2.7.1
+      wrangler: 2.8.0
 
   apps/web:
     specifiers:
@@ -7074,8 +7074,8 @@ packages:
       - utf-8-validate
     dev: true
 
-  /wrangler/2.7.1:
-    resolution: {integrity: sha512-SKoe+UTOCX0J+RfEDE6MEdnNy1lDSnB1BfpAEblgvDHjmEunPFu0w6GxcyOYAl/fTl3/VjXZO3p+Ybm9zenzWg==}
+  /wrangler/2.8.0:
+    resolution: {integrity: sha512-CAhjoeTnVFB65HPmOSquXbQ37lc2X77iOirX4tRMuRNKQng2NztHOfo++6BZdlV29E4IPD9boTRXck3R+O8mrg==}
     engines: {node: '>=16.13.0'}
     hasBin: true
     dependencies:
