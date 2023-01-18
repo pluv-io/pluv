@@ -3,6 +3,7 @@ import { Chess } from "chess.js";
 import type { CSSProperties } from "react";
 import { forwardRef, useCallback, useImperativeHandle, useMemo } from "react";
 import { Chessboard } from "react-chessboard";
+import { useChessSounds } from "./useChessSounds";
 
 interface ChessMove {
     from: string;
@@ -28,34 +29,49 @@ export interface ChessBoardProps {
 
 export const ChessBoard = forwardRef<{}, ChessBoardProps>(
     ({ className, history = [], onMove, style }, ref) => {
-        const clone = useCallback(
-            (toClone: Chess) => new Chess(toClone.fen()),
-            []
-        );
+        const sounds = useChessSounds();
+
+        const clone = useCallback((game: Chess) => {
+            return game
+                .history()
+                .reduce(
+                    (board, notation) => (board.move(notation), board),
+                    new Chess()
+                );
+        }, []);
+
+        // {
+        //     // truncate game history if we encounter an invalid move
+        //     if (didError) return board;
+
+        //     const copy = clone(board);
+
+        //     try {
+        //         copy.move(notation);
+        //     } catch {
+        //         didError = true;
+
+        //         return board;
+        //     }
+
+        //     return copy;
+        // }
 
         const game = useMemo((): Chess => {
             let didError: boolean = false;
 
-            return history.reduce((board, notation) => {
-                // truncate game history if we encounter an invalid move
-                if (didError) return board;
+            const state = history.reduce(
+                (board, notation) => (board.move(notation), board),
+                new Chess()
+            );
 
-                const copy = clone(board);
-
-                try {
-                    copy.move(notation);
-                } catch {
-                    didError = true;
-
-                    return board;
-                }
-
-                return copy;
-            }, new Chess());
-        }, [clone, history]);
+            return state;
+        }, [history]);
 
         const move = useCallback(
             (newMove: ChessMove | string): boolean => {
+                if (!onMove) return false;
+
                 const copy = clone(game);
 
                 let move: Move | null = null;
@@ -68,18 +84,27 @@ export const ChessBoard = forwardRef<{}, ChessBoardProps>(
 
                 if (!move) return false;
 
-                const lastMove =
-                    typeof newMove === "string"
-                        ? newMove
-                        : copy.history().slice(-1).pop();
+                const lastMove = copy
+                    .history({ verbose: true })
+                    .slice(-1)
+                    .pop();
 
                 if (!lastMove) throw new Error("Error while making move");
 
-                onMove?.({ game: copy, move: lastMove });
+                onMove({ game: copy, move: lastMove.san });
+
+                if (copy.isGameOver()) sounds.gameEnd.play();
+                else if (copy.isCheck()) sounds.check.play();
+                else if (lastMove.captured) sounds.capture.play();
+                else if (lastMove.promotion) sounds.promote.play();
+                else if (lastMove.san.startsWith("0-0")) sounds.castle.play();
+                else sounds.move.play();
+
+                if (lastMove.promotion) sounds.promote.play();
 
                 return true;
             },
-            [clone, game, onMove]
+            [clone, game, onMove, sounds]
         );
 
         useImperativeHandle(ref, () => ({ move }), [move]);
@@ -100,6 +125,14 @@ export const ChessBoard = forwardRef<{}, ChessBoardProps>(
                     onPieceDrop={onDrop}
                     position={game.fen()}
                 />
+                <div style={{ display: "none" }}>
+                    {sounds.capture.element}
+                    {sounds.castle.element}
+                    {sounds.check.element}
+                    {sounds.gameEnd.element}
+                    {sounds.move.element}
+                    {sounds.promote.element}
+                </div>
             </div>
         );
     }

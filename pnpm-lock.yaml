@@ -134,6 +134,7 @@ importers:
 
   internal/react-chess:
     specifiers:
+      '@pluv-internal/react-hooks': workspace:^
       '@pluv/tsconfig': workspace:^
       '@types/react': 18.0.26
       chess.js: 1.0.0-beta.1
@@ -143,6 +144,7 @@ importers:
       tsup: ^6.5.0
       typescript: ^4.9.4
     dependencies:
+      '@pluv-internal/react-hooks': link:../react-hooks
       '@types/react': 18.0.26
       chess.js: 1.0.0-beta.1
       react: 18.2.0
