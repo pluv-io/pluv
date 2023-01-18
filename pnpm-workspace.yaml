@@ -18,6 +18,7 @@ packages:
 
   - "internal/cloudflare-utils"
   - "internal/rainfall"
+  - "internal/react-chess"
   - "internal/react-hooks"
   - "internal/tailwind-config"
 

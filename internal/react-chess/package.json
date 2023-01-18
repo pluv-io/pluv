@@ -1,5 +1,5 @@
 {
-	"name": "@pluv-internal/react-hooks",
+	"name": "@pluv-internal/react-chess",
 	"version": "0.0.0",
 	"private": true,
 	"main": "./dist/index.js",
@@ -15,10 +15,10 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@react-hookz/web": "^22.0.0",
 		"@types/react": "18.0.26",
+		"chess.js": "1.0.0-beta.1",
 		"react": "18.2.0",
-		"react-use": "^17.4.0"
+		"react-chessboard": "^2.0.8"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
