@@ -1,12 +1,12 @@
 import { Rainfall } from "@pluv-internal/rainfall";
-import { CSSProperties, FC, useEffect, useMemo, useState } from "react";
+import { CSSProperties, FC, memo, useEffect, useMemo, useState } from "react";
 
 export interface HomeHeroProps {
     className?: string;
     style?: CSSProperties;
 }
 
-export const HomeHero: FC<HomeHeroProps> = ({ className, style }) => {
+export const HomeHero = memo<HomeHeroProps>(({ className, style }) => {
     const [rootElem, rootRef] = useState<HTMLDivElement | null>(null);
     const [ready, setReady] = useState<boolean>(false);
 
@@ -27,4 +27,6 @@ export const HomeHero: FC<HomeHeroProps> = ({ className, style }) => {
     }, [rainfall, ready, rootElem]);
 
     return <div ref={rootRef} className={className} style={style} />;
-};
+});
+
+HomeHero.displayName = "HomeHero";
