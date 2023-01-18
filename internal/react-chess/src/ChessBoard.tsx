@@ -1,15 +1,12 @@
 import type { Move, Square } from "chess.js";
 import { Chess } from "chess.js";
-import type { CSSProperties } from "react";
+import type { CSSProperties, FC } from "react";
 import { forwardRef, useCallback, useImperativeHandle, useMemo } from "react";
 import { Chessboard } from "react-chessboard";
+import { ChessBoardContext } from "./context";
+import { customPieces } from "./customPieces";
+import type { ChessMove, CustomPieceProps } from "./types";
 import { useChessSounds } from "./useChessSounds";
-
-interface ChessMove {
-    from: string;
-    to: string;
-    promotion?: string;
-}
 
 export interface ChessBoardRef {
     move: (notation: string) => void;
@@ -22,13 +19,14 @@ export interface ChessBoardMoveEvent {
 
 export interface ChessBoardProps {
     className?: string;
+    customPiece?: FC<CustomPieceProps>;
     history: readonly string[];
     onMove?: (event: ChessBoardMoveEvent) => void;
     style?: CSSProperties;
 }
 
 export const ChessBoard = forwardRef<{}, ChessBoardProps>(
-    ({ className, history = [], onMove, style }, ref) => {
+    ({ className, customPiece, history = [], onMove, style }, ref) => {
         const sounds = useChessSounds();
 
         const clone = useCallback((game: Chess) => {
@@ -40,32 +38,11 @@ export const ChessBoard = forwardRef<{}, ChessBoardProps>(
                 );
         }, []);
 
-        // {
-        //     // truncate game history if we encounter an invalid move
-        //     if (didError) return board;
-
-        //     const copy = clone(board);
-
-        //     try {
-        //         copy.move(notation);
-        //     } catch {
-        //         didError = true;
-
-        //         return board;
-        //     }
-
-        //     return copy;
-        // }
-
         const game = useMemo((): Chess => {
-            let didError: boolean = false;
-
-            const state = history.reduce(
+            return history.reduce(
                 (board, notation) => (board.move(notation), board),
                 new Chess()
             );
-
-            return state;
         }, [history]);
 
         const move = useCallback(
@@ -119,12 +96,15 @@ export const ChessBoard = forwardRef<{}, ChessBoardProps>(
 
         return (
             <div className={className} style={style}>
-                <Chessboard
-                    customBoardStyle={{ width: "100%" }}
-                    isDraggablePiece={() => !!onMove}
-                    onPieceDrop={onDrop}
-                    position={game.fen()}
-                />
+                <ChessBoardContext.Provider value={{ customPiece }}>
+                    <Chessboard
+                        customBoardStyle={{ width: "100%" }}
+                        customPieces={customPieces}
+                        isDraggablePiece={() => !!onMove}
+                        onPieceDrop={onDrop}
+                        position={game.fen()}
+                    />
+                </ChessBoardContext.Provider>
                 <div style={{ display: "none" }}>
                     {sounds.capture.element}
                     {sounds.castle.element}
