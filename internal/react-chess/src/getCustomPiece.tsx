@@ -14,7 +14,7 @@ export const getCustomPiece = (piece: ReactNode): CustomPieceFn => {
 
         const children = (
             <svg viewBox="1 1 43 43" height={squareWidth} width={squareWidth}>
-                {piece}
+                <g>{piece}</g>
             </svg>
         );
 
