@@ -3,6 +3,7 @@ module.exports = {
     "next",
     "turbo",
     "plugin:prettier/recommended",
+    "plugin:storybook/recommended",
     "plugin:tailwindcss/recommended",
     "prettier"
   ],
