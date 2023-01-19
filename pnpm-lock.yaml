@@ -188,7 +188,7 @@ importers:
       '@pluv-internal/react-hooks': workspace:^
       '@pluv/tsconfig': workspace:^
       '@types/react': 18.0.27
-      chess.js: 1.0.0-beta.1
+      chess.js: 1.0.0-beta.2
       eslint-config-pluv: workspace:^
       react: 18.2.0
       react-chessboard: ^2.0.8
@@ -197,7 +197,7 @@ importers:
     dependencies:
       '@pluv-internal/react-hooks': link:../react-hooks
       '@types/react': 18.0.27
-      chess.js: 1.0.0-beta.1
+      chess.js: 1.0.0-beta.2
       react: 18.2.0
       react-chessboard: 2.0.8_3stiutgnnbnfnf3uowm5cip22i
     devDependencies:
@@ -6690,8 +6690,8 @@ packages:
   /chardet/0.7.0:
     resolution: {integrity: sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==}
 
-  /chess.js/1.0.0-beta.1:
-    resolution: {integrity: sha512-yXGLpKcorxm8TYzDf7Yu7sxkjuWDeFCFmR4/8GG4+5ksdFbYOyfp+MUtN3Z/EuZr5dOxFgjNyBoqbzQpIN5Z8w==}
+  /chess.js/1.0.0-beta.2:
+    resolution: {integrity: sha512-B8G0PpTTUWvc5vRZDHmV9U+2i5+N583o+irxZwVNIVleXUBrkZC1TEdp6kMsnEs/QmhOHbKrmAr+8nz7zZOs6g==}
     dev: false
 
   /chokidar/2.1.8:
