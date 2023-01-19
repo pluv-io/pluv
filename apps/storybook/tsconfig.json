@@ -1,0 +1,24 @@
+{
+  "extends": "@pluv/tsconfig/react-library.json",
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"],
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@pluv-apps/server-cloudflare": ["../server-cloudflare/src"],
+			"@pluv-apps/web": ["../web/src"],
+			"@pluv-apps/web/components": ["../web/components"],
+			"@pluv-internal/cloudflare-utils": ["../../internal/cloudflare-utils/dist"],
+			"@pluv-internal/rainfall": ["../../internal/rainfall/dist"],
+			"@pluv-internal/react-hooks": ["../../internal/react-hooks/dist"],
+			"@pluv/authorize": ["../../packages/authorize/dist"],
+			"@pluv/client": ["../../packages/client/dist"],
+			"@pluv/crdt-yjs": ["../../packages/crdt-yjs/dist"],
+			"@pluv/io": ["../../packages/io/dist"],
+			"@pluv/platform-node": ["../../packages/platform-node/dist"],
+			"@pluv/react": ["../../packages/react/dist"],
+			"@pluv/types": ["../../packages/types/dist"],
+			"ws": ["./node_modules/@types/ws"]
+		}
+	}
+}
