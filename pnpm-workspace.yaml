@@ -1,6 +1,6 @@
 packages:
   - "apps/server-cloudflare"
-  - "apps/server-node"
+  - "apps/storybook"
   - "apps/web"
 
   - "packages/cli"

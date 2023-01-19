@@ -8,6 +8,9 @@
         "start": "next start",
         "lint": "next lint --fix"
     },
+    "files": [
+        "components.ts"
+    ],
     "dependencies": {
         "@pluv-apps/server-cloudflare": "workspace:^",
         "@pluv-internal/rainfall": "workspace:^",
