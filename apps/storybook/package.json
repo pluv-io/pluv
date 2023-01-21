@@ -11,8 +11,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@pluv-apps/web": "workspace:^",
     "@types/react": "18.0.27",
     "@types/react-dom": "^18.0.10",
+    "next": "^13.1.2",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
