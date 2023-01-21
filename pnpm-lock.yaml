@@ -42,6 +42,7 @@ importers:
   apps/storybook:
     specifiers:
       '@babel/core': ^7.20.12
+      '@pluv-apps/web': workspace:^
       '@pluv-internal/tailwind-config': workspace:^
       '@pluv/tsconfig': workspace:^
       '@storybook/addon-actions': ^6.5.15
@@ -59,14 +60,17 @@ importers:
       babel-loader: ^8.3.0
       eslint: ^8.32.0
       eslint-config-pluv: workspace:^
+      next: ^13.1.2
       postcss: ^8.4.21
       react: 18.2.0
       react-dom: 18.2.0
       tailwindcss: ^3.2.4
       typescript: ^4.9.4
     dependencies:
+      '@pluv-apps/web': link:../web
       '@types/react': 18.0.27
       '@types/react-dom': 18.0.10
+      next: 13.1.2_pjwopsidmaokadturxaafygjp4
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:

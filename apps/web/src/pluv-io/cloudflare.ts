@@ -35,19 +35,8 @@ export const {
     usePluvStorage,
 } = createRoomBundle({
     initialStorage: () => ({
-        messages: y.array([
-            y.unstable__object({
-                message: "hello",
-                name: "leedavidcs",
-            }),
-        ]),
-    }),
-    presence: z.object({
-        cursor: z.nullable(
-            z.object({
-                x: z.number(),
-                y: z.number(),
-            })
-        ),
+        demo: y.unstable__object({
+            chessHistory: y.array(["e4"]),
+        }),
     }),
 });
