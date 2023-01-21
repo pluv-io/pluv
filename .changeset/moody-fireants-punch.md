@@ -1,6 +1,4 @@
 ---
-"@pluv-apps/storybook": patch
-"@pluv-apps/web": patch
 "@pluv/react": patch
 "@pluv-internal/react-chess": patch
 "@pluv-internal/react-hooks": patch
