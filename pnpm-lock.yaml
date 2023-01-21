@@ -70,7 +70,7 @@ importers:
       '@pluv-apps/web': link:../web
       '@types/react': 18.0.27
       '@types/react-dom': 18.0.10
-      next: 13.1.2_pjwopsidmaokadturxaafygjp4
+      next: 13.1.4_pjwopsidmaokadturxaafygjp4
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
