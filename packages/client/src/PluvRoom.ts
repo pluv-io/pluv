@@ -3,7 +3,6 @@ import type {
     BaseIOEventRecord,
     EventMessage,
     Id,
-    InferEventMessage,
     InferIOAuthorize,
     InferIOAuthorizeRequired,
     InferIOAuthorizeUser,
@@ -14,6 +13,7 @@ import type {
     JsonObject,
 } from "@pluv/types";
 import type { AbstractType } from "yjs";
+import { AbstractRoom } from "./AbstractRoom";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
@@ -28,6 +28,7 @@ import type {
 import { StateNotifier } from "./StateNotifier";
 import type {
     AuthorizationState,
+    InternalSubscriptions,
     UserInfo,
     WebSocketConnection,
     WebSocketState,
@@ -89,10 +90,6 @@ interface InternalListeners {
     onAuthorizationFail: (error: Error) => void;
 }
 
-interface InternalSubscriptions {
-    observeCrdt: (() => void) | null;
-}
-
 export type PluvRoomDebug<TIO extends IOLike> = Id<{
     output: readonly (keyof InferIOOutput<TIO>)[];
     input: readonly (keyof InferIOInput<TIO>)[];
@@ -118,10 +115,8 @@ export class PluvRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, AbstractType<any>> = {}
-> {
+> extends AbstractRoom<TIO, TPresence, TStorage> {
     readonly _endpoints: RoomEndpoints<TIO>;
-
-    public readonly id: string;
 
     private _crdtManager: CrdtManager<TStorage> | null = null;
     private _crdtNotifier = new CrdtNotifier<TStorage>();
@@ -167,7 +162,8 @@ export class PluvRoom<
             wsEndpoint,
         } = options;
 
-        this.id = room;
+        super(room);
+
         this._debug = debug;
 
         this._endpoints = {
