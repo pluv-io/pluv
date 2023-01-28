@@ -19,6 +19,10 @@ export enum ConnectionState {
     Untouched = "Untouched",
 }
 
+export interface InternalSubscriptions {
+    observeCrdt: (() => void) | null;
+}
+
 export interface WebSocketConnection {
     id: string | null;
     state: ConnectionState;
