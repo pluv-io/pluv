@@ -1,5 +1,17 @@
 # @pluv/react
 
+## 0.3.0
+
+### Minor Changes
+
+- 043c915: Added MockedDataProvider from createRoomBundle
+
+### Patch Changes
+
+- 93f8c54: chore(deps): update dependency @types/react to v18.0.27
+- Updated dependencies [595e66f]
+  - @pluv/client@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes
