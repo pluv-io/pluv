@@ -1,5 +1,11 @@
 # @pluv/client
 
+## 0.4.0
+
+### Minor Changes
+
+- 595e66f: added mocked-room for mocking a client-side room for testing
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,5 +1,14 @@
 # pluv
 
+## 0.2.3
+
+### Patch Changes
+
+- 6d2903f: chore(deps): update nextjs monorepo to v13.1.4
+- 629b1f1: chore(deps): update nextjs monorepo to v13.1.5
+- 1aa2216: fix(deps): update dependency @pluv/react to ^0.2.0
+- 7280a83: chore(deps): update nextjs monorepo to v13.1.3
+
 ## 0.2.2
 
 ### Patch Changes
