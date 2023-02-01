@@ -1,19 +1,14 @@
 name: Auto Assign
 on:
   issues:
-    types: [opened]
+    types: [opened, reopened]
   pull_request:
-    types: [opened]
+    types: [opened, reopened]
+permissions:
+  issues: write
+  pull-requests: write
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: wow-actions/auto-assign@v3
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          addReviewers: true
-          addAssignees: author
-          reviewers: leedavidcs
-          numberOfReviewers: 0
-          skipKeywords: draft, wip
-          excludeLabels: renovate
+      - uses: toshimaru/auto-author-assign@v1.6.2
