@@ -1,11 +1,14 @@
 import type {
+    AbstractRoom,
     InferYjsSharedTypeJson,
+    MockedRoomEvents,
     PluvClient,
+    PluvRoom,
     PluvRoomDebug,
     UserInfo,
     WebSocketConnection,
 } from "@pluv/client";
-import type { PluvRoom } from "@pluv/client";
+import { MockedRoom } from "@pluv/client";
 import type {
     Id,
     InferIOInput,
@@ -34,21 +37,33 @@ export interface CreateRoomBundleOptions<
     presence?: InputZodLike<TPresence>;
 }
 
-export type PluvRoomProviderProps<
-    TIO extends IOLike,
+type BaseRoomProviderProps<
     TPresence extends JsonObject,
     TStorage extends Record<string, AbstractType<any>>
 > = {
     children?: ReactNode;
-    debug?: boolean | PluvRoomDebug<TIO>;
-    onAuthorizationFail?: (error: Error) => void;
+    initialStorage?: keyof TStorage extends never ? never : () => TStorage;
     room: string;
 } & (keyof TPresence extends never
     ? { initialPresence?: never }
-    : { initialPresence: TPresence }) &
-    (keyof TStorage extends never
-        ? { initialStorage?: never }
-        : { initialStorage?: () => TStorage });
+    : { initialPresence: TPresence });
+
+export type MockedRoomProviderProps<
+    TIO extends IOLike,
+    TPresence extends JsonObject,
+    TStorage extends Record<string, AbstractType<any>>
+> = BaseRoomProviderProps<TPresence, TStorage> & {
+    events?: MockedRoomEvents<TIO>;
+};
+
+export type PluvRoomProviderProps<
+    TIO extends IOLike,
+    TPresence extends JsonObject,
+    TStorage extends Record<string, AbstractType<any>>
+> = BaseRoomProviderProps<TPresence, TStorage> & {
+    debug?: boolean | PluvRoomDebug<TIO>;
+    onAuthorizationFail?: (error: Error) => void;
+};
 
 export interface SubscriptionHookOptions<T extends unknown> {
     isEqual?: (a: T, b: T) => boolean;
@@ -64,6 +79,7 @@ export interface CreateRoomBundle<
     TStorage extends Record<string, AbstractType<any>>
 > {
     // components
+    MockedRoomProvider: FC<MockedRoomProviderProps<TIO, TPresence, TStorage>>;
     PluvRoomProvider: FC<PluvRoomProviderProps<TIO, TPresence, TStorage>>;
 
     // hooks
@@ -99,7 +115,7 @@ export interface CreateRoomBundle<
         selector?: (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T[],
         options?: SubscriptionHookOptions<readonly Id<T>[]>
     ) => readonly Id<T>[];
-    usePluvRoom: () => PluvRoom<TIO, TPresence>;
+    usePluvRoom: () => AbstractRoom<TIO, TPresence, TStorage>;
     usePluvStorage: <
         TKey extends keyof TStorage,
         TData extends unknown = InferYjsSharedTypeJson<TStorage[TKey]>
@@ -125,9 +141,38 @@ export const createRoomBundle = <
      * @author leedavidcs
      * @date November 11, 2022
      */
-    const PluvRoomContext = createContext<PluvRoom<TIO, TPresence, TStorage>>(
-        null as any
-    );
+    const PluvRoomContext = createContext<
+        AbstractRoom<TIO, TPresence, TStorage>
+    >(null as any);
+
+    const MockedRoomProvider = memo<
+        MockedRoomProviderProps<TIO, TPresence, TStorage>
+    >((props) => {
+        const {
+            children,
+            events,
+            initialPresence,
+            initialStorage,
+            room: _room,
+        } = props;
+
+        const [room] = useState<MockedRoom<TIO, TPresence, TStorage>>(() => {
+            return new MockedRoom<TIO, TPresence, TStorage>(_room, {
+                events,
+                initialPresence,
+                initialStorage,
+                presence: options.presence,
+            });
+        });
+
+        return (
+            <PluvRoomContext.Provider value={room}>
+                {children}
+            </PluvRoomContext.Provider>
+        );
+    });
+
+    MockedRoomProvider.displayName = "MockedRoomProvider";
 
     const PluvRoomProvider = memo<
         PluvRoomProviderProps<TIO, TPresence, TStorage>
@@ -435,6 +480,7 @@ export const createRoomBundle = <
 
     return {
         // components
+        MockedRoomProvider,
         PluvRoomProvider,
 
         // hooks
