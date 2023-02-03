@@ -1,1 +1,1 @@
-export { useSyncExternalStoreWithSelector } from "use-sync-external-store/with-selector";
+export { useSyncExternalStoreWithSelector } from "use-sync-external-store/with-selector.js";
