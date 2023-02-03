@@ -187,10 +187,6 @@ export class MockedRoom<
                 const origin = _origin ?? null;
 
                 if (!this._crdtManager) return;
-                if (!this._state.webSocket) return;
-                if (!this._state.connection.id) return;
-                if (this._state.webSocket.readyState !== WebSocket.OPEN) return;
-
                 if (origin === "$STORAGE_UPDATED") return;
 
                 const sharedTypes = this._crdtManager.doc.getSharedTypes();

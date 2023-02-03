@@ -160,7 +160,10 @@ export const createRoomBundle = <
             return new MockedRoom<TIO, TPresence, TStorage>(_room, {
                 events,
                 initialPresence,
-                initialStorage,
+                initialStorage:
+                    typeof initialStorage === "function"
+                        ? initialStorage
+                        : options.initialStorage,
                 presence: options.presence,
             });
         });
