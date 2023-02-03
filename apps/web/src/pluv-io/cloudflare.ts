@@ -21,6 +21,7 @@ export const {
 
 export const {
     // components
+    MockedRoomProvider,
     PluvRoomProvider,
 
     // hooks

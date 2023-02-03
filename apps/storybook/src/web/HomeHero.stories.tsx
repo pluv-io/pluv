@@ -13,4 +13,4 @@ const Template: Story<HomeHeroProps> = (args) => {
 Template.args = {};
 
 export const Standard = Template.bind({});
-Standard.args = Template.args;
+Standard.args = { ...Template.args };
