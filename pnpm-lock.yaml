@@ -44,6 +44,7 @@ importers:
       '@babel/core': ^7.20.12
       '@pluv-apps/web': workspace:^
       '@pluv-internal/tailwind-config': workspace:^
+      '@pluv/react': workspace:^
       '@pluv/tsconfig': workspace:^
       '@storybook/addon-actions': ^6.5.16
       '@storybook/addon-essentials': ^6.5.16
@@ -68,6 +69,7 @@ importers:
       typescript: ^4.9.4
     dependencies:
       '@pluv-apps/web': link:../web
+      '@pluv/react': link:../../packages/react
       '@types/react': 18.0.27
       '@types/react-dom': 18.0.10
       next: 13.1.4_pjwopsidmaokadturxaafygjp4
