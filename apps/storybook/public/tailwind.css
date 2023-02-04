@@ -540,16 +540,30 @@ video {
   height: 80vh;
 }
 
-.h-\[600px\] {
-  height: 600px;
-}
-
 .w-full {
   width: 100%;
 }
 
 .w-\[600px\] {
   width: 600px;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-\[blink_1s_linear_infinite\] {
+  animation: blink 1s linear infinite;
 }
 
 .overflow-hidden {
@@ -559,4 +573,16 @@ video {
 .object-cover {
   -o-object-fit: cover;
      object-fit: cover;
+}
+
+.text-\[0\.84em\] {
+  font-size: 0.84em;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.opacity-100 {
+  opacity: 1;
 }
