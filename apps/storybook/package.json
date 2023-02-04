@@ -5,8 +5,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "storybook": "concurrently \"pnpm:watch:*\"",
+    "build-storybook": "build-storybook",
+    "build:css": "tailwindcss -i ./src/styles/tailwind.css -o ./public/tailwind.css",
+    "watch:css": "pnpm build:css -- --watch",
+    "watch:storybook": "start-storybook -p 6006"
   },
   "keywords": [],
   "author": "",
@@ -35,6 +38,7 @@
     "@storybook/testing-library": "^0.0.13",
     "autoprefixer": "^10.4.13",
     "babel-loader": "^9.1.2",
+    "concurrently": "^7.6.0",
     "eslint": "^8.32.0",
     "eslint-config-pluv": "workspace:^",
     "postcss": "^8.4.21",
