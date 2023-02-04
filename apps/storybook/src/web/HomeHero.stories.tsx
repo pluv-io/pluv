@@ -8,7 +8,7 @@ export default {
 } as Meta;
 
 const Template: Story<HomeHeroProps> = (args) => {
-    return <HomeHero className="h-[600px] w-full" {...args} />;
+    return <HomeHero className="w-full" {...args} />;
 };
 Template.args = {};
 

@@ -48,14 +48,10 @@ export class DropletManager {
     private smallDroplets: Droplet[][][];
 
     constructor(stage: Container, resources: DropletAssets) {
-        let smallDropletAmount = 9000;
-        let largeDropletAmount = 200;
+        const isMobile = stage.width < 700;
 
-        // Quick implementation to make sure there aren't out of this world thunderstorms on mobile
-        if (stage.width < 700) {
-            smallDropletAmount = 3000;
-            largeDropletAmount = 150;
-        }
+        const smallDropletAmount = isMobile ? 2500 : 7500;
+        const largeDropletAmount = isMobile ? 150 : 200;
 
         this.options = {
             spawnRate: {

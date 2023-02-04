@@ -58,12 +58,5 @@ export const getDropletAssets = async (): Promise<DropletAssets> => {
         {} as DropletAssets
     );
 
-    // const assets = await Assets.load([
-    //     "ALPHA",
-    //     "SHINE",
-    //     "BACKGROUND",
-    //     "FOREGROUND",
-    // ]);
-
     return assets as DropletAssets;
 };
