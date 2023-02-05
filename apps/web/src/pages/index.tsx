@@ -12,7 +12,7 @@ export const Page: NextPage = () => {
 
     return (
         <div>
-            <HomeHero className="h-[80vh] w-full" />
+            <HomeHero className="w-full" />
             <ChessBoard
                 className="w-[600px]"
                 history={moves}
