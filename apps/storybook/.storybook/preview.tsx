@@ -1,3 +1,5 @@
+import { LaserWaveTheme } from "@pluv-internal/react-code";
+import { GlobalStyles } from "@pluv-internal/react-components";
 import React from "react";
 
 export const parameters = {
@@ -29,3 +31,13 @@ const overwriteNextImage = (nextImage: any) => {
 };
 
 overwriteNextImage(WebNextImage);
+
+export const decorators = [
+	(Nested) => (
+		<>
+			<GlobalStyles />
+			<LaserWaveTheme />
+			<Nested />
+		</>
+	)
+];

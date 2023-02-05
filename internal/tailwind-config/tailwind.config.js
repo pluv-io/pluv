@@ -8,6 +8,7 @@ module.exports = {
 		},
 		fontFamily: {
 			sans: ["Inter", ...defaultTheme.fontFamily.sans],
+			mono: ["Inconsolata", ...defaultTheme.fontFamily.mono],
 		},
 		keyframes: {
 			blink: {
