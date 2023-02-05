@@ -1,11 +1,7 @@
 import { ChessBoard } from "@pluv-internal/react-chess";
 import type { NextPage } from "next";
-import dynamic from "next/dynamic";
 import { useState } from "react";
-
-const HomeHero = dynamic(() => import("../components/HomeHero"), {
-    ssr: false,
-});
+import { HomeHero } from "../components/HomeHero";
 
 export const Page: NextPage = () => {
     const [moves, setMoves] = useState<readonly string[]>([]);
