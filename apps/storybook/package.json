@@ -32,6 +32,7 @@
     "devDependencies": {
         "@babel/core": "^7.20.12",
         "@pluv-internal/tailwind-config": "workspace:^",
+		"@pluv-internal/typings": "workspace:^",
         "@pluv/tsconfig": "workspace:^",
         "@storybook/addon-actions": "^6.5.16",
         "@storybook/addon-essentials": "^6.5.16",
