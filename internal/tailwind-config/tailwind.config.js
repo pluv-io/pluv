@@ -6,6 +6,9 @@ module.exports = {
 		colors: {
 			...colors
 		},
+		fontFamily: {
+			sans: ["Inter", ...defaultTheme.fontFamily.sans],
+		},
 		keyframes: {
 			blink: {
 				"0%": { opacity: 1 },

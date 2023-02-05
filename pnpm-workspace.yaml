@@ -22,5 +22,6 @@ packages:
   - "internal/react-components"
   - "internal/react-hooks"
   - "internal/tailwind-config"
+  - "internal/typings"
 
   - "tests/e2e"
