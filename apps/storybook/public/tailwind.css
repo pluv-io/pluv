@@ -540,12 +540,20 @@ video {
   height: 80vh;
 }
 
+.h-12 {
+  height: 3rem;
+}
+
 .w-full {
   width: 100%;
 }
 
 .w-\[600px\] {
   width: 600px;
+}
+
+.w-32 {
+  width: 8rem;
 }
 
 @keyframes blink {
@@ -568,6 +576,11 @@ video {
 
 .overflow-hidden {
   overflow: hidden;
+}
+
+.bg-red-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(239 68 68 / var(--tw-bg-opacity));
 }
 
 .object-cover {

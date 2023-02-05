@@ -4,7 +4,7 @@ import { Typist } from "@pluv-internal/react-components";
 import ms from "ms";
 
 export default {
-    title: "react-components/molecules/HomeHero",
+    title: "react-components/molecules/Typist",
     component: Typist,
 } as Meta;
 
