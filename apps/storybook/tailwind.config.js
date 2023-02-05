@@ -6,6 +6,7 @@ module.exports = {
 	content: [
 		"./src/**/*.{js,jsx,ts,tsx}",
 		"../web/src/**/*.{js,jsx,ts,tsx}",
-		"../../internal/react-components/src/**/*.{js,jsx,ts,tsx}"
+		"../../internal/react-code/src/**/*.{js,jsx,ts,tsx}",
+		"../../internal/react-components/src/**/*.{js,jsx,ts,tsx}",
 	],
 };

@@ -16,6 +16,7 @@
         "@pluv-apps/server-cloudflare": "workspace:^",
         "@pluv-internal/rainfall": "workspace:^",
         "@pluv-internal/react-chess": "workspace:^",
+        "@pluv-internal/react-code": "workspace:^",
         "@pluv-internal/react-components": "workspace:^",
         "@pluv-internal/react-hooks": "workspace:^",
         "@pluv/io": "workspace:^",
