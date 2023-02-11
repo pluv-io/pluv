@@ -11,7 +11,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@types/react": "18.0.27",
+		"@types/react": "18.0.28",
 		"@types/styled-components": "^5.1.26",
 		"clsx": "^1.2.1",
 		"next": "^13.1.6",
