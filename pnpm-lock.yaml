@@ -43,6 +43,7 @@ importers:
     specifiers:
       '@babel/core': ^7.20.12
       '@pluv-apps/web': workspace:^
+      '@pluv-internal/react-chess': workspace:^
       '@pluv-internal/react-code': workspace:^
       '@pluv-internal/react-components': workspace:^
       '@pluv-internal/tailwind-config': workspace:^
@@ -82,6 +83,7 @@ importers:
       typescript: ^4.9.5
     dependencies:
       '@pluv-apps/web': link:../web
+      '@pluv-internal/react-chess': link:../../internal/react-chess
       '@pluv-internal/react-code': link:../../internal/react-code
       '@pluv-internal/react-components': link:../../internal/react-components
       '@pluv/react': link:../../packages/react
