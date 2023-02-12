@@ -3,19 +3,11 @@ import { Chess } from "chess.js";
 import type { CSSProperties, FC } from "react";
 import { forwardRef, useCallback, useImperativeHandle, useMemo } from "react";
 import { Chessboard } from "react-chessboard";
-import tw from "twin.macro";
+import { theme } from "twin.macro";
 import { ChessBoardContext } from "./context";
 import { customPieces } from "./customPieces";
 import type { ChessMove, CustomPieceProps } from "./types";
 import { useChessSounds } from "./useChessSounds";
-
-const Root = tw.div`
-    border
-    border-solid
-    border-slate-300
-    rounded-md
-    overflow-hidden
-`;
 
 export interface ChessBoardRef {
     move: (notation: string) => void;
@@ -104,10 +96,16 @@ export const ChessBoard = forwardRef<{}, ChessBoardProps>(
         );
 
         return (
-            <Root className={className} style={style}>
+            <div className={className} style={style}>
                 <ChessBoardContext.Provider value={{ customPiece }}>
                     <Chessboard
-                        customBoardStyle={{ width: "100%" }}
+                        customBoardStyle={{ width: "100%", borderRadius: 4 }}
+                        customDarkSquareStyle={{
+                            backgroundColor: theme`colors.slate.600`,
+                        }}
+                        customLightSquareStyle={{
+                            backgroundColor: theme`colors.slate.400`,
+                        }}
                         customPieces={customPieces}
                         isDraggablePiece={() => !!onMove}
                         onPieceDrop={onDrop}
@@ -122,7 +120,7 @@ export const ChessBoard = forwardRef<{}, ChessBoardProps>(
                     {sounds.move.element}
                     {sounds.promote.element}
                 </div>
-            </Root>
+            </div>
         );
     }
 );

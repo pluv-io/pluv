@@ -41,7 +41,7 @@ const ChessDemoContainer = tw(PageContainer)`
 `;
 
 const StyledHomeChessDemo = tw(HomeChessDemo)`
-    w-screen
+    w-full
 `;
 
 export interface HomeIntroSectionProps {

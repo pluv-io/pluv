@@ -11,10 +11,10 @@ const Root = styled.div`
         items-stretch
         justify-center
         gap-[32px]
-        h-[600px]
+        h-[720px]
     `}
 
-    @media (max-width: 920px) {
+    @media (max-width: 1080px) {
         ${tw`
             h-auto
         `}
@@ -24,8 +24,13 @@ const Root = styled.div`
 const Board = styled(ChessBoard)`
     ${tw`
         min-w-0
-        w-[600px]
-        h-[600px]
+        w-[720px]
+        h-[720px]
+        border-8
+        border-solid
+        border-indigo-800
+        rounded-md
+        overflow-hidden
     `}
 
     @media (max-width: 920px) {
@@ -40,6 +45,12 @@ const MoveHistory = styled(ChessMoveHistory)`
     ${tw`
         shrink-0
         w-[208px]
+        border-4
+        border-solid
+        border-indigo-800
+        rounded-md
+        overflow-hidden
+        bg-zinc-800
     `}
 
     @media (max-width: 920px) {

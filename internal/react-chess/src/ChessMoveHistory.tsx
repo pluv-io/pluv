@@ -7,11 +7,6 @@ const Root = tw.div`
     flex-col
     items-stretch
     w-[208px]
-    border
-    border-solid
-    border-slate-300
-    rounded-md
-    overflow-hidden
 `;
 
 const Row = tw.div`
@@ -23,13 +18,14 @@ const Row = tw.div`
     gap-1
     h-6
     text-sm
+    font-medium
 `;
 
 const HeaderRow = tw(Row)`
     mb-2
     pt-2
     px-2
-    font-medium
+    [& > *]:font-bold
 `;
 
 const Moves = tw.div`
@@ -42,7 +38,6 @@ const TurnNo = tw.span`
     shrink-0
     w-8
     min-w-0
-    font-medium
 `;
 
 const TurnPlayer = tw.span`
