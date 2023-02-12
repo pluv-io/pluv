@@ -2,14 +2,10 @@
 	"name": "@pluv-internal/react-chess",
 	"version": "0.0.0",
 	"private": true,
-	"main": "./dist/index.js",
-	"module": "./dist/index.mjs",
-	"types": "./dist/index.d.ts",
+	"main": "./src/index.ts",
+	"types": "./src/index.ts",
 	"scripts": {
-		"build": "tsup src/index.ts --format esm,cjs --dts",
-		"dev": "tsup src/index.ts --format esm,cjs --watch --dts",
-		"lint": "eslint src/**/*.ts* --fix",
-		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+		"lint": "eslint src/**/*.ts* --fix"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -17,14 +13,26 @@
 	"dependencies": {
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@types/react": "18.0.28",
+		"@types/styled-components": "^5.1.26",
 		"chess.js": "1.0.0-beta.2",
 		"react": "18.2.0",
-		"react-chessboard": "^2.0.8"
+		"react-chessboard": "^2.0.8",
+		"styled-components": "^5.3.6",
+		"twin.macro": "^3.1.0"
 	},
 	"devDependencies": {
+		"@pluv-internal/tailwind-config": "workspace:^",
+		"@pluv-internal/typings": "workspace:^",
 		"@pluv/tsconfig": "workspace:^",
+		"autoprefixer": "^10.4.13",
 		"eslint-config-pluv": "workspace:^",
-		"tsup": "^6.5.0",
+		"postcss": "^8.4.21",
+		"tailwindcss": "^3.2.6",
 		"typescript": "^4.9.5"
+	},
+	"babelMacros": {
+		"twin": {
+			"preset": "styled-components"
+		}
 	}
 }

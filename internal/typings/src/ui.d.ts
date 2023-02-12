@@ -17,8 +17,3 @@ export type InferComponentProps<T extends ElementType> =
 export type WithAsProp<T extends ElementType> = {
     as?: T;
 } & InferComponentProps<T>;
-
-export interface Coordinates {
-    x: number;
-    y: number;
-}

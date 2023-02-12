@@ -240,24 +240,38 @@ importers:
   internal/react-chess:
     specifiers:
       '@pluv-internal/react-hooks': workspace:^
+      '@pluv-internal/tailwind-config': workspace:^
+      '@pluv-internal/typings': workspace:^
       '@pluv/tsconfig': workspace:^
       '@types/react': 18.0.28
+      '@types/styled-components': ^5.1.26
+      autoprefixer: ^10.4.13
       chess.js: 1.0.0-beta.2
       eslint-config-pluv: workspace:^
+      postcss: ^8.4.21
       react: 18.2.0
       react-chessboard: ^2.0.8
-      tsup: ^6.5.0
+      styled-components: ^5.3.6
+      tailwindcss: ^3.2.6
+      twin.macro: ^3.1.0
       typescript: ^4.9.5
     dependencies:
       '@pluv-internal/react-hooks': link:../react-hooks
       '@types/react': 18.0.28
+      '@types/styled-components': 5.1.26
       chess.js: 1.0.0-beta.2
       react: 18.2.0
       react-chessboard: 2.0.8_pmekkgnqduwlme35zpnqhenc34
+      styled-components: 5.3.6_react@18.2.0
+      twin.macro: 3.1.0_tailwindcss@3.2.6
     devDependencies:
+      '@pluv-internal/tailwind-config': link:../tailwind-config
+      '@pluv-internal/typings': link:../typings
       '@pluv/tsconfig': link:../../packages/tsconfig
+      autoprefixer: 10.4.13_postcss@8.4.21
       eslint-config-pluv: link:../../packages/eslint-config-pluv
-      tsup: 6.5.0_typescript@4.9.5
+      postcss: 8.4.21
+      tailwindcss: 3.2.6_postcss@8.4.21
       typescript: 4.9.5
 
   internal/react-code:

@@ -5,6 +5,16 @@ const CustomStyles = createGlobalStyle`
     ${tw`
         antialiased
     `}
+
+    html {
+        color-scheme: dark;
+    }
+
+    html, body {
+        ${tw`
+            bg-stone-900
+        `}
+    }
 `;
 
 export const GlobalStyles = () => (
