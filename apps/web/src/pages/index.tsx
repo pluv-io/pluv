@@ -1,22 +1,13 @@
-import { ChessBoard } from "@pluv-internal/react-chess";
+import { HomeHero, HomeIntroSection } from "../components";
 import type { NextPage } from "next";
-import { useState } from "react";
-import { HomeHero } from "../components/HomeHero";
+import { PluvRoomProvider } from "../../pluv-io";
 
 export const Page: NextPage = () => {
-    const [moves, setMoves] = useState<readonly string[]>([]);
-
     return (
-        <div>
+        <PluvRoomProvider room="home-page">
             <HomeHero className="w-full" />
-            <ChessBoard
-                className="w-[600px]"
-                history={moves}
-                onMove={({ game }) => {
-                    setMoves(game.history());
-                }}
-            />
-        </div>
+            <HomeIntroSection />
+        </PluvRoomProvider>
     );
 };
 

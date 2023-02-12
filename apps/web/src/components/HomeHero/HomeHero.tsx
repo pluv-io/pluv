@@ -12,7 +12,7 @@ const Root = tw.div`
     items-center
     justify-center
     w-full
-    h-screen
+    h-[80vh]
     overflow-hidden
 `;
 
@@ -46,9 +46,9 @@ const RadialBackground = styled.div`
 	    inset-0
     `}
     background-image: radial-gradient(
-        80% 100% at center,
+        80% 112% at center,
         ${theme`colors.slate.900`} 35%,
-        ${rgba(theme`colors.slate.900`, 0)} 75%
+        ${rgba(theme`colors.slate.900`, 0)} 85%
     );
 `;
 
@@ -71,7 +71,8 @@ const TagLine = tw.h1`
 	font-bold
     leading-tight
     text-white
-	[font-size: 3.125rem]
+    [font-size: 2.25rem]
+	sm:[font-size: 3.125rem]
 	md:[font-size: 5.75rem]
 `;
 
@@ -88,7 +89,7 @@ const Info = tw(PageContainer)`
 	[max-width: 26rem]
 	text-lg
 	font-semibold
-	text-gray-500
+	text-blue-300
 	text-center
 	md:text-2xl
 `;

@@ -1,12 +1,11 @@
 import type { Meta, Story } from "@storybook/react";
-import type { HomeChessDemoProps } from "@pluv-apps/web/components";
-import { HomeChessDemo } from "@pluv-apps/web/components";
+import { Page } from "@pluv-apps/web/src/pages";
 import { MockedRoomProvider } from "@pluv-apps/web/pluv-io";
 import { y } from "@pluv/react";
 
 export default {
-    title: "web/HomeChessDemo",
-    component: HomeChessDemo,
+    title: "web/pages",
+    component: Page,
     decorators: [
         (Nested) => (
             <MockedRoomProvider
@@ -15,7 +14,7 @@ export default {
                         chessHistory: y.array<string>([]),
                     }),
                 })}
-                room="story-home-chess-demo"
+                room="story-pages"
             >
                 <Nested />
             </MockedRoomProvider>
@@ -23,14 +22,14 @@ export default {
     ],
 } as Meta;
 
-const Template: Story<HomeChessDemoProps> = (args) => {
-    return (
-        <div style={{ width: 500 }}>
-            <HomeChessDemo {...args} />
-        </div>
-    );
+const Template: Story<{}> = (args) => {
+    return <Page {...args} />;
 };
 Template.args = {};
+Template.parameters = {
+    layout: "fullscreen",
+};
 
 export const Standard = Template.bind({});
 Standard.args = { ...Template.args };
+Standard.parameters = { ...Template.parameters };

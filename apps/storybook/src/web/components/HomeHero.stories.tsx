@@ -3,7 +3,7 @@ import type { HomeHeroProps } from "@pluv-apps/web/components";
 import { HomeHero } from "@pluv-apps/web/components";
 
 export default {
-    title: "web/HomeHero",
+    title: "web/components/HomeHero",
     component: HomeHero,
 } as Meta;
 

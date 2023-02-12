@@ -145,6 +145,10 @@ export const createRoomBundle = <
         AbstractRoom<TIO, TPresence, TStorage>
     >(null as any);
 
+    const MockedRoomContext = createContext<{
+        room: AbstractRoom<TIO, TPresence, TStorage> | null;
+    }>({ room: null });
+
     const MockedRoomProvider = memo<
         MockedRoomProviderProps<TIO, TPresence, TStorage>
     >((props) => {
@@ -169,9 +173,11 @@ export const createRoomBundle = <
         });
 
         return (
-            <PluvRoomContext.Provider value={room}>
-                {children}
-            </PluvRoomContext.Provider>
+            <MockedRoomContext.Provider value={{ room }}>
+                <PluvRoomContext.Provider value={room}>
+                    {children}
+                </PluvRoomContext.Provider>
+            </MockedRoomContext.Provider>
         );
     });
 
@@ -190,6 +196,7 @@ export const createRoomBundle = <
         } = props;
 
         const rerender = useRerender();
+        const { room: mockedRoom } = useContext(MockedRoomContext);
 
         const [room] = useState<PluvRoom<TIO, TPresence, TStorage>>(() => {
             return client.createRoom<TPresence, TStorage>(_room, {
@@ -223,7 +230,7 @@ export const createRoomBundle = <
         }, [room]);
 
         return (
-            <PluvRoomContext.Provider value={room}>
+            <PluvRoomContext.Provider value={mockedRoom ?? room}>
                 {children}
             </PluvRoomContext.Provider>
         );
