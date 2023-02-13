@@ -4,7 +4,10 @@ import { PluvRoomProvider } from "../../pluv-io";
 
 export const Page: NextPage = () => {
     return (
-        <PluvRoomProvider room="home-page">
+        <PluvRoomProvider
+            initialPresence={{ demoChessSquare: null }}
+            room="home-page"
+        >
             <HomeHero className="w-full" />
             <HomeIntroSection />
         </PluvRoomProvider>
