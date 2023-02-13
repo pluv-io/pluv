@@ -23,11 +23,15 @@ export interface ChessBoardProps {
     customPiece?: FC<CustomPieceProps>;
     history: readonly string[];
     onMove?: (event: ChessBoardMoveEvent) => void;
+    onSquareSelect?: (square: Square) => void;
     style?: CSSProperties;
 }
 
 export const ChessBoard = forwardRef<{}, ChessBoardProps>(
-    ({ className, customPiece, history = [], onMove, style }, ref) => {
+    (
+        { className, customPiece, history = [], onMove, onSquareSelect, style },
+        ref
+    ) => {
         const sounds = useChessSounds();
 
         const clone = useCallback((game: Chess) => {
@@ -89,10 +93,12 @@ export const ChessBoard = forwardRef<{}, ChessBoardProps>(
 
         const onDrop = useCallback(
             (from: Square, to: Square): boolean => {
+                onSquareSelect?.(to);
+
                 // Always promote to queen for simplicity
                 return move({ from, to, promotion: "q" });
             },
-            [move]
+            [move, onSquareSelect]
         );
 
         return (
@@ -108,6 +114,11 @@ export const ChessBoard = forwardRef<{}, ChessBoardProps>(
                         }}
                         customPieces={customPieces}
                         isDraggablePiece={() => !!onMove}
+                        onPieceDragBegin={(_, square) => {
+                            onSquareSelect?.(square);
+                        }}
+                        onSquareClick={onSquareSelect}
+                        onSquareRightClick={onSquareSelect}
                         onPieceDrop={onDrop}
                         position={game.fen()}
                     />

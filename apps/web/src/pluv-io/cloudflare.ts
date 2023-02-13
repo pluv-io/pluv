@@ -35,6 +35,9 @@ export const {
     usePluvRoom,
     usePluvStorage,
 } = createRoomBundle({
+    presence: z.object({
+        demoChessSquare: z.nullable(z.string()),
+    }),
     initialStorage: () => ({
         demo: y.unstable__object({
             chessHistory: y.array(["e4"]),
