@@ -14,7 +14,7 @@
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@types/react": "18.0.28",
 		"@types/styled-components": "^5.1.26",
-		"chess.js": "1.0.0-beta.2",
+		"chess.js": "1.0.0-beta.3",
 		"react": "18.2.0",
 		"react-chessboard": "^2.0.8",
 		"styled-components": "^5.3.6",
