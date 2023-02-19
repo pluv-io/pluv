@@ -23,12 +23,12 @@
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
 	"dependencies": {
-		"@panva/hkdf": "^1.0.2",
+		"@panva/hkdf": "^1.0.4",
 		"@pluv/crdt-yjs": "workspace:^",
 		"@pluv/types": "workspace:^",
 		"chalk": "^4.1.2",
-		"jose": "^4.11.2",
-		"wonka": "^6.1.2"
+		"jose": "^4.12.0",
+		"wonka": "^6.2.3"
 	},
 	"peerDependencies": {
 		"yjs": "^13.0.0"
@@ -36,8 +36,8 @@
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
-		"tsup": "^6.5.0",
+		"tsup": "^6.6.3",
 		"typescript": "^4.9.5",
-		"yjs": "^13.5.45"
+		"yjs": "^13.5.46"
 	}
 }

@@ -24,7 +24,7 @@
         "@pluv/react": "workspace:^",
         "@seznam/compose-react-refs": "^1.0.6",
         "@types/common-tags": "^1.8.1",
-        "@types/node": "^18.11.18",
+        "@types/node": "^18.14.0",
         "@types/react": "18.0.28",
         "@types/styled-components": "^5.1.26",
         "@types/ws": "^8.5.4",
@@ -36,8 +36,8 @@
         "react-dom": "18.2.0",
         "styled-components": "^5.3.6",
         "twin.macro": "^3.1.0",
-        "yjs": "^13.5.45",
-        "zod": "^3.20.2"
+        "yjs": "^13.5.46",
+        "zod": "^3.20.6"
     },
     "devDependencies": {
         "@babel/core": "^7.20.12",
