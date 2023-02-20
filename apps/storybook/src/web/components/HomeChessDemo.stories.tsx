@@ -11,7 +11,7 @@ export default {
         (Nested) => (
             <MockedRoomProvider
                 initialStorage={() => ({
-                    demo: y.unstable__object({
+                    demo: y.object({
                         chessHistory: y.array<string>([]),
                     }),
                 })}

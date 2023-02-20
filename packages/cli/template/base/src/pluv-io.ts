@@ -16,7 +16,7 @@ export const Pluv = createBundle(client);
 export const PluvRoom = Pluv.createRoomBundle({
     initialStorage: () => ({
         messages: y.array([
-            y.unstable__object({
+            y.object({
                 message: "Thanks for trying Pluv.IO!",
                 name: "pluv"
             }),

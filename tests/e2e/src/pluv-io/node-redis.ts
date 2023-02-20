@@ -47,7 +47,7 @@ export const {
 } = createRoomBundle({
     initialStorage: () => ({
         messages: y.array([
-            y.unstable__object({
+            y.object({
                 message: "hello",
                 name: "leedavidcs",
             }),
