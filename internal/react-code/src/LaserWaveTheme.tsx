@@ -10,7 +10,7 @@ import { createGlobalStyle } from "styled-components";
 export const LaserWaveTheme = createGlobalStyle`
     code[class*="language-"],
     pre[class*="language-"] {
-        background: #27212e;
+        background: transparent;
         color: #ffffff;
         /* The following properties are standard, please leave them as they are */
         font-size: 1em;
@@ -19,7 +19,7 @@ export const LaserWaveTheme = createGlobalStyle`
         white-space: pre;
         word-spacing: normal;
         word-break: normal;
-        line-height: 1.5;
+        line-height: 1.25;
         -moz-tab-size: 2;
         -o-tab-size: 2;
         tab-size: 2;
@@ -48,10 +48,8 @@ export const LaserWaveTheme = createGlobalStyle`
 
     /* Properties specific to code blocks */
     pre[class*="language-"] {
-        padding: 1em; /* this is standard */
-        margin: 0.5em 0; /* this is the default */
+        padding: 0.5em; /* this is standard */
         overflow: auto; /* this is standard */
-        border-radius: 0.5em;
     }
 
     /* Properties specific to inline code */

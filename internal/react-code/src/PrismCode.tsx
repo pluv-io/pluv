@@ -1,13 +1,31 @@
 import { clsx } from "clsx";
-import Highlight, { defaultProps, Language } from "prism-react-renderer";
-import { CSSProperties, memo } from "react";
-import tw from "twin.macro";
+import type { Language } from "prism-react-renderer";
+import Highlight, { defaultProps } from "prism-react-renderer";
+import type { CSSProperties } from "react";
+import { memo } from "react";
+import tw, { styled } from "twin.macro";
 
-const Pre = tw.pre`
-    text-left
-    overflow-scroll
-    p-[0.5em]
-    font-mono
+const Pre = styled.pre`
+    ${tw`
+        text-left
+        overflow-scroll
+        p-[0.5em]
+        font-mono
+        hover:[::-webkit-scrollbar-thumb]:block
+    `}
+
+    &::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        ${tw`
+            hidden
+            bg-gray-700/40
+            rounded-full
+        `}
+    }
 `;
 
 const Line = tw.div`
