@@ -32,7 +32,7 @@ export const PluvRoom = Pluv.createRoomBundle({
     // later on, so think of these as just types if needed.
     initialStorage: () => ({
         messages: y.array([
-            y.unstable__object({
+            y.object({
                 message: "Hello world!",
                 name: "johnathan_doe",
             }),

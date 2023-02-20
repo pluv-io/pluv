@@ -15,7 +15,7 @@ export const CloudflareStorageRoom: FC<CloudflareStorageRoomProps> = () => {
                 id="button-add-message"
                 onClick={() => {
                     sharedType?.push([
-                        y.unstable__object({
+                        y.object({
                             message: `new message ${messages?.length ?? 0}`,
                             name: "John Doe",
                         }),

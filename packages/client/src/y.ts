@@ -1,1 +1,1 @@
-export { array, map, text, unstable__object } from "@pluv/crdt-yjs";
+export { array, map, text, object } from "@pluv/crdt-yjs";

@@ -46,7 +46,7 @@ export const ChatRoom: FC<Record<string, never>> = () => {
                     if (e.key.toLowerCase() !== "enter") return;
 
                     sharedType?.push([
-                        y.unstable__object({
+                        y.object({
                             message,
                             name: myself.user.name,
                         })

@@ -58,7 +58,7 @@ This is a factory to create a client-side PluvIO room module.
 export const PluvRoom = createRoomBundle({
     initialStorage: () => ({
         messages: y.array([
-            y.unstable__object({
+            y.object({
                 message: "Hello World!",
                 name: "johnathan_doe",
             }),
@@ -356,7 +356,7 @@ reduce rerenders.
 const { PluvRoomProvider, usePluvStorage } = createRoomBundle({
     initialStorage: () => ({
         messages: y.array([
-            y.unstable__object({
+            y.object({
                 message: "Hello world!",
                 name: "johnathan_doe",
             }),
@@ -386,7 +386,7 @@ messages?.forEach(({ message, name }) => {
 });
 
 sharedType?.push([
-    y.unstable__object({
+    y.object({
         message: "Hello world",
         name: "johnathan_doe",
     })
@@ -403,7 +403,7 @@ messages?.forEach((message)) => {
 
 // Shared type is unchanged, even when filtered
 sharedType?.push([
-    y.unstable__object({
+    y.object({
         message: "Hello world",
         name: "johnathan_doe",
     })

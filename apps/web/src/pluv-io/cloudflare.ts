@@ -39,7 +39,7 @@ export const {
         demoChessSquare: z.nullable(z.string()),
     }),
     initialStorage: () => ({
-        demo: y.unstable__object({
+        demo: y.object({
             chessHistory: y.array(["e4"]),
         }),
     }),
