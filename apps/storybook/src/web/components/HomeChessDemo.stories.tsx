@@ -10,6 +10,9 @@ export default {
     decorators: [
         (Nested) => (
             <MockedRoomProvider
+                initialPresence={{
+                    demoChessSquare: null,
+                }}
                 initialStorage={() => ({
                     demo: y.object({
                         chessHistory: y.array<string>([]),
