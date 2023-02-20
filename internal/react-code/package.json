@@ -11,6 +11,7 @@
 		"access": "public"
 	},
 	"dependencies": {
+		"@radix-ui/react-tabs": "^1.0.2",
 		"@types/react": "18.0.28",
 		"@types/styled-components": "^5.1.26",
 		"clsx": "^1.2.1",
