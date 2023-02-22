@@ -8,11 +8,8 @@ export const Root = tw(Tabs.Root)`
     flex
     flex-col
     items-stretch
-    border
-    border-solid
-    border-indigo-500/40
-    rounded-md
     p-2
+    overflow-x-auto
 `;
 
 const TabsList = tw(Tabs.List)`
@@ -32,6 +29,7 @@ const TabsTrigger = styled(Tabs.Trigger)`
         border-transparent
         font-medium
         text-sm
+        whitespace-nowrap
         hover:bg-gray-500/40
         transition-all
         ease-in
@@ -48,8 +46,36 @@ const TabsTrigger = styled(Tabs.Trigger)`
     }
 `;
 
-const TabsContent = tw(Tabs.Content)`
+const TabsContent = styled(Tabs.Content)`
+    ${tw`
+        grow
+        overflow-y-auto
+        hover:[::-webkit-scrollbar-thumb]:block
+    `}
 
+    &::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    &::-webkit-scrollbar-track,
+    &::-webkit-scrollbar-corner {
+        ${tw`
+            bg-transparent
+        `}
+    }
+
+    &::-webkit-scrollbar-thumb {
+        ${tw`
+            hidden
+            bg-gray-700/40
+            rounded-full
+        `}
+    }
+`;
+
+const StyledPrismCode = tw(PrismCode)`
+    w-fit
 `;
 
 export interface MultiPrismCodeTab<TTab extends string> {
@@ -82,7 +108,9 @@ export const MultiPrismCode = <TTab extends string>(
             </TabsList>
             {tabs.map((tab) => (
                 <TabsContent key={tab.name} value={tab.name}>
-                    <PrismCode language={tab.language}>{tab.code}</PrismCode>
+                    <StyledPrismCode language={tab.language}>
+                        {tab.code}
+                    </StyledPrismCode>
                 </TabsContent>
             ))}
         </Root>
