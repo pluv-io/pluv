@@ -16,7 +16,7 @@ jobs:
         ports:
           - 6379:6379
       redis-cluster:
-        image: grokzen/redis-cluster:6.2.8
+        image: grokzen/redis-cluster:6.2.10
         ports:
           - 7006:7000
           - 7001:7001
