@@ -9,7 +9,7 @@ const nodes = ports.map((port) => ({ host, port }));
 const natMap = ports.reduce<NatMap>(
     (acc, port) => ({
         ...acc,
-        [`${host}:${port}`]: { host: "${host}", port },
+        [`${host}:${port}`]: { host, port },
     }),
     {}
 );
