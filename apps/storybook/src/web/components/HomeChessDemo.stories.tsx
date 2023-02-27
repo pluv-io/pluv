@@ -27,11 +27,7 @@ export default {
 } as Meta;
 
 const Template: Story<HomeChessDemoProps> = (args) => {
-    return (
-        <div style={{ width: 500 }}>
-            <HomeChessDemo {...args} />
-        </div>
-    );
+    return <HomeChessDemo {...args} />;
 };
 Template.args = {};
 

@@ -2,6 +2,7 @@ import { MouseEvent, RefCallback, useMemo } from "react";
 import { useState, useEffect, useCallback } from "react";
 
 export interface UseDragOptions<TElement extends HTMLElement> {
+    container?: HTMLElement;
     onDrag: (delta: { x: number; y: number }, e: MouseEvent<TElement>) => void;
 }
 
@@ -21,19 +22,16 @@ export const useDrag = <TElement extends HTMLElement>(
     options: UseDragOptions<TElement>,
     elem: TElement | null = null
 ): UseDragResult<TElement> => {
-    const { onDrag } = options;
+    const { container, onDrag } = options;
 
     const [_elem, ref] = useState<TElement | null>(elem);
     const finalElem = elem ?? _elem;
 
-    const [start, setStart] = useState<{
-        x: number;
-        y: number;
-    } | null>(null);
+    const [start, setStart] = useState<{ x: number; y: number } | null>(null);
 
     const isDragging = !!start;
 
-    const onMouseDown = useCallback((e: MouseEvent<TElement>) => {
+    const onMouseDown = useCallback((e: MouseEvent) => {
         setStart({ x: e.pageX, y: e.pageY });
     }, []);
 
@@ -42,7 +40,7 @@ export const useDrag = <TElement extends HTMLElement>(
     }, []);
 
     const onMouseMove = useCallback(
-        (e: MouseEvent<TElement>) => {
+        (e: MouseEvent) => {
             if (!start) return;
 
             const delta = {
@@ -58,16 +56,18 @@ export const useDrag = <TElement extends HTMLElement>(
     useEffect(() => {
         if (!finalElem) return;
 
-        finalElem.addEventListener("pointerdown", onMouseDown as any);
-        finalElem.addEventListener("pointermove", onMouseMove as any);
-        finalElem.addEventListener("pointerup", onMouseUp);
+        const _container = container ?? window;
+
+        finalElem.addEventListener("mousedown", onMouseDown as any);
+        _container.addEventListener("mouseup", onMouseUp);
+        _container.addEventListener("mousemove", onMouseMove as any);
 
         return () => {
             finalElem.removeEventListener("mousedown", onMouseDown as any);
-            finalElem.removeEventListener("mousemove", onMouseMove as any);
-            finalElem.removeEventListener("mouseup", onMouseUp);
+            _container.removeEventListener("mouseup", onMouseUp);
+            _container.removeEventListener("mousemove", onMouseMove as any);
         };
-    }, [finalElem, onMouseDown, onMouseMove, onMouseUp, isDragging]);
+    }, [container, finalElem, onMouseDown, onMouseMove, onMouseUp, isDragging]);
 
     const handlers = useMemo(
         () => ({ onMouseDown, onMouseMove, onMouseUp }),
