@@ -5,7 +5,7 @@ import { codeBlock } from "common-tags";
 import type { CSSProperties } from "react";
 import { memo, useMemo, useState } from "react";
 import tw from "twin.macro";
-import type { HomeCodeDemoPositions } from "./context";
+import type { HomeCodeDemoPositions, HomeCodeDemoSelections } from "./context";
 import { HomeCodeDemoContext } from "./context";
 import { HomeCodeDemoUserDemo } from "./HomeCodeDemoUserDemo";
 
@@ -59,6 +59,10 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
     const [codePositions, setCodePositions] = useState<HomeCodeDemoPositions>({
         first: { x: -48, y: 0 },
         second: { x: 48, y: 0 },
+    });
+    const [selections, setSelections] = useState<HomeCodeDemoSelections>({
+        jane: null,
+        john: null,
     });
 
     const tabs = useMemo(
@@ -192,8 +196,10 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
             value={{
                 codePositions,
                 initPositions,
+                selections,
                 setCodePositions,
                 setInitPositions,
+                setSelections,
             }}
         >
             <Root className={className} style={style}>

@@ -26,8 +26,8 @@ export const HomeCodeDemoUserDemo: FC<HomeCodeDemoUserDemoProps> = ({
 }) => {
     return (
         <Root className={className} style={style}>
-            <UserDemo id="user1" />
-            <UserDemo id="user2" />
+            <UserDemo id="user1" user="jane" />
+            <UserDemo id="user2" user="john" />
         </Root>
     );
 };
