@@ -13,6 +13,7 @@
         "pluv-io.ts"
     ],
     "dependencies": {
+        "@dnd-kit/core": "^6.0.8",
         "@pluv-apps/server-cloudflare": "workspace:^",
         "@pluv-internal/rainfall": "workspace:^",
         "@pluv-internal/react-chess": "workspace:^",

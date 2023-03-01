@@ -10,6 +10,9 @@ export default {
     decorators: [
         (Nested) => (
             <MockedRoomProvider
+                initialPresence={{
+                    demoChessSquare: null,
+                }}
                 initialStorage={() => ({
                     demo: y.object({
                         chessHistory: y.array<string>([]),
@@ -24,11 +27,7 @@ export default {
 } as Meta;
 
 const Template: Story<HomeChessDemoProps> = (args) => {
-    return (
-        <div style={{ width: 500 }}>
-            <HomeChessDemo {...args} />
-        </div>
-    );
+    return <HomeChessDemo {...args} />;
 };
 Template.args = {};
 

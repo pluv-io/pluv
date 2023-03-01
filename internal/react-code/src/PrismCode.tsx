@@ -8,7 +8,7 @@ import tw, { styled } from "twin.macro";
 const Pre = styled.pre`
     ${tw`
         text-left
-        overflow-scroll
+        overflow-auto
         p-[0.5em]
         font-mono
         hover:[::-webkit-scrollbar-thumb]:block
@@ -17,6 +17,13 @@ const Pre = styled.pre`
     &::-webkit-scrollbar {
         width: 8px;
         height: 8px;
+    }
+
+    &::-webkit-scrollbar-track,
+    &::-webkit-scrollbar-corner {
+        ${tw`
+            bg-transparent
+        `}
     }
 
     &::-webkit-scrollbar-thumb {

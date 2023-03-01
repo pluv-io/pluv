@@ -46,7 +46,7 @@
 
 ## Intro
 
-Pluv.IO allows you to build real-time collaborate features with a fully end-to-end type-safe api.
+Pluv.IO allows you to build real-time collaborative features with a fully end-to-end type-safe api.
 
 ### Why?
 
@@ -65,7 +65,7 @@ broadcast("SEND_MESSAGE", { message: "Hello world!" });
 And this:
 
 ```tsx
-const [myCursor, updatePresence] = usePluvMyPresence((me) => me.presence.cursor);
+const [myCursor, updatePresence] = usePluvMyPresence((me) => me.cursor);
 const cursors = usePluvOthers((others) => {
   return others.map((other) => other.presence.cursor);
 });
