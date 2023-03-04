@@ -102,21 +102,25 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                     import { PluvRoomProvider } from "client/pluv";
                     import type { FC, ReactNode } from "react";
 
-                    interface ProviderProps {
+                    export interface ProviderProps {
                       children?: ReactNode;
                     }
+
+                    const initialPresence = { selection: null };
+
+                    const initialStorage = () => ({
+                      boxes: y.object({
+                        first: y.object({ x: -48, y: 0 }),
+                        second: y.object({ x: 48, y: 0 }),
+                      }),
+                    });
 
                     export const Provider: FC<ProviderProps> = ({ children }) => {
                       return (
                         <PluvRoomProvider
-                          initialPresence={{ selection: null }}
+                          initialPresence={initialPresence}
                           // Optionally override initial storage here
-                          initialStorage={() => ({
-                            boxes: y.object({
-                              first: y.object({ x: -48, y: 0 }),
-                              second: y.object({ x: 48, y: 0 }),
-                            }),
-                          })}
+                          initialStorage={initialStorage}
                           room="demo-room"
                         >
                           {children}
@@ -183,6 +187,7 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                     import { platformNode } from "@pluv/platform-node";
                     import { z } from "zod";
 
+                    // Create @pluv/io websocket manager for Node.js
                     export const io = createIO({ platform: platformNode() });
                 `,
                 name: "server/pluv.ts",

@@ -108,7 +108,7 @@ export const MultiPrismCode = <TTab extends string>(
             </TabsList>
             {tabs.map((tab) => (
                 <TabsContent key={tab.name} value={tab.name}>
-                    <StyledPrismCode language={tab.language}>
+                    <StyledPrismCode language={tab.language ?? "tsx"}>
                         {tab.code}
                     </StyledPrismCode>
                 </TabsContent>

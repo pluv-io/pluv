@@ -1,3 +1,5 @@
+export type { HomeBoxesDemoSectionProps } from "./HomeBoxesDemoSection";
+export { HomeBoxesDemoSection } from "./HomeBoxesDemoSection";
 export type { HomeChessDemoProps } from "./HomeChessDemo";
 export { HomeChessDemo } from "./HomeChessDemo";
 export type { HomeCodeDemoProps } from "./HomeCodeDemo";
