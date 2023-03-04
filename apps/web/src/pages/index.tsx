@@ -1,4 +1,8 @@
-import { HomeHero, HomeIntroSection } from "../components";
+import {
+    HomeBoxesDemoSection,
+    HomeHero,
+    HomeIntroSection,
+} from "../components";
 import type { NextPage } from "next";
 import { PluvRoomProvider } from "../../pluv-io";
 
@@ -10,6 +14,7 @@ export const Page: NextPage = () => {
         >
             <HomeHero className="w-full" />
             <HomeIntroSection />
+            <HomeBoxesDemoSection />
         </PluvRoomProvider>
     );
 };
