@@ -53,12 +53,12 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
     const { className, style } = props;
 
     const [initPositions, setInitPositions] = useState<HomeCodeDemoPositions>({
-        first: { x: -48, y: 0 },
-        second: { x: 48, y: 0 },
+        first: { x: -56, y: 0 },
+        second: { x: 56, y: 0 },
     });
     const [codePositions, setCodePositions] = useState<HomeCodeDemoPositions>({
-        first: { x: -48, y: 0 },
-        second: { x: 48, y: 0 },
+        first: { x: -56, y: 0 },
+        second: { x: 56, y: 0 },
     });
     const [selections, setSelections] = useState<HomeCodeDemoSelections>({
         jane: null,
