@@ -37,6 +37,25 @@ const MockButton = tw.span`
     bg-gray-500/20
 `;
 
+const UserName = tw.div`
+    absolute
+    top-4
+    right-5
+    text-sm
+    font-semibold
+    text-gray-500
+`;
+
+const Instructions = tw.div`
+    absolute
+    bottom-4
+    left-1/2
+    -translate-x-1/2
+    text-sm
+    font-medium
+    text-gray-500
+`;
+
 const FirstBox = tw(HomeCodeDemoBox)`
     text-cyan-500
 `;
@@ -139,6 +158,8 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({
                 <MockButton />
                 <MockButton />
             </MockButtons>
+            <UserName>{user}</UserName>
+            <Instructions>Drag the boxes</Instructions>
             <DndContext
                 onDragMove={({ delta }) => {
                     setCodePositions({

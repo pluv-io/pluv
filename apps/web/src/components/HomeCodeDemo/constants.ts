@@ -1,1 +1,1 @@
-export const BOX_SIZE = 64;
+export const BOX_SIZE = 84;
