@@ -1,5 +1,6 @@
 import {
     HomeBoxesDemoSection,
+    HomeFeaturesSection,
     HomeHero,
     HomeIntroSection,
 } from "../components";
@@ -14,6 +15,7 @@ export const Page: NextPage = () => {
         >
             <HomeHero className="w-full" />
             <HomeIntroSection />
+            <HomeFeaturesSection />
             <HomeBoxesDemoSection />
         </PluvRoomProvider>
     );
