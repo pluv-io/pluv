@@ -1,6 +1,5 @@
 import type { MultiPrismCodeTab } from "@pluv-internal/react-code";
 import { MultiPrismCode } from "@pluv-internal/react-code";
-import { PageContainer } from "@pluv-internal/react-components";
 import { codeBlock } from "common-tags";
 import type { CSSProperties } from "react";
 import { memo, useMemo, useState } from "react";
@@ -9,7 +8,7 @@ import type { HomeCodeDemoPositions, HomeCodeDemoSelections } from "./context";
 import { HomeCodeDemoContext } from "./context";
 import { HomeCodeDemoUserDemo } from "./HomeCodeDemoUserDemo";
 
-const Root = tw(PageContainer)`
+const Root = tw.div`
     flex
     flex-col
     items-center
