@@ -78,7 +78,7 @@ export const useTypist = <TElement extends HTMLElement>(
 
         const timeout = setTimeout(() => {
             setMode("typing");
-        }, typingDelay);
+        }, typingDelay) as number;
 
         timeoutsRef.current[0] = timeout;
 
@@ -167,7 +167,7 @@ export const useTypist = <TElement extends HTMLElement>(
 
         const timeout = setTimeout(() => {
             setMode("deleting");
-        }, deleteDelay);
+        }, deleteDelay) as number;
 
         timeoutsRef.current[1] = timeout;
 
@@ -200,7 +200,7 @@ export const useTypist = <TElement extends HTMLElement>(
         const timeout = setTimeout(() => {
             setIndex(0);
             setMode("starting");
-        }, repeatDelay);
+        }, repeatDelay) as number;
 
         timeoutsRef.current[2] = timeout;
 
