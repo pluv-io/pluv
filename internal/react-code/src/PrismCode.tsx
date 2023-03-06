@@ -1,8 +1,8 @@
 import { clsx } from "clsx";
 import type { Language } from "prism-react-renderer";
 import Highlight, { defaultProps } from "prism-react-renderer";
-import type { CSSProperties } from "react";
-import { memo } from "react";
+import { CSSProperties, FC } from "react";
+import { forwardRef, memo } from "react";
 import tw, { styled } from "twin.macro";
 
 const Pre = styled.pre`
@@ -51,50 +51,78 @@ const LineContent = tw.span`
     table-cell
 `;
 
+export type TokenInputProps = Parameters<
+    Highlight["getTokenProps"]
+>[0]["token"];
+
+export type TokenOutputProps = ReturnType<Highlight["getTokenProps"]>;
+
+export interface PrismCodeTokenProps {
+    index: number;
+    line: readonly TokenInputProps[];
+    tokenProps: TokenOutputProps;
+}
+
 export interface PrismCodeProps {
     children?: string;
     className?: string;
     language?: Language;
     style?: CSSProperties;
+    tokenRenderer?: FC<PrismCodeTokenProps>;
 }
 
-export const PrismCode = memo<PrismCodeProps>((props) => {
-    const {
-        children = "",
-        className: _className,
-        language = "tsx",
-        style: _style,
-    } = props;
+export const PrismCode = memo(
+    forwardRef<HTMLPreElement, PrismCodeProps>((props, ref) => {
+        const {
+            children = "",
+            className: _className,
+            language = "tsx",
+            style: _style,
+            tokenRenderer: Token = ({ tokenProps }) => <span {...tokenProps} />,
+        } = props;
 
-    return (
-        <Highlight
-            {...defaultProps}
-            code={children}
-            language={language}
-            theme={{ plain: {}, styles: [] }}
-        >
-            {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                <Pre
-                    className={clsx(_className, className)}
-                    style={{ ..._style, ...style }}
-                >
-                    {tokens.map((line, i) => (
-                        <Line key={i} {...getLineProps({ line, key: i })}>
-                            <LineNo>{i + 1}</LineNo>
-                            <LineContent>
-                                {line.map((token, key) => (
-                                    <span
-                                        key={key}
-                                        {...getTokenProps({ token, key })}
-                                    />
-                                ))}
-                            </LineContent>
-                        </Line>
-                    ))}
-                </Pre>
-            )}
-        </Highlight>
-    );
-});
+        return (
+            <Highlight
+                {...defaultProps}
+                code={children}
+                language={language}
+                theme={{ plain: {}, styles: [] }}
+            >
+                {({
+                    className,
+                    style,
+                    tokens,
+                    getLineProps,
+                    getTokenProps,
+                }) => (
+                    <Pre
+                        ref={ref}
+                        className={clsx(_className, className)}
+                        style={{ ..._style, ...style }}
+                    >
+                        {tokens.map((line, i) => (
+                            <Line key={i} {...getLineProps({ line, key: i })}>
+                                <LineNo>{i + 1}</LineNo>
+                                <LineContent>
+                                    {line.map((token, key) => (
+                                        <Token
+                                            key={key}
+                                            index={key}
+                                            line={line}
+                                            tokenProps={getTokenProps({
+                                                token,
+                                                key,
+                                            })}
+                                        />
+                                    ))}
+                                </LineContent>
+                            </Line>
+                        ))}
+                    </Pre>
+                )}
+            </Highlight>
+        );
+    })
+);
 
 PrismCode.displayName = "PrismCode";

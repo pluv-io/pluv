@@ -10,3 +10,5 @@ export type { HomeHeroProps } from "./HomeHero";
 export { HomeHero } from "./HomeHero";
 export type { HomeIntroSectionProps } from "./HomeIntroSection";
 export { HomeIntroSection } from "./HomeIntroSection";
+export type { HomeTypeSafetyDemoProps } from "./HomeTypeSafetyDemo";
+export { HomeTypeSafetyDemo } from "./HomeTypeSafetyDemo";

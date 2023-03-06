@@ -23,6 +23,7 @@
         "@pluv/io": "workspace:^",
         "@pluv/platform-node": "workspace:^",
         "@pluv/react": "workspace:^",
+        "@radix-ui/react-popover": "^1.0.4",
         "@seznam/compose-react-refs": "^1.0.6",
         "@types/common-tags": "^1.8.1",
         "@types/node": "^18.14.4",
