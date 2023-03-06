@@ -76,9 +76,9 @@ export const useTypist = <TElement extends HTMLElement>(
     useEffect(() => {
         if (mode !== "starting") return;
 
-        const timeout = setTimeout(() => {
+        const timeout: number = setTimeout(() => {
             setMode("typing");
-        }, typingDelay) as number;
+        }, typingDelay) as any;
 
         timeoutsRef.current[0] = timeout;
 
@@ -165,9 +165,9 @@ export const useTypist = <TElement extends HTMLElement>(
         if (mode !== "paused") return;
         if (!Number.isFinite(deleteDelay)) return;
 
-        const timeout = setTimeout(() => {
+        const timeout: number = setTimeout(() => {
             setMode("deleting");
-        }, deleteDelay) as number;
+        }, deleteDelay) as any;
 
         timeoutsRef.current[1] = timeout;
 
@@ -197,10 +197,10 @@ export const useTypist = <TElement extends HTMLElement>(
         if (mode !== "deleting") return;
         if (hasDisplayedSentence) return;
 
-        const timeout = setTimeout(() => {
+        const timeout: number = setTimeout(() => {
             setIndex(0);
             setMode("starting");
-        }, repeatDelay) as number;
+        }, repeatDelay) as any;
 
         timeoutsRef.current[2] = timeout;
 
