@@ -48,7 +48,6 @@ export interface CodeTooltipChildProps {
         onMouseOver: () => void;
     };
     ref: RefCallback<HTMLElement>;
-    style: CSSProperties;
 }
 
 export interface CodeTooltipProps {
@@ -122,6 +121,5 @@ export const CodeTooltip: FC<CodeTooltipProps> = ({
                 document.body
             ),
         handlers: { onMouseOut, onMouseOver },
-        style: { position: "relative" },
     });
 };

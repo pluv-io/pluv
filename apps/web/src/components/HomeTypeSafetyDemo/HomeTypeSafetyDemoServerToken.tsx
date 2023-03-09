@@ -38,10 +38,10 @@ export const HomeTypeSafetyDemoServerToken: FC<
             }}
             open={showTooltip(text, "message") || open}
         >
-            {({ children, handlers, ref, style }) => (
+            {({ children, handlers, ref }) => (
                 <span>
                     {padded && " "}
-                    <span ref={ref} {...tokenProps} {...handlers} style={style}>
+                    <span ref={ref} {...tokenProps} {...handlers}>
                         {text.trim()}
                         {children}
                     </span>
