@@ -20,7 +20,7 @@ importers:
 
   apps/server-cloudflare:
     specifiers:
-      '@cloudflare/workers-types': ^3.18.0
+      '@cloudflare/workers-types': ^4.20230307.0
       '@pluv-internal/cloudflare-utils': workspace:^
       '@pluv/io': workspace:^
       '@pluv/platform-cloudflare': workspace:^
@@ -34,7 +34,7 @@ importers:
       '@pluv/platform-cloudflare': link:../../packages/platform-cloudflare
       zod: 3.21.4
     devDependencies:
-      '@cloudflare/workers-types': 3.18.0
+      '@cloudflare/workers-types': 4.20230307.0
       '@pluv/tsconfig': link:../../packages/tsconfig
       typescript: 4.9.5
       wrangler: 2.12.2
@@ -211,7 +211,7 @@ importers:
 
   internal/cloudflare-utils:
     specifiers:
-      '@cloudflare/workers-types': ^3.18.0
+      '@cloudflare/workers-types': ^4.20230307.0
       '@pluv/tsconfig': workspace:^
       '@pluv/types': workspace:^
       eslint-config-pluv: workspace:^
@@ -222,7 +222,7 @@ importers:
       '@pluv/types': link:../../packages/types
       path-to-regexp: 6.2.1
     devDependencies:
-      '@cloudflare/workers-types': 3.18.0
+      '@cloudflare/workers-types': 4.20230307.0
       '@pluv/tsconfig': link:../../packages/tsconfig
       eslint-config-pluv: link:../../packages/eslint-config-pluv
       tsup: 6.6.3_typescript@4.9.5
@@ -588,7 +588,7 @@ importers:
 
   packages/platform-cloudflare:
     specifiers:
-      '@cloudflare/workers-types': ^3.18.0
+      '@cloudflare/workers-types': ^4.20230307.0
       '@pluv/io': workspace:^
       '@pluv/tsconfig': workspace:^
       '@pluv/types': workspace:^
@@ -599,7 +599,7 @@ importers:
       '@pluv/io': link:../io
       '@pluv/types': link:../types
     devDependencies:
-      '@cloudflare/workers-types': 3.18.0
+      '@cloudflare/workers-types': 4.20230307.0
       '@pluv/tsconfig': link:../tsconfig
       eslint-config-pluv: link:../eslint-config-pluv
       tsup: 6.6.3_typescript@4.9.5
@@ -691,7 +691,7 @@ importers:
 
   tests/e2e:
     specifiers:
-      '@cloudflare/workers-types': ^3.18.0
+      '@cloudflare/workers-types': ^4.20230307.0
       '@playwright/test': ^1.31.2
       '@pluv-internal/cloudflare-utils': workspace:^
       '@pluv/client': workspace:^
@@ -770,7 +770,7 @@ importers:
       yjs: 13.5.49
       zod: 3.21.4
     devDependencies:
-      '@cloudflare/workers-types': 3.18.0
+      '@cloudflare/workers-types': 4.20230307.0
       '@playwright/test': 1.31.2
       '@pluv/tsconfig': link:../../packages/tsconfig
       concurrently: 7.6.0
@@ -2436,8 +2436,8 @@ packages:
       mime: 3.0.0
     dev: true
 
-  /@cloudflare/workers-types/3.18.0:
-    resolution: {integrity: sha512-ehKOJVLMeR+tZkYhWEaLYQxl0TaIZu/kE86HF3/RidR8Xv5LuQxpbh+XXAoKVqsaphWLhIgBhgnlN5HGdheXSQ==}
+  /@cloudflare/workers-types/4.20230307.0:
+    resolution: {integrity: sha512-Go968aDDcqONHQcUdgIiPRkPdT4QTzD0ecHJsI1u7ZiHPMOoZn+Dy7hYsdUJ5ldX9wTZDrICBM1rDKTRaDUitg==}
     dev: true
 
   /@cnakazawa/watch/1.0.4:
