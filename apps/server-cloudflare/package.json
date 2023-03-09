@@ -12,7 +12,7 @@
     "@pluv-internal/cloudflare-utils": "workspace:^",
     "@pluv/io": "workspace:^",
     "@pluv/platform-cloudflare": "workspace:^",
-    "zod": "^3.20.6"
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.18.0",
