@@ -1,5 +1,26 @@
 # @pluv/client
 
+## 0.5.0
+
+### Minor Changes
+
+- 327a6ef: renamed y.unstable\_\_object to y.object
+
+### Patch Changes
+
+- 78a6119: Fixed MockedRoom not sending storage updates
+- 8bf62cb: bumped dependencies
+- 7e52685: Bumped dependencies
+- b1cb325: Updated dependencies
+- 8e97fb2: Updated dependencies
+- Updated dependencies [8bf62cb]
+- Updated dependencies [7e52685]
+- Updated dependencies [b1cb325]
+- Updated dependencies [327a6ef]
+- Updated dependencies [8e97fb2]
+  - @pluv/crdt-yjs@0.3.0
+  - @pluv/types@0.1.3
+
 ## 0.4.0
 
 ### Minor Changes

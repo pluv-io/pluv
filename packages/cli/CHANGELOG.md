@@ -1,5 +1,27 @@
 # pluv
 
+## 0.3.0
+
+### Minor Changes
+
+- 10e715d: fix(deps): update dependency @pluv/react to ^0.4.0
+- 327a6ef: renamed y.unstable\_\_object to y.object
+- 0f35eae: fix(deps): update dependency @pluv/react to ^0.3.0
+
+### Patch Changes
+
+- 8bf62cb: bumped dependencies
+- 7e52685: Bumped dependencies
+- b1cb325: Updated dependencies
+- 1a15739: chore(deps): update nextjs monorepo to v13.2.1
+- 106ee81: chore(deps): update nextjs monorepo to v13.2.3
+- e7360b6: chore(deps): update nextjs monorepo to v13.2.2
+- 8e97fb2: Updated dependencies
+- Updated dependencies [8bf62cb]
+- Updated dependencies [7e52685]
+- Updated dependencies [8e97fb2]
+  - @pluv/types@0.1.3
+
 ## 0.2.3
 
 ### Patch Changes

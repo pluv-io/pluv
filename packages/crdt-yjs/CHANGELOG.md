@@ -1,5 +1,22 @@
 # @pluv/crdt-yjs
 
+## 0.3.0
+
+### Minor Changes
+
+- 327a6ef: renamed y.unstable\_\_object to y.object
+
+### Patch Changes
+
+- 8bf62cb: bumped dependencies
+- 7e52685: Bumped dependencies
+- b1cb325: Updated dependencies
+- 8e97fb2: Updated dependencies
+- Updated dependencies [8bf62cb]
+- Updated dependencies [7e52685]
+- Updated dependencies [8e97fb2]
+  - @pluv/types@0.1.3
+
 ## 0.2.0
 
 ### Minor Changes

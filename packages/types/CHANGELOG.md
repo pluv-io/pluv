@@ -1,5 +1,13 @@
 # @pluv/types
 
+## 0.1.3
+
+### Patch Changes
+
+- 8bf62cb: bumped dependencies
+- 7e52685: Bumped dependencies
+- 8e97fb2: Updated dependencies
+
 ## 0.1.2
 
 ### Patch Changes
