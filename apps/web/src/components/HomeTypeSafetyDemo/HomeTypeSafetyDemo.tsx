@@ -1,9 +1,16 @@
 import { PrismCode } from "@pluv-internal/react-code";
+import { useOrchestratedTypist } from "@pluv-internal/react-hooks";
 import { codeBlock } from "common-tags";
-import { CSSProperties, FC, useMemo } from "react";
+import ms from "ms";
+import { CSSProperties, FC, useMemo, useRef } from "react";
 import tw from "twin.macro";
+import { HomeTypeSafetyDemoContext } from "./context";
 import { HomeTypeSafetyDemoClient } from "./HomeTypeSafetyDemoClient";
 import { HomeTypeSafetyDemoServer } from "./HomeTypeSafetyDemoServer";
+
+const INPUT_PARAMETER_TEXT = " message: z.string() ";
+const RESOLVER_PARAMETER_TEXT = " message ";
+const RESOLVER_OUTPUT_TEXT = "MESSAGE_RECEIVED: { message }";
 
 const Root = tw.div`
     flex
@@ -67,12 +74,27 @@ export const HomeTypeSafetyDemo: FC<HomeTypeSafetyDemoProps> = ({
         []
     );
 
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    const typistStates = useOrchestratedTypist(contentRef, {
+        deleteSpeed: 0,
+        repeat: false,
+        sentences: [
+            INPUT_PARAMETER_TEXT,
+            RESOLVER_PARAMETER_TEXT,
+            RESOLVER_OUTPUT_TEXT,
+        ],
+        typingSpeed: ms("0.1s"),
+    });
+
     return (
-        <Root className={className} style={style}>
-            <ContentContainer>
-                <CodeDemo as={HomeTypeSafetyDemoClient} />
-                <CodeDemo as={HomeTypeSafetyDemoServer} />
-            </ContentContainer>
-        </Root>
+        <HomeTypeSafetyDemoContext.Provider value={typistStates}>
+            <Root className={className} style={style}>
+                <ContentContainer ref={contentRef}>
+                    <CodeDemo as={HomeTypeSafetyDemoClient} />
+                    <CodeDemo as={HomeTypeSafetyDemoServer} />
+                </ContentContainer>
+            </Root>
+        </HomeTypeSafetyDemoContext.Provider>
     );
 };

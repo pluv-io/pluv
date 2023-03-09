@@ -28,7 +28,7 @@ export const useOrchestratedTypist = <TElement extends HTMLElement>(
         deleteDelay = ms("2s"),
         deleteSpeed,
         paused,
-        repeat,
+        repeat = true,
         repeatDelay,
         sentences,
         typingDelay = ms("1s"),
@@ -64,6 +64,7 @@ export const useOrchestratedTypist = <TElement extends HTMLElement>(
 
     useEffect(() => {
         if (!isCompleted) return;
+        if (!repeat) return;
 
         const timeout = setTimeout(() => {
             results.forEach(([, { reset }]) => reset());
@@ -72,7 +73,7 @@ export const useOrchestratedTypist = <TElement extends HTMLElement>(
         return () => {
             clearTimeout(timeout);
         };
-    }, [deleteDelay, isCompleted, results]);
+    }, [deleteDelay, isCompleted, repeat, results]);
 
     return results.map(([state]) => state);
 };

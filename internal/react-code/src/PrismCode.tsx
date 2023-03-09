@@ -60,6 +60,7 @@ export type TokenOutputProps = ReturnType<Highlight["getTokenProps"]>;
 export interface PrismCodeTokenProps {
     index: number;
     line: readonly TokenInputProps[];
+    lineNo: number;
     tokenProps: TokenOutputProps;
 }
 
@@ -109,6 +110,7 @@ export const PrismCode = memo(
                                             key={key}
                                             index={key}
                                             line={line}
+                                            lineNo={i + 1}
                                             tokenProps={getTokenProps({
                                                 token,
                                                 key,

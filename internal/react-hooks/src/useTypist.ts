@@ -89,6 +89,7 @@ export const useTypist = <TElement extends HTMLElement>(
 
     useEffect(() => {
         if (paused) return;
+        if (!repeat) return;
         if (focused && isIntersecting) {
             setMode("starting");
 
@@ -102,7 +103,7 @@ export const useTypist = <TElement extends HTMLElement>(
         setIndex(0);
         setMode("halted");
         setDisplayedSentence("");
-    }, [focused, isIntersecting, paused, typingDelay]);
+    }, [focused, isIntersecting, paused, repeat, typingDelay]);
 
     useEffect(() => {
         if (paused) return;
