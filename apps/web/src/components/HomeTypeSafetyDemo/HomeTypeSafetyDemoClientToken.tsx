@@ -1,10 +1,10 @@
 import { CodeTooltip, PrismCodeTokenProps } from "@pluv-internal/react-code";
 import { FC, useCallback, useState } from "react";
 
-export type HomeTypeSafetyDemoServerTokenProps = PrismCodeTokenProps;
+export type HomeTypeSafetyDemoClientTokenProps = PrismCodeTokenProps;
 
-export const HomeTypeSafetyDemoServerToken: FC<
-    HomeTypeSafetyDemoServerTokenProps
+export const HomeTypeSafetyDemoClientToken: FC<
+    HomeTypeSafetyDemoClientTokenProps
 > = ({ lineNo, tokenProps }) => {
     const text = tokenProps.children;
 
@@ -23,17 +23,15 @@ export const HomeTypeSafetyDemoServerToken: FC<
 
     const padded = text.startsWith(" ");
 
-    console.log(tokenProps, lineNo);
-
-    if (tokenProps.key === 6 && lineNo === 13) {
+    if (tokenProps.key === 8 && lineNo === 11) {
         return (
             <CodeTooltip
-                helperText="(property) color: string"
-                label="color"
+                helperText="(property) data: { message: string }"
+                label="data"
                 onOpenChange={(newOpen) => {
                     setOpen(newOpen);
                 }}
-                open={showTooltip(text, "color")}
+                open={showTooltip(text, "data")}
             >
                 {({ children, handlers, ref }) => (
                     <span>
@@ -49,15 +47,15 @@ export const HomeTypeSafetyDemoServerToken: FC<
         );
     }
 
-    if (tokenProps.key === 5 && lineNo === 14) {
+    if (tokenProps.key === 13 && lineNo === 12) {
         return (
             <CodeTooltip
-                helperText="(property) color: string"
-                label="color"
+                helperText="(property) data: { message: string }"
+                label="data"
                 onOpenChange={(newOpen) => {
                     setOpen(newOpen);
                 }}
-                open={showTooltip(text, "color")}
+                open={showTooltip(text, "data")}
             >
                 {({ children, handlers, ref }) => (
                     <span>
@@ -66,14 +64,13 @@ export const HomeTypeSafetyDemoServerToken: FC<
                             {text.trim()}
                             {children}
                         </span>
-                        {padded && " "}
                     </span>
                 )}
             </CodeTooltip>
         );
     }
 
-    if (tokenProps.key === 6 && lineNo === 21) {
+    if (tokenProps.key === 15 && lineNo === 12) {
         return (
             <CodeTooltip
                 helperText="(property) message: string"
@@ -97,7 +94,7 @@ export const HomeTypeSafetyDemoServerToken: FC<
         );
     }
 
-    if (tokenProps.key === 5 && lineNo === 22) {
+    if (tokenProps.key === 7 && lineNo === 20) {
         return (
             <CodeTooltip
                 helperText="(property) message: string"
@@ -105,7 +102,7 @@ export const HomeTypeSafetyDemoServerToken: FC<
                 onOpenChange={(newOpen) => {
                     setOpen(newOpen);
                 }}
-                open={open && text.trim().startsWith("m")}
+                open={showTooltip(text, "message")}
             >
                 {({ children, handlers, ref }) => (
                     <span>

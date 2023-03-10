@@ -1,16 +1,17 @@
-import { PrismCode } from "@pluv-internal/react-code";
 import { useOrchestratedTypist } from "@pluv-internal/react-hooks";
-import { codeBlock } from "common-tags";
 import ms from "ms";
-import { CSSProperties, FC, useMemo, useRef } from "react";
+import { CSSProperties, FC, useRef } from "react";
 import tw from "twin.macro";
 import { HomeTypeSafetyDemoContext } from "./context";
 import { HomeTypeSafetyDemoClient } from "./HomeTypeSafetyDemoClient";
 import { HomeTypeSafetyDemoServer } from "./HomeTypeSafetyDemoServer";
 
-const INPUT_PARAMETER_TEXT = " message: z.string() ";
-const RESOLVER_PARAMETER_TEXT = " message ";
-const RESOLVER_OUTPUT_TEXT = "MESSAGE_RECEIVED: { message }";
+const CLIENT_INPUT_PARAMETER_TEXT = " data ";
+const CLIENT_NEW_MESSAGE_TEXT = ", data\u200b.message\u200b";
+const CLIENT_SEND_MESSAGE_INPUT_TEXT = " message ";
+const SERVER_INPUT_PARAMETER_TEXT = " message: z.string() ";
+const SERVER_RESOLVER_PARAMETER_TEXT = " message ";
+const SERVER_RESOLVER_OUTPUT_TEXT = "MESSAGE_RECEIVED: { message },";
 
 const Root = tw.div`
     flex
@@ -26,7 +27,7 @@ const ContentContainer = tw.div`
     gap-[32px]
     max-w-[1080px]
     w-full
-    h-[480px]
+    h-[540px]
 `;
 
 const CodeDemo = tw.div`
@@ -49,40 +50,18 @@ export const HomeTypeSafetyDemo: FC<HomeTypeSafetyDemoProps> = ({
     className,
     style,
 }) => {
-    const serverCode = useMemo(
-        () => codeBlock`
-            import { createIO } from "@pluv/io";
-            import { platformCloudflare } from "@pluv/platform-cloudflare";
-            import { z } from "zod";
-
-            const io = createIO({
-                platform: platformCloudflare(),
-            })
-                .event("SEND_MESSAGE", {
-                    input: z.object({ message: z.string() }),
-                    resolver: ({ message }) => ({
-                        MESSAGE_RECEIVED: { message },
-                    }),
-                })
-                .event("EMIT_FIREWORK", {
-                    input: z.object({ color: z.string() }),
-                    resolver: ({ color }) => ({
-                        FIREWORK_EMITTED: { color },
-                    }),
-                });
-        `,
-        []
-    );
-
     const contentRef = useRef<HTMLDivElement>(null);
 
     const [typistStates] = useOrchestratedTypist(contentRef, {
         deleteSpeed: 0,
         repeat: false,
         sentences: [
-            INPUT_PARAMETER_TEXT,
-            RESOLVER_PARAMETER_TEXT,
-            RESOLVER_OUTPUT_TEXT,
+            SERVER_INPUT_PARAMETER_TEXT,
+            SERVER_RESOLVER_PARAMETER_TEXT,
+            SERVER_RESOLVER_OUTPUT_TEXT,
+            CLIENT_INPUT_PARAMETER_TEXT,
+            CLIENT_NEW_MESSAGE_TEXT,
+            CLIENT_SEND_MESSAGE_INPUT_TEXT,
         ],
         typingSpeed: ms("0.1s"),
     });
@@ -91,8 +70,8 @@ export const HomeTypeSafetyDemo: FC<HomeTypeSafetyDemoProps> = ({
         <HomeTypeSafetyDemoContext.Provider value={typistStates}>
             <Root className={className} style={style}>
                 <ContentContainer ref={contentRef}>
-                    <CodeDemo as={HomeTypeSafetyDemoClient} />
                     <CodeDemo as={HomeTypeSafetyDemoServer} />
+                    <CodeDemo as={HomeTypeSafetyDemoClient} />
                 </ContentContainer>
             </Root>
         </HomeTypeSafetyDemoContext.Provider>

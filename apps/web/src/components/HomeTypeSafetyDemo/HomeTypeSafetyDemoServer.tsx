@@ -19,23 +19,28 @@ export const HomeTypeSafetyDemoServer: FC<HomeTypeSafetyDemoServerProps> = ({
 }) => {
     const template = useMemo(
         () => codeBlock`
+            // server/pluv.ts
+
             import { createIO } from "@pluv/io";
             import { platformCloudflare } from "@pluv/platform-cloudflare";
             import { z } from "zod";
 
+            // Create your PluvIO server
             const io = createIO({
-                platform: platformCloudflare(),
+              platform: platformCloudflare(),
             })
-                .event("EMIT_FIREWORK", {
-                    input: z.object({ color: z.string() }),
-                    resolver: ({ color }) => ({
-                        FIREWORK_EMITTED: { color },
-                    }),
-                })
-                .event("SEND_MESSAGE", {
-                    input: z.object({${INPUT_PARAMETER}}),
-                    resolver: ({${RESOLVER_PARAMETER}}) => ({${RESOLVER_OUTPUT}}),
-                });
+              .event("EMIT_FIREWORK", {
+                input: z.object({ color: z.string() }),
+                resolver: ({ color }) => ({
+                  FIREWORK_EMITTED: { color },
+                }),
+              })
+              .event("SEND_MESSAGE", {
+                // Set input validator and type
+                input: z.object({${INPUT_PARAMETER}}),
+                // Set output value and type
+                resolver: ({${RESOLVER_PARAMETER}}) => ({${RESOLVER_OUTPUT}}),
+              });
         `,
         []
     );
@@ -52,9 +57,7 @@ export const HomeTypeSafetyDemoServer: FC<HomeTypeSafetyDemoServerProps> = ({
             .replace(RESOLVER_PARAMETER, resolverParam)
             .replace(
                 RESOLVER_OUTPUT,
-                resolverOutput
-                    ? `\n            ${resolverOutput}\n        `
-                    : ""
+                resolverOutput ? `\n      ${resolverOutput}\n    ` : ""
             );
     }, [inputParam, resolverOutput, resolverParam, template]);
 

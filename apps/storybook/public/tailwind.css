@@ -655,6 +655,10 @@ video {
   height: auto;
 }
 
+.h-\[540px\] {
+  height: 540px;
+}
+
 .min-h-0 {
   min-height: 0px;
 }
