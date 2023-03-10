@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import { createContext } from "react";
+import { BOX_SIZE } from "./constants";
 
 const INITIAL_POSITIONS: HomeCodeDemoPositions = {
     first: { x: -48, y: 0 },
@@ -22,6 +23,7 @@ export interface HomeCodeDemoSelections {
 }
 
 export interface HomeCodeDemoContextValue {
+    boxSize: number;
     codePositions: HomeCodeDemoPositions;
     initPositions: HomeCodeDemoPositions;
     selections: HomeCodeDemoSelections;
@@ -31,6 +33,7 @@ export interface HomeCodeDemoContextValue {
 }
 
 export const HomeCodeDemoContext = createContext<HomeCodeDemoContextValue>({
+    boxSize: BOX_SIZE,
     codePositions: INITIAL_POSITIONS,
     initPositions: INITIAL_POSITIONS,
     selections: { jane: null, john: null },

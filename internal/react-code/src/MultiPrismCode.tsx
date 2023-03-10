@@ -17,6 +17,7 @@ const TabsList = tw(Tabs.List)`
     flex-row
     items-stretch
     gap-0.5
+    overflow-hidden
 `;
 
 const TabsTrigger = styled(Tabs.Trigger)`
