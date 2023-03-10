@@ -15,8 +15,8 @@
     "access": "public"
   },
   "dependencies": {
-    "eslint": "^8.35.0",
-    "eslint-config-next": "^13.2.3",
+    "eslint": "^8.36.0",
+    "eslint-config-next": "^13.2.4",
     "eslint-config-prettier": "^8.7.0",
     "eslint-config-turbo": "^0.0.9",
     "eslint-plugin-prettier": "^4.2.1",
