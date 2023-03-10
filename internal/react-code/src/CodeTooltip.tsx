@@ -6,6 +6,7 @@ import {
     RefCallback,
     useCallback,
     useEffect,
+    useMemo,
     useState,
 } from "react";
 import { createPortal } from "react-dom";
@@ -77,14 +78,17 @@ export const CodeTooltip: FC<CodeTooltipProps> = ({
     const { attributes, forceUpdate, styles } = usePopper(refElem, popperElem, {
         placement: "bottom-end",
         strategy: "fixed",
-        modifiers: [
-            {
-                name: "computeStyles",
-                options: {
-                    gpuAcceleration: false,
+        modifiers: useMemo(
+            () => [
+                {
+                    name: "computeStyles",
+                    options: {
+                        gpuAcceleration: false,
+                    },
                 },
-            },
-        ],
+            ],
+            []
+        ),
     });
 
     const onMouseOver = useCallback(() => {
