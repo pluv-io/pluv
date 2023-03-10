@@ -76,7 +76,7 @@ export const HomeTypeSafetyDemo: FC<HomeTypeSafetyDemoProps> = ({
 
     const contentRef = useRef<HTMLDivElement>(null);
 
-    const typistStates = useOrchestratedTypist(contentRef, {
+    const [typistStates] = useOrchestratedTypist(contentRef, {
         deleteSpeed: 0,
         repeat: false,
         sentences: [

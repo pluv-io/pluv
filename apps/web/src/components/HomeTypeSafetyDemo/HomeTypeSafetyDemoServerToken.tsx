@@ -14,40 +14,62 @@ export const HomeTypeSafetyDemoServerToken: FC<
         (text: string, toMatch: string): boolean => {
             const trimmed = text.trimStart();
 
-            if (!toMatch.includes(trimmed)) return false;
             if (!trimmed.startsWith(toMatch.charAt(0))) return false;
 
-            return true;
+            return toMatch.includes(trimmed) || open;
         },
-        []
+        [open]
     );
-
-    const fallback = <span {...tokenProps} />;
-
-    if (tokenProps.key !== 6) return fallback;
-    if (lineNo !== 16) return fallback;
 
     const padded = text.startsWith(" ");
 
-    return (
-        <CodeTooltip
-            helperText="(property) message: string"
-            label="message"
-            onOpenChange={(newOpen) => {
-                setOpen(newOpen);
-            }}
-            open={showTooltip(text, "message") || open}
-        >
-            {({ children, handlers, ref }) => (
-                <span>
-                    {padded && " "}
-                    <span ref={ref} {...tokenProps} {...handlers}>
-                        {text.trim()}
-                        {children}
+    if (tokenProps.key === 6 && lineNo === 10) {
+        return (
+            <CodeTooltip
+                helperText="(property) color: string"
+                label="color"
+                onOpenChange={(newOpen) => {
+                    setOpen(newOpen);
+                }}
+                open={showTooltip(text, "color")}
+            >
+                {({ children, handlers, ref }) => (
+                    <span>
+                        {padded && " "}
+                        <span ref={ref} {...tokenProps} {...handlers}>
+                            {text.trim()}
+                            {children}
+                        </span>
+                        {padded && " "}
                     </span>
-                    {padded && " "}
-                </span>
-            )}
-        </CodeTooltip>
-    );
+                )}
+            </CodeTooltip>
+        );
+    }
+
+    if (tokenProps.key === 6 && lineNo === 16) {
+        return (
+            <CodeTooltip
+                helperText="(property) message: string"
+                label="message"
+                onOpenChange={(newOpen) => {
+                    setOpen(newOpen);
+                }}
+                open={showTooltip(text, "message")}
+            >
+                {({ children, handlers, ref }) => (
+                    <span>
+                        {padded && " "}
+                        <span ref={ref} {...tokenProps} {...handlers}>
+                            {text.trim()}
+                            {children}
+                        </span>
+                        {padded && " "}
+                    </span>
+                )}
+            </CodeTooltip>
+        );
+    }
+
+    return <span {...tokenProps} />;
 };

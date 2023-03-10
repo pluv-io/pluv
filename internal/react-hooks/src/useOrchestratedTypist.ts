@@ -1,5 +1,5 @@
 import ms from "ms";
-import { RefObject, useEffect, useMemo } from "react";
+import { RefObject, useCallback, useEffect, useMemo } from "react";
 import { TypistState, useTypist, UseTypistParams } from "./useTypist";
 
 export interface OrchestratedTypistState {
@@ -20,10 +20,19 @@ export type UseOrchestratedTypistParams = Pick<
     onChange?: (state: OrchestratedTypistState) => void;
 };
 
+export interface UseOrchestratedTypistActions {
+    reset: () => void;
+}
+
+export type UseOrchestratedTypistResult = readonly [
+    state: readonly TypistState[],
+    actions: UseOrchestratedTypistActions
+];
+
 export const useOrchestratedTypist = <TElement extends HTMLElement>(
     ref: RefObject<TElement>,
     params: UseOrchestratedTypistParams
-): readonly TypistState[] => {
+): UseOrchestratedTypistResult => {
     const {
         deleteDelay = ms("2s"),
         deleteSpeed,
@@ -62,18 +71,22 @@ export const useOrchestratedTypist = <TElement extends HTMLElement>(
 
     const isCompleted = results.every(([{ completed }]) => completed);
 
+    const reset = useCallback(() => {
+        results.forEach(([, { reset }]) => reset());
+    }, [results]);
+
     useEffect(() => {
         if (!isCompleted) return;
         if (!repeat) return;
 
         const timeout = setTimeout(() => {
-            results.forEach(([, { reset }]) => reset());
+            reset();
         }, deleteDelay);
 
         return () => {
             clearTimeout(timeout);
         };
-    }, [deleteDelay, isCompleted, repeat, results]);
+    }, [deleteDelay, isCompleted, repeat, reset, results]);
 
-    return results.map(([state]) => state);
+    return [results.map(([state]) => state), { reset }];
 };

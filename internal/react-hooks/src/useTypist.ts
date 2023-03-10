@@ -28,11 +28,11 @@ export interface UseTypistParams {
     typingSpeed?: number;
 }
 
-export interface TypistActions {
+export interface UseTypistActions {
     reset: () => void;
 }
 
-export type UseTypistResult = readonly [TypistState, TypistActions];
+export type UseTypistResult = readonly [TypistState, UseTypistActions];
 
 export const useTypist = <TElement extends HTMLElement>(
     ref: RefObject<TElement>,
