@@ -21,13 +21,15 @@ const Root = tw.div`
 
 const ContentContainer = tw.div`
     flex
-    flex-row
+    flex-col
     items-stretch
     justify-center
-    gap-[32px]
+    gap-[16px]
     max-w-[1080px]
     w-full
     h-[540px]
+    md:flex-row
+    md:gap-[32px]
 `;
 
 const CodeDemo = tw.div`

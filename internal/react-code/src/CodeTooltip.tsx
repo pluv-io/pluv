@@ -15,7 +15,7 @@ import tw from "twin.macro";
 import { CodeTooltipIcon, CodeTooltipIconType } from "./CodeTooltipIcon";
 
 const Content = tw.div`
-    translate-x-full
+    md:translate-x-full
     flex
     flex-row
     items-center
@@ -30,6 +30,7 @@ const Content = tw.div`
     shadow-indigo-800
     bg-zinc-800
     text-sm
+    whitespace-nowrap
     z-[1]
 `;
 
