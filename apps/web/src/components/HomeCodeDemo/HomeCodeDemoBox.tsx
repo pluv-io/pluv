@@ -2,8 +2,8 @@ import { useDraggable } from "@dnd-kit/core";
 import composeRefs from "@seznam/compose-react-refs";
 import type { CSSProperties } from "react";
 import { forwardRef } from "react";
-import tw from "twin.macro";
-import { BOX_SIZE } from "./constants";
+import tw, { styled, theme } from "twin.macro";
+import { BOX_SIZE, MOBILE_BOX_SIZE } from "./constants";
 
 const Root = tw.div`
     relative
@@ -12,12 +12,22 @@ const Root = tw.div`
     justify-center
 `;
 
-const Box = tw.div`
-    absolute
-    rounded-lg
-    cursor-grab
-    [background-color: currentColor]
-    [&[data-selected="true"]]:cursor-grabbing
+const Box = styled.div`
+    ${tw`
+        absolute
+        rounded-lg
+        cursor-grab
+        [background-color: currentColor]
+        [&[data-selected="true"]]:cursor-grabbing
+    `}
+
+    height: ${MOBILE_BOX_SIZE}px;
+    width: ${MOBILE_BOX_SIZE}px;
+
+    @media (min-width: ${theme`screens.md`}) {
+        height: ${BOX_SIZE}px;
+        width: ${BOX_SIZE}px;
+    }
 `;
 
 const User = tw.div`
@@ -88,8 +98,6 @@ export const HomeCodeDemoBox = forwardRef<HTMLDivElement, HomeCodeDemoBoxProps>(
                     }}
                     role="none"
                     style={{
-                        height: BOX_SIZE,
-                        width: BOX_SIZE,
                         transform: `translate3d(${x}px, ${y}px, 0)`,
                     }}
                     data-selected={isDragging}

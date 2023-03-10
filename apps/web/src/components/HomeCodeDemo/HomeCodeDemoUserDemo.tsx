@@ -4,15 +4,23 @@ import { HomeCodeDemoBrowser } from "./HomeCodeDemoBrowser";
 
 const Root = tw.div`
     flex
-    flex-col
+    flex-row
     items-stretch
-    gap-[32px]
+    gap-[0]
+    sm:gap-[16px]
+    md:gap-[32px]
+    md:flex-col
 `;
 
 const UserDemo = tw(HomeCodeDemoBrowser)`
     grow
     basis-0
     min-h-0
+    rounded-md
+    first:rounded-r-none
+    last:rounded-l-none
+    sm:first:rounded-r-md
+    sm:last:rounded-l-md
 `;
 
 export interface HomeCodeDemoUserDemoProps {

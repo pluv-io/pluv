@@ -15,7 +15,6 @@ const Root = tw.div`
     border
     border-solid
     border-indigo-500/40
-    rounded-md
     overflow-hidden
 `;
 
@@ -54,6 +53,7 @@ const Instructions = tw.div`
     text-sm
     font-medium
     text-gray-500
+    whitespace-nowrap
 `;
 
 const FirstBox = tw(HomeCodeDemoBox)`
@@ -85,6 +85,7 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({
     user,
 }) => {
     const {
+        boxSize,
         codePositions,
         initPositions,
         selections,
@@ -120,10 +121,10 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({
 
             if (!rootRect) return position;
 
-            const minWidth = rootRect.width / -2 + BOX_SIZE / 2;
-            const maxWidth = rootRect.width / 2 - BOX_SIZE / 2;
-            const minHeight = rootRect.height / -2 + BOX_SIZE / 2;
-            const maxHeight = rootRect.height / 2 - BOX_SIZE / 2;
+            const minWidth = rootRect.width / -2 + boxSize / 2;
+            const maxWidth = rootRect.width / 2 - boxSize / 2;
+            const minHeight = rootRect.height / -2 + boxSize / 2;
+            const maxHeight = rootRect.height / 2 - boxSize / 2;
 
             const newXPosition = Math.min(
                 Math.max(position.x, minWidth),
@@ -136,7 +137,7 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({
 
             return { x: newXPosition, y: newYPosition };
         },
-        [rootElem]
+        [boxSize, rootElem]
     );
 
     return (

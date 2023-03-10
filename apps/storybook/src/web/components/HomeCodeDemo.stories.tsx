@@ -11,6 +11,10 @@ const Template: Story<HomeCodeDemoProps> = (args) => {
     return <HomeCodeDemo {...args} />;
 };
 Template.args = {};
+Template.parameters = {
+    layout: "fullscreen",
+};
 
 export const Standard = Template.bind({});
 Standard.args = { ...Template.args };
+Standard.parameters = { ...Template.parameters };

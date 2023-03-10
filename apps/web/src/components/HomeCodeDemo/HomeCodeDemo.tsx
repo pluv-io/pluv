@@ -1,9 +1,11 @@
 import type { MultiPrismCodeTab } from "@pluv-internal/react-code";
 import { MultiPrismCode } from "@pluv-internal/react-code";
+import { useMediaQuery } from "@pluv-internal/react-hooks";
 import { codeBlock } from "common-tags";
-import type { CSSProperties } from "react";
+import { CSSProperties, useEffect } from "react";
 import { memo, useMemo, useState } from "react";
-import tw from "twin.macro";
+import tw, { theme } from "twin.macro";
+import { BOX_SIZE, MOBILE_BOX_SIZE } from "./constants";
 import type { HomeCodeDemoPositions, HomeCodeDemoSelections } from "./context";
 import { HomeCodeDemoContext } from "./context";
 import { HomeCodeDemoUserDemo } from "./HomeCodeDemoUserDemo";
@@ -16,20 +18,25 @@ const Root = tw.div`
 
 const ContentContainer = tw.div`
     flex
-    flex-row
+    flex-col
     items-stretch
     justify-center
-    gap-[32px]
+    gap-[16px]
     max-w-[1080px]
     w-full
-    h-[640px]
+    h-[980px]
+    md:flex-row
+    md:h-[640px]
+    md:gap-[32px]
 `;
 
 const BoxesDemo = tw(HomeCodeDemoUserDemo)`
-    grow
     basis-0
     min-w-0
-    min-h-0
+    min-h-[240px]
+    sm:min-h-[280px]
+    md:min-h-0
+    md:grow
 `;
 
 const CodeDemo = tw(MultiPrismCode)`
@@ -195,9 +202,26 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
         [codePositions]
     );
 
+    const isDesktop = useMediaQuery(`(min-width: ${theme`screens.md`})`);
+
+    const boxSize = isDesktop ? BOX_SIZE : MOBILE_BOX_SIZE;
+
+    useEffect(() => {
+        setInitPositions({
+            first: { x: (-2 * boxSize) / 3, y: 0 },
+            second: { x: (2 * boxSize) / 3, y: 0 },
+        });
+
+        setCodePositions({
+            first: { x: (-2 * boxSize) / 3, y: 0 },
+            second: { x: (2 * boxSize) / 3, y: 0 },
+        });
+    }, [boxSize]);
+
     return (
         <HomeCodeDemoContext.Provider
             value={{
+                boxSize,
                 codePositions,
                 initPositions,
                 selections,
