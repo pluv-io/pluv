@@ -66,17 +66,23 @@ export interface HomeChessDemoProps {
 export const HomeChessDemo: FC<HomeChessDemoProps> = ({ className, style }) => {
     const [demo, sharedType] = usePluvStorage("demo");
 
-    const history = useMemo(() => demo?.chessHistory?.slice() ?? [], [demo]);
+    const moveHistory = useMemo(
+        () => demo?.chessHistory?.slice() ?? null,
+        [demo]
+    );
+
+    if (!moveHistory) return null;
 
     return (
         <Root className={className} style={style}>
             <Board
-                history={history}
+                history={moveHistory}
+                id="home-chess"
                 onMove={({ game }) => {
                     sharedType?.set("chessHistory", y.array(game.history()));
                 }}
             />
-            <MoveHistory history={history} />
+            <MoveHistory history={moveHistory ?? []} />
         </Root>
     );
 };

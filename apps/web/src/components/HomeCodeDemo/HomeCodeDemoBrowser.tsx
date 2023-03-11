@@ -2,7 +2,6 @@ import { DndContext } from "@dnd-kit/core";
 import type { CSSProperties, FC, MouseEvent } from "react";
 import { useCallback, useContext, useMemo, useState } from "react";
 import tw from "twin.macro";
-import { BOX_SIZE } from "./constants";
 import type { HomeCodeDemoPosition, HomeCodeDemoSelections } from "./context";
 import { HomeCodeDemoContext } from "./context";
 import { HomeCodeDemoBox } from "./HomeCodeDemoBox";
@@ -162,6 +161,7 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({
             <UserName>{user}</UserName>
             <Instructions>Drag the boxes</Instructions>
             <DndContext
+                id={`${id}_dnd_first`}
                 onDragMove={({ delta }) => {
                     setCodePositions({
                         ...initPositions,
@@ -196,6 +196,7 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({
                 />
             </DndContext>
             <DndContext
+                id={`${id}_dnd_second`}
                 onDragMove={({ delta }) => {
                     setCodePositions({
                         ...initPositions,
