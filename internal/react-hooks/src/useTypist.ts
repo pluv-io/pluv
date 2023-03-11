@@ -151,6 +151,8 @@ export const useTypist = <TElement extends HTMLElement>(
 
         if (!deleteSpeed) {
             setDisplayedSentence("");
+
+            return;
         }
 
         const interval: number = setInterval(() => {
