@@ -5,6 +5,7 @@
       "dependsOn": [
         "^build"
       ],
+      "env": ["WS_ENDPOINT"],
       "outputs": [
         "dist/**",
         ".next/**"
@@ -14,7 +15,8 @@
       "cache": false,
       "dependsOn": [
         "^dev"
-      ]
+      ],
+      "env": ["WS_ENDPOINT"]
     },
     "lint": {
       "outputs": []

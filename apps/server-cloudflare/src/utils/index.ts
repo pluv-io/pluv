@@ -1,1 +1,0 @@
-export { getRoomId } from "./getRoomId";

@@ -3,9 +3,7 @@ import { createBundle, createClient, y } from "@pluv/react";
 import { z } from "zod";
 
 const client = createClient<typeof io>({
-    wsEndpoint: (roomName) => {
-        return `ws://localhost:8787/api/room/${roomName}/websocket`;
-    },
+    wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/${room}`,
 });
 
 export const {
