@@ -1,7 +1,7 @@
 import { PageContainer } from "@pluv-internal/react-components";
 import { CSSProperties, FC } from "react";
 import tw from "twin.macro";
-import { HomeChessDemo } from "../HomeChessDemo";
+import { HomeTypeSafetyDemo } from "../HomeTypeSafetyDemo";
 
 const Root = tw.section`
     flex
@@ -32,36 +32,36 @@ const Info = tw(PageContainer)`
     text-slate-300
 `;
 
-const ChessDemoContainer = tw(PageContainer)`
+const TypeSafetyDemoContainer = tw(PageContainer)`
     flex
     items-center
     justify-center
     mt-12
 `;
 
-const StyledHomeChessDemo = tw(HomeChessDemo)`
+const StyledTypeSafetyDemo = tw(HomeTypeSafetyDemo)`
     w-full
 `;
 
-export interface HomeIntroSectionProps {
+export interface HomeTypeSafetyDemoSectionProps {
     className?: string;
     style?: CSSProperties;
 }
 
-export const HomeIntroSection: FC<HomeIntroSectionProps> = ({
+export const HomeTypeSafetyDemoSection: FC<HomeTypeSafetyDemoSectionProps> = ({
     className,
     style,
 }) => {
     return (
         <Root className={className} style={style}>
-            <Title as="h2">Multiplayer made easy</Title>
+            <Title as="h2">End-to-end Type-Safety</Title>
             <Info as="h3">
-                Pluv provides powerful utilities to make building complex
-                multiplayer experiences easier.
+                Get intellisense and autocomplete, so you can move fast and
+                catch errors in development
             </Info>
-            <ChessDemoContainer>
-                <StyledHomeChessDemo />
-            </ChessDemoContainer>
+            <TypeSafetyDemoContainer>
+                <StyledTypeSafetyDemo />
+            </TypeSafetyDemoContainer>
         </Root>
     );
 };

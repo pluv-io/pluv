@@ -72,9 +72,28 @@ export const useTypist = <TElement extends HTMLElement>(
             timeout3: number | null
         ]
     >([null, null, null]);
+    const intervalsRef = useRef<
+        [interval1: number | null, interval2: number | null]
+    >([null, null]);
+
+    const isViewed = focused && isIntersecting;
+
+    const reset = useCallback(() => {
+        intervalsRef.current.forEach((interval) => {
+            interval && clearInterval(interval);
+        });
+        timeoutsRef.current.forEach((timeout) => {
+            timeout && clearTimeout(timeout);
+        });
+
+        setIndex(0);
+        setDisplayedSentence("");
+        setMode("starting");
+    }, []);
 
     useEffect(() => {
         if (mode !== "starting") return;
+        if (!isViewed) return;
 
         const timeout: number = setTimeout(() => {
             setMode("typing");
@@ -85,32 +104,26 @@ export const useTypist = <TElement extends HTMLElement>(
         return () => {
             clearTimeout(timeout);
         };
-    }, [mode, typingDelay]);
+    }, [isViewed, mode, typingDelay]);
 
     useEffect(() => {
         if (paused) return;
-        if (!repeat) return;
-        if (focused && isIntersecting) {
-            setMode("starting");
+        if (isViewed) {
+            reset();
 
             return;
         }
 
-        timeoutsRef.current.forEach((timeout) => {
-            timeout && clearTimeout(timeout);
-        });
-
-        setIndex(0);
+        reset();
         setMode("halted");
-        setDisplayedSentence("");
-    }, [focused, isIntersecting, paused, repeat, typingDelay]);
+    }, [isViewed, paused, reset]);
 
     useEffect(() => {
         if (paused) return;
         if (!sentence) return;
         if (mode !== "typing") return;
 
-        const interval = setInterval(() => {
+        const interval: number = setInterval(() => {
             setDisplayedSentence((oldSentence) => {
                 const oldLength = oldSentence.length;
 
@@ -122,7 +135,9 @@ export const useTypist = <TElement extends HTMLElement>(
 
                 return `${oldSentence}${sentence.charAt(oldLength)}`;
             });
-        }, typingSpeed);
+        }, typingSpeed) as any;
+
+        intervalsRef.current[0] = interval;
 
         return () => {
             clearInterval(interval);
@@ -138,7 +153,7 @@ export const useTypist = <TElement extends HTMLElement>(
             setDisplayedSentence("");
         }
 
-        const interval = setInterval(() => {
+        const interval: number = setInterval(() => {
             setDisplayedSentence((oldSentence) => {
                 const oldLength = oldSentence.length;
 
@@ -150,7 +165,13 @@ export const useTypist = <TElement extends HTMLElement>(
 
                 return oldSentence.slice(0, oldLength - 1);
             });
-        }, deleteSpeed);
+        }, deleteSpeed) as any;
+
+        intervalsRef.current[1] = interval;
+
+        return () => {
+            clearInterval(interval);
+        };
     }, [deleteSpeed, mode, paused, sentence]);
 
     useEffect(() => {
@@ -229,12 +250,6 @@ export const useTypist = <TElement extends HTMLElement>(
     useUpdateEffect(() => {
         onChange?.(typistState);
     }, [onChange, typistState]);
-
-    const reset = useCallback(() => {
-        setIndex(0);
-        setDisplayedSentence("");
-        setMode("starting");
-    }, []);
 
     return [typistState, { reset }];
 };

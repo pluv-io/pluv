@@ -7,8 +7,7 @@ const Root = tw.section`
     flex
     flex-col
     items-center
-    pt-24
-    pb-28
+    py-24
 `;
 
 const Title = tw(PageContainer)`
@@ -26,8 +25,8 @@ const Info = tw(PageContainer)`
 	flex
 	flex-col
 	items-center
-	[max-width: 32rem]
     mt-4
+    max-w-[32rem]
 	text-lg
 	text-center
     text-slate-300
@@ -40,7 +39,7 @@ const CodeDemoContainer = tw(PageContainer)`
     mt-12
 `;
 
-const StyledHomeCodeDemo = tw(HomeCodeDemo)`
+const StyledCodeDemo = tw(HomeCodeDemo)`
     w-full
 `;
 
@@ -61,7 +60,7 @@ export const HomeBoxesDemoSection: FC<HomeBoxesDemoSectionProps> = ({
                 allow you to focus on your end-user experience.
             </Info>
             <CodeDemoContainer>
-                <StyledHomeCodeDemo />
+                <StyledCodeDemo />
             </CodeDemoContainer>
         </Root>
     );
