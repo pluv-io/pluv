@@ -123,7 +123,7 @@ export const useTypist = <TElement extends HTMLElement>(
         if (!sentence) return;
         if (mode !== "typing") return;
 
-        const interval = setInterval(() => {
+        const interval: number = setInterval(() => {
             setDisplayedSentence((oldSentence) => {
                 const oldLength = oldSentence.length;
 
@@ -135,7 +135,7 @@ export const useTypist = <TElement extends HTMLElement>(
 
                 return `${oldSentence}${sentence.charAt(oldLength)}`;
             });
-        }, typingSpeed);
+        }, typingSpeed) as any;
 
         intervalsRef.current[0] = interval;
 
@@ -153,7 +153,7 @@ export const useTypist = <TElement extends HTMLElement>(
             setDisplayedSentence("");
         }
 
-        const interval = setInterval(() => {
+        const interval: number = setInterval(() => {
             setDisplayedSentence((oldSentence) => {
                 const oldLength = oldSentence.length;
 
@@ -165,7 +165,7 @@ export const useTypist = <TElement extends HTMLElement>(
 
                 return oldSentence.slice(0, oldLength - 1);
             });
-        }, deleteSpeed);
+        }, deleteSpeed) as any;
 
         intervalsRef.current[1] = interval;
 
