@@ -38,4 +38,4 @@ dist
 dist-ssr
 .cache
 
-public/tailwind.css
+**/public/tailwind.css
