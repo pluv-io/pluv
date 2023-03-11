@@ -22,14 +22,23 @@ export interface ChessBoardProps {
     className?: string;
     customPiece?: FC<CustomPieceProps>;
     history: readonly string[];
+    id?: string;
     onMove?: (event: ChessBoardMoveEvent) => void;
     onSquareSelect?: (square: Square) => void;
     style?: CSSProperties;
 }
 
-export const ChessBoard = forwardRef<{}, ChessBoardProps>(
+export const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     (
-        { className, customPiece, history = [], onMove, onSquareSelect, style },
+        {
+            className,
+            customPiece,
+            history = [],
+            id,
+            onMove,
+            onSquareSelect,
+            style,
+        },
         ref
     ) => {
         const sounds = useChessSounds();
@@ -102,10 +111,10 @@ export const ChessBoard = forwardRef<{}, ChessBoardProps>(
         );
 
         return (
-            <div className={className} style={style}>
+            <div id={id} className={className} style={style}>
                 <ChessBoardContext.Provider value={{ customPiece }}>
                     <Chessboard
-                        customBoardStyle={{ width: "100%", borderRadius: 4 }}
+                        customBoardStyle={{ width: "100%" }}
                         customDarkSquareStyle={{
                             backgroundColor: theme`colors.slate.600`,
                         }}
@@ -113,6 +122,7 @@ export const ChessBoard = forwardRef<{}, ChessBoardProps>(
                             backgroundColor: theme`colors.slate.400`,
                         }}
                         customPieces={customPieces}
+                        id={`${id}_board`}
                         isDraggablePiece={() => !!onMove}
                         onPieceDragBegin={(_, square) => {
                             onSquareSelect?.(square);
