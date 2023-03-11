@@ -65,6 +65,7 @@ export const HomeTypeSafetyDemo: FC<HomeTypeSafetyDemoProps> = ({
             CLIENT_NEW_MESSAGE_TEXT,
             CLIENT_SEND_MESSAGE_INPUT_TEXT,
         ],
+        typingDelay: ms("1.75s"),
         typingSpeed: ms("0.1s"),
     });
 

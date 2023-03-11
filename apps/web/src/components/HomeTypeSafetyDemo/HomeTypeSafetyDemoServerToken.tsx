@@ -23,8 +23,6 @@ export const HomeTypeSafetyDemoServerToken: FC<
 
     const padded = text.startsWith(" ");
 
-    console.log(tokenProps, lineNo);
-
     if (tokenProps.key === 6 && lineNo === 13) {
         return (
             <CodeTooltip

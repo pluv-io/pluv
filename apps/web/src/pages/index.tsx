@@ -3,6 +3,7 @@ import {
     HomeFeaturesSection,
     HomeHero,
     HomeIntroSection,
+    HomeTypeSafetyDemoSection,
 } from "../components";
 import type { NextPage } from "next";
 import { PluvRoomProvider } from "../../pluv-io";
@@ -17,6 +18,7 @@ export const Page: NextPage = () => {
             <HomeIntroSection />
             <HomeFeaturesSection />
             <HomeBoxesDemoSection />
+            <HomeTypeSafetyDemoSection />
         </PluvRoomProvider>
     );
 };

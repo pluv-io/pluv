@@ -8,8 +8,7 @@ const Root = tw.section`
     flex
     flex-col
     items-center
-    pt-24
-    pb-28
+    py-24
 `;
 
 const Features = tw(PageContainer)`
