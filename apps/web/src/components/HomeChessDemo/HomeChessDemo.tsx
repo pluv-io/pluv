@@ -1,4 +1,8 @@
-import { ChessBoard, ChessMoveHistory } from "@pluv-internal/react-chess";
+import {
+    ChessBoard,
+    ChessMoveHistory,
+    LoadingChessBoard,
+} from "@pluv-internal/react-chess";
 import { y } from "@pluv/react";
 import { CSSProperties, FC, useMemo } from "react";
 import tw, { styled } from "twin.macro";
@@ -71,17 +75,22 @@ export const HomeChessDemo: FC<HomeChessDemoProps> = ({ className, style }) => {
         [demo]
     );
 
-    if (!moveHistory) return null;
-
     return (
         <Root className={className} style={style}>
-            <Board
-                history={moveHistory}
-                id="home-chess"
-                onMove={({ game }) => {
-                    sharedType?.set("chessHistory", y.array(game.history()));
-                }}
-            />
+            {moveHistory ? (
+                <Board
+                    history={moveHistory}
+                    id="home-chess"
+                    onMove={({ game }) => {
+                        sharedType?.set(
+                            "chessHistory",
+                            y.array(game.history())
+                        );
+                    }}
+                />
+            ) : (
+                <Board as={LoadingChessBoard} />
+            )}
             <MoveHistory history={moveHistory ?? []} />
         </Root>
     );
