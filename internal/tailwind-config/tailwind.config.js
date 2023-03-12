@@ -11,6 +11,7 @@ module.exports = {
 			mono: ["Inconsolata", ...defaultTheme.fontFamily.mono],
 		},
 		keyframes: {
+			...defaultTheme.keyframes,
 			blink: {
 				"0%": { opacity: 1 },
 				"50%": { opacity: 0 },
