@@ -69,7 +69,7 @@ export const parameters = {
 
 import * as WebNextImage from "../../web/node_modules/next/image";
 
-const overwriteNextImage = (nextImage: any) => {
+const overwriteNextImage = (nextImage) => {
 	const OriginalNextImage = nextImage.default;
 
 	Object.defineProperty(nextImage, "default", {
@@ -88,11 +88,11 @@ const overwriteNextImage = (nextImage: any) => {
 overwriteNextImage(WebNextImage);
 
 export const decorators = [
-	(Nested) => (
+	(Story) => (
 		<>
 			<GlobalStyles />
 			<LaserWaveTheme />
-			<Nested />
+			<Story />
 		</>
 	)
 ];
