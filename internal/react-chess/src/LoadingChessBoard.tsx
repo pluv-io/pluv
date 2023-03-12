@@ -11,9 +11,7 @@ const Root = tw.div`
 `;
 
 const Cell = styled.div`
-    ${tw`
-        bg-slate-600
-    `}
+    ${tw`bg-slate-600`}
 `;
 
 const RowNo = styled.span`
@@ -56,9 +54,7 @@ const Row = styled.div`
     }
 
     &:last-child > ${Cell}:nth-child(odd) > ${ColNo} {
-        ${tw`
-            text-slate-400
-        `}
+        ${tw`text-slate-400`}
     }
 `;
 
