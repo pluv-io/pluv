@@ -16,3 +16,5 @@ export type { HomeTypeSafetyDemoSectionProps } from "./HomeTypeSafetyDemoSection
 export { HomeTypeSafetyDemoSection } from "./HomeTypeSafetyDemoSection";
 export type { SiteWideAppBarProps } from "./SiteWideAppBar";
 export { SiteWideAppBar } from "./SiteWideAppBar";
+export type { SiteWideFooterProps } from "./SiteWideFooter";
+export { SiteWideFooter } from "./SiteWideFooter";

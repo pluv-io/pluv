@@ -1,6 +1,6 @@
 import {
-    AppBar,
     Button,
+    Footer,
     LogoIcon,
     NextLink,
 } from "@pluv-internal/react-components";
@@ -8,7 +8,7 @@ import { GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
 import { CSSProperties, memo } from "react";
 import tw, { styled } from "twin.macro";
 
-const Root = tw(AppBar)`
+const Root = tw(Footer)`
     flex
     flex-row
     items-stretch
@@ -66,12 +66,21 @@ const LinksContainer = tw.div`
     gap-2
 `;
 
-export interface SiteWideAppBarProps {
+const ExternalLink = tw(NextLink)`
+    flex
+    flex-row
+    items-center
+    justify-center
+    gap-2
+    w-32
+`;
+
+export interface SiteWideFooterProps {
     className?: string;
     style?: CSSProperties;
 }
 
-export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
+export const SiteWideFooter = memo<SiteWideFooterProps>((props) => {
     const { className, style } = props;
 
     return (
@@ -83,28 +92,28 @@ export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
                 </Logo>
                 <LinksContainer>
                     <Button
-                        as={NextLink}
+                        as={ExternalLink}
                         href="https://github.com/pluv-io/pluv"
                         outlined
                         rel="noreferrer noopener"
-                        square
                         target="_blank"
                         title="GitHub"
                         aria-label="GitHub"
                     >
                         <GitHubIcon height={24} width={24} />
+                        <span>GitHub</span>
                     </Button>
                     <Button
-                        as={NextLink}
+                        as={ExternalLink}
                         href="https://www.npmjs.com/package/@pluv/io"
                         outlined
                         rel="noreferrer noopener"
-                        square
                         target="_blank"
-                        title="npm"
-                        aria-label="npm"
+                        title="Npm"
+                        aria-label="Npm"
                     >
                         <NpmIcon height={24} width={24} />
+                        <span>npm</span>
                     </Button>
                 </LinksContainer>
             </Content>
@@ -112,4 +121,4 @@ export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
     );
 });
 
-SiteWideAppBar.displayName = "SiteWideAppBar";
+SiteWideFooter.displayName = "SiteWideFooter";
