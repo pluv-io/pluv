@@ -1,5 +1,14 @@
 # @pluv/react
 
+## 0.5.1
+
+### Patch Changes
+
+- f6c0e65: bumped dependencies
+- Updated dependencies [f6c0e65]
+  - @pluv/client@0.5.1
+  - @pluv/types@0.1.3
+
 ## 0.5.0
 
 ### Minor Changes

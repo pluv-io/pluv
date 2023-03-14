@@ -1,5 +1,15 @@
 # @pluv/persistance-redis
 
+## 0.1.6
+
+### Patch Changes
+
+- 9c30e96: bumped dependencies
+- f6c0e65: bumped dependencies
+- Updated dependencies [f6c0e65]
+  - @pluv/io@0.2.5
+  - @pluv/types@0.1.3
+
 ## 0.1.5
 
 ### Patch Changes
