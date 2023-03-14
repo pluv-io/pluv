@@ -1,0 +1,1 @@
+export { filterValidProps } from "./filterValidProps";

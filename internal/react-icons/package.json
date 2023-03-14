@@ -1,0 +1,36 @@
+{
+	"name": "@pluv-internal/react-icons",
+	"version": "0.0.0",
+	"private": true,
+	"main": "./src/index.tsx",
+	"types": "./src/index.tsx",
+	"scripts": {
+		"build": "pnpm run script -- scripts/generate-svg-components && pnpm lint",
+		"lint": "eslint src/**/*.ts* --fix",
+		"script": "dotenv -- ts-node -P tsconfig.script.json -T"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {
+		"@types/react": "18.0.28",
+		"react": "18.2.0"
+	},
+	"devDependencies": {
+		"@pluv-internal/typings": "workspace:^",
+		"@pluv/tsconfig": "workspace:^",
+		"@svgr/core": "^6.5.1",
+		"@svgr/plugin-prettier": "^6.5.1",
+		"@svgr/plugin-svgo": "^6.5.1",
+		"@types/common-tags": "^1.8.1",
+		"@types/fs-extra": "^11.0.1",
+		"@types/glob": "^8.1.0",
+		"common-tags": "^1.8.2",
+		"dotenv-cli": "^7.1.0",
+		"eslint-config-pluv": "workspace:^",
+		"fs-extra": "^11.1.0",
+		"glob": "^9.2.1",
+		"ts-node": "^10.9.1",
+		"typescript": "^4.9.5"
+	}
+}

@@ -8,7 +8,7 @@ import type { ComponentType } from "react";
 declare module "twin.macro" {
     // The styled and css imports
     export const styled: typeof styledImport;
-    const css: typeof cssImport;
+    export const css: typeof cssImport;
 
     type TwComponentWrapper = <T extends ComponentType<any>>(
         component: T

@@ -12,6 +12,7 @@
 			"@pluv-internal/react-code": ["../../internal/react-code/src"],
 			"@pluv-internal/react-components": ["../../internal/react-components/src"],
 			"@pluv-internal/react-hooks": ["../../internal/react-hooks/src"],
+			"@pluv-internal/react-icons": ["../../internal/react-icons/src"],
 			"@pluv-internal/typings": ["../../internal/typings"],
 			"@pluv/authorize": ["../../packages/authorize/dist"],
 			"@pluv/client": ["../../packages/client/dist"],

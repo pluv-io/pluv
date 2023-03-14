@@ -11,6 +11,7 @@
 		"access": "public"
 	},
 	"dependencies": {
+		"@emotion/is-prop-valid": "^1.2.0",
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@types/ms": "^0.7.31",
 		"@types/react": "18.0.28",

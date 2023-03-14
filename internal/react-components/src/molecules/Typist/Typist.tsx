@@ -1,6 +1,5 @@
 import type { UseTypistParams } from "@pluv-internal/react-hooks";
 import { useTypist } from "@pluv-internal/react-hooks";
-import ms from "ms";
 import type { CSSProperties, FC, ReactNode } from "react";
 import { useRef } from "react";
 import { TypistCursor } from "./TypistCursor";
