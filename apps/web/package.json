@@ -26,7 +26,7 @@
         "@seznam/compose-react-refs": "^1.0.6",
         "@types/common-tags": "^1.8.1",
         "@types/ms": "^0.7.31",
-        "@types/node": "^18.15.0",
+        "@types/node": "^18.15.2",
         "@types/react": "18.0.28",
         "@types/styled-components": "^5.1.26",
         "@types/ws": "^8.5.4",
@@ -39,7 +39,7 @@
         "react-dom": "18.2.0",
         "styled-components": "^5.3.8",
         "twin.macro": "^3.1.0",
-        "yjs": "^13.5.49",
+        "yjs": "^13.5.50",
         "zod": "^3.21.4"
     },
     "devDependencies": {
