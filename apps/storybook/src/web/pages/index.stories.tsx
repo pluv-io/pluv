@@ -1,7 +1,8 @@
-import type { Meta, Story } from "@storybook/react";
-import { Page } from "@pluv-apps/web/src/pages";
+import { SiteWideLayout } from "@pluv-apps/web/components";
 import { MockedRoomProvider } from "@pluv-apps/web/pluv-io";
+import { Page } from "@pluv-apps/web/src/pages";
 import { y } from "@pluv/react";
+import type { Meta, Story } from "@storybook/react";
 
 export default {
     title: "web/pages",
@@ -19,7 +20,9 @@ export default {
                 })}
                 room="story-pages"
             >
-                <Nested />
+                <SiteWideLayout>
+                    <Nested />
+                </SiteWideLayout>
             </MockedRoomProvider>
         ),
     ],
