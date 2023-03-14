@@ -2,6 +2,8 @@ export type { AppBarProps } from "./AppBar";
 export { AppBar } from "./AppBar";
 export type { ButtonProps } from "./Button";
 export { Button } from "./Button";
+export type { FooterProps } from "./Footer";
+export { Footer } from "./Footer";
 export type { LogoIconProps } from "./LogoIcon";
 export { LogoIcon } from "./LogoIcon";
 export type { NextLinkProps } from "./NextLink";

@@ -15,6 +15,7 @@ export const AppBar = styled.div`
         shadow-lg
         shadow-indigo-800
         border-b
+        border-solid
         border-indigo-700/60
         bg-zinc-800
     `}
