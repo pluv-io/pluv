@@ -29,8 +29,8 @@ export interface ChessBoardProps {
 }
 
 export const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
-    (
-        {
+    (props, ref) => {
+        const {
             className,
             customPiece,
             history = [],
@@ -38,9 +38,8 @@ export const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
             onMove,
             onSquareSelect,
             style,
-        },
-        ref
-    ) => {
+        } = props;
+
         const sounds = useChessSounds();
 
         const clone = useCallback((game: Chess) => {

@@ -22,6 +22,7 @@ packages:
   - "internal/react-code"
   - "internal/react-components"
   - "internal/react-hooks"
+  - "internal/react-icons"
   - "internal/tailwind-config"
   - "internal/typings"
 

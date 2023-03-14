@@ -1,5 +1,3 @@
-import { clsx } from "clsx";
-import { CSSProperties, FC } from "react";
 import { keyframes } from "styled-components";
 import tw, { styled } from "twin.macro";
 

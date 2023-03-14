@@ -1,10 +1,19 @@
-import { createGlobalStyle } from "styled-components";
-import tw, { GlobalStyles as BaseStyles } from "twin.macro";
+import { createGlobalStyle, CSSObject } from "styled-components";
+import tw, { globalStyles } from "twin.macro";
+
+const baseStyles = Object.fromEntries(
+    Object.entries(globalStyles).filter(
+        ([prop]) =>
+            prop !== "button, [type='button'], [type='reset'], [type='submit']"
+    )
+) as CSSObject;
 
 const CustomStyles = createGlobalStyle`
     ${tw`
         antialiased
     `}
+
+    ${baseStyles}
 
     html {
         color-scheme: dark;
@@ -17,9 +26,4 @@ const CustomStyles = createGlobalStyle`
     }
 `;
 
-export const GlobalStyles = () => (
-    <>
-        <BaseStyles />
-        <CustomStyles />
-    </>
-);
+export const GlobalStyles = () => <CustomStyles />;

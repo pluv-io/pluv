@@ -14,3 +14,5 @@ export type { HomeTypeSafetyDemoProps } from "./HomeTypeSafetyDemo";
 export { HomeTypeSafetyDemo } from "./HomeTypeSafetyDemo";
 export type { HomeTypeSafetyDemoSectionProps } from "./HomeTypeSafetyDemoSection";
 export { HomeTypeSafetyDemoSection } from "./HomeTypeSafetyDemoSection";
+export type { SiteWideAppBarProps } from "./SiteWideAppBar";
+export { SiteWideAppBar } from "./SiteWideAppBar";
