@@ -20,7 +20,7 @@ export default {
                 })}
                 room="story-pages"
             >
-                <SiteWideLayout>
+                <SiteWideLayout style={{ padding: 0 }}>
                     <Nested />
                 </SiteWideLayout>
             </MockedRoomProvider>

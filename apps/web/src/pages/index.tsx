@@ -23,4 +23,6 @@ export const Page: NextPage = () => {
     );
 };
 
+(Page as any).style = { padding: 0 };
+
 export default Page;

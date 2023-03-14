@@ -11,7 +11,7 @@ export const CustomApp: NextPage<AppProps> = ({ Component, pageProps }) => {
         <>
             <GlobalStyles />
             <LaserWaveTheme />
-            <SiteWideLayout>
+            <SiteWideLayout style={{ ...(Component as any).style }}>
                 <Component {...pageProps} />
             </SiteWideLayout>
         </>
