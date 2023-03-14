@@ -18,3 +18,5 @@ export type { SiteWideAppBarProps } from "./SiteWideAppBar";
 export { SiteWideAppBar } from "./SiteWideAppBar";
 export type { SiteWideFooterProps } from "./SiteWideFooter";
 export { SiteWideFooter } from "./SiteWideFooter";
+export type { SiteWideLayoutProps } from "./SiteWideLayout";
+export { SiteWideLayout } from "./SiteWideLayout";

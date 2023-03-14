@@ -12,4 +12,5 @@ export const Footer = tw.footer`
     border-t
     border-solid
     border-indigo-700/60
+    bg-zinc-800
 `;
