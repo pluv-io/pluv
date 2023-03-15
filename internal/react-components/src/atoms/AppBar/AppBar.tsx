@@ -12,11 +12,11 @@ export const AppBar = styled.div`
         min-h-[4rem]
         py-2
         px-4
-        shadow-lg
-        shadow-indigo-800
         border-b
         border-solid
         border-indigo-700/60
+        shadow-lg
+        shadow-indigo-800
         bg-zinc-800
     `}
     z-index: ${getZIndex("app-bar")};
