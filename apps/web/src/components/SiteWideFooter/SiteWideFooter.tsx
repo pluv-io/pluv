@@ -96,11 +96,12 @@ export const SiteWideFooter = memo<SiteWideFooterProps>((props) => {
                         href="https://github.com/pluv-io/pluv"
                         outlined
                         rel="noreferrer noopener"
+                        size="small"
                         target="_blank"
                         title="GitHub"
                         aria-label="GitHub"
                     >
-                        <GitHubIcon height={24} width={24} />
+                        <GitHubIcon height={16} width={16} />
                         <span>GitHub</span>
                     </Button>
                     <Button
@@ -108,11 +109,12 @@ export const SiteWideFooter = memo<SiteWideFooterProps>((props) => {
                         href="https://www.npmjs.com/package/@pluv/io"
                         outlined
                         rel="noreferrer noopener"
+                        size="small"
                         target="_blank"
-                        title="Npm"
-                        aria-label="Npm"
+                        title="npm"
+                        aria-label="npm"
                     >
-                        <NpmIcon height={24} width={24} />
+                        <NpmIcon height={16} width={16} />
                         <span>npm</span>
                     </Button>
                 </LinksContainer>

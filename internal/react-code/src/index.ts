@@ -8,5 +8,9 @@ export { CodeTooltipIcon } from "./CodeTooltipIcon";
 export { LaserWaveTheme } from "./LaserWaveTheme";
 export type { MultiPrismCodeProps, MultiPrismCodeTab } from "./MultiPrismCode";
 export { MultiPrismCode } from "./MultiPrismCode";
-export type { PrismCodeProps, PrismCodeTokenProps } from "./PrismCode";
+export type {
+    Language,
+    PrismCodeProps,
+    PrismCodeTokenProps,
+} from "./PrismCode";
 export { PrismCode } from "./PrismCode";
