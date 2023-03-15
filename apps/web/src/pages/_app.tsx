@@ -1,6 +1,6 @@
 import { MdxProvider } from "@pluv-internal/mdx-components";
 import { LaserWaveTheme } from "@pluv-internal/react-code";
-import { GlobalStyles } from "@pluv-internal/react-components";
+import { GlobalStyles, LazyMotion } from "@pluv-internal/react-components";
 import { NextPage } from "next";
 import type { AppProps } from "next/app";
 import { SiteWideLayout } from "../components";
@@ -12,11 +12,13 @@ export const CustomApp: NextPage<AppProps> = ({ Component, pageProps }) => {
         <>
             <GlobalStyles />
             <LaserWaveTheme />
-            <SiteWideLayout style={{ ...(Component as any).style }}>
-                <MdxProvider>
-                    <Component {...pageProps} />
-                </MdxProvider>
-            </SiteWideLayout>
+            <LazyMotion>
+                <SiteWideLayout style={{ ...(Component as any).style }}>
+                    <MdxProvider>
+                        <Component {...pageProps} />
+                    </MdxProvider>
+                </SiteWideLayout>
+            </LazyMotion>
         </>
     );
 };
