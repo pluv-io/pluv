@@ -1,3 +1,4 @@
+import { MdxProvider } from "@pluv-internal/mdx-components";
 import { LaserWaveTheme } from "@pluv-internal/react-code";
 import { GlobalStyles } from "@pluv-internal/react-components";
 import { NextPage } from "next";
@@ -12,7 +13,9 @@ export const CustomApp: NextPage<AppProps> = ({ Component, pageProps }) => {
             <GlobalStyles />
             <LaserWaveTheme />
             <SiteWideLayout style={{ ...(Component as any).style }}>
-                <Component {...pageProps} />
+                <MdxProvider>
+                    <Component {...pageProps} />
+                </MdxProvider>
             </SiteWideLayout>
         </>
     );

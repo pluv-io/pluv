@@ -1,9 +1,42 @@
 import { clsx } from "clsx";
-import type { Language } from "prism-react-renderer";
 import Highlight, { defaultProps } from "prism-react-renderer";
 import { CSSProperties, FC } from "react";
 import { forwardRef, memo } from "react";
 import tw, { styled } from "twin.macro";
+
+export type Language =
+    | "markup"
+    | "bash"
+    | "clike"
+    | "c"
+    | "cpp"
+    | "css"
+    | "javascript"
+    | "jsx"
+    | "coffeescript"
+    | "actionscript"
+    | "css-extr"
+    | "diff"
+    | "git"
+    | "go"
+    | "graphql"
+    | "handlebars"
+    | "json"
+    | "less"
+    | "makefile"
+    | "markdown"
+    | "objectivec"
+    | "ocaml"
+    | "python"
+    | "reason"
+    | "sass"
+    | "scss"
+    | "sql"
+    | "stylus"
+    | "tsx"
+    | "typescript"
+    | "wasm"
+    | "yaml";
 
 const Pre = styled.pre`
     ${tw`
