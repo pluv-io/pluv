@@ -3,12 +3,12 @@ import tw from "twin.macro";
 
 export type SideBarProps = InferComponentProps<typeof SideBar>;
 
-export const SideBar = tw.div`
+export const SideBar = tw.aside`
     sticky
     inset-y-0
     left-0
     w-72
-    h-screen
+    max-h-screen
     border-r
     border-solid
     border-indigo-700/60

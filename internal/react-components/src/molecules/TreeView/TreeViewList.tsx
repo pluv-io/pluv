@@ -1,6 +1,6 @@
 import { ChevronDownIcon } from "@pluv-internal/react-icons";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
-import { AnimatePresence, m } from "framer-motion";
+import { m } from "framer-motion";
 import { FC, ReactNode, useState } from "react";
 import { CSSProperties } from "styled-components";
 import tw, { styled } from "twin.macro";
@@ -53,15 +53,30 @@ const ItemContent = styled.button`
     `}
 `;
 
-const ChevronButton = tw.button`
-    flex
-    items-center
-    justify-center
-    w-8
-    rounded
-    hover:bg-slate-300/10
-    focus:bg-slate-300/20
-    active:bg-slate-300/40
+const StyledIcon = tw(ChevronDownIcon)`
+    -rotate-90
+    transition
+    duration-150
+    ease-linear
+`;
+
+const ChevronButton = styled.button`
+    ${tw`
+        flex
+        items-center
+        justify-center
+        w-8
+        rounded
+        hover:bg-slate-300/10
+        focus:bg-slate-300/20
+        active:bg-slate-300/40
+    `}
+
+    &[aria-expanded="true"] > ${StyledIcon} {
+        ${tw`
+            rotate-0
+        `}
+    }
 `;
 
 const Content = tw(m.ul)`
@@ -108,21 +123,20 @@ export const TreeViewList: FC<TreeViewListProps> = ({
                 }}
             >
                 {child}
-                <ChevronButton>
-                    <ChevronDownIcon height={24} width={24} />
+                <ChevronButton aria-expanded={open}>
+                    <StyledIcon height={24} width={24} />
                 </ChevronButton>
             </Item>
-            <AnimatePresence>
-                {open && (
-                    <Content
-                        initial={{ height: 0 }}
-                        animate={{ height: "auto" }}
-                        exit={{ height: 0 }}
-                    >
-                        {content}
-                    </Content>
-                )}
-            </AnimatePresence>
+            <Content
+                animate={open ? "open" : "default"}
+                initial={false}
+                variants={{
+                    default: { height: 0 },
+                    open: { height: "auto" },
+                }}
+            >
+                {content}
+            </Content>
         </Root>
     );
 };
