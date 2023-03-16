@@ -2,11 +2,11 @@
 > This package is currently in preview and may have breaking changes between versions. Please wait for a `v1.0.0` stable release before using this in production.
 
 <h1 align="center">
-  <br>
-  <img src="https://github.com/pluv-io/pluv/blob/master/assets/pluv-icon-192x192.png?raw=true" alt="Pluv.IO" width="180" style="border-radius:16px">
-  <br>
+  <br />
+  <img src="https://github.com/pluv-io/pluv/blob/master/assets/pluv-icon-192x192.png?raw=true" alt="Pluv.IO" width="180" style="border-radius:16px" />
+  <br />
   Pluv.IO (preview)
-  <br>
+  <br />
 </h1>
 
 <h3 align="center">Multi-platform, E2E type-safe realtime packages</h3>
@@ -26,7 +26,7 @@
 </p>
 
 <p align="center">
-  <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript">
+  <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript" />
   <a href="https://openbase.com/js/@pluv/io?utm_source=embedded&amp;utm_medium=badge&amp;utm_campaign=rate-badge">
     <img src="https://badges.openbase.com/js/featured/@pluv/io.svg?token=FdWfpo90mCUb7InAjDG0KeXM/uH+KdHK3us2pNRgWf0=" alt="Featured on Openbase" />
   </a>
