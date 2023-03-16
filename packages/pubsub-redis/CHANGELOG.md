@@ -1,5 +1,16 @@
 # @pluv/pubsub-redis
 
+## 0.1.6
+
+### Patch Changes
+
+- 9c30e96: bumped dependencies
+- 161e00e: fixed links to other pluv packages in readmes
+- f6c0e65: bumped dependencies
+- Updated dependencies [161e00e]
+- Updated dependencies [f6c0e65]
+  - @pluv/io@0.2.5
+
 ## 0.1.5
 
 ### Patch Changes
