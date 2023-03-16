@@ -1,5 +1,16 @@
 # @pluv/client
 
+## 0.5.1
+
+### Patch Changes
+
+- 161e00e: fixed links to other pluv packages in readmes
+- f6c0e65: bumped dependencies
+- Updated dependencies [161e00e]
+- Updated dependencies [f6c0e65]
+  - @pluv/crdt-yjs@0.3.1
+  - @pluv/types@0.1.3
+
 ## 0.5.0
 
 ### Minor Changes

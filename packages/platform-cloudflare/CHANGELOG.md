@@ -1,5 +1,15 @@
 # @pluv/platform-cloudflare
 
+## 0.1.6
+
+### Patch Changes
+
+- 161e00e: fixed links to other pluv packages in readmes
+- Updated dependencies [161e00e]
+- Updated dependencies [f6c0e65]
+  - @pluv/io@0.2.5
+  - @pluv/types@0.1.3
+
 ## 0.1.5
 
 ### Patch Changes
