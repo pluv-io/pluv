@@ -2,9 +2,28 @@ import type { InferComponentProps } from "@pluv-internal/typings";
 import * as React from "react";
 import type { Ref, SVGProps } from "react";
 
-export type SvgIconComponent = typeof ChevronDownIcon;
+export type SvgIconComponent = typeof BarsIcon;
 export type SvgIconComponentProps = InferComponentProps<SvgIconComponent>;
 
+export const BarsIcon = React.memo(
+    React.forwardRef(
+        (props: SVGProps<SVGSVGElement>, ref: Ref<SVGSVGElement>) => (
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                width={16}
+                height={16}
+                ref={ref}
+                {...props}
+            >
+                <path
+                    fill="currentColor"
+                    d="M1 2.75A.75.75 0 0 1 1.75 2h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 2.75Zm0 5A.75.75 0 0 1 1.75 7h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 7.75ZM1.75 12h12.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1 0-1.5Z"
+                />
+            </svg>
+        )
+    )
+);
 export const ChevronDownIcon = React.memo(
     React.forwardRef(
         (props: SVGProps<SVGSVGElement>, ref: Ref<SVGSVGElement>) => (
@@ -83,6 +102,26 @@ export const NpmIcon = React.memo(
                 <path
                     fill="currentColor"
                     d="M0,0v512h512V0H0z M416.1,416.1h-64.2v-256H256v256H95.9V95.9h320.2V416.1z"
+                />
+            </svg>
+        )
+    )
+);
+export const XIcon = React.memo(
+    React.forwardRef(
+        (props: SVGProps<SVGSVGElement>, ref: Ref<SVGSVGElement>) => (
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                width={24}
+                height={24}
+                ref={ref}
+                {...props}
+            >
+                <path
+                    fill="currentColor"
+                    fillRule="evenodd"
+                    d="M5.72 5.72a.75.75 0 011.06 0L12 10.94l5.22-5.22a.75.75 0 111.06 1.06L13.06 12l5.22 5.22a.75.75 0 11-1.06 1.06L12 13.06l-5.22 5.22a.75.75 0 01-1.06-1.06L10.94 12 5.72 6.78a.75.75 0 010-1.06z"
                 />
             </svg>
         )

@@ -24,6 +24,8 @@ const Item = tw(NextLink)`
     hover:bg-slate-300/10
     focus:bg-slate-300/20
     active:bg-slate-300/40
+    [[data-selected="true"]]:text-sky-500
+    [[data-selected="true"]]:bg-slate-300/20
 `;
 
 export interface TreeViewLinkProps {
@@ -31,6 +33,7 @@ export interface TreeViewLinkProps {
     className?: string;
     href: string;
     rel?: string;
+    selected?: boolean;
     style?: CSSProperties;
     target?: string;
 }
@@ -40,13 +43,19 @@ export const TreeViewLink: FC<TreeViewLinkProps> = ({
     className,
     href,
     rel,
+    selected = false,
     style,
     target,
 }) => {
     return (
         <Root className={className} style={style}>
             <NavigationMenu.Link asChild>
-                <Item href={href} rel={rel} target={target}>
+                <Item
+                    href={href}
+                    rel={rel}
+                    target={target}
+                    data-selected={selected}
+                >
                     {children}
                 </Item>
             </NavigationMenu.Link>

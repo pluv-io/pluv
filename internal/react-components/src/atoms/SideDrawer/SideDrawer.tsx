@@ -4,6 +4,7 @@ import { keyframes } from "styled-components";
 import tw, { styled } from "twin.macro";
 import { getZIndex } from "../../z-indices";
 import { VisuallyHidden } from "../VisuallyHidden";
+import { SideDrawerClose } from "./SideDrawerClose";
 import { SideDrawerRoot } from "./SideDrawerRoot";
 import { SideDrawerTrigger } from "./SideDrawerTrigger";
 
@@ -53,7 +54,8 @@ const Root = styled(Dialog.Content)`
         fixed
         inset-y-0
         left-0
-        w-72
+        w-80
+        max-w-[90vw]
         border-r
         border-solid
         border-indigo-700/60
@@ -107,6 +109,7 @@ const _SideDrawer: FC<SideDrawerProps> = ({
 _SideDrawer.displayName = "SideDrawer";
 
 export const SideDrawer = Object.assign(_SideDrawer, {
+    Close: SideDrawerClose,
     Root: SideDrawerRoot,
     Trigger: SideDrawerTrigger,
 });

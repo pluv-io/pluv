@@ -1,5 +1,7 @@
 export type { DocsLayoutProps } from "./DocsLayout";
 export { DocsLayout } from "./DocsLayout";
+export type { DocsTreeViewNavigationProps } from "./DocsTreeViewNavigation";
+export { DocsTreeViewNavigation } from "./DocsTreeViewNavigation";
 export type { HomeBoxesDemoSectionProps } from "./HomeBoxesDemoSection";
 export { HomeBoxesDemoSection } from "./HomeBoxesDemoSection";
 export type { HomeChessDemoProps } from "./HomeChessDemo";
@@ -16,6 +18,8 @@ export type { HomeTypeSafetyDemoProps } from "./HomeTypeSafetyDemo";
 export { HomeTypeSafetyDemo } from "./HomeTypeSafetyDemo";
 export type { HomeTypeSafetyDemoSectionProps } from "./HomeTypeSafetyDemoSection";
 export { HomeTypeSafetyDemoSection } from "./HomeTypeSafetyDemoSection";
+export type { MobileDocsSideDrawerProps } from "./MobileDocsSideDrawer";
+export { MobileDocsSideDrawer } from "./MobileDocsSideDrawer";
 export type { SiteWideAppBarProps } from "./SiteWideAppBar";
 export { SiteWideAppBar } from "./SiteWideAppBar";
 export type { SiteWideFooterProps } from "./SiteWideFooter";

@@ -3,10 +3,12 @@ import {
     Button,
     LogoIcon,
     NextLink,
+    SideDrawer,
 } from "@pluv-internal/react-components";
-import { GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
+import { BarsIcon, GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
 import { CSSProperties, memo } from "react";
 import tw, { styled } from "twin.macro";
+import { MobileDocsSideDrawer } from "../MobileDocsSideDrawer";
 
 const Root = tw(AppBar)`
     flex
@@ -44,6 +46,20 @@ const Content = styled.div`
     }
 `;
 
+const LeftContainer = tw.div`
+    flex
+    items-center
+`;
+
+const MobileDrawerButton = tw(Button)`
+    mr-3
+    lg:hidden!
+`;
+
+const StyledMobileDocsSideDrawer = tw(MobileDocsSideDrawer)`
+    lg:hidden
+`;
+
 const Logo = tw(NextLink)`
     flex
     items-center
@@ -59,7 +75,7 @@ const PluvName = tw.span`
     font-bold
 `;
 
-const LinksContainer = tw.div`
+const RightContainer = tw.div`
     flex
     flex-row
     items-center
@@ -77,11 +93,21 @@ export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
     return (
         <Root className={className} style={style}>
             <Content>
-                <Logo href="/">
-                    <StyledLogoIcon height={40} width={40} />
-                    <PluvName>pluv.io</PluvName>
-                </Logo>
-                <LinksContainer>
+                <LeftContainer>
+                    <SideDrawer.Root>
+                        <SideDrawer.Trigger>
+                            <MobileDrawerButton outlined square type="button">
+                                <BarsIcon height={24} width={24} />
+                            </MobileDrawerButton>
+                        </SideDrawer.Trigger>
+                        <StyledMobileDocsSideDrawer />
+                    </SideDrawer.Root>
+                    <Logo href="/">
+                        <StyledLogoIcon height={36} width={36} />
+                        <PluvName>pluv.io</PluvName>
+                    </Logo>
+                </LeftContainer>
+                <RightContainer>
                     <Button
                         as={NextLink}
                         href="https://github.com/pluv-io/pluv"
@@ -106,7 +132,7 @@ export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
                     >
                         <NpmIcon height={24} width={24} />
                     </Button>
-                </LinksContainer>
+                </RightContainer>
             </Content>
         </Root>
     );

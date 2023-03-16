@@ -23,12 +23,15 @@ const Item = tw.button`
     hover:bg-slate-300/10
     focus:bg-slate-300/20
     active:bg-slate-300/40
+    [[data-selected="true"]]:text-sky-500
+    [[data-selected="true"]]:bg-slate-300/20
 `;
 
 export interface TreeViewButtonProps {
     children?: ReactNode;
     className?: string;
     onClick?: () => void;
+    selected?: boolean;
     style?: CSSProperties;
 }
 
@@ -36,11 +39,14 @@ export const TreeViewButton: FC<TreeViewButtonProps> = ({
     children,
     className,
     onClick,
+    selected = false,
     style,
 }) => {
     return (
         <Root className={className} style={style}>
-            <Item onClick={onClick}>{children}</Item>
+            <Item onClick={onClick} data-selected={selected}>
+                {children}
+            </Item>
         </Root>
     );
 };

@@ -8,7 +8,7 @@ export default {
 } as Meta;
 
 const Template: Story<SideBarProps> = (args) => {
-    return <SideBar {...args} />;
+    return <SideBar {...args} style={{ height: "100vh" }} />;
 };
 Template.args = {};
 Template.parameters = {
