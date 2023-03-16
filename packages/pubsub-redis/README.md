@@ -2,11 +2,11 @@
 > This package is currently in preview and may have breaking changes between versions. Please wait for a `v1.0.0` stable release before using this in production.
 
 <h1 align="center">
-  <br>
-  <img src="https://github.com/pluv-io/pluv/blob/master/assets/pluv-icon-192x192.png?raw=true" alt="Pluv.IO" width="180" style="border-radius:16px">
-  <br>
+  <br />
+  <img src="https://github.com/pluv-io/pluv/blob/master/assets/pluv-icon-192x192.png?raw=true" alt="Pluv.IO" width="180" style="border-radius:16px" />
+  <br />
   Pluv.IO (preview)
-  <br>
+  <br />
 </h1>
 
 <h3 align="center">Multi-platform, E2E type-safe realtime packages</h3>
@@ -19,7 +19,7 @@
   <a href="https://github.com/pluv-io/pluv/blob/master/LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/pluv-io/pluv" alt="License MIT" />
   </a>
-  <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript">
+  <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript" />
   <a href="https://commitizen.github.io/cz-cli/">
     <img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly" />
   </a>
@@ -32,7 +32,7 @@
 
 ## `@pluv/pubsub-redis`
 
-> PubSub for [@pluv/io](https://img.shields.io/npm/v/@pluv/io) rooms on distributed systems. Available for [Node.js](https://nodejs.org/) only.
+> PubSub for [@pluv/io](https://www.npmjs.com/package/@pluv/io) rooms on distributed systems. Available for [Node.js](https://nodejs.org/) only.
 
 ## Installation
 
