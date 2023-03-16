@@ -131,6 +131,7 @@ importers:
       '@babel/core': ^7.21.0
       '@dnd-kit/core': ^6.0.8
       '@mdx-js/loader': ^2.3.0
+      '@mdx-js/react': ^2.3.0
       '@next/bundle-analyzer': ^13.2.4
       '@next/mdx': ^13.2.4
       '@pluv-apps/server-cloudflare': workspace:^
@@ -211,8 +212,9 @@ importers:
     devDependencies:
       '@babel/core': 7.21.0
       '@mdx-js/loader': 2.3.0
+      '@mdx-js/react': 2.3.0_react@18.2.0
       '@next/bundle-analyzer': 13.2.4
-      '@next/mdx': 13.2.4_@mdx-js+loader@2.3.0
+      '@next/mdx': 13.2.4_msthxdjvrhmdkfpqqalumiidgq
       '@pluv-internal/tailwind-config': link:../../internal/tailwind-config
       '@pluv-internal/typings': link:../../internal/typings
       '@pluv/tsconfig': link:../../packages/tsconfig
@@ -3651,7 +3653,7 @@ packages:
       glob: 7.1.7
     dev: false
 
-  /@next/mdx/13.2.4_@mdx-js+loader@2.3.0:
+  /@next/mdx/13.2.4_msthxdjvrhmdkfpqqalumiidgq:
     resolution: {integrity: sha512-inl7u+OEa4Ok3uL052oa8EDw1bUkMGLVKzFfVBIgG19s29gxQvcWYzxa5t438J31ljApjh6Y5k4AD6yLaCAlQw==}
     peerDependencies:
       '@mdx-js/loader': '>=0.15.0'
@@ -3663,6 +3665,7 @@ packages:
         optional: true
     dependencies:
       '@mdx-js/loader': 2.3.0
+      '@mdx-js/react': 2.3.0_react@18.2.0
       source-map: 0.7.4
     dev: true
 

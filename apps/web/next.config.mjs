@@ -1,10 +1,18 @@
-import bundleAnalyzer from "@next/bundle-analyzer";
-import withMdx from "@next/mdx";
+import bundleAnalyzerPlugin from "@next/bundle-analyzer";
+import mdxPlugin from "@next/mdx";
 import withPlugins from "next-compose-plugins";
 import remarkGfm from "remark-gfm";
 
-const withBundleAnalyzer = bundleAnalyzer({
+const withBundleAnalyzer = bundleAnalyzerPlugin({
 	enabled: process.env.BUNDLE_ANALYZE === "true",
+});
+
+const withMdx = mdxPlugin({
+	extension: /\.mdx?$/,
+	options: {
+		remarkPlugins:  [[remarkGfm, {}]],
+		rehypePlugins: [],
+	},
 });
 
 /** @type {import("next").NextConfig} */
@@ -30,11 +38,5 @@ const config = {
 
 export default withPlugins([
 	withBundleAnalyzer,
-	[withMdx, {
-		extension: /\.mdx?$/,
-		options: {
-			remarkPlugins:  [[remarkGfm, {}]],
-			rehypePlugins: [],
-		},
-	}],
+	withMdx,
 ], config);
