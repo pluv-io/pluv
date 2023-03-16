@@ -61,9 +61,10 @@ const PluvName = tw.span`
 
 const LinksContainer = tw.div`
     flex
-    flex-row
+    flex-col
     items-center
     gap-2
+    sm:flex-row
 `;
 
 const ExternalLink = tw(NextLink)`

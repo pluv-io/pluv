@@ -12,14 +12,6 @@ const Root = tw(NavigationMenu.Item)`
     items-stretch
 `;
 
-const Item = tw.div`
-    relative
-    flex
-    flex-row
-    items-stretch
-    h-8
-`;
-
 const ItemContent = styled.button`
     ${tw`
         grow
@@ -51,6 +43,21 @@ const ItemContent = styled.button`
         focus:before:bg-slate-300/20
         active:before:bg-slate-300/40
     `}
+`;
+
+const Item = styled.div`
+    ${tw`
+        relative
+        flex
+        flex-row
+        items-stretch
+        h-8
+        [[data-selected="true"]]:text-sky-500
+    `}
+
+    &[data-selected="true"] ${ItemContent} {
+        ${tw`before:bg-slate-300/20`}
+    }
 `;
 
 const StyledIcon = tw(ChevronDownIcon)`
@@ -93,6 +100,7 @@ export interface TreeViewListProps {
     className?: string;
     content?: ReactNode;
     href?: string;
+    selected?: boolean;
     style?: CSSProperties;
 }
 
@@ -101,6 +109,7 @@ export const TreeViewList: FC<TreeViewListProps> = ({
     className,
     content,
     href,
+    selected = false,
     style,
 }) => {
     const [open, setOpen] = useState<boolean>(false);
@@ -121,9 +130,10 @@ export const TreeViewList: FC<TreeViewListProps> = ({
                 onClick={() => {
                     setOpen((oldOpen) => !oldOpen);
                 }}
+                data-selected={selected}
             >
                 {child}
-                <ChevronButton aria-expanded={open}>
+                <ChevronButton aria-expanded={open || selected}>
                     <StyledIcon height={24} width={24} />
                 </ChevronButton>
             </Item>
