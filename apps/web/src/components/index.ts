@@ -1,3 +1,5 @@
+export type { DocsLayoutProps } from "./DocsLayout";
+export { DocsLayout } from "./DocsLayout";
 export type { HomeBoxesDemoSectionProps } from "./HomeBoxesDemoSection";
 export { HomeBoxesDemoSection } from "./HomeBoxesDemoSection";
 export type { HomeChessDemoProps } from "./HomeChessDemo";

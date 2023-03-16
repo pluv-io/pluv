@@ -13,7 +13,7 @@ export const CustomApp: NextPage<AppProps> = ({ Component, pageProps }) => {
             <GlobalStyles />
             <LaserWaveTheme />
             <LazyMotion>
-                <SiteWideLayout style={{ ...(Component as any).style }}>
+                <SiteWideLayout>
                     <MdxProvider>
                         <Component {...pageProps} />
                     </MdxProvider>

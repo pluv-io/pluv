@@ -3,6 +3,7 @@ import { CSSProperties, memo, ReactNode } from "react";
 import tw from "twin.macro";
 import { SiteWideAppBar } from "../SiteWideAppBar";
 import { SiteWideFooter } from "../SiteWideFooter";
+import { SiteWideLayoutContent } from "./SiteWideLayoutContent";
 
 const Root = tw.div`
     flex
@@ -12,10 +13,6 @@ const Root = tw.div`
 
 const StyledSiteWideAppBar = tw(SiteWideAppBar)`
     shrink-0
-`;
-
-const Content = tw(PageContainer)`
-    grow
 `;
 
 const StyledSiteWideFooter = tw(SiteWideFooter)`
@@ -28,18 +25,20 @@ export interface SiteWideLayoutProps {
     style?: CSSProperties;
 }
 
-export const SiteWideLayout = memo<SiteWideLayoutProps>((props) => {
+const _SiteWideLayout = memo<SiteWideLayoutProps>((props) => {
     const { children, className, style } = props;
 
     return (
-        <Root>
+        <Root className={className} style={style}>
             <StyledSiteWideAppBar />
-            <Content className={className} style={style}>
-                {children}
-            </Content>
+            {children}
             <StyledSiteWideFooter />
         </Root>
     );
 });
 
-SiteWideLayout.displayName = "SiteWideLayout";
+_SiteWideLayout.displayName = "SiteWideLayout";
+
+export const SiteWideLayout = Object.assign(_SiteWideLayout, {
+    Content: SiteWideLayoutContent,
+});

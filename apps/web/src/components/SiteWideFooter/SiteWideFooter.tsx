@@ -72,7 +72,7 @@ const ExternalLink = tw(NextLink)`
     items-center
     justify-center
     gap-2
-    w-32
+    w-28
 `;
 
 export interface SiteWideFooterProps {

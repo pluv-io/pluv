@@ -8,7 +8,11 @@ export default {
 } as Meta;
 
 const Template: Story<SiteWideLayoutProps> = (args) => {
-    return <SiteWideLayout {...args} />;
+    return (
+        <SiteWideLayout {...args}>
+            <SiteWideLayout.Content>{args.children}</SiteWideLayout.Content>
+        </SiteWideLayout>
+    );
 };
 Template.args = {};
 Template.parameters = {

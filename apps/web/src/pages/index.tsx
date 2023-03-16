@@ -1,28 +1,34 @@
+import type { NextPage } from "next";
+import tw from "twin.macro";
+import { PluvRoomProvider } from "../../pluv-io";
 import {
     HomeBoxesDemoSection,
     HomeFeaturesSection,
     HomeHero,
     HomeIntroSection,
     HomeTypeSafetyDemoSection,
+    SiteWideLayout,
 } from "../components";
-import type { NextPage } from "next";
-import { PluvRoomProvider } from "../../pluv-io";
+
+const Root = tw(SiteWideLayout.Content)`
+    p-0
+`;
 
 export const Page: NextPage = () => {
     return (
-        <PluvRoomProvider
-            initialPresence={{ demoChessSquare: null }}
-            room="home-page"
-        >
-            <HomeHero className="w-full" />
-            <HomeIntroSection />
-            <HomeFeaturesSection />
-            <HomeBoxesDemoSection />
-            <HomeTypeSafetyDemoSection />
-        </PluvRoomProvider>
+        <Root>
+            <PluvRoomProvider
+                initialPresence={{ demoChessSquare: null }}
+                room="home-page"
+            >
+                <HomeHero className="w-full" />
+                <HomeIntroSection />
+                <HomeFeaturesSection />
+                <HomeBoxesDemoSection />
+                <HomeTypeSafetyDemoSection />
+            </PluvRoomProvider>
+        </Root>
     );
 };
-
-(Page as any).style = { padding: 0 };
 
 export default Page;
