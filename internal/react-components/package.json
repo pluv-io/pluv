@@ -13,7 +13,9 @@
 	"dependencies": {
 		"@emotion/is-prop-valid": "^1.2.0",
 		"@pluv-internal/react-hooks": "workspace:^",
+		"@pluv-internal/react-icons": "workspace:^",
 		"@radix-ui/react-dialog": "^1.0.3",
+		"@radix-ui/react-navigation-menu": "^1.1.2",
 		"@radix-ui/react-visually-hidden": "^1.0.2",
 		"@types/ms": "^0.7.31",
 		"@types/react": "18.0.28",
