@@ -2,6 +2,7 @@ import "twin.macro";
 import type styledImport, {
     css as cssImport,
     StyledComponent,
+    ThemedStyledFunction,
 } from "styled-components";
 import type { ComponentType } from "react";
 
@@ -12,7 +13,7 @@ declare module "twin.macro" {
 
     type TwComponentWrapper = <T extends ComponentType<any>>(
         component: T
-    ) => TemplateFn<StyledComponent<T, any, {}, never>>;
+    ) => ThemedStyledFunction<T, any, {}, never>;
 
     const tw: TwFn & TwComponentWrapper & typeof styledImport;
 

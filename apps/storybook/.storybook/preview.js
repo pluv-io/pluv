@@ -1,5 +1,5 @@
 import { LaserWaveTheme } from "@pluv-internal/react-code";
-import { GlobalStyles } from "@pluv-internal/react-components";
+import { GlobalStyles, LazyMotion } from "@pluv-internal/react-components";
 import React from "react";
 
 const DEFAULT_VIEWPORT_HEIGHT = "1200px";
@@ -92,7 +92,9 @@ export const decorators = [
 		<>
 			<GlobalStyles />
 			<LaserWaveTheme />
-			<Story />
+			<LazyMotion>
+				<Story />
+			</LazyMotion>
 		</>
 	)
 ];
