@@ -1,5 +1,6 @@
 import { LaserWaveTheme } from "@pluv-internal/react-code";
 import { GlobalStyles, LazyMotion } from "@pluv-internal/react-components";
+import { withThemeFromJSXProvider } from "@storybook/addon-styling";
 import React from "react";
 
 const DEFAULT_VIEWPORT_HEIGHT = "1200px";
@@ -88,9 +89,9 @@ const overwriteNextImage = (nextImage) => {
 overwriteNextImage(WebNextImage);
 
 export const decorators = [
+	withThemeFromJSXProvider({ GlobalStyles }),
 	(Story) => (
 		<>
-			<GlobalStyles />
 			<LaserWaveTheme />
 			<LazyMotion>
 				<Story />

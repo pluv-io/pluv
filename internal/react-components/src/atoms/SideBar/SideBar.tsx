@@ -7,7 +7,7 @@ export const SideBar = tw.aside`
     sticky
     inset-y-0
     left-0
-    w-80
+    w-72
     max-w-[90vw]
     max-h-screen
     border-r

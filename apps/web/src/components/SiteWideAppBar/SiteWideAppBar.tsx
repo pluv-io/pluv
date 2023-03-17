@@ -53,7 +53,7 @@ const LeftContainer = tw.div`
 
 const MobileDrawerButton = tw(Button)`
     mr-3
-    lg:hidden!
+    lg:hidden
 `;
 
 const StyledMobileDocsSideDrawer = tw(MobileDocsSideDrawer)`
