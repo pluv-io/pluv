@@ -15,11 +15,7 @@ export default {
 } as Meta;
 
 const Template: Story<DocsLayoutProps> = (args) => {
-    return (
-        <DocsLayout {...args}>
-            <DocsLayout.Content>{args.children}</DocsLayout.Content>
-        </DocsLayout>
-    );
+    return <DocsLayout {...args} />;
 };
 Template.args = {};
 Template.parameters = {
