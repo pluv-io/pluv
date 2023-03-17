@@ -1,4 +1,3 @@
-import { PageContainer } from "@pluv-internal/react-components";
 import { CSSProperties, memo, ReactNode } from "react";
 import tw from "twin.macro";
 import { SiteWideAppBar } from "../SiteWideAppBar";

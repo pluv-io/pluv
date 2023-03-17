@@ -18,13 +18,10 @@ const Root = tw.ul`
 `;
 
 const Item = tw.li`
-    flex
-    flex-row
-    items-center
-    h-7
     pl-2
     border-l-2
     border-indigo-300/20
+    text-sm
     hover:border-indigo-400/40
     [&[data-active="true"]]:border-indigo-500/60
     [&[data-active="true"]]:bg-indigo-600/20
@@ -35,6 +32,10 @@ const Item = tw.li`
 
 const Link = tw(Anchor)`
     grow
+    flex
+    flex-row
+    items-center
+    h-7
 `;
 
 interface HeadingItem {

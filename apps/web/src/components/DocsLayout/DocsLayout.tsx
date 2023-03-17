@@ -1,4 +1,4 @@
-import { PageContainer, SideBar } from "@pluv-internal/react-components";
+import { SideBar, TableOfContents } from "@pluv-internal/react-components";
 import { CSSProperties, memo, ReactNode } from "react";
 import tw from "twin.macro";
 import { DocsTreeViewNavigation } from "../DocsTreeViewNavigation";
@@ -20,13 +20,18 @@ const StyledSideBar = tw(SideBar)`
     lg:flex
 `;
 
-const Container = tw(PageContainer)`
+const Container = tw.div`
     grow
     flex
-    flex-col
-    items-center
-    py-6
-    sm:py-10
+    flex-row
+    items-start
+    justify-center
+    gap-8
+    px-2
+    py-8
+    md:gap-12
+    sm:px-8
+    sm:py-12
 `;
 
 const Content = tw.main`
@@ -35,6 +40,16 @@ const Content = tw.main`
     items-start
     w-full
     lg:max-w-[80%]
+`;
+
+const StyledToC = tw(TableOfContents)`
+    shrink-0
+    hidden
+    sticky
+    top-24
+    w-40
+    sm:top-28
+    lg:flex
 `;
 
 export interface DocsLayoutProps {
@@ -52,7 +67,8 @@ export const DocsLayout = memo<DocsLayoutProps>((props) => {
                 <DocsTreeViewNavigation />
             </StyledSideBar>
             <Container>
-                <Content>{children}</Content>
+                <Content id="docs-content">{children}</Content>
+                <StyledToC selector="#docs-content" />
             </Container>
         </Root>
     );
