@@ -20,11 +20,21 @@ const StyledSideBar = tw(SideBar)`
     lg:flex
 `;
 
-const Content = tw(PageContainer)`
+const Container = tw(PageContainer)`
     grow
     flex
     flex-col
+    items-center
+    py-6
+    sm:py-10
+`;
+
+const Content = tw.main`
+    flex
+    flex-col
     items-start
+    w-full
+    lg:max-w-[80%]
 `;
 
 export interface DocsLayoutProps {
@@ -41,7 +51,9 @@ export const DocsLayout = memo<DocsLayoutProps>((props) => {
             <StyledSideBar>
                 <DocsTreeViewNavigation />
             </StyledSideBar>
-            <Content>{children}</Content>
+            <Container>
+                <Content>{children}</Content>
+            </Container>
         </Root>
     );
 });
