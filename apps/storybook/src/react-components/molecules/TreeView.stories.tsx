@@ -1,8 +1,7 @@
-import { action } from "@storybook/addon-actions";
-import type { Meta, Story } from "@storybook/react";
 import type { TreeViewProps } from "@pluv-internal/react-components";
 import { TreeView } from "@pluv-internal/react-components";
-import { TreeViewList } from "@pluv-internal/react-components/src/molecules/TreeView/TreeViewList";
+import { action } from "@storybook/addon-actions";
+import type { Meta, Story } from "@storybook/react";
 
 export default {
     title: "react-components/molecules/TreeView",
@@ -15,7 +14,7 @@ const Template: Story<TreeViewProps> = (args) => {
             <TreeView.Link href="https://google.com">Google</TreeView.Link>
             <TreeView.Link href="https://reddit.com">Reddit</TreeView.Link>
             <TreeView.Button onClick={action("onClick")}>Login</TreeView.Button>
-            <TreeViewList
+            <TreeView.List
                 href="https://google.com"
                 content={
                     <>
@@ -26,8 +25,8 @@ const Template: Story<TreeViewProps> = (args) => {
                 }
             >
                 Primary Colors
-            </TreeViewList>
-            <TreeViewList
+            </TreeView.List>
+            <TreeView.List
                 content={
                     <>
                         <TreeView.Button>Purple</TreeView.Button>
@@ -37,7 +36,7 @@ const Template: Story<TreeViewProps> = (args) => {
                 }
             >
                 Secondary Colors
-            </TreeViewList>
+            </TreeView.List>
         </TreeView>
     );
 };

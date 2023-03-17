@@ -15,6 +15,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@faker-js/faker": "^7.6.0",
         "@pluv-apps/web": "workspace:^",
         "@pluv-internal/react-chess": "workspace:^",
         "@pluv-internal/react-code": "workspace:^",

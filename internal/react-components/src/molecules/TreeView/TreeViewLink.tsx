@@ -24,8 +24,8 @@ const Item = tw(NextLink)`
     hover:bg-slate-300/10
     focus:bg-slate-300/20
     active:bg-slate-300/40
-    [[data-selected="true"]]:text-sky-500
-    [[data-selected="true"]]:bg-slate-300/20
+    [&[data-selected="true"]]:text-sky-500
+    [&[data-selected="true"]]:bg-slate-300/20
 `;
 
 export interface TreeViewLinkProps {

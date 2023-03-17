@@ -1,3 +1,5 @@
+export type { AnchorProps } from "./Anchor";
+export { Anchor } from "./Anchor";
 export type { AppBarProps } from "./AppBar";
 export { AppBar } from "./AppBar";
 export type { ButtonProps } from "./Button";
