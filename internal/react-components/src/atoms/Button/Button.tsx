@@ -1,4 +1,5 @@
-import { InferComponentProps } from "@pluv-internal/typings";
+import isPropValid from "@emotion/is-prop-valid";
+import type { InferComponentProps } from "@pluv-internal/typings";
 import tw, { styled } from "twin.macro";
 
 export type ButtonVariant =
@@ -10,7 +11,11 @@ export type ButtonVariant =
 
 export type ButtonProps = InferComponentProps<typeof Button>;
 
-export const Button = styled.button<{
+export const Button = styled.button.withConfig({
+    shouldForwardProp(prop, defaultValidatorFn) {
+        return defaultValidatorFn(prop) && isPropValid(prop);
+    },
+})<{
     bounce?: boolean;
     outlined?: boolean;
     size?: "small" | "medium" | "large";
