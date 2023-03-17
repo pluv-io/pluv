@@ -52,7 +52,7 @@ const Item = styled.div`
         flex-row
         items-stretch
         h-8
-        [[data-selected="true"]]:text-sky-500
+        [&[data-selected="true"]]:text-sky-500
     `}
 
     &[data-selected="true"] ${ItemContent} {

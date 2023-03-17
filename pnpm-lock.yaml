@@ -42,6 +42,7 @@ importers:
   apps/storybook:
     specifiers:
       '@babel/core': ^7.21.0
+      '@faker-js/faker': ^7.6.0
       '@pluv-apps/web': workspace:^
       '@pluv-internal/react-chess': workspace:^
       '@pluv-internal/react-code': workspace:^
@@ -83,6 +84,7 @@ importers:
       twin.macro: ^3.1.0
       typescript: ^4.9.5
     dependencies:
+      '@faker-js/faker': 7.6.0
       '@pluv-apps/web': link:../web
       '@pluv-internal/react-chess': link:../../internal/react-chess
       '@pluv-internal/react-code': link:../../internal/react-code
@@ -3216,6 +3218,11 @@ packages:
   /@eslint/js/8.36.0:
     resolution: {integrity: sha512-lxJ9R5ygVm8ZWgYdUweoq5ownDlJ4upvoWmO4eLxBYHdMo+vZ/Rx0EN6MbKWDJOSUGrqJy2Gt+Dyv/VKml0fjg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  /@faker-js/faker/7.6.0:
+    resolution: {integrity: sha512-XK6BTq1NDMo9Xqw/YkYyGjSsg44fbNwYRx7QK2CuoQgyy+f1rrTDHoExVM5PsyXCtfl2vs2vVJ0MN0yN6LppRw==}
+    engines: {node: '>=14.0.0', npm: '>=6.0.0'}
+    dev: false
 
   /@gar/promisify/1.1.3:
     resolution: {integrity: sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==}
