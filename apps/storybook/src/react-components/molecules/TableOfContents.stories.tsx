@@ -88,6 +88,7 @@ const Template: Story<TableOfContentsProps> = (args) => {
                 ))}
             </div>
             <TableOfContents
+                {...args}
                 selector="#table-of-contents-content"
                 style={{
                     position: "sticky",

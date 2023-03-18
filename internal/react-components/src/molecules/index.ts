@@ -1,3 +1,5 @@
+export type { BreadcrumbsItemProps, BreadcrumbsProps } from "./Breadcrumbs";
+export { Breadcrumbs } from "./Breadcrumbs";
 export type { TableOfContentsProps } from "./TableOfContents";
 export { TableOfContents } from "./TableOfContents";
 export type {
