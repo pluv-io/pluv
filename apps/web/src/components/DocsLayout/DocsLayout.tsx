@@ -1,4 +1,5 @@
 import { SideBar, TableOfContents } from "@pluv-internal/react-components";
+import { useRouter } from "next/router";
 import { CSSProperties, memo, ReactNode } from "react";
 import tw from "twin.macro";
 import { DocsTreeViewNavigation } from "../DocsTreeViewNavigation";
@@ -61,6 +62,8 @@ export interface DocsLayoutProps {
 export const DocsLayout = memo<DocsLayoutProps>((props) => {
     const { children, className, style } = props;
 
+    const router = useRouter();
+
     return (
         <Root as="div" className={className} style={style}>
             <StyledSideBar>
@@ -68,7 +71,7 @@ export const DocsLayout = memo<DocsLayoutProps>((props) => {
             </StyledSideBar>
             <Container>
                 <Content id="docs-content">{children}</Content>
-                <StyledToC selector="#docs-content" />
+                <StyledToC key={router.asPath} selector="#docs-content" />
             </Container>
         </Root>
     );
