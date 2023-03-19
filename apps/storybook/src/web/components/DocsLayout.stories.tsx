@@ -81,6 +81,9 @@ const Template: Story<DocsLayoutProps> = (args) => {
 Template.args = {};
 Template.parameters = {
     layout: "fullscreen",
+    nextRouter: {
+        pathname: "/docs/io/basic-setup",
+    },
 };
 
 export const Standard = Template.bind({});

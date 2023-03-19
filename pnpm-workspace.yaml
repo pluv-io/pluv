@@ -26,5 +26,6 @@ packages:
   - "internal/react-icons"
   - "internal/tailwind-config"
   - "internal/typings"
+  - "internal/utils"
 
   - "tests/e2e"

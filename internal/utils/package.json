@@ -1,0 +1,22 @@
+{
+	"name": "@pluv-internal/utils",
+	"version": "0.0.0",
+	"private": true,
+	"main": "./src/index.ts",
+	"types": "./src/index.ts",
+	"scripts": {
+		"lint": "eslint src/**/*.ts* --fix"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {
+		"@pluv/types": "workspace:^"
+	},
+	"devDependencies": {
+        "@pluv-internal/typings": "workspace:^",
+		"@pluv/tsconfig": "workspace:^",
+		"eslint-config-pluv": "workspace:^",
+		"typescript": "^5.0.2"
+	}
+}

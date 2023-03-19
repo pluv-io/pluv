@@ -152,6 +152,7 @@ importers:
       '@pluv-internal/react-icons': workspace:^
       '@pluv-internal/tailwind-config': workspace:^
       '@pluv-internal/typings': workspace:^
+      '@pluv-internal/utils': workspace:^
       '@pluv/io': workspace:^
       '@pluv/platform-node': workspace:^
       '@pluv/react': workspace:^
@@ -234,6 +235,7 @@ importers:
       '@next/mdx': 13.2.4_msthxdjvrhmdkfpqqalumiidgq
       '@pluv-internal/tailwind-config': link:../../internal/tailwind-config
       '@pluv-internal/typings': link:../../internal/typings
+      '@pluv-internal/utils': link:../../internal/utils
       '@pluv/tsconfig': link:../../packages/tsconfig
       '@types/fs-extra': 11.0.1
       '@types/glob': 8.1.0
@@ -590,6 +592,21 @@ importers:
       postcss: 8.4.21
       react-is: 18.2.0
       tailwindcss: 3.2.7_postcss@8.4.21
+      typescript: 5.0.2
+
+  internal/utils:
+    specifiers:
+      '@pluv-internal/typings': workspace:^
+      '@pluv/tsconfig': workspace:^
+      '@pluv/types': workspace:^
+      eslint-config-pluv: workspace:^
+      typescript: ^5.0.2
+    dependencies:
+      '@pluv/types': link:../../packages/types
+    devDependencies:
+      '@pluv-internal/typings': link:../typings
+      '@pluv/tsconfig': link:../../packages/tsconfig
+      eslint-config-pluv: link:../../packages/eslint-config-pluv
       typescript: 5.0.2
 
   packages/cli:
