@@ -23,7 +23,7 @@
     "eslint-plugin-react": "7.32.2",
     "eslint-plugin-tailwindcss": "^3.10.1",
     "prettier": "^2.8.4",
-    "prettier-plugin-tailwindcss": "^0.2.4"
+    "prettier-plugin-tailwindcss": "^0.2.5"
   },
   "devDependencies": {
     "tailwindcss": "^3.2.7",
