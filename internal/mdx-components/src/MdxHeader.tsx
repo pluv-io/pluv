@@ -12,6 +12,11 @@ const Root = tw(NextLink)`
     mb-[0.8em]
 `;
 
+const StyledLinkIcon = tw(LinkIcon)`
+    [height: 0.625em]
+    [width: 0.625em]
+`;
+
 export interface MdxHeaderProps {
     children?: ReactNode;
     className?: string;
@@ -37,7 +42,7 @@ export const MdxHeader: FC<MdxHeaderProps> = ({
     return (
         <Root id={hash} className={className} href={`#${hash}`} style={style}>
             <HeaderType>{children}</HeaderType>
-            <LinkIcon height="0.5em" width="0.5em" />
+            <StyledLinkIcon height={24} width={24} />
         </Root>
     );
 };
