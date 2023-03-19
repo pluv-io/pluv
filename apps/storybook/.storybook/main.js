@@ -16,6 +16,7 @@ module.exports = {
                 },
             },
         },
+        "storybook-addon-next-router"
     ],
     core: {
         builder: "@storybook/builder-webpack5"
