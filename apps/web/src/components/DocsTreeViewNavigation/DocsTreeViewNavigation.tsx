@@ -17,7 +17,10 @@ export const DocsTreeViewNavigation = memo<DocsTreeViewNavigationProps>(
 
         return (
             <TreeView className={className} style={style}>
-                <DocsTreeViewNavigationRoutes routes={routes} />
+                <DocsTreeViewNavigationRoutes
+                    baseRoute="/docs"
+                    routes={routes}
+                />
             </TreeView>
         );
     }
