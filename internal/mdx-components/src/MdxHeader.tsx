@@ -40,8 +40,8 @@ export const MdxHeader: FC<MdxHeaderProps> = ({
     }, [content]);
 
     return (
-        <Root id={hash} className={className} href={`#${hash}`} style={style}>
-            <HeaderType>{children}</HeaderType>
+        <Root className={className} href={`#${hash}`} style={style}>
+            <HeaderType id={hash}>{children}</HeaderType>
             <StyledLinkIcon height={24} width={24} />
         </Root>
     );

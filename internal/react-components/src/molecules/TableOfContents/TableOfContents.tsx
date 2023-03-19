@@ -68,7 +68,7 @@ export const TableOfContents = memo<TableOfContentsProps>((props) => {
 
     const getTocItem = useCallback((id: string): Element | null => {
         return (
-            Array.from(document.querySelectorAll(`a[href="#${id}"]`)).at(-1) ??
+            Array.from(document.querySelectorAll(`a[href$="#${id}"]`)).at(-1) ??
             null
         );
     }, []);
@@ -147,8 +147,6 @@ export const TableOfContents = memo<TableOfContentsProps>((props) => {
         (): string | null => items.find((item) => item.active)?.id ?? null,
         [items]
     );
-
-    if (!items.length) return null;
 
     return (
         <Root className={className} style={style}>
