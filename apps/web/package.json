@@ -3,10 +3,12 @@
     "version": "0.0.0",
     "private": true,
     "scripts": {
-        "dev": "dotenv -- next dev",
         "build": "dotenv -- next build",
-        "start": "next start",
-        "lint": "next lint --fix"
+        "build:docs": "pnpm run script -- scripts/generate-docs",
+        "dev": "dotenv -- next dev",
+        "lint": "next lint --fix",
+		"script": "dotenv -- ts-node -P tsconfig.script.json -T",
+        "start": "next start"
     },
     "files": [
         "components.ts",
@@ -54,6 +56,8 @@
         "@pluv-internal/tailwind-config": "workspace:^",
         "@pluv-internal/typings": "workspace:^",
         "@pluv/tsconfig": "workspace:^",
+        "@types/fs-extra": "^11.0.1",
+        "@types/glob": "^8.1.0",
         "autoprefixer": "^10.4.14",
         "babel-loader": "^9.1.2",
         "babel-plugin-macros": "^3.1.0",
@@ -61,11 +65,14 @@
         "dotenv-cli": "^7.1.0",
         "eslint": "8.36.0",
         "eslint-config-pluv": "workspace:^",
+        "fs-extra": "^11.1.0",
+        "glob": "^9.2.1",
         "next-compose-plugins": "^2.2.1",
         "postcss": "^8.4.21",
         "react-is": "^18.2.0",
         "remark-gfm": "^3.0.1",
         "tailwindcss": "3.2.7",
+        "ts-node": "^10.9.1",
         "typescript": "^4.9.5"
     },
     "babelMacros": {
