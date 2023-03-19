@@ -3,11 +3,12 @@
     "version": "0.0.0",
     "private": true,
     "scripts": {
-        "build": "dotenv -- next build",
+        "build": "pnpm run prepare && dotenv -- next build",
         "build:docs": "pnpm run script -- scripts/generate-docs",
-        "dev": "dotenv -- next dev",
+        "dev": "pnpm run prepare && dotenv -- next dev",
         "lint": "next lint --fix",
-		"script": "dotenv -- ts-node -P tsconfig.script.json -T",
+        "prepare": "concurrently \"pnpm:build:docs\"",
+        "script": "dotenv -- ts-node -P tsconfig.script.json -T",
         "start": "next start"
     },
     "files": [
@@ -62,6 +63,7 @@
         "babel-loader": "^9.1.2",
         "babel-plugin-macros": "^3.1.0",
         "babel-plugin-styled-components": "^2.0.7",
+        "concurrently": "^7.6.0",
         "dotenv-cli": "^7.1.0",
         "eslint": "8.36.0",
         "eslint-config-pluv": "workspace:^",
