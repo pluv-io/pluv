@@ -1,3 +1,5 @@
+export type { DocsBreadcrumbsProps } from "./DocsBreadcrumbs";
+export { DocsBreadcrumbs } from "./DocsBreadcrumbs";
 export type { DocsLayoutProps } from "./DocsLayout";
 export { DocsLayout } from "./DocsLayout";
 export type { DocsTreeViewNavigationProps } from "./DocsTreeViewNavigation";

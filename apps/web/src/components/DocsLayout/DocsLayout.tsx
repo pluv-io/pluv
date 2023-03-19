@@ -2,6 +2,7 @@ import { SideBar, TableOfContents } from "@pluv-internal/react-components";
 import { useRouter } from "next/router";
 import { CSSProperties, memo, ReactNode } from "react";
 import tw from "twin.macro";
+import { DocsBreadcrumbs } from "../DocsBreadcrumbs";
 import { DocsTreeViewNavigation } from "../DocsTreeViewNavigation";
 import { SiteWideLayout } from "../SiteWideLayout";
 
@@ -47,6 +48,10 @@ const Content = tw.main`
     lg:max-w-[80%]
 `;
 
+const StyledBreadcrumbs = tw(DocsBreadcrumbs)`
+    mb-8
+`;
+
 const StyledToC = tw(TableOfContents)`
     shrink-0
     hidden
@@ -74,7 +79,10 @@ export const DocsLayout = memo<DocsLayoutProps>((props) => {
                 <DocsTreeViewNavigation />
             </StyledSideBar>
             <Container>
-                <Content id="docs-content">{children}</Content>
+                <Content id="docs-content">
+                    <StyledBreadcrumbs />
+                    {children}
+                </Content>
                 <StyledToC key={router.asPath} selector="#docs-content" />
             </Container>
         </Root>

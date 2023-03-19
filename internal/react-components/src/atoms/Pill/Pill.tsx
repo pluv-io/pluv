@@ -17,4 +17,5 @@ export const Pill = tw.div`
     ease-in
     [&[href]]:cursor-pointer
     [&[href]]:hover:bg-zinc-700
+    [&[data-selected="true"]]:bg-zinc-700
 `;

@@ -24,12 +24,14 @@ const Root = styled(NavigationMenu.Item)`
 const Link = tw(Pill)`
     [font-size: inherit]
     hover:text-sky-500
+    [&[data-selected="true"]]:text-sky-500
 `;
 
 export interface BreadcrumbsItemProps {
     children?: ReactNode;
     className?: string;
     href: string;
+    selected?: boolean;
     style?: CSSProperties;
 }
 
@@ -37,12 +39,13 @@ export const BreadcrumbsItem: FC<BreadcrumbsItemProps> = ({
     children,
     className,
     href,
+    selected = false,
     style,
 }) => {
     return (
         <Root className={className} style={style}>
             <NavigationMenu.Link asChild>
-                <Link as={NextLink} href={href}>
+                <Link as={NextLink} href={href} data-selected={selected}>
                     {children}
                 </Link>
             </NavigationMenu.Link>

@@ -14,14 +14,12 @@ const getFilePaths = (): readonly string[] => {
 };
 
 const normalize = (filePath: string): string => {
-    return filePath
-        .replace(sourcePath, "")
-        .replace(/^\//, "")
-        .replace(/\s+/g, "-");
+    return filePath.replace(sourcePath, "").replace(/^\//, "");
 };
 
 const toRouteSlug = (fileName: string): string => {
     return normalize(fileName)
+        .replace(/\s+/g, "-")
         .replace(/[^a-zA-Z0-9-\.]/g, "")
         .toLowerCase();
 };
@@ -74,7 +72,7 @@ const generateRoutes = (): void => {
         if (!result) return acc;
 
         const [slug, node] = result;
-        const parts = normalize(filePath).split("/");
+        const parts = normalize(filePath).replace(/\s+/g, "-").split("/");
         const name = node.name;
 
         const prefixed = parts.length > 1 ? `@pluv/${name}` : name;
