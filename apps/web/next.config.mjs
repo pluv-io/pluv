@@ -10,6 +10,7 @@ const withBundleAnalyzer = bundleAnalyzerPlugin({
 const withMdx = mdxPlugin({
 	extension: /\.mdx?$/,
 	options: {
+		providerImportSource: "@mdx-js/react",
 		remarkPlugins:  [[remarkGfm, {}]],
 		rehypePlugins: [],
 	},

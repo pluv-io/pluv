@@ -1,15 +1,11 @@
+import { MdxProvider } from "@pluv-internal/mdx-components";
 import { SideBar, TableOfContents } from "@pluv-internal/react-components";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { CSSProperties, memo, ReactNode } from "react";
 import tw from "twin.macro";
 import { DocsBreadcrumbs } from "../DocsBreadcrumbs";
 import { DocsTreeViewNavigation } from "../DocsTreeViewNavigation";
 import { SiteWideLayout } from "../SiteWideLayout";
-
-const MdxProvider = dynamic(() => import("@pluv-internal/mdx-components"), {
-    ssr: false,
-});
 
 const Root = tw(SiteWideLayout.Content)`
     flex
