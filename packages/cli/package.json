@@ -41,13 +41,13 @@
 		"fs-extra": "^11.1.0",
 		"gradient-string": "^2.0.2",
 		"inquirer": "^9.1.5",
-		"ora": "^6.1.2",
+		"ora": "^6.2.0",
 		"type-fest": "^3.6.1"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
-		"tsup": "^6.6.3",
+		"tsup": "^6.7.0",
 		"typescript": "^5.0.2"
 	}
 }
