@@ -74,16 +74,18 @@ const generateRoutes = (): void => {
         if (!result) return acc;
 
         const [slug, node] = result;
-        const [, parts] = filePath.replace(sourcePath, "").split("/");
+        const parts = normalize(filePath).split("/");
+        const name = node.name;
 
-        const prefixed = parts.length > 1 ? `@pluv/${slug}` : slug;
+        const prefixed = parts.length > 1 ? `@pluv/${name}` : name;
 
         return {
             ...acc,
-            [prefixed]: {
+            [slug]: {
                 ...node,
+                name: prefixed,
                 children: {
-                    ...acc[prefixed]?.children,
+                    ...acc[slug]?.children,
                     ...node.children,
                 },
             },
