@@ -12,11 +12,15 @@ const Root = tw(SiteWideLayout.Content)`
 `;
 
 const StyledSideBar = tw(SideBar)`
+    sticky
+    top-16
     shrink-0
     hidden
     flex-col
     items-stretch
+    [height: calc(100vh - 4rem)]
     px-3
+    pt-8
     overflow-y-auto
     lg:flex
 `;

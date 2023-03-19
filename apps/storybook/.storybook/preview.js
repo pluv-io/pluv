@@ -1,6 +1,7 @@
 import { LaserWaveTheme } from "@pluv-internal/react-code";
 import { GlobalStyles, LazyMotion } from "@pluv-internal/react-components";
 import { withThemeFromJSXProvider } from "@storybook/addon-styling";
+import { RouterContext } from "next/dist/shared/lib/router-context";
 import React from "react";
 
 const DEFAULT_VIEWPORT_HEIGHT = "1200px";
@@ -12,6 +13,9 @@ export const parameters = {
 			color: /(background|color)$/i,
 			date: /Date$/,
 		},
+	},
+	nextRouter: {
+		Provider: RouterContext.Provider,
 	},
 	viewport: {
 		viewports: {
