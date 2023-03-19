@@ -28,7 +28,7 @@
 		"@pluv/types": "workspace:^",
 		"chalk": "^4.1.2",
 		"jose": "^4.13.1",
-		"wonka": "^6.2.4"
+		"wonka": "^6.2.5"
 	},
 	"peerDependencies": {
 		"yjs": "^13.0.0"
