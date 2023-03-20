@@ -1,4 +1,5 @@
 import { Breadcrumbs } from "@pluv-internal/react-components";
+import { HomeIcon } from "@pluv-internal/react-icons";
 import { get } from "@pluv-internal/utils";
 import { useRouter } from "next/router";
 import { CSSProperties, memo } from "react";
@@ -21,6 +22,9 @@ export const DocsBreadcrumbs = memo<DocsBreadcrumbsProps>((props) => {
 
     return (
         <Breadcrumbs className={className} style={style}>
+            <Breadcrumbs.Item href="/" title="Home" aria-label="Home">
+                <HomeIcon height={16} width={16} />
+            </Breadcrumbs.Item>
             {slugs.map((slug, i) => {
                 const parts = slugs.slice(0, i + 1);
 
