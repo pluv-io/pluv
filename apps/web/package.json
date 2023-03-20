@@ -5,7 +5,9 @@
     "scripts": {
         "build": "pnpm run prepare && dotenv -- next build",
         "build:docs": "pnpm run script -- scripts/generate-docs",
-        "dev": "pnpm run prepare && dotenv -- next dev",
+        "watch:dev": "dotenv -- next dev",
+        "watch:docs": "nodemon -e mdx -w src/inputs/docs -x \"pnpm run build:docs\"",
+        "dev": "concurrently \"pnpm:watch:*\"",
         "lint": "next lint --fix",
         "prepare": "concurrently \"pnpm:build:docs\"",
         "script": "dotenv -- ts-node -P tsconfig.script.json -T",
@@ -71,6 +73,7 @@
         "fs-extra": "^11.1.0",
         "glob": "^9.3.0",
         "next-compose-plugins": "^2.2.1",
+        "nodemon": "^2.0.21",
         "postcss": "^8.4.21",
         "react-is": "^18.2.0",
         "remark-gfm": "^3.0.1",
