@@ -16,6 +16,14 @@ export type { PageContainerProps } from "./PageContainer";
 export { PageContainer } from "./PageContainer";
 export type { PillProps } from "./Pill";
 export { Pill } from "./Pill";
+export type {
+    SeoDescriptionProps,
+    SeoImageProps,
+    SeoMiscProps,
+    SeoProps,
+    SeoTitleProps,
+} from "./Seo";
+export { Seo } from "./Seo";
 export type { SideBarProps } from "./SideBar";
 export { SideBar } from "./SideBar";
 export type {
