@@ -28,6 +28,7 @@
         "@pluv-internal/react-components": "workspace:^",
         "@pluv-internal/react-hooks": "workspace:^",
         "@pluv-internal/react-icons": "workspace:^",
+        "@pluv-internal/remark-plugins": "workspace:^",
         "@pluv/io": "workspace:^",
         "@pluv/platform-node": "workspace:^",
         "@pluv/react": "workspace:^",

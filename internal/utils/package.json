@@ -10,11 +10,7 @@
 	"publishConfig": {
 		"access": "public"
 	},
-	"dependencies": {
-		"@pluv/types": "workspace:^"
-	},
 	"devDependencies": {
-        "@pluv-internal/typings": "workspace:^",
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
 		"typescript": "^5.0.2"

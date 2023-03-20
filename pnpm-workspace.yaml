@@ -24,6 +24,7 @@ packages:
   - "internal/react-components"
   - "internal/react-hooks"
   - "internal/react-icons"
+  - "internal/remark-plugins"
   - "internal/tailwind-config"
   - "internal/typings"
   - "internal/utils"

@@ -1,0 +1,29 @@
+{
+	"name": "@pluv-internal/remark-plugins",
+	"version": "0.0.0",
+	"private": true,
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"scripts": {
+		"build": "tsup src/index.ts --format esm,cjs --dts",
+		"dev": "tsup src/index.ts --format esm,cjs --watch --dts",
+		"lint": "eslint src/**/*.ts* --fix",
+		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {
+		"@types/unist": "^2.0.6",
+		"acorn": "^8.8.2",
+		"gray-matter": "^4.0.3",
+		"vfile": "^5.3.7"
+	},
+	"devDependencies": {
+		"@pluv/tsconfig": "workspace:^",
+		"eslint-config-pluv": "workspace:^",
+		"tsup": "^6.7.0",
+		"typescript": "^5.0.2"
+	}
+}
