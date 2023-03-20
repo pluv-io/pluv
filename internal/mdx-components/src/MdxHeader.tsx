@@ -4,12 +4,15 @@ import { CSSProperties, FC, ReactNode, useMemo } from "react";
 import tw, { styled } from "twin.macro";
 
 const StyledLinkIcon = tw(LinkIcon)`
+    hidden
+    [height: 0.625em]
+    [width: 0.625em]
+    ml-[0.3em]
     opacity-0
     transition-opacity
     duration-75
     ease-in
-    [height: 0.625em]
-    [width: 0.625em]
+    sm:inline
 `;
 
 const Root = styled(Anchor)`
@@ -18,14 +21,17 @@ const Root = styled(Anchor)`
         flex-row
         flex-nowrap
         items-center
-        gap-[0.3em]
         mb-[0.8em]
         not-first:mt-[0.8em]
     `}
 
-    &:hover > ${StyledLinkIcon} {
+    &:hover ${StyledLinkIcon} {
         ${tw`opacity-100`}
     }
+`;
+
+const Header = tw.header`
+    inline
 `;
 
 export interface MdxHeaderProps {
@@ -52,8 +58,10 @@ export const MdxHeader: FC<MdxHeaderProps> = ({
 
     return (
         <Root className={className} href={`#${hash}`} style={style}>
-            <HeaderType id={hash}>{children}</HeaderType>
-            <StyledLinkIcon height={24} width={24} />
+            <Header as={HeaderType} id={hash}>
+                {children}
+                <StyledLinkIcon height={24} width={24} />
+            </Header>
         </Root>
     );
 };
