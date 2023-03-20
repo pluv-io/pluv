@@ -28,24 +28,34 @@ const Link = tw(Pill)`
 `;
 
 export interface BreadcrumbsItemProps {
+    "aria-label"?: string;
     children?: ReactNode;
     className?: string;
     href: string;
     selected?: boolean;
     style?: CSSProperties;
+    title?: string;
 }
 
 export const BreadcrumbsItem: FC<BreadcrumbsItemProps> = ({
+    "aria-label": ariaLabel,
     children,
     className,
     href,
     selected = false,
     style,
+    title,
 }) => {
     return (
         <Root className={className} style={style}>
             <NavigationMenu.Link asChild>
-                <Link as={NextLink} href={href} data-selected={selected}>
+                <Link
+                    as={NextLink}
+                    href={href}
+                    title={title}
+                    aria-label={ariaLabel}
+                    data-selected={selected}
+                >
                     {children}
                 </Link>
             </NavigationMenu.Link>

@@ -22,7 +22,7 @@ export const DocsBreadcrumbs = memo<DocsBreadcrumbsProps>((props) => {
 
     return (
         <Breadcrumbs className={className} style={style}>
-            <Breadcrumbs.Item href="/">
+            <Breadcrumbs.Item href="/" title="Home" aria-label="Home">
                 <HomeIcon height={16} width={16} />
             </Breadcrumbs.Item>
             {slugs.map((slug, i) => {
