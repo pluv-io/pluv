@@ -1,20 +1,31 @@
-import { NextLink } from "@pluv-internal/react-components";
+import { Anchor } from "@pluv-internal/react-components";
 import { LinkIcon } from "@pluv-internal/react-icons";
 import { CSSProperties, FC, ReactNode, useMemo } from "react";
-import tw from "twin.macro";
-
-const Root = tw(NextLink)`
-    flex
-    flex-row
-    flex-nowrap
-    items-center
-    gap-[0.3em]
-    mb-[0.8em]
-`;
+import tw, { styled } from "twin.macro";
 
 const StyledLinkIcon = tw(LinkIcon)`
+    opacity-0
+    transition-opacity
+    duration-75
+    ease-in
     [height: 0.625em]
     [width: 0.625em]
+`;
+
+const Root = styled(Anchor)`
+    ${tw`
+        flex
+        flex-row
+        flex-nowrap
+        items-center
+        gap-[0.3em]
+        mb-[0.8em]
+        not-first:mt-[0.8em]
+    `}
+
+    &:hover > ${StyledLinkIcon} {
+        ${tw`opacity-100`}
+    }
 `;
 
 export interface MdxHeaderProps {

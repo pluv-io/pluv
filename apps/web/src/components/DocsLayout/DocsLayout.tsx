@@ -44,9 +44,16 @@ const Container = tw.div`
 const Content = tw.main`
     flex
     flex-col
-    items-start
+    items-stretch
     w-full
     lg:max-w-[80%]
+`;
+
+const DocContent = tw.div`
+    flex
+    flex-col
+    items-start
+    w-full
 `;
 
 const StyledBreadcrumbs = tw(DocsBreadcrumbs)`
@@ -58,7 +65,7 @@ const StyledToC = tw(TableOfContents)`
     hidden
     sticky
     top-24
-    w-40
+    w-64
     sm:top-28
     lg:flex
 `;
@@ -82,9 +89,18 @@ export const DocsLayout = memo<DocsLayoutProps>((props) => {
             <Container>
                 <Content id="docs-content">
                     <StyledBreadcrumbs />
-                    <MdxProvider>{children}</MdxProvider>
+                    <DocContent>
+                        <MdxProvider>{children}</MdxProvider>
+                    </DocContent>
                 </Content>
-                <StyledToC key={router.asPath} selector="#docs-content" />
+                <StyledToC
+                    key={router.asPath}
+                    intersection={{
+                        rootMargin: "-64px 0% 0%",
+                        threshold: 1,
+                    }}
+                    selector="#docs-content"
+                />
             </Container>
         </Root>
     );

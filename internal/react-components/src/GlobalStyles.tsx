@@ -22,6 +22,7 @@ const CustomStyles = createGlobalStyle`
     html, body {
         ${tw`
             bg-stone-900
+            scroll-pt-20
         `}
     }
 `;

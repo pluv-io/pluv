@@ -2,4 +2,77 @@ import { DocsLayout } from "../../components";
 
 # Introduction
 
+Multi-platform, E2E type-safe realtime packages
+
+<p
+    align="start"
+    style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "0.25rem",
+        marginBottom: "2rem"
+    }}
+>
+    <a href="https://www.npmjs.com/package/@pluv/io">
+        <img src="https://img.shields.io/npm/v/@pluv/io" alt="npm @pluv/io" />
+    </a>
+    <a href="https://github.com/pluv-io/pluv/blob/master/LICENSE">
+        <img alt="GitHub" src="https://img.shields.io/github/license/pluv-io/pluv" alt="License MIT" />
+    </a>
+    <a href="https://commitizen.github.io/cz-cli/">
+        <img src="https://img.shields.io/badge/commitizen-friendly-blue.svg" alt="Commitizen friendly" />
+    </a>
+    <a href="https://www.typescriptlang.org/">
+        <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript" />
+    </a>
+    <a href="https://openbase.com/js/@pluv/io?utm_source=embedded&amp;utm_medium=badge&amp;utm_campaign=rate-badge">
+        <img src="https://badges.openbase.com/js/featured/@pluv/io.svg?token=FdWfpo90mCUb7InAjDG0KeXM/uH+KdHK3us2pNRgWf0=" alt="Featured on Openbase" />
+    </a>
+</p>
+
+[pluv.io](https://www.npmjs.com/package/@pluv/io) allows you to more easily build real-time collaborative features with a fully end-to-end type-safe api.
+
+Existing open-source tools for building real-time APIs come with several trade-offs. With [socket.io](https://socket.io) or [y-websocket](https://github.com/yjs/y-websocket), you get built-in support for things like heartbeats, rooms and awareness without any automatic type-safety server-to-client. Meanwhile, with [GraphQL](https://graphql.org/) you get type-safety in subscriptions but lose those same features. pluv.io unifies these experiences by providing **common websocket API capabilities** and **end-to-end type-safety** server-to-client.
+
+## Built for multiple runtimes and frameworks
+
+pluv.io supports hosting on either [Node.js](https://nodejs.org/) or [Cloudflare Workers](https://workers.cloudflare.com/). Support for multiple frameworks is also planned, with [React](https://beta.es.reactjs.org/) already available with [@pluv/react](https://www.npmjs.com/package/@pluv/react). If you're building for other frameworks, [@pluv/client](https://www.npmjs.com/package/@pluv/client) is framework agnostic and can meet your needs.
+
+## Features and roadmap
+
+### Capabilities
+
+- [x] Automatic type-safety
+- [x] Basic events
+- [x] Rooms
+- [x] Authentication
+- [x] Awareness + Presence
+- [x] [CRDTs](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type) (with [Yjs](https://docs.yjs.dev/))
+    - [x] **Shared Types**
+        - [x] [Map](https://docs.yjs.dev/api/shared-types/y.map)
+        - [x] [Array](https://docs.yjs.dev/api/shared-types/y.array)
+        - [x] [Text](https://docs.yjs.dev/api/shared-types/y.text)
+        - [x] [XmlFragment](https://docs.yjs.dev/api/shared-types/y.xmlfragment)
+        - [x] [XmlElement](https://docs.yjs.dev/api/shared-types/y.xmlelement)
+        - [x] [XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext)
+- [ ] Studio (admin & developer panel)
+
+### Runtimes
+
+- [x] [Cloudflare Workers](https://workers.cloudflare.com/)
+- [x] [Node.js](https://nodejs.org/)
+    - [x] **PubSubs**
+        - [x] [Redis](https://redis.io/)
+        - [ ] [RabbitMQ](https://www.rabbitmq.com/)
+        - [ ] [Kafka](https://kafka.apache.org/)
+    - [x] **CRDT State Persistance**
+        - [x] [Redis](https://redis.io/)
+        - [ ] [Prisma](https://www.prisma.io/)
+
+### Frontends
+
+- [x] [React.js](https://beta.reactjs.org/)
+- [ ] [Vue.js](https://vuejs.org/)
+- [ ] [Svelte](https://svelte.dev/)
+
 export default ({ children }) => <DocsLayout>{children}</DocsLayout>;

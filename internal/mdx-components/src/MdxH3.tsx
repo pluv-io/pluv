@@ -3,8 +3,8 @@ import tw from "twin.macro";
 import { MdxHeader } from "./MdxHeader";
 
 const Root = tw(MdxHeader)`
-    text-lg
-    font-semibold
+    text-2xl
+    font-bold
 `;
 
 export interface MdxH3Props {

@@ -3,7 +3,7 @@ import tw from "twin.macro";
 import { MdxHeader } from "./MdxHeader";
 
 const Root = tw(MdxHeader)`
-    text-sm
+    text-base
     font-semibold
 `;
 

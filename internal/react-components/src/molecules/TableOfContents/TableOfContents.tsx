@@ -35,7 +35,8 @@ const Link = tw(Anchor)`
     flex
     flex-row
     items-center
-    h-7
+    min-h-[1.75rem]
+    py-1
 `;
 
 interface HeadingItem {
