@@ -2,6 +2,8 @@ export type { DocsBreadcrumbsProps } from "./DocsBreadcrumbs";
 export { DocsBreadcrumbs } from "./DocsBreadcrumbs";
 export type { DocsLayoutProps } from "./DocsLayout";
 export { DocsLayout } from "./DocsLayout";
+export type { DocsSeoProps } from "./DocsSeo";
+export { DocsSeo } from "./DocsSeo";
 export type { DocsTreeViewNavigationProps } from "./DocsTreeViewNavigation";
 export { DocsTreeViewNavigation } from "./DocsTreeViewNavigation";
 export type { HomeBoxesDemoSectionProps } from "./HomeBoxesDemoSection";

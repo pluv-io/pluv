@@ -2,10 +2,16 @@ import NextHead from "next/head";
 import type { FC } from "react";
 
 export interface SeoTitleProps {
+    postfix?: boolean;
     title: string;
 }
 
-export const SeoTitle: FC<SeoTitleProps> = ({ title }) => {
+export const SeoTitle: FC<SeoTitleProps> = ({
+    postfix = true,
+    title: _title,
+}) => {
+    const title = postfix ? `${_title} – pluv.io` : _title;
+
     return (
         <NextHead>
             <title key="title">{title}</title>

@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { CSSProperties, memo, ReactNode } from "react";
 import tw from "twin.macro";
 import { DocsBreadcrumbs } from "../DocsBreadcrumbs";
+import { DocsSeo } from "../DocsSeo";
 import { DocsTreeViewNavigation } from "../DocsTreeViewNavigation";
 import { SiteWideLayout } from "../SiteWideLayout";
 
@@ -73,17 +74,21 @@ const StyledToC = tw(TableOfContents)`
 export interface DocsLayoutProps {
     children?: ReactNode;
     className?: string;
-    meta?: Record<string, any>;
+    meta?: {
+        description?: string;
+        title?: string;
+    };
     style?: CSSProperties;
 }
 
 export const DocsLayout = memo<DocsLayoutProps>((props) => {
-    const { children, className, style } = props;
+    const { children, className, meta, style } = props;
 
     const router = useRouter();
 
     return (
         <Root as="div" className={className} style={style}>
+            <DocsSeo description={meta?.description} title={meta?.title} />
             <StyledSideBar>
                 <DocsTreeViewNavigation />
             </StyledSideBar>
