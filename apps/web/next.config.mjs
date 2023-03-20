@@ -1,5 +1,6 @@
 import bundleAnalyzerPlugin from "@next/bundle-analyzer";
 import mdxPlugin from "@next/mdx";
+import { frontmatter } from "@pluv-internal/remark-plugins";
 import withPlugins from "next-compose-plugins";
 import remarkGfm from "remark-gfm";
 
@@ -11,7 +12,7 @@ const withMdx = mdxPlugin({
 	extension: /\.mdx?$/,
 	options: {
 		providerImportSource: "@mdx-js/react",
-		remarkPlugins:  [[remarkGfm, {}]],
+		remarkPlugins:  [frontmatter, remarkGfm],
 		rehypePlugins: [],
 	},
 });

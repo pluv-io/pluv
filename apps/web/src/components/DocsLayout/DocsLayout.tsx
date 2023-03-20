@@ -73,6 +73,7 @@ const StyledToC = tw(TableOfContents)`
 export interface DocsLayoutProps {
     children?: ReactNode;
     className?: string;
+    meta?: Record<string, any>;
     style?: CSSProperties;
 }
 
