@@ -91,6 +91,7 @@ const Content = tw(m.ul)`
     flex-col
     items-stretch
     gap-0.5
+    mt-0.5
     pl-3
     overflow-hidden
 `;
@@ -99,6 +100,7 @@ export interface TreeViewListProps {
     children?: ReactNode;
     className?: string;
     content?: ReactNode;
+    defaultOpen?: boolean;
     href?: string;
     selected?: boolean;
     style?: CSSProperties;
@@ -108,11 +110,12 @@ export const TreeViewList: FC<TreeViewListProps> = ({
     children,
     className,
     content,
+    defaultOpen = false,
     href,
     selected = false,
     style,
 }) => {
-    const [open, setOpen] = useState<boolean>(false);
+    const [open, setOpen] = useState<boolean>(defaultOpen);
 
     const child = href ? (
         <NavigationMenu.Link asChild>
