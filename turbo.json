@@ -34,5 +34,5 @@
       ]
     }
   },
-  "globalEnv": ["PLUV_AUTH_SECRET"]
+  "globalEnv": ["BASE_URL", "DEPLOY_URL", "PLUV_AUTH_SECRET", "SEO", "VERCEL_URL"]
 }
