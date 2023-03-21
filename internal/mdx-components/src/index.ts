@@ -26,5 +26,7 @@ export type { MdxPreProps } from "./MdxPre";
 export { MdxPre } from "./MdxPre";
 export type { MdxProviderProps } from "./MdxProvider";
 export { MdxProvider, MdxProvider as default } from "./MdxProvider";
+export type { MdxTableProps } from "./MdxTable";
+export { MdxTable } from "./MdxTable";
 export type { MdxUlProps } from "./MdxUl";
 export { MdxUl } from "./MdxUl";

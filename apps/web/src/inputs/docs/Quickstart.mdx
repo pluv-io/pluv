@@ -1,0 +1,248 @@
+---
+title: Quickstart
+description: Learn how to quickly get started and setup with @pluv/io
+---
+
+import { DocsLayout } from "../../../components";
+
+# Quickstart
+
+Learn how to quickly get started and setup with @pluv/io.
+
+## Installation
+
+[pluv.io](https://www.npmjs.com/package/@pluv/io) is broken up into multiple packages, so that you can install only what you need, particular to your codebase and framework selections.
+
+| Purpose                                                 | Location | Install command                       |
+|---------------------------------------------------------|----------|---------------------------------------|
+| Register websockets and custom events                   | Server   | npm install @pluv/io yjs              |
+| Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client yjs          |
+| React-bindings for @pluv/client                         | Client   | npm install @pluv/react yjs           |
+| Adapter for Node.js runtime                             | Server   | npm install @pluv/platform-node ws    |
+| Adapter for Cloudflare Workers runtime                  | Server   | npm install @pluv/platform-cloudflare |
+
+### Installation Example
+
+Here is an example installation for [npm](https://www.npmjs.com/), assuming you are building for [Node.js](https://nodejs.org/), [React](https://react.dev/) and [TypeScript](https://www.typescriptlang.org/).
+
+```bash
+# For the server
+npm install @pluv/io @pluv/platform-node yjs
+# Server peer-dependencies
+npm install yjs ws zod
+
+# For the client
+npm install @pluv/react
+# Client peer-dependencies
+npm install react react-dom yjs zod
+```
+
+## Defining a backend PluvIO instance
+
+Let's step through how we'd put together a real-time API for Node.js. In this example, this API will define 2 type-safe events.
+
+### Create PluvIO instance
+
+Define a io (websocket client) instance on the server codebase:
+
+```ts
+// backend/io.ts
+
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+
+export const io = createIO({ platform: platformNode() });
+
+// Export the websocket client io type, instead of the client itself
+export type AppPluvIO = typeof io;
+```
+
+### Create type-safe server events
+
+Use `io.event` to define type-safe websocket events on the io instance. The two properties on the event function are:
+
+* `input`: [zod](https://www.npmjs.com/package/zod) validation schema that validates and casts the input for the event.
+* `resolver`: This is the implementation of the event. It accepts an input of the validated input of the incoming event, and returns an event record to emit back to the frontend client.
+
+```ts
+// backend/io.ts
+
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { z } from "zod";
+
+export const io = createIO({ platform: platformNode() })
+    // When event "SEND_MESSAGE" is sent by the frontend and received
+    // on the server
+    .event("SEND_MESSAGE", {
+        // Define a zod validation schema for the input
+        input: z.object({
+            message: z.string(),
+        }),
+        // Emit a "MESSAGE_RECEIVED" from the server to the client
+        resolver: ({ message }) => ({ MESSAGE_RECEIVED: { message } }),
+    })
+    .event("EMIT_EMOJI", {
+        input: z.object({
+            emojiCode: z.number(),
+        }),
+        resolver: ({ emojiCode }) => ({ EMOJI_RECEIVED: { emojiCode } }),
+    });
+
+
+export type AppPluvIO = typeof io;
+```
+
+### Integrate PluvIO with ws
+
+**Important:** Demonstration is for Node.js only.
+
+Integrate with [ws](https://www.npmjs.com/package/ws) on Node.js.
+
+```ts
+// backend/server.ts
+
+import express from "express";
+import Http from "http";
+import WebSocket from "ws";
+import { io } from "./io";
+
+const PORT = 3000;
+
+const app = express();
+const server = Http.createServer();
+const wsServer = new WebSocket.Server({ server });
+
+const parseRoomId = (url: string): string => {
+    /* get room from req.url */
+};
+
+wsServer.on("connection", async (ws, req) => {
+    const roomId = parseRoomId(req.url);
+    const room = io.getRoom(roomId);
+
+    await room.register(ws);
+});
+
+server.listen(PORT, () => {
+    console.log(`Server is listening on port: ${port}`);
+});
+```
+
+## Connecting the frontend to PluvIO
+
+Now that the io instance is setup on the backend, we can setup the frontend client and connect the exported io type from the server.
+
+### Create the React bundle
+
+```ts
+// frontend/io.ts
+
+import { createBundle, createClient, y } from "@pluv/react";
+import type { AppPluvIO } from "server/io";
+
+const client = createClient<AppPluvIO>({
+    // Define a ws endpoint url based on how you parse the room name
+    wsEndpoint: (room) => `ws://localhost:3000/api/room/${room}`,
+});
+
+export const {
+    // factories
+    createRoomBundle,
+
+    // components
+    PluvProvider,
+
+    // hooks
+    usePluvClient,
+} = createBundle(client);
+
+export const {
+    // components
+    MockedRoomProvider,
+    PluvRoomProvider,
+
+    // hooks
+    usePluvBroadcast,
+    usePluvConnection,
+    usePluvEvent,
+    usePluvMyPresence,
+    usePluvMyself,
+    usePluvOther,
+    usePluvOthers,
+    usePluvRoom,
+    usePluvStorage,
+} = createRoomBundle();
+```
+
+### Wrap with your pluv.io providers
+
+Wrap your component with `PluvRoomProvider` to connect to a realtime room and enable the rest of your room react hooks.
+
+```tsx
+// frontend/Room.tsx
+
+import { FC } from "react";
+import { PluvRoomProvider } from "./io";
+import { ChatRoom } from "./ChatRoom";
+
+export const Room: FC = () => {
+    return (
+        <PluvRoomProvider room="my-example-room">
+            <ChatRoom />
+        </PluvRoomProvider>
+    );
+};
+```
+
+### Send and receive events
+
+Use `usePluvBroadcast` and `usePluvEvent` to send and receive type-safe events in your React component.
+
+```tsx
+// frontend/ChatRoom.tsx
+
+import { FC, useCallback, useState } from "react";
+import { emojiMap } from "./emojiMap";
+import { usePluvBroadcast, usePluvEvent } from "./io";
+
+export const ChatRoom: FC = () => {
+    const broadcast = usePluvBroadcast();
+
+    const [messages. setMessages] = useState<string[]>([]);
+
+    usePluvEvent("MESSAGE_RECEIVED", ({ data }) => {
+        //                              ^? (property) data: { message: string }
+        setMessages((prev) => [...prev, data.message]);
+    });
+
+    usePluvEvent("EMOJI_RECEIVED", ({ data }) => {
+        //                            ^? (property) data: { emojiCode: number }
+        const emoji = emojiMap[data.emojiCode];
+
+        console.log(emoji);
+    });
+
+    const onMessage = useCallback((message: string): void => {
+        // 2nd parameter will be statically typed from server/io.ts
+        broadcast("SEND_MESSAGE", { message });
+    }, [broadcast]);
+
+    const onEmoji = useCallback((emojiCode: number): void => {
+        broadcast("EMIT_EMOJI", { emojiCode });
+    }, [broadcast]);
+
+    // ...
+};
+```
+
+## Next Steps
+
+This example only scratches the surface of the realtime capabilities offered by pluv.io.
+
+* Usage with Cloudflare Workers (server-side)
+* Using CRDT storage with yjs
+* Using presence and awareness
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;
+

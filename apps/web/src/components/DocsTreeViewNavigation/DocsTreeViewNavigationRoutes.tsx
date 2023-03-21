@@ -13,6 +13,17 @@ export const DocsTreeViewNavigationRoutes: FC<
 > = ({ baseRoute = "", routes }) => {
     const router = useRouter();
 
+    const sorted = useMemo(() => {
+        const startsWithAZ = (word: string): boolean => /^[a-z]/i.test(word);
+
+        return Object.entries(routes).sort(([, a], [, b]) => {
+            if (!startsWithAZ(a.name) && startsWithAZ(b.name)) return 1;
+            if (startsWithAZ(a.name) && !startsWithAZ(b.name)) return -1;
+
+            return a.name.localeCompare(b.name);
+        });
+    }, [routes]);
+
     const slugs = useMemo(() => {
         return router.asPath
             .replace(new RegExp(`^${baseRoute}`), "")
@@ -25,7 +36,7 @@ export const DocsTreeViewNavigationRoutes: FC<
 
     return (
         <>
-            {Object.entries(routes).map(([slug, node]) =>
+            {sorted.map(([slug, node]) =>
                 Object.keys(node.children).length ? (
                     <TreeView.List
                         key={slug}

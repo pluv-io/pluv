@@ -3,6 +3,7 @@ import { FC } from "react";
 import tw from "twin.macro";
 
 const Root = tw.ul`
+    list-disc
     list-inside
     mb-4
     pl-6
