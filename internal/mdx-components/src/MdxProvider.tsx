@@ -13,6 +13,7 @@ import { MdxLi } from "./MdxLi";
 import { MdxOl } from "./MdxOl";
 import { MdxP } from "./MdxP";
 import { MdxPre } from "./MdxPre";
+import { MdxTable } from "./MdxTable";
 import { MdxUl } from "./MdxUl";
 
 export interface MdxProviderProps {
@@ -36,6 +37,7 @@ export const MdxProvider: FC<MdxProviderProps> = ({ children }) => {
                 ol: MdxOl,
                 p: MdxP,
                 pre: MdxPre,
+                table: MdxTable,
                 ul: MdxUl,
             }}
         >

@@ -18,8 +18,9 @@ const Heading = tw.h1`
 
 const Contents = tw.div`
     grid
-    [grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr))]
+    [grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr))]
     gap-8
+    w-full
 `;
 
 const Card = tw(DocsCard)`
