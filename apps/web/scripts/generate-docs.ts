@@ -32,7 +32,19 @@ const generateDocPages = (): void => {
     const filePaths = getFilePaths();
 
     fs.ensureDirSync(outputDocs);
-    fs.emptyDirSync(outputDocs);
+
+    const contents = fs
+        .readdirSync(outputDocs)
+        .map((fileName) => path.join(outputDocs, fileName));
+
+    contents.forEach((fileOrDirPath) => {
+        const stat = fs.statSync(fileOrDirPath);
+        const isMdx = path.extname(fileOrDirPath) === ".mdx";
+
+        if (stat.isFile() && !isMdx) return;
+
+        fs.rmSync(fileOrDirPath, { recursive: true });
+    });
 
     filePaths.forEach((filePath) => {
         const route = toRoute(filePath);

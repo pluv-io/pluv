@@ -1,6 +1,6 @@
-import type { Meta, Story } from "@storybook/react";
 import type { PillProps } from "@pluv-internal/react-components";
 import { Pill } from "@pluv-internal/react-components";
+import type { Meta, Story } from "@storybook/react";
 
 export default {
     title: "react-components/atoms/Pill",

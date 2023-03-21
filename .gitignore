@@ -40,4 +40,4 @@ dist-ssr
 
 **/public/tailwind.css
 **/generated/**
-apps/web/src/pages/docs/**
+apps/web/src/pages/docs/**/*.mdx

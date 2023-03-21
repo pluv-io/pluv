@@ -77,7 +77,7 @@ export interface DocsLayoutProps {
     meta?: {
         description?: string;
         title?: string;
-    };
+    } | null;
     style?: CSSProperties;
 }
 

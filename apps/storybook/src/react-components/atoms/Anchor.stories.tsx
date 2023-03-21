@@ -1,6 +1,6 @@
-import type { Meta, Story } from "@storybook/react";
 import type { AnchorProps } from "@pluv-internal/react-components";
 import { Anchor } from "@pluv-internal/react-components";
+import type { Meta, Story } from "@storybook/react";
 
 export default {
     title: "react-components/atoms/Anchor",

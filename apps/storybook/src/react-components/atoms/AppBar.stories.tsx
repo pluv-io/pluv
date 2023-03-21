@@ -1,6 +1,6 @@
-import type { Meta, Story } from "@storybook/react";
 import type { AppBarProps } from "@pluv-internal/react-components";
 import { AppBar } from "@pluv-internal/react-components";
+import type { Meta, Story } from "@storybook/react";
 
 export default {
     title: "react-components/atoms/AppBar",

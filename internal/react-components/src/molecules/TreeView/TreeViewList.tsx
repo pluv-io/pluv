@@ -119,7 +119,13 @@ export const TreeViewList: FC<TreeViewListProps> = ({
 
     const child = href ? (
         <NavigationMenu.Link asChild>
-            <ItemContent as={NextLink} href={href}>
+            <ItemContent
+                as={NextLink}
+                href={href}
+                onClick={(e) => {
+                    e.stopPropagation();
+                }}
+            >
                 {children}
             </ItemContent>
         </NavigationMenu.Link>
