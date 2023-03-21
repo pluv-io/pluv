@@ -18,7 +18,10 @@ export const DocsBreadcrumbs = memo<DocsBreadcrumbsProps>((props) => {
 
     const router = useRouter();
 
-    const slugs = router.pathname.replace(/^\/docs\//, "").split("/");
+    const slugs = router.asPath
+        .replace(/^(\/)?docs(\/)?/, "")
+        .split("/")
+        .filter((slug) => !!slug);
 
     return (
         <Breadcrumbs className={className} style={style}>

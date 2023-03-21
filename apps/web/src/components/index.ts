@@ -1,5 +1,7 @@
 export type { DocsBreadcrumbsProps } from "./DocsBreadcrumbs";
 export { DocsBreadcrumbs } from "./DocsBreadcrumbs";
+export type { DocsCardProps } from "./DocsCard";
+export { DocsCard } from "./DocsCard";
 export type { DocsLayoutProps } from "./DocsLayout";
 export { DocsLayout } from "./DocsLayout";
 export type { DocsSeoProps } from "./DocsSeo";

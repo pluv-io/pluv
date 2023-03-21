@@ -14,11 +14,11 @@ export const DocsTreeViewNavigationRoutes: FC<
     const router = useRouter();
 
     const slugs = useMemo(() => {
-        return router.pathname
+        return router.asPath
             .replace(new RegExp(`^${baseRoute}`), "")
             .replace(/^\//, "")
             .split("/");
-    }, [baseRoute, router.pathname]);
+    }, [baseRoute, router.asPath]);
 
     const [currentSlug] = slugs;
     const finalSlug = slugs.at(-1);

@@ -14,6 +14,8 @@ export type { NextLinkProps } from "./NextLink";
 export { NextLink } from "./NextLink";
 export type { PageContainerProps } from "./PageContainer";
 export { PageContainer } from "./PageContainer";
+export type { PaperProps } from "./Paper";
+export { Paper } from "./Paper";
 export type { PillProps } from "./Pill";
 export { Pill } from "./Pill";
 export type {
