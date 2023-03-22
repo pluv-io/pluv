@@ -89,7 +89,7 @@ export const io = createIO({ platform: platformNode() })
         resolver: ({ emojiCode }) => ({ EMOJI_RECEIVED: { emojiCode } }),
     });
 
-
+// Export the io type instance of the io itself
 export type AppPluvIO = typeof io;
 ```
 
