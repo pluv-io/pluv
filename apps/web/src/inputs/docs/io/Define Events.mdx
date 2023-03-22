@@ -1,0 +1,41 @@
+---
+title: Define Events
+description: Define events in pluv.io by simply defining an input validation schema and resolver.
+---
+
+import { DocsLayout } from "../../../components";
+
+# Define Events
+
+In pluv.io, you can define custom events with an input validation schema and resolver, and have them be automatically type-safe without having to manage your own types.
+
+## Usage example
+
+```ts
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { z } from "zod";
+
+export const io = createIO({ platform: platformNode() })
+    // When event "SEND_MESSAGE" is sent by the frontend and received
+    // on the server
+    .event("SEND_MESSAGE", {
+        // Define a zod validation schema for the input
+        input: z.object({
+            message: z.string(),
+        }),
+        // Emit a "MESSAGE_RECEIVED" from the server to the client
+        resolver: ({ message }) => ({ MESSAGE_RECEIVED: { message } }),
+    })
+    .event("EMIT_EMOJI", {
+        input: z.object({
+            emojiCode: z.number(),
+        }),
+        resolver: ({ emojiCode }) => ({ EMOJI_RECEIVED: { emojiCode } }),
+    });
+
+// Export the io type instance of the io itself
+export type AppPluvIO = typeof io;
+```
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;
