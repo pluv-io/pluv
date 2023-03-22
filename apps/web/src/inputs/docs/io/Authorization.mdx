@@ -1,0 +1,175 @@
+---
+title: Authorization
+description: Learn how to add custom authorization to rooms in @pluv/io
+---
+
+import { DocsLayout } from "../../../components";
+
+# Authorization
+
+pluv.io uses JWTs to authorize access to rooms on a new connection. To generate a JWT, you will need to setup an authentication endpoint to determine if the user should have access to the room.
+
+The examples below will use [express](https://expressjs.com), but so long as you can create an http endpoint that can return text responses, these should still be relevant.
+
+## Enable authorization on io
+
+Set the `authorize` property on your `createIO` config to enable authorization on your io instance.
+
+```ts
+// server/io.ts
+
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { z } from "zod";
+
+export const io = createIO({
+    authorize: {
+        // If required is false, users can authenticate for a room to
+        // attach an identity to their presence. Otherwise they will be
+        // anonymous.
+        required: true,
+        // The secret for generating your JWT
+        secret: process.env.PLUV_AUTH_SECRET!,
+        // The shape of your user object. `id` must always be required.
+        user: z.object({
+            id: z.string(),
+            // Here is an additional field we wish to add.
+            name: z.string(),
+        }),
+    },
+    platform: platformNode(),
+});
+
+export type AppPluvIO = typeof io;
+```
+
+## Setup an authorization endpoint
+
+To add custom authorization, you'll need to define an http endpoint to return a JWT from.
+
+```ts
+// server/server.ts
+
+import express from "express";
+import Http from "http";
+import { io } from "./io";
+
+const PORT = 3000;
+
+const app = express();
+const server = Http.createServer();
+
+app.get("/api/authorize", async (req, res) => {
+    const room = req.query.room as string;
+
+    // ... Implement your custom authorization here
+
+    const token = await io.createToken({
+        room,
+        user: {
+            id: "abc123",
+            name: "leedavidcs",
+        },
+    });
+
+    return res.send(token).status(200);
+});
+
+server.listen(PORT, () => {
+    console.log(`Server is listening on port: ${port}`);
+});
+```
+
+## Connect to your authorization endpoint
+
+Now that we have our endpoint defined, connect our frontend client to our authorization endpoint.
+
+```ts
+// frontend/io.ts
+
+import { createClient } from "@pluv/react";
+import type { AppPluvIO } from "server/io";
+
+const client = createClient<AppPluvIO>({
+    authEndpoint: (room) => `http://localhost:3000/api/authorize?room=${room}`,
+    // Define a ws endpoint url based on how you parse the room name
+    wsEndpoint: (room) => `ws://localhost:3000/api/room/${room}`,
+});
+```
+
+### How to use POST requests
+
+```ts
+// frontend/io.ts
+
+import { createClient } from "@pluv/react";
+import type { AppPluvIO } from "server/io";
+
+const client = createClient<AppPluvIO>({
+    authEndpoint: (room) => ({
+        url: "http://localhost:3000/api/authorize",
+        // You can use fetch options as well like so
+        options: {
+            method: "POST",
+            body: JSON.stringify({ room }),
+        },
+    }),
+    // Define a ws endpoint url based on how you parse the room name
+    wsEndpoint: (room) => `ws://localhost:3000/api/room/${room}`,
+});
+```
+
+## Add token to room registration
+
+When the frontend receives a JWT from your authorization endpoint, it will add that token as a `token` query parameter to your websocket connection request. To use this token, pass the token into `io.room.register` on your server.
+
+```ts
+import express from "express";
+import Http from "http";
+import WebSocket from "ws";
+import { io } from "./io";
+
+const PORT = 3000;
+
+const app = express();
+const server = Http.createServer();
+const wsServer = new WebSocket.Server({ server });
+
+const parseRoomId = (url: string): string => {
+    /* get room from req.url */
+};
+
+const parseToken = (url: string): string => {
+    /* get token from query parameters of req.url */
+};
+
+wsServer.on("connection", async (ws, req) => {
+    const roomId = parseRoomId(req.url);
+    const token = parseToken(req.url);
+
+    // Pass in the token from query params
+    await room.register(ws, { token });
+});
+
+app.get("/api/authorize", async (req, res) => {
+    const room = req.query.room as string;
+
+    // ... Implement your custom authorization here
+
+    const token = await io.createToken({
+        room,
+        user: {
+            id: "abc123",
+            name: "leedavidcs",
+        },
+    });
+
+    return res.send(token).status(200);
+});
+
+server.listen(PORT, () => {
+    console.log(`Server is listening on port: ${port}`);
+});
+```
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;
