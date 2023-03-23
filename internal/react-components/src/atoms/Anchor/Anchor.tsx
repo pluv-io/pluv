@@ -10,4 +10,5 @@ export const Anchor = tw(NextLink)`
     transition-colors
     duration-75
     ease-in
+    [&[data-selected="true"]]:text-sky-500
 `;

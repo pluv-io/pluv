@@ -1,4 +1,10 @@
 import { CSSProperties, FC } from "react";
+import tw from "twin.macro";
+
+const Root = tw.svg`
+    h-full
+    w-full
+`;
 
 export interface KingPieceProps {
     className?: string;
@@ -7,7 +13,7 @@ export interface KingPieceProps {
 
 export const KingPiece: FC<KingPieceProps> = ({ className, style }) => {
     return (
-        <svg
+        <Root
             className={className}
             style={style}
             version="1.1"
@@ -68,6 +74,6 @@ export const KingPiece: FC<KingPieceProps> = ({ className, style }) => {
                     d="M 12.5,37 C 18,34 27,34 32.5,37"
                 />
             </g>
-        </svg>
+        </Root>
     );
 };

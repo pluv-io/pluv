@@ -1,4 +1,5 @@
 import {
+    Anchor,
     AppBar,
     Button,
     LogoIcon,
@@ -6,6 +7,7 @@ import {
     SideDrawer,
 } from "@pluv-internal/react-components";
 import { BarsIcon, GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
+import { useRouter } from "next/router";
 import { CSSProperties, memo } from "react";
 import tw, { styled } from "twin.macro";
 import { MobileDocsSideDrawer } from "../MobileDocsSideDrawer";
@@ -25,22 +27,6 @@ const Content = styled.div`
         w-full
     `}
 
-    @media (min-width: 640px) {
-        max-width: 640px;
-    }
-
-    @media (min-width: 768px) {
-        max-width: 768px;
-    }
-
-    @media (min-width: 1024px) {
-        max-width: 1024px;
-    }
-
-    @media (min-width: 1280px) {
-        max-width: 1280px;
-    }
-
     @media (min-width: 1536px) {
         max-width: 1536px;
     }
@@ -49,6 +35,20 @@ const Content = styled.div`
 const LeftContainer = tw.div`
     flex
     items-center
+`;
+
+const LinksContainer = tw.div`
+    hidden
+    items-center
+    gap-6
+    ml-10
+    md:flex
+`;
+
+const Link = tw(Anchor)`
+    font-semibold
+    [color: inherit]
+    hover:no-underline
 `;
 
 const MobileDrawerButton = tw(Button)`
@@ -90,6 +90,8 @@ export interface SiteWideAppBarProps {
 export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
     const { className, style } = props;
 
+    const router = useRouter();
+
     return (
         <Root className={className} style={style}>
             <Content>
@@ -106,6 +108,24 @@ export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
                         <StyledLogoIcon height={36} width={36} />
                         <PluvName>pluv.io</PluvName>
                     </Logo>
+                    <LinksContainer>
+                        <Link
+                            href="/docs/introduction"
+                            data-selected={
+                                router.pathname === "/docs/introduction"
+                            }
+                        >
+                            Docs
+                        </Link>
+                        <Link
+                            href="/docs/quickstart"
+                            data-selected={
+                                router.pathname === "/docs/quickstart"
+                            }
+                        >
+                            Quickstart
+                        </Link>
+                    </LinksContainer>
                 </LeftContainer>
                 <RightContainer>
                     <Button
