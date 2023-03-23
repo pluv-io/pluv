@@ -1,0 +1,70 @@
+---
+title: PubSub
+description: Add a PubSub to pluv.io to horizontally scale your real-time API.
+---
+
+import { DocsLayout } from "../../../components";
+
+# PubSub
+
+> **Note**: Currently PubSub's are supported for Node.js only.
+
+You may want to run a single room across multiple servers to horizontally scale your API. For that a PubSub will be necessary to share the events, and Persistance will be necessary for syncing storage state across servers.
+
+## Usage Example
+
+Let's step through how we'd setup a pubsub to our pluv.io API.
+
+### Installation
+
+Install your PubSub and Persistance of your choosing:
+
+```bash
+# For the server
+npm install @pluv/pubsub-redis @pluv/persistance-redis
+# Peer-dependencies
+npm install ioredis yjs
+```
+
+### Setup your PubSub and Persistance
+
+Create your pluv.io instance with your selected PubSub and Persistance:
+
+```ts
+// server/io.ts
+
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { PubSubRedis } from "@pluv/pubsub-redis";
+import { PersistanceRedis } from "@pluv/persistance-redis";
+import { Redis } from "ioredis";
+
+// Setup redis. You can also use a Redis Cluster
+const redis = new Redis({
+    /* redis config here */
+});
+
+export const io = createIO({
+    platform: platformNode({
+        persistance: new PersistanceRedis({ client: redis }),
+        pubSub: new PubSubRedis({
+            publisher: redis,
+            subscriber: redis,
+        }),
+    }),
+});
+```
+
+## Available Libraries
+
+Below are the available pubsubs and libraries written for pluv.io. Check the [roadmap](http://localhost:3000/docs/introduction#features-and-roadmap) to see what other providers are to be supported in the future.
+
+### PubSubs
+
+* [Redis](https://www.npmjs.com/package/@pluv/pubsub-redis)
+
+### Persistances
+
+* [Redis](https://www.npmjs.com/package/@pluv/persistance-redis)
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;

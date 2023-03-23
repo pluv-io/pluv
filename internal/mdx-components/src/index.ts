@@ -1,5 +1,7 @@
 export type { MdxAProps } from "./MdxA";
 export { MdxA } from "./MdxA";
+export type { MdxBlockQuoteProps } from "./MdxBlockQuote";
+export { MdxBlockQuote } from "./MdxBlockQuote";
 export type { MdxCodeProps } from "./MdxCode";
 export { MdxCode } from "./MdxCode";
 export type { MdxH1Props } from "./MdxH1";
