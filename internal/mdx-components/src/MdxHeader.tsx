@@ -21,7 +21,7 @@ const Root = styled(Anchor)`
         flex-row
         flex-nowrap
         items-center
-        mb-[0.8em]
+        mb-[0.6em]
         not-first:mt-[1.2em]
     `}
 

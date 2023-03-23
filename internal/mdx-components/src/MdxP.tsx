@@ -3,7 +3,7 @@ import { FC } from "react";
 import tw from "twin.macro";
 
 const Root = tw.p`
-    mb-[0.8em]
+    my-[0.8em]
 `;
 
 export type MdxPProps = Omit<InferComponentProps<"p">, "ref">;

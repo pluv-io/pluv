@@ -1,0 +1,101 @@
+---
+title: Cloudflare Workers
+description: Build real-time applications with pluv.io on Cloudflare Workers
+---
+
+import { DocsLayout } from "../../../components";
+
+# Cloudflare Workers
+
+pluv.io supports building real-time APIs with [Cloudflare Workers](https://workers.cloudflare.com/) through their [Durable Objects API](https://developers.cloudflare.com/workers/runtime-apis/durable-objects/).
+
+## Using with Cloudflare Workers
+
+Let's step through how we'd put together a real-time API for Cloudflare Workers. The examples below assumes a basic understanding of Cloudflare Workers and Durable Objects.
+
+### Install dependencies
+
+```bash
+# For the server
+npm install @pluv/io @pluv/platform-cloudflare
+# Server peer-dependencies
+npm install yjs zod
+```
+
+### Create PluvIO instance
+
+Define an io (websocket client) instance on the server codebase:
+
+```ts
+// backend/io.ts
+
+import { createIO } from "@pluv/io";
+import { platformCloudflare } from "@pluv/platform-cloudflare";
+
+export const io = createIO({ platform: platformCloudflare() });
+
+// Export the websocket client io type, instead of the client itself
+export type AppPluvIO = typeof io;
+```
+
+### Attach to a RoomDurableObject
+
+Next, create a `RoomDurableObject` and attach our new pluv.io instance to the room:
+
+```ts
+// server/RoomDurableObject.ts
+
+import { type InferIORoom } from "@pluv/io";
+import { AppPluvIO, io } from "./io";
+
+export class RoomDurableObject implements DurableObject {
+    private _io: InferIORoom<AppPluvIO>;
+
+    constructor(state: DurableObjectState) {
+        this._io = io.getRoom(state.id.toString());
+    }
+
+    async fetch(request: Request) {
+        const isWebSocketRequest = request.headers.get("Upgrade") === "WebSocket";
+
+        if (!isWebSocketRequest) {
+            return new Response("Expected WebSocket", { status: 400 });
+        }
+
+        const { 0: client, 1: server } = new WebSocketPair();
+
+        await this._io.register(server);
+
+        return new Response(null, { status: 101, webSocket: client });
+    }
+}
+```
+
+### Forward request to RoomDurableObject
+
+Lastly, integrate your `RoomDurableObject` with your Cloudflare Worker's default handler:
+
+```ts
+// server/index.ts
+
+const parseRoomId = (url: string): string => {
+    /* get room from req.url */
+};
+
+const handler = {
+    async fetch(req: Request, env: Env): Promise<Response> {
+        const roomId = parseRoomId(req.url);
+        const durableObjectId = env.rooms.idFromString(roomId);
+
+        const room = env.rooms.get(durableObjectId);
+
+        return room.fetch(request);
+    },
+};
+
+export default handler;
+```
+
+From this point on, you can integrate your frontend with `@pluv/react` as you would normally.
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>
