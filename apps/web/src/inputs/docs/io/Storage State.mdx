@@ -1,0 +1,46 @@
+---
+title: Storage State
+description: Listen to storage and room changes, and initialize rooms with saved storage.
+---
+
+import { DocsLayout } from "../../../components";
+
+# Storage State
+
+Listen to when a room is deleted so that when the same room is re-created, users can resume from  the same storage as where they left off.
+
+## Add listeners
+
+```ts
+// server/io.ts
+
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { db } from "./db";
+
+export const io = createIO({
+    initialStorage: async (room: string) => {
+        const existingRoom = await db.room.findUnique({ where: { room } });
+
+        return existingRoom?.encodedState ?? null;
+    },
+    platform: platformNode(),
+    // Before the room is destroyed, persist the state to a database
+    // to load when the room is re-created.
+    onRoomDeleted: async (room: string, encodedState: string) => {
+        await db.room.upsert({
+            where: { room },
+            create: { encodedState, room },
+            update: { encodedState },
+        });
+    },
+    // It is unnecessary to save the storage state in this listener.
+    // If a room already exists, users will load the currently active
+    // storage before the storage from initialStorage.
+    onStorageUpdated: (room: string, encodedState: string) => {
+        console.log(room, encodedState);
+    },
+});
+```
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;
