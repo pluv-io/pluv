@@ -1,0 +1,77 @@
+---
+title: Node.js
+description: Build real-time applications with pluv.io on Node.js.
+---
+
+import { DocsLayout } from "../../../components";
+
+# Node.js
+
+pluv.io supports building real-time APIs with [Node.js](https://nodejs.org/).
+
+## Using with Node.js
+
+Let's step through how we'd put together a real-time API for Node.js.
+
+### Install dependencies
+
+```bash
+# For the server
+npm install @pluv/io @pluv/platform-node
+# Server peer-dependencies
+npm install ws yjs zod
+```
+
+### Create PluvIO instance
+
+Define an io (websocket client) instance on the server codebase:
+
+```ts
+// backend/io.ts
+
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+
+export const io = createIO({ platform: platformNode() });
+
+// Export the websocket client io type, instead of the client itself
+export type AppPluvIO = typeof io;
+```
+
+### Integrate PluvIO with ws
+
+Integrate with [ws](https://www.npmjs.com/package/ws) on your Node.js server.
+
+```ts
+// backend/server.ts
+
+import express from "express";
+import Http from "http";
+import WebSocket from "ws";
+import { io } from "./io";
+
+const PORT = 3000;
+
+const app = express();
+const server = Http.createServer();
+const wsServer = new WebSocket.Server({ server });
+
+const parseRoomId = (url: string): string => {
+    /* get room from req.url */
+};
+
+wsServer.on("connection", async (ws, req) => {
+    const roomId = parseRoomId(req.url);
+    const room = io.getRoom(roomId);
+
+    await room.register(ws);
+});
+
+server.listen(PORT, () => {
+    console.log(`Server is listening on port: ${port}`);
+});
+```
+
+From this point on, you can integrate your frontend with `@pluv/react` as you would normally.
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>

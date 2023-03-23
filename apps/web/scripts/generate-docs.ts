@@ -17,6 +17,10 @@ const normalize = (filePath: string): string => {
     return filePath.replace(sourcePath, "").replace(/^\//, "");
 };
 
+const removeExt = (filePath: string): string => {
+    return filePath.replace(path.extname(filePath), "");
+};
+
 const toRouteSlug = (fileName: string): string => {
     return normalize(fileName)
         .replace(/\s+/g, "-")
@@ -65,12 +69,11 @@ const generateRoutes = (): void => {
     const toRouteNode = (
         filePath: string
     ): null | [slug: string, node: RouteNode] => {
-        const [name, ...parts] = normalize(filePath)
-            .replace(/\..*/, "")
-            .split("/");
+        const [normalized, ...parts] = normalize(filePath).split("/");
 
-        if (!name) return null;
+        if (!normalized) return null;
 
+        const name = removeExt(normalized);
         const slug = toRouteSlug(name);
         const result = toRouteNode(parts.join("/"));
         const children = result ? { [result[0]]: result[1] } : {};

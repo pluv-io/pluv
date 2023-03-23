@@ -134,9 +134,9 @@ export const getStaticProps: GetStaticProps<
             const contents = fs.readFileSync(filePath, { encoding: "utf-8" });
             const data = (matter(contents).data ?? null) as MetaJson | null;
             const name = filePath
+                .replace(path.extname(filePath), "")
                 .replace(source, "")
-                .replace(/^\//, "")
-                .replace(/\..+$/, "");
+                .replace(/^\//, "");
             const slug = name
                 .replace(/\s+/g, "-")
                 .replace(/[^a-zA-Z0-9-\.]/g, "")
