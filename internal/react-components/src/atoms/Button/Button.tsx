@@ -94,6 +94,11 @@ export const Button = styled.button.withConfig({
         }
     }}
 
+    ${tw`
+        border-opacity-40
+        not-disabled:hover:border-opacity-100
+    `}
+
 	${({ size = "medium" }) => {
         switch (size) {
             case "large":

@@ -53,7 +53,7 @@
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20230307.0",
-		"@playwright/test": "^1.31.2",
+		"@playwright/test": "^1.32.0",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^7.6.0",
 		"eslint-config-pluv": "workspace:^",
