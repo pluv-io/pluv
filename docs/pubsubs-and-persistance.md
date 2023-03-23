@@ -4,7 +4,7 @@
 > PubSubs and Persistance is currently only supported with @pluv/platform-node
 
 You may want to run a single room across multiple servers, in which case the events will need to be
-communicated between the servers within the same room. For that a PubSubs will be necessary to share the events, and Persistance will be necessary for syncing storage state across servers.
+communicated between the servers within the same room. For that a PubSub will be necessary to share the events, and Persistance will be necessary for syncing storage state across servers.
 
 ## How to setup a PubSub and Persistance
 
@@ -27,7 +27,7 @@ import { Redis } from "ioredis";
 
 const redis = new Redis({
     /* redis config here */
-})
+});
 
 export const io = createIO({
     platform: platformNode({
@@ -36,7 +36,7 @@ export const io = createIO({
             publisher: redis,
             subscriber: redis,
         }),
-    })
+    }),
 });
 ```
 

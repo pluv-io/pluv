@@ -1,6 +1,7 @@
 import { MDXProvider } from "@mdx-js/react";
 import type { FC, ReactNode } from "react";
 import { MdxA } from "./MdxA";
+import { MdxBlockQuote } from "./MdxBlockQuote";
 import { MdxCode } from "./MdxCode";
 import { MdxH1 } from "./MdxH1";
 import { MdxH2 } from "./MdxH2";
@@ -25,6 +26,7 @@ export const MdxProvider: FC<MdxProviderProps> = ({ children }) => {
         <MDXProvider
             components={{
                 a: MdxA,
+                blockquote: MdxBlockQuote,
                 code: MdxCode,
                 h1: MdxH1,
                 h2: MdxH2,
