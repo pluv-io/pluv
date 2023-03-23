@@ -27,7 +27,7 @@ Here is an example installation for [npm](https://www.npmjs.com/), assuming you 
 
 ```bash
 # For the server
-npm install @pluv/io @pluv/platform-node yjs
+npm install @pluv/io @pluv/platform-node
 # Server peer-dependencies
 npm install yjs ws zod
 
@@ -43,7 +43,7 @@ Let's step through how we'd put together a real-time API for Node.js. In this ex
 
 ### Create PluvIO instance
 
-Define a io (websocket client) instance on the server codebase:
+Define an io (websocket client) instance on the server codebase:
 
 ```ts
 // backend/io.ts

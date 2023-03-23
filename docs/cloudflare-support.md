@@ -41,7 +41,7 @@ export class RoomDurableObject implements DurableObject {
   private _io: InferIORoom<typeof io>;
 
   constructor(state: DurableObjectState) {
-    this._io = io.getRoom(state.id.toString);
+    this._io = io.getRoom(state.id.toString());
   }
 
   async fetch(request: Request): Promise<Response> {

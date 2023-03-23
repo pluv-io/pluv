@@ -43,10 +43,23 @@ export const MdxPre: FC<MdxPreProps> = (props) => {
     }, [children, hasChildren]);
 
     const language = useMemo(() => {
-        return className?.startsWith("language")
-            ? className.replace(/language-/, "")
-            : "tsx";
-    }, [className]) as Language;
+        const parseLanguage = (_className?: string): string | null => {
+            return _className?.replace(/language-/, "") ?? null;
+        };
+
+        const getChildrenLanguage = (_children: ReactNode): string => {
+            if (!isValidElement(_children)) return "tsx";
+
+            const _language = parseLanguage(_children.props.className);
+
+            if (_language) return _language;
+            if (!hasChildren(_children)) return "tsx";
+
+            return getChildrenLanguage(_children.props.children);
+        };
+
+        return parseLanguage(className) ?? getChildrenLanguage(children);
+    }, [children, className, hasChildren]) as Language;
 
     return (
         <Root className={className} language={language} style={style}>
