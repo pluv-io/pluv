@@ -93,7 +93,7 @@ const Content = tw(m.ul)`
     gap-0.5
     mt-0.5
     pl-3
-    overflow-hidden
+    overflow-y-clip
 `;
 
 export interface TreeViewListProps {

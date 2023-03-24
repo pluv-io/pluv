@@ -22,10 +22,11 @@ const Item = tw.li`
     border-l-2
     border-indigo-300/20
     text-sm
+    text-slate-400
     hover:border-indigo-400/40
     [&[data-active="true"]]:border-indigo-500/60
     [&[data-active="true"]]:bg-indigo-600/20
-    [&[data-active="true"]]:text-sky-300
+    [&[data-active="true"]]:text-white
     [&[data-active="true"]]:font-semibold
     [&[data-nested="true"]]:pl-6
 `;
