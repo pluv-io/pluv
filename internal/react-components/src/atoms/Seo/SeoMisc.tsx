@@ -23,11 +23,16 @@ export const SeoMisc: FC<SeoMiscProps> = ({
     const router = useRouter();
 
     const locale = router?.locale ?? "en-US";
-    const origin =
-        _origin ||
-        process.env.BASE_URL ||
-        process.env.VERCEL_URL ||
-        process.env.DEPLOY_URL;
+    const origin = useMemo(() => {
+        if (typeof window !== "undefined") return window.origin;
+
+        return (
+            _origin ||
+            process.env.BASE_URL ||
+            process.env.VERCEL_URL ||
+            process.env.DEPLOY_URL
+        );
+    }, [_origin]);
 
     const canonical = `${origin}${_canonical.replace(/\/+$/g, "")}`;
 

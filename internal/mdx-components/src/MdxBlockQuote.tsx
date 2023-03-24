@@ -7,6 +7,7 @@ export type MdxBlockQuoteProps = Omit<
 >;
 
 export const MdxBlockQuote = tw.blockquote`
+    mb-[1.2em]
     pl-3
     py-1
     border-l-2

@@ -66,7 +66,7 @@ const StyledToC = tw(TableOfContents)`
     hidden
     sticky
     top-24
-    w-64
+    w-72
     sm:top-28
     lg:flex
 `;

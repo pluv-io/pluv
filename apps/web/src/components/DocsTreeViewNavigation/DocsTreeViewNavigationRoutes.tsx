@@ -31,7 +31,6 @@ export const DocsTreeViewNavigationRoutes: FC<
             .split("/");
     }, [baseRoute, router.asPath]);
 
-    const [currentSlug] = slugs;
     const finalSlug = slugs.at(-1);
 
     return (
@@ -46,7 +45,7 @@ export const DocsTreeViewNavigationRoutes: FC<
                                 routes={node.children}
                             />
                         }
-                        defaultOpen={currentSlug === slug}
+                        defaultOpen
                         href={`${baseRoute}/${slug}`}
                         selected={finalSlug === slug}
                     >
