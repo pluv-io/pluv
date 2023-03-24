@@ -26,6 +26,7 @@ export const DocsTreeViewNavigationRoutes: FC<
 
     const slugs = useMemo(() => {
         return router.asPath
+            .replace(/#.+$/g, "")
             .replace(new RegExp(`^${baseRoute}`), "")
             .replace(/^\//, "")
             .split("/");
