@@ -1,5 +1,25 @@
 # @pluv/client
 
+## 0.6.0
+
+### Minor Changes
+
+- e1308e3: changed `PluvClient.createRoom` to have optional options.
+- e1308e3: changed `PluvClient.enter` to return the `PluvRoom` that was entered.
+
+### Patch Changes
+
+- 9516a4e: updated typescript to 5.0
+- 7b6da1c: bumped dependencies
+- e9c1514: bumped dependencies
+- 9d1829c: chore: bumped dependencies
+- Updated dependencies [9516a4e]
+- Updated dependencies [7b6da1c]
+- Updated dependencies [e9c1514]
+- Updated dependencies [9d1829c]
+  - @pluv/crdt-yjs@0.3.2
+  - @pluv/types@0.1.4
+
 ## 0.5.1
 
 ### Patch Changes

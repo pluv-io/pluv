@@ -1,5 +1,11 @@
 # @pluv/tsconfig
 
+## 0.1.4
+
+### Patch Changes
+
+- e9c1514: bumped dependencies
+
 ## 0.1.3
 
 ### Patch Changes
