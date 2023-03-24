@@ -2,4 +2,4 @@
 "@pluv/client": minor
 ---
 
-updated createRoom options to be optional
+changed `PluvClient.createRoom` to have optional options.

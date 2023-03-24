@@ -2,4 +2,4 @@
 "@pluv/client": minor
 ---
 
-return room after PluvRoom.enter
+changed `PluvClient.enter` to return the `PluvRoom` that was entered.
