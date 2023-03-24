@@ -56,7 +56,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
 
     public enter = async (
         room: string | PluvRoom<TIO, JsonObject, any>
-    ): Promise<void> => {
+    ): Promise<PluvRoom<TIO, JsonObject, any>> => {
         const toEnter = typeof room === "string" ? this.getRoom(room) : room;
 
         if (!toEnter) {
@@ -68,6 +68,8 @@ export class PluvClient<TIO extends IOLike = IOLike> {
         await toEnter.connect();
 
         this._logDebug(`Entered room: ${room}`);
+
+        return toEnter;
     };
 
     public getRoom = <
