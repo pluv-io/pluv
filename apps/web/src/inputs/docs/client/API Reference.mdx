@@ -69,7 +69,7 @@ This is the client returned by `createClient`.
 
 Returns a `PluvRoom` instance.
 
-Create a `PluvRoom` that websockets can join and leave. The second argument is a configuration for presence and storage.
+Create a `PluvRoom` that websockets can join and leave. The second argument is an optional configuration for presence and storage. See the example below for the available properties of the configuration.
 
 ```ts
 // frontend/room.ts
@@ -95,7 +95,9 @@ const room = client.createRoom("my-example-room", {
 
 ### PluvClient.enter
 
-Establishes a websocket connection with a room. If the `PluvClient` specifies an `authEndpoint`, the endpoint will be called when this function is called.
+Returns a `PluvRoom` instance.
+
+Establishes a websocket connection with a room. If the `PluvClient` specifies an `authEndpoint`, the endpoint will be called when this function is called. Returns the `PluvRoom` that was entered.
 
 > **Note**: This method will fail if the room does not already exist beforehand.
 
@@ -276,6 +278,34 @@ Returns all user info objects for connections that are not the current user's.
 
 ```ts
 const others = room.getOthers();
+```
+
+### PluvRoom.getStorage
+
+Returns a [yjs](https://yjs.dev/) shared type defined on the client config.
+
+```ts
+// frontend/room.ts
+import { y } from "@pluv/client";
+import { z } from "zod";
+import { client } from "./io.ts";
+
+const room = client.createRoom("my-example-room", {
+    // Define your presence schema
+    presence: z.object({
+        selectionId: z.nullable(z.string()),
+    }),
+    // Define the user's initial presence
+    initialPresence: {
+        selectionId: null,
+    },
+    // Define the initial storage for the room
+    initialStorage: () => ({
+        messages: y.array(["hello world!"]),
+    }),
+});
+
+const messages = room.getStorage("messages");
 ```
 
 ### PluvRoom.other
