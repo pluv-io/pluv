@@ -16,14 +16,18 @@ const Item = tw(NextLink)`
     h-8
     px-3
     rounded
-    font-semibold
+    text-sm
     transition-colors
     duration-150
     ease-in
     cursor-pointer
+    text-slate-400
     hover:bg-slate-300/10
+    hover:text-white
     focus:bg-slate-300/20
+    focus:text-white
     active:bg-slate-300/40
+    active:text-white
     [&[data-selected="true"]]:text-sky-500
     [&[data-selected="true"]]:bg-slate-300/20
 `;
