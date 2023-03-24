@@ -1,5 +1,13 @@
 # @pluv/types
 
+## 0.1.4
+
+### Patch Changes
+
+- 9516a4e: updated typescript to 5.0
+- 7b6da1c: bumped dependencies
+- e9c1514: bumped dependencies
+
 ## 0.1.3
 
 ### Patch Changes

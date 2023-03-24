@@ -1,5 +1,19 @@
 # @pluv/pubsub-redis
 
+## 0.1.7
+
+### Patch Changes
+
+- 9516a4e: updated typescript to 5.0
+- 7b6da1c: bumped dependencies
+- e9c1514: bumped dependencies
+- 9d1829c: chore: bumped dependencies
+- Updated dependencies [9516a4e]
+- Updated dependencies [7b6da1c]
+- Updated dependencies [e9c1514]
+- Updated dependencies [9d1829c]
+  - @pluv/io@0.2.6
+
 ## 0.1.6
 
 ### Patch Changes

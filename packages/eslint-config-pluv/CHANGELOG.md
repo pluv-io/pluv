@@ -1,5 +1,14 @@
 # eslint-config-pluv
 
+## 0.1.6
+
+### Patch Changes
+
+- 9516a4e: updated typescript to 5.0
+- beca15d: fix(deps): update dependency eslint-config-turbo to ^0.0.10
+- e9c1514: bumped dependencies
+- 9d1829c: chore: bumped dependencies
+
 ## 0.1.5
 
 ### Patch Changes
