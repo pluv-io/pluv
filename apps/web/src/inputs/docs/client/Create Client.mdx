@@ -1,0 +1,48 @@
+---
+title: Create Client
+description: Create a framework-agnostic type-safe pluv.io client to add real-time to any app.
+---
+
+import { DocsLayout } from "../../../components";
+
+# Create Client
+
+Generally, it is recommended to use framework-specific bindings for your particular UI framework such as [@pluv/react](https://www.npmjs.com/package/@pluv/react). However, if your selected framework isn't yet supported, you can create a framework-agnostic pluv.io client to add automatic type-safe real-time to any app.
+
+## Creating a PluvClient
+
+> **Note**: These examples assume that you've already created a backend pluv.io
+> instance. Refer to the [quickstart](/docs/quickstart) to learn more.
+
+### Install dependencies
+
+```bash
+# For the frontend
+npm install @pluv/client
+# Frontend peer-dependencies
+npm install react react-dom yjs zod
+```
+
+### Define a frontend PluvClient
+
+```ts
+// frontend/io.ts
+
+import { createClient } from "@pluv/client";
+// Import the type from your backend @pluv/io instance.
+import { type AppPluvIO } from "server/io";
+
+const client = createClient<AppPluvIO>({
+    wsEndpoint: (room: string): string => {
+        // Specify the ws endpoint to connect to 
+        return `http://localhost:3000/api/room?room=${room}`;
+    },
+});
+```
+
+## Next Steps
+
+* [Enable authorization](/docs/io/authorization)
+* [Create rooms](/docs/client/create-rooms)
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;

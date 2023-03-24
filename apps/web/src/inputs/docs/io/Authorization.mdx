@@ -91,6 +91,7 @@ import { createClient } from "@pluv/react";
 import type { AppPluvIO } from "server/io";
 
 const client = createClient<AppPluvIO>({
+    // Specify your auth endpoint here
     authEndpoint: (room) => `http://localhost:3000/api/authorize?room=${room}`,
     // Define a ws endpoint url based on how you parse the room name
     wsEndpoint: (room) => `ws://localhost:3000/api/room/${room}`,

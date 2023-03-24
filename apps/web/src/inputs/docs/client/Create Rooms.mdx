@@ -1,0 +1,41 @@
+---
+title: Create Rooms
+description: Create 
+---
+
+import { DocsLayout } from "../../../components";
+
+# Creating Rooms
+
+Rooms are the channels that WebSockets can enter and leave (i.e. connect and disconnect). Events emitted by sockets in a room will be broadcasted only to other sockets within the same room.
+
+## Creating a PluvRoom
+
+To create a `PluvRoom`, you must first have a `PluvClient` defined. Refer to the [create client](/docs/client/create-client) documentation to do so.
+
+```ts
+// frontend/room.ts
+
+import { y } from "@pluv/client";
+import { z } from "zod";
+import { client } from "./io";
+
+const ROOM_NAME = "my-test-room";
+
+export const room = client.createRoom(ROOM_NAME, {
+    // Define your presence schema
+    presence: z.object({
+        selectionId: z.nullable(z.string()),
+    }),
+    // Define the user's initial presence value
+    initialPresence: {
+        selectionId: null,
+    },
+    // Define the initial storage for the room
+    initialStorage: () => ({
+        messages: y.array(["hello world!"]),
+    }),
+});
+```
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;
