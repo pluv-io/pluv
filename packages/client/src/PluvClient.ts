@@ -32,7 +32,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
         TStorage extends Record<string, AbstractType<any>> = {}
     >(
         room: string,
-        options: PluvRoomOptions<TIO, TPresence, TStorage>
+        options: PluvRoomOptions<TIO, TPresence, TStorage> = {}
     ): PluvRoom<TIO, TPresence, TStorage> => {
         const oldRoom = this.getRoom<TPresence, TStorage>(room);
 
