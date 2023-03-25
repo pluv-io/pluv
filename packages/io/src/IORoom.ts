@@ -5,6 +5,7 @@ import type {
     BaseIOEventRecord,
     EventMessage,
     EventRecord,
+    Id,
     InferEventMessage,
     InferIOAuthorize,
     InferIOAuthorizeUser,
@@ -85,10 +86,10 @@ export class IORoom<
     readonly _authorize: TAuthorize | null = null;
     readonly _events: InferEventConfig<TContext, TInput, TOutput>;
 
-    readonly room: string;
+    readonly id: string;
 
     constructor(
-        room: string,
+        id: string,
         config: IORoomConfig<TPlatform, TAuthorize, TContext, TInput, TOutput>
     ) {
         const {
@@ -106,7 +107,7 @@ export class IORoom<
         this._events = events;
         this._platform = platform;
 
-        this.room = room;
+        this.id = id;
 
         this._listeners = {
             onDestroy: (encodedState) => onDestroy?.(encodedState),
@@ -116,7 +117,12 @@ export class IORoom<
         if (initialStorage) this._initialStorage = initialStorage;
     }
 
-    public broadcast(message: BroadcastMessage<this>): Promise<void> {
+    public broadcast<TEvent extends keyof InferIOInput<this>>(
+        event: TEvent,
+        data: Id<InferIOInput<this>[TEvent]>
+    ): Promise<void> {
+        const message = { type: event, data } as BroadcastMessage<this>;
+
         return Promise.resolve(this._broadcast({ message }));
     }
 
@@ -129,12 +135,12 @@ export class IORoom<
         const token = options?.token;
         const sessionId = this._platform.randomUUID();
         const pluvWs = this._platform.convertWebSocket(webSocket, {
-            room: this.room,
+            room: this.id,
         });
 
         this._logDebug(
             `${chalk.blue(
-                `Registering connection for room ${this.room}:`
+                `Registering connection for room ${this.id}:`
             )} ${sessionId}`
         );
 
@@ -168,7 +174,7 @@ export class IORoom<
             id: sessionId,
             presence: null,
             quit: false,
-            room: this.room,
+            room: this.id,
             timers: {
                 ping: currentTime,
             },
@@ -179,7 +185,7 @@ export class IORoom<
         this._sessions.set(session.id, session);
 
         await this._platform.persistance.addUser(
-            this.room,
+            this.id,
             sessionId,
             user ?? {}
         );
@@ -191,7 +197,7 @@ export class IORoom<
         const context: EventResolverContext<TContext> = {
             context: this._context,
             doc: this._doc,
-            room: this.room,
+            room: this.id,
             session,
             sessions: this._sessions,
         };
@@ -227,10 +233,10 @@ export class IORoom<
                         return;
                     }
                     case "sync": {
-                        this._platform.pubSub.publish(this.room, {
+                        this._platform.pubSub.publish(this.id, {
                             connectionId: session.id,
                             options: eventConfig.options,
-                            room: this.room,
+                            room: this.id,
                             user: session.user,
                             ...message,
                         });
@@ -261,13 +267,13 @@ export class IORoom<
 
             this._logDebug(
                 `${chalk.blue(
-                    `(Unregistering connection for room ${this.room}:`
+                    `(Unregistering connection for room ${this.id}:`
                 )} ${sessionId}`
             );
             this._sessions.delete(session.id);
 
             this._platform.persistance
-                .deleteUser(this.room, session.id)
+                .deleteUser(this.id, session.id)
                 .finally(() => {
                     this._broadcast({
                         message: {
@@ -283,11 +289,11 @@ export class IORoom<
 
                     this._logDebug(
                         `${chalk.blue(
-                            `Unregistered connection for room ${this.room}:`
+                            `Unregistered connection for room ${this.id}:`
                         )} ${sessionId}`
                     );
                     this._logDebug(
-                        `${chalk.blue(`Room ${this.room} size:`)} ${size}`
+                        `${chalk.blue(`Room ${this.id} size:`)} ${size}`
                     );
 
                     if (size) return;
@@ -301,13 +307,13 @@ export class IORoom<
 
         this._logDebug(
             `${chalk.blue(
-                `Registered connection for room ${this.room}:`
+                `Registered connection for room ${this.id}:`
             )} ${sessionId}`
         );
 
         const size = this._getSessionsSize();
 
-        this._logDebug(`${chalk.blue(`Room ${this.room} size:`)} ${size}`);
+        this._logDebug(`${chalk.blue(`Room ${this.id} size:`)} ${size}`);
     }
 
     private _broadcast(params: BroadcastParams<this>): void {
@@ -328,9 +334,9 @@ export class IORoom<
 
         this._emitQuitters(quitters);
 
-        this._platform.pubSub.publish(this.room, {
+        this._platform.pubSub.publish(this.id, {
             connectionId: senderId ?? null,
-            room: this.room,
+            room: this.id,
             user: sender?.user ?? null,
             ...message,
         });
@@ -360,7 +366,7 @@ export class IORoom<
 
     private _emitStorageReceived(session: WebSocketSession): void {
         this._platform.persistance
-            .getStorageState(this.room)
+            .getStorageState(this.id)
             .then(async (_state) => {
                 const state =
                     _state ??
@@ -412,9 +418,9 @@ export class IORoom<
             return null;
         }
 
-        if (payload.room !== this.room) {
+        if (payload.room !== this.id) {
             this._logDebug(
-                chalk.blue(`Token is not authorized for room ${this.room}:`)
+                chalk.blue(`Token is not authorized for room ${this.id}:`)
             );
             this._logDebug(chalk.blue("Received:"), payload.room);
             this._logDebug(token);
@@ -456,7 +462,7 @@ export class IORoom<
     }
 
     private async _initialize(): Promise<void> {
-        this._logDebug(`${chalk.blue(`Initializing room ${this.room}:`)}`);
+        this._logDebug(`${chalk.blue(`Initializing room ${this.id}:`)}`);
 
         if (!!this._uninitialize) {
             await this._uninitialize();
@@ -465,7 +471,7 @@ export class IORoom<
         }
 
         const pubSubId = await this._platform.pubSub.subscribe(
-            this.room,
+            this.id,
             ({ options = {}, ...message }) => {
                 const session = {
                     id: message.connectionId,
@@ -591,7 +597,7 @@ export class IORoom<
         Array.from(sessions.values()).forEach((_session) => {
             _session.webSocket.sendMessage({
                 connectionId: senderId,
-                room: this.room,
+                room: this.id,
                 user: _session.user,
                 ...message,
             });
@@ -612,7 +618,7 @@ export class IORoom<
 
         session.webSocket.sendMessage({
             connectionId: sender.id,
-            room: this.room,
+            room: this.id,
             user: sender.user,
             ...message,
         });
@@ -629,7 +635,7 @@ export class IORoom<
         this._resolveMessage(message, {
             context: this._context,
             doc: this._doc,
-            room: this.room,
+            room: this.id,
             session: null,
             sessions: this._sessions,
         }).then((output) => {
@@ -638,11 +644,11 @@ export class IORoom<
             Object.keys(output).forEach((type: string) => {
                 const data = output[type] ?? {};
 
-                this._platform.pubSub.publish(this.room, {
+                this._platform.pubSub.publish(this.id, {
                     connectionId: senderId,
                     data,
                     options: { type: "self" },
-                    room: this.room,
+                    room: this.id,
                     type,
                     user: sender.user ?? null,
                 });

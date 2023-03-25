@@ -1,0 +1,140 @@
+---
+title: API Reference
+description: "@pluv/io API reference"
+---
+
+import { DocsLayout } from "../../../components";
+
+# API Reference
+
+## createIO
+
+Returns a `PluvIO` instance.
+
+Creates a server-side `PluvIO` client that will create rooms to register your websockets to. Below will show a available configurations for `createIO`. To learn more about `createIO`, read [Authorization](/docs/io/authorization), [Cloudflare Workers](/docs/io/cloudflare-workers), [Node.js](/docs/io/node.js) and [PubSub](/docs/io/pubsub).
+
+```ts
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { z } from "zod";
+
+const io = createIO({
+    // Optional: if provided, defines authorization for rooms created by io
+    authorize: {
+        // If required is false, users can authenticate for a room to
+        // attach an identity to their presence. Otherwise they will be
+        // anonymous.
+        required: true,
+        // The secret for generating your JWT
+        secret: process.env.PLUV_AUTH_SECRET!,
+        // The shape of your user object. `id` must always be required.
+        user: z.object({
+            id: z.string(),
+            // Here is an additional field we wish to add.
+            name: z.string(),
+        }),
+    },
+    // Enable @pluv/io for Node.js
+    platform: platformNode(),
+});
+```
+
+## PluvIO
+
+This is the client returned by `createIO`.
+
+### createToken
+
+Returns `Promise<string>`.
+
+Creates a JWT for a user trying to connect to a room. This should be called within a custom authentication endpoint you define. See [Authorization](/docs/io/authorization) for more information.
+
+```ts
+const token = await io.createToken({
+    room: "my-example-room",
+    user: {
+        id: "abc123",
+        name: "leedavidcs",
+    },
+});
+```
+
+### event
+
+Returns `PluvIO`.
+
+Adds a new type-safe event to be broadcasted from `PluvClient`. See [Define Events](/docs/io/define-events) for more information.
+
+```ts
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { z } from "zod";
+
+const io = createIO({ platform: platformNode() })
+    // When event "SEND_MESSAGE" is sent by the frontend and received
+    // on the server
+    .event("SEND_MESSAGE", {
+        // Define a zod validation schema for the input
+        input: z.object({
+            message: z.string(),
+        }),
+        // Emit a "MESSAGE_RECEIVED" from the server to the client
+        resolver: ({ message }) => ({ MESSAGE_RECEIVED: { message } }),
+    })
+    .event("EMIT_EMOJI", {
+        input: z.object({
+            emojiCode: z.number(),
+        }),
+        resolver: ({ emojiCode }) => ({ EMOJI_RECEIVED: { emojiCode } }),
+    });
+```
+
+### getRoom
+
+Returns `IORoom`.
+
+Retrieves a room by room name if it already exists. If the room doesn't already exist, the room is created and returned.
+
+```ts
+const room = io.getRoom("my-example-room");
+```
+
+## IORoom
+
+This is the room returned by `PluvIO.getRoom`. This is what websockets are registered to.
+
+### broadcast
+
+Returns `void`.
+
+Broadcasts an event to all connected websockets to the room.
+
+```ts
+room.broadcast("EMIT_EMOJI", {
+    emojiCode: 123,
+});
+```
+
+### id
+
+Type of `string`.
+
+This is the id of the room, when the room was created.
+
+```ts
+const roomId = room.id;
+```
+
+### register
+
+Returns `Promise<void>`.
+
+Registers a websocket to the room. Accepts a secondary options parameter to pass-in a token for authorizing the room. Read [Cloudflare Workers](/docs/io/cloudflare-workers), [Node.js](/docs/io/node.js) and [Authorization](/docs/io/authorization) to learn more.
+
+```ts
+// const token: string = ...
+
+room.register(webSocket, { token })
+```
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;

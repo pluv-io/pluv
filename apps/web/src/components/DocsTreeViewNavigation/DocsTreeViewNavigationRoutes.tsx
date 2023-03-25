@@ -5,12 +5,14 @@ import { DocRouteNode } from "../../types";
 
 export interface DocsTreeViewNavigationRoutesProps {
     baseRoute?: string;
+    level: number;
     routes: Record<string, DocRouteNode>;
+    selected?: boolean;
 }
 
 export const DocsTreeViewNavigationRoutes: FC<
     DocsTreeViewNavigationRoutesProps
-> = ({ baseRoute = "", routes }) => {
+> = ({ baseRoute = "", level, routes, selected }) => {
     const router = useRouter();
 
     const sorted = useMemo(() => {
@@ -32,6 +34,11 @@ export const DocsTreeViewNavigationRoutes: FC<
             .split("/");
     }, [baseRoute, router.asPath]);
 
+    const routeSlug = useMemo(
+        () => router.asPath.split("/")[level + 1],
+        [level, router.asPath]
+    );
+
     const finalSlug = slugs.at(-1);
 
     return (
@@ -43,7 +50,9 @@ export const DocsTreeViewNavigationRoutes: FC<
                         content={
                             <DocsTreeViewNavigationRoutes
                                 baseRoute={`${baseRoute}/${slug}`}
+                                level={level + 1}
                                 routes={node.children}
+                                selected={selected && routeSlug === slug}
                             />
                         }
                         defaultOpen
@@ -56,7 +65,7 @@ export const DocsTreeViewNavigationRoutes: FC<
                     <TreeView.Link
                         key={slug}
                         href={`${baseRoute}/${slug}`}
-                        selected={finalSlug === slug}
+                        selected={selected && finalSlug === slug}
                     >
                         {node.name}
                     </TreeView.Link>

@@ -1,10 +1,21 @@
-import { InferComponentProps } from "@pluv-internal/typings";
-import { FC } from "react";
+import { CSSProperties, FC, ReactNode } from "react";
 import tw, { styled } from "twin.macro";
 
-const Root = styled.table`
+const Root = tw.div`
+    flex
+    items-stretch
+    w-full
+    border
+    border-solid
+    border-indigo-500/40
+    rounded-md
+    overflow-hidden
+`;
+
+const Table = styled.table`
     ${tw`
-        w-full
+        grow
+        -m-[1px]
     `}
 
     & thead, & tbody, & tr {
@@ -37,8 +48,16 @@ const Root = styled.table`
     }
 `;
 
-export type MdxTableProps = Omit<InferComponentProps<"table">, "ref">;
+export interface MdxTableProps {
+    children?: ReactNode;
+    className?: string;
+    style?: CSSProperties;
+}
 
-export const MdxTable: FC<MdxTableProps> = (props) => {
-    return <Root {...props} />;
+export const MdxTable: FC<MdxTableProps> = ({ children, className, style }) => {
+    return (
+        <Root className={className} style={style}>
+            <Table>{children}</Table>
+        </Root>
+    );
 };
