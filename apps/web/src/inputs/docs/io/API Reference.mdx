@@ -17,6 +17,7 @@ Creates a server-side `PluvIO` client that will create rooms to register your we
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
+import { db } from "./db";
 
 const io = createIO({
     // Optional: if provided, defines authorization for rooms created by io
@@ -34,8 +35,31 @@ const io = createIO({
             name: z.string(),
         }),
     },
+    // Optional. Only needed to load persisted storage for rooms.
+    // Load storage for a newly created room.
+    initialStorage: async (room: string) => {
+        const existingRoom = await db.room.findUnique({ where: { room } });
+
+        return existingRoom?.encodedState ?? null;
+    },
     // Enable @pluv/io for Node.js
     platform: platformNode(),
+    // Optional. Only needed for persisting storage for rooms.
+    // Before the room is destroyed, persist the state to a database
+    // to load when the room is re-created.
+    onRoomDeleted: async (room: string, encodedState: string) => {
+        await db.room.upsert({
+            where: { room },
+            create: { encodedState, room },
+            update: { encodedState },
+        });
+    },
+    // It is unnecessary to save the storage state in this listener.
+    // If a room already exists, users will load the currently active
+    // storage before the storage from initialStorage.
+    onStorageUpdated: (room: string, encodedState: string) => {
+        console.log(room, encodedState);
+    },
 });
 ```
 
