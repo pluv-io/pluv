@@ -1,5 +1,17 @@
 # @pluv/io
 
+## 0.3.0
+
+### Minor Changes
+
+- c5567f1: renamed IORoom.room to IORoom.id
+- c5567f1: updated IORoom.broadcast to have the same function signature as PluvRoom.broadcast
+
+### Patch Changes
+
+- @pluv/crdt-yjs@0.3.2
+- @pluv/types@0.1.4
+
 ## 0.2.6
 
 ### Patch Changes

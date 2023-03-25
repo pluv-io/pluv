@@ -1,5 +1,12 @@
 # pluv
 
+## 0.3.4
+
+### Patch Changes
+
+- 57ae13f: bumped dependencies
+  - @pluv/types@0.1.4
+
 ## 0.3.3
 
 ### Patch Changes
