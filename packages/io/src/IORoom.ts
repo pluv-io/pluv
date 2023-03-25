@@ -116,7 +116,12 @@ export class IORoom<
         if (initialStorage) this._initialStorage = initialStorage;
     }
 
-    public broadcast(message: BroadcastMessage<this>): Promise<void> {
+    public broadcast<TEvent extends keyof InferIOInput<this>>(
+        event: TEvent,
+        data: Id<InferIOInput<this>[TEvent]>
+    ): Promise<void> {
+        const message = { type: event, data } as BroadcastMessage<this>;
+
         return Promise.resolve(this._broadcast({ message }));
     }
 
