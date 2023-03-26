@@ -3,6 +3,8 @@ export { useClickOutside } from "./useClickOutside";
 export { useIntersectionObserver } from "./useIntersectionObserver";
 export { useMeasure } from "./useMeasure";
 export { useMediaQuery } from "./useMediaQuery";
+export type { NoSsrFunction } from "./useNoSsr";
+export { useNoSsr } from "./useNoSsr";
 export type {
     OrchestratedTypistState,
     UseOrchestratedTypistParams,
