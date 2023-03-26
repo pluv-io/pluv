@@ -95,7 +95,7 @@ const room = client.createRoom("my-example-room", {
 
 ### PluvClient.enter
 
-Returns a `PluvRoom` instance.
+Returns `Promise<PluvRoom>`.
 
 Establishes a websocket connection with a room. If the `PluvClient` specifies an `authEndpoint`, the endpoint will be called when this function is called. Returns the `PluvRoom` that was entered.
 

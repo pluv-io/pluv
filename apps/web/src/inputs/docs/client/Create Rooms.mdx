@@ -1,6 +1,6 @@
 ---
 title: Create Rooms
-description: Create 
+description: Learn how to create and connect to rooms with @pluv/client.
 ---
 
 import { DocsLayout } from "../../../components";
@@ -36,6 +36,30 @@ export const room = client.createRoom(ROOM_NAME, {
         messages: y.array(["hello world!"]),
     }),
 });
+```
+
+## Connect to your PluvRoom
+
+```ts
+import { client } from "./io";
+
+// connect by room name
+await client.enter(ROOM_NAME);
+
+// or connect by room instance
+await client.enter(room);
+```
+
+## Leave your PluvRoom
+
+```ts
+import { client } from "./io";
+
+// leave by room name
+client.leave(ROOM_NAME);
+
+// or leave by room instance
+client.leave(room);
 ```
 
 export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;
