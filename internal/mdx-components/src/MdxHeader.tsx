@@ -22,7 +22,8 @@ const Root = styled(Anchor)`
         flex-nowrap
         items-center
         mb-[0.6em]
-        not-first:mt-[1.2em]
+        not-first:mt-[1em]
+        [& + p]:mt-0
     `}
 
     &:hover ${StyledLinkIcon} {
