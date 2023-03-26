@@ -1,0 +1,80 @@
+---
+title: Create Bundle
+description: Learn how to create a frontend client and React.js bundle for pluv.io
+---
+
+import { DocsLayout } from "../../../components";
+
+# Create Bundle
+
+pluv.io ships [@pluv/react](https://npmjs.com/package/@pluv/react) to leverage [@pluv/client](https://npmjs.com/package/@pluv/client) in a type-safe and React.js way.
+
+## Create a PluvIO instance
+
+First, create a `PluvIO` instance from the `@pluv/io` package in your backend codebase.
+
+```ts
+// backend/io.ts
+
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+
+export const io = createIO({ platform: platformNode() });
+
+// Export the websocket client io type, instead of the client itself
+export type AppPluvIO = typeof io;
+```
+
+## Create a Pluv React bundle
+
+Then, import your `PluvIO` type to the frontend, and create your type-safe React.js bundle using `@pluv/react`.
+
+```ts
+// frontend/io.ts
+
+import { createBundle, createClient } from "@pluv/react";
+import { z } from "zod";
+// import your PluvIO instance from your backend codebase
+import { type AppPluvIO } from "backend/io";
+
+const client = clientClient<AppPluvIO>({
+    authEndpoint: () => "{{your auth endpoint}}",
+    wsEndpoint: () => "{{your ws endpoint}}",
+});
+
+export const {
+    // factories
+    createRoomBundle,
+
+    // components
+    PluvProvider,
+
+    // hooks
+    usePluvClient,
+} = createBundle(client);
+
+export const {
+    // components
+    PluvRoomProvider,
+
+    // hooks
+    usePluvBroadcast,
+    usePluvConnection,
+    usePluvEvent,
+    usePluvMyPresence,
+    usePluvMyself,
+    usePluvOther,
+    usePluvOthers,
+    usePluvRoom,
+    usePluvStorage,
+} = createRoomBundle();
+```
+
+## Next Steps
+
+* [Setup authorization](/docs/io/authorization)
+* Use custom events
+* Use yjs storage
+* Use awareness and presence
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>
