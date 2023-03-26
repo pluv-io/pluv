@@ -45,7 +45,7 @@ export const DocsBreadcrumbs = memo<DocsBreadcrumbsProps>((props) => {
                 return (
                     <Breadcrumbs.Item
                         key={slug}
-                        href={parts.join("/")}
+                        href={`/docs/${parts.join("/")}`}
                         selected={i === slugs.length - 1}
                     >
                         {getName(parts)}

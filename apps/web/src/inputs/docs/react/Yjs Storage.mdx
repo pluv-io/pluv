@@ -1,0 +1,79 @@
+---
+title: Yjs Storage
+description: Learn how to use Yjs storage with @pluv/react.
+---
+
+import { DocsLayout } from "../../../components";
+
+# Yjs Storage
+
+pluv.io supports conflict-free replicated data-types (CRDT) storage with [yjs](https://yjs.dev). This allows modifying shared data between multiple users, and also leveraging the yjs ecosystem such as [rich-text-editor bindings](https://docs.yjs.dev/ecosystem/editor-bindings).
+
+## Set initialStorage
+
+To get started with yjs for pluv.io, first set an `initialStorage` config on your `createRoomBundle` config.
+
+```ts
+import { createBundle, createClient, y } from "@pluv/react";
+import { type AppPluvIO } from "backend/io";
+
+const client = createClient<typeof io>({
+    wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
+});
+
+const { createRoomBundle } = createBundle(client);
+
+export const {
+    PluvRoomProvider,
+    usePluvStorage,
+} = createRoomBundle({
+    // Set the initial storage value, and type here
+    // Don't worry, we can set a different default value in the room component
+    initialStorage: () => ({
+        messages: y.array(["hello world!"]),
+    }),
+});
+```
+
+## Setup PluvRoomProvider
+
+Then, setup `PluvRoomProvider` with your new `initialStorage` if it is different than your default set from `createRoomBundle`.
+
+```tsx
+import { y } from "@pluv/react";
+import { FC } from "react";
+import { PluvRoomProvider } from "frontend/io";
+
+export const MyPage: FC = () => {
+    return (
+        <PluvRoomProvider
+            room="my-room-id"
+            initialStorage={() => ({
+                messages: y.array([]),
+            })}
+        >
+            <MyRoom />
+        </PluvRoomProvider>
+    );
+};
+```
+
+## Use yjs shared-types
+
+We can then use [yjs shared-types](https://docs.yjs.dev/getting-started/working-with-shared-types) to leverage shared CRDTs between connected clients using `usePluvStorage`.
+
+```tsx
+import { usePluvStorage } from "frontend/io";
+import { useCallback } from "react";
+
+// "messages" is a key from the root properties of `initialStorage`.
+const [messages, sharedType] = usePluvStorage("messages");
+
+const addMessage = useCallback((message: string) => {
+    sharedType?.(message);
+});
+
+messages.map((message, i) => <div key={i}>{message}</div>)
+```
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;
