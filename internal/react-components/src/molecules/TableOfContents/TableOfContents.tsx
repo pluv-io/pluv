@@ -152,15 +152,16 @@ export const TableOfContents = memo<TableOfContentsProps>((props) => {
 
     return (
         <Root className={className} style={style}>
-            {items.map((item) => (
-                <Item
-                    key={item.id}
-                    data-active={item.id === activeId}
-                    data-nested={item.depth > 2}
-                >
-                    <Link href={`#${item.id}`}>{item.title}</Link>
-                </Item>
-            ))}
+            {items.length > 1 &&
+                items.map((item) => (
+                    <Item
+                        key={item.id}
+                        data-active={item.id === activeId}
+                        data-nested={item.depth > 2}
+                    >
+                        <Link href={`#${item.id}`}>{item.title}</Link>
+                    </Item>
+                ))}
         </Root>
     );
 });
