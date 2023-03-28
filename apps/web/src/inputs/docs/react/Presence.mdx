@@ -1,0 +1,109 @@
+---
+title: Presence
+description: Learn how to apply awareness and presence to your real-time applications with @pluv/react.
+---
+
+import { DocsLayout } from "../../../components";
+
+# Presence
+
+Presence is a per-connection state that allows users to track what other users are doing in the same room. Presence can be used to represent movement, selections, and characteristics of a user, and can be really important to building collaborative experiences.
+
+## Set presence
+
+To get started with presence for pluv.io, first set a `presence` config on your `createRoomBundle` config.
+
+```ts
+import { createBundle, createClient } from "@pluv/react";
+import { type AppPluvIO } from "backend/io";
+import { z } from "zod";
+
+const client = createClient<AppPluvIO>({
+    wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
+});
+
+const { createRoomBundle } = createBundle(client);
+
+export const {
+    PluvRoomProvider,
+    usePluvMyPresence,
+    usePluvMyself,
+    usePluvOther,
+    usePluvOthers,
+    usePluvStorage,
+} = createRoomBundle({
+    // Define the validation schema for presence, using zod
+    presence: z.object({
+        selectionId: z.nullable(z.string()),
+    }),
+});
+```
+
+## Set initialPresence on PluvRoomProvider
+
+```tsx
+import { FC } from "react";
+import { PluvRoomProvider } from "frontend/io";
+
+const Room: FC = () => {
+    return (
+        <PluvRoomProvider
+            // Specify the initial presence for each newly connected user
+            initialPresence={{
+                selectionId: null,
+            }}
+            room="my-example-room"
+        >
+            <ChatRoom />
+        </PluvRoomProvider>
+    );
+};
+```
+
+## Observing presence
+
+### Current user's presence
+
+```tsx
+import { usePluvMyPresence, usePluvMyself } from "frontend/io";
+import { useCallback } from "react";
+
+const [myPresence, updateMyPresence] = usePluvMyPresence();
+//     ^? const myPresence: { selectionId: string | null } | null
+
+const myself = usePluvMyself();
+//    ^? const myself: {
+//        connectionId: string;
+//        presence: { selectionId: string | null };
+//        user: null;
+//    } | null;
+
+// Updating the current user's presence
+const selectInput = useCallback((selectionId: string) => {
+    updateMyPresence(selectionId);
+}, [updateMyPresence]);
+```
+
+### Others' presence
+
+```tsx
+import { usePluvOther, usePluvOthers } from "frontend/io";
+
+const others = usePluvOthers();
+//    ^? const others: readonly {
+//        connectionId: string;
+//        presence: { selectionId: string | null };
+//        user: null;
+//    } | null;
+
+// const connectionId = others[0]?.connectionId!;
+
+const other = usePluvOther(connectionId);
+//    ^? const other: {
+//        connectionId: string;
+//        presence: { selectionId: string | null };
+//        user: null;
+//    } | null;
+```
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>
