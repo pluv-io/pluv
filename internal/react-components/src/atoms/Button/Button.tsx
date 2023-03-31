@@ -151,5 +151,3 @@ Button.defaultProps = {
     role: "button",
     type: "button",
 };
-
-<Button as="div" />;
