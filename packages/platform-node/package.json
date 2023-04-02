@@ -25,13 +25,13 @@
 	"dependencies": {
 		"@pluv/io": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^18.15.9",
+		"@types/node": "^18.15.11",
 		"@types/ws": "^8.5.4"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^6.7.0",
-		"typescript": "^5.0.2"
+		"typescript": "^5.0.3"
 	}
 }

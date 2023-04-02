@@ -28,7 +28,7 @@
 		"@pluv/types": "workspace:^",
 		"chalk": "^4.1.2",
 		"jose": "^4.13.1",
-		"wonka": "^6.2.5"
+		"wonka": "^6.3.1"
 	},
 	"peerDependencies": {
 		"yjs": "^13.0.0"
@@ -37,7 +37,7 @@
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^6.7.0",
-		"typescript": "^5.0.2",
+		"typescript": "^5.0.3",
 		"yjs": "^13.5.51"
 	}
 }

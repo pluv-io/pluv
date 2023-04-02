@@ -35,7 +35,7 @@
         "@seznam/compose-react-refs": "^1.0.6",
         "@types/common-tags": "^1.8.1",
         "@types/ms": "^0.7.31",
-        "@types/node": "^18.15.9",
+        "@types/node": "^18.15.11",
         "@types/react": "18.0.31",
         "@types/react-dom": "^18.0.11",
         "@types/styled-components": "^5.1.26",
@@ -49,12 +49,12 @@
         "react": "18.2.0",
         "react-dom": "18.2.0",
         "styled-components": "^5.3.9",
-        "twin.macro": "^3.1.0",
+        "twin.macro": "^3.3.0",
         "yjs": "^13.5.51",
         "zod": "^3.21.4"
     },
     "devDependencies": {
-        "@babel/core": "^7.21.3",
+        "@babel/core": "^7.21.4",
         "@mdx-js/loader": "^2.3.0",
         "@next/bundle-analyzer": "^13.2.4",
         "@next/mdx": "^13.2.4",
@@ -68,20 +68,20 @@
         "babel-loader": "^9.1.2",
         "babel-plugin-macros": "^3.1.0",
         "babel-plugin-styled-components": "^2.0.7",
-        "concurrently": "^7.6.0",
+        "concurrently": "^8.0.1",
         "dotenv-cli": "^7.1.0",
         "eslint": "8.37.0",
         "eslint-config-pluv": "workspace:^",
         "fs-extra": "^11.1.1",
-        "glob": "^9.3.2",
+        "glob": "^9.3.4",
         "next-compose-plugins": "^2.2.1",
         "nodemon": "^2.0.22",
         "postcss": "^8.4.21",
         "react-is": "^18.2.0",
         "remark-gfm": "^3.0.1",
-        "tailwindcss": "3.2.7",
+        "tailwindcss": "3.3.1",
         "ts-node": "^10.9.1",
-        "typescript": "^5.0.2"
+        "typescript": "^5.0.3"
     },
     "babelMacros": {
         "twin": {
