@@ -1,5 +1,17 @@
 # pluv
 
+## 0.4.0
+
+### Minor Changes
+
+- a0160cf: bumped @pluv/io
+
+### Patch Changes
+
+- 74870ee: bumped dependencies
+- Updated dependencies [74870ee]
+  - @pluv/types@0.1.5
+
 ## 0.3.4
 
 ### Patch Changes

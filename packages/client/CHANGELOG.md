@@ -1,5 +1,15 @@
 # @pluv/client
 
+## 0.6.1
+
+### Patch Changes
+
+- 19433af: updated MockedRoomProvider events to allow partial events
+- 74870ee: bumped dependencies
+- Updated dependencies [74870ee]
+  - @pluv/crdt-yjs@0.3.3
+  - @pluv/types@0.1.5
+
 ## 0.6.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @pluv/types
 
+## 0.1.5
+
+### Patch Changes
+
+- 74870ee: bumped dependencies
+
 ## 0.1.4
 
 ### Patch Changes
