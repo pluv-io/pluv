@@ -282,7 +282,7 @@ export const createRoomBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual
+            options?.isEqual ?? fastDeepEqual
         );
     };
 
@@ -328,7 +328,7 @@ export const createRoomBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual
+            options?.isEqual ?? fastDeepEqual
         );
 
         const updateMyPresence: Dispatch<UpdateMyPresenceAction<TPresence>> =
@@ -378,7 +378,7 @@ export const createRoomBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual
+            options?.isEqual ?? fastDeepEqual
         );
     };
 
@@ -413,7 +413,7 @@ export const createRoomBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual
+            options?.isEqual ?? fastDeepEqual
         );
     };
 
