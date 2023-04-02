@@ -3,11 +3,11 @@ import type { IOLike, JsonObject } from "@pluv/types";
 import { createContext, FC, ReactNode } from "react";
 import { memo, useContext } from "react";
 import type { AbstractType } from "yjs";
-import {
+import type {
     CreateRoomBundle,
-    createRoomBundle as _createRoomBundle,
     CreateRoomBundleOptions,
 } from "./createRoomBundle";
+import { createRoomBundle as _createRoomBundle } from "./createRoomBundle";
 
 export interface PluvProviderProps {
     children?: ReactNode;

@@ -29,11 +29,11 @@ import { ConnectionState } from "./types";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
 
-export type MockedRoomEvents<TIO extends IOLike> = {
+export type MockedRoomEvents<TIO extends IOLike> = Partial<{
     [P in keyof InferIOInput<TIO>]: (
         data: Id<InferIOInput<TIO>[P]>
     ) => Partial<InferIOOutput<TIO>>;
-};
+}>;
 
 export type MockedRoomConfig<
     TIO extends IOLike,
