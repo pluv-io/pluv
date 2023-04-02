@@ -33,7 +33,7 @@
 		"@types/fs-extra": "^11.0.1",
 		"@types/gradient-string": "^1.1.2",
 		"@types/inquirer": "^9.0.3",
-		"@types/node": "^18.15.9",
+		"@types/node": "^18.15.11",
 		"chalk": "^4.1.2",
 		"commander": "^10.0.0",
 		"common-tags": "^1.8.2",
@@ -42,7 +42,7 @@
 		"gradient-string": "^2.0.2",
 		"inquirer": "^9.1.5",
 		"ora": "^6.3.0",
-		"type-fest": "^3.7.0"
+		"type-fest": "^3.7.2"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",

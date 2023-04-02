@@ -15,15 +15,15 @@
     "access": "public"
   },
   "dependencies": {
-    "eslint": "^8.36.0",
+    "eslint": "^8.37.0",
     "eslint-config-next": "^13.2.4",
     "eslint-config-prettier": "^8.8.0",
-    "eslint-config-turbo": "^0.0.10",
+    "eslint-config-turbo": "^1.8.8",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "7.32.2",
-    "eslint-plugin-tailwindcss": "^3.10.1",
+    "eslint-plugin-tailwindcss": "^3.10.3",
     "prettier": "^2.8.7",
-    "prettier-plugin-tailwindcss": "^0.2.5"
+    "prettier-plugin-tailwindcss": "^0.2.6"
   },
   "devDependencies": {
     "postcss": "^8.4.21",
