@@ -28,6 +28,10 @@ const StyledSideBar = tw(SideBar)`
     lg:flex
 `;
 
+const Navigation = tw(DocsTreeViewNavigation)`
+    pb-6
+`;
+
 const Container = tw.div`
     grow
     flex
@@ -90,7 +94,7 @@ export const DocsLayout = memo<DocsLayoutProps>((props) => {
         <Root as="div" className={className} style={style}>
             <DocsSeo description={meta?.description} title={meta?.title} />
             <StyledSideBar>
-                <DocsTreeViewNavigation />
+                <Navigation />
             </StyledSideBar>
             <Container>
                 <Content id="docs-content">
