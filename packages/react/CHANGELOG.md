@@ -1,5 +1,17 @@
 # @pluv/react
 
+## 0.5.4
+
+### Patch Changes
+
+- 19433af: updated MockedRoomProvider events to allow partial events
+- b80c555: updated react hooks to not re-render if state is deeply equal by default
+- 74870ee: bumped dependencies
+- Updated dependencies [19433af]
+- Updated dependencies [74870ee]
+  - @pluv/client@0.6.1
+  - @pluv/types@0.1.5
+
 ## 0.5.3
 
 ### Patch Changes

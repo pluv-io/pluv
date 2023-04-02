@@ -1,5 +1,14 @@
 # @pluv/persistance-redis
 
+## 0.1.9
+
+### Patch Changes
+
+- 74870ee: bumped dependencies
+- Updated dependencies [74870ee]
+  - @pluv/types@0.1.5
+  - @pluv/io@0.3.1
+
 ## 0.1.8
 
 ### Patch Changes
