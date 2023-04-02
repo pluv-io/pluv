@@ -17,7 +17,7 @@ To get started with yjs for pluv.io, first set an `initialStorage` config on you
 import { createBundle, createClient, y } from "@pluv/react";
 import { type AppPluvIO } from "backend/io";
 
-const client = createClient<typeof io>({
+const client = createClient<AppPluvIO>({
     wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
 });
 
@@ -70,7 +70,7 @@ import { useCallback } from "react";
 const [messages, sharedType] = usePluvStorage("messages");
 
 const addMessage = useCallback((message: string) => {
-    sharedType?.(message);
+    sharedType?.push([message]);
 });
 
 messages.map((message, i) => <div key={i}>{message}</div>)

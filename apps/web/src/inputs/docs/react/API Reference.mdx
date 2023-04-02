@@ -1,0 +1,251 @@
+---
+title: API Reference
+description: "@pluv/react API Reference"
+---
+
+import { DocsLayout } from "../../../components";
+
+# API Reference
+
+## createClient
+
+Returns a `PluvClient` instance.
+
+This is a re-export of [createClient](/docs/client/api-reference#createclient) from [@pluv/client](/docs/client/api-reference).
+
+## createBundle
+
+Returns a `CreateBundle` instance.
+
+Creates a bundle to be able to access the `PluvClient` from a react hook.
+
+## CreateBundle
+
+This is the bundle returned from `createBundle`.
+
+### createRoomBundle
+
+Returns a `CreateRoomBundle` instance.
+
+Creates a bundle to be able to access `PluvRoom` capabilities from various react hooks.
+
+### PluvProvider
+
+React provider component to allow the `PluvClient` created by `createClient` to be accessible in child components via `usePluvClient`. This is identical to importing the created client, so this is primarily useful for dependency injection when testing.
+
+```tsx
+<PluvProvider>{children}</PluvProvider>
+```
+
+### usePluvClient
+
+Returns `PluvClient`.
+
+Returns the `PluvClient` that was created via `createClient`.
+
+## CreateRoomBundle
+
+This is the bundle returned from `createRoomBundle`.
+
+### MockedRoomProvider
+
+React provider component to mock `PluvRoomProvider`. Enables hooks from `CreateRoomBundle` to work for single-player. This can be useful as in [Storybook](https://storybook.js.org/) within a decorator when mocking `PluvRoomProvider`.
+
+```tsx
+import { y } from "@pluv/react";
+import { MockedRoomProvider } from "./io";
+
+<MockedRoomProvider
+    // Mock events sent and received for hooks in child components.
+    events={{
+        $EMIT_EMOJI: ({ emojiCode }) => ({
+            EMOJI_RECEIVED: { emojiCode },
+        }),
+    }}
+    // Set initial presence for the current user
+    initialPresence={{
+        selectionId: null,
+    }}
+    // Set initial storage for usePluvStorage
+    initialStorage={() => ({
+        messages: y.array([]),
+    })}
+    // Set the room id
+    room="my-mock-room"
+>
+    {children}
+</MockedRoomProvider>
+```
+
+### PluvRoomProvider
+
+React provider component to enable `CreateRoomBundle` hooks within child components. Mounting this component connects to a real-time room with other connected users. Unmounting this component will disconnect the room. See [Create Rooms](/docs/react/api-reference) for more details.
+
+```tsx
+<PluvRoomProvider
+    // Set initial presence for the current user
+    initialPresence={{
+        selectionId: null,
+    }}
+    // Set initial storage for usePluvStorage
+    initialStorage={() => ({
+        messages: y.array([]),
+    })}
+    // Emits an error whenever authorization fails, for monitoring or
+    // debugging purposes
+    onAuthorizationFail={(error: Error) => {
+        console.error(error);
+    }}
+    // Set the room id
+    room="my-room-id"
+>
+    {children}
+</PluvRoomProvider>
+```
+
+### usePluvBroadcast
+
+Returns `(event, data) => void`.
+
+Returns a broadcast function to emit an event and data to all connected clients. This is type-safe. The first parameter `event` will be the name of the event specified when creating your backend `PluvIO` instance and the second parameter `data` will be the associated response type. See [Define Events](/docs/io/define-events) for more details.
+
+```tsx
+const broadcast = usePluvBroadcast();
+
+broadcast("EMIT_RECEIVED", { emojiCode: 123 });
+```
+
+### usePluvConnection
+
+Returns `WebSocketConnection`.
+
+Returns the websocket connection start of the current user.
+
+```tsx
+const connection = usePluvConnection();
+//    ^? const connection: {
+//        id: string | null;
+//        state: ConnectionState;
+//    }
+```
+
+### usePluvEvent
+
+Returns `void`.
+
+Defines a listener for events broadcasted by connected clients. This is type-safe. The first parameter `event` is the name of the event to listen to from your backend `PluvIO` instance. The second parameter is a callback containing the data emitted from the broadcasted event.
+
+```tsx
+usePluvEvent("EMOJI_RECEIVED", ({ emojiCode }) => {
+    console.log(emojiCode);
+});
+```
+
+### usePluvMyPresence
+
+Returns `[myPresence: TPresence | null, updatePresence: Function]`.
+
+Returns the current user's presence, and a function to update the user's presence. Using this hook rerenders the component based on a deep-equality check on the user's presence value. This hook accepts a selector to return a modified presence to reduce rerenders.
+
+```tsx
+const { usePluvMyPresence } = createRoomBundle({
+    presence: z.object({
+        selectionId: z.nullable(z.string()),
+        selectionColor: z.string(),
+    }),
+});
+
+const [
+    // the user's presence
+    myPresence,
+    // a presence updater function
+    updateMyPresence
+] = usePluvMyPresence();
+
+// update individual base properties
+updateMyPresence({ selectionId: "name-input" });
+updateMyPresence({ selectionColor: "#123456" });
+
+// update multiple base properties
+updateMyPresence({
+    selectionId: "name-input",
+    selectionColor: "#123456",
+});
+
+// if you only need a partial presence
+const [myPresence] = usePluvMyPresence(({ selectionId }) => selectionId);
+
+// if you don't need presence, and just want the updater
+const [, updateMyPresence] = usePluvMyPresence(
+    // set selector to return a stable value
+    () => true
+);
+```
+
+### usePluvMyself
+
+Returns `UserInfo | null`.
+
+Returns the user-info object for the current user. This hook accepts a selector to return a modified user-info to reduce rerenders.
+
+```tsx
+const myself = usePluvMyself();
+
+// if you don't need the entire user-info
+const myself = usePluvMyself(({ connectionId }) => connectionId);
+```
+
+### usePluvOther
+
+Returns `UserInfo | null`.
+
+Returns the user-info object for a connected user by `connectionId` string.
+
+```tsx
+const other = usePluvOther();
+
+// if you don't need the entire user-info
+const other = usePluvOther(({ connectionId }) => connectionId);
+```
+
+### usePluvOthers
+
+Returns `readonly UserInfo[]`.
+
+Returns all user-info objects for all connected users. This may trigger a lot of re-renders if presence updates frequently.
+
+> **Note**
+> Consider using this hook only for deriving others' `connectionId` values to pass into `usePluvOther`.
+
+```tsx
+const others = usePluvOthers();
+
+// if you want to just pull out connectionId properties
+const connectionIds = usePluvOthers((others) => {
+    return others.map(({ connectionId }) => connectionId);
+});
+```
+
+### usePluvStorage
+
+Returns `[TData | null, Yjs.SharedType | null]`.
+
+Returns a base-level property of our [yjs](https://yjs.dev) storage as a serialized value and a [Yjs SharedType](https://docs.yjs.dev/getting-started/working-with-shared-types). The component is re-rendered whenever the Yjs SharedType is updated.
+
+```tsx
+import { y } from "@pluv/react";
+
+const { usePluvStorage } = createRoomBundle({
+    initialStorage: () => ({
+        messages: y.array(["hello"]),
+    }),
+});
+
+const [messages, sharedType] = usePluvStorage("messages");
+
+sharedType?.push(["world~!"]);
+
+messages?.map((message, key) => <div key={key}>{message}</div>);
+```
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;
