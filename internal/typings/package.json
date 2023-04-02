@@ -12,7 +12,7 @@
 		"@types/styled-components": "^5.1.26",
 		"react": "18.2.0",
 		"styled-components": "^5.3.9",
-		"twin.macro": "^3.1.0"
+		"twin.macro": "^3.3.0"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
@@ -20,7 +20,7 @@
 		"eslint-config-pluv": "workspace:^",
 		"postcss": "^8.4.21",
 		"react-is": "^18.2.0",
-		"tailwindcss": "^3.2.7",
+		"tailwindcss": "^3.3.1",
 		"typescript": "^5.0.2"
 	}
 }

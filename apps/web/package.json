@@ -49,7 +49,7 @@
         "react": "18.2.0",
         "react-dom": "18.2.0",
         "styled-components": "^5.3.9",
-        "twin.macro": "^3.1.0",
+        "twin.macro": "^3.3.0",
         "yjs": "^13.5.51",
         "zod": "^3.21.4"
     },
@@ -79,7 +79,7 @@
         "postcss": "^8.4.21",
         "react-is": "^18.2.0",
         "remark-gfm": "^3.0.1",
-        "tailwindcss": "3.2.7",
+        "tailwindcss": "3.3.1",
         "ts-node": "^10.9.1",
         "typescript": "^5.0.2"
     },

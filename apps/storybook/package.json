@@ -32,7 +32,7 @@
         "react": "18.2.0",
         "react-dom": "18.2.0",
         "styled-components": "^5.3.9",
-        "twin.macro": "^3.1.0"
+        "twin.macro": "^3.3.0"
     },
     "devDependencies": {
         "@babel/core": "^7.21.4",
@@ -60,7 +60,7 @@
         "postcss": "^8.4.21",
         "react-is": "^18.2.0",
         "storybook-addon-next-router": "^4.0.2",
-        "tailwindcss": "^3.2.7",
+        "tailwindcss": "^3.3.1",
         "typescript": "^4.9.5",
         "webpack": "^5.77.0"
     },
