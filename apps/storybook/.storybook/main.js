@@ -1,3 +1,5 @@
+const path = require("path");
+
 module.exports = {
     stories: [
         "../src/**/*.stories.mdx",
@@ -7,7 +9,6 @@ module.exports = {
         "@storybook/addon-links",
         "@storybook/addon-essentials",
         "@storybook/addon-interactions",
-        "@storybook/addon-styling",
         {
             name: "@storybook/addon-postcss",
             options: {
@@ -16,11 +17,22 @@ module.exports = {
                 },
             },
         },
-        "storybook-addon-next-router"
     ],
-    core: {
-        builder: "@storybook/builder-webpack5"
+    framework: {
+        name: "@storybook/nextjs",
+        options: {
+            nextConfigPath: path.resolve(__dirname, "../next.config.mjs"),
+        },
     },
-    framework: "@storybook/react",
     staticDirs: ["../public"],
+    webpackFinal: async (config) => {
+        config.resolve.fallback = {
+            crypto: require.resolve("crypto-browserify"),
+            path: require.resolve("path-browserify"),
+            stream: require.resolve("stream-browserify"),
+            url: require.resolve("url/"),
+        };
+
+        return config;
+    },
 };

@@ -1,6 +1,5 @@
 import { LaserWaveTheme } from "@pluv-internal/react-code";
 import { GlobalStyles, LazyMotion } from "@pluv-internal/react-components";
-import { withThemeFromJSXProvider } from "@storybook/addon-styling";
 import { RouterContext } from "next/dist/shared/lib/router-context";
 import React from "react";
 
@@ -72,30 +71,10 @@ export const parameters = {
 	}
 };
 
-import * as WebNextImage from "../../web/node_modules/next/image";
-
-const overwriteNextImage = (nextImage) => {
-	const OriginalNextImage = nextImage.default;
-
-	Object.defineProperty(nextImage, "default", {
-		configurable: true,
-		value: (props) => (
-			<OriginalNextImage
-				{...props}
-				unoptimized
-				blurDataURL="data:image/jpeg;base64,/9j/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAADAAQDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAbEAADAAMBAQAAAAAAAAAAAAABAgMABAURUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAFxEAAwEAAAAAAAAAAAAAAAAAAAECEf/aAAwDAQACEQMRAD8Anz9voy1dCI2mectSE5ioFCqia+KCwJ8HzGMZPqJb1oPEf//Z"
-				loader={({ src }) => src}
-			/>
-		)
-	});
-};
-
-overwriteNextImage(WebNextImage);
-
 export const decorators = [
-	withThemeFromJSXProvider({ GlobalStyles }),
 	(Story) => (
 		<>
+			<GlobalStyles />
 			<LaserWaveTheme />
 			<LazyMotion>
 				<Story />
