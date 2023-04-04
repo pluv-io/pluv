@@ -48,18 +48,18 @@
 		"react": "18.2.0",
 		"react-dom": "18.2.0",
 		"ws": "^8.13.0",
-		"yjs": "^13.5.51",
+		"yjs": "^13.5.52",
 		"zod": "^3.21.4"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20230321.0",
-		"@playwright/test": "^1.32.1",
+		"@playwright/test": "^1.32.2",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^8.0.1",
 		"eslint-config-pluv": "workspace:^",
 		"miniflare": "^2.13.0",
 		"ts-node": "^10.9.1",
 		"typescript": "^5.0.3",
-		"wrangler": "2.13.0"
+		"wrangler": "2.14.0"
 	}
 }
