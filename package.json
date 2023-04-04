@@ -4,7 +4,7 @@
     "engines": {
         "node": ">=14.0.0"
     },
-    "packageManager": "pnpm@7.30.5",
+    "packageManager": "pnpm@8.1.1",
     "scripts": {
         "build": "turbo run build",
         "changeset": "changeset",
@@ -12,7 +12,6 @@
         "commit": "cz",
         "dev": "turbo run dev --parallel",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-        "husky": "husky",
         "lint": "turbo run lint",
         "release": "turbo run build --filter=./packages/* && changeset publish",
         "services:start": "docker compose up -d",
