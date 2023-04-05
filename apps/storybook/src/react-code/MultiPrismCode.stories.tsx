@@ -1,4 +1,4 @@
-import type { Meta, Story } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import type { MultiPrismCodeProps } from "@pluv-internal/react-code";
 import { MultiPrismCode } from "@pluv-internal/react-code";
 import { codeBlock } from "common-tags";
@@ -38,21 +38,24 @@ export default {
     component: MultiPrismCode,
 } as Meta;
 
-const Template: Story<MultiPrismCodeProps<"File1" | "File2">> = (args) => {
-    return <MultiPrismCode {...args} />;
-};
-Template.args = {
-    tabs: [
-        {
-            code: TAB1,
-            name: "File1",
-        },
-        {
-            code: TAB2,
-            name: "File2",
-        },
-    ],
+type Story = StoryObj<MultiPrismCodeProps<"File1" | "File2">>;
+
+const Template: Story = {
+    render: (args) => {
+        return <MultiPrismCode {...args} />;
+    },
+    args: {
+        tabs: [
+            {
+                code: TAB1,
+                name: "File1",
+            },
+            {
+                code: TAB2,
+                name: "File2",
+            },
+        ],
+    },
 };
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
+export const Standard: Story = { ...Template };

@@ -49,6 +49,7 @@
         "@storybook/nextjs": "^7.0.2",
         "@storybook/react": "^7.0.2",
         "@storybook/testing-library": "^0.1.0",
+        "@storybook/types": "^7.0.2",
         "autoprefixer": "^10.4.14",
         "babel-loader": "^9.1.2",
         "babel-plugin-macros": "^3.1.0",

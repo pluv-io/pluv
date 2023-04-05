@@ -23,6 +23,7 @@
 			"@pluv/platform-node": ["../../packages/platform-node/dist"],
 			"@pluv/react": ["../../packages/react/dist"],
 			"@pluv/types": ["../../packages/types/dist"],
+			"@storybook/types": ["./node_modules/@storybook/types"],
 			"ws": ["./node_modules/@types/ws"]
 		}
 	}
