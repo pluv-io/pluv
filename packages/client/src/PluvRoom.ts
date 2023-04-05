@@ -662,9 +662,6 @@ export class PluvRoom<
 
         if (!this._crdtManager) return;
 
-        const test = doc({});
-        test.applyUpdate(data.state);
-
         this._crdtManager.doc.applyUpdate(data.state, "$STORAGE_UPDATED");
 
         const sharedTypes = this._crdtManager.doc.getSharedTypes();
