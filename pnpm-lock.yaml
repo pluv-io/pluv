@@ -150,6 +150,9 @@ importers:
       '@storybook/testing-library':
         specifier: ^0.1.0
         version: 0.1.0
+      '@storybook/types':
+        specifier: ^7.0.2
+        version: 7.0.2
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.14(postcss@8.4.21)
@@ -6470,7 +6473,7 @@ packages:
   /@types/node-fetch@2.6.3:
     resolution: {integrity: sha512-ETTL1mOEdq/sxUtgtOhKjyB2Irra4cjxksvcMUR5Zr4n+PxVhsCD9WS46oPbHL3et9Zde7CNRr+WUNlcHvsX+w==}
     dependencies:
-      '@types/node': 16.18.23
+      '@types/node': 18.15.11
       form-data: 3.0.1
     dev: true
 

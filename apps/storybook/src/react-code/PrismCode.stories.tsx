@@ -1,4 +1,4 @@
-import type { Meta, Story } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import type { PrismCodeProps } from "@pluv-internal/react-code";
 import { PrismCode } from "@pluv-internal/react-code";
 import { codeBlock } from "common-tags";
@@ -26,12 +26,16 @@ export default {
     component: PrismCode,
 } as Meta;
 
-const Template: Story<PrismCodeProps> = (args) => {
-    return <PrismCode {...args} />;
-};
-Template.args = {
-    children: DEFAULT_CODE,
+type Story = StoryObj<PrismCodeProps>;
+
+const Template: Story = {
+    render: (args) => {
+        // @ts-ignore
+        return <PrismCode {...args} />;
+    },
+    args: {
+        children: DEFAULT_CODE,
+    },
 };
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
+export const Standard: Story = { ...Template };
