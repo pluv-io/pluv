@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
 import type { ChessBoardProps } from "@pluv-internal/react-chess";
 import { ChessBoard } from "@pluv-internal/react-chess";
+import type { Meta, StoryObj } from "@storybook/react";
 
 export default {
     title: "react-chess/ChessBoard",

@@ -1,16 +1,18 @@
 import type { LogoIconProps } from "@pluv-internal/react-components";
 import { LogoIcon } from "@pluv-internal/react-components";
-import type { Meta, Story } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 
 export default {
     title: "react-components/atoms/LogoIcon",
     component: LogoIcon,
 } as Meta;
 
-const Template: Story<LogoIconProps> = (args) => {
-    return <LogoIcon {...args} />;
-};
-Template.args = {};
+type Story = StoryObj<LogoIconProps>;
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
+const Template: Story = {
+    render: (args) => {
+        return <LogoIcon {...args} />;
+    },
+};
+
+export const Standard = { ...Template };

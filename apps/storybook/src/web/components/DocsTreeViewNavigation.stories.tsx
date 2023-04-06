@@ -1,4 +1,4 @@
-import type { Meta, Story } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import type { DocsTreeViewNavigationProps } from "@pluv-apps/web/components";
 import { DocsTreeViewNavigation } from "@pluv-apps/web/components";
 
@@ -7,10 +7,12 @@ export default {
     component: DocsTreeViewNavigation,
 } as Meta;
 
-const Template: Story<DocsTreeViewNavigationProps> = (args) => {
-    return <DocsTreeViewNavigation {...args} />;
-};
-Template.args = {};
+type Story = StoryObj<DocsTreeViewNavigationProps>;
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
+const Template: Story = {
+    render: (args) => {
+        return <DocsTreeViewNavigation {...args} />;
+    },
+};
+
+export const Standard: Story = { ...Template };
