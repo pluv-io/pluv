@@ -1,4 +1,4 @@
-import type { Meta, Story } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import type { SiteWideAppBarProps } from "@pluv-apps/web/components";
 import { SiteWideAppBar } from "@pluv-apps/web/components";
 
@@ -7,14 +7,15 @@ export default {
     component: SiteWideAppBar,
 } as Meta;
 
-const Template: Story<SiteWideAppBarProps> = (args) => {
-    return <SiteWideAppBar {...args} />;
-};
-Template.args = {};
-Template.parameters = {
-    layout: "fullscreen",
+type Story = StoryObj<SiteWideAppBarProps>;
+
+const Template: Story = {
+    render: (args) => {
+        return <SiteWideAppBar {...args} />;
+    },
+    parameters: {
+        layout: "fullscreen",
+    },
 };
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
-Standard.parameters = { ...Template.parameters };
+export const Standard: Story = { ...Template };

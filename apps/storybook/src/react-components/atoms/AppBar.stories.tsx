@@ -1,20 +1,21 @@
 import type { AppBarProps } from "@pluv-internal/react-components";
 import { AppBar } from "@pluv-internal/react-components";
-import type { Meta, Story } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 
 export default {
     title: "react-components/atoms/AppBar",
     component: AppBar,
 } as Meta;
 
-const Template: Story<AppBarProps> = (args) => {
-    return <AppBar {...args} />;
-};
-Template.args = {};
-Template.parameters = {
-    layout: "fullscreen",
+type Story = StoryObj<AppBarProps>;
+
+const Template: Story = {
+    render: (args) => {
+        return <AppBar {...args} />;
+    },
+    parameters: {
+        layout: "fullscreen",
+    },
 };
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
-Standard.parameters = { ...Template.parameters };
+export const Standard = { ...Template };

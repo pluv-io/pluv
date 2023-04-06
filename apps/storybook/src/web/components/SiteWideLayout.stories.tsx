@@ -1,24 +1,25 @@
-import type { Meta, Story } from "@storybook/react";
 import type { SiteWideLayoutProps } from "@pluv-apps/web/components";
 import { SiteWideLayout } from "@pluv-apps/web/components";
+import type { Meta, StoryObj } from "@storybook/react";
 
 export default {
     title: "web/components/SiteWideLayout",
     component: SiteWideLayout,
 } as Meta;
 
-const Template: Story<SiteWideLayoutProps> = (args) => {
-    return (
-        <SiteWideLayout {...args}>
-            <SiteWideLayout.Content>{args.children}</SiteWideLayout.Content>
-        </SiteWideLayout>
-    );
-};
-Template.args = {};
-Template.parameters = {
-    layout: "fullscreen",
+type Story = StoryObj<SiteWideLayoutProps>;
+
+const Template: Story = {
+    render: (args) => {
+        return (
+            <SiteWideLayout {...args}>
+                <SiteWideLayout.Content>{args.children}</SiteWideLayout.Content>
+            </SiteWideLayout>
+        );
+    },
+    parameters: {
+        layout: "fullscreen",
+    },
 };
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
-Standard.parameters = { ...Template.parameters };
+export const Standard: Story = { ...Template };

@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import type { Meta, Story } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import type { PaperProps } from "@pluv-internal/react-components";
 import { Paper } from "@pluv-internal/react-components";
 
@@ -10,19 +10,22 @@ export default {
     component: Paper,
 } as Meta;
 
-const Template: Story<PaperProps> = (args) => {
-    return <Paper {...args}>{faker.lorem.paragraphs(10)}</Paper>;
-};
-Template.args = {};
+type Story = StoryObj<PaperProps>;
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
-
-export const AsLink: Story<PaperProps> = (args) => {
-    return (
-        <Paper {...args} as="a" href="https://google.com">
-            {faker.lorem.paragraphs(10)}
-        </Paper>
-    );
+const Template: Story = {
+    render: (args) => {
+        return <Paper {...args}>{faker.lorem.paragraphs(10)}</Paper>;
+    },
 };
-Template.args = {};
+
+export const Standard: Story = { ...Template };
+
+export const AsLink: Story = {
+    render: (args) => {
+        return (
+            <Paper {...args} as="a" href="https://google.com">
+                {faker.lorem.paragraphs(10)}
+            </Paper>
+        );
+    },
+};

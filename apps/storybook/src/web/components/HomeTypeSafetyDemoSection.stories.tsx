@@ -1,16 +1,20 @@
-import type { Meta, Story } from "@storybook/react";
-import type { HomeTypeSafetyDemoSectionProps } from "@pluv-apps/web/components";
-import { HomeTypeSafetyDemoSection } from "@pluv-apps/web/components";
+import type { Meta, StoryObj } from "@storybook/react";
+import {
+    HomeTypeSafetyDemoSection,
+    HomeTypeSafetyDemoSectionProps,
+} from "@pluv-apps/web/components";
 
 export default {
     title: "web/components/HomeTypeSafetyDemoSection",
     component: HomeTypeSafetyDemoSection,
 } as Meta;
 
-const Template: Story<HomeTypeSafetyDemoSectionProps> = (args) => {
-    return <HomeTypeSafetyDemoSection {...args} />;
-};
-Template.args = {};
+type Story = StoryObj<HomeTypeSafetyDemoSectionProps>;
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
+const Template: Story = {
+    render: (args) => {
+        return <HomeTypeSafetyDemoSection {...args} />;
+    },
+};
+
+export const Standard: Story = { ...Template };

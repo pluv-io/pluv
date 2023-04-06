@@ -1,19 +1,22 @@
 import type { ButtonProps } from "@pluv-internal/react-components";
 import { Button } from "@pluv-internal/react-components";
-import type { Meta, Story } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 
 export default {
     title: "react-components/atoms/Button",
     component: Button,
 } as Meta;
 
-const Template: Story<ButtonProps> = (args) => {
-    return <Button {...args} />;
-};
-Template.args = {
-    children: "Button",
-    variant: "primary",
+type Story = StoryObj<ButtonProps>;
+
+const Template: Story = {
+    render: (args) => {
+        return <Button {...args} />;
+    },
+    args: {
+        children: "Button",
+        variant: "primary",
+    },
 };
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
+export const Standard = { ...Template.args };

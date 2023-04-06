@@ -1,4 +1,4 @@
-import type { Meta, Story } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import type { HomeCodeDemoProps } from "@pluv-apps/web/components";
 import { HomeCodeDemo } from "@pluv-apps/web/components";
 
@@ -7,14 +7,15 @@ export default {
     component: HomeCodeDemo,
 } as Meta;
 
-const Template: Story<HomeCodeDemoProps> = (args) => {
-    return <HomeCodeDemo {...args} />;
-};
-Template.args = {};
-Template.parameters = {
-    layout: "fullscreen",
+type Story = StoryObj<HomeCodeDemoProps>;
+
+const Template: Story = {
+    render: (args) => {
+        return <HomeCodeDemo {...args} />;
+    },
+    parameters: {
+        layout: "fullscreen",
+    },
 };
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
-Standard.parameters = { ...Template.parameters };
+export const Standard: Story = { ...Template };

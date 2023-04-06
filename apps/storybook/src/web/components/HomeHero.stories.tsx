@@ -1,4 +1,4 @@
-import type { Meta, Story } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import type { HomeHeroProps } from "@pluv-apps/web/components";
 import { HomeHero } from "@pluv-apps/web/components";
 
@@ -7,10 +7,12 @@ export default {
     component: HomeHero,
 } as Meta;
 
-const Template: Story<HomeHeroProps> = (args) => {
-    return <HomeHero className="w-full" {...args} />;
-};
-Template.args = {};
+type Story = StoryObj<HomeHeroProps>;
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
+const Template: Story = {
+    render: (args) => {
+        return <HomeHero className="w-full" {...args} />;
+    },
+};
+
+export const Standard: Story = { ...Template };

@@ -1,4 +1,4 @@
-import type { Meta, Story } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import type { HomeChessDemoProps } from "@pluv-apps/web/components";
 import { HomeChessDemo } from "@pluv-apps/web/components";
 import { MockedRoomProvider } from "@pluv-apps/web/pluv-io";
@@ -26,10 +26,12 @@ export default {
     ],
 } as Meta;
 
-const Template: Story<HomeChessDemoProps> = (args) => {
-    return <HomeChessDemo {...args} />;
-};
-Template.args = {};
+type Story = StoryObj<HomeChessDemoProps>;
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
+const Template: Story = {
+    render: (args) => {
+        return <HomeChessDemo {...args} />;
+    },
+};
+
+export const Standard: Story = { ...Template };

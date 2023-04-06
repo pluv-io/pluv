@@ -1,20 +1,21 @@
 import type { FooterProps } from "@pluv-internal/react-components";
 import { Footer } from "@pluv-internal/react-components";
-import type { Meta, Story } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 
 export default {
     title: "react-components/atoms/Footer",
     component: Footer,
 } as Meta;
 
-const Template: Story<FooterProps> = (args) => {
-    return <Footer {...args} />;
-};
-Template.args = {};
-Template.parameters = {
-    layout: "fullscreen",
+type Story = StoryObj<FooterProps>;
+
+const Template: Story = {
+    render: (args) => {
+        return <Footer {...args} />;
+    },
+    parameters: {
+        layout: "fullscreen",
+    },
 };
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
-Standard.parameters = { ...Template.parameters };
+export const Standard = { ...Template };

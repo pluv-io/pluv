@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import type { SideDrawerProps } from "@pluv-internal/react-components";
 import { SideDrawer } from "@pluv-internal/react-components";
-import type { Meta, Story } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 
 export default {
@@ -8,24 +9,26 @@ export default {
     component: SideDrawer,
 } as Meta;
 
-const Template: Story<SideDrawerProps> = (args) => {
-    const [open, setOpen] = useState<boolean>(true);
+type Story = StoryObj<SideDrawerProps>;
 
-    return (
-        <SideDrawer.Root
-            onOpenChange={(newOpen) => {
-                setOpen(newOpen);
-            }}
-            open={open}
-        >
-            <SideDrawer.Trigger>
-                <button type="button">Open</button>
-            </SideDrawer.Trigger>
-            <SideDrawer {...args} />
-        </SideDrawer.Root>
-    );
+const Template: Story = {
+    render: (args) => {
+        const [open, setOpen] = useState<boolean>(true);
+
+        return (
+            <SideDrawer.Root
+                onOpenChange={(newOpen) => {
+                    setOpen(newOpen);
+                }}
+                open={open}
+            >
+                <SideDrawer.Trigger>
+                    <button type="button">Open</button>
+                </SideDrawer.Trigger>
+                <SideDrawer {...args} />
+            </SideDrawer.Root>
+        );
+    },
 };
-Template.args = {};
 
-export const Standard = Template.bind({});
-Standard.args = { ...Template.args };
+export const Standard: Story = { ...Template };
