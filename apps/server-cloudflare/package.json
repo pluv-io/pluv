@@ -6,7 +6,8 @@
   "types": "./src/index.ts",
   "scripts": {
     "build": "rollup --config ./rollup.config.mjs",
-    "deploy": "wrangler publish",
+    "deploy:dev": "wrangler publish --config ./wrangler-dev.toml",
+    "deploy:prod": "wrangler publish --config ./wrangler-prod.toml",
     "dev": "wrangler dev --port 8787"
   },
   "dependencies": {

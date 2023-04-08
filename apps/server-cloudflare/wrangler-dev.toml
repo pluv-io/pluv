@@ -1,6 +1,6 @@
-name = "server-cloudflare"
+name = "pluv-server-dev"
 main = "dist/index.js"
-compatibility_date = "2022-09-29"
+compatibility_date = "2023-04-08"
 
 [durable_objects]
 bindings = [
