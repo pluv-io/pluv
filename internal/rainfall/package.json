@@ -18,7 +18,7 @@
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^6.7.0",
-		"typescript": "^5.0.3"
+		"typescript": "^5.0.4"
 	},
 	"dependencies": {
 		"@types/pixi.js": "4.8.9",
