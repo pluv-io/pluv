@@ -1,5 +1,14 @@
 # @pluv/client
 
+## 0.6.3
+
+### Patch Changes
+
+- 850626e: bumped dependencies
+- Updated dependencies [850626e]
+  - @pluv/crdt-yjs@0.3.5
+  - @pluv/types@0.1.6
+
 ## 0.6.2
 
 ### Patch Changes
