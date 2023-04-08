@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.3.3
+
+### Patch Changes
+
+- 77069a1: replaced chalk for kleur
+  - @pluv/crdt-yjs@0.3.4
+  - @pluv/types@0.1.5
+
 ## 0.3.2
 
 ### Patch Changes

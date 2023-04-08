@@ -1,5 +1,11 @@
 # @pluv/tsconfig
 
+## 0.1.5
+
+### Patch Changes
+
+- 77069a1: updated config options
+
 ## 0.1.4
 
 ### Patch Changes
