@@ -5,6 +5,7 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
+    "build": "rollup --config ./rollup.config.mjs",
     "deploy": "wrangler publish",
     "dev": "wrangler dev --port 8787"
   },
@@ -17,6 +18,15 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230321.0",
     "@pluv/tsconfig": "workspace:^",
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-dynamic-import-vars": "^2.0.3",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "@rollup/plugin-terser": "^0.4.0",
+    "@rollup/plugin-typescript": "^11.1.0",
+    "rollup": "^3.20.2",
+    "rollup-plugin-node-globals": "^1.4.0",
+    "rollup-plugin-node-polyfills": "^0.2.1",
     "typescript": "^5.0.3",
     "wrangler": "2.14.0"
   }

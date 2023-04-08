@@ -37,6 +37,8 @@ yarn-error.log*
 dist
 dist-ssr
 .cache
+.rollup.cache
+tsconfig.tsbuildinfo
 
 **/public/tailwind.css
 **/generated/**

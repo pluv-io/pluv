@@ -22,6 +22,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "7.32.2",
     "eslint-plugin-tailwindcss": "^3.10.3",
+    "next": "^13.3.0",
     "prettier": "^2.8.7",
     "prettier-plugin-tailwindcss": "^0.2.6"
   },

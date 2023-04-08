@@ -1,16 +1,16 @@
-import chalk from "chalk";
+import colors from "kleur";
 
 export const logger = {
-    error(...args: unknown[]) {
-        console.log(chalk.red(...args));
+    error(args: string | number) {
+        console.log(colors.red(args));
     },
-    warn(...args: unknown[]) {
-        console.log(chalk.yellow(...args));
+    warn(args: string | number) {
+        console.log(colors.yellow(args));
     },
-    info(...args: unknown[]) {
-        console.log(chalk.cyan(...args));
+    info(args: string | number) {
+        console.log(colors.cyan(args));
     },
-    success(...args: unknown[]) {
-        console.log(chalk.green(...args));
+    success(args: string | number) {
+        console.log(colors.green(args));
     },
 };
