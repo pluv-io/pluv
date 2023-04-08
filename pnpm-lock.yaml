@@ -977,9 +977,9 @@ importers:
       '@types/node':
         specifier: ^18.15.11
         version: 18.15.11
-      chalk:
-        specifier: ^4.1.2
-        version: 4.1.2
+      colorette:
+        specifier: ^2.0.19
+        version: 2.0.19
       commander:
         specifier: ^10.0.0
         version: 10.0.0

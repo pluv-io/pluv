@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import * as colors from "colorette";
 import { execSync } from "child_process";
 import { execa } from "execa";
 import fs from "fs-extra";
@@ -78,7 +78,7 @@ export const initializeGit = async (projectDir: string) => {
         }>({
             name: "overwriteGit",
             type: "confirm",
-            message: `${chalk.redBright.bold(
+            message: `${colors.redBright(
                 "Warning:"
             )} Git is already initialized in "${dirName}". Initializing a new git repository would delete the previous history. Would you like to continue anyways?`,
             default: false,
@@ -97,7 +97,7 @@ export const initializeGit = async (projectDir: string) => {
         }>({
             name: "initializeChildGitRepo",
             type: "confirm",
-            message: `${chalk.redBright.bold(
+            message: `${colors.redBright(
                 "Warning:"
             )} "${dirName}" is already in a git worktree. Would you still like to initialize a new git repository in this directory?`,
             default: false,
@@ -126,14 +126,14 @@ export const initializeGit = async (projectDir: string) => {
         }
         await execa("git", ["add", "."], { cwd: projectDir });
         spinner.succeed(
-            `${chalk.green(
+            `${colors.green(
                 "Successfully initialized and staged"
-            )} ${chalk.green.bold("git")}\n`
+            )} ${colors.green("git")}\n`
         );
     } catch (error) {
         // Safeguard, should be unreachable
         spinner.fail(
-            `${chalk.bold.red(
+            `${colors.bold(
                 "Failed:"
             )} could not initialize git. Update git to the latest version!\n`
         );

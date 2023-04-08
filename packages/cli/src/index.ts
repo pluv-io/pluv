@@ -51,7 +51,7 @@ main().catch((err) => {
     logger.error("Aborting installzation...");
 
     if (err instanceof Error) {
-        logger.error(err);
+        logger.error(err.message);
     } else {
         logger.error(
             "An unknown error has occurred. Please open an issue on github with the below:"
