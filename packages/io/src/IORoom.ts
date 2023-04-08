@@ -16,7 +16,7 @@ import type {
     Maybe,
     MaybePromise,
 } from "@pluv/types";
-import chalk from "chalk";
+import * as colors from "colorette";
 import type { AbstractPlatform, InferWebSocketType } from "./AbstractPlatform";
 import { authorize } from "./authorize";
 import type {
@@ -139,7 +139,7 @@ export class IORoom<
         });
 
         this._logDebug(
-            `${chalk.blue(
+            `${colors.blue(
                 `Registering connection for room ${this.id}:`
             )} ${sessionId}`
         );
@@ -158,7 +158,7 @@ export class IORoom<
 
         if (isUnauthorized || isTokenInUse) {
             this._logDebug(
-                `${chalk.blue(
+                `${colors.blue(
                     "Authorization failed for connection:"
                 )} ${sessionId}`
             );
@@ -266,7 +266,7 @@ export class IORoom<
             session.quit = true;
 
             this._logDebug(
-                `${chalk.blue(
+                `${colors.blue(
                     `(Unregistering connection for room ${this.id}:`
                 )} ${sessionId}`
             );
@@ -288,12 +288,12 @@ export class IORoom<
                     const size = this._getSessionsSize();
 
                     this._logDebug(
-                        `${chalk.blue(
+                        `${colors.blue(
                             `Unregistered connection for room ${this.id}:`
                         )} ${sessionId}`
                     );
                     this._logDebug(
-                        `${chalk.blue(`Room ${this.id} size:`)} ${size}`
+                        `${colors.blue(`Room ${this.id} size:`)} ${size}`
                     );
 
                     if (size) return;
@@ -306,14 +306,14 @@ export class IORoom<
         pluvWs.addEventListener("error", closeHandler);
 
         this._logDebug(
-            `${chalk.blue(
+            `${colors.blue(
                 `Registered connection for room ${this.id}:`
             )} ${sessionId}`
         );
 
         const size = this._getSessionsSize();
 
-        this._logDebug(`${chalk.blue(`Room ${this.id} size:`)} ${size}`);
+        this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
     }
 
     private _broadcast(params: BroadcastParams<this>): void {
@@ -412,7 +412,7 @@ export class IORoom<
         }).decode(token);
 
         if (!payload) {
-            this._logDebug(chalk.blue("Could not decode token:"));
+            this._logDebug(colors.blue("Could not decode token:"));
             this._logDebug(token);
 
             return null;
@@ -420,9 +420,9 @@ export class IORoom<
 
         if (payload.room !== this.id) {
             this._logDebug(
-                chalk.blue(`Token is not authorized for room ${this.id}:`)
+                colors.blue(`Token is not authorized for room ${this.id}:`)
             );
-            this._logDebug(chalk.blue("Received:"), payload.room);
+            this._logDebug(colors.blue("Received:"), payload.room);
             this._logDebug(token);
 
             return null;
@@ -431,7 +431,9 @@ export class IORoom<
         try {
             return this._authorize.user.parse(payload.user) ?? null;
         } catch {
-            this._logDebug(`${chalk.blue("Token fails validation:")} ${token}`);
+            this._logDebug(
+                `${colors.blue("Token fails validation:")} ${token}`
+            );
 
             return null;
         }
@@ -462,7 +464,7 @@ export class IORoom<
     }
 
     private async _initialize(): Promise<void> {
-        this._logDebug(`${chalk.blue(`Initializing room ${this.id}:`)}`);
+        this._logDebug(`${colors.blue(`Initializing room ${this.id}:`)}`);
 
         if (!!this._uninitialize) {
             await this._uninitialize();

@@ -5,10 +5,11 @@
       "dependsOn": [
         "^build"
       ],
-      "env": ["WS_ENDPOINT"],
+      "env": ["BUNDLE_ANALYZE", "WS_ENDPOINT"],
       "outputs": [
         "dist/**",
-        ".next/**"
+        ".next/**",
+        ".rollup.cache"
       ]
     },
     "dev": {

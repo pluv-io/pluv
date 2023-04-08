@@ -12,7 +12,7 @@ import type {
     MaybePromise,
     Maybe,
 } from "@pluv/types";
-import chalk from "chalk";
+import * as colors from "colorette";
 import type { AbstractPlatform } from "./AbstractPlatform";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
@@ -277,16 +277,18 @@ export class PluvIO<
             events: this._events,
             initialStorage: () => this._initialStorage?.(room),
             onDestroy: (encodedState) => {
-                this._logDebug(`${chalk.blue("Deleting empty room:")} ${room}`);
+                this._logDebug(
+                    `${colors.blue("Deleting empty room:")} ${room}`
+                );
 
                 this._rooms.delete(room);
 
                 if (this._debug) {
                     const rooms = Array.from(this._rooms.keys());
 
-                    this._logDebug(`${chalk.blue("Deleted room:")} ${room}`);
+                    this._logDebug(`${colors.blue("Deleted room:")} ${room}`);
                     this._logDebug(
-                        `${chalk.blue("Rooms available:")} ${rooms.join(", ")}`
+                        `${colors.blue("Rooms available:")} ${rooms.join(", ")}`
                     );
                 }
 
@@ -304,9 +306,9 @@ export class PluvIO<
         if (this._debug) {
             const rooms = Array.from(this._rooms.keys());
 
-            this._logDebug(`${chalk.blue("Created room:")} ${room}`);
+            this._logDebug(`${colors.blue("Created room:")} ${room}`);
             this._logDebug(
-                `${chalk.blue("Rooms available:")} ${rooms.join(", ")}`
+                `${colors.blue("Rooms available:")} ${rooms.join(", ")}`
             );
         }
 
