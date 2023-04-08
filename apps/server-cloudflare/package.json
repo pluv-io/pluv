@@ -6,8 +6,11 @@
   "types": "./src/index.ts",
   "scripts": {
     "build": "rollup --config ./rollup.config.mjs",
-    "deploy": "wrangler publish",
-    "dev": "wrangler dev --port 8787"
+    "cf:login": "wrangler login",
+    "deploy:dev": "wrangler publish --config ./wrangler-dev.toml",
+    "deploy:prod": "wrangler publish --config ./wrangler-prod.toml",
+    "dev": "wrangler dev --port 8787",
+    "wrangler": "wrangler"
   },
   "dependencies": {
     "@pluv-internal/cloudflare-utils": "workspace:^",
