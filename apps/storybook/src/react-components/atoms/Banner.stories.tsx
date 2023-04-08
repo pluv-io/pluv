@@ -1,20 +1,20 @@
-import type { AppBarProps } from "@pluv-internal/react-components";
-import { AppBar } from "@pluv-internal/react-components";
+import type { BannerProps } from "@pluv-internal/react-components";
+import { Banner } from "@pluv-internal/react-components";
 import type { Meta, StoryObj } from "@storybook/react";
 
 export default {
-    title: "react-components/atoms/AppBar",
-    component: AppBar,
+    title: "react-components/atoms/Banner",
+    component: Banner,
 } as Meta;
 
-type Story = StoryObj<AppBarProps>;
+type Story = StoryObj<BannerProps>;
 
 const Template: Story = {
     render: (args) => {
         return (
-            <AppBar {...args}>
+            <Banner {...args}>
                 <div>Hello world~!</div>
-            </AppBar>
+            </Banner>
         );
     },
     parameters: {
