@@ -1,5 +1,11 @@
 # eslint-config-pluv
 
+## 0.1.9
+
+### Patch Changes
+
+- 77069a1: updated config options
+
 ## 0.1.8
 
 ### Patch Changes
