@@ -1,4 +1,4 @@
-import * as colors from "colorette";
+import colors from "kleur";
 
 export const logger = {
     error(args: string | number) {

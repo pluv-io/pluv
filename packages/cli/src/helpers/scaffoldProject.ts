@@ -1,5 +1,5 @@
 import path from "path";
-import * as colors from "colorette";
+import colors from "kleur";
 import fs from "fs-extra";
 import inquirer from "inquirer";
 import ora from "ora";
@@ -21,7 +21,7 @@ export const scaffoldProject = async (options: InstallerOptions) => {
     const srcDir = path.join(PKG_ROOT, "template/base");
 
     if (!noInstall) {
-        logger.info(`\nUsing: ${colors.cyan(pkgManager)}\n`);
+        logger.info(`\nUsing: ${colors.cyan().bold(pkgManager)}\n`);
     } else {
         logger.info("");
     }
@@ -31,9 +31,11 @@ export const scaffoldProject = async (options: InstallerOptions) => {
     if (fs.existsSync(projectDir)) {
         if (fs.readdirSync(projectDir).length === 0) {
             spinner.info(
-                `${colors.cyan(
-                    projectName ?? ""
-                )} exists but is empty, continuing...\n`
+                `${colors
+                    .cyan()
+                    .bold(
+                        projectName ?? ""
+                    )} exists but is empty, continuing...\n`
             );
         } else {
             spinner.stopAndPersist();
@@ -42,9 +44,11 @@ export const scaffoldProject = async (options: InstallerOptions) => {
             }>({
                 name: "overwriteDir",
                 type: "list",
-                message: `${colors.redBright("Warning:")} ${colors.cyan(
-                    projectName ?? ""
-                )} already exists and isn't empty. How would you like to proceed?`,
+                message: `${colors.red().bold("Warning:")} ${colors
+                    .cyan()
+                    .bold(
+                        projectName ?? ""
+                    )} already exists and isn't empty. How would you like to proceed?`,
                 choices: [
                     {
                         name: "Abort installation (recommended)",
@@ -90,9 +94,9 @@ export const scaffoldProject = async (options: InstallerOptions) => {
 
             if (overwriteDir === "clear") {
                 spinner.info(
-                    `Emptying ${colors.cyan(
-                        projectName ?? ""
-                    )} and creating t3 app..\n`
+                    `Emptying ${colors
+                        .cyan()
+                        .bold(projectName ?? "")} and creating t3 app..\n`
                 );
                 fs.emptyDirSync(projectDir);
             }
@@ -108,7 +112,7 @@ export const scaffoldProject = async (options: InstallerOptions) => {
     );
 
     const scaffoldedName =
-        projectName === "." ? "App" : colors.cyan(projectName ?? "");
+        projectName === "." ? "App" : colors.cyan().bold(projectName ?? "");
 
     spinner.succeed(
         `${scaffoldedName} ${colors.green("scaffolded successfully!")}\n`

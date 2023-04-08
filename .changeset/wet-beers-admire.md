@@ -3,4 +3,4 @@
 "@pluv/io": patch
 ---
 
-replaced chalk for colorette
+replaced chalk for kleur

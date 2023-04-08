@@ -1,4 +1,4 @@
-import * as colors from "colorette";
+import colors from "kleur";
 import { execa } from "execa";
 import ora from "ora";
 import { getUserPkgManager } from "../utils/getUserPkgManager";

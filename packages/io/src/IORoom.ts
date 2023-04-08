@@ -16,7 +16,7 @@ import type {
     Maybe,
     MaybePromise,
 } from "@pluv/types";
-import * as colors from "colorette";
+import colors from "kleur";
 import type { AbstractPlatform, InferWebSocketType } from "./AbstractPlatform";
 import { authorize } from "./authorize";
 import type {

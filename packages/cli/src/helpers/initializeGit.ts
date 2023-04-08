@@ -1,4 +1,4 @@
-import * as colors from "colorette";
+import colors from "kleur";
 import { execSync } from "child_process";
 import { execa } from "execa";
 import fs from "fs-extra";
@@ -78,9 +78,11 @@ export const initializeGit = async (projectDir: string) => {
         }>({
             name: "overwriteGit",
             type: "confirm",
-            message: `${colors.redBright(
-                "Warning:"
-            )} Git is already initialized in "${dirName}". Initializing a new git repository would delete the previous history. Would you like to continue anyways?`,
+            message: `${colors
+                .red()
+                .bold(
+                    "Warning:"
+                )} Git is already initialized in "${dirName}". Initializing a new git repository would delete the previous history. Would you like to continue anyways?`,
             default: false,
         });
         if (!overwriteGit) {
@@ -97,9 +99,11 @@ export const initializeGit = async (projectDir: string) => {
         }>({
             name: "initializeChildGitRepo",
             type: "confirm",
-            message: `${colors.redBright(
-                "Warning:"
-            )} "${dirName}" is already in a git worktree. Would you still like to initialize a new git repository in this directory?`,
+            message: `${colors
+                .red()
+                .bold(
+                    "Warning:"
+                )} "${dirName}" is already in a git worktree. Would you still like to initialize a new git repository in this directory?`,
             default: false,
         });
         if (!initializeChildGitRepo) {
@@ -126,16 +130,18 @@ export const initializeGit = async (projectDir: string) => {
         }
         await execa("git", ["add", "."], { cwd: projectDir });
         spinner.succeed(
-            `${colors.green(
-                "Successfully initialized and staged"
-            )} ${colors.green("git")}\n`
+            `${colors.green("Successfully initialized and staged")} ${colors
+                .green()
+                .bold("git")}\n`
         );
     } catch (error) {
         // Safeguard, should be unreachable
         spinner.fail(
-            `${colors.bold(
-                "Failed:"
-            )} could not initialize git. Update git to the latest version!\n`
+            `${colors
+                .red()
+                .bold(
+                    "Failed:"
+                )} could not initialize git. Update git to the latest version!\n`
         );
     }
 };

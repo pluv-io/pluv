@@ -12,7 +12,7 @@ import type {
     MaybePromise,
     Maybe,
 } from "@pluv/types";
-import * as colors from "colorette";
+import colors from "kleur";
 import type { AbstractPlatform } from "./AbstractPlatform";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
