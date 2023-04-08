@@ -1,5 +1,11 @@
 # eslint-config-pluv
 
+## 0.1.10
+
+### Patch Changes
+
+- 850626e: bumped dependencies
+
 ## 0.1.9
 
 ### Patch Changes
