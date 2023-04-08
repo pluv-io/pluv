@@ -2,6 +2,8 @@ export type { AnchorProps } from "./Anchor";
 export { Anchor } from "./Anchor";
 export type { AppBarProps } from "./AppBar";
 export { AppBar } from "./AppBar";
+export type { BannerProps } from "./Banner";
+export { Banner } from "./Banner";
 export type { ButtonProps } from "./Button";
 export { Button } from "./Button";
 export type { FooterProps } from "./Footer";

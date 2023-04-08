@@ -5,8 +5,9 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "storybook": "concurrently \"pnpm:watch:*\"",
-        "build-storybook": "storybook build",
+        "dev": "concurrently \"pnpm:watch:*\"",
+        "build": "pnpm build:css && pnpm build:css",
+        "build:storybook": "storybook build",
         "build:css": "tailwindcss -i ./src/styles/tailwind.css -o ./public/tailwind.css",
         "watch:css": "pnpm build:css -- --watch",
         "watch:storybook": "storybook dev -p 6006"
