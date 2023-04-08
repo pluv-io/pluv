@@ -1,6 +1,5 @@
 ---
-"eslint-config-pluv": patch
-"@pluv/tsconfig": patch
+"pluv": patch
 "@pluv/io": patch
 ---
 
