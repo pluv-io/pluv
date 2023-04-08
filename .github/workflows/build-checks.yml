@@ -1,0 +1,32 @@
+name: Build Checks
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  build-check:
+    name: Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.4
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm build
+
+      - name: Lint
+        run: pnpm lint
