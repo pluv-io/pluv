@@ -1,5 +1,13 @@
 # @pluv/persistance-redis
 
+## 0.1.13
+
+### Patch Changes
+
+- 78fd644: updated readmes with links to the documentation website
+- Updated dependencies [78fd644]
+  - @pluv/io@0.3.5
+
 ## 0.1.12
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @pluv/react
 
+## 0.5.7
+
+### Patch Changes
+
+- 78fd644: updated readmes with links to the documentation website
+- Updated dependencies [78fd644]
+  - @pluv/client@0.6.4
+
 ## 0.5.6
 
 ### Patch Changes

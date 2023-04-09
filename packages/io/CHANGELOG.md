@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.3.5
+
+### Patch Changes
+
+- 78fd644: updated readmes with links to the documentation website
+- Updated dependencies [78fd644]
+  - @pluv/crdt-yjs@0.3.6
+
 ## 0.3.4
 
 ### Patch Changes
