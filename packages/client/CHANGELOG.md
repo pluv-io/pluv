@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.6.4
+
+### Patch Changes
+
+- 78fd644: updated readmes with links to the documentation website
+- Updated dependencies [78fd644]
+  - @pluv/crdt-yjs@0.3.6
+
 ## 0.6.3
 
 ### Patch Changes
