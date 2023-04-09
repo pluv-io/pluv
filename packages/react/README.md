@@ -23,7 +23,6 @@
   <a href="https://commitizen.github.io/cz-cli/">
     <img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly" />
   </a>
-  <img src="https://img.shields.io/badge/docs-coming%20soon!-blue" alt="Docs coming soon!" />
 </p>
 
 <p align="center">
@@ -33,6 +32,8 @@
 ## `@pluv/react`
 
 > [React.js](https://reactjs.org/) bindings for [@pluv/client](https://www.npmjs.com/package/@pluv/client).
+
+**👉 See full documentation on [pluv.io](https://pluv.io/docs/introduction). 👈**
 
 ## Installation
 

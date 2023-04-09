@@ -22,7 +22,6 @@
   <a href="https://commitizen.github.io/cz-cli/">
     <img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly" />
   </a>
-  <img src="https://img.shields.io/badge/website-coming%20soon!-blue" alt="Website coming soon!" />
 </p>
 
 <p align="center">
@@ -48,6 +47,8 @@
 
 Pluv.IO allows you to build real-time collaborative features with a fully end-to-end type-safe api.
 
+**👉 See full documentation on [pluv.io](https://pluv.io/docs/introduction). 👈**
+
 ### Why?
 
 So you can do this:
@@ -60,53 +61,6 @@ usePluvEvent("RECEIVE_MESSAGE", ({ data }) => {
 });
 
 broadcast("SEND_MESSAGE", { message: "Hello world!" });
-```
-
-And this:
-
-```tsx
-const [myCursor, updatePresence] = usePluvMyPresence((me) => me.cursor);
-const cursors = usePluvOthers((others) => {
-  return others.map((other) => other.presence.cursor);
-});
-
-useEffect(() => {
-  const updateCursor = (e: MouseEvent) => {
-    updatePresence({ cursor: { x: e.pageX, y: e.pageY } });
-  };
-
-  window.addEventListener("mousemove", updateCursor);
-
-  return () => {
-    window.removeEventListener("mousemove", updateCursor);
-  };
-}, [updatePresence]);
-
-return (
-  <div>
-    <div style={{ top: myCursor?.y, left: myCursor?.x }} />
-    {cursors.map((cursor, i) => (
-      <div key={i} style={{ top: cursor?.y, left: cursor?.x }} />
-    ))}
-  </div>
-);
-```
-
-Also this:
-
-
-```tsx
-const [messages, sharedType] = usePluvStorage("messages");
-
-sharedType?.push(["Hello world!"]);
-
-return (
-  <div>
-    {messages?.map((message, i) => (
-      <div key={i}>{message}</div>
-    ))}
-  </div>
-);
 ```
 
 And more. With **E2E type-safety**, **great intellisense** and the **[yjs](https://docs.yjs.dev/) ecosystem**.
@@ -160,14 +114,7 @@ Before diving into documentation, check out usage instructions for your selected
 
 ### Documentation
 
-* [Authentication](https://github.com/pluv-io/pluv/blob/master/docs/authentication.md)
-* [CRDT Storage](https://github.com/pluv-io/pluv/blob/master/docs/crdt-storage.md)
-* [Creating Rooms](https://github.com/pluv-io/pluv/blob/master/docs/creating-rooms.md)
-* [`createIO` API](https://github.com/pluv-io/pluv/blob/master/docs/create-io-api.md)
-* [Custom Events](https://github.com/pluv-io/pluv/blob/master/docs/custom-events.md)
-* [Presence](https://github.com/pluv-io/pluv/blob/master/docs/presence.md)
-* [PubSubs and Persistance](https://github.com/pluv-io/pluv/blob/master/docs/pubsubs-and-persistance.md)
-* [React API](https://github.com/pluv-io/pluv/blob/master/docs/react-api.md)
+Documentation is available at [pluv.io](https://pluv.io/docs/introduction).
 
 ## Related
 
@@ -191,4 +138,4 @@ This software uses the following open source tooling and libraries:
 
 ## License
 
-MIT
+[MIT](https://github.com/pluv-io/pluv/blob/master/LICENSE)

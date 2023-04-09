@@ -23,7 +23,6 @@
   <a href="https://commitizen.github.io/cz-cli/">
     <img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly" />
   </a>
-  <img src="https://img.shields.io/badge/docs-coming%20soon!-blue" alt="Docs coming soon!" />
 </p>
 
 > **Note**
@@ -32,6 +31,8 @@
 ## Pluv.IO
 
 This package contains the cli for [@pluv/io](https://www.npmjs.com/package/@pluv/io). You are likely looking for the original package [here on npm](https://www.npmjs.com/package/@pluv/io).
+
+**👉 See full documentation on [pluv.io](https://pluv.io/docs/introduction). 👈**
 
 ## Usage
 
