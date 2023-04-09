@@ -1,9 +1,14 @@
 import { PageContainer, Typist } from "@pluv-internal/react-components";
+import { useMediaQuery, useNoSsr } from "@pluv-internal/react-hooks";
 import dynamic from "next/dynamic";
 import NextImage from "next/image";
 import { rgba } from "polished";
 import { CSSProperties, memo } from "react";
 import tw, { styled, theme } from "twin.macro";
+
+const HomeHeroRainfall = dynamic(() => import("./HomeHeroRainfall"), {
+    ssr: false,
+});
 
 const Root = tw.div`
     relative
@@ -35,10 +40,6 @@ const RainfallContainer = tw.div`
     w-full
     aspect-[3/2]
 `;
-
-const HomeHeroRainfall = dynamic(() => import("./HomeHeroRainfall"), {
-    ssr: false,
-});
 
 const RadialBackground = styled.div`
     ${tw`
@@ -104,6 +105,13 @@ export interface HomeHeroProps {
 }
 
 export const HomeHero = memo<HomeHeroProps>(({ className, style }) => {
+    const isDesktop = useMediaQuery("(min-width: 992px)", {
+        initializeWithValue: false,
+    });
+
+    const noSsr = useNoSsr();
+    const showRainfall = noSsr(isDesktop, false);
+
     return (
         <Root className={className} style={style}>
             <RainfallAbsoluteContainer>
@@ -115,7 +123,9 @@ export const HomeHero = memo<HomeHeroProps>(({ className, style }) => {
                         priority
                         src="/static/jpg/rainfall-background.jpg"
                     />
-                    <HomeHeroRainfall className="absolute inset-0" />
+                    {showRainfall && (
+                        <HomeHeroRainfall className="absolute inset-0" />
+                    )}
                 </RainfallContainer>
             </RainfallAbsoluteContainer>
             <RadialBackground />

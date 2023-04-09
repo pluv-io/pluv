@@ -50,8 +50,8 @@ export class DropletManager {
     constructor(stage: Container, resources: DropletAssets) {
         const isMobile = stage.width < 700;
 
-        const smallDropletAmount = isMobile ? 2500 : 7500;
-        const largeDropletAmount = isMobile ? 150 : 200;
+        const smallDropletAmount = isMobile ? 750 : 1_750;
+        const largeDropletAmount = isMobile ? 50 : 100;
 
         this.options = {
             spawnRate: {
