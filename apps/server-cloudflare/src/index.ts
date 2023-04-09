@@ -19,20 +19,13 @@ const getCorsHeaders = (origin: string, env: Env): Record<string, string> => {
         "Access-Control-Max-Age": "86400",
     };
 
-    const whitelist = ["pluv.io", "pluv.vercel.app"].reduce(
-        (origins, domain) => [
-            ...origins,
-            `https://${domain}`,
-            `https://www.${domain}`,
-            `wss://${domain}`,
-            `wss://www.${domain}`,
-            `ws://${domain}`,
-            `ws://www.${domain}`,
-        ],
-        [] as readonly string[]
-    );
+    const isWhitelisted = ["pluv.io", "pluv.vercel.app"].some((domain) => {
+        const re = new RegExp(`(http|ws)s?://${domain}(/)?`);
 
-    if (!whitelist.includes(origin)) return corsHeaders;
+        return re.test(domain);
+    });
+
+    if (!isWhitelisted) return corsHeaders;
 
     return {
         ...corsHeaders,
@@ -40,27 +33,31 @@ const getCorsHeaders = (origin: string, env: Env): Record<string, string> => {
     };
 };
 
-const router = createRouter<RouterContext>().path(
-    "get",
-    "/api/room/:rest*",
-    async ({ rest }, { origin, request, context: { env } }) => {
-        const [name] = rest;
+const router = createRouter<RouterContext>()
+    .path(
+        "get",
+        "/api/room/:rest*",
+        async ({ rest }, { origin, request, context: { env } }) => {
+            const [name] = rest;
 
-        const roomId = DurableObjectUtils.isValidId(name)
-            ? env.rooms.idFromString(name)
-            : DurableObjectUtils.isValidName(name)
-            ? env.rooms.idFromName(name)
-            : env.rooms.newUniqueId();
+            const roomId = DurableObjectUtils.isValidId(name)
+                ? env.rooms.idFromString(name)
+                : DurableObjectUtils.isValidName(name)
+                ? env.rooms.idFromName(name)
+                : env.rooms.newUniqueId();
 
-        const room = env.rooms.get(roomId);
+            const room = env.rooms.get(roomId);
 
-        return room.fetch(request, {
+            return room.fetch(request);
+        }
+    )
+    .path("get", "*", (_, { origin, context: { env } }) => {
+        return new Response("ok", {
             headers: {
                 ...getCorsHeaders(origin, env),
             },
         });
-    }
-);
+    });
 
 const handler = {
     async fetch(request: Request, env: Env): Promise<Response> {
