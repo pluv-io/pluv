@@ -1,5 +1,11 @@
 # @pluv/io
 
+## 0.3.6
+
+### Patch Changes
+
+- a7e2980: deleted links to docs that were removed
+
 ## 0.3.5
 
 ### Patch Changes
