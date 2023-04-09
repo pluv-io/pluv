@@ -1,6 +1,6 @@
 import type { Move, Square } from "chess.js";
 import { Chess } from "chess.js";
-import type { CSSProperties, FC } from "react";
+import { CSSProperties, FC, useEffect } from "react";
 import { forwardRef, useCallback, useImperativeHandle, useMemo } from "react";
 import { Chessboard } from "react-chessboard";
 import { theme } from "twin.macro";
@@ -10,6 +10,7 @@ import type { ChessMove, CustomPieceProps } from "./types";
 import { useChessSounds } from "./useChessSounds";
 
 export interface ChessBoardRef {
+    clear: () => void;
     move: (notation: string) => void;
 }
 
@@ -23,6 +24,7 @@ export interface ChessBoardProps {
     customPiece?: FC<CustomPieceProps>;
     history: readonly string[];
     id?: string;
+    onGameOver?: (winner: "b" | "w" | null) => void;
     onMove?: (event: ChessBoardMoveEvent) => void;
     onSquareSelect?: (square: Square) => void;
     style?: CSSProperties;
@@ -35,6 +37,7 @@ export const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
             customPiece,
             history = [],
             id,
+            onGameOver,
             onMove,
             onSquareSelect,
             style,
@@ -97,7 +100,9 @@ export const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
             [clone, game, onMove, sounds]
         );
 
-        useImperativeHandle(ref, () => ({ move }), [move]);
+        const clear = useCallback(() => game.clear(), [game]);
+
+        useImperativeHandle(ref, () => ({ clear, move }), [clear, move]);
 
         const onDrop = useCallback(
             (from: Square, to: Square): boolean => {
@@ -108,6 +113,13 @@ export const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
             },
             [move, onSquareSelect]
         );
+
+        const isGameOver = game.isGameOver();
+        const winner = isGameOver ? game.turn() : null;
+
+        useEffect(() => {
+            isGameOver && onGameOver?.(winner);
+        }, [isGameOver, onGameOver, winner]);
 
         return (
             <div id={id} className={className} style={style}>
