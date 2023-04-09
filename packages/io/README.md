@@ -107,11 +107,6 @@ Before diving into documentation, check out usage instructions for your selected
 > **Note:**
 > `@pluv/io`, `@pluv/client`, `@pluv/crdt-yjs` and `@pluv/react` all require [yjs](https://docs.yjs.dev/) as a peer dependency.
 
-### Platforms
-
-* [Cloudflare](https://github.com/pluv-io/pluv/blob/master/docs/cloudflare-support.md)
-* [Node.js](https://github.com/pluv-io/pluv/blob/master/docs/nodejs-support.md)
-
 ### Documentation
 
 Documentation is available at [pluv.io](https://pluv.io/docs/introduction).
