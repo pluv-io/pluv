@@ -24,6 +24,7 @@ export type PathParams<T extends string> = T extends string
 
 interface RouterPathHandlerHelpers<TContext> {
     context: TContext;
+    origin: string;
     query: ParsedUrlQuery;
     request: Request;
 }
@@ -119,6 +120,7 @@ export class Router<
         return (
             (await handler(params, {
                 context: this._config.context,
+                origin: url.origin,
                 query,
                 request,
             })) ?? new Response("OK", { status: 200 })
