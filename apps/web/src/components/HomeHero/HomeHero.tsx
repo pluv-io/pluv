@@ -51,6 +51,14 @@ const RadialBackground = styled.div`
         ${theme`colors.slate.900`} 35%,
         ${rgba(theme`colors.slate.900`, 0)} 85%
     );
+
+    @media (max-width: 992px) {
+        background-image: radial-gradient(
+            112% 90% at center center,
+            ${theme`colors.slate.900`} 35%,
+            ${rgba(theme`colors.slate.900`, 0)} 85%
+        );
+    }
 `;
 
 const Contents = tw.div`
