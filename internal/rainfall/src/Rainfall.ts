@@ -1,3 +1,4 @@
+import { utils } from "pixi.js";
 import type { DropletAssets } from "./DropletAssets";
 import { getDropletAssets } from "./DropletAssets";
 import { EffectCanvas } from "./EffectCanvas";
@@ -17,6 +18,8 @@ export class Rainfall {
 
     constructor(options: RainfallOptions = {}) {
         const { onReady } = options;
+
+        utils.skipHello();
 
         getDropletAssets().then((resources) => {
             this._resources = resources;
