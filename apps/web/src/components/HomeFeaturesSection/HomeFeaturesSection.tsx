@@ -47,14 +47,11 @@ export const HomeFeaturesSection: FC<HomeFeaturesSectionProps> = ({
                     title="Yjs CRDT"
                 />
                 <Feature
-                    description="Display user selections with presence states defined per-user"
+                    description="Display user selections with per-user presence states."
                     title="Presence"
                 />
                 <Feature
-                    description={oneLine`
-                    Pluv.io makes it easy to add your own custom authentication
-                    rules to rooms.
-                `}
+                    description="Add your own custom authentication rules to rooms."
                     title="Authentication"
                 />
                 <Feature
