@@ -5,8 +5,10 @@ import { io } from "../pluv-io";
 export class RoomDurableObject implements DurableObject {
     private _io: InferIORoom<typeof io>;
 
-    constructor(state: DurableObjectState) {
-        this._io = io.getRoom(state.id.toString());
+    constructor(state: DurableObjectState, env: Env) {
+        this._io = io.getRoom(state.id.toString(), {
+            debug: env.DEPLOY_ENV === "development",
+        });
     }
 
     async fetch(request: Request): Promise<Response> {

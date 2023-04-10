@@ -17,7 +17,9 @@
       "dependsOn": [
         "^dev"
       ],
-      "env": ["WS_ENDPOINT"]
+      "env": [
+        "WS_ENDPOINT"
+      ]
     },
     "lint": {
       "outputs": []
@@ -35,5 +37,12 @@
       ]
     }
   },
-  "globalEnv": ["BASE_URL", "DEPLOY_URL", "PLUV_AUTH_SECRET", "SEO", "VERCEL_URL"]
+  "globalEnv": [
+    "BASE_URL",
+    "DEPLOY_URL",
+    "NODE_ENV",
+    "PLUV_AUTH_SECRET",
+    "SEO",
+    "VERCEL_URL"
+  ]
 }

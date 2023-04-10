@@ -43,8 +43,6 @@ export const getDropletAssets = async (): Promise<DropletAssets> => {
                 .add(BACKGROUND)
                 .add(FOREGROUND)
                 .load((_, _resources) => {
-                    console.log(_resources);
-
                     resolve(_resources);
                 });
         }

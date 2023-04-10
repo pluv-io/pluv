@@ -60,6 +60,10 @@ export type PluvIOConfig<
     platform: TPlatform;
 };
 
+export interface GetRoomOptions {
+    debug?: boolean;
+}
+
 export class PluvIO<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any> = BaseIOAuthorize,
@@ -253,8 +257,11 @@ export class PluvIO<
     }
 
     public getRoom(
-        room: string
+        room: string,
+        options: GetRoomOptions = {}
     ): IORoom<TPlatform, TAuthorize, TContext, TInput, TOutput> {
+        const { debug } = options;
+
         if (!/^[a-z0-9]+[a-z0-9\-_]+[a-z0-9]+$/i.test(room)) {
             throw new Error("Unsupported room name");
         }
@@ -273,7 +280,7 @@ export class PluvIO<
         >(room, {
             authorize: this._authorize ?? undefined,
             context: this._context,
-            debug: this._debug,
+            debug: debug ?? this._debug,
             events: this._events,
             initialStorage: () => this._initialStorage?.(room),
             onDestroy: (encodedState) => {

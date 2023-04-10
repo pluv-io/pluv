@@ -18,6 +18,7 @@ export const Page: NextPage = () => {
     return (
         <Root>
             <PluvRoomProvider
+                debug={process.env.NODE_ENV === "development"}
                 initialPresence={{ demoChessSquare: null }}
                 room="home-page"
             >
