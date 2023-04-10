@@ -32,4 +32,4 @@ export type {
 export type { CreateIOParams } from "./createIO";
 export { createIO } from "./createIO";
 export type { IORoom } from "./IORoom";
-export type { InferIORoom, PluvIO } from "./PluvIO";
+export type { GetRoomOptions, InferIORoom, PluvIO } from "./PluvIO";
