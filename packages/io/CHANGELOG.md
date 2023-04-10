@@ -1,5 +1,11 @@
 # @pluv/io
 
+## 0.3.7
+
+### Patch Changes
+
+- ecc4040: added ability to set debug when room is created
+
 ## 0.3.6
 
 ### Patch Changes
