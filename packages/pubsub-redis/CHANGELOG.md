@@ -1,5 +1,12 @@
 # @pluv/pubsub-redis
 
+## 0.1.15
+
+### Patch Changes
+
+- Updated dependencies [ecc4040]
+  - @pluv/io@0.3.7
+
 ## 0.1.14
 
 ### Patch Changes
