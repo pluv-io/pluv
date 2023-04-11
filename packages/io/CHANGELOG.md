@@ -1,5 +1,11 @@
 # @pluv/io
 
+## 0.3.8
+
+### Patch Changes
+
+- bcf1c3e: purge empty rooms before joining a new room
+
 ## 0.3.7
 
 ### Patch Changes
