@@ -262,6 +262,8 @@ export class PluvIO<
     ): IORoom<TPlatform, TAuthorize, TContext, TInput, TOutput> {
         const { debug } = options;
 
+        this._purgeEmptyRooms();
+
         if (!/^[a-z0-9]+[a-z0-9\-_]+[a-z0-9]+$/i.test(room)) {
             throw new Error("Unsupported room name");
         }
@@ -352,5 +354,15 @@ export class PluvIO<
 
     private _logDebug(...data: any[]): void {
         this._debug && console.log(...data);
+    }
+
+    private _purgeEmptyRooms(): void {
+        const rooms = Array.from(this._rooms.entries());
+
+        rooms.forEach(([id, room]) => {
+            if (room.getSize()) return;
+
+            this._rooms.delete(id);
+        });
     }
 }

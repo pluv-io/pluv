@@ -126,6 +126,24 @@ export class IORoom<
         return Promise.resolve(this._broadcast({ message }));
     }
 
+    public getSize(): number {
+        const currentTime = new Date().getTime();
+
+        /**
+         * @description Doing this instead of .size because some sessions
+         * in the map can be considered as "omitted".
+         * @author leedavidcs
+         * @date December 21, 2022
+         */
+        return Array.from(this._sessions.values()).reduce((count, session) => {
+            if (session.quit) return count;
+
+            return currentTime - session.timers.ping > PING_TIMEOUT_MS
+                ? count
+                : count + 1;
+        }, 0);
+    }
+
     public async register(
         webSocket: InferWebSocketType<TPlatform>,
         options?: WebsocketRegisterOptions
@@ -285,7 +303,7 @@ export class IORoom<
 
                     uninitializeWs();
 
-                    const size = this._getSessionsSize();
+                    const size = this.getSize();
 
                     this._logDebug(
                         `${colors.blue(
@@ -311,7 +329,7 @@ export class IORoom<
             )} ${sessionId}`
         );
 
-        const size = this._getSessionsSize();
+        const size = this.getSize();
 
         this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
     }
@@ -437,24 +455,6 @@ export class IORoom<
 
             return null;
         }
-    }
-
-    private _getSessionsSize(): number {
-        const currentTime = new Date().getTime();
-
-        /**
-         * @description Doing this instead of .size because some sessions
-         * in the map can be considered as "omitted".
-         * @author leedavidcs
-         * @date December 21, 2022
-         */
-        return Array.from(this._sessions.values()).reduce((count, session) => {
-            if (session.quit) return count;
-
-            return currentTime - session.timers.ping > PING_TIMEOUT_MS
-                ? count
-                : count + 1;
-        }, 0);
     }
 
     private _getEventConfig(
