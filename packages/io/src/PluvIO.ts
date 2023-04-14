@@ -291,6 +291,7 @@ export class PluvIO<
                 );
 
                 this._rooms.delete(room);
+                this._listeners.onRoomDeleted(room, encodedState);
 
                 if (this._debug) {
                     const rooms = Array.from(this._rooms.keys());
@@ -300,12 +301,6 @@ export class PluvIO<
                         `${colors.blue("Rooms available:")} ${rooms.join(", ")}`
                     );
                 }
-
-                this._platform.persistance.getSize(room).then((size) => {
-                    if (size) return;
-
-                    this._listeners.onRoomDeleted(room, encodedState);
-                });
             },
             platform,
         });

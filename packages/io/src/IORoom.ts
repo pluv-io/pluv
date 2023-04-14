@@ -110,7 +110,9 @@ export class IORoom<
         this.id = id;
 
         this._listeners = {
-            onDestroy: (encodedState) => onDestroy?.(encodedState),
+            onDestroy: (encodedState) => {
+                onDestroy?.(encodedState);
+            },
         };
 
         if (authorize) this._authorize = authorize;
@@ -493,6 +495,8 @@ export class IORoom<
             this._doc = doc();
 
             this._listeners.onDestroy(encodedState);
+
+            this._uninitialize = null;
         };
     }
 
