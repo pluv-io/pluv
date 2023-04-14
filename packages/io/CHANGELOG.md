@@ -1,5 +1,11 @@
 # @pluv/io
 
+## 0.3.9
+
+### Patch Changes
+
+- abb3622: fixed @pluv/io yjs doc becoming unresponsive when the last user leaves on a cloudflare worker
+
 ## 0.3.8
 
 ### Patch Changes
