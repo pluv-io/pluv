@@ -9,7 +9,7 @@
     "cf:login": "wrangler login",
     "deploy:dev": "wrangler publish --config ./wrangler-dev.toml",
     "deploy:prod": "wrangler publish --config ./wrangler-prod.toml",
-    "dev": "wrangler dev --port 8787",
+    "dev": "wrangler --config ./wrangler-dev.toml dev --port 8787",
     "wrangler": "wrangler"
   },
   "dependencies": {

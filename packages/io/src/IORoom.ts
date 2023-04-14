@@ -110,7 +110,9 @@ export class IORoom<
         this.id = id;
 
         this._listeners = {
-            onDestroy: (encodedState) => onDestroy?.(encodedState),
+            onDestroy: (encodedState) => {
+                onDestroy?.(encodedState);
+            },
         };
 
         if (authorize) this._authorize = authorize;
@@ -488,9 +490,6 @@ export class IORoom<
             this._platform.pubSub.unsubscribe(pubSubId);
 
             const encodedState = this._doc.encodeStateAsUpdate();
-
-            this._doc.destroy();
-            this._doc = doc();
 
             this._listeners.onDestroy(encodedState);
         };
