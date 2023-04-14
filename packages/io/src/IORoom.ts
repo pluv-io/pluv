@@ -491,7 +491,12 @@ export class IORoom<
 
             const encodedState = this._doc.encodeStateAsUpdate();
 
+            this._doc.destroy();
+            this._doc = doc();
+
             this._listeners.onDestroy(encodedState);
+
+            this._uninitialize = null;
         };
     }
 
