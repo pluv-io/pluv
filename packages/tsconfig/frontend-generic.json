@@ -3,9 +3,9 @@
 	"display": "Frontend Generic",
 	"extends": "./base.json",
 	"compilerOptions": {
-		"lib": ["DOM", "esnext"],
-		"module": "ESNext",
-		"target": "es5"
+		"lib": ["dom", "esnext"],
+		"module": "esnext",
+		"target": "es6"
 	}
 }
   
