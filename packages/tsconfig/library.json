@@ -3,8 +3,8 @@
 	"display": "Library",
 	"extends": "./base.json",
 	"compilerOptions": {
-		"lib": ["ESNext"],
-		"module": "ESNext",
+		"lib": ["esnext"],
+		"module": "esnext",
 		"target": "es6"
 	}
 }
