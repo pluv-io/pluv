@@ -17,7 +17,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
     private _debug: boolean;
     private _wsEndpoint: WsEndpoint;
 
-    private _rooms = new Map<string, PluvRoom<TIO, JsonObject, any>>();
+    private _rooms = new Map<string, PluvRoom<TIO, any, any>>();
 
     constructor(options: PluvClientOptions<TIO>) {
         const { authEndpoint, debug = false, wsEndpoint } = options;
@@ -55,7 +55,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
     };
 
     public enter = async (
-        room: string | PluvRoom<TIO, JsonObject, any>
+        room: string | PluvRoom<TIO, any, any>
     ): Promise<PluvRoom<TIO, JsonObject, any>> => {
         const toEnter = typeof room === "string" ? this.getRoom(room) : room;
 
@@ -89,7 +89,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
         return Array.from(this._rooms.values());
     };
 
-    public leave = (room: string | PluvRoom<TIO, JsonObject, any>): void => {
+    public leave = (room: string | PluvRoom<TIO, any, any>): void => {
         const toLeave = typeof room === "string" ? this.getRoom(room) : room;
 
         if (!toLeave) return;

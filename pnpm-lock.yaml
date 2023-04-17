@@ -451,7 +451,7 @@ importers:
         version: link:../../packages/eslint-config-pluv
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -543,7 +543,7 @@ importers:
         version: link:../../packages/eslint-config-pluv
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -805,7 +805,7 @@ importers:
         version: link:../../packages/eslint-config-pluv
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -894,7 +894,7 @@ importers:
         version: link:../../packages/eslint-config-pluv
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -1013,7 +1013,7 @@ importers:
         version: link:../eslint-config-pluv
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -1033,12 +1033,15 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      '@swc/core':
+        specifier: ^1.3.51
+        version: 1.3.51
       eslint-config-pluv:
         specifier: workspace:^
         version: link:../eslint-config-pluv
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -1063,7 +1066,7 @@ importers:
         version: link:../eslint-config-pluv
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -1143,7 +1146,7 @@ importers:
         version: link:../eslint-config-pluv
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -1174,7 +1177,7 @@ importers:
         version: 5.3.1
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -1199,7 +1202,7 @@ importers:
         version: link:../eslint-config-pluv
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -1227,7 +1230,7 @@ importers:
         version: link:../eslint-config-pluv
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -1252,7 +1255,7 @@ importers:
         version: 5.3.1
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -1289,7 +1292,7 @@ importers:
         version: 18.2.0
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -1309,7 +1312,7 @@ importers:
         version: link:../eslint-config-pluv
       tsup:
         specifier: ^6.7.0
-        version: 6.7.0(ts-node@10.9.1)(typescript@5.0.4)
+        version: 6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4)
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
@@ -6091,6 +6094,118 @@ packages:
       cosmiconfig: 8.1.3
       deepmerge: 4.3.1
       svgo: 3.0.2
+    dev: true
+
+  /@swc/core-darwin-arm64@1.3.51:
+    resolution: {integrity: sha512-DM15fJgaXQ+BOoTlMCBoRBSzkpC2V8vAXaAvh3BZ+BI6/03FUQ0j9CMIaSkss3VOv+WwqzllmcT71C/oVDQ7Tg==}
+    engines: {node: '>=10'}
+    cpu: [arm64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-darwin-x64@1.3.51:
+    resolution: {integrity: sha512-EPAneufZfFQUkpkf2m8Ap8TajLvjWI+UmDQz54QaofLaigXgrnLoqTtnZHBfDbUTApGYz3GaqjfZ2fMLGiISLQ==}
+    engines: {node: '>=10'}
+    cpu: [x64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-linux-arm-gnueabihf@1.3.51:
+    resolution: {integrity: sha512-sASxO3lJjlY5g8S25yCQirDOW6zqBNeDSUCBrulaVxttx0PcL64kc6qaOlM3HKlNO4W1P7RW/mGFR4bBov+yIg==}
+    engines: {node: '>=10'}
+    cpu: [arm]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-linux-arm64-gnu@1.3.51:
+    resolution: {integrity: sha512-z8yHRUK+5mRxSQkw9uND8QSt8lTrW0X8blmP12Q7c7RKWOHqIaGS60a3VvLuTal7k48K4YTstSevIrGwGK88sA==}
+    engines: {node: '>=10'}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-linux-arm64-musl@1.3.51:
+    resolution: {integrity: sha512-lMlp09lv6qDURvETw4AAZAjaJfvjwHjiAuB+JuZrgP3zdxB21M6cMas3EjAGXtNabpU1FJu+8Lsys6/GBBjsPQ==}
+    engines: {node: '>=10'}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-linux-x64-gnu@1.3.51:
+    resolution: {integrity: sha512-6zK4tDr6do6RFTJv38Rb8ZjBLdfSN7GeuyOJpblz1Qu62RqyY2Zf3fxuCZY9tkoEepZ0MvU0d4D7HhAUYKj20A==}
+    engines: {node: '>=10'}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-linux-x64-musl@1.3.51:
+    resolution: {integrity: sha512-ZwW+X9XdEiAszX+zfaLdOVfi5rQP3vnVwuNAiuX9eq5jHdfOKfKaNtJaGTD8w8NgMavaBM5AMaCHshFVNF0vRw==}
+    engines: {node: '>=10'}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-win32-arm64-msvc@1.3.51:
+    resolution: {integrity: sha512-w+IX4xCIZH6RQG7RrOOrrHqIqM7JIj9BDZHM9LAYC5MIbDinwjnSUXz7bpn0L1LRusvPtmbTulLuSkmVBSSwAg==}
+    engines: {node: '>=10'}
+    cpu: [arm64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-win32-ia32-msvc@1.3.51:
+    resolution: {integrity: sha512-Bzv/h0HkoKkTWOOoHtehId/6AS5hLBbWE5czzcQc8SWs+BNNV8zjWoq1oYn7/gLLEhdKaBAxv9q7RHzOfBx28A==}
+    engines: {node: '>=10'}
+    cpu: [ia32]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-win32-x64-msvc@1.3.51:
+    resolution: {integrity: sha512-dTKAdSd0e2Sfz3Sl3m6RGLQbk6jdSIh8TlFomF4iiHDHq4PxLTzjaOVvKUAP5wux9DtBnAgZeSHMuQfM4aL9oA==}
+    engines: {node: '>=10'}
+    cpu: [x64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core@1.3.51:
+    resolution: {integrity: sha512-/fdKlrs2NacLeOKrVZjCPfw5GeUIyBcJg0GDBn0+qwC3Y6k85m4aswK1sfRDF3nzyeXXoBr7YBb+/cSdFq9pVw==}
+    engines: {node: '>=10'}
+    requiresBuild: true
+    peerDependencies:
+      '@swc/helpers': ^0.5.0
+    peerDependenciesMeta:
+      '@swc/helpers':
+        optional: true
+    optionalDependencies:
+      '@swc/core-darwin-arm64': 1.3.51
+      '@swc/core-darwin-x64': 1.3.51
+      '@swc/core-linux-arm-gnueabihf': 1.3.51
+      '@swc/core-linux-arm64-gnu': 1.3.51
+      '@swc/core-linux-arm64-musl': 1.3.51
+      '@swc/core-linux-x64-gnu': 1.3.51
+      '@swc/core-linux-x64-musl': 1.3.51
+      '@swc/core-win32-arm64-msvc': 1.3.51
+      '@swc/core-win32-ia32-msvc': 1.3.51
+      '@swc/core-win32-x64-msvc': 1.3.51
     dev: true
 
   /@swc/helpers@0.4.14:
@@ -15156,7 +15271,7 @@ packages:
   /tslib@2.5.0:
     resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
 
-  /tsup@6.7.0(ts-node@10.9.1)(typescript@5.0.4):
+  /tsup@6.7.0(@swc/core@1.3.51)(ts-node@10.9.1)(typescript@5.0.4):
     resolution: {integrity: sha512-L3o8hGkaHnu5TdJns+mCqFsDBo83bJ44rlK7e6VdanIvpea4ArPcU3swWGsLVbXak1PqQx/V+SSmFPujBK+zEQ==}
     engines: {node: '>=14.18'}
     hasBin: true
@@ -15172,6 +15287,7 @@ packages:
       typescript:
         optional: true
     dependencies:
+      '@swc/core': 1.3.51
       bundle-require: 4.0.1(esbuild@0.17.15)
       cac: 6.7.14
       chokidar: 3.5.3
