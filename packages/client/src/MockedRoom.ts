@@ -191,16 +191,12 @@ export class MockedRoom<
 
                 const sharedTypes = this._crdtManager.doc.getSharedTypes();
 
-                Object.keys(sharedTypes).forEach((key) => {
+                Object.entries(sharedTypes).forEach(([prop, sharedType]) => {
                     if (!this._crdtManager) return;
-
-                    const sharedType = sharedTypes[key];
-
-                    if (!sharedType) return;
 
                     const serialized = sharedType.toJSON();
 
-                    this._crdtNotifier.subject(key).next(serialized);
+                    this._crdtNotifier.subject(prop).next(serialized);
                 });
             }
         );
