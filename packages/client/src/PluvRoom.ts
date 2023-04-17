@@ -352,6 +352,25 @@ export class PluvRoom<
         return this._stateNotifier.subscribe(name, callback);
     };
 
+    public updateMyPresence = (presence: Partial<TPresence>): void => {
+        const connectionId = this._state.connection.id;
+
+        if (!connectionId) return;
+
+        this._usersManager.patchPresence(connectionId, presence);
+
+        const myPresence = this._usersManager.myself?.presence ?? null;
+        const myself = this._usersManager.myself ?? null;
+
+        this._stateNotifier.subjects["my-presence"].next(myPresence);
+        this._stateNotifier.subjects["myself"].next(myself);
+
+        this.broadcast(
+            "$UPDATE_PRESENCE" as keyof InferIOInput<TIO>,
+            { presence } as any
+        );
+    };
+
     private _attachWindowListeners(): void {
         if (typeof window === "undefined") return;
         if (typeof document === "undefined") return;
@@ -738,6 +757,16 @@ export class PluvRoom<
                 if (this._state.webSocket.readyState !== WebSocket.OPEN) return;
 
                 if (origin === "$STORAGE_UPDATED") return;
+
+                const sharedTypes = this._crdtManager.doc.getSharedTypes();
+
+                Object.entries(sharedTypes).forEach(([prop, sharedType]) => {
+                    if (!this._crdtManager) return;
+
+                    const serialized = sharedType.toJSON();
+
+                    this._crdtNotifier.subject(prop).next(serialized);
+                });
 
                 this._sendMessage({
                     type: "$UPDATE_STORAGE",
