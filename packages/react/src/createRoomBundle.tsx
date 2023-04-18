@@ -334,16 +334,12 @@ export const createRoomBundle = <
         const updateMyPresence: Dispatch<UpdateMyPresenceAction<TPresence>> =
             useCallback(
                 (value: UpdateMyPresenceAction<TPresence>): void => {
-                    const oldMyPresence = room.getMyPresence();
                     const presence =
                         typeof value === "function"
-                            ? value(oldMyPresence)
+                            ? value(room.getMyPresence())
                             : value;
 
-                    room.broadcast(
-                        "$UPDATE_PRESENCE" as keyof InferIOInput<TIO>,
-                        { presence } as any
-                    );
+                    room.updateMyPresence(presence);
                 },
                 [room]
             );
