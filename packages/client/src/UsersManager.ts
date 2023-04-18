@@ -20,6 +20,14 @@ export class UsersManager<
     TPresence extends JsonObject = {}
 > {
     private _initialPresence: TPresence;
+    /**
+     * @description This presence can be updated while the user is not
+     * connected.
+     */
+    private _myPresence: TPresence;
+    /**
+     * @description This is only set when the user is connected.
+     */
     private _myself: UserInfo<TIO, TPresence> | null = null;
     private _others = new Map<string, UserInfo<TIO, TPresence>>();
     private _presence: InputZodLike<TPresence> | null = null;
@@ -27,8 +35,12 @@ export class UsersManager<
     constructor(config: UsersManagerConfig<TPresence>) {
         const { initialPresence, presence = null } = config;
 
-        this._initialPresence = initialPresence as TPresence;
+        this._myPresence = this._initialPresence = initialPresence as TPresence;
         this._presence = presence;
+    }
+
+    public get myPresence(): TPresence {
+        return this._myPresence;
     }
 
     public get myself(): UserInfo<TIO, TPresence> | null {
@@ -52,7 +64,7 @@ export class UsersManager<
         patch: Partial<TPresence>
     ): void {
         if (this._myself?.connectionId === connectionId) {
-            this._myself.presence = Object.assign(
+            this._myPresence = this._myself.presence = Object.assign(
                 Object.create(null),
                 this._myself.presence,
                 patch
@@ -93,11 +105,13 @@ export class UsersManager<
             presence: this._initialPresence,
             user,
         };
+
+        this._myPresence = this._myself.presence;
     }
 
     public setPresence(connectionId: string, presence: TPresence): void {
         if (this._myself?.connectionId === connectionId) {
-            this._myself.presence = presence;
+            this._myPresence = this._myself.presence = presence;
 
             return;
         }
@@ -124,5 +138,20 @@ export class UsersManager<
             presence: this._initialPresence,
             user,
         });
+    }
+
+    /**
+     * @description This method need not care about being connected.
+     */
+    public updateMyPresence(presence: Partial<TPresence>): void {
+        this._myPresence = Object.assign(
+            Object.create(null),
+            this._myPresence,
+            presence
+        );
+
+        if (!this._myself) return;
+
+        this._myself.presence = this._myPresence;
     }
 }
