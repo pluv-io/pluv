@@ -363,7 +363,7 @@ export class PluvRoom<
         const myself = this._usersManager.myself ?? null;
 
         this._stateNotifier.subjects["my-presence"].next(myPresence);
-        this._stateNotifier.subjects["myself"].next(myself);
+        !!myself && this._stateNotifier.subjects["myself"].next(myself);
 
         this.broadcast(
             "$UPDATE_PRESENCE" as keyof InferIOInput<TIO>,
