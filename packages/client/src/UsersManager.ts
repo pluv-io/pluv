@@ -106,12 +106,13 @@ export class UsersManager<
             user,
         };
 
-        this._myPresence = this._myself.presence;
+        this._myPresence = this._initialPresence;
     }
 
     public setPresence(connectionId: string, presence: TPresence): void {
         if (this._myself?.connectionId === connectionId) {
-            this._myPresence = this._myself.presence = presence;
+            this._myself.presence = presence;
+            this._myPresence = presence;
 
             return;
         }
