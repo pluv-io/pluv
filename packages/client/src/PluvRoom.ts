@@ -554,7 +554,7 @@ export class PluvRoom<
             data.presence as TPresence
         );
 
-        const myPresence = this._usersManager.myself?.presence ?? null;
+        const myPresence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
 
         if (myself?.connectionId === connectionId) {
@@ -622,7 +622,7 @@ export class PluvRoom<
             user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>
         );
 
-        const myPresence = this._usersManager.myself?.presence ?? null;
+        const myPresence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
 
         this._stateNotifier.subjects["my-presence"].next(myPresence);
