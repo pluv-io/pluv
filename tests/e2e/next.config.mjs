@@ -2,7 +2,10 @@
 
 /** @type {import("next").NextConfig} */
 const config = {
+    experimental: {
+        externalDir: true,
+    },
     reactStrictMode: true,
 };
-  
-module.exports = config;
+
+export default config;

@@ -35,7 +35,8 @@ export class UsersManager<
     constructor(config: UsersManagerConfig<TPresence>) {
         const { initialPresence, presence = null } = config;
 
-        this._myPresence = this._initialPresence = initialPresence as TPresence;
+        this._initialPresence = initialPresence as TPresence;
+        this._myPresence = initialPresence as TPresence;
         this._presence = presence;
     }
 
@@ -64,11 +65,13 @@ export class UsersManager<
         patch: Partial<TPresence>
     ): void {
         if (this._myself?.connectionId === connectionId) {
-            this._myPresence = this._myself.presence = Object.assign(
-                Object.create(null),
-                this._myself.presence,
-                patch
-            ) as TPresence;
+            const presence = {
+                ...this._myPresence,
+                ...patch,
+            } as TPresence;
+
+            this._myself.presence = presence;
+            this._myPresence = presence;
 
             return;
         }
@@ -77,11 +80,10 @@ export class UsersManager<
 
         if (!other) return;
 
-        const presence = Object.assign(
-            Object.create(null),
-            other.presence,
-            patch
-        ) as TPresence;
+        const presence = {
+            ...other.presence,
+            ...patch,
+        } as TPresence;
 
         this._presence?.parse(presence);
 
@@ -145,11 +147,7 @@ export class UsersManager<
      * @description This method need not care about being connected.
      */
     public updateMyPresence(presence: Partial<TPresence>): void {
-        this._myPresence = Object.assign(
-            Object.create(null),
-            this._myPresence,
-            presence
-        );
+        this._myPresence = { ...this._myPresence, ...presence };
 
         if (!this._myself) return;
 
