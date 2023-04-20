@@ -68,4 +68,6 @@ export abstract class AbstractRoom<
         name: TSubject,
         callback: SubscriptionCallback<TIO, TPresence, TSubject>
     ): () => void;
+
+    public abstract updateMyPresence(presence: Partial<TPresence>): void;
 }

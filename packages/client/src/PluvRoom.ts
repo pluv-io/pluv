@@ -279,8 +279,12 @@ export class PluvRoom<
 
         if (!canDisconnect) return;
 
+        this._clearInterval(this._intervals.heartbeat);
+
         this._closeWs();
         this._crdtManager?.destroy();
+
+        this._stateNotifier.subjects["my-presence"].next(null);
 
         this._updateState((oldState) => {
             oldState.authorization.token = null;
@@ -353,17 +357,13 @@ export class PluvRoom<
     };
 
     public updateMyPresence = (presence: Partial<TPresence>): void => {
-        const connectionId = this._state.connection.id;
+        this._usersManager.updateMyPresence(presence);
 
-        if (!connectionId) return;
-
-        this._usersManager.patchPresence(connectionId, presence);
-
-        const myPresence = this._usersManager.myself?.presence ?? null;
+        const myPresence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
 
         this._stateNotifier.subjects["my-presence"].next(myPresence);
-        this._stateNotifier.subjects["myself"].next(myself);
+        !!myself && this._stateNotifier.subjects["myself"].next(myself);
 
         this.broadcast(
             "$UPDATE_PRESENCE" as keyof InferIOInput<TIO>,
@@ -435,7 +435,6 @@ export class PluvRoom<
 
         this._subscriptions.observeCrdt?.();
 
-        this._clearInterval(this._intervals.heartbeat);
         this._clearTimeout(this._timeouts.pong);
         this._clearTimeout(this._timeouts.reconnect);
 
@@ -450,7 +449,6 @@ export class PluvRoom<
 
         this._detachWsListeners();
 
-        this._stateNotifier.subjects["my-presence"].next(null);
         this._stateNotifier.subjects["myself"].next(null);
     }
 
@@ -556,7 +554,7 @@ export class PluvRoom<
             data.presence as TPresence
         );
 
-        const myPresence = this._usersManager.myself?.presence ?? null;
+        const myPresence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
 
         if (myself?.connectionId === connectionId) {
@@ -624,7 +622,7 @@ export class PluvRoom<
             user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>
         );
 
-        const myPresence = this._usersManager.myself?.presence ?? null;
+        const myPresence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
 
         this._stateNotifier.subjects["my-presence"].next(myPresence);

@@ -17,6 +17,7 @@
 	"private": true,
 	"dependencies": {
 		"@pluv-internal/cloudflare-utils": "workspace:^",
+		"@pluv-internal/react-hooks": "workspace:^",
 		"@pluv/client": "workspace:^",
 		"@pluv/crdt-yjs": "workspace:^",
 		"@pluv/io": "workspace:^",

@@ -1319,6 +1319,9 @@ importers:
       '@pluv-internal/cloudflare-utils':
         specifier: workspace:^
         version: link:../../internal/cloudflare-utils
+      '@pluv-internal/react-hooks':
+        specifier: workspace:^
+        version: link:../../internal/react-hooks
       '@pluv/client':
         specifier: workspace:^
         version: link:../../packages/client
