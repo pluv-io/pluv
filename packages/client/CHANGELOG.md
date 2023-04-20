@@ -1,5 +1,14 @@
 # @pluv/client
 
+## 0.6.5
+
+### Patch Changes
+
+- 7ad4967: fixed user's presence not updating locally while offline
+- 4535687: fix local yjs doc not updating while disconnected
+  - @pluv/crdt-yjs@0.3.6
+  - @pluv/types@0.1.6
+
 ## 0.6.4
 
 ### Patch Changes
