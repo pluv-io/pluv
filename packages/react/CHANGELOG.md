@@ -1,5 +1,15 @@
 # @pluv/react
 
+## 0.5.8
+
+### Patch Changes
+
+- 7ad4967: fixed user's presence not updating locally while offline
+- Updated dependencies [7ad4967]
+- Updated dependencies [4535687]
+  - @pluv/client@0.6.5
+  - @pluv/types@0.1.6
+
 ## 0.5.7
 
 ### Patch Changes

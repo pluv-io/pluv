@@ -1,5 +1,12 @@
 # @pluv/tsconfig
 
+## 0.1.6
+
+### Patch Changes
+
+- 4535687: update config to output to es5 target
+- 46a1a87: set all targets to es6
+
 ## 0.1.5
 
 ### Patch Changes
