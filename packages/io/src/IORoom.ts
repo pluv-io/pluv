@@ -25,6 +25,7 @@ import type {
     SendMessageOptions,
     WebSocketSession,
 } from "./types";
+import { AbstractMessageEvent } from "./AbstractWebSocket";
 
 const PING_TIMEOUT_MS = 30_000;
 
@@ -210,120 +211,16 @@ export class IORoom<
             user ?? {}
         );
 
+        const onClose = this._onClose(session, uninitializeWs).bind(this);
+        const onMessage = this._onMessage(session).bind(this);
+
+        pluvWs.addEventListener("close", onClose);
+        pluvWs.addEventListener("error", onClose);
+        pluvWs.addEventListener("message", onMessage);
+
         this._emitRegistered(session);
         this._emitStorageReceived(session);
         this._emitUserJoined(session);
-
-        const context: EventResolverContext<TContext> = {
-            context: this._context,
-            doc: this._doc,
-            room: this.id,
-            session,
-            sessions: this._sessions,
-        };
-
-        pluvWs.addEventListener("message", (event) => {
-            if (!this._uninitialize) return;
-
-            if (session.quit) {
-                session.webSocket.close(1011, "WebSocket broken.");
-
-                return;
-            }
-
-            const message = this._parseMessage(event);
-
-            if (!message) return;
-
-            const eventConfig = this._getEventConfig(message);
-
-            if (!eventConfig) return;
-
-            this._resolveMessage(message, context).then((output) => {
-                if (!output) return;
-
-                const eventType = eventConfig.options?.type ?? "broadcast";
-
-                switch (eventType) {
-                    case "self": {
-                        Object.entries(output).forEach(([type, data]) => {
-                            this._sendSelfMessage({ data, type }, session);
-                        });
-
-                        return;
-                    }
-                    case "sync": {
-                        this._platform.pubSub.publish(this.id, {
-                            connectionId: session.id,
-                            options: eventConfig.options,
-                            room: this.id,
-                            user: session.user,
-                            ...message,
-                        });
-
-                        Object.entries(output).forEach(([type, data]) => {
-                            this._sendSelfMessage({ data, type }, session);
-                        });
-
-                        return;
-                    }
-                    case "broadcast":
-                    default: {
-                        Object.entries(output).forEach(([type, data]: any) => {
-                            this._broadcast({
-                                message: { data, type },
-                                senderId: session.id,
-                            });
-                        });
-                    }
-                }
-            });
-        });
-
-        const closeHandler = () => {
-            if (!this._uninitialize) return;
-
-            session.quit = true;
-
-            this._logDebug(
-                `${colors.blue(
-                    `(Unregistering connection for room ${this.id}:`
-                )} ${sessionId}`
-            );
-            this._sessions.delete(session.id);
-
-            this._platform.persistance
-                .deleteUser(this.id, session.id)
-                .finally(() => {
-                    this._broadcast({
-                        message: {
-                            type: "$EXIT",
-                            data: { sessionId: session.id },
-                        },
-                        senderId: session.id,
-                    });
-
-                    uninitializeWs();
-
-                    const size = this.getSize();
-
-                    this._logDebug(
-                        `${colors.blue(
-                            `Unregistered connection for room ${this.id}:`
-                        )} ${sessionId}`
-                    );
-                    this._logDebug(
-                        `${colors.blue(`Room ${this.id} size:`)} ${size}`
-                    );
-
-                    if (size) return;
-
-                    this._uninitialize?.();
-                });
-        };
-
-        pluvWs.addEventListener("close", closeHandler);
-        pluvWs.addEventListener("error", closeHandler);
 
         this._logDebug(
             `${colors.blue(
@@ -502,6 +399,123 @@ export class IORoom<
 
     private _logDebug(...data: any[]): void {
         this._debug && console.log(...data);
+    }
+
+    private _onClose(
+        session: WebSocketSession,
+        callback?: () => void
+    ): () => void {
+        return (): void => {
+            if (!this._uninitialize) return;
+
+            session.quit = true;
+
+            this._logDebug(
+                `${colors.blue(
+                    `(Unregistering connection for room ${this.id}:`
+                )} ${session.id}`
+            );
+            this._sessions.delete(session.id);
+
+            this._platform.persistance
+                .deleteUser(this.id, session.id)
+                .finally(() => {
+                    this._broadcast({
+                        message: {
+                            type: "$EXIT",
+                            data: { sessionId: session.id },
+                        },
+                        senderId: session.id,
+                    });
+
+                    callback?.();
+
+                    const size = this.getSize();
+
+                    this._logDebug(
+                        `${colors.blue(
+                            `Unregistered connection for room ${this.id}:`
+                        )} ${session.id}`
+                    );
+                    this._logDebug(
+                        `${colors.blue(`Room ${this.id} size:`)} ${size}`
+                    );
+
+                    if (size) return;
+
+                    this._uninitialize?.();
+                });
+        };
+    }
+
+    private _onMessage(
+        session: WebSocketSession
+    ): (event: AbstractMessageEvent) => void {
+        return (event: AbstractMessageEvent): void => {
+            const context: EventResolverContext<TContext> = {
+                context: this._context,
+                doc: this._doc,
+                room: this.id,
+                session,
+                sessions: this._sessions,
+            };
+
+            if (!this._uninitialize) return;
+
+            if (session.quit) {
+                session.webSocket.close(1011, "WebSocket broken.");
+
+                return;
+            }
+
+            const message = this._parseMessage(event);
+
+            if (!message) return;
+
+            const eventConfig = this._getEventConfig(message);
+
+            if (!eventConfig) return;
+
+            this._resolveMessage(message, context).then((output) => {
+                if (!output) return;
+
+                const eventType = eventConfig.options?.type ?? "broadcast";
+
+                switch (eventType) {
+                    case "self": {
+                        Object.entries(output).forEach(([type, data]) => {
+                            this._sendSelfMessage({ data, type }, session);
+                        });
+
+                        return;
+                    }
+                    case "sync": {
+                        this._platform.pubSub.publish(this.id, {
+                            connectionId: session.id,
+                            options: eventConfig.options,
+                            room: this.id,
+                            user: session.user,
+                            ...message,
+                        });
+
+                        Object.entries(output).forEach(([type, data]) => {
+                            this._sendSelfMessage({ data, type }, session);
+                        });
+
+                        return;
+                    }
+                    case "broadcast":
+                    default: {
+                        Object.entries(output).forEach(([type, data]: any) => {
+                            this._broadcast({
+                                message: { data, type },
+                                senderId: session.id,
+                            });
+                        });
+                    }
+                }
+            });
+        };
     }
 
     private _parseMessage(message: {
