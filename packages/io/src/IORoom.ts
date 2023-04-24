@@ -220,7 +220,6 @@ export class IORoom<
 
         this._emitRegistered(session);
         this._emitStorageReceived(session);
-        this._emitUserJoined(session);
 
         this._logDebug(
             `${colors.blue(
@@ -298,23 +297,6 @@ export class IORoom<
                     session
                 );
             });
-    }
-
-    private _emitUserJoined(session: WebSocketSession): void {
-        const user = session.user as any;
-
-        if (!user) return;
-
-        this._broadcast({
-            message: {
-                type: "$USER_JOINED",
-                data: {
-                    connectionId: session.id,
-                    user,
-                },
-            },
-            senderId: session.id,
-        });
     }
 
     private async _getAuthorizedUser(

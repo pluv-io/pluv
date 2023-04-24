@@ -128,7 +128,8 @@ export class UsersManager<
 
     public setUser(
         connectionId: string,
-        user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>
+        user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>,
+        presence?: TPresence
     ): void {
         if (this._myself?.connectionId === connectionId) return;
 
@@ -138,7 +139,7 @@ export class UsersManager<
 
         this._others.set(connectionId, {
             connectionId,
-            presence: this._initialPresence,
+            presence: presence ?? this._initialPresence,
             user,
         });
     }

@@ -622,13 +622,13 @@ export class PluvRoom<
             user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>
         );
 
-        const myPresence = this._usersManager.myPresence;
+        const presence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
 
-        this._stateNotifier.subjects["my-presence"].next(myPresence);
+        this._stateNotifier.subjects["my-presence"].next(presence);
         this._stateNotifier.subjects["myself"].next(myself);
 
-        this._sendMessage({ type: "$GET_OTHERS", data: {} });
+        this._sendMessage({ type: "$INITIALIZE_SESSION", data: { presence } });
     }
 
     private _handleStorageReceivedMessage(message: IOEventMessage<TIO>): void {
@@ -708,7 +708,17 @@ export class PluvRoom<
             InferIOAuthorize<TIO>
         >["$USER_JOINED"];
 
-        this._usersManager.setUser(connectionId, data.user);
+        const myself = this._usersManager.myself;
+
+        if (myself.connectionId === connectionId) {
+            this._sendMessage({ type: "$GET_OTHERS", data: {} });
+        }
+
+        this._usersManager.setUser(
+            connectionId,
+            data.user,
+            data.presence as TPresence
+        );
 
         const other = this._usersManager.getOther(connectionId);
         const others = this._usersManager.getOthers();

@@ -85,18 +85,6 @@ export class PluvIO<
     readonly _authorize: TAuthorize | null = null;
     readonly _debug: boolean;
     readonly _events: InferEventConfig<TContext, TInput, TOutput> = {
-        $PING: {
-            resolver: (data, { session }) => {
-                if (!session) return {};
-
-                const currentTime = new Date().getTime();
-
-                session.timers.ping = currentTime;
-
-                return { $PONG: {} };
-            },
-            options: { type: "self" },
-        },
         $GET_OTHERS: {
             resolver: (data, { room, session, sessions }) => {
                 const others = Array.from(sessions.entries())
@@ -123,6 +111,33 @@ export class PluvIO<
                 return { $OTHERS_RECEIVED: { others } };
             },
             options: { type: "sync" },
+        },
+        $INITIALIZE_SESSION: {
+            resolver: ({ presence }, { session }) => {
+                if (!session) return {};
+
+                session.presence = presence;
+
+                return {
+                    $USER_JOINED: {
+                        connectionId: session.id,
+                        user: session.user,
+                        presence,
+                    },
+                };
+            },
+        },
+        $PING: {
+            resolver: (data, { session }) => {
+                if (!session) return {};
+
+                const currentTime = new Date().getTime();
+
+                session.timers.ping = currentTime;
+
+                return { $PONG: {} };
+            },
+            options: { type: "self" },
         },
         $UPDATE_PRESENCE: {
             resolver: ({ presence }, { session }) => {

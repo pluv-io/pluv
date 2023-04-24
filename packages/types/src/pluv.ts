@@ -6,6 +6,9 @@ export type BaseUser = {
 
 export interface BaseClientEventRecord {
     $GET_OTHERS: {};
+    $INITIALIZE_SESSION: {
+        presence: JsonObject;
+    };
     $PING: {};
     $UPDATE_PRESENCE: {
         presence: JsonObject;
@@ -40,6 +43,7 @@ export interface BaseIOAuthorizeEventRecord<
     $USER_JOINED: {
         connectionId: string;
         user: NonNullable<InferIOAuthorizeUser<TAuthorize>>;
+        presence: JsonObject;
     };
 }
 
