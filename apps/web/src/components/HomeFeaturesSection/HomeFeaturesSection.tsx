@@ -14,6 +14,7 @@ const Root = tw.section`
 const Features = tw(PageContainer)`
     grid
     grid-cols-1
+    auto-rows-fr
     gap-6
     max-w-[1200px]
     md:grid-cols-2
