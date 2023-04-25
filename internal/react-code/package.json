@@ -11,6 +11,7 @@
 		"access": "public"
 	},
 	"dependencies": {
+		"@pluv-internal/react-hooks": "workspace:^",
 		"@popperjs/core": "^2.11.7",
 		"@radix-ui/react-tabs": "^1.0.3",
 		"@types/react": "18.0.38",

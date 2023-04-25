@@ -617,6 +617,9 @@ importers:
 
   internal/react-code:
     dependencies:
+      '@pluv-internal/react-hooks':
+        specifier: workspace:^
+        version: link:../react-hooks
       '@popperjs/core':
         specifier: ^2.11.7
         version: 2.11.7

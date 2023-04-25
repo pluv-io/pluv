@@ -16,7 +16,8 @@ import { CodeTooltipIcon, CodeTooltipIconType } from "./CodeTooltipIcon";
 
 const Content = tw.div`
     md:translate-x-full
-    flex
+    md:flex
+    hidden
     flex-row
     items-center
     gap-1
