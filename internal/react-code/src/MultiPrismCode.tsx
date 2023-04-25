@@ -13,6 +13,7 @@ export const Root = tw(Tabs.Root)`
 `;
 
 const TabsList = tw(Tabs.List)`
+    shrink-0
     flex
     flex-row
     items-stretch
