@@ -38,6 +38,7 @@ const Container = tw.div`
     flex-row
     items-start
     justify-center
+    min-w-0
     gap-8
     px-2
     py-8
