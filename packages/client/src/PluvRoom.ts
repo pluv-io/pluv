@@ -728,12 +728,6 @@ export class PluvRoom<
     }
 
     private _heartbeat(): void {
-        if (!this._state.webSocket) return;
-        if (!this._state.connection.id) return;
-        if (this._state.webSocket.readyState !== this._state.webSocket.OPEN) {
-            return;
-        }
-
         this._clearTimeout(this._timeouts.pong);
         this._timeouts.pong = setTimeout(
             this._reconnect.bind(this),
@@ -967,7 +961,7 @@ export class PluvRoom<
 
         this._updateState((oldState) => {
             oldState.authorization.token = null;
-            oldState.connection.state = ConnectionState.Unavailable;
+            oldState.connection.state = ConnectionState.Closed;
             oldState.webSocket = null;
 
             return oldState;
