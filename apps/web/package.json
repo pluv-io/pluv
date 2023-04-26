@@ -79,7 +79,7 @@
         "postcss": "^8.4.21",
         "react-is": "^18.2.0",
         "remark-gfm": "^3.0.1",
-        "tailwindcss": "3.3.1",
+        "tailwindcss": "3.3.2",
         "ts-node": "^10.9.1",
         "typescript": "^5.0.4"
     },
