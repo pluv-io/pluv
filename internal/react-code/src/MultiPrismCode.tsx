@@ -1,8 +1,7 @@
 import * as Tabs from "@radix-ui/react-tabs";
-import type { Language } from "prism-react-renderer";
 import { CSSProperties, FC, ReactElement, useMemo } from "react";
 import tw, { styled } from "twin.macro";
-import { PrismCode } from "./PrismCode";
+import { Language, PrismCode } from "./PrismCode";
 
 export const Root = tw(Tabs.Root)`
     flex
