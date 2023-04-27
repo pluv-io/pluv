@@ -30,7 +30,7 @@ export const HomeTypeSafetyDemoServer = memo<HomeTypeSafetyDemoServerProps>(
                 .event("EMIT_FIREWORK", {
                     input: z.object({ color: z.string() }),
                     resolver: ({ color }) => ({
-                    FIREWORK_EMITTED: { color },
+                        FIREWORK_EMITTED: { color },
                     }),
                 })
                 .event("SEND_MESSAGE", {
