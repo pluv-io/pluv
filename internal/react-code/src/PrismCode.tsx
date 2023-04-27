@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import Highlight, { defaultProps } from "prism-react-renderer";
+import { Highlight } from "prism-react-renderer";
 import { CSSProperties, FC } from "react";
 import { forwardRef, memo } from "react";
 import tw, { styled } from "twin.macro";
@@ -84,11 +84,18 @@ const LineContent = tw.span`
     table-cell
 `;
 
-export type TokenInputProps = Parameters<
-    Highlight["getTokenProps"]
->[0]["token"];
+export interface TokenInputProps {
+    types: string[];
+    content: string;
+    empty?: boolean;
+};
 
-export type TokenOutputProps = ReturnType<Highlight["getTokenProps"]>;
+export interface TokenOutputProps {
+    style?: CSSProperties;
+    className: string;
+    children: string;
+    [key: string]: unknown;
+};
 
 export interface PrismCodeTokenProps {
     index: number;
@@ -117,7 +124,6 @@ export const PrismCode = memo(
 
         return (
             <Highlight
-                {...defaultProps}
                 code={children}
                 language={language}
                 theme={{ plain: {}, styles: [] }}
