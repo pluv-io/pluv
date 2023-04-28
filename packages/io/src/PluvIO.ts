@@ -113,31 +113,32 @@ export class PluvIO<
         TOutputSync
     > = {
         $GET_OTHERS: {
-            resolver: (data, { room, session, sessions }) => {
-                const others = Array.from(sessions.entries())
-                    .filter(([, wsSession]) => wsSession.id !== session?.id)
-                    .reduce<{
-                        [connectionId: string]: {
-                            connectionId: string;
-                            room: string | null;
-                            user: InferIOAuthorizeUser<TAuthorize>;
-                        };
-                    }>(
-                        (acc, [connectionId, { presence, user }]) => ({
-                            ...acc,
-                            [connectionId]: {
-                                connectionId,
-                                presence,
-                                room,
-                                user: user as InferIOAuthorizeUser<TAuthorize>,
-                            },
-                        }),
-                        {}
-                    );
+            resolver: {
+                sync: (data, { room, session, sessions }) => {
+                    const others = Array.from(sessions.entries())
+                        .filter(([, wsSession]) => wsSession.id !== session?.id)
+                        .reduce<{
+                            [connectionId: string]: {
+                                connectionId: string;
+                                room: string | null;
+                                user: InferIOAuthorizeUser<TAuthorize>;
+                            };
+                        }>(
+                            (acc, [connectionId, { presence, user }]) => ({
+                                ...acc,
+                                [connectionId]: {
+                                    connectionId,
+                                    presence,
+                                    room,
+                                    user: user as InferIOAuthorizeUser<TAuthorize>,
+                                },
+                            }),
+                            {}
+                        );
 
-                return { $OTHERS_RECEIVED: { others } };
+                    return { $OTHERS_RECEIVED: { others } };
+                },
             },
-            options: { type: "sync" },
         },
         $INITIALIZE_SESSION: {
             resolver: ({ presence }, { session }) => {
@@ -155,16 +156,17 @@ export class PluvIO<
             },
         },
         $PING: {
-            resolver: (data, { session }) => {
-                if (!session) return {};
+            resolver: {
+                self: (data, { session }) => {
+                    if (!session) return {};
 
-                const currentTime = new Date().getTime();
+                    const currentTime = new Date().getTime();
 
-                session.timers.ping = currentTime;
+                    session.timers.ping = currentTime;
 
-                return { $PONG: {} };
+                    return { $PONG: {} };
+                },
             },
-            options: { type: "self" },
         },
         $UPDATE_PRESENCE: {
             resolver: ({ presence }, { session }) => {

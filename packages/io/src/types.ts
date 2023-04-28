@@ -30,7 +30,6 @@ export interface EventConfig<
     TResultSync extends EventRecord<string, any> = {}
 > {
     input?: InputZodLike<TData>;
-    options?: SendMessageOptions;
     resolver:
         | EventResolver<TContext, TData, TResultBroadcast>
         | EventResolverObject<
