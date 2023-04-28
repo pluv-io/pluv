@@ -25,11 +25,20 @@ declare global {
 export interface EventConfig<
     TContext extends JsonObject = {},
     TData extends JsonObject = {},
-    TResult extends EventRecord<string, any> = {}
+    TResultBroadcast extends EventRecord<string, any> = {},
+    TResultSelf extends EventRecord<string, any> = {},
+    TResultSync extends EventRecord<string, any> = {}
 > {
     input?: InputZodLike<TData>;
-    options?: SendMessageOptions;
-    resolver: EventResolver<TContext, TData, TResult>;
+    resolver:
+        | EventResolver<TContext, TData, TResultBroadcast>
+        | EventResolverObject<
+              TContext,
+              TData,
+              TResultBroadcast,
+              TResultSelf,
+              TResultSync
+          >;
 }
 
 export type EventConfigType = "broadcast" | "self" | "sync";
@@ -37,11 +46,11 @@ export type EventConfigType = "broadcast" | "self" | "sync";
 export type EventResolver<
     TContext extends JsonObject = {},
     TData extends JsonObject = {},
-    TResult extends EventRecord<string, any> = {}
+    TResultBroadcast extends EventRecord<string, any> = {}
 > = (
     data: TData,
     context: EventResolverContext<TContext>
-) => MaybePromise<TResult | void>;
+) => MaybePromise<TResultBroadcast | void>;
 
 export interface EventResolverContext<TContext extends JsonObject = {}> {
     context: TContext;
@@ -63,13 +72,35 @@ export interface EventResolverContext<TContext extends JsonObject = {}> {
     sessions: Map<string, WebSocketSession>;
 }
 
+export type EventResolverObject<
+    TContext extends JsonObject = {},
+    TData extends JsonObject = {},
+    TResultBroadcast extends EventRecord<string, any> = {},
+    TResultSelf extends EventRecord<string, any> = {},
+    TResultSync extends EventRecord<string, any> = {}
+> = {
+    broadcast?: EventResolver<TContext, TData, TResultBroadcast>;
+    self?: EventResolver<TContext, TData, TResultSelf>;
+    sync?: EventResolver<TContext, TData, TResultSync>;
+};
+
 export type InferEventConfig<
     TContext extends JsonObject = {},
     TInput extends EventRecord<string, any> = {},
-    TOutput extends EventRecord<string, any> = {}
+    TOutputBroadcast extends EventRecord<string, any> = {},
+    TOutputSelf extends EventRecord<string, any> = {},
+    TOutputSync extends EventRecord<string, any> = {}
 > = {
     [P in keyof TInput]: P extends string
-        ? Id<EventConfig<TContext, TInput[P], TOutput>>
+        ? Id<
+              EventConfig<
+                  TContext,
+                  TInput[P],
+                  TOutputBroadcast,
+                  TOutputSelf,
+                  TOutputSync
+              >
+          >
         : never;
 };
 

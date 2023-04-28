@@ -1,4 +1,4 @@
-import { Id, JsonObject, MaybePromise, NonNilProps } from "./general";
+import { Id, JsonObject, MaybePromise, NonNilProps, Spread } from "./general";
 
 export type BaseUser = {
     id: string;
@@ -121,6 +121,35 @@ export type InferIOInput<TIO extends IOLike> = TIO extends IOLike<
 export type InferIOOutput<TIO extends IOLike> = TIO extends IOLike<
     any,
     any,
+    infer IOutputBroadcast,
+    infer IOutputSelf,
+    infer IOutputSync
+>
+    ? Spread<[IOutputBroadcast, IOutputSelf, IOutputSync]>
+    : never;
+
+export type InferIOOutputBroadcast<TIO extends IOLike> = TIO extends IOLike<
+    any,
+    any,
+    infer IOutput
+>
+    ? IOutput
+    : never;
+
+export type InferIOOutputSelf<TIO extends IOLike> = TIO extends IOLike<
+    any,
+    any,
+    any,
+    infer IOutput
+>
+    ? IOutput
+    : never;
+
+export type InferIOOutputSync<TIO extends IOLike> = TIO extends IOLike<
+    any,
+    any,
+    any,
+    any,
     infer IOutput
 >
     ? IOutput
@@ -168,16 +197,33 @@ export type IOEventMessage<
 export interface IOLike<
     TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
     TInput extends EventRecord<string, any> = {},
-    TOutput extends EventRecord<string, any> = {}
+    TOutputBroadcast extends EventRecord<string, any> = {},
+    TOutputSelf extends EventRecord<string, any> = {},
+    TOutputSync extends EventRecord<string, any> = {}
 > {
     _authorize: TAuthorize | null;
     _events: {
         [P in keyof TInput]: P extends string
             ? {
-                  resolver: (
-                      data: TInput[P],
-                      ...args: any[]
-                  ) => MaybePromise<TOutput | void>;
+                  resolver:
+                      | ((
+                            data: TInput[P],
+                            ...args: any[]
+                        ) => MaybePromise<TOutputBroadcast | void>)
+                      | {
+                            broadcast?: (
+                                data: TInput[P],
+                                ...args: any[]
+                            ) => MaybePromise<TOutputBroadcast | void>;
+                            self?: (
+                                data: TInput[P],
+                                ...args: any[]
+                            ) => MaybePromise<TOutputSelf | void>;
+                            sync?: (
+                                data: TInput[P],
+                                ...args: any[]
+                            ) => MaybePromise<TOutputSync | void>;
+                        };
               }
             : never;
     };

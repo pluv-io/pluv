@@ -15,12 +15,15 @@ import type {
     JsonObject,
     Maybe,
     MaybePromise,
+    Spread,
 } from "@pluv/types";
 import colors from "kleur";
 import type { AbstractPlatform, InferWebSocketType } from "./AbstractPlatform";
 import { authorize } from "./authorize";
 import type {
+    EventResolver,
     EventResolverContext,
+    EventResolverObject,
     InferEventConfig,
     SendMessageOptions,
     WebSocketSession,
@@ -47,12 +50,20 @@ export type IORoomConfig<
     TAuthorize extends IOAuthorize<any, any> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TInput extends EventRecord<string, any> = {},
-    TOutput extends EventRecord<string, any> = {}
+    TOutputBroadcast extends EventRecord<string, any> = {},
+    TOutputSelf extends EventRecord<string, any> = {},
+    TOutputSync extends EventRecord<string, any> = {}
 > = Partial<IORoomListeners> & {
     authorize?: TAuthorize;
     context: TContext;
     debug: boolean;
-    events: InferEventConfig<TContext, TInput, TOutput>;
+    events: InferEventConfig<
+        TContext,
+        TInput,
+        TOutputBroadcast,
+        TOutputSelf,
+        TOutputSync
+    >;
     initialStorage?: () => MaybePromise<Maybe<string>>;
     platform: TPlatform;
 };
@@ -71,8 +82,11 @@ export class IORoom<
     TAuthorize extends IOAuthorize<any, any> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TInput extends EventRecord<string, any> = {},
-    TOutput extends EventRecord<string, any> = {}
-> implements IOLike<TAuthorize, TInput, TOutput>
+    TOutputBroadcast extends EventRecord<string, any> = {},
+    TOutputSelf extends EventRecord<string, any> = {},
+    TOutputSync extends EventRecord<string, any> = {}
+> implements
+        IOLike<TAuthorize, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>
 {
     private readonly _context: TContext;
     private readonly _debug: boolean;
@@ -85,13 +99,27 @@ export class IORoom<
     private _uninitialize: (() => Promise<void>) | null = null;
 
     readonly _authorize: TAuthorize | null = null;
-    readonly _events: InferEventConfig<TContext, TInput, TOutput>;
+    readonly _events: InferEventConfig<
+        TContext,
+        TInput,
+        TOutputBroadcast,
+        TOutputSelf,
+        TOutputSync
+    >;
 
     readonly id: string;
 
     constructor(
         id: string,
-        config: IORoomConfig<TPlatform, TAuthorize, TContext, TInput, TOutput>
+        config: IORoomConfig<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TInput,
+            TOutputBroadcast,
+            TOutputSelf,
+            TOutputSync
+        >
     ) {
         const {
             authorize,
@@ -340,8 +368,64 @@ export class IORoom<
 
     private _getEventConfig(
         message: EventMessage<string, any>
-    ): InferEventConfig<TContext, TInput, TOutput>[keyof TInput] | null {
+    ):
+        | InferEventConfig<
+              TContext,
+              TInput,
+              TOutputBroadcast,
+              TOutputSelf,
+              TOutputSync
+          >[keyof TInput]
+        | null {
         return this._events[message.type as keyof TInput] ?? null;
+    }
+
+    private _getEventInputs(
+        message: EventMessage<string, any>
+    ): TInput[string] {
+        const eventConfig = this._getEventConfig(message);
+
+        if (!eventConfig) return message.data;
+
+        /**
+         * !HACK
+         * @description If the config doesn't specify validation, we
+         * assume no input is to be expected, but pass through all values
+         * regardless. Leave this up to the implementer of the event.
+         * @author leedavidcs
+         * @date September 25, 2022
+         */
+        return eventConfig.input
+            ? (eventConfig.input.parse(message.data) as TInput[string])
+            : message.data;
+    }
+
+    private _getEventResolverObject(
+        message: EventMessage<string, any>
+    ): EventResolverObject<
+        TContext,
+        TInput[string],
+        TOutputBroadcast,
+        TOutputSelf,
+        TOutputSync
+    > {
+        const eventConfig = this._getEventConfig(message);
+
+        if (!eventConfig) return {};
+
+        const resolver:
+            | EventResolver<TContext, TInput[string], TOutputBroadcast>
+            | EventResolverObject<
+                  TContext,
+                  TInput[string],
+                  TOutputBroadcast,
+                  TOutputSelf,
+                  TOutputSync
+              > = eventConfig.resolver;
+
+        return typeof resolver === "function"
+            ? { broadcast: resolver }
+            : { ...resolver };
     }
 
     private async _initialize(): Promise<void> {
@@ -454,47 +538,54 @@ export class IORoom<
 
             if (!message) return;
 
-            const eventConfig = this._getEventConfig(message);
+            const resolver = this._getEventResolverObject(message);
 
-            if (!eventConfig) return;
+            let inputs: TInput[string];
 
-            this._resolveMessage(message, context).then((output) => {
-                if (!output) return;
+            try {
+                inputs = this._getEventInputs(message);
+            } catch (error) {
+                session?.webSocket.handleError({
+                    error,
+                    message: "Invalid input",
+                    session,
+                });
 
-                const eventType = eventConfig.options?.type ?? "broadcast";
+                return;
+            }
 
-                switch (eventType) {
-                    case "self": {
-                        Object.entries(output).forEach(([type, data]) => {
-                            this._sendSelfMessage({ data, type }, session);
+            Promise.all([
+                resolver.broadcast?.(inputs, context),
+                resolver.self?.(inputs, context),
+                resolver.sync?.(inputs, context),
+            ]).then(([broadcast, self, sync]) => {
+                if (broadcast) {
+                    Object.entries(broadcast).forEach(([type, data]: any) => {
+                        this._broadcast({
+                            message: { data, type },
+                            senderId: session.id,
                         });
+                    });
+                }
 
-                        return;
-                    }
-                    case "sync": {
-                        this._platform.pubSub.publish(this.id, {
-                            connectionId: session.id,
-                            options: eventConfig.options,
-                            room: this.id,
-                            user: session.user,
-                            ...message,
-                        });
+                if (self) {
+                    Object.entries(self).forEach(([type, data]) => {
+                        this._sendSelfMessage({ data, type }, session);
+                    });
+                }
 
-                        Object.entries(output).forEach(([type, data]) => {
-                            this._sendSelfMessage({ data, type }, session);
-                        });
+                if (sync) {
+                    this._platform.pubSub.publish(this.id, {
+                        connectionId: session.id,
+                        options: { type: "sync" },
+                        room: this.id,
+                        user: session.user,
+                        ...message,
+                    });
 
-                        return;
-                    }
-                    case "broadcast":
-                    default: {
-                        Object.entries(output).forEach(([type, data]: any) => {
-                            this._broadcast({
-                                message: { data, type },
-                                senderId: session.id,
-                            });
-                        });
-                    }
+                    Object.entries(sync).forEach(([type, data]) => {
+                        this._sendSelfMessage({ data, type }, session);
+                    });
                 }
             });
         };
@@ -514,47 +605,6 @@ export class IORoom<
         } catch {
             return null;
         }
-    }
-
-    private async _resolveMessage(
-        message: EventMessage<string, any>,
-        context: EventResolverContext<TContext>
-    ): Promise<TOutput | null> {
-        const { session } = context;
-
-        const eventConfig = this._getEventConfig(message);
-
-        if (!eventConfig) return null;
-
-        let input: TInput[string];
-
-        /**
-         * !HACK
-         * @description If the config doesn't specify validation, we
-         * assume no input is to be expected, but pass through all values
-         * regardless. Leave this up to the implementer of the event.
-         * @author leedavidcs
-         * @date September 25, 2022
-         */
-        try {
-            input = eventConfig.input
-                ? (eventConfig.input.parse(message.data) as TInput[string])
-                : message.data;
-        } catch (error) {
-            session?.webSocket.handleError({
-                error,
-                message: "Invalid input",
-                session,
-            });
-
-            return null;
-        }
-
-        const output = await eventConfig.resolver(input, context);
-
-        if (!output) return null;
-
-        return output;
     }
 
     private _sendMessage(
@@ -634,13 +684,27 @@ export class IORoom<
 
         if (!senderId) return;
 
-        this._resolveMessage(message, {
+        const context: EventResolverContext<TContext> = {
             context: this._context,
             doc: this._doc,
             room: this.id,
             session: null,
             sessions: this._sessions,
-        }).then((output) => {
+        };
+
+        const resolver = this._getEventResolverObject(message).sync;
+
+        if (!resolver) return;
+
+        let inputs: TInput[string];
+
+        try {
+            inputs = this._getEventInputs(message);
+        } catch {
+            return;
+        }
+
+        Promise.resolve(resolver(inputs, context)).then((output) => {
             if (!output) return;
 
             Object.keys(output).forEach((type: string) => {

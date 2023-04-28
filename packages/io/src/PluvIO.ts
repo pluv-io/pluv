@@ -1,22 +1,24 @@
 import type {
+    BaseIOAuthorize,
     EventRecord,
+    IOAuthorize,
+    IOLike,
     InferIOAuthorize,
     InferIOAuthorizeUser,
     InferIOInput,
-    InferIOOutput,
-    IOAuthorize,
-    IOLike,
+    InferIOOutputBroadcast,
+    InferIOOutputSelf,
+    InferIOOutputSync,
     JsonObject,
-    Spread,
-    BaseIOAuthorize,
-    MaybePromise,
     Maybe,
+    MaybePromise,
+    Spread,
 } from "@pluv/types";
 import colors from "kleur";
 import type { AbstractPlatform } from "./AbstractPlatform";
+import { IORoom } from "./IORoom";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
-import { IORoom } from "./IORoom";
 import type { EventConfig, InferEventConfig } from "./types";
 
 export type InferIOContext<TIO extends PluvIO<any, any, any, any, any>> =
@@ -50,12 +52,20 @@ export type PluvIOConfig<
     TAuthorize extends IOAuthorize<any, any> | null = null,
     TContext extends JsonObject = {},
     TInput extends EventRecord<string, any> = {},
-    TOutput extends EventRecord<string, any> = {}
+    TOutputBroadcast extends EventRecord<string, any> = {},
+    TOutputSelf extends EventRecord<string, any> = {},
+    TOutputSync extends EventRecord<string, any> = {}
 > = Partial<PluvIOListeners> & {
     authorize?: TAuthorize;
     context?: TContext;
     debug?: boolean;
-    events?: InferEventConfig<TContext, TInput, TOutput>;
+    events?: InferEventConfig<
+        TContext,
+        TInput,
+        TOutputBroadcast,
+        TOutputSelf,
+        TOutputSync
+    >;
     initialStorage?: (room: string) => MaybePromise<Maybe<string>>;
     platform: TPlatform;
 };
@@ -69,8 +79,11 @@ export class PluvIO<
     TAuthorize extends IOAuthorize<any, any> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TInput extends EventRecord<string, any> = {},
-    TOutput extends EventRecord<string, any> = {}
-> implements IOLike<TAuthorize, TInput, TOutput>
+    TOutputBroadcast extends EventRecord<string, any> = {},
+    TOutputSelf extends EventRecord<string, any> = {},
+    TOutputSync extends EventRecord<string, any> = {}
+> implements
+        IOLike<TAuthorize, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>
 {
     private _context: TContext = {} as TContext;
     private _initialStorage:
@@ -79,38 +92,53 @@ export class PluvIO<
     private _listeners: PluvIOListeners;
     private _rooms = new Map<
         string,
-        IORoom<TPlatform, TAuthorize, TContext, TInput, TOutput>
+        IORoom<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TInput,
+            TOutputBroadcast,
+            TOutputSelf,
+            TOutputSync
+        >
     >();
 
     readonly _authorize: TAuthorize | null = null;
     readonly _debug: boolean;
-    readonly _events: InferEventConfig<TContext, TInput, TOutput> = {
+    readonly _events: InferEventConfig<
+        TContext,
+        TInput,
+        TOutputBroadcast,
+        TOutputSelf,
+        TOutputSync
+    > = {
         $GET_OTHERS: {
-            resolver: (data, { room, session, sessions }) => {
-                const others = Array.from(sessions.entries())
-                    .filter(([, wsSession]) => wsSession.id !== session?.id)
-                    .reduce<{
-                        [connectionId: string]: {
-                            connectionId: string;
-                            room: string | null;
-                            user: InferIOAuthorizeUser<TAuthorize>;
-                        };
-                    }>(
-                        (acc, [connectionId, { presence, user }]) => ({
-                            ...acc,
-                            [connectionId]: {
-                                connectionId,
-                                presence,
-                                room,
-                                user: user as InferIOAuthorizeUser<TAuthorize>,
-                            },
-                        }),
-                        {}
-                    );
+            resolver: {
+                sync: (data, { room, session, sessions }) => {
+                    const others = Array.from(sessions.entries())
+                        .filter(([, wsSession]) => wsSession.id !== session?.id)
+                        .reduce<{
+                            [connectionId: string]: {
+                                connectionId: string;
+                                room: string | null;
+                                user: InferIOAuthorizeUser<TAuthorize>;
+                            };
+                        }>(
+                            (acc, [connectionId, { presence, user }]) => ({
+                                ...acc,
+                                [connectionId]: {
+                                    connectionId,
+                                    presence,
+                                    room,
+                                    user: user as InferIOAuthorizeUser<TAuthorize>,
+                                },
+                            }),
+                            {}
+                        );
 
-                return { $OTHERS_RECEIVED: { others } };
+                    return { $OTHERS_RECEIVED: { others } };
+                },
             },
-            options: { type: "sync" },
         },
         $INITIALIZE_SESSION: {
             resolver: ({ presence }, { session }) => {
@@ -128,16 +156,17 @@ export class PluvIO<
             },
         },
         $PING: {
-            resolver: (data, { session }) => {
-                if (!session) return {};
+            resolver: {
+                self: (data, { session }) => {
+                    if (!session) return {};
 
-                const currentTime = new Date().getTime();
+                    const currentTime = new Date().getTime();
 
-                session.timers.ping = currentTime;
+                    session.timers.ping = currentTime;
 
-                return { $PONG: {} };
+                    return { $PONG: {} };
+                },
             },
-            options: { type: "self" },
         },
         $UPDATE_PRESENCE: {
             resolver: ({ presence }, { session }) => {
@@ -173,11 +202,25 @@ export class PluvIO<
                 return { $STORAGE_UPDATED: { state } };
             },
         },
-    } as InferEventConfig<TContext, TInput, TOutput>;
+    } as InferEventConfig<
+        TContext,
+        TInput,
+        TOutputBroadcast,
+        TOutputSelf,
+        TOutputSync
+    >;
     readonly _platform: TPlatform;
 
     constructor(
-        options: PluvIOConfig<TPlatform, TAuthorize, TContext, TInput, TOutput>
+        options: PluvIOConfig<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TInput,
+            TOutputBroadcast,
+            TOutputSelf,
+            TOutputSync
+        >
     ) {
         const {
             authorize,
@@ -226,16 +269,26 @@ export class PluvIO<
     public event<
         TEvent extends string,
         TData extends JsonObject = {},
-        TResult extends EventRecord<string, any> = {}
+        TResultBroadcast extends EventRecord<string, any> = {},
+        TResultSelf extends EventRecord<string, any> = {},
+        TResultSync extends EventRecord<string, any> = {}
     >(
         event: TEvent,
-        config: EventConfig<TContext, TData, TResult>
+        config: EventConfig<
+            TContext,
+            TData,
+            TResultBroadcast,
+            TResultSelf,
+            TResultSync
+        >
     ): PluvIO<
         TPlatform,
         TAuthorize,
         TContext,
         Spread<[TInput, EventRecord<TEvent, TData>]>,
-        Spread<[TOutput, TResult]>
+        Spread<[TOutputBroadcast, TResultBroadcast]>,
+        Spread<[TOutputSelf, TResultSelf]>,
+        Spread<[TOutputSync, TResultSync]>
     > {
         if (event.startsWith("$")) {
             throw new Error('Event name must not start with "$".');
@@ -246,7 +299,11 @@ export class PluvIO<
         } as InferEventConfig<
             TContext,
             EventRecord<TEvent, TData>,
-            TResult extends EventRecord<string, any> ? TResult : {}
+            TResultBroadcast extends EventRecord<string, any>
+                ? TResultBroadcast
+                : {},
+            TResultSelf extends EventRecord<string, any> ? TResultSelf : {},
+            TResultSync extends EventRecord<string, any> ? TResultSync : {}
         >;
 
         /**
@@ -274,7 +331,15 @@ export class PluvIO<
     public getRoom(
         room: string,
         options: GetRoomOptions = {}
-    ): IORoom<TPlatform, TAuthorize, TContext, TInput, TOutput> {
+    ): IORoom<
+        TPlatform,
+        TAuthorize,
+        TContext,
+        TInput,
+        TOutputBroadcast,
+        TOutputSelf,
+        TOutputSync
+    > {
         const { debug } = options;
 
         this._purgeEmptyRooms();
@@ -293,7 +358,9 @@ export class PluvIO<
             TAuthorize,
             TContext,
             TInput,
-            TOutput
+            TOutputBroadcast,
+            TOutputSelf,
+            TOutputSync
         >(room, {
             authorize: this._authorize ?? undefined,
             context: this._context,
@@ -342,7 +409,9 @@ export class PluvIO<
         InferIOAuthorize<TIO1>,
         InferIOContext<TIO1>,
         Spread<[InferIOInput<TIO1>, InferIOInput<TIO2>]>,
-        Spread<[InferIOOutput<TIO1>, InferIOOutput<TIO2>]>
+        Spread<[InferIOOutputBroadcast<TIO1>, InferIOOutputBroadcast<TIO2>]>,
+        Spread<[InferIOOutputSelf<TIO1>, InferIOOutputSelf<TIO2>]>,
+        Spread<[InferIOOutputSync<TIO1>, InferIOOutputSync<TIO2>]>
     > {
         const authorize = (first._authorize ??
             undefined) as InferIOAuthorize<TIO1>;
