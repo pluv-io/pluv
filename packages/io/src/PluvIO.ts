@@ -141,18 +141,47 @@ export class PluvIO<
             },
         },
         $INITIALIZE_SESSION: {
-            resolver: ({ presence }, { session }) => {
-                if (!session) return {};
+            resolver: {
+                broadcast: ({ presence }, { session }) => {
+                    if (!session) return {};
 
-                session.presence = presence;
+                    session.presence = presence;
 
-                return {
-                    $USER_JOINED: {
-                        connectionId: session.id,
-                        user: session.user,
-                        presence,
-                    },
-                };
+                    return {
+                        $USER_JOINED: {
+                            connectionId: session.id,
+                            user: session.user,
+                            presence,
+                        },
+                    };
+                },
+                self: async ({ update }, { doc, room }) => {
+                    const oldState =
+                        await this._platform.persistance.getStorageState(room);
+
+                    if (oldState) {
+                        const initialState = await this._initialStorage?.(room);
+
+                        const updated = doc
+                            .applyUpdate(initialState)
+                            .applyUpdate(update);
+                        const state = updated.encodeStateAsUpdate();
+
+                        await this._platform.persistance.setStorageState(
+                            room,
+                            state
+                        );
+
+                        this._listeners.onStorageUpdated(room, state);
+                    }
+
+                    const state =
+                        (await this._platform.persistance.getStorageState(
+                            room
+                        )) ?? doc.encodeStateAsUpdate();
+
+                    return { $STORAGE_RECEIVED: { state } };
+                },
             },
         },
         $PING: {

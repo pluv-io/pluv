@@ -15,17 +15,17 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
     constructor(options: CrdtManagerOptions<TStorage> = {}) {
         const { encodedState, initialStorage } = options;
 
-        const doc1 = encodedState
+        const _doc = encodedState
             ? doc<TStorage>().applyUpdate(encodedState)
             : null;
 
-        if (doc1 && !!Object.keys(doc1.toJSON()).length) {
-            this.doc = doc1;
+        if (_doc && !!Object.keys(_doc.toJSON()).length) {
+            this.doc = _doc;
 
             return;
         }
 
-        doc1?.destroy();
+        _doc?.destroy();
 
         this.doc = doc<TStorage>(initialStorage?.());
     }

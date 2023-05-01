@@ -8,6 +8,7 @@ export interface BaseClientEventRecord {
     $GET_OTHERS: {};
     $INITIALIZE_SESSION: {
         presence: JsonObject;
+        update: string;
     };
     $PING: {};
     $UPDATE_PRESENCE: {
