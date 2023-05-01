@@ -247,7 +247,6 @@ export class IORoom<
         pluvWs.addEventListener("message", onMessage);
 
         this._emitRegistered(session);
-        this._emitStorageReceived(session);
 
         this._logDebug(
             `${colors.blue(
@@ -306,25 +305,6 @@ export class IORoom<
             },
             session
         );
-    }
-
-    private _emitStorageReceived(session: WebSocketSession): void {
-        this._platform.persistance
-            .getStorageState(this.id)
-            .then(async (_state) => {
-                const state =
-                    _state ??
-                    (await this._initialStorage?.()) ??
-                    this._doc.encodeStateAsUpdate();
-
-                this._sendSelfMessage(
-                    {
-                        type: "$STORAGE_RECEIVED",
-                        data: { state },
-                    },
-                    session
-                );
-            });
     }
 
     private async _getAuthorizedUser(
