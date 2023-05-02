@@ -134,6 +134,7 @@ export class PluvRoom<
             user: null,
         },
         connection: {
+            count: 0,
             id: null,
             state: ConnectionState.Untouched,
         },
@@ -611,6 +612,7 @@ export class PluvRoom<
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
         this._updateState((oldState) => {
+            oldState.connection.count += 1;
             oldState.connection.id = connectionId;
             oldState.authorization.user = user;
 
@@ -628,7 +630,15 @@ export class PluvRoom<
         this._stateNotifier.subjects["my-presence"].next(presence);
         this._stateNotifier.subjects["myself"].next(myself);
 
-        this._sendMessage({ type: "$INITIALIZE_SESSION", data: { presence } });
+        const update =
+            this._state.connection.count > 1
+                ? this._crdtManager?.doc.encodeStateAsUpdate() ?? null
+                : null;
+
+        this._sendMessage({
+            type: "$INITIALIZE_SESSION",
+            data: { presence, update },
+        });
     }
 
     private _handleStorageReceivedMessage(message: IOEventMessage<TIO>): void {

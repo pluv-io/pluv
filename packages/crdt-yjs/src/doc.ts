@@ -20,7 +20,12 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
         });
     }
 
-    public applyUpdate(update: string | Uint8Array, origin?: string): this {
+    public applyUpdate(
+        update?: string | Uint8Array | null,
+        origin?: string
+    ): this {
+        if (update === null || typeof update === "undefined") return this;
+
         const uint8Update =
             typeof update === "string" ? toUint8Array(update) : update;
 

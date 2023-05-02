@@ -24,6 +24,7 @@ export interface InternalSubscriptions {
 }
 
 export interface WebSocketConnection {
+    count: number;
     id: string | null;
     state: ConnectionState;
 }

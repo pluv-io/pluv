@@ -141,18 +141,49 @@ export class PluvIO<
             },
         },
         $INITIALIZE_SESSION: {
-            resolver: ({ presence }, { session }) => {
-                if (!session) return {};
+            resolver: {
+                broadcast: ({ presence }, { session }) => {
+                    if (!session) return {};
 
-                session.presence = presence;
+                    session.presence = presence;
 
-                return {
-                    $USER_JOINED: {
-                        connectionId: session.id,
-                        user: session.user,
-                        presence,
-                    },
-                };
+                    return {
+                        $USER_JOINED: {
+                            connectionId: session.id,
+                            user: session.user,
+                            presence,
+                        },
+                    };
+                },
+                self: async ({ update }, { doc, room }) => {
+                    const oldState =
+                        await this._platform.persistance.getStorageState(room);
+
+                    const updates: readonly Maybe<string>[] = [
+                        oldState ? null : await this._initialStorage?.(room),
+                        update,
+                    ];
+
+                    if (updates.some((_update) => !!_update)) {
+                        const state = updates
+                            .reduce((_doc, _up) => _doc.applyUpdate(_up), doc)
+                            .encodeStateAsUpdate();
+
+                        await this._platform.persistance.setStorageState(
+                            room,
+                            state
+                        );
+
+                        this._listeners.onStorageUpdated(room, state);
+                    }
+
+                    const state =
+                        (await this._platform.persistance.getStorageState(
+                            room
+                        )) ?? doc.encodeStateAsUpdate();
+
+                    return { $STORAGE_RECEIVED: { state } };
+                },
             },
         },
         $PING: {
