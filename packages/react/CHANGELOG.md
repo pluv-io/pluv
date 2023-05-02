@@ -1,5 +1,18 @@
 # @pluv/react
 
+## 0.5.9
+
+### Patch Changes
+
+- 3518a83: bumped dependencies
+- Updated dependencies [0dd847e]
+- Updated dependencies [bb2886b]
+- Updated dependencies [ae679a8]
+- Updated dependencies [bb2886b]
+- Updated dependencies [3518a83]
+  - @pluv/client@0.7.0
+  - @pluv/types@0.2.0
+
 ## 0.5.8
 
 ### Patch Changes

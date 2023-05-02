@@ -1,5 +1,24 @@
 # @pluv/io
 
+## 0.4.0
+
+### Minor Changes
+
+- bb2886b: allow sending multiple output types (broadcast, self, sync) per event
+- ae679a8: updated offline presence to be set when reconnecting to a room
+
+### Patch Changes
+
+- 41943cf: bumped dependencies
+- 0dd847e: updated storage to be synced when reconnected to the room
+- 3518a83: bumped dependencies
+- Updated dependencies [0dd847e]
+- Updated dependencies [bb2886b]
+- Updated dependencies [ae679a8]
+- Updated dependencies [3518a83]
+  - @pluv/crdt-yjs@0.3.7
+  - @pluv/types@0.2.0
+
 ## 0.3.9
 
 ### Patch Changes
