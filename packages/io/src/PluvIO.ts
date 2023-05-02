@@ -159,13 +159,15 @@ export class PluvIO<
                     const oldState =
                         await this._platform.persistance.getStorageState(room);
 
-                    if (oldState) {
-                        const initialState = await this._initialStorage?.(room);
+                    const updates: readonly Maybe<string>[] = [
+                        oldState ? null : await this._initialStorage?.(room),
+                        update,
+                    ];
 
-                        const updated = doc
-                            .applyUpdate(initialState)
-                            .applyUpdate(update);
-                        const state = updated.encodeStateAsUpdate();
+                    if (updates.some((_update) => !!_update)) {
+                        const state = updates
+                            .reduce((_doc, _up) => _doc.applyUpdate(_up), doc)
+                            .encodeStateAsUpdate();
 
                         await this._platform.persistance.setStorageState(
                             room,
