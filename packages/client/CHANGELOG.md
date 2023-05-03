@@ -1,5 +1,23 @@
 # @pluv/client
 
+## 0.7.0
+
+### Minor Changes
+
+- ae679a8: updated offline presence to be set when reconnecting to a room
+
+### Patch Changes
+
+- 0dd847e: updated storage to be synced when reconnected to the room
+- bb2886b: fixed not reconnecting during heartbeat
+- 3518a83: bumped dependencies
+- Updated dependencies [0dd847e]
+- Updated dependencies [bb2886b]
+- Updated dependencies [ae679a8]
+- Updated dependencies [3518a83]
+  - @pluv/crdt-yjs@0.3.7
+  - @pluv/types@0.2.0
+
 ## 0.6.5
 
 ### Patch Changes

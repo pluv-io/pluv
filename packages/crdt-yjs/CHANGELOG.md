@@ -1,5 +1,16 @@
 # @pluv/crdt-yjs
 
+## 0.3.7
+
+### Patch Changes
+
+- 0dd847e: updated storage to be synced when reconnected to the room
+- 3518a83: bumped dependencies
+- Updated dependencies [0dd847e]
+- Updated dependencies [bb2886b]
+- Updated dependencies [ae679a8]
+  - @pluv/types@0.2.0
+
 ## 0.3.6
 
 ### Patch Changes
