@@ -1221,6 +1221,9 @@ importers:
       '@types/ws':
         specifier: ^8.5.4
         version: 8.5.4
+      path-to-regexp:
+        specifier: ^6.2.1
+        version: 6.2.1
     devDependencies:
       '@pluv/tsconfig':
         specifier: workspace:^
