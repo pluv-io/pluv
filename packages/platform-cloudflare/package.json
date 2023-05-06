@@ -24,7 +24,8 @@
 	},
 	"dependencies": {
 		"@pluv/io": "workspace:^",
-		"@pluv/types": "workspace:^"
+		"@pluv/types": "workspace:^",
+		"path-to-regexp": "^6.2.1"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20230404.0",
