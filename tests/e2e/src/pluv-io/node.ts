@@ -3,11 +3,11 @@ import { z } from "zod";
 import type { io } from "../server/node";
 
 const client = createClient<typeof io>({
-    authEndpoint: (roomName) => {
-        return `http://localhost:3102/api/authorize?roomName=${roomName}`;
+    authEndpoint: (room) => {
+        return `http://localhost:3102/api/pluv/authorize?room=${room}`;
     },
-    wsEndpoint: (roomName) => {
-        return `ws://localhost:3102/api/room/${roomName}/websocket`;
+    wsEndpoint: (room) => {
+        return `ws://localhost:3102/api/pluv/room/${room}`;
     },
 });
 

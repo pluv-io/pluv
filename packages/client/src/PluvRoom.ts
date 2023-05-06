@@ -1,4 +1,4 @@
-import { doc, InferYjsSharedTypeJson } from "@pluv/crdt-yjs";
+import { InferYjsSharedTypeJson } from "@pluv/crdt-yjs";
 import type {
     BaseIOEventRecord,
     EventMessage,
@@ -497,9 +497,15 @@ export class PluvRoom<
         if (!this._endpoints.authEndpoint) return null;
 
         if (typeof this._endpoints.authEndpoint === "string") {
-            const token = await fetch(this._endpoints.authEndpoint)
-                .then((res) => res.text())
-                .then((text) => text.trim());
+            const res = await fetch(this._endpoints.authEndpoint);
+
+            if (!res.ok || res.status !== 200) {
+                throw new Error("Room is unauthorized");
+            }
+
+            const token = await res.text().then((text) => text.trim());
+
+            if (!token) throw new Error("Room is unauthorized");
 
             return token;
         }
