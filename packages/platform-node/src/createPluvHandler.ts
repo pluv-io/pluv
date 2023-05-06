@@ -6,7 +6,7 @@ import {
     Maybe,
     MaybePromise,
 } from "@pluv/types";
-import Http from "http";
+import Http, { IncomingMessage, ServerResponse } from "http";
 import { match } from "path-to-regexp";
 import Url from "url";
 import WebSocket from "ws";
@@ -35,11 +35,17 @@ const handle = (ws: WebSocket.WebSocket) => ({
     invalidToken: () => ws.close(1011, "Invalid authentication token"),
 });
 
+export type RequestHandler = (
+    req: IncomingMessage,
+    res: ServerResponse,
+    next?: () => void
+) => void;
+
 export const createPluvHandler = <
     TPluv extends PluvIO<NodePlatform, any, any, any, any, any, any>
 >(
     config: CreatePluvHandlerConfig<TPluv>
-): WebSocket.Server<WebSocket.WebSocket> => {
+): RequestHandler => {
     const { authorize, endpoint = "/api/pluv", io, server } = config;
 
     const wsServer = new WebSocket.Server({ server });
@@ -73,9 +79,8 @@ export const createPluvHandler = <
         await room.register(ws, { token });
     });
 
-    if (!authorize) return wsServer;
-
-    server.addListener("request", async (req, res) => {
+    const handler = async (req: IncomingMessage, res: ServerResponse) => {
+        if (!authorize) return;
         if (req.method !== "GET") return;
 
         const url = req.url;
@@ -114,7 +119,11 @@ export const createPluvHandler = <
             res.writeHead(403, { "Content-Type": "text/plain" });
             res.end(err instanceof Error ? err.message : "Unauthorized");
         }
-    });
+    };
 
-    return wsServer;
+    return async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        next?: () => void
+    ) => Promise.resolve(handler(req, res)).catch(next);
 };
