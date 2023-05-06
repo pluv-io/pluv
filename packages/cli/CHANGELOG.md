@@ -1,5 +1,17 @@
 # pluv
 
+## 0.4.4
+
+### Patch Changes
+
+- ef162ad: chore(deps): update nextjs monorepo to v13.3.1
+- 41943cf: bumped dependencies
+- 3518a83: bumped dependencies
+- Updated dependencies [0dd847e]
+- Updated dependencies [bb2886b]
+- Updated dependencies [ae679a8]
+  - @pluv/types@0.2.0
+
 ## 0.4.3
 
 ### Patch Changes

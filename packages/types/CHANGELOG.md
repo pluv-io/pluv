@@ -1,5 +1,16 @@
 # @pluv/types
 
+## 0.2.0
+
+### Minor Changes
+
+- bb2886b: allow sending multiple output types (broadcast, self, sync) per event
+- ae679a8: updated offline presence to be set when reconnecting to a room
+
+### Patch Changes
+
+- 0dd847e: updated storage to be synced when reconnected to the room
+
 ## 0.1.6
 
 ### Patch Changes
