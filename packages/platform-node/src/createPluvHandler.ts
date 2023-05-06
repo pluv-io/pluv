@@ -35,7 +35,9 @@ const handle = (ws: WebSocket.WebSocket) => ({
     invalidToken: () => ws.close(1011, "Invalid authentication token"),
 });
 
-export const createPluvHandler = <TPluv extends PluvIO<NodePlatform>>(
+export const createPluvHandler = <
+    TPluv extends PluvIO<NodePlatform, any, any, any, any, any, any>
+>(
     config: CreatePluvHandlerConfig<TPluv>
 ): WebSocket.Server<WebSocket.WebSocket> => {
     const { authorize, endpoint = "/api/pluv", io, server } = config;
@@ -53,7 +55,7 @@ export const createPluvHandler = <TPluv extends PluvIO<NodePlatform>>(
 
         if (!pathname) return onError.invalidEndpoint();
 
-        const matcher = match<{ roomId: string }>(`${endpoint}/:roomId`);
+        const matcher = match<{ roomId: string }>(`${endpoint}/room/:roomId`);
         const matched = matcher(pathname);
 
         if (!matched) return onError.invalidEndpoint();
