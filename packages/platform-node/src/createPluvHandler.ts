@@ -6,7 +6,7 @@ import {
     Maybe,
     MaybePromise,
 } from "@pluv/types";
-import Http, { IncomingMessage, ServerResponse } from "http";
+import Http from "http";
 import { match } from "path-to-regexp";
 import Url from "url";
 import WebSocket from "ws";
@@ -36,8 +36,8 @@ const handle = (ws: WebSocket.WebSocket) => ({
 });
 
 export type RequestHandler = (
-    req: IncomingMessage,
-    res: ServerResponse,
+    req: Http.IncomingMessage,
+    res: Http.ServerResponse,
     next?: () => void
 ) => void;
 
@@ -80,8 +80,8 @@ export const createPluvHandler = <
     });
 
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        req: Http.IncomingMessage,
+        res: Http.ServerResponse,
         next?: () => void
     ) => {
         if (!authorize) return next?.();
