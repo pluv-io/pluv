@@ -79,23 +79,27 @@ export const createPluvHandler = <
         await room.register(ws, { token });
     });
 
-    const handler = async (req: IncomingMessage, res: ServerResponse) => {
-        if (!authorize) return;
-        if (req.method !== "GET") return;
+    return async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        next?: () => void
+    ) => {
+        if (!authorize) return next?.();
+        if (req.method !== "GET") return next?.();
 
         const url = req.url;
 
-        if (!url) return;
+        if (!url) return next?.();
 
         const parsed = Url.parse(url, true);
         const { pathname } = parsed;
 
-        if (!pathname) return;
+        if (!pathname) return next?.();
 
         const matcher = match<{}>(`${endpoint}/authorize`);
         const matched = matcher(pathname);
 
-        if (!matched) return;
+        if (!matched) return next?.();
 
         const roomId = parsed.query?.room || undefined;
 
@@ -120,10 +124,4 @@ export const createPluvHandler = <
             res.end(err instanceof Error ? err.message : "Unauthorized");
         }
     };
-
-    return async (
-        req: IncomingMessage,
-        res: ServerResponse,
-        next?: () => void
-    ) => Promise.resolve(handler(req, res)).catch(next);
 };
