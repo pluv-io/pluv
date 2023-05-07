@@ -3,7 +3,7 @@ export type {
     AuthorizeFunctionContext,
     CreatePluvHandlerConfig,
     CreatePluvHandlerResult,
-    PluvHandler,
+    PluvHandlerFetch,
 } from "./createPluvHandler";
 export { createPluvHandler } from "./createPluvHandler";
 export { platformCloudflare } from "./platformCloudflare";

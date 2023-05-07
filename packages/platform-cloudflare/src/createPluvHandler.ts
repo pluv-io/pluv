@@ -23,20 +23,26 @@ export type CreatePluvHandlerConfig<
 > = {
     binding: TBinding;
     endpoint?: string;
+    modify?: (
+        request: Request,
+        response: Response,
+        env: Record<TBinding, DurableObjectNamespace>
+    ) => MaybePromise<Response>;
     io: TPluv;
 } & (InferIOAuthorizeRequired<InferIOAuthorize<TPluv>> extends true
     ? { authorize: AuthorizeFunction<TPluv> }
     : { authorize?: undefined });
 
-export type PluvHandler<
+export type PluvHandlerFetch<
     TEnv extends Record<string, DurableObjectNamespace> = {}
 > = (request: Request, env: TEnv) => Promise<Response | null>;
 
 export interface CreatePluvHandlerResult<
     TEnv extends Record<string, DurableObjectNamespace> = {}
 > {
-    handler: PluvHandler<TEnv>;
+    fetch: PluvHandlerFetch<TEnv>;
     DurableObject: { new (state: DurableObjectState): DurableObject };
+    handler: ExportedHandler<TEnv>;
 }
 
 export const createPluvHandler = <
@@ -45,7 +51,7 @@ export const createPluvHandler = <
 >(
     config: CreatePluvHandlerConfig<TPluv, TBinding>
 ): CreatePluvHandlerResult<Record<TBinding, DurableObjectNamespace>> => {
-    const { authorize, binding, endpoint = "/api/pluv", io } = config;
+    const { authorize, binding, endpoint = "/api/pluv", modify, io } = config;
 
     const DurableObject = class implements DurableObject {
         private _io: IORoom<CloudflarePlatform>;
@@ -85,7 +91,7 @@ export const createPluvHandler = <
         return namespace;
     };
 
-    const authHandler: PluvHandler<
+    const authHandler: PluvHandlerFetch<
         Record<TBinding, DurableObjectNamespace>
     > = async (request, env) => {
         if (!authorize) return null;
@@ -133,7 +139,7 @@ export const createPluvHandler = <
         }
     };
 
-    const roomHandler: PluvHandler<
+    const roomHandler: PluvHandlerFetch<
         Record<TBinding, DurableObjectNamespace>
     > = async (request, env) => {
         const { pathname } = new URL(request.url);
@@ -158,7 +164,7 @@ export const createPluvHandler = <
         return room.fetch(request);
     };
 
-    const handler: PluvHandler<
+    const fetch: PluvHandlerFetch<
         Record<TBinding, DurableObjectNamespace>
     > = async (request, env) => {
         return [authHandler, roomHandler].reduce((promise, current) => {
@@ -166,5 +172,18 @@ export const createPluvHandler = <
         }, Promise.resolve<Response | null>(null));
     };
 
-    return { handler, DurableObject };
+    const handler: ExportedHandler<Record<TBinding, DurableObjectNamespace>> = {
+        fetch: async (request, env) => {
+            const response =
+                (await fetch(request, env)) ??
+                new Response("Not Found", {
+                    headers: { "Content-Type": "text/plain" },
+                    status: 404,
+                });
+
+            return modify?.(request, response, env) ?? response;
+        },
+    };
+
+    return { fetch, DurableObject, handler };
 };
