@@ -65,15 +65,29 @@ export const createPluvHandler = <
 
             const { 0: client, 1: server } = new WebSocketPair();
 
-            await this._io.register(server);
+            const token = new URL(request.url).searchParams.get("token");
+
+            await this._io.register(server, { token });
 
             return new Response(null, { status: 101, webSocket: client });
         }
     };
 
+    const getDurableObjectNamespace = (
+        env: Record<TBinding, DurableObjectNamespace>
+    ): DurableObjectNamespace => {
+        const namespace = env[binding];
+
+        if (!namespace) {
+            throw new Error(`Could not find DurableObject binding: ${binding}`);
+        }
+
+        return namespace;
+    };
+
     const authHandler: PluvHandler<
         Record<TBinding, DurableObjectNamespace>
-    > = async (request) => {
+    > = async (request, env) => {
         if (!authorize) return null;
 
         const { pathname, searchParams } = new URL(request.url);
@@ -96,7 +110,13 @@ export const createPluvHandler = <
 
             if (!user) throw new Error();
 
-            const token = await io.createToken({ room: roomId, user });
+            const namespace = getDurableObjectNamespace(env);
+            const durableObjectId = namespace.idFromName(roomId);
+
+            const token = await io.createToken({
+                room: durableObjectId.toString(),
+                user,
+            });
 
             return new Response(token, {
                 headers: { "Content-Type": "text/plain" },
@@ -130,12 +150,8 @@ export const createPluvHandler = <
                 status: 404,
             });
         }
-        const namespace = env[binding];
 
-        if (!namespace) {
-            throw new Error(`Could not find DurableObject binding: ${binding}`);
-        }
-
+        const namespace = getDurableObjectNamespace(env);
         const durableObjectId = namespace.idFromName(roomId);
         const room = namespace.get(durableObjectId);
 

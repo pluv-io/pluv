@@ -74,7 +74,7 @@ interface SendMessageSender {
 }
 
 export interface WebsocketRegisterOptions {
-    token?: string;
+    token?: string | null;
 }
 
 export class IORoom<
@@ -308,7 +308,7 @@ export class IORoom<
     }
 
     private async _getAuthorizedUser(
-        token: string | undefined
+        token: Maybe<string>
     ): Promise<InferIOAuthorizeUser<InferIOAuthorize<this>> | null> {
         if (!this._authorize) return null;
         if (!token) return null;
