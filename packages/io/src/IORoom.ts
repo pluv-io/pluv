@@ -64,7 +64,6 @@ export type IORoomConfig<
         TOutputSelf,
         TOutputSync
     >;
-    initialStorage?: () => MaybePromise<Maybe<string>>;
     platform: TPlatform;
 };
 
@@ -93,7 +92,6 @@ export class IORoom<
     private readonly _platform: TPlatform;
 
     private _doc: YjsDoc<any> = doc();
-    private _initialStorage: (() => MaybePromise<Maybe<string>>) | null = null;
     private _listeners: IORoomListeners;
     private _sessions = new Map<string, WebSocketSession>();
     private _uninitialize: (() => Promise<void>) | null = null;
@@ -121,15 +119,8 @@ export class IORoom<
             TOutputSync
         >
     ) {
-        const {
-            authorize,
-            context,
-            debug,
-            events,
-            initialStorage,
-            onDestroy,
-            platform,
-        } = config;
+        const { authorize, context, debug, events, onDestroy, platform } =
+            config;
 
         this._context = context;
         this._debug = debug;
@@ -145,7 +136,6 @@ export class IORoom<
         };
 
         if (authorize) this._authorize = authorize;
-        if (initialStorage) this._initialStorage = initialStorage;
     }
 
     public broadcast<TEvent extends keyof InferIOInput<this>>(

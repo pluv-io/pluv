@@ -413,7 +413,6 @@ export class PluvIO<
             context: this._context,
             debug: debug ?? this._debug,
             events: this._events,
-            initialStorage: () => this._initialStorage?.(room),
             onDestroy: (encodedState) => {
                 this._logDebug(
                     `${colors.blue("Deleting empty room:")} ${room}`
