@@ -136,7 +136,7 @@ export const createPluvHandler = <
             throw new Error(`Could not find DurableObject binding: ${binding}`);
         }
 
-        const durableObjectId = namespace.idFromString(roomId);
+        const durableObjectId = namespace.idFromName(roomId);
         const room = namespace.get(durableObjectId);
 
         return room.fetch(request);
