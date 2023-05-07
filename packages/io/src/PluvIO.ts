@@ -21,21 +21,37 @@ import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
 import type { EventConfig, InferEventConfig } from "./types";
 
-export type InferIOContext<TIO extends PluvIO<any, any, any, any, any>> =
-    TIO extends PluvIO<any, any, infer IContext, any, any> ? IContext : never;
+export type InferIOContext<
+    TIO extends PluvIO<any, any, any, any, any, any, any>
+> = TIO extends PluvIO<any, any, infer IContext, any, any, any, any>
+    ? IContext
+    : never;
 
-export type InferIOPlatform<TIO extends PluvIO<any, any, any, any>> =
-    TIO extends PluvIO<infer IPlatform, any, any, any, any> ? IPlatform : never;
+export type InferIOPlatform<
+    TIO extends PluvIO<any, any, any, any, any, any, any>
+> = TIO extends PluvIO<infer IPlatform, any, any, any, any, any, any>
+    ? IPlatform
+    : never;
 
-export type InferIORoom<TIO extends PluvIO<any, any, any, any>> =
+export type InferIORoom<TIO extends PluvIO<any, any, any, any, any, any, any>> =
     TIO extends PluvIO<
         infer IPlatform,
         infer IAuthorize,
         infer IContext,
         infer IInput,
-        infer IOutput
+        infer IOutputBroadcast,
+        infer IOutputSelf,
+        infer IOutputSync
     >
-        ? IORoom<IPlatform, IAuthorize, IContext, IInput, IOutput>
+        ? IORoom<
+              IPlatform,
+              IAuthorize,
+              IContext,
+              IInput,
+              IOutputBroadcast,
+              IOutputSelf,
+              IOutputSync
+          >
         : never;
 
 export interface PluvIORegisterOptions {
