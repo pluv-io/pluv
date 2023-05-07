@@ -73,7 +73,7 @@ export const createPluvHandler = <
 
     const authHandler: PluvHandler<
         Record<TBinding, DurableObjectNamespace>
-    > = async (request, env) => {
+    > = async (request) => {
         if (!authorize) return null;
 
         const { pathname, searchParams } = new URL(request.url);
@@ -124,12 +124,12 @@ export const createPluvHandler = <
 
         const { roomId } = matched.params;
 
-        if (!roomId)
+        if (!roomId) {
             return new Response("Not found", {
                 headers: { "Content-Type": "text/plain" },
                 status: 404,
             });
-
+        }
         const namespace = env[binding];
 
         if (!namespace) {

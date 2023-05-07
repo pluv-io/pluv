@@ -24,7 +24,9 @@ const handler = {
                 status: 404,
             });
 
-        response.headers.set("access-control-allow-origin", "*");
+        if (request.headers.get("Upgrade") !== "websocket") {
+            response.headers.append("access-control-allow-origin", "*");
+        }
 
         return response;
     },
