@@ -30,17 +30,13 @@ export type CreatePluvHandlerConfig<
 
 export type PluvHandler<
     TEnv extends Record<string, DurableObjectNamespace> = {}
-> = (
-    request: Request,
-    env: TEnv,
-    ctx: ExecutionContext
-) => Promise<Response | null>;
+> = (request: Request, env: TEnv) => Promise<Response | null>;
 
 export interface CreatePluvHandlerResult<
     TEnv extends Record<string, DurableObjectNamespace> = {}
 > {
     handler: PluvHandler<TEnv>;
-    PluvRoomDurableObject: { new (state: DurableObjectState): DurableObject };
+    DurableObject: { new (state: DurableObjectState): DurableObject };
 }
 
 export const createPluvHandler = <
@@ -49,9 +45,9 @@ export const createPluvHandler = <
 >(
     config: CreatePluvHandlerConfig<TPluv, TBinding>
 ): CreatePluvHandlerResult<Record<TBinding, DurableObjectNamespace>> => {
-    const { authorize, binding, endpoint, io } = config;
+    const { authorize, binding, endpoint = "/api/pluv", io } = config;
 
-    class PluvRoomDurableObject implements DurableObject {
+    const DurableObject = class implements DurableObject {
         private _io: IORoom<CloudflarePlatform>;
 
         constructor(state: DurableObjectState) {
@@ -73,7 +69,7 @@ export const createPluvHandler = <
 
             return new Response(null, { status: 101, webSocket: client });
         }
-    }
+    };
 
     const authHandler: PluvHandler<
         Record<TBinding, DurableObjectNamespace>
@@ -148,11 +144,11 @@ export const createPluvHandler = <
 
     const handler: PluvHandler<
         Record<TBinding, DurableObjectNamespace>
-    > = async (request, env, ctx) => {
+    > = async (request, env) => {
         return [authHandler, roomHandler].reduce((promise, current) => {
-            return promise.then((value) => value ?? current(request, env, ctx));
+            return promise.then((value) => value ?? current(request, env));
         }, Promise.resolve<Response | null>(null));
     };
 
-    return { handler, PluvRoomDurableObject };
+    return { handler, DurableObject };
 };
