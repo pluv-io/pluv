@@ -17,15 +17,16 @@ export const RoomDurableObject = Pluv.DurableObject;
 
 const handler = {
     async fetch(request: Request, env: Env): Promise<Response> {
-        const response = await Pluv.handler(request, env);
-
-        return (
-            response ??
+        const response =
+            (await Pluv.handler(request, env)) ??
             new Response("Not Found", {
                 headers: { "Content-Type": "text/plain" },
                 status: 404,
-            })
-        );
+            });
+
+        response.headers.set("access-control-allow-origin", "*");
+
+        return response;
     },
 };
 
