@@ -10,7 +10,7 @@ const Pluv = createPluvHandler({
     binding: "rooms",
     io,
     modify: (request, response) => {
-        if (response.headers.get("Upgrade") === "websocket") return response;
+        if (request.headers.get("Upgrade") === "websocket") return response;
 
         const isWhitelisted = CORS_VALID_DOMAINS.some((domain) => {
             return new RegExp(`https?://${domain}\/?`).test(request.url);
