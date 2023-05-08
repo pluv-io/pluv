@@ -1,70 +1,43 @@
-import {
-    createRouter,
-    DurableObjectUtils,
-} from "@pluv-internal/cloudflare-utils";
+import { createPluvHandler } from "@pluv/platform-cloudflare";
+import { io } from "./pluv-io";
 
-export { RoomDurableObject } from "./durable-objects";
 export { io } from "./pluv-io";
 
-interface RouterContext {
-    env: Env;
-}
+const CORS_VALID_DOMAINS = ["pluv.io", "pluv.vercel.app"];
+const CORS_MAX_AGE = 86_400;
 
-const getCorsHeaders = (origin: string, env: Env): Record<string, string> => {
-    if (env.DEPLOY_ENV !== "production") return {};
+const Pluv = createPluvHandler({
+    binding: "rooms",
+    io,
+    modify: (request, response) => {
+        if (response.headers.get("Upgrade") === "websocket") return response;
 
-    const corsHeaders = {
-        "Access-Control-Allow-Origin": "https://pluv.io",
-        "Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
-        "Access-Control-Max-Age": "86400",
-    };
-
-    const isWhitelisted = ["pluv.io", "pluv.vercel.app"].some((domain) => {
-        const re = new RegExp(`(http|ws)s?://${domain}(/)?`);
-
-        return re.test(domain);
-    });
-
-    if (!isWhitelisted) return corsHeaders;
-
-    return {
-        ...corsHeaders,
-        "Access-Control-Allow-Origin": origin,
-    };
-};
-
-const router = createRouter<RouterContext>()
-    .path(
-        "get",
-        "/api/room/:rest*",
-        async ({ rest }, { origin, request, context: { env } }) => {
-            const [name] = rest;
-
-            const roomId = DurableObjectUtils.isValidId(name)
-                ? env.rooms.idFromString(name)
-                : DurableObjectUtils.isValidName(name)
-                ? env.rooms.idFromName(name)
-                : env.rooms.newUniqueId();
-
-            const room = env.rooms.get(roomId);
-
-            return room.fetch(request);
-        }
-    )
-    .path("get", "*", (_, { origin, context: { env } }) => {
-        return new Response("ok", {
-            headers: {
-                ...getCorsHeaders(origin, env),
-            },
+        const isWhitelisted = CORS_VALID_DOMAINS.some((domain) => {
+            return new RegExp(`https?://${domain}\/?`).test(request.url);
         });
-    });
 
-const handler = {
-    async fetch(request: Request, env: Env): Promise<Response> {
-        const context: RouterContext = { env };
+        if (!isWhitelisted) return response;
 
-        return router.setConfig({ context }).match(request);
+        const { origin } = new URL(request.url);
+        const headers = {
+            "access-control-allow-origin": origin,
+            "access-control-allow-methods": [
+                "GET",
+                "HEAD",
+                "POST",
+                "OPTIONS",
+            ].join(","),
+            "access-control-max-age": `${CORS_MAX_AGE}`,
+        };
+
+        Object.entries(headers).map(([header, value]) => {
+            response.headers.append(header, value);
+        });
+
+        return response;
     },
-};
+});
 
-export default handler;
+export const RoomDurableObject = Pluv.DurableObject;
+
+export default Pluv.handler;

@@ -13,7 +13,6 @@
     "wrangler": "wrangler"
   },
   "dependencies": {
-    "@pluv-internal/cloudflare-utils": "workspace:^",
     "@pluv/io": "workspace:^",
     "@pluv/platform-cloudflare": "workspace:^",
     "zod": "^3.21.4"
