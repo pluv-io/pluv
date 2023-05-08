@@ -70,21 +70,19 @@ interface TimeoutIds {
     reconnect: number | null;
 }
 
-export type AuthEndpoint = string | ((room: string) => FetchOptions);
+export type AuthEndpoint =
+    | string
+    | ((room: string) => string | FetchOptions)
+    | true;
 export type WsEndpoint = string | ((room: string) => string);
 
-export interface RoomConfigOptions {
-    authEndpoint?: AuthEndpoint;
-    wsEndpoint: WsEndpoint;
-}
-
-type FetchOptions = string | { url: string; options?: RequestInit };
+type FetchOptions = { url: string; options?: RequestInit };
 
 export type RoomEndpoints<TIO extends IOLike> = {
-    wsEndpoint: WsEndpoint;
+    wsEndpoint?: WsEndpoint;
 } & (InferIOAuthorizeRequired<InferIOAuthorize<TIO>> extends true
     ? { authEndpoint: AuthEndpoint }
-    : { authEndpoint?: AuthEndpoint });
+    : { authEndpoint?: undefined });
 
 interface InternalListeners {
     onAuthorizationFail: (error: Error) => void;
@@ -167,12 +165,7 @@ export class PluvRoom<
 
         this._debug = debug;
 
-        this._endpoints = {
-            authEndpoint: authEndpoint as
-                | string
-                | ((room: string) => FetchOptions),
-            wsEndpoint,
-        };
+        this._endpoints = { authEndpoint, wsEndpoint } as RoomEndpoints<TIO>;
 
         this._listeners = {
             onAuthorizationFail: (error) => {
@@ -494,39 +487,60 @@ export class PluvRoom<
     }
 
     private async _getAuthorization(room: string): Promise<string | null> {
-        if (!this._endpoints.authEndpoint) return null;
+        const fetchOptions = this._getAuthFetchOptions(room);
 
-        if (typeof this._endpoints.authEndpoint === "string") {
-            const res = await fetch(this._endpoints.authEndpoint);
+        if (!fetchOptions) return null;
 
-            if (!res.ok || res.status !== 200) {
-                throw new Error("Room is unauthorized");
-            }
+        const { url, options } = fetchOptions;
 
-            const token = await res.text().then((text) => text.trim());
+        const res = await fetch(url, options);
 
-            if (!token) throw new Error("Room is unauthorized");
-
-            return token;
+        if (!res.ok || res.status !== 200) {
+            throw new Error("Room is unauthorized");
         }
 
-        const config = this._endpoints.authEndpoint(room);
-        const endpoint = typeof config === "string" ? config : config.url;
-        const options = typeof config === "string" ? undefined : config.options;
+        try {
+            return await res.text().then((text) => text.trim());
+        } catch (err) {
+            throw new Error(
+                err instanceof Error ? err.message : "Room is unauthorized"
+            );
+        }
+    }
 
-        const token = await fetch(endpoint, options)
-            .then((res) => res.text())
-            .then((text) => text.trim());
+    private _getAuthFetchOptions(room: string): FetchOptions | null {
+        if (typeof this._endpoints.authEndpoint === "undefined") return null;
 
-        return token;
+        if (this._endpoints.authEndpoint === true) {
+            return {
+                url: `/api/pluv/authorize?room=${room}`,
+                options: {},
+            };
+        }
+
+        if (typeof this._endpoints.authEndpoint === "string") {
+            return {
+                url: this._endpoints.authEndpoint,
+                options: {},
+            };
+        }
+
+        const result = this._endpoints.authEndpoint(room);
+
+        return typeof result === "string"
+            ? { url: result, options: {} }
+            : result;
     }
 
     private _getWsEndpoint(room: string): string {
-        if (typeof this._endpoints.wsEndpoint === "string") {
-            return this._endpoints.wsEndpoint;
+        switch (typeof this._endpoints.wsEndpoint) {
+            case "undefined":
+                return `/api/pluv/room/${room}`;
+            case "string":
+                return this._endpoints.wsEndpoint;
+            default:
+                return this._endpoints.wsEndpoint(room);
         }
-
-        return this._endpoints.wsEndpoint(room);
     }
 
     private _handleExit(message: IOEventMessage<TIO>): void {

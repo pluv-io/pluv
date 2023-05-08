@@ -5,6 +5,7 @@ import type {
     RoomEndpoints,
     PluvRoomOptions,
     WsEndpoint,
+    RoomConfig,
 } from "./PluvRoom";
 import { PluvRoom } from "./PluvRoom";
 
@@ -13,9 +14,9 @@ export type PluvClientOptions<TIO extends IOLike> = RoomEndpoints<TIO> & {
 };
 
 export class PluvClient<TIO extends IOLike = IOLike> {
-    private _authEndpoint: AuthEndpoint;
+    private _authEndpoint: AuthEndpoint | undefined;
     private _debug: boolean;
-    private _wsEndpoint: WsEndpoint;
+    private _wsEndpoint: WsEndpoint | undefined;
 
     private _rooms = new Map<string, PluvRoom<TIO, any, any>>();
 
@@ -45,7 +46,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
             initialStorage: options.initialStorage,
             onAuthorizationFail: options.onAuthorizationFail,
             wsEndpoint: this._wsEndpoint,
-        });
+        } as RoomConfig<TIO, TPresence, TStorage>);
 
         this._rooms.set(room, newRoom);
 

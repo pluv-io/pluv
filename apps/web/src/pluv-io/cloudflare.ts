@@ -3,7 +3,7 @@ import { createBundle, createClient, y } from "@pluv/react";
 import { z } from "zod";
 
 const client = createClient<typeof io>({
-    wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
+    wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/pluv/room/${room}`,
 });
 
 export const {

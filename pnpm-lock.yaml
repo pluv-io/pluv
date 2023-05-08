@@ -25,9 +25,6 @@ importers:
 
   apps/server-cloudflare:
     dependencies:
-      '@pluv-internal/cloudflare-utils':
-        specifier: workspace:^
-        version: link:../../internal/cloudflare-utils
       '@pluv/io':
         specifier: workspace:^
         version: link:../../packages/io
