@@ -19,38 +19,41 @@ export type AuthorizeFunction<TPluv extends PluvIO<CloudflarePlatform>> = (
 
 export type CreatePluvHandlerConfig<
     TPluv extends PluvIO<CloudflarePlatform>,
-    TBinding extends string
+    TBinding extends string,
+    TEnv extends Record<string, any>
 > = {
     binding: TBinding;
     endpoint?: string;
     modify?: (
         request: Request,
         response: Response,
-        env: Record<TBinding, DurableObjectNamespace>
+        env: TEnv
     ) => MaybePromise<Response>;
     io: TPluv;
 } & (InferIOAuthorizeRequired<InferIOAuthorize<TPluv>> extends true
     ? { authorize: AuthorizeFunction<TPluv> }
     : { authorize?: undefined });
 
-export type PluvHandlerFetch<
-    TEnv extends Record<string, DurableObjectNamespace> = {}
-> = (request: Request, env: TEnv) => Promise<Response | null>;
+export type PluvHandlerFetch<TEnv extends Record<string, any> = {}> = (
+    request: Request,
+    env: TEnv
+) => Promise<Response | null>;
 
 export interface CreatePluvHandlerResult<
-    TEnv extends Record<string, DurableObjectNamespace> = {}
+    TEnv extends Record<string, any> = {}
 > {
-    fetch: PluvHandlerFetch<TEnv>;
     DurableObject: { new (state: DurableObjectState): DurableObject };
+    fetch: PluvHandlerFetch<TEnv>;
     handler: ExportedHandler<TEnv>;
 }
 
 export const createPluvHandler = <
     TPluv extends PluvIO<CloudflarePlatform, any, any, any, any, any, any>,
-    TBinding extends string
+    TBinding extends string,
+    TEnv extends Record<string, any>
 >(
-    config: CreatePluvHandlerConfig<TPluv, TBinding>
-): CreatePluvHandlerResult<Record<TBinding, DurableObjectNamespace>> => {
+    config: CreatePluvHandlerConfig<TPluv, TBinding, TEnv>
+): CreatePluvHandlerResult<TEnv> => {
     const { authorize, binding, endpoint = "/api/pluv", modify, io } = config;
 
     const DurableObject = class implements DurableObject {
@@ -79,9 +82,7 @@ export const createPluvHandler = <
         }
     };
 
-    const getDurableObjectNamespace = (
-        env: Record<TBinding, DurableObjectNamespace>
-    ): DurableObjectNamespace => {
+    const getDurableObjectNamespace = (env: TEnv): DurableObjectNamespace => {
         const namespace = env[binding];
 
         if (!namespace) {
@@ -91,9 +92,7 @@ export const createPluvHandler = <
         return namespace;
     };
 
-    const authHandler: PluvHandlerFetch<
-        Record<TBinding, DurableObjectNamespace>
-    > = async (request, env) => {
+    const authHandler: PluvHandlerFetch<TEnv> = async (request, env) => {
         if (!authorize) return null;
 
         const { pathname, searchParams } = new URL(request.url);
@@ -139,9 +138,7 @@ export const createPluvHandler = <
         }
     };
 
-    const roomHandler: PluvHandlerFetch<
-        Record<TBinding, DurableObjectNamespace>
-    > = async (request, env) => {
+    const roomHandler: PluvHandlerFetch<TEnv> = async (request, env) => {
         const { pathname } = new URL(request.url);
         const matcher = match<{ roomId: string }>(`${endpoint}/room/:roomId`);
         const matched = matcher(pathname);
@@ -164,15 +161,13 @@ export const createPluvHandler = <
         return room.fetch(request);
     };
 
-    const fetch: PluvHandlerFetch<
-        Record<TBinding, DurableObjectNamespace>
-    > = async (request, env) => {
+    const fetch: PluvHandlerFetch<TEnv> = async (request, env) => {
         return [authHandler, roomHandler].reduce((promise, current) => {
             return promise.then((value) => value ?? current(request, env));
         }, Promise.resolve<Response | null>(null));
     };
 
-    const handler: ExportedHandler<Record<TBinding, DurableObjectNamespace>> = {
+    const handler: ExportedHandler<TEnv> = {
         fetch: async (request, env) => {
             const response =
                 (await fetch(request, env)) ??
