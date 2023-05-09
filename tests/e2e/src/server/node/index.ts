@@ -26,7 +26,7 @@ if (Number.isNaN(port)) {
 const app = express();
 const server = Http.createServer(app);
 
-const handler = createPluvHandler({
+const Pluv = createPluvHandler({
     authorize: () => {
         const id = Crypto.randomUUID();
 
@@ -36,9 +36,11 @@ const handler = createPluvHandler({
     server,
 });
 
+Pluv.createWsServer();
+
 app.use(bodyParser.json());
 app.use(cors({ origin: "*" }));
-app.use(handler);
+app.use(Pluv.handler);
 
 server.listen(port, () => {
     console.log(`Server is listening on port: ${port}`);

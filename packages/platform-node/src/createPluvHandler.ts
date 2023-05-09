@@ -9,7 +9,7 @@ import {
 import Http from "http";
 import { match } from "path-to-regexp";
 import Url from "url";
-import WebSocket from "ws";
+import WS from "ws";
 import { NodePlatform } from "./NodePlatform";
 
 export interface AuthorizeFunctionContext {
@@ -29,10 +29,22 @@ export type CreatePluvHandlerConfig<TPluv extends PluvIO<NodePlatform>> = {
     ? { authorize: AuthorizeFunction<TPluv> }
     : { authorize?: undefined });
 
-const handle = (ws: WebSocket.WebSocket) => ({
-    invalidEndpoint: () => ws.close(1011, "Invalid WebSocket endpoint"),
-    invalidRoom: () => ws.close(1011, "Invalid room name"),
-    invalidToken: () => ws.close(1011, "Invalid authentication token"),
+const handle = (ws: WS.WebSocket) => ({
+    invalidEndpoint: () => {
+        ws.close(1011, "Invalid WebSocket endpoint");
+
+        return { matched: false };
+    },
+    invalidRoom: () => {
+        ws.close(1011, "Invalid room name");
+
+        return { matched: true };
+    },
+    invalidToken: () => {
+        ws.close(1011, "Invalid authentication token");
+
+        return { matched: true };
+    },
 });
 
 export type RequestHandler = (
@@ -41,20 +53,42 @@ export type RequestHandler = (
     next?: () => void
 ) => void;
 
+export interface WebSocketHandlerResult {
+    matched: boolean;
+}
+
+export type WebSocketHandler = (
+    ws: WS.WebSocket,
+    req: Http.IncomingMessage
+) => Promise<WebSocketHandlerResult>;
+
+export interface CreatePluvHandlerResult {
+    createWsServer: () => WS.Server<WS.WebSocket>;
+    handler: RequestHandler;
+    wsHandler: WebSocketHandler;
+}
+
 export const createPluvHandler = <
     TPluv extends PluvIO<NodePlatform, any, any, any, any, any, any>
 >(
     config: CreatePluvHandlerConfig<TPluv>
-): RequestHandler => {
+): CreatePluvHandlerResult => {
     const { authorize, endpoint = "/api/pluv", io, server } = config;
 
-    const wsServer = new WebSocket.Server({ server });
+    const wsServer = new WS.Server({ server });
 
-    wsServer.on("connection", async (ws, req) => {
+    const wsHandler = async (
+        ws: WS.WebSocket,
+        req: Http.IncomingMessage
+    ): Promise<WebSocketHandlerResult> => {
         const url = req.url;
         const onError = handle(ws);
 
-        if (!url) return onError.invalidEndpoint();
+        if (!url) {
+            onError.invalidEndpoint();
+
+            return { matched: false };
+        }
 
         const parsed = Url.parse(url, true);
         const { pathname } = parsed;
@@ -77,9 +111,17 @@ export const createPluvHandler = <
         const room = io.getRoom(roomId);
 
         await room.register(ws, { token });
-    });
 
-    return async (
+        return { matched: true };
+    };
+
+    const createWsServer = () => {
+        return wsServer.on("connection", async (ws, req) => {
+            await wsHandler(ws, req);
+        });
+    };
+
+    const handler = async (
         req: Http.IncomingMessage,
         res: Http.ServerResponse,
         next?: () => void
@@ -123,5 +165,11 @@ export const createPluvHandler = <
             res.writeHead(403, { "Content-Type": "text/plain" });
             res.end(err instanceof Error ? err.message : "Unauthorized");
         }
+    };
+
+    return {
+        createWsServer,
+        handler,
+        wsHandler,
     };
 };
