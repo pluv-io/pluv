@@ -125,31 +125,29 @@ export const createPluvHandler = <
         req: Http.IncomingMessage,
         res: Http.ServerResponse,
         next?: () => void
-    ) => {
-        if (!authorize) return next?.();
-        if (req.method !== "GET") return next?.();
+    ): Promise<Http.ServerResponse | null> => {
+        if (!authorize) return next?.() ?? null;
+        if (req.method !== "GET") return next?.() ?? null;
 
         const url = req.url;
 
-        if (!url) return next?.();
+        if (!url) return next?.() ?? null;
 
         const parsed = Url.parse(url, true);
         const { pathname } = parsed;
 
-        if (!pathname) return next?.();
+        if (!pathname) return next?.() ?? null;
 
         const matcher = match<{}>(`${endpoint}/authorize`);
         const matched = matcher(pathname);
 
-        if (!matched) return next?.();
+        if (!matched) return next?.() ?? null;
 
         const roomId = parsed.query?.room || undefined;
 
         if (typeof roomId !== "string" || !roomId) {
             res.writeHead(404, { "Content-Type": "text/plain" });
-            res.end("Room does not exist");
-
-            return;
+            return res.end("Room does not exist");
         }
 
         try {
@@ -160,10 +158,10 @@ export const createPluvHandler = <
             const token = await io.createToken({ room: roomId, user });
 
             res.writeHead(200, { "Content-Type": "text/plain" });
-            res.end(token);
+            return res.end(token);
         } catch (err) {
             res.writeHead(403, { "Content-Type": "text/plain" });
-            res.end(err instanceof Error ? err.message : "Unauthorized");
+            return res.end(err instanceof Error ? err.message : "Unauthorized");
         }
     };
 
