@@ -56,9 +56,7 @@ export class RoomDurableObject implements DurableObject {
     }
 
     async fetch(request: Request) {
-        const isWebSocketRequest = request.headers.get("Upgrade") === "WebSocket";
-
-        if (!isWebSocketRequest) {
+        if (request.headers.get("Upgrade") !== "WebSocket") {
             return new Response("Expected WebSocket", { status: 400 });
         }
 
@@ -85,6 +83,9 @@ const parseRoomId = (url: string): string => {
 const handler = {
     async fetch(req: Request, env: Env): Promise<Response> {
         const roomId = parseRoomId(req.url);
+        // In wrangler.toml:
+        // [durable_objects]
+        // bindings = [{ name = "rooms", class_name = "RoomDurableObject" }]
         const durableObjectId = env.rooms.idFromString(roomId);
 
         const room = env.rooms.get(durableObjectId);
@@ -98,7 +99,7 @@ export default handler;
 
 ## createPluvHandler
 
-If you don't need to modify your DurableObject or Cloudflare Worker handler too specifically, [@pluv/platform-node](https://www.npmjs.com/package/@pluv/platform-cloudflare) also provides a function `createPluvHandler` to create a DurableObject and handler for you automatically.
+If you don't need to modify your DurableObject or Cloudflare Worker handler too specifically, [@pluv/platform-cloudflare](https://www.npmjs.com/package/@pluv/platform-cloudflare) also provides a function `createPluvHandler` to create a DurableObject and handler for you automatically.
 
 ```ts
 import { createIO } from "@pluv/io";
@@ -111,6 +112,8 @@ const Pluv = createPluvHandler({
     io,
     // Your durable object binding, defined in wrangler.toml
     binding: "rooms",
+    // Optional: Specify the base path from which endpoints are defined
+    endpoint: "/api/pluv", // default
     // If your PluvIO instance defines authorization, add your authorization
     // logic here. Return a user if authorized, return null or throw an error
     // if not authorized.
