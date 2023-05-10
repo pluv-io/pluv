@@ -49,7 +49,7 @@ This is the bundle returned from `createRoomBundle`.
 
 ### MockedRoomProvider
 
-React provider component to mock `PluvRoomProvider`. Enables hooks from `CreateRoomBundle` to work for single-player. This can be useful as in [Storybook](https://storybook.js.org/) within a decorator when mocking `PluvRoomProvider`.
+React provider component to mock `PluvRoomProvider`. Enables hooks from `CreateRoomBundle` while completely offline. This can be useful as in [Storybook](https://storybook.js.org/) within a decorator when mocking `PluvRoomProvider`.
 
 ```tsx
 import { y } from "@pluv/react";
@@ -58,7 +58,7 @@ import { MockedRoomProvider } from "./io";
 <MockedRoomProvider
     // Mock events sent and received for hooks in child components.
     events={{
-        $EMIT_EMOJI: ({ emojiCode }) => ({
+        EMIT_EMOJI: ({ emojiCode }) => ({
             EMOJI_RECEIVED: { emojiCode },
         }),
     }}

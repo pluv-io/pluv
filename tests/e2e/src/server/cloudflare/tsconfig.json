@@ -6,6 +6,8 @@
 	],
 	"compilerOptions": {
 		"baseUrl": ".",
+		"declaration": false,
+		"declarationMap": false,
 		"types": ["@cloudflare/workers-types"],
 		"paths": {
 			"@pluv-internal/cloudflare-utils": ["../../../../../internal/cloudflare-utils/dist"],
