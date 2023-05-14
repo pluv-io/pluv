@@ -82,6 +82,9 @@ import { MockedRoomProvider } from "./io";
 React provider component to enable `CreateRoomBundle` hooks within child components. Mounting this component connects to a real-time room with other connected users. Unmounting this component will disconnect the room. See [Create Rooms](/docs/react/api-reference) for more details.
 
 ```tsx
+import { y } from "@pluv/react";
+import { MockedRoomProvider } from "./io";
+
 <PluvRoomProvider
     // Set initial presence for the current user
     initialPresence={{

@@ -102,6 +102,7 @@ Integrate with [ws](https://www.npmjs.com/package/ws) on Node.js.
 ```ts
 // backend/server.ts
 
+import { createPluvHandler } from "@pluv/platform-node";
 import express from "express";
 import Http from "http";
 import WebSocket from "ws";
@@ -111,22 +112,14 @@ const PORT = 3000;
 
 const app = express();
 const server = Http.createServer();
-const wsServer = new WebSocket.Server({ server });
 
-const parseRoomId = (url: string): string => {
-    /* get room from req.url */
-};
+const Pluv = createPluvHandler({ io, server });
 
-wsServer.on("connection", async (ws, req) => {
-    const roomId = parseRoomId(req.url);
-    const room = io.getRoom(roomId);
+Pluv.createWsServer();
 
-    await room.register(ws);
-});
+app.use(Pluv.handler);
 
-server.listen(PORT, () => {
-    console.log(`Server is listening on port: ${port}`);
-});
+server.listen(PORT);
 ```
 
 ## Connecting the frontend to PluvIO
@@ -141,10 +134,7 @@ Now that the io instance is setup on the backend, we can setup the frontend clie
 import { createBundle, createClient, y } from "@pluv/react";
 import type { AppPluvIO } from "server/io";
 
-const client = createClient<AppPluvIO>({
-    // Define a ws endpoint url based on how you parse the room name
-    wsEndpoint: (room) => `ws://localhost:3000/api/room/${room}`,
-});
+const client = createClient<AppPluvIO>();
 
 export const {
     // factories
@@ -240,9 +230,9 @@ export const ChatRoom: FC = () => {
 
 This example only scratches the surface of the realtime capabilities offered by pluv.io.
 
+* [Authorization](/docs/io/authorization)
 * [Usage with Cloudflare Workers (server-side)](/docs/io/cloudflare-workers)
 * [Using CRDT storage with yjs](/docs/react/yjs-storage)
 * [Using presence and awareness](/docs/react/presence)
 
 export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;
-
