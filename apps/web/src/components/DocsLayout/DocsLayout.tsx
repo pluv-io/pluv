@@ -25,7 +25,7 @@ const StyledSideBar = tw(SideBar)`
     px-3
     pt-8
     overflow-y-auto
-    lg:flex
+    xl:flex
 `;
 
 const Navigation = tw(DocsTreeViewNavigation)`
@@ -38,12 +38,14 @@ const Container = tw.div`
     flex-row
     items-start
     justify-center
+    gap-2
     min-w-0
-    gap-8
     px-2
     py-8
-    md:gap-12
-    sm:px-8
+    lg:gap-6
+    xl:gap-8
+    lg:px-6
+    xl:px-8
     sm:py-12
 `;
 
@@ -52,6 +54,7 @@ const Content = tw.main`
     flex-col
     items-stretch
     w-full
+    min-w-0
     lg:max-w-[80%]
 `;
 
