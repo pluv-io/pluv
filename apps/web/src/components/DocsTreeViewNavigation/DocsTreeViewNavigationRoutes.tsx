@@ -1,18 +1,19 @@
 import { TreeView } from "@pluv-internal/react-components";
 import { useRouter } from "next/router";
-import { FC, useMemo } from "react";
+import { FC, MouseEvent, useMemo } from "react";
 import { DocRouteNode } from "../../types";
 
 export interface DocsTreeViewNavigationRoutesProps {
     baseRoute?: string;
     level: number;
+    onClickLink?: (event: MouseEvent<HTMLAnchorElement>) => void;
     routes: Record<string, DocRouteNode>;
     selected?: boolean;
 }
 
 export const DocsTreeViewNavigationRoutes: FC<
     DocsTreeViewNavigationRoutesProps
-> = ({ baseRoute = "", level, routes, selected }) => {
+> = ({ baseRoute = "", level, onClickLink, routes, selected }) => {
     const router = useRouter();
 
     const sorted = useMemo(() => {
@@ -51,6 +52,7 @@ export const DocsTreeViewNavigationRoutes: FC<
                             <DocsTreeViewNavigationRoutes
                                 baseRoute={`${baseRoute}/${slug}`}
                                 level={level + 1}
+                                onClickLink={onClickLink}
                                 routes={node.children}
                                 selected={selected && routeSlug === slug}
                             />
@@ -65,6 +67,7 @@ export const DocsTreeViewNavigationRoutes: FC<
                     <TreeView.Link
                         key={slug}
                         href={`${baseRoute}/${slug}`}
+                        onClick={onClickLink}
                         selected={selected && finalSlug === slug}
                     >
                         {node.name}
