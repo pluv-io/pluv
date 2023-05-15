@@ -13,7 +13,7 @@
 	"dependencies": {
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@types/ms": "^0.7.31",
-		"@types/react": "18.2.5",
+		"@types/react": "18.2.6",
 		"@types/react-dom": "^18.2.1",
 		"@types/styled-components": "^5.1.26",
 		"chess.js": "1.0.0-beta.5",
