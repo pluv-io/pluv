@@ -4,7 +4,7 @@ import type styledImport, {
     StyledComponent,
     ThemedStyledFunction,
 } from "styled-components";
-import type { ComponentType } from "react";
+import type { ComponentType, DOMAttributes } from "react";
 
 declare module "twin.macro" {
     // The styled and css imports
@@ -23,6 +23,7 @@ declare module "twin.macro" {
 declare module "react" {
     // The css prop
     interface HTMLAttributes<T> extends DOMAttributes<T> {
+        key?: Key | null | undefined;
         css?: any;
     }
     // The inline svg css prop
@@ -34,7 +35,7 @@ declare module "react" {
 // The "as" prop on styled components
 declare global {
     namespace JSX {
-        interface IntrinsicAttributes<T> extends DOMAttributes<T> {
+        interface IntrinsicAttributes extends React.Attributes {
             as?: string | ComponentType<any>;
             forwardedAs?: string | ComponentType<any>;
         }
