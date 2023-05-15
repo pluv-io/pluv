@@ -1,5 +1,17 @@
 # @pluv/react
 
+## 0.5.10
+
+### Patch Changes
+
+- 5bbfb98: fix not properly handling unauthorized checks
+- b85a232: bumped dependencies
+- Updated dependencies [5bbfb98]
+- Updated dependencies [b85a232]
+- Updated dependencies [fde89cf]
+  - @pluv/client@0.8.0
+  - @pluv/types@0.2.0
+
 ## 0.5.9
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # @pluv/client
 
+## 0.8.0
+
+### Minor Changes
+
+- fde89cf: added defaults to the client to align it with createPluvClient by default
+
+### Patch Changes
+
+- 5bbfb98: fix not properly handling unauthorized checks
+- b85a232: bumped dependencies
+- Updated dependencies [b85a232]
+  - @pluv/crdt-yjs@0.3.8
+  - @pluv/types@0.2.0
+
 ## 0.7.0
 
 ### Minor Changes

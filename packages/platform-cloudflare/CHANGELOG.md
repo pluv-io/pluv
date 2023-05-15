@@ -1,5 +1,19 @@
 # @pluv/platform-cloudflare
 
+## 0.2.0
+
+### Minor Changes
+
+- 643d5b5: added createPluvHandler to automatically set-up a pluv server with reasonable defaults
+
+### Patch Changes
+
+- b85a232: bumped dependencies
+- fde89cf: added defaults to the client to align it with createPluvClient by default
+- Updated dependencies [b85a232]
+  - @pluv/io@0.4.1
+  - @pluv/types@0.2.0
+
 ## 0.1.18
 
 ### Patch Changes
