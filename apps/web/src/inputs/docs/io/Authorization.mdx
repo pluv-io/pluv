@@ -92,9 +92,11 @@ import type { AppPluvIO } from "server/io";
 
 const client = createClient<AppPluvIO>({
     // Specify your auth endpoint here
+    // Set to `true` if you have authorization on your io instance, and you
+    // want to use the default of (room) => `/api/pluv/authorize?room=${room}`
+    // This is the default from `createPluvHandler`
     authEndpoint: (room) => `http://localhost:3000/api/authorize?room=${room}`,
-    // Define a ws endpoint url based on how you parse the room name
-    wsEndpoint: (room) => `ws://localhost:3000/api/room/${room}`,
+    // ...
 });
 ```
 
@@ -115,8 +117,7 @@ const client = createClient<AppPluvIO>({
             body: JSON.stringify({ room }),
         },
     }),
-    // Define a ws endpoint url based on how you parse the room name
-    wsEndpoint: (room) => `ws://localhost:3000/api/room/${room}`,
+    // ...
 });
 ```
 
