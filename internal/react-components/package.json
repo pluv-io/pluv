@@ -11,7 +11,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@emotion/is-prop-valid": "^1.2.0",
+		"@emotion/is-prop-valid": "^1.2.1",
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@pluv-internal/react-icons": "workspace:^",
 		"@radix-ui/react-dialog": "^1.0.3",
@@ -22,9 +22,9 @@
 		"@types/react-dom": "^18.2.1",
 		"@types/styled-components": "^5.1.26",
 		"clsx": "^1.2.1",
-		"framer-motion": "^10.12.5",
+		"framer-motion": "^10.12.10",
 		"ms": "^2.1.3",
-		"next": "^13.3.4",
+		"next": "^13.4.2",
 		"react": "18.2.0",
 		"react-dom": "18.2.0",
 		"styled-components": "^5.3.10",
