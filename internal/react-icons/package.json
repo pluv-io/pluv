@@ -19,10 +19,10 @@
 	"devDependencies": {
 		"@pluv-internal/typings": "workspace:^",
 		"@pluv/tsconfig": "workspace:^",
-		"@svgr/core": "^7.0.0",
-		"@svgr/plugin-jsx": "^7.0.0",
-		"@svgr/plugin-prettier": "^7.0.0",
-		"@svgr/plugin-svgo": "^7.0.0",
+		"@svgr/core": "^8.0.0",
+		"@svgr/plugin-jsx": "^8.0.1",
+		"@svgr/plugin-prettier": "^8.0.1",
+		"@svgr/plugin-svgo": "^8.0.1",
 		"@types/common-tags": "^1.8.1",
 		"@types/fs-extra": "^11.0.1",
 		"@types/glob": "^8.1.0",
@@ -31,7 +31,7 @@
 		"dotenv-cli": "^7.2.1",
 		"eslint-config-pluv": "workspace:^",
 		"fs-extra": "^11.1.1",
-		"glob": "^10.2.2",
+		"glob": "^10.2.4",
 		"ts-node": "^10.9.1",
 		"typescript": "^5.0.4"
 	}
