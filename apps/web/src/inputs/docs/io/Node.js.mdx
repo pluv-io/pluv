@@ -94,7 +94,7 @@ const Pluv = createPluvHandler({
     // Your PluvIO instance
     io,
     // Optional: Specify the base path from which endpoints are defined
-    endpoint: "/api/pluv", // default
+    endpoint: "/api/pluv", // defaults to "/api/pluv"
     // Your Http.Server instance
     server,
     // If your PluvIO instance defines authorization, add your authorization
@@ -108,7 +108,7 @@ const Pluv = createPluvHandler({
     },
 });
 
-// Create your Pluv WebSocket server, which listens to "connection" events
+// Create your WS.Server instance, which listens to "connection" events
 const wsServer = Pluv.createWsServer();
 
 // Alternatively, define your own websocket server

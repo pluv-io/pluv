@@ -53,11 +53,11 @@ const Link = tw(Anchor)`
 
 const MobileDrawerButton = tw(Button)`
     mr-3
-    lg:hidden
+    xl:hidden
 `;
 
 const StyledMobileDocsSideDrawer = tw(MobileDocsSideDrawer)`
-    lg:hidden
+    xl:hidden
 `;
 
 const Logo = tw(NextLink)`
