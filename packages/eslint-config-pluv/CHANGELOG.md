@@ -1,5 +1,11 @@
 # eslint-config-pluv
 
+## 0.1.12
+
+### Patch Changes
+
+- b85a232: bumped dependencies
+
 ## 0.1.11
 
 ### Patch Changes

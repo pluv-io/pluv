@@ -1,5 +1,19 @@
 # @pluv/platform-node
 
+## 0.2.0
+
+### Minor Changes
+
+- 5bbfb98: added createPluvHandler to automatically set-up a pluv server with reasonable defaults
+
+### Patch Changes
+
+- 5bbfb98: require ws as a peer dependency
+- b85a232: bumped dependencies
+- Updated dependencies [b85a232]
+  - @pluv/io@0.4.1
+  - @pluv/types@0.2.0
+
 ## 0.1.18
 
 ### Patch Changes

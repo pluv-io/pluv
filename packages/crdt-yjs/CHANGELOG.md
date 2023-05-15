@@ -1,5 +1,12 @@
 # @pluv/crdt-yjs
 
+## 0.3.8
+
+### Patch Changes
+
+- b85a232: bumped dependencies
+  - @pluv/types@0.2.0
+
 ## 0.3.7
 
 ### Patch Changes

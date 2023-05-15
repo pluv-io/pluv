@@ -1,5 +1,13 @@
 # pluv
 
+## 0.4.5
+
+### Patch Changes
+
+- f2c3707: fix(deps): update dependency @pluv/io to ^0.4.0
+- b85a232: bumped dependencies
+  - @pluv/types@0.2.0
+
 ## 0.4.4
 
 ### Patch Changes
