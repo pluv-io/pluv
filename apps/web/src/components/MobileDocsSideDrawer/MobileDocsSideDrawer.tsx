@@ -5,7 +5,7 @@ import {
     SideDrawer,
 } from "@pluv-internal/react-components";
 import { XIcon } from "@pluv-internal/react-icons";
-import { CSSProperties, FC } from "react";
+import { CSSProperties, FC, MouseEvent } from "react";
 import tw from "twin.macro";
 import { DocsTreeViewNavigation } from "../DocsTreeViewNavigation";
 
@@ -48,11 +48,13 @@ const StyledTreeView = tw(DocsTreeViewNavigation)`
 
 export interface MobileDocsSideDrawerProps {
     className?: string;
+    onClickLink?: (event: MouseEvent<HTMLAnchorElement>) => void;
     style?: CSSProperties;
 }
 
 export const MobileDocsSideDrawer: FC<MobileDocsSideDrawerProps> = ({
     className,
+    onClickLink,
     style,
 }) => {
     return (
@@ -68,7 +70,7 @@ export const MobileDocsSideDrawer: FC<MobileDocsSideDrawerProps> = ({
                     </Button>
                 </SideDrawer.Close>
             </TopContainer>
-            <StyledTreeView />
+            <StyledTreeView onClickLink={onClickLink} />
         </Root>
     );
 };

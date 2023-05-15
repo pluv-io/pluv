@@ -1,5 +1,5 @@
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
-import { CSSProperties, FC, ReactNode } from "react";
+import { CSSProperties, FC, MouseEvent, ReactNode } from "react";
 import tw from "twin.macro";
 import { NextLink } from "../../atoms";
 
@@ -36,6 +36,7 @@ export interface TreeViewLinkProps {
     children?: ReactNode;
     className?: string;
     href: string;
+    onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
     rel?: string;
     selected?: boolean;
     style?: CSSProperties;
@@ -46,6 +47,7 @@ export const TreeViewLink: FC<TreeViewLinkProps> = ({
     children,
     className,
     href,
+    onClick,
     rel,
     selected = false,
     style,
@@ -56,6 +58,7 @@ export const TreeViewLink: FC<TreeViewLinkProps> = ({
             <NavigationMenu.Link asChild>
                 <Item
                     href={href}
+                    onClick={onClick}
                     rel={rel}
                     target={target}
                     data-selected={selected}

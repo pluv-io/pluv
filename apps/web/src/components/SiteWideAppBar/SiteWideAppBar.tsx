@@ -8,7 +8,7 @@ import {
 } from "@pluv-internal/react-components";
 import { BarsIcon, GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
 import { useRouter } from "next/router";
-import { CSSProperties, memo } from "react";
+import { CSSProperties, memo, useState } from "react";
 import tw, { styled } from "twin.macro";
 import { MobileDocsSideDrawer } from "../MobileDocsSideDrawer";
 
@@ -92,17 +92,30 @@ export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
 
     const router = useRouter();
 
+    const [open, setOpen] = useState<boolean>(false);
+
     return (
         <Root className={className} style={style}>
             <Content>
                 <LeftContainer>
-                    <SideDrawer.Root>
+                    <SideDrawer.Root
+                        open={open}
+                        onOpenChange={(newOpen) => {
+                            setOpen(newOpen);
+                        }}
+                    >
                         <SideDrawer.Trigger>
                             <MobileDrawerButton outlined square type="button">
                                 <BarsIcon height={24} width={24} />
                             </MobileDrawerButton>
                         </SideDrawer.Trigger>
-                        <StyledMobileDocsSideDrawer />
+                        <StyledMobileDocsSideDrawer
+                            onClickLink={(e) => {
+                                e.stopPropagation();
+
+                                setOpen(false);
+                            }}
+                        />
                     </SideDrawer.Root>
                     <Logo href="/">
                         <StyledLogoIcon height={36} width={36} />
