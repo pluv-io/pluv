@@ -26,6 +26,6 @@
         "cz-conventional-changelog": "^3.3.0",
         "eslint-config-pluv": "workspace:^",
         "prettier": "^2.8.8",
-        "turbo": "^1.9.3"
+        "turbo": "^1.9.4"
     }
 }
