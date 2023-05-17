@@ -35,7 +35,7 @@
         "@seznam/compose-react-refs": "^1.0.6",
         "@types/common-tags": "^1.8.1",
         "@types/ms": "^0.7.31",
-        "@types/node": "^20.1.4",
+        "@types/node": "^20.1.7",
         "@types/react": "18.2.6",
         "@types/react-dom": "^18.2.4",
         "@types/styled-components": "^5.1.26",

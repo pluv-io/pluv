@@ -26,7 +26,7 @@
 		"@types/common-tags": "^1.8.1",
 		"@types/fs-extra": "^11.0.1",
 		"@types/glob": "^8.1.0",
-		"@types/node": "^20.1.4",
+		"@types/node": "^20.1.7",
 		"common-tags": "^1.8.2",
 		"dotenv-cli": "^7.2.1",
 		"eslint-config-pluv": "workspace:^",
