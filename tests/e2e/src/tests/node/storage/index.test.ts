@@ -170,4 +170,35 @@ test.describe("Node Storage", () => {
             await secondPage.close();
         }
     );
+
+    test(
+        oneLine`
+        
+        `,
+        async () => {
+            const testUrl = `${TEST_URL}?room=e2e-node-storage-saved`;
+
+            const firstPage = await openTestPage(testUrl);
+
+            await firstPage.waitForSelector("#storage");
+            await waitMs(ms("0.25s"));
+
+            await firstPage.click("#button-add-message");
+            await waitMs(ms("0.25s"));
+
+            await firstPage.click("#disconnect-room");
+            await waitMs(ms("0.5s"));
+
+            await firstPage.click("#connect-room");
+            await waitMs(ms("0.5s"));
+
+            await firstPage
+                .locator("#storage")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((messages) => expect(messages.length).toEqual(2));
+
+            await firstPage.close();
+        }
+    );
 });
