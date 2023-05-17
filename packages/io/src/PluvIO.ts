@@ -105,7 +105,6 @@ export class PluvIO<
     private _initialStorage:
         | ((room: string) => MaybePromise<Maybe<string>>)
         | null = null;
-    private _listeners: PluvIOListeners;
     private _rooms = new Map<
         string,
         IORoom<
@@ -256,6 +255,7 @@ export class PluvIO<
         TOutputSelf,
         TOutputSync
     >;
+    readonly _listeners: PluvIOListeners;
     readonly _platform: TPlatform;
 
     constructor(
@@ -467,12 +467,16 @@ export class PluvIO<
         const events1 = first._events;
         const events2 = second._events;
 
+        const { onRoomDeleted, onStorageUpdated } = first._listeners;
+
         const events = Object.assign(Object.create(null), events1, events2);
 
         return new PluvIO({
             authorize,
             debug,
             events,
+            onRoomDeleted,
+            onStorageUpdated,
             platform,
         });
     }

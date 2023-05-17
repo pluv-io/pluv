@@ -8,6 +8,7 @@
 		"dev-server-cloudflare": "wrangler publish --dry-run --outdir=dist && miniflare ./dist/index.js --modules --port 3101",
 		"dev-server-node": "ts-node --project ./src/server/node/tsconfig.json ./src/server/node -- --port 3102",
 		"dev-server-node-redis": "ts-node --project ./src/server/node/tsconfig.json ./src/server/node-redis -- --port 3103",
+		"prisma": "prisma",
 		"start": "next start",
 		"test": "playwright test",
 		"test:cloudflare": "playwright test ./src/tests/cloudflare/",
@@ -27,6 +28,7 @@
 		"@pluv/pubsub-redis": "workspace:^",
 		"@pluv/react": "workspace:^",
 		"@pluv/types": "workspace:^",
+		"@prisma/client": "^4.14.0",
 		"@types/body-parser": "^1.19.2",
 		"@types/common-tags": "^1.8.1",
 		"@types/cors": "^2.8.13",
@@ -59,6 +61,7 @@
 		"concurrently": "^8.0.1",
 		"eslint-config-pluv": "workspace:^",
 		"miniflare": "^2.14.0",
+		"prisma": "^4.14.0",
 		"ts-node": "^10.9.1",
 		"typescript": "^5.0.4",
 		"wrangler": "2.20.0"

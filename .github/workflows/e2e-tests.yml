@@ -43,6 +43,12 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
+      - name: Setup dev.db
+        run: |
+          pnpm prisma generate
+          pnpm prisma db push
+        working-directory: tests/e2e
+
       - name: Install Playwright
         run: pnpm dlx playwright install chromium
 
