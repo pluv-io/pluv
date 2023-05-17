@@ -106,7 +106,7 @@ export interface CreateRoomBundle<
         selector?: (myPresence: TPresence) => T,
         options?: SubscriptionHookOptions<Id<T> | null>
     ) => [
-        myPresence: Id<T> | null,
+        myPresence: Id<T>,
         updateMyPresence: Dispatch<UpdateMyPresenceAction<TPresence>>
     ];
     usePluvMyself: <T extends unknown = UserInfo<TIO, TPresence>>(
@@ -311,7 +311,7 @@ export const createRoomBundle = <
     const usePluvMyPresence = <T extends unknown = TPresence>(
         selector = identity as (myPresence: TPresence) => T,
         options?: SubscriptionHookOptions<Id<T> | null>
-    ): [Id<T> | null, Dispatch<UpdateMyPresenceAction<TPresence>>] => {
+    ): [Id<T>, Dispatch<UpdateMyPresenceAction<TPresence>>] => {
         const room = usePluvRoom();
 
         const subscribe = useCallback(
@@ -324,9 +324,7 @@ export const createRoomBundle = <
         const getSnapshot = room.getMyPresence;
 
         const _selector = useCallback(
-            (snapshot: TPresence | null) => {
-                return !snapshot ? null : (selector(snapshot) as Id<T>);
-            },
+            (snapshot: TPresence) => selector(snapshot) as Id<T>,
             [selector]
         );
 

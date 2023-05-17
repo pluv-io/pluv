@@ -38,7 +38,7 @@ export abstract class AbstractRoom<
 
     public abstract getConnection(): WebSocketConnection;
 
-    public abstract getMyPresence(): TPresence | null;
+    public abstract getMyPresence(): TPresence;
 
     public abstract getMyself(): Id<UserInfo<TIO, TPresence>> | null;
 

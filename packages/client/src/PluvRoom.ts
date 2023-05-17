@@ -303,8 +303,8 @@ export class PluvRoom<
         );
     }
 
-    public getMyPresence = (): TPresence | null => {
-        return this._usersManager.myself?.presence ?? null;
+    public getMyPresence = (): TPresence => {
+        return this._usersManager.myPresence;
     };
 
     public getMyself = (): Id<UserInfo<TIO, TPresence>> | null => {
