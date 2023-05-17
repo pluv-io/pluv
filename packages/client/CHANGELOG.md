@@ -1,5 +1,11 @@
 # @pluv/client
 
+## 0.8.1
+
+### Patch Changes
+
+- 2c9c5c3: changed my-presence to be non-nullable
+
 ## 0.8.0
 
 ### Minor Changes
