@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/persistance-redis",
-	"version": "0.1.19",
+	"version": "0.1.20",
 	"description": "@pluv/io yjs storage persistance for node.js",
 	"author": "leedavidcs",
 	"license": "MIT",

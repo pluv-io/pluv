@@ -1,5 +1,13 @@
 # @pluv/react
 
+## 0.5.11
+
+### Patch Changes
+
+- 2c9c5c3: changed my-presence to be non-nullable
+- Updated dependencies [2c9c5c3]
+  - @pluv/client@0.8.1
+
 ## 0.5.10
 
 ### Patch Changes

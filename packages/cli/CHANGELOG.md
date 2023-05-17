@@ -1,5 +1,11 @@
 # pluv
 
+## 0.4.6
+
+### Patch Changes
+
+- a5f7176: fix(deps): update dependency @pluv/platform-node to ^0.2.0
+
 ## 0.4.5
 
 ### Patch Changes

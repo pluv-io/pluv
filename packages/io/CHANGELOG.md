@@ -1,5 +1,11 @@
 # @pluv/io
 
+## 0.4.2
+
+### Patch Changes
+
+- 8917309: fixed PluvIO listeners onRoomDeleted and onStorageUpdated not working when additional events were added
+
 ## 0.4.1
 
 ### Patch Changes
