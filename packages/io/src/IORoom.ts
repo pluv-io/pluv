@@ -18,7 +18,7 @@ import type {
 import colors from "kleur";
 import type {
     AbstractPlatform,
-    InferPlatformIOContextType,
+    InferPlatformEventContextType,
     InferPlatformRoomContextType,
     InferPlatformWebSocketType,
 } from "./AbstractPlatform";
@@ -44,13 +44,13 @@ interface BroadcastParams<TIO extends IORoom<any, any, any, any, any>> {
     senderId?: string;
 }
 
-export interface IORoomListenerEvent {
+export type IORoomListenerEvent<TPlatform extends AbstractPlatform> = {
     room: string;
     encodedState: string;
-}
+} & InferPlatformRoomContextType<TPlatform>;
 
-interface IORoomListeners {
-    onDestroy: (event: IORoomListenerEvent) => void;
+interface IORoomListeners<TPlatform extends AbstractPlatform> {
+    onDestroy: (event: IORoomListenerEvent<TPlatform>) => void;
 }
 
 export type IORoomConfig<
@@ -61,9 +61,9 @@ export type IORoomConfig<
     TOutputBroadcast extends EventRecord<string, any> = {},
     TOutputSelf extends EventRecord<string, any> = {},
     TOutputSync extends EventRecord<string, any> = {}
-> = Partial<IORoomListeners> & {
+> = Partial<IORoomListeners<TPlatform>> & {
     authorize?: TAuthorize;
-    context: TContext & InferPlatformIOContextType<TPlatform>;
+    context: TContext & InferPlatformRoomContextType<TPlatform>;
     debug: boolean;
     events: InferEventConfig<
         TPlatform,
@@ -83,8 +83,8 @@ interface SendMessageSender {
 
 export type WebsocketRegisterOptions<TPlatform extends AbstractPlatform> = {
     token?: string | null;
-} & InferPlatformIOContextType<TPlatform> &
-    InferPlatformRoomContextType<TPlatform>;
+} & InferPlatformRoomContextType<TPlatform> &
+    InferPlatformEventContextType<TPlatform>;
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -97,12 +97,13 @@ export class IORoom<
 > implements
         IOLike<TAuthorize, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>
 {
-    private readonly _context: TContext & InferPlatformIOContextType<TPlatform>;
+    private readonly _context: TContext &
+        InferPlatformRoomContextType<TPlatform>;
     private readonly _debug: boolean;
     private readonly _platform: TPlatform;
 
     private _doc: YjsDoc<any> = doc();
-    private _listeners: IORoomListeners;
+    private _listeners: IORoomListeners<TPlatform>;
     private _sessions = new Map<string, WebSocketSession>();
     private _uninitialize: (() => Promise<void>) | null = null;
 
@@ -180,8 +181,8 @@ export class IORoom<
     ): Promise<void> {
         const { token, ..._platformRoomContext } = options;
         const platformRoomContext =
-            _platformRoomContext as InferPlatformIOContextType<TPlatform> &
-                InferPlatformRoomContextType<TPlatform>;
+            _platformRoomContext as InferPlatformRoomContextType<TPlatform> &
+                InferPlatformEventContextType<TPlatform>;
 
         if (!this._uninitialize) await this._initialize();
 
@@ -403,8 +404,8 @@ export class IORoom<
         const resolver:
             | EventResolver<
                   TContext &
-                      InferPlatformIOContextType<TPlatform> &
-                      InferPlatformRoomContextType<TPlatform>,
+                      InferPlatformRoomContextType<TPlatform> &
+                      InferPlatformEventContextType<TPlatform>,
                   TInput[string],
                   TOutputBroadcast
               >
@@ -452,6 +453,7 @@ export class IORoom<
             this._doc = doc();
 
             this._listeners.onDestroy({
+                ...this._context,
                 encodedState,
                 room: this.id,
             });
@@ -513,7 +515,7 @@ export class IORoom<
 
     private _onMessage(
         session: WebSocketSession,
-        platformRoomContext: InferPlatformRoomContextType<TPlatform>
+        platformRoomContext: InferPlatformEventContextType<TPlatform>
     ): (event: AbstractMessageEvent) => void {
         return (event: AbstractMessageEvent): void => {
             const baseContext: EventResolverContext<TContext> = {
@@ -554,8 +556,8 @@ export class IORoom<
 
             const extendedContext: EventResolverContext<
                 TContext &
-                    InferPlatformIOContextType<TPlatform> &
-                    InferPlatformRoomContextType<TPlatform>
+                    InferPlatformRoomContextType<TPlatform> &
+                    InferPlatformEventContextType<TPlatform>
             > = {
                 ...baseContext,
                 context: { ...this._context, ...platformRoomContext },

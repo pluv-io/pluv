@@ -17,7 +17,7 @@ import type {
 import colors from "kleur";
 import type {
     AbstractPlatform,
-    InferPlatformIOContextType,
+    InferPlatformRoomContextType,
 } from "./AbstractPlatform";
 import { IORoom, IORoomListenerEvent } from "./IORoom";
 import type { JWTEncodeParams } from "./authorize";
@@ -57,14 +57,9 @@ export type InferIORoom<TIO extends PluvIO<any, any, any, any, any, any, any>> =
           >
         : never;
 
-export type PluvIOListenerEvent = {
-    encodedState: string;
-    room: string;
-};
-
-export interface PluvIOListeners {
-    onRoomDeleted: (event: PluvIOListenerEvent) => void;
-    onStorageUpdated: (event: PluvIOListenerEvent) => void;
+export interface PluvIOListeners<TPlatform extends AbstractPlatform> {
+    onRoomDeleted: (event: IORoomListenerEvent<TPlatform>) => void;
+    onStorageUpdated: (event: IORoomListenerEvent<TPlatform>) => void;
 }
 
 export type PluvIOConfig<
@@ -75,7 +70,7 @@ export type PluvIOConfig<
     TOutputBroadcast extends EventRecord<string, any> = {},
     TOutputSelf extends EventRecord<string, any> = {},
     TOutputSync extends EventRecord<string, any> = {}
-> = Partial<PluvIOListeners> & {
+> = Partial<PluvIOListeners<TPlatform>> & {
     authorize?: TAuthorize;
     context?: TContext;
     debug?: boolean;
@@ -93,7 +88,7 @@ export type PluvIOConfig<
 
 export type GetRoomOptions<TPlatform extends AbstractPlatform> = {
     debug?: boolean;
-} & InferPlatformIOContextType<TPlatform>;
+} & InferPlatformRoomContextType<TPlatform>;
 
 export class PluvIO<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -196,6 +191,7 @@ export class PluvIO<
                         );
 
                         this._listeners.onStorageUpdated({
+                            ...context,
                             encodedState,
                             room,
                         });
@@ -237,7 +233,7 @@ export class PluvIO<
             },
         },
         $UPDATE_STORAGE: {
-            resolver: ({ origin, update }, { doc, room }) => {
+            resolver: ({ origin, update }, { context, doc, room }) => {
                 if (
                     origin === "$STORAGE_RECEIVED" &&
                     Object.keys(doc.toJSON()).length
@@ -252,6 +248,7 @@ export class PluvIO<
                     .setStorageState(room, encodedState)
                     .then(() => {
                         this._listeners.onStorageUpdated({
+                            ...context,
                             encodedState,
                             room,
                         });
@@ -268,7 +265,7 @@ export class PluvIO<
         TOutputSelf,
         TOutputSync
     >;
-    readonly _listeners: PluvIOListeners;
+    readonly _listeners: PluvIOListeners<TPlatform>;
     readonly _platform: TPlatform;
 
     constructor(
@@ -414,7 +411,7 @@ export class PluvIO<
         const ioContext = {
             ...this._context,
             ...platformIOContext,
-        } as TContext & InferPlatformIOContextType<TPlatform>;
+        } as TContext & InferPlatformRoomContextType<TPlatform>;
 
         const newRoom = new IORoom<
             TPlatform,
@@ -438,8 +435,8 @@ export class PluvIO<
                     room,
                     encodedState,
                     ...platformIOContext,
-                } as IORoomListenerEvent &
-                    InferPlatformIOContextType<TPlatform>;
+                } as IORoomListenerEvent<TPlatform> &
+                    InferPlatformRoomContextType<TPlatform>;
 
                 this._rooms.delete(room);
                 this._listeners.onRoomDeleted(roomContext);

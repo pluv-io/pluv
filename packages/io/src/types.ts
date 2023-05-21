@@ -6,12 +6,12 @@ import type {
     JsonObject,
     MaybePromise,
 } from "@pluv/types";
-import type { AbstractWebSocket } from "./AbstractWebSocket";
 import {
     AbstractPlatform,
-    InferPlatformIOContextType,
+    InferPlatformEventContextType,
     InferPlatformRoomContextType,
 } from "./AbstractPlatform";
+import type { AbstractWebSocket } from "./AbstractWebSocket";
 
 export interface Console {
     debug(...data: any[]): void;
@@ -39,8 +39,8 @@ export interface EventConfig<
     resolver:
         | EventResolver<
               TContext &
-                  InferPlatformIOContextType<TPlatform> &
-                  InferPlatformRoomContextType<TPlatform>,
+                  InferPlatformRoomContextType<TPlatform> &
+                  InferPlatformEventContextType<TPlatform>,
               TData,
               TResultBroadcast
           >
@@ -106,15 +106,15 @@ export type EventResolverObject<
 > = {
     broadcast?: EventResolver<
         TContext &
-            InferPlatformIOContextType<TPlatform> &
-            InferPlatformRoomContextType<TPlatform>,
+            InferPlatformRoomContextType<TPlatform> &
+            InferPlatformEventContextType<TPlatform>,
         TData,
         TResultBroadcast
     >;
     self?: EventResolver<
         TContext &
-            InferPlatformIOContextType<TPlatform> &
-            InferPlatformRoomContextType<TPlatform>,
+            InferPlatformRoomContextType<TPlatform> &
+            InferPlatformEventContextType<TPlatform>,
         TData,
         TResultSelf
     >;

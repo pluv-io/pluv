@@ -7,12 +7,12 @@ import { PubSub } from "./PubSub";
 export type InferPlatformWebSocketType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<infer IWebSocket> ? IWebSocket : never;
 
-export type InferPlatformIOContextType<TPlatform extends AbstractPlatform> =
+export type InferPlatformRoomContextType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<any, infer IIOContext>
         ? IIOContext
         : never;
 
-export type InferPlatformRoomContextType<TPlatform extends AbstractPlatform> =
+export type InferPlatformEventContextType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<any, any, infer IRoomContext>
         ? IRoomContext
         : never;
