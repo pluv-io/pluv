@@ -1,5 +1,16 @@
 # @pluv/platform-cloudflare
 
+## 0.3.0
+
+### Minor Changes
+
+- ae4e1f1: added platform-specific contexts to expose env in cloudflare and req in node.js
+
+### Patch Changes
+
+- Updated dependencies [ae4e1f1]
+  - @pluv/io@0.5.0
+
 ## 0.2.1
 
 ### Patch Changes
