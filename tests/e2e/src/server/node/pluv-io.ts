@@ -25,7 +25,7 @@ export const io = createIO({
             update: { storage },
         });
     },
-    initialStorage: async (name) => {
+    getInitialStorage: async ({ room: name }) => {
         if (name !== "e2e-node-storage-saved") return null;
 
         const room = await prisma.room.findUnique({ where: { name } });

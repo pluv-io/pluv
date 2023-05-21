@@ -8,7 +8,7 @@ import type {
     MaybePromise,
 } from "@pluv/types";
 import type { AbstractPlatform } from "./AbstractPlatform";
-import type { PluvIOListeners } from "./PluvIO";
+import type { GetInitialStorageFn, PluvIOListeners } from "./PluvIO";
 import { PluvIO } from "./PluvIO";
 
 export type CreateIOParams<
@@ -20,7 +20,7 @@ export type CreateIOParams<
     authorize?: IOAuthorize<TAuthorizeUser, TAuthorizeRequired>;
     context?: TContext;
     debug?: boolean;
-    initialStorage?: (room: string) => MaybePromise<Maybe<string>>;
+    getInitialStorage?: GetInitialStorageFn<TPlatform>;
     platform: TPlatform;
 };
 
@@ -47,7 +47,7 @@ export const createIO = <
         authorize,
         context,
         debug,
-        initialStorage,
+        getInitialStorage,
         onRoomDeleted,
         onStorageUpdated,
         platform,
@@ -63,7 +63,7 @@ export const createIO = <
         authorize,
         context,
         debug,
-        initialStorage,
+        getInitialStorage,
         onRoomDeleted,
         onStorageUpdated,
         platform,
