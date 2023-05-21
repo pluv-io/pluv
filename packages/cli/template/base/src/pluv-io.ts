@@ -2,14 +2,7 @@ import { createBundle, createClient, y } from "@pluv/react";
 import { z } from "zod";
 import { type io } from "./server";
 
-const client = createClient<typeof io>({
-    authEndpoint: (roomName) => {
-        return `http://localhost:3001/api/authorize?room=${roomName}`;
-    },
-    wsEndpoint: (roomName) => {
-        return `ws://localhost:3001/api/room/${roomName}`
-    }
-});
+const client = createClient<typeof io>({});
 
 export const Pluv = createBundle(client);
 
