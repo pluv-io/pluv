@@ -24,17 +24,15 @@ import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
 import type { EventConfig, InferEventConfig } from "./types";
 
-export type InferIOContext<
-    TIO extends PluvIO<any, any, any, any, any, any, any>
-> = TIO extends PluvIO<any, any, infer IContext, any, any, any, any>
-    ? IContext
-    : never;
+type InferIOContext<TIO extends PluvIO<any, any, any, any, any, any, any>> =
+    TIO extends PluvIO<any, any, infer IContext, any, any, any, any>
+        ? IContext
+        : never;
 
-export type InferIOPlatform<
-    TIO extends PluvIO<any, any, any, any, any, any, any>
-> = TIO extends PluvIO<infer IPlatform, any, any, any, any, any, any>
-    ? IPlatform
-    : never;
+type InferIOPlatform<TIO extends PluvIO<any, any, any, any, any, any, any>> =
+    TIO extends PluvIO<infer IPlatform, any, any, any, any, any, any>
+        ? IPlatform
+        : never;
 
 export type InferIORoom<TIO extends PluvIO<any, any, any, any, any, any, any>> =
     TIO extends PluvIO<
@@ -56,6 +54,14 @@ export type InferIORoom<TIO extends PluvIO<any, any, any, any, any, any, any>> =
               IOutputSync
           >
         : never;
+
+type GetInitialStorageEvent<TPlatform extends AbstractPlatform> = {
+    room: string;
+} & InferPlatformRoomContextType<TPlatform>;
+
+export type GetInitialStorageFn<TPlatform extends AbstractPlatform> = (
+    event: GetInitialStorageEvent<TPlatform>
+) => MaybePromise<Maybe<string>>;
 
 export interface PluvIOListeners<TPlatform extends AbstractPlatform> {
     onRoomDeleted: (event: IORoomListenerEvent<TPlatform>) => void;
@@ -82,7 +88,7 @@ export type PluvIOConfig<
         TOutputSelf,
         TOutputSync
     >;
-    initialStorage?: (room: string) => MaybePromise<Maybe<string>>;
+    getInitialStorage?: GetInitialStorageFn<TPlatform>;
     platform: TPlatform;
 };
 
@@ -102,9 +108,7 @@ export class PluvIO<
         IOLike<TAuthorize, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>
 {
     private _context: TContext = {} as TContext;
-    private _initialStorage:
-        | ((room: string) => MaybePromise<Maybe<string>>)
-        | null = null;
+    private _getInitialStorage: GetInitialStorageFn<TPlatform> | null = null;
     private _rooms = new Map<
         string,
         IORoom<
@@ -176,7 +180,12 @@ export class PluvIO<
                         await this._platform.persistance.getStorageState(room);
 
                     const updates: readonly Maybe<string>[] = [
-                        oldState ? null : await this._initialStorage?.(room),
+                        oldState
+                            ? null
+                            : await this._getInitialStorage?.({
+                                  ...context,
+                                  room,
+                              }),
                         update,
                     ];
 
@@ -284,7 +293,7 @@ export class PluvIO<
             context,
             debug = false,
             events,
-            initialStorage,
+            getInitialStorage,
             onRoomDeleted,
             onStorageUpdated,
             platform,
@@ -296,7 +305,7 @@ export class PluvIO<
         if (authorize) this._authorize = authorize;
         if (context) this._context = context;
         if (events) this._events = events;
-        if (initialStorage) this._initialStorage = initialStorage;
+        if (getInitialStorage) this._getInitialStorage = getInitialStorage;
 
         this._listeners = {
             onRoomDeleted: (event) => onRoomDeleted?.(event),
