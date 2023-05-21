@@ -1,5 +1,11 @@
 # pluv
 
+## 0.5.0
+
+### Minor Changes
+
+- a3e8f15: Updated cli to use latest pluv packages.
+
 ## 0.4.6
 
 ### Patch Changes
