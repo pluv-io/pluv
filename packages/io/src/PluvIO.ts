@@ -395,7 +395,7 @@ export class PluvIO<
         TOutputSelf,
         TOutputSync
     > {
-        const { debug, ...platformIOContext } = options;
+        const { debug, ...platformRoomContext } = options;
 
         this._purgeEmptyRooms();
 
@@ -408,9 +408,9 @@ export class PluvIO<
 
         if (oldRoom) return oldRoom;
 
-        const ioContext = {
+        const roomContext = {
             ...this._context,
-            ...platformIOContext,
+            ...platformRoomContext,
         } as TContext & InferPlatformRoomContextType<TPlatform>;
 
         const newRoom = new IORoom<
@@ -423,7 +423,7 @@ export class PluvIO<
             TOutputSync
         >(room, {
             authorize: this._authorize ?? undefined,
-            context: ioContext,
+            context: roomContext,
             debug: debug ?? this._debug,
             events: this._events,
             onDestroy: ({ encodedState, room }) => {
@@ -434,7 +434,7 @@ export class PluvIO<
                 const roomContext = {
                     room,
                     encodedState,
-                    ...platformIOContext,
+                    ...platformRoomContext,
                 } as IORoomListenerEvent<TPlatform> &
                     InferPlatformRoomContextType<TPlatform>;
 

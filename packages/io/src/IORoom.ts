@@ -179,9 +179,9 @@ export class IORoom<
         webSocket: InferPlatformWebSocketType<TPlatform>,
         options: WebsocketRegisterOptions<TPlatform>
     ): Promise<void> {
-        const { token, ..._platformRoomContext } = options;
-        const platformRoomContext =
-            _platformRoomContext as InferPlatformRoomContextType<TPlatform> &
+        const { token, ..._platformEventContext } = options;
+        const platformEventContext =
+            _platformEventContext as InferPlatformRoomContextType<TPlatform> &
                 InferPlatformEventContextType<TPlatform>;
 
         if (!this._uninitialize) await this._initialize();
@@ -244,7 +244,7 @@ export class IORoom<
         );
 
         const onClose = this._onClose(session, uninitializeWs).bind(this);
-        const onMessage = this._onMessage(session, platformRoomContext).bind(
+        const onMessage = this._onMessage(session, platformEventContext).bind(
             this
         );
 
@@ -515,7 +515,7 @@ export class IORoom<
 
     private _onMessage(
         session: WebSocketSession,
-        platformRoomContext: InferPlatformEventContextType<TPlatform>
+        platformEventContext: InferPlatformEventContextType<TPlatform>
     ): (event: AbstractMessageEvent) => void {
         return (event: AbstractMessageEvent): void => {
             const baseContext: EventResolverContext<TContext> = {
@@ -560,7 +560,7 @@ export class IORoom<
                     InferPlatformEventContextType<TPlatform>
             > = {
                 ...baseContext,
-                context: { ...this._context, ...platformRoomContext },
+                context: { ...this._context, ...platformEventContext },
             };
 
             Promise.all([
