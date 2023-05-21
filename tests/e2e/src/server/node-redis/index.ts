@@ -51,9 +51,11 @@ wsServer.on("connection", async (ws, req) => {
 
     const token = parsed.query?.token as string | undefined;
     const io = parsed.query?.io as string | undefined;
-    const room = !io ? io1st.getRoom(roomId) : io2nd.getRoom(roomId);
+    const room = !io
+        ? io1st.getRoom(roomId, { req })
+        : io2nd.getRoom(roomId, { req });
 
-    await room.register(ws, { token });
+    await room.register(ws, { req, token });
 });
 
 app.use(bodyParser.json());

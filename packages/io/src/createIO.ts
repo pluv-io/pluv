@@ -16,7 +16,7 @@ export type CreateIOParams<
     TContext extends JsonObject = {},
     TAuthorizeUser extends BaseUser = BaseUser,
     TAuthorizeRequired extends boolean = false
-> = Partial<PluvIOListeners> & {
+> = Partial<PluvIOListeners<TPlatform>> & {
     authorize?: IOAuthorize<TAuthorizeUser, TAuthorizeRequired>;
     context?: TContext;
     debug?: boolean;

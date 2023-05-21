@@ -15,8 +15,11 @@ import type {
     Spread,
 } from "@pluv/types";
 import colors from "kleur";
-import type { AbstractPlatform } from "./AbstractPlatform";
-import { IORoom } from "./IORoom";
+import type {
+    AbstractPlatform,
+    InferPlatformRoomContextType,
+} from "./AbstractPlatform";
+import { IORoom, IORoomListenerEvent } from "./IORoom";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
 import type { EventConfig, InferEventConfig } from "./types";
@@ -54,13 +57,9 @@ export type InferIORoom<TIO extends PluvIO<any, any, any, any, any, any, any>> =
           >
         : never;
 
-export interface PluvIORegisterOptions {
-    token?: string;
-}
-
-export interface PluvIOListeners {
-    onRoomDeleted: (room: string, encodedState: string) => void;
-    onStorageUpdated: (room: string, encodedState: string) => void;
+export interface PluvIOListeners<TPlatform extends AbstractPlatform> {
+    onRoomDeleted: (event: IORoomListenerEvent<TPlatform>) => void;
+    onStorageUpdated: (event: IORoomListenerEvent<TPlatform>) => void;
 }
 
 export type PluvIOConfig<
@@ -71,11 +70,12 @@ export type PluvIOConfig<
     TOutputBroadcast extends EventRecord<string, any> = {},
     TOutputSelf extends EventRecord<string, any> = {},
     TOutputSync extends EventRecord<string, any> = {}
-> = Partial<PluvIOListeners> & {
+> = Partial<PluvIOListeners<TPlatform>> & {
     authorize?: TAuthorize;
     context?: TContext;
     debug?: boolean;
     events?: InferEventConfig<
+        TPlatform,
         TContext,
         TInput,
         TOutputBroadcast,
@@ -86,9 +86,9 @@ export type PluvIOConfig<
     platform: TPlatform;
 };
 
-export interface GetRoomOptions {
+export type GetRoomOptions<TPlatform extends AbstractPlatform> = {
     debug?: boolean;
-}
+} & InferPlatformRoomContextType<TPlatform>;
 
 export class PluvIO<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -121,6 +121,7 @@ export class PluvIO<
     readonly _authorize: TAuthorize | null = null;
     readonly _debug: boolean;
     readonly _events: InferEventConfig<
+        TPlatform,
         TContext,
         TInput,
         TOutputBroadcast,
@@ -170,7 +171,7 @@ export class PluvIO<
                         },
                     };
                 },
-                self: async ({ update }, { doc, room }) => {
+                self: async ({ update }, { context, doc, room }) => {
                     const oldState =
                         await this._platform.persistance.getStorageState(room);
 
@@ -180,16 +181,20 @@ export class PluvIO<
                     ];
 
                     if (updates.some((_update) => !!_update)) {
-                        const state = updates
+                        const encodedState = updates
                             .reduce((_doc, _up) => _doc.applyUpdate(_up), doc)
                             .encodeStateAsUpdate();
 
                         await this._platform.persistance.setStorageState(
                             room,
-                            state
+                            encodedState
                         );
 
-                        this._listeners.onStorageUpdated(room, state);
+                        this._listeners.onStorageUpdated({
+                            ...context,
+                            encodedState,
+                            room,
+                        });
                     }
 
                     const state =
@@ -228,7 +233,7 @@ export class PluvIO<
             },
         },
         $UPDATE_STORAGE: {
-            resolver: ({ origin, update }, { doc, room }) => {
+            resolver: ({ origin, update }, { context, doc, room }) => {
                 if (
                     origin === "$STORAGE_RECEIVED" &&
                     Object.keys(doc.toJSON()).length
@@ -237,25 +242,30 @@ export class PluvIO<
                 }
 
                 const updated = doc.applyUpdate(update);
-                const state = updated.encodeStateAsUpdate();
+                const encodedState = updated.encodeStateAsUpdate();
 
                 this._platform.persistance
-                    .setStorageState(room, state)
+                    .setStorageState(room, encodedState)
                     .then(() => {
-                        this._listeners.onStorageUpdated(room, state);
+                        this._listeners.onStorageUpdated({
+                            ...context,
+                            encodedState,
+                            room,
+                        });
                     });
 
-                return { $STORAGE_UPDATED: { state } };
+                return { $STORAGE_UPDATED: { state: encodedState } };
             },
         },
     } as InferEventConfig<
+        TPlatform,
         TContext,
         TInput,
         TOutputBroadcast,
         TOutputSelf,
         TOutputSync
     >;
-    readonly _listeners: PluvIOListeners;
+    readonly _listeners: PluvIOListeners<TPlatform>;
     readonly _platform: TPlatform;
 
     constructor(
@@ -289,12 +299,8 @@ export class PluvIO<
         if (initialStorage) this._initialStorage = initialStorage;
 
         this._listeners = {
-            onRoomDeleted: (room, encodedState) => {
-                return onRoomDeleted?.(room, encodedState);
-            },
-            onStorageUpdated: (room, encodedState) => {
-                return onStorageUpdated?.(room, encodedState);
-            },
+            onRoomDeleted: (event) => onRoomDeleted?.(event),
+            onStorageUpdated: (event) => onStorageUpdated?.(event),
         };
     }
 
@@ -322,6 +328,7 @@ export class PluvIO<
     >(
         event: TEvent,
         config: EventConfig<
+            TPlatform,
             TContext,
             TData,
             TResultBroadcast,
@@ -344,6 +351,7 @@ export class PluvIO<
         const newEvent = {
             [event]: config,
         } as InferEventConfig<
+            TPlatform,
             TContext,
             EventRecord<TEvent, TData>,
             TResultBroadcast extends EventRecord<string, any>
@@ -377,7 +385,7 @@ export class PluvIO<
 
     public getRoom(
         room: string,
-        options: GetRoomOptions = {}
+        options: GetRoomOptions<TPlatform>
     ): IORoom<
         TPlatform,
         TAuthorize,
@@ -387,7 +395,7 @@ export class PluvIO<
         TOutputSelf,
         TOutputSync
     > {
-        const { debug } = options;
+        const { debug, ...platformRoomContext } = options;
 
         this._purgeEmptyRooms();
 
@@ -400,6 +408,11 @@ export class PluvIO<
 
         if (oldRoom) return oldRoom;
 
+        const roomContext = {
+            ...this._context,
+            ...platformRoomContext,
+        } as TContext & InferPlatformRoomContextType<TPlatform>;
+
         const newRoom = new IORoom<
             TPlatform,
             TAuthorize,
@@ -410,16 +423,23 @@ export class PluvIO<
             TOutputSync
         >(room, {
             authorize: this._authorize ?? undefined,
-            context: this._context,
+            context: roomContext,
             debug: debug ?? this._debug,
             events: this._events,
-            onDestroy: (encodedState) => {
+            onDestroy: ({ encodedState, room }) => {
                 this._logDebug(
                     `${colors.blue("Deleting empty room:")} ${room}`
                 );
 
+                const roomContext = {
+                    room,
+                    encodedState,
+                    ...platformRoomContext,
+                } as IORoomListenerEvent<TPlatform> &
+                    InferPlatformRoomContextType<TPlatform>;
+
                 this._rooms.delete(room);
-                this._listeners.onRoomDeleted(room, encodedState);
+                this._listeners.onRoomDeleted(roomContext);
 
                 if (this._debug) {
                     const rooms = Array.from(this._rooms.keys());
