@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { TextDecoder } from "util";
 import type { WebSocket } from "ws";
 import { NodeWebSocket } from "./NodeWebSocket";
+import { IncomingMessage, ServerResponse } from "http";
 
 export type NodePlatformOptions =
     | { persistance?: undefined; pubSub?: undefined }
@@ -12,7 +13,10 @@ export type NodePlatformOptions =
           pubSub: AbstractPubSub;
       };
 
-export class NodePlatform extends AbstractPlatform<WebSocket> {
+export class NodePlatform extends AbstractPlatform<
+    WebSocket,
+    { req: IncomingMessage }
+> {
     constructor(options: NodePlatformOptions = {}) {
         const { persistance, pubSub } = options;
 

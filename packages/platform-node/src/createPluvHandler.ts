@@ -108,9 +108,9 @@ export const createPluvHandler = <
 
         if (Array.isArray(token)) return onError.invalidToken();
 
-        const room = io.getRoom(roomId);
+        const room = io.getRoom(roomId, { req });
 
-        await room.register(ws, { token });
+        await room.register(ws, { req, token });
 
         return { matched: true };
     };

@@ -14,11 +14,15 @@ import type {
     IOLike,
     JsonObject,
     Maybe,
-    MaybePromise,
-    Spread,
 } from "@pluv/types";
 import colors from "kleur";
-import type { AbstractPlatform, InferWebSocketType } from "./AbstractPlatform";
+import type {
+    AbstractPlatform,
+    InferPlatformIOContextType,
+    InferPlatformRoomContextType,
+    InferPlatformWebSocketType,
+} from "./AbstractPlatform";
+import { AbstractMessageEvent } from "./AbstractWebSocket";
 import { authorize } from "./authorize";
 import type {
     EventResolver,
@@ -28,7 +32,6 @@ import type {
     SendMessageOptions,
     WebSocketSession,
 } from "./types";
-import { AbstractMessageEvent } from "./AbstractWebSocket";
 
 const PING_TIMEOUT_MS = 30_000;
 
@@ -41,8 +44,13 @@ interface BroadcastParams<TIO extends IORoom<any, any, any, any, any>> {
     senderId?: string;
 }
 
+export interface IORoomListenerEvent {
+    room: string;
+    encodedState: string;
+}
+
 interface IORoomListeners {
-    onDestroy: (encodedState: string) => void;
+    onDestroy: (event: IORoomListenerEvent) => void;
 }
 
 export type IORoomConfig<
@@ -55,9 +63,10 @@ export type IORoomConfig<
     TOutputSync extends EventRecord<string, any> = {}
 > = Partial<IORoomListeners> & {
     authorize?: TAuthorize;
-    context: TContext;
+    context: TContext & InferPlatformIOContextType<TPlatform>;
     debug: boolean;
     events: InferEventConfig<
+        TPlatform,
         TContext,
         TInput,
         TOutputBroadcast,
@@ -72,14 +81,15 @@ interface SendMessageSender {
     user: JsonObject | null;
 }
 
-export interface WebsocketRegisterOptions {
+export type WebsocketRegisterOptions<TPlatform extends AbstractPlatform> = {
     token?: string | null;
-}
+} & InferPlatformIOContextType<TPlatform> &
+    InferPlatformRoomContextType<TPlatform>;
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any> = BaseIOAuthorize,
-    TContext extends JsonObject = {},
+    TContext extends Record<string, any> = {},
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
     TOutputSelf extends EventRecord<string, any> = {},
@@ -87,7 +97,7 @@ export class IORoom<
 > implements
         IOLike<TAuthorize, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>
 {
-    private readonly _context: TContext;
+    private readonly _context: TContext & InferPlatformIOContextType<TPlatform>;
     private readonly _debug: boolean;
     private readonly _platform: TPlatform;
 
@@ -98,6 +108,7 @@ export class IORoom<
 
     readonly _authorize: TAuthorize | null = null;
     readonly _events: InferEventConfig<
+        TPlatform,
         TContext,
         TInput,
         TOutputBroadcast,
@@ -130,9 +141,7 @@ export class IORoom<
         this.id = id;
 
         this._listeners = {
-            onDestroy: (encodedState) => {
-                onDestroy?.(encodedState);
-            },
+            onDestroy: (event) => onDestroy?.(event),
         };
 
         if (authorize) this._authorize = authorize;
@@ -166,12 +175,16 @@ export class IORoom<
     }
 
     public async register(
-        webSocket: InferWebSocketType<TPlatform>,
-        options?: WebsocketRegisterOptions
+        webSocket: InferPlatformWebSocketType<TPlatform>,
+        options: WebsocketRegisterOptions<TPlatform>
     ): Promise<void> {
+        const { token, ..._platformRoomContext } = options;
+        const platformRoomContext =
+            _platformRoomContext as InferPlatformIOContextType<TPlatform> &
+                InferPlatformRoomContextType<TPlatform>;
+
         if (!this._uninitialize) await this._initialize();
 
-        const token = options?.token;
         const sessionId = this._platform.randomUUID();
         const pluvWs = this._platform.convertWebSocket(webSocket, {
             room: this.id,
@@ -230,7 +243,9 @@ export class IORoom<
         );
 
         const onClose = this._onClose(session, uninitializeWs).bind(this);
-        const onMessage = this._onMessage(session).bind(this);
+        const onMessage = this._onMessage(session, platformRoomContext).bind(
+            this
+        );
 
         pluvWs.addEventListener("close", onClose);
         pluvWs.addEventListener("error", onClose);
@@ -340,6 +355,7 @@ export class IORoom<
         message: EventMessage<string, any>
     ):
         | InferEventConfig<
+              TPlatform,
               TContext,
               TInput,
               TOutputBroadcast,
@@ -373,6 +389,7 @@ export class IORoom<
     private _getEventResolverObject(
         message: EventMessage<string, any>
     ): EventResolverObject<
+        TPlatform,
         TContext,
         TInput[string],
         TOutputBroadcast,
@@ -384,8 +401,15 @@ export class IORoom<
         if (!eventConfig) return {};
 
         const resolver:
-            | EventResolver<TContext, TInput[string], TOutputBroadcast>
+            | EventResolver<
+                  TContext &
+                      InferPlatformIOContextType<TPlatform> &
+                      InferPlatformRoomContextType<TPlatform>,
+                  TInput[string],
+                  TOutputBroadcast
+              >
             | EventResolverObject<
+                  TPlatform,
                   TContext,
                   TInput[string],
                   TOutputBroadcast,
@@ -427,7 +451,10 @@ export class IORoom<
             this._doc.destroy();
             this._doc = doc();
 
-            this._listeners.onDestroy(encodedState);
+            this._listeners.onDestroy({
+                encodedState,
+                room: this.id,
+            });
 
             this._uninitialize = null;
         };
@@ -485,10 +512,11 @@ export class IORoom<
     }
 
     private _onMessage(
-        session: WebSocketSession
+        session: WebSocketSession,
+        platformRoomContext: InferPlatformRoomContextType<TPlatform>
     ): (event: AbstractMessageEvent) => void {
         return (event: AbstractMessageEvent): void => {
-            const context: EventResolverContext<TContext> = {
+            const baseContext: EventResolverContext<TContext> = {
                 context: this._context,
                 doc: this._doc,
                 room: this.id,
@@ -524,10 +552,19 @@ export class IORoom<
                 return;
             }
 
+            const extendedContext: EventResolverContext<
+                TContext &
+                    InferPlatformIOContextType<TPlatform> &
+                    InferPlatformRoomContextType<TPlatform>
+            > = {
+                ...baseContext,
+                context: { ...this._context, ...platformRoomContext },
+            };
+
             Promise.all([
-                resolver.broadcast?.(inputs, context),
-                resolver.self?.(inputs, context),
-                resolver.sync?.(inputs, context),
+                resolver.broadcast?.(inputs, extendedContext),
+                resolver.self?.(inputs, extendedContext),
+                resolver.sync?.(inputs, baseContext),
             ]).then(([broadcast, self, sync]) => {
                 if (broadcast) {
                     Object.entries(broadcast).forEach(([type, data]: any) => {

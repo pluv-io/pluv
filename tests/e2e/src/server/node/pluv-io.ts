@@ -16,9 +16,7 @@ export const io = createIO({
         }),
     },
     platform: platformNode(),
-    onRoomDeleted: async (name, storage) => {
-        console.log(name, storage);
-
+    onRoomDeleted: async ({ room: name, encodedState: storage }) => {
         if (name !== "e2e-node-storage-saved") return;
 
         await prisma.room.upsert({
@@ -28,8 +26,6 @@ export const io = createIO({
         });
     },
     initialStorage: async (name) => {
-        console.log(name);
-
         if (name !== "e2e-node-storage-saved") return null;
 
         const room = await prisma.room.findUnique({ where: { name } });

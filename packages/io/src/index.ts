@@ -6,7 +6,9 @@ export type {
 } from "@pluv/types";
 export type {
     ConvertWebSocketConfig,
-    InferWebSocketType,
+    InferPlatformIOContextType,
+    InferPlatformRoomContextType,
+    InferPlatformWebSocketType,
 } from "./AbstractPlatform";
 export { AbstractPersistance } from "./AbstractPersistance";
 export { AbstractPlatform } from "./AbstractPlatform";
