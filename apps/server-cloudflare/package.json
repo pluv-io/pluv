@@ -7,8 +7,8 @@
   "scripts": {
     "build": "rollup --config ./rollup.config.mjs",
     "cf:login": "wrangler login",
-    "deploy:dev": "wrangler publish --config ./wrangler-dev.toml",
-    "deploy:prod": "wrangler publish --config ./wrangler-prod.toml",
+    "deploy:dev": "wrangler deploy --config ./wrangler-dev.toml",
+    "deploy:prod": "wrangler deploy --config ./wrangler-prod.toml",
     "dev": "wrangler --config ./wrangler-dev.toml dev --port 8787",
     "wrangler": "wrangler"
   },
@@ -18,7 +18,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20230511.0",
+    "@cloudflare/workers-types": "^4.20230518.0",
     "@pluv/tsconfig": "workspace:^",
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-dynamic-import-vars": "^2.0.3",
@@ -26,10 +26,10 @@
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-typescript": "^11.1.1",
-    "rollup": "^3.22.0",
+    "rollup": "^3.23.0",
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-polyfills": "^0.2.1",
     "typescript": "^5.0.4",
-    "wrangler": "2.20.0"
+    "wrangler": "3.0.1"
   }
 }
