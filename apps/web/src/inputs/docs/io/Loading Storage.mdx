@@ -20,7 +20,7 @@ import { db } from "./db";
 
 export const io = createIO({
     // Load storage for a newly created room.
-    initialStorage: async (room: string) => {
+    getInitialStorage: async ({ room }) => {
         const existingRoom = await db.room.findUnique({ where: { room } });
 
         return existingRoom?.encodedState ?? null;
@@ -28,7 +28,7 @@ export const io = createIO({
     platform: platformNode(),
     // Before the room is destroyed, persist the state to a database
     // to load when the room is re-created.
-    onRoomDeleted: async (room: string, encodedState: string) => {
+    onRoomDeleted: async ({ encodedState, room }) => {
         await db.room.upsert({
             where: { room },
             create: { encodedState, room },
@@ -38,7 +38,7 @@ export const io = createIO({
     // It is unnecessary to save the storage state in this listener.
     // If a room already exists, users will load the currently active
     // storage before the storage from initialStorage.
-    onStorageUpdated: (room: string, encodedState: string) => {
+    onStorageUpdated: ({ encodedState, room }) => {
         console.log(room, encodedState);
     },
 });

@@ -31,8 +31,44 @@ Define an io (websocket client) instance on the server codebase:
 
 import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
+import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/d1";
+import { schema } from "./schema";
 
-export const io = createIO({ platform: platformCloudflare() });
+type Env = {
+    DB: D1Database;
+};
+
+export const io = createIO({
+    platform: platformCloudflare<Env>(),
+    // Example of using Cloudflare's D1 database with drizzle-orm
+    getInitialStorage: async ({ env, room }) => {
+        const db = drizzle(env.DB, { schema });
+
+        const existingRoom = await db
+            .select({ encodedState: schema.rooms.encodedState })
+            .from(schema.rooms)
+            .where(eq(schema.rooms.name, room))
+            .get();
+
+        return existingRoom?.encodedState ?? null;
+    },
+    onRoomDeleted: async ({ encodedState, env, room }) => {
+        const db = drizzle(env.DB, { schema });
+
+        await db
+            .insert(schema.rooms)
+            .values({
+                name: room,
+                encodedState,
+            })
+            .onConflictDoUpdate({
+                target: schema.rooms.name,
+                set: { encodedState },
+            })
+            .run();
+    },
+});
 
 // Export the websocket client io type, instead of the client itself
 export type AppPluvIO = typeof io;
