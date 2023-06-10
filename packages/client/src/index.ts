@@ -7,6 +7,7 @@ export type {
 } from "@pluv/types";
 export type { AbstractType } from "yjs";
 export { AbstractRoom } from "./AbstractRoom";
+export { AbstractStorageStore } from "./AbstractStorageStore";
 export { createClient } from "./createClient";
 export type { MockedRoomConfig, MockedRoomEvents } from "./MockedRoom";
 export { MockedRoom } from "./MockedRoom";
