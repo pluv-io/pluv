@@ -13,7 +13,8 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@types/react": "18.2.7",
+		"@playwright/test": "^1.35.0",
+		"@types/react": "18.2.11",
 		"react": "18.2.0"
 	},
 	"devDependencies": {
@@ -26,13 +27,13 @@
 		"@types/common-tags": "^1.8.1",
 		"@types/fs-extra": "^11.0.1",
 		"@types/glob": "^8.1.0",
-		"@types/node": "^20.2.3",
+		"@types/node": "^20.2.6",
 		"common-tags": "^1.8.2",
 		"dotenv-cli": "^7.2.1",
 		"eslint-config-pluv": "workspace:^",
 		"fs-extra": "^11.1.1",
-		"glob": "^10.2.6",
+		"glob": "^10.2.7",
 		"ts-node": "^10.9.1",
-		"typescript": "^5.0.4"
+		"typescript": "^5.1.3"
 	}
 }

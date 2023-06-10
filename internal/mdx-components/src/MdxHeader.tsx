@@ -1,6 +1,6 @@
 import { Anchor } from "@pluv-internal/react-components";
 import { LinkIcon } from "@pluv-internal/react-icons";
-import { CSSProperties, FC, ReactNode, useMemo } from "react";
+import { CSSProperties, ReactElement, ReactNode, useMemo } from "react";
 import tw, { styled } from "twin.macro";
 
 const StyledLinkIcon = tw(LinkIcon)`
@@ -42,12 +42,12 @@ export interface MdxHeaderProps {
     type?: "header" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 }
 
-export const MdxHeader: FC<MdxHeaderProps> = ({
+export const MdxHeader = ({
     children,
     className,
     style,
     type: HeaderType = "header",
-}) => {
+}: MdxHeaderProps): ReactElement | null => {
     const content = typeof children === "string" ? children : "";
 
     const hash = useMemo(() => {

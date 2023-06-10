@@ -1,7 +1,7 @@
 import { NextLink } from "@pluv-internal/react-components";
 import { useNoSsr } from "@pluv-internal/react-hooks";
 import { InferComponentProps } from "@pluv-internal/typings";
-import { FC } from "react";
+import { ReactElement } from "react";
 import tw from "twin.macro";
 
 const Root = tw(NextLink)`
@@ -10,7 +10,7 @@ const Root = tw(NextLink)`
 
 export type MdxAProps = Omit<InferComponentProps<"a">, "ref">;
 
-export const MdxA: FC<MdxAProps> = (props) => {
+export const MdxA = (props: MdxAProps): ReactElement | null => {
     const { href } = props;
 
     const noSsr = useNoSsr();

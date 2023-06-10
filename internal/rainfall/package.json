@@ -18,10 +18,12 @@
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^6.7.0",
-		"typescript": "^5.0.4"
+		"typescript": "^5.1.3"
 	},
 	"dependencies": {
+		"@playwright/test": "^1.35.0",
 		"@types/pixi.js": "4.8.9",
+		"@types/react": "^18.2.11",
 		"pixi.js": "4.8.9"
 	}
 }

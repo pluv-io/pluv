@@ -1,5 +1,5 @@
 import { InferComponentProps } from "@pluv-internal/typings";
-import { FC } from "react";
+import { ReactElement } from "react";
 import tw from "twin.macro";
 
 const Root = tw.p`
@@ -8,6 +8,6 @@ const Root = tw.p`
 
 export type MdxPProps = Omit<InferComponentProps<"p">, "ref">;
 
-export const MdxP: FC<MdxPProps> = (props) => {
+export const MdxP = (props: MdxPProps): ReactElement | null => {
     return <Root {...props} />;
 };
