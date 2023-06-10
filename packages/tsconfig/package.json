@@ -22,5 +22,9 @@
     "node.json",
     "react-library.json",
     "wrangler.json"
-  ]
+  ],
+  "dependencies": {
+    "@playwright/test": "^1.35.0",
+    "@types/react": "^18.2.11"
+  }
 }

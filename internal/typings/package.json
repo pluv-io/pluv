@@ -8,7 +8,8 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@types/react": "18.2.7",
+		"@playwright/test": "^1.35.0",
+		"@types/react": "18.2.11",
 		"@types/styled-components": "^5.1.26",
 		"react": "18.2.0",
 		"styled-components": "^5.3.10",
@@ -18,9 +19,9 @@
 		"@pluv/tsconfig": "workspace:^",
 		"autoprefixer": "^10.4.14",
 		"eslint-config-pluv": "workspace:^",
-		"postcss": "^8.4.23",
+		"postcss": "^8.4.24",
 		"react-is": "^18.2.0",
 		"tailwindcss": "^3.3.2",
-		"typescript": "^5.0.4"
+		"typescript": "^5.1.3"
 	}
 }

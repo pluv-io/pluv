@@ -23,8 +23,10 @@
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
 	"dependencies": {
+		"@playwright/test": "^1.35.0",
 		"@pluv/io": "workspace:^",
 		"@pluv/types": "workspace:^",
+		"@types/react": "^18.2.11",
 		"path-to-regexp": "^6.2.1"
 	},
 	"devDependencies": {
@@ -32,6 +34,6 @@
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^6.7.0",
-		"typescript": "^5.0.4"
+		"typescript": "^5.1.3"
 	}
 }
