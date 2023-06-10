@@ -1,4 +1,4 @@
-import { CSSProperties, FC, ReactNode } from "react";
+import { CSSProperties, ReactElement, ReactNode } from "react";
 import tw from "twin.macro";
 import { MdxHeader } from "./MdxHeader";
 
@@ -13,7 +13,11 @@ export interface MdxH4Props {
     style?: CSSProperties;
 }
 
-export const MdxH4: FC<MdxH4Props> = ({ children, className, style }) => {
+export const MdxH4 = ({
+    children,
+    className,
+    style,
+}: MdxH4Props): ReactElement | null => {
     return (
         <Root className={className} style={style} type="h4">
             {children}

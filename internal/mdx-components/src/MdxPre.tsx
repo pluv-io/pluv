@@ -1,11 +1,10 @@
 import { Language, PrismCode } from "@pluv-internal/react-code";
 import { InferComponentProps } from "@pluv-internal/typings";
 import {
-    FC,
-    isValidElement,
     PropsWithChildren,
     ReactElement,
     ReactNode,
+    isValidElement,
     useCallback,
     useMemo,
 } from "react";
@@ -20,7 +19,7 @@ const Root = tw(PrismCode)`
 
 export type MdxPreProps = Omit<InferComponentProps<"code">, "ref">;
 
-export const MdxPre: FC<MdxPreProps> = (props) => {
+export const MdxPre = (props: MdxPreProps): ReactElement | null => {
     const { children, className, style } = props;
 
     const hasChildren = useCallback(

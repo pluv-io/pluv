@@ -1,4 +1,4 @@
-import { CSSProperties, FC, ReactNode } from "react";
+import { CSSProperties, ReactElement, ReactNode } from "react";
 import tw, { styled } from "twin.macro";
 
 const Root = tw.div`
@@ -54,7 +54,11 @@ export interface MdxTableProps {
     style?: CSSProperties;
 }
 
-export const MdxTable: FC<MdxTableProps> = ({ children, className, style }) => {
+export const MdxTable = ({
+    children,
+    className,
+    style,
+}: MdxTableProps): ReactElement | null => {
     return (
         <Root className={className} style={style}>
             <Table>{children}</Table>

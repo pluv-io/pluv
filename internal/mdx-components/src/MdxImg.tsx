@@ -1,5 +1,5 @@
 import NextImage from "next/legacy/image";
-import { CSSProperties, FC } from "react";
+import { CSSProperties, FC, ReactElement } from "react";
 
 export interface MdxImgProps {
     alt?: string;
@@ -8,7 +8,12 @@ export interface MdxImgProps {
     style?: CSSProperties;
 }
 
-export const MdxImg: FC<MdxImgProps> = ({ alt, className, src, style }) => {
+export const MdxImg = ({
+    alt,
+    className,
+    src,
+    style,
+}: MdxImgProps): ReactElement | null => {
     if (!src) return null;
 
     return (
