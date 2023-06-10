@@ -63,7 +63,7 @@ export type WebSocketHandler = (
 ) => Promise<WebSocketHandlerResult>;
 
 export interface CreatePluvHandlerResult {
-    createWsServer: () => WS.Server<WS.WebSocket>;
+    createWsServer: () => WS.Server;
     handler: RequestHandler;
     wsHandler: WebSocketHandler;
 }
