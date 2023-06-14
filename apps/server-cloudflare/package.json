@@ -16,7 +16,7 @@
     "@playwright/test": "^1.35.0",
     "@pluv/io": "workspace:^",
     "@pluv/platform-cloudflare": "workspace:^",
-    "@types/react": "^18.2.11",
+    "@types/react": "^18.2.12",
     "zod": "^3.21.4"
   },
   "devDependencies": {
@@ -28,7 +28,7 @@
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-typescript": "^11.1.1",
-    "rollup": "^3.24.1",
+    "rollup": "^3.25.1",
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-polyfills": "^0.2.1",
     "typescript": "^5.1.3",
