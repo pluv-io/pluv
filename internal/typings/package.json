@@ -9,7 +9,7 @@
 	},
 	"dependencies": {
 		"@playwright/test": "^1.35.0",
-		"@types/react": "18.2.11",
+		"@types/react": "18.2.12",
 		"@types/styled-components": "^5.1.26",
 		"react": "18.2.0",
 		"styled-components": "^5.3.10",

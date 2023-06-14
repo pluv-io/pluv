@@ -23,7 +23,7 @@
 	"dependencies": {
 		"@playwright/test": "^1.35.0",
 		"@types/pixi.js": "4.8.9",
-		"@types/react": "^18.2.11",
+		"@types/react": "^18.2.12",
 		"pixi.js": "4.8.9"
 	}
 }
