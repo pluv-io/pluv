@@ -1,6 +1,5 @@
 import { AbstractStorageStore } from "@pluv/client";
-import { MaybePromise } from "@pluv/types";
-import { IDBPDatabase, deleteDB, openDB } from "idb";
+import { IDBPDatabase, openDB } from "idb";
 
 const UPGRADES_KEY = "__PLUV_UPDATES";
 
@@ -34,18 +33,6 @@ export class IndexedDBStorage extends AbstractStorageStore {
         await db.add(UPGRADES_KEY, update);
 
         this._dbSize += 1;
-    }
-
-    public async applyUpdates(
-        applyFn: (updates: readonly string[]) => MaybePromise<void>
-    ): Promise<void> {
-        const updates = await this.getUpdates(this._dbRef);
-
-        await Promise.resolve(applyFn(updates));
-
-        const lastKey = await this._getLastKey();
-
-        this._dbRef = lastKey + 1;
     }
 
     public destroy(): Promise<void> {
@@ -83,7 +70,16 @@ export class IndexedDBStorage extends AbstractStorageStore {
 
         if (!db) return [];
 
-        return await db.getAll(UPGRADES_KEY, this._getLowerBound(start));
+        const updates = await db.getAll(
+            UPGRADES_KEY,
+            this._getLowerBound(start)
+        );
+
+        const lastKey = await this._getLastKey();
+
+        this._dbRef = lastKey + 1;
+
+        return updates;
     }
 
     public async initialize(): Promise<void> {

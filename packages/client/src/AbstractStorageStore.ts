@@ -9,10 +9,6 @@ export abstract class AbstractStorageStore {
 
     public abstract addUpdate(update: string): Promise<void>;
 
-    public abstract applyUpdates(
-        applyFn: (updates: readonly string[]) => MaybePromise<void>
-    ): Promise<void>;
-
     public abstract destroy(): Promise<void>;
 
     public abstract flatten(encodedState: string): Promise<void>;

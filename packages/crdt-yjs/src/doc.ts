@@ -15,8 +15,6 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
 
         const storage = this.value.getMap("storage");
 
-        Object.entries(value).forEach(([key, node]) => {});
-
         Object.entries(value).forEach(([key, node]) => {
             storage.set(key, node);
         });

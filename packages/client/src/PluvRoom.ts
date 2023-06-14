@@ -152,11 +152,10 @@ export class PluvRoom<
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     readonly _endpoints: RoomEndpoints<TIO>;
 
-    private _crdtManager: CrdtManager<TStorage> | null = null;
+    private _crdtManager: CrdtManager<TStorage>;
     private _crdtNotifier = new CrdtNotifier<TStorage>();
     private _debug: boolean | PluvRoomDebug<TIO>;
     private _eventNotifier = new EventNotifier<TIO>();
-    private _initialStorage: (() => TStorage) | null = null;
     private _intervals: IntervalIds = {
         heartbeat: null,
     };
@@ -228,7 +227,9 @@ export class PluvRoom<
             presence,
         });
 
-        if (initialStorage) this._initialStorage = initialStorage;
+        this._crdtManager = new CrdtManager<TStorage>({ initialStorage });
+
+        this._observeCrdt();
     }
 
     public get webSocket(): WebSocket | null {
@@ -268,6 +269,7 @@ export class PluvRoom<
         });
 
         await this._storageStore.initialize();
+        await this._applyStorageStore();
 
         const url = new URL(this._getWsEndpoint(this.id));
 
@@ -424,19 +426,9 @@ export class PluvRoom<
         const crdtManager = this._crdtManager;
         const encodedState = crdtManager.doc.encodeStateAsUpdate();
 
-        /**
-         * !NOTE
-         * @description Consider if this is really necessasry, vs just getting
-         * the next db ref
-         * @date June 6, 2023
-         */
-        await this._storageStore.applyUpdates(async (updates) => {
-            crdtManager.doc.transact(() => {
-                updates.forEach((update) => {
-                    crdtManager.doc.applyUpdate(update);
-                });
-            }, Y_ORIGIN_STORAGE_STORE);
-        });
+        const updates = await this._storageStore.getUpdates();
+
+        this._crdtManager.initialize(updates, Y_ORIGIN_STORAGE_STORE);
 
         await this._storageStore.addUpdate(encodedState);
     }
@@ -747,9 +739,7 @@ export class PluvRoom<
         });
     }
 
-    private async _handleStorageReceivedMessage(
-        message: IOEventMessage<TIO>
-    ): Promise<void> {
+    private _handleStorageReceivedMessage(message: IOEventMessage<TIO>): void {
         const { connectionId } = message;
 
         if (!connectionId) return;
@@ -760,14 +750,7 @@ export class PluvRoom<
             InferIOAuthorize<TIO>
         >["$STORAGE_RECEIVED"];
 
-        this._crdtManager = new CrdtManager<TStorage>({
-            encodedState: data.state,
-            initialStorage: this._initialStorage ?? undefined,
-        });
-
-        await this._applyStorageStore();
-
-        this._observeCrdt();
+        this._crdtManager.initialize(data.state, "$STORAGE_RECEIVED");
 
         const sharedTypes = this._crdtManager.doc.getSharedTypes();
 
@@ -870,6 +853,9 @@ export class PluvRoom<
                 const origin = _origin ?? null;
 
                 if (!this._crdtManager) return;
+
+                this._addToStorageStore(update);
+
                 if (!this._state.webSocket) return;
                 if (!this._state.connection.id) return;
                 if (this._state.webSocket.readyState !== WebSocket.OPEN) return;
@@ -942,7 +928,7 @@ export class PluvRoom<
      */
     private _onError(): void {}
 
-    private async _onMessage(event: MessageEvent<string>): Promise<void> {
+    private _onMessage(event: MessageEvent<string>): void {
         const message = this._parseMessage(event);
 
         if (!message) return;
