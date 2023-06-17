@@ -61,19 +61,25 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
 
         if (!updates.length) return this;
 
-        const applyDoc = this.initialized ? this.doc : doc<TStorage>();
+        if (this.initialized) {
+            this.doc.transact(() => {
+                updates.reduce(
+                    (_doc, _update) => _doc.applyUpdate(_update),
+                    this.doc
+                );
+            }, origin);
 
-        applyDoc.transact(() => {
-            updates.reduce(
-                (_doc, _update) => _doc.applyUpdate(_update, origin),
-                applyDoc
-            );
-        });
-
-        if (Object.keys(applyDoc.toJSON()).length) {
-            this.initialized = true;
-            this.doc = applyDoc;
+            return this;
         }
+
+        const _doc = doc<TStorage>();
+
+        _doc.transact(() => {
+            updates.reduce((acc, _update) => acc.applyUpdate(_update), _doc);
+        }, origin);
+
+        this.initialized = true;
+        this.doc = _doc;
 
         return this;
     }

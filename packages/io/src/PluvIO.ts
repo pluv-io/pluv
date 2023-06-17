@@ -244,7 +244,7 @@ export class PluvIO<
         $UPDATE_STORAGE: {
             resolver: ({ origin, update }, { context, doc, room }) => {
                 if (
-                    origin === "$STORAGE_RECEIVED" &&
+                    origin === "$INITIALIZED" &&
                     Object.keys(doc.toJSON()).length
                 ) {
                     return;

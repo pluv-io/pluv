@@ -1,6 +1,12 @@
 import { fromUint8Array, toUint8Array } from "js-base64";
-import { AbstractType, Map as YMap, transact, Transaction } from "yjs";
-import { applyUpdate, Doc as YDoc, encodeStateAsUpdate } from "yjs";
+import {
+    AbstractType,
+    Transaction,
+    Doc as YDoc,
+    Map as YMap,
+    applyUpdate,
+    encodeStateAsUpdate,
+} from "yjs";
 import type { InferYjsDocJson } from "./types";
 
 export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
@@ -56,14 +62,14 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
     public subscribe(
         fn: (
             update: string,
-            origin: string,
+            origin: any,
             doc: YDoc,
             transaction: Transaction
         ) => void
     ): () => void {
         const _fn = (
             update: Uint8Array,
-            origin: string,
+            origin: any,
             doc: YDoc,
             transaction: Transaction
         ) => fn(YjsDoc.fromUint8Array(update), origin, doc, transaction);
@@ -79,14 +85,13 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
         return this._storage.toJSON() as InferYjsDocJson<this>;
     }
 
-    public transact(fn: () => void, origin?: string): void {
-        transact(
-            this.value,
-            () => {
-                fn();
-            },
-            origin
-        );
+    public transact(
+        fn: (transaction: Transaction) => void,
+        origin?: any
+    ): void {
+        this.value.transact((tx) => {
+            fn(tx);
+        }, origin);
     }
 
     public static fromUint8Array(u8a: Uint8Array): string {

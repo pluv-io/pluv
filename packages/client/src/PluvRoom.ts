@@ -40,11 +40,12 @@ import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
 import { debounce } from "./utils";
 
+const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
 const HEARTBEAT_INTERVAL_MS = 10_000;
 const PONG_TIMEOUT_MS = 2_000;
 const RECONNECT_TIMEOUT_MS = 30_000;
-const Y_ORIGIN_STORAGE_STORE = "STORAGE_STORE";
-const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
+const STORAGE_STORE_FLATTEN_THRESHOLD = 500;
+const Y_ORIGIN_INITIALIZED = "$INITIALIZED";
 
 export const DEFAULT_PLUV_CLIENT_ADDON = <
     TIO extends IOLike = IOLike,
@@ -411,7 +412,7 @@ export class PluvRoom<
 
             const storageStoreSize = await this._storageStore.getSize();
 
-            if (storageStoreSize < 500) return;
+            if (storageStoreSize < STORAGE_STORE_FLATTEN_THRESHOLD) return;
 
             const encodedState = this._crdtManager.doc.encodeStateAsUpdate();
 
@@ -428,7 +429,7 @@ export class PluvRoom<
 
         const updates = await this._storageStore.getUpdates();
 
-        this._crdtManager.initialize(updates, Y_ORIGIN_STORAGE_STORE);
+        this._crdtManager.initialize(updates, Y_ORIGIN_INITIALIZED);
 
         await this._storageStore.addUpdate(encodedState);
     }
@@ -750,7 +751,7 @@ export class PluvRoom<
             InferIOAuthorize<TIO>
         >["$STORAGE_RECEIVED"];
 
-        this._crdtManager.initialize(data.state, "$STORAGE_RECEIVED");
+        this._crdtManager.initialize(data.state, Y_ORIGIN_INITIALIZED);
 
         const sharedTypes = this._crdtManager.doc.getSharedTypes();
 
@@ -765,7 +766,7 @@ export class PluvRoom<
 
         this._sendMessage({
             type: "$UPDATE_STORAGE",
-            data: { origin: "$STORAGE_RECEIVED", update },
+            data: { origin: Y_ORIGIN_INITIALIZED, update },
         });
     }
 
@@ -856,12 +857,6 @@ export class PluvRoom<
 
                 this._addToStorageStore(update);
 
-                if (!this._state.webSocket) return;
-                if (!this._state.connection.id) return;
-                if (this._state.webSocket.readyState !== WebSocket.OPEN) return;
-
-                if (origin === "$STORAGE_UPDATED") return;
-
                 const sharedTypes = this._crdtManager.doc.getSharedTypes();
 
                 Object.entries(sharedTypes).forEach(([prop, sharedType]) => {
@@ -871,6 +866,14 @@ export class PluvRoom<
 
                     this._crdtNotifier.subject(prop).next(serialized);
                 });
+
+                if (origin === Y_ORIGIN_INITIALIZED) return;
+
+                if (!this._state.webSocket) return;
+                if (!this._state.connection.id) return;
+                if (this._state.webSocket.readyState !== WebSocket.OPEN) return;
+
+                if (origin === "$STORAGE_UPDATED") return;
 
                 this._sendMessage({
                     type: "$UPDATE_STORAGE",
