@@ -229,8 +229,6 @@ export class PluvRoom<
         });
 
         this._crdtManager = new CrdtManager<TStorage>({ initialStorage });
-
-        this._observeCrdt();
     }
 
     public get webSocket(): WebSocket | null {
@@ -424,12 +422,19 @@ export class PluvRoom<
     private async _applyStorageStore(): Promise<void> {
         if (!this._crdtManager) return;
 
-        const crdtManager = this._crdtManager;
-        const encodedState = crdtManager.doc.encodeStateAsUpdate();
+        const encodedState = this._crdtManager.doc.encodeStateAsUpdate();
 
         const updates = await this._storageStore.getUpdates();
 
-        this._crdtManager.initialize(updates, Y_ORIGIN_INITIALIZED);
+        this._crdtManager.initialize(
+            updates,
+            () => {
+                this._observeCrdt();
+            },
+            Y_ORIGIN_INITIALIZED
+        );
+
+        this._emitSharedTypes();
 
         await this._storageStore.addUpdate(encodedState);
     }
@@ -551,6 +556,16 @@ export class PluvRoom<
         );
 
         this._wsListeners = null;
+    }
+
+    private _emitSharedTypes(): void {
+        const sharedTypes = this._crdtManager.doc.getSharedTypes();
+
+        Object.entries(sharedTypes).forEach(([prop, sharedType]) => {
+            const serialized = sharedType.toJSON();
+
+            this._crdtNotifier.subject(prop).next(serialized);
+        });
     }
 
     private _getAddon = (
@@ -751,16 +766,15 @@ export class PluvRoom<
             InferIOAuthorize<TIO>
         >["$STORAGE_RECEIVED"];
 
-        this._crdtManager.initialize(data.state, Y_ORIGIN_INITIALIZED);
+        this._crdtManager.initialize(
+            data.state,
+            () => {
+                this._observeCrdt();
+            },
+            Y_ORIGIN_INITIALIZED
+        );
 
-        const sharedTypes = this._crdtManager.doc.getSharedTypes();
-
-        Object.keys(sharedTypes).forEach((key) => {
-            const sharedType = sharedTypes[key];
-            const serialized = sharedType.toJSON();
-
-            this._crdtNotifier.subject(key).next(serialized);
-        });
+        this._emitSharedTypes();
 
         const update = this._crdtManager.doc.encodeStateAsUpdate();
 
@@ -853,19 +867,8 @@ export class PluvRoom<
             (update, _origin) => {
                 const origin = _origin ?? null;
 
-                if (!this._crdtManager) return;
-
                 this._addToStorageStore(update);
-
-                const sharedTypes = this._crdtManager.doc.getSharedTypes();
-
-                Object.entries(sharedTypes).forEach(([prop, sharedType]) => {
-                    if (!this._crdtManager) return;
-
-                    const serialized = sharedType.toJSON();
-
-                    this._crdtNotifier.subject(prop).next(serialized);
-                });
+                this._emitSharedTypes();
 
                 if (origin === Y_ORIGIN_INITIALIZED) return;
 

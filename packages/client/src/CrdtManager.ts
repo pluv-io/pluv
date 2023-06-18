@@ -55,6 +55,7 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
 
     public initialize(
         update: string | readonly string[],
+        onInitialized: (crdtManager: this) => void,
         origin?: string
     ): this {
         const updates = typeof update === "string" ? [update] : update;
@@ -62,25 +63,35 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
         if (!updates.length) return this;
 
         if (this.initialized) {
-            this.doc.transact(() => {
-                updates.reduce(
-                    (_doc, _update) => _doc.applyUpdate(_update),
-                    this.doc
-                );
-            }, origin);
+            this._applyDocUpdates(this.doc, updates, origin);
 
             return this;
         }
 
-        const _doc = doc<TStorage>();
-
-        _doc.transact(() => {
-            updates.reduce((acc, _update) => acc.applyUpdate(_update), _doc);
-        }, origin);
+        const _doc = this._applyDocUpdates(doc<TStorage>(), updates, origin);
 
         this.initialized = true;
-        this.doc = _doc;
+
+        if (!!Object.keys(_doc.toJSON()).length) {
+            this.doc = _doc;
+        } else {
+            _doc.destroy();
+        }
+
+        onInitialized(this);
 
         return this;
+    }
+
+    private _applyDocUpdates(
+        yjsDoc: YjsDoc<TStorage>,
+        updates: readonly string[],
+        origin?: string
+    ): YjsDoc<TStorage> {
+        yjsDoc.transact(() => {
+            updates.reduce((acc, _update) => acc.applyUpdate(_update), yjsDoc);
+        }, origin);
+
+        return yjsDoc;
     }
 }
