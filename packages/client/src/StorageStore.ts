@@ -17,8 +17,8 @@ export class StorageStore extends AbstractStorageStore {
         return Promise.resolve();
     }
 
-    public getSize() {
-        return Promise.resolve(0);
+    public getShouldFlatten() {
+        return Promise.resolve(false);
     }
 
     public getUpdates() {

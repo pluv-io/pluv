@@ -1,6 +1,7 @@
 import { AbstractStorageStore } from "@pluv/client";
 import { IDBPDatabase, openDB } from "idb";
 
+const STORAGE_STORE_FLATTEN_THRESHOLD = 500;
 const UPGRADES_KEY = "__PLUV_UPDATES";
 
 type IndexDBSchema = {
@@ -15,7 +16,7 @@ type IndexedDB = IDBPDatabase<IndexDBSchema>;
 export class IndexedDBStorage extends AbstractStorageStore {
     public room: string;
 
-    private _db: IndexedDB | null;
+    private _db: IndexedDB | null = null;
     private _dbRef: number = 0;
     private _dbSize: number = 0;
 
@@ -57,12 +58,10 @@ export class IndexedDBStorage extends AbstractStorageStore {
         this._dbSize = await this._getSize();
     }
 
-    public async getSize(): Promise<number> {
-        if (this._dbSize) return this._dbSize;
+    public async getShouldFlatten(): Promise<boolean> {
+        const dbSize = await this._getSize();
 
-        this._dbSize = await this._getSize();
-
-        return this._dbSize;
+        return dbSize >= STORAGE_STORE_FLATTEN_THRESHOLD;
     }
 
     public async getUpdates(start: number = 0): Promise<readonly string[]> {
@@ -120,6 +119,8 @@ export class IndexedDBStorage extends AbstractStorageStore {
     }
 
     private async _getSize(): Promise<number> {
+        if (this._dbSize) return this._dbSize;
+
         const db = this._db;
 
         if (!db) throw new Error("IndexedDB not initialized");

@@ -13,7 +13,7 @@ export abstract class AbstractStorageStore {
 
     public abstract flatten(encodedState: string): Promise<void>;
 
-    public abstract getSize(): Promise<number>;
+    public abstract getShouldFlatten(): Promise<boolean>;
 
     public abstract getUpdates(start?: number): Promise<readonly string[]>;
 

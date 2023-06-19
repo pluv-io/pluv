@@ -9,6 +9,12 @@ export interface CrdtManagerOptions<
     initialStorage?: () => TStorage;
 }
 
+interface CrdtManagerInitializeParams {
+    onInitialized?: () => void;
+    origin?: any;
+    update: string | readonly string[];
+}
+
 export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
     public doc: YjsDoc<TStorage>;
     public initialized: boolean = false;
@@ -37,10 +43,13 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
      * update. This unfortunately means updates can be dropped entirely
      * @date June 13, 2023
      */
-    public applyUpdate(update: string, origin?: string): this {
+    public applyUpdate(update: string | readonly string[], origin?: any): this {
         if (!this.initialized) return this;
 
-        this.doc.applyUpdate(update, origin);
+        const updates: readonly string[] =
+            typeof update === "string" ? [update] : update;
+
+        this._applyDocUpdates(this.doc, updates, origin);
 
         return this;
     }
@@ -53,11 +62,9 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
         return this.doc.get(key);
     }
 
-    public initialize(
-        update: string | readonly string[],
-        onInitialized: (crdtManager: this) => void,
-        origin?: string
-    ): this {
+    public initialize(params: CrdtManagerInitializeParams): this {
+        const { onInitialized, origin, update } = params;
+
         const updates = typeof update === "string" ? [update] : update;
 
         if (!updates.length) return this;
@@ -78,7 +85,7 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
             _doc.destroy();
         }
 
-        onInitialized(this);
+        onInitialized?.();
 
         return this;
     }

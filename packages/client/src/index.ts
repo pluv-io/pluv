@@ -13,7 +13,12 @@ export type { MockedRoomConfig, MockedRoomEvents } from "./MockedRoom";
 export { MockedRoom } from "./MockedRoom";
 export type { PluvClientOptions } from "./PluvClient";
 export { PluvClient } from "./PluvClient";
-export type { PluvRoomDebug } from "./PluvRoom";
+export type {
+    PluvRoomAddon,
+    PluvRoomAddonInput,
+    PluvRoomAddonResult,
+    PluvRoomDebug,
+} from "./PluvRoom";
 export { PluvRoom } from "./PluvRoom";
 export type { WebSocketConnection, UserInfo, WebSocketState } from "./types";
 export { ConnectionState } from "./types";

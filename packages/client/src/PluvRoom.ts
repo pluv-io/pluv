@@ -44,7 +44,6 @@ const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
 const HEARTBEAT_INTERVAL_MS = 10_000;
 const PONG_TIMEOUT_MS = 2_000;
 const RECONNECT_TIMEOUT_MS = 30_000;
-const STORAGE_STORE_FLATTEN_THRESHOLD = 500;
 const Y_ORIGIN_INITIALIZED = "$INITIALIZED";
 
 export const DEFAULT_PLUV_CLIENT_ADDON = <
@@ -402,41 +401,24 @@ export class PluvRoom<
         );
     };
 
-    private _addToStorageStore = debounce(
-        async (update: string): Promise<void> => {
-            if (!this._crdtManager) return;
+    private async _addToStorageStore(update: string): Promise<void> {
+        await this._storageStore.addUpdate(update);
 
-            await this._storageStore.addUpdate(update);
-
-            const storageStoreSize = await this._storageStore.getSize();
-
-            if (storageStoreSize < STORAGE_STORE_FLATTEN_THRESHOLD) return;
-
-            const encodedState = this._crdtManager.doc.encodeStateAsUpdate();
-
-            await this._storageStore.flatten(encodedState);
-        },
-        { wait: ADD_TO_STORAGE_STATE_DEBOUNCE_MS }
-    );
+        this._flattenStorageStore();
+    }
 
     private async _applyStorageStore(): Promise<void> {
-        if (!this._crdtManager) return;
-
-        const encodedState = this._crdtManager.doc.encodeStateAsUpdate();
-
         const updates = await this._storageStore.getUpdates();
 
-        this._crdtManager.initialize(
-            updates,
-            () => {
+        this._crdtManager.initialize({
+            onInitialized: () => {
                 this._observeCrdt();
             },
-            Y_ORIGIN_INITIALIZED
-        );
+            origin: Y_ORIGIN_INITIALIZED,
+            update: updates,
+        });
 
         this._emitSharedTypes();
-
-        await this._storageStore.addUpdate(encodedState);
     }
 
     private _attachWindowListeners(): void {
@@ -567,6 +549,23 @@ export class PluvRoom<
             this._crdtNotifier.subject(prop).next(serialized);
         });
     }
+
+    private _flattenStorageStore = debounce(
+        async (): Promise<void> => {
+            const shouldFlatten = await this._storageStore.getShouldFlatten();
+
+            if (!shouldFlatten) return;
+
+            const updates = await this._storageStore.getUpdates();
+
+            this._crdtManager.applyUpdate(updates, this);
+
+            const encodedState = this._crdtManager.doc.encodeStateAsUpdate();
+
+            await this._storageStore.flatten(encodedState);
+        },
+        { wait: ADD_TO_STORAGE_STATE_DEBOUNCE_MS }
+    );
 
     private _getAddon = (
         addons: readonly PluvRoomAddon<TIO, TPresence, TStorage>[]
@@ -755,7 +754,9 @@ export class PluvRoom<
         });
     }
 
-    private _handleStorageReceivedMessage(message: IOEventMessage<TIO>): void {
+    private async _handleStorageReceivedMessage(
+        message: IOEventMessage<TIO>
+    ): Promise<void> {
         const { connectionId } = message;
 
         if (!connectionId) return;
@@ -766,13 +767,17 @@ export class PluvRoom<
             InferIOAuthorize<TIO>
         >["$STORAGE_RECEIVED"];
 
-        this._crdtManager.initialize(
-            data.state,
-            () => {
+        this._crdtManager.initialize({
+            onInitialized: async () => {
                 this._observeCrdt();
             },
-            Y_ORIGIN_INITIALIZED
-        );
+            origin: Y_ORIGIN_INITIALIZED,
+            update: data.state,
+        });
+
+        const encodedState = this._crdtManager.doc.encodeStateAsUpdate();
+
+        await this._storageStore.addUpdate(encodedState);
 
         this._emitSharedTypes();
 
@@ -870,7 +875,7 @@ export class PluvRoom<
                 this._addToStorageStore(update);
                 this._emitSharedTypes();
 
-                if (origin === Y_ORIGIN_INITIALIZED) return;
+                if (origin === Y_ORIGIN_INITIALIZED || origin === this) return;
 
                 if (!this._state.webSocket) return;
                 if (!this._state.connection.id) return;
