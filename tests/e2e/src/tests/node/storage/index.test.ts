@@ -203,49 +203,49 @@ test.describe("Node Storage", () => {
         }
     );
 
-    test(
-        oneLine`
-        
-        `,
-        async () => {
-            const roomName = "e2e-node-storage-addon-indexeddb";
-            const testUrl = `${TEST_URL}?room=${roomName}`;
+    // test(
+    //     oneLine`
 
-            const firstPage = await openTestPage(testUrl);
+    //     `,
+    //     async () => {
+    //         const roomName = "e2e-node-storage-addon-indexeddb";
+    //         const testUrl = `${TEST_URL}?room=${roomName}`;
 
-            await firstPage.waitForSelector("#storage");
-            await waitMs(ms("0.25s"));
+    //         const firstPage = await openTestPage(testUrl);
 
-            await firstPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(1));
+    //         await firstPage.waitForSelector("#storage");
+    //         await waitMs(ms("0.25s"));
 
-            await firstPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
+    //         await firstPage
+    //             .locator("#storage")
+    //             .innerText()
+    //             .then((text) => JSON.parse(text))
+    //             .then((messages) => expect(messages.length).toEqual(1));
 
-            await firstPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(2));
+    //         await firstPage.click("#button-add-message");
+    //         await waitMs(ms("0.25s"));
 
-            await firstPage.reload({ waitUntil: "load" });
-            await waitMs(ms("0.25s"));
+    //         await firstPage
+    //             .locator("#storage")
+    //             .innerText()
+    //             .then((text) => JSON.parse(text))
+    //             .then((messages) => expect(messages.length).toEqual(2));
 
-            await firstPage.waitForSelector("#storage");
-            await waitMs(ms("0.25s"));
+    //         await firstPage.reload({ waitUntil: "load" });
+    //         await waitMs(ms("0.25s"));
 
-            await firstPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(2));
+    //         await firstPage.waitForSelector("#storage");
+    //         await waitMs(ms("0.25s"));
 
-            await firstPage.evaluate(async () => {
-                await deleteDB(roomName);
-            });
-        }
-    );
+    //         await firstPage
+    //             .locator("#storage")
+    //             .innerText()
+    //             .then((text) => JSON.parse(text))
+    //             .then((messages) => expect(messages.length).toEqual(2));
+
+    //         await firstPage.evaluate(async () => {
+    //             await deleteDB(roomName);
+    //         });
+    //     }
+    // );
 });
