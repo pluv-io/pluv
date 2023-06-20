@@ -109,7 +109,7 @@ export type PluvRoomAddon<
     TStorage extends Record<string, AbstractType<any>> = {}
 > = (
     input: PluvRoomAddonInput<TIO, TPresence, TStorage>
-) => PluvRoomAddonResult;
+) => Partial<PluvRoomAddonResult>;
 
 export interface PluvRoomAddonInput<
     TIO extends IOLike = IOLike,
@@ -202,7 +202,10 @@ export class PluvRoom<
 
         const addon = this._getAddon(addons);
 
-        const { storage } = addon({ room: this });
+        const { storage } = {
+            ...DEFAULT_PLUV_CLIENT_ADDON({ room: this }),
+            ...addon({ room: this }),
+        };
 
         this._storageStore = storage;
 
