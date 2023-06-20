@@ -1,3 +1,4 @@
+import { addonIndexedDB } from "@pluv/addon-indexeddb";
 import { createBundle, createClient, y } from "@pluv/react";
 import { z } from "zod";
 import type { io } from "../server/node";
@@ -37,6 +38,11 @@ export const {
     usePluvRoom,
     usePluvStorage,
 } = createRoomBundle({
+    addons: [
+        addonIndexedDB({
+            enabled: (room) => room.id === "e2e-node-storage-addon-indexeddb",
+        }),
+    ],
     initialStorage: () => ({
         messages: y.array([
             y.object({
