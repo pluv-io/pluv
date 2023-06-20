@@ -22,8 +22,10 @@ export const addonIndexedDB = <
     return ({ room }) => {
         const _enabled = typeof enabled === "boolean" ? enabled : enabled(room);
 
+        if (!_enabled) return {};
+
         return {
-            storage: _enabled ? new IndexedDBStorage(room.id) : undefined,
+            storage: new IndexedDBStorage(room.id),
         };
     };
 };

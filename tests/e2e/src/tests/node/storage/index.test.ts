@@ -231,7 +231,7 @@ test.describe("Node Storage", () => {
                 .then((text) => JSON.parse(text))
                 .then((messages) => expect(messages.length).toEqual(2));
 
-            await firstPage.reload({ waitUntil: "domcontentloaded" });
+            await firstPage.reload({ waitUntil: "load" });
             await waitMs(ms("0.25s"));
 
             await firstPage.waitForSelector("#storage");
