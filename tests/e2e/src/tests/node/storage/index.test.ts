@@ -203,49 +203,49 @@ test.describe("Node Storage", () => {
         }
     );
 
-    // test(
-    //     oneLine`
+    test(
+        oneLine`
+            addonIndexedDB persists old storage on refresh
+        `,
+        async () => {
+            const roomName = "e2e-node-storage-addon-indexeddb";
+            const testUrl = `${TEST_URL}?room=${roomName}`;
 
-    //     `,
-    //     async () => {
-    //         const roomName = "e2e-node-storage-addon-indexeddb";
-    //         const testUrl = `${TEST_URL}?room=${roomName}`;
+            const firstPage = await openTestPage(testUrl);
 
-    //         const firstPage = await openTestPage(testUrl);
+            await firstPage.waitForSelector("#storage");
+            await waitMs(ms("0.25s"));
 
-    //         await firstPage.waitForSelector("#storage");
-    //         await waitMs(ms("0.25s"));
+            await firstPage
+                .locator("#storage")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((messages) => expect(messages.length).toEqual(1));
 
-    //         await firstPage
-    //             .locator("#storage")
-    //             .innerText()
-    //             .then((text) => JSON.parse(text))
-    //             .then((messages) => expect(messages.length).toEqual(1));
+            await firstPage.click("#button-add-message");
+            await waitMs(ms("0.25s"));
 
-    //         await firstPage.click("#button-add-message");
-    //         await waitMs(ms("0.25s"));
+            await firstPage
+                .locator("#storage")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((messages) => expect(messages.length).toEqual(2));
 
-    //         await firstPage
-    //             .locator("#storage")
-    //             .innerText()
-    //             .then((text) => JSON.parse(text))
-    //             .then((messages) => expect(messages.length).toEqual(2));
+            await firstPage.reload({ waitUntil: "load" });
+            await waitMs(ms("0.25s"));
 
-    //         await firstPage.reload({ waitUntil: "load" });
-    //         await waitMs(ms("0.25s"));
+            await firstPage.waitForSelector("#storage");
+            await waitMs(ms("0.25s"));
 
-    //         await firstPage.waitForSelector("#storage");
-    //         await waitMs(ms("0.25s"));
+            await firstPage
+                .locator("#storage")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((messages) => expect(messages.length).toEqual(2));
 
-    //         await firstPage
-    //             .locator("#storage")
-    //             .innerText()
-    //             .then((text) => JSON.parse(text))
-    //             .then((messages) => expect(messages.length).toEqual(2));
-
-    //         await firstPage.evaluate(async () => {
-    //             await deleteDB(roomName);
-    //         });
-    //     }
-    // );
+            await firstPage.evaluate(async () => {
+                await deleteDB(roomName);
+            });
+        }
+    );
 });

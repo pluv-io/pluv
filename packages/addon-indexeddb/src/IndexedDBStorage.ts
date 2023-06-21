@@ -109,9 +109,7 @@ export class IndexedDBStorage extends AbstractStorageStore {
         const store = db.transaction(UPGRADES_KEY).objectStore(UPGRADES_KEY);
         const cursor = await store.openCursor(null, "prev");
 
-        if (!cursor) throw new Error("Could not get last key");
-
-        return cursor.key;
+        return cursor?.key ?? -1;
     }
 
     private _getLowerBound(lower: number, open: boolean = false): IDBKeyRange {
