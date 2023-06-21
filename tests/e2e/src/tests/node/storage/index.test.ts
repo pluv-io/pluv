@@ -1,6 +1,5 @@
 import { expect, test } from "@playwright/test";
 import { oneLine } from "common-tags";
-import { deleteDB } from "idb";
 import ms from "ms";
 import { openTestPage, waitMs } from "../../../utils";
 
@@ -242,10 +241,6 @@ test.describe("Node Storage", () => {
                 .innerText()
                 .then((text) => JSON.parse(text))
                 .then((messages) => expect(messages.length).toEqual(2));
-
-            await firstPage.evaluate(async () => {
-                await deleteDB(roomName);
-            });
         }
     );
 });
