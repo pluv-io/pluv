@@ -11,7 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@pluv/io": "^0.6.0",
+    "@pluv/io": "^0.7.0",
     "@pluv/platform-node": "^0.3.0",
     "@pluv/react": "^0.5.0",
     "cors": "^2.8.5",
