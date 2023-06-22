@@ -13,7 +13,7 @@
   "dependencies": {
     "@pluv/io": "^0.6.0",
     "@pluv/platform-node": "^0.3.0",
-    "@pluv/react": "^0.5.0",
+    "@pluv/react": "^0.6.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "next": "13.4.7",
