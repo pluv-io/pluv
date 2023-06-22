@@ -1,0 +1,1 @@
+export { addonIndexedDB } from "./addonIndexedDB";

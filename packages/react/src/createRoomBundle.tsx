@@ -4,6 +4,7 @@ import type {
     MockedRoomEvents,
     PluvClient,
     PluvRoom,
+    PluvRoomAddon,
     PluvRoomDebug,
     UserInfo,
     WebSocketConnection,
@@ -37,9 +38,11 @@ import {
 } from "./internal";
 
 export interface CreateRoomBundleOptions<
+    TIO extends IOLike,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, AbstractType<any>> = {}
 > {
+    addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
     initialStorage?: () => TStorage;
     presence?: InputZodLike<TPresence>;
 }
@@ -139,7 +142,7 @@ export const createRoomBundle = <
     TStorage extends Record<string, AbstractType<any>> = {}
 >(
     client: PluvClient<TIO>,
-    options: CreateRoomBundleOptions<TPresence, TStorage> = {}
+    options: CreateRoomBundleOptions<TIO, TPresence, TStorage> = {}
 ): CreateRoomBundle<TIO, TPresence, TStorage> => {
     /**
      * !HACK
@@ -207,6 +210,7 @@ export const createRoomBundle = <
 
         const [room] = useState<PluvRoom<TIO, TPresence, TStorage>>(() => {
             return client.createRoom<TPresence, TStorage>(_room, {
+                addons: options.addons,
                 debug,
                 initialPresence,
                 initialStorage:

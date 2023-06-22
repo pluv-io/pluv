@@ -1,13 +1,13 @@
 import type { IOLike, JsonObject } from "@pluv/types";
 import { AbstractType } from "yjs";
-import type {
+import {
     AuthEndpoint,
-    RoomEndpoints,
+    PluvRoom,
     PluvRoomOptions,
-    WsEndpoint,
     RoomConfig,
+    RoomEndpoints,
+    WsEndpoint,
 } from "./PluvRoom";
-import { PluvRoom } from "./PluvRoom";
 
 export type PluvClientOptions<TIO extends IOLike> = RoomEndpoints<TIO> & {
     debug?: boolean;
@@ -40,6 +40,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
         if (oldRoom) return oldRoom;
 
         const newRoom = new PluvRoom<TIO, TPresence, TStorage>(room, {
+            addons: options.addons,
             authEndpoint: this._authEndpoint,
             debug: options.debug,
             initialPresence: options.initialPresence,
@@ -90,12 +91,14 @@ export class PluvClient<TIO extends IOLike = IOLike> {
         return Array.from(this._rooms.values());
     };
 
-    public leave = (room: string | PluvRoom<TIO, any, any>): void => {
+    public leave = async (
+        room: string | PluvRoom<TIO, any, any>
+    ): Promise<void> => {
         const toLeave = typeof room === "string" ? this.getRoom(room) : room;
 
         if (!toLeave) return;
 
-        toLeave.disconnect();
+        await toLeave.disconnect();
 
         this._rooms.delete(toLeave.id);
 

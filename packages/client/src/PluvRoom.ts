@@ -14,6 +14,7 @@ import type {
 } from "@pluv/types";
 import type { AbstractType } from "yjs";
 import { AbstractRoom } from "./AbstractRoom";
+import { AbstractStorageStore } from "./AbstractStorageStore";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
@@ -26,6 +27,7 @@ import type {
     SubscriptionCallback,
 } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
+import { StorageStore } from "./StorageStore";
 import type {
     AuthorizationState,
     InternalSubscriptions,
@@ -36,10 +38,23 @@ import type {
 import { ConnectionState } from "./types";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
+import { debounce } from "./utils";
 
+const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
 const HEARTBEAT_INTERVAL_MS = 10_000;
 const PONG_TIMEOUT_MS = 2_000;
 const RECONNECT_TIMEOUT_MS = 30_000;
+const Y_ORIGIN_INITIALIZED = "$INITIALIZED";
+
+export const DEFAULT_PLUV_CLIENT_ADDON = <
+    TIO extends IOLike = IOLike,
+    TPresence extends JsonObject = {},
+    TStorage extends Record<string, AbstractType<any>> = {}
+>(
+    input: PluvRoomAddonInput<TIO, TPresence, TStorage>
+): PluvRoomAddonResult => ({
+    storage: new StorageStore(input.room.id),
+});
 
 declare global {
     var process: {
@@ -88,6 +103,26 @@ interface InternalListeners {
     onAuthorizationFail: (error: Error) => void;
 }
 
+export type PluvRoomAddon<
+    TIO extends IOLike = IOLike,
+    TPresence extends JsonObject = {},
+    TStorage extends Record<string, AbstractType<any>> = {}
+> = (
+    input: PluvRoomAddonInput<TIO, TPresence, TStorage>
+) => Partial<PluvRoomAddonResult>;
+
+export interface PluvRoomAddonInput<
+    TIO extends IOLike = IOLike,
+    TPresence extends JsonObject = {},
+    TStorage extends Record<string, AbstractType<any>> = {}
+> {
+    room: PluvRoom<TIO, TPresence, TStorage>;
+}
+
+export interface PluvRoomAddonResult {
+    storage: AbstractStorageStore;
+}
+
 export type PluvRoomDebug<TIO extends IOLike> = Id<{
     output: readonly (keyof InferIOOutput<TIO>)[];
     input: readonly (keyof InferIOInput<TIO>)[];
@@ -98,6 +133,7 @@ export type PluvRoomOptions<
     TPresence extends JsonObject = {},
     TStorage extends Record<string, AbstractType<any>> = {}
 > = {
+    addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
     debug?: boolean | PluvRoomDebug<TIO>;
     onAuthorizationFail?: (error: Error) => void;
 } & Omit<CrdtManagerOptions<TStorage>, "encodedState"> &
@@ -116,11 +152,10 @@ export class PluvRoom<
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     readonly _endpoints: RoomEndpoints<TIO>;
 
-    private _crdtManager: CrdtManager<TStorage> | null = null;
+    private _crdtManager: CrdtManager<TStorage>;
     private _crdtNotifier = new CrdtNotifier<TStorage>();
     private _debug: boolean | PluvRoomDebug<TIO>;
     private _eventNotifier = new EventNotifier<TIO>();
-    private _initialStorage: (() => TStorage) | null = null;
     private _intervals: IntervalIds = {
         heartbeat: null,
     };
@@ -139,6 +174,7 @@ export class PluvRoom<
         webSocket: null,
     };
     private _stateNotifier = new StateNotifier<TIO, TPresence>();
+    private _storageStore: AbstractStorageStore;
     private _subscriptions: InternalSubscriptions = {
         observeCrdt: null,
     };
@@ -152,6 +188,7 @@ export class PluvRoom<
 
     constructor(room: string, options: RoomConfig<TIO, TPresence, TStorage>) {
         const {
+            addons = [],
             authEndpoint,
             debug = false,
             initialPresence,
@@ -162,6 +199,15 @@ export class PluvRoom<
         } = options;
 
         super(room);
+
+        const addon = this._getAddon(addons);
+
+        const { storage } = {
+            ...DEFAULT_PLUV_CLIENT_ADDON({ room: this }),
+            ...addon({ room: this }),
+        };
+
+        this._storageStore = storage;
 
         this._debug = debug;
 
@@ -184,7 +230,7 @@ export class PluvRoom<
             presence,
         });
 
-        if (initialStorage) this._initialStorage = initialStorage;
+        this._crdtManager = new CrdtManager<TStorage>({ initialStorage });
     }
 
     public get webSocket(): WebSocket | null {
@@ -223,26 +269,24 @@ export class PluvRoom<
             return oldState;
         });
 
+        await this._storageStore.initialize();
+        await this._applyStorageStore();
+
         const url = new URL(this._getWsEndpoint(this.id));
 
         let authToken: string | null = null;
-
-        try {
-            authToken = await this._getAuthorization(this.id);
-        } catch (err) {
-            this._onAuthorizationFail(err);
-
-            return;
-        }
-
-        authToken &&
-            url.searchParams.set("token", encodeURIComponent(authToken));
-
         let webSocket: WebSocket;
 
         try {
+            authToken = await this._getAuthorization(this.id);
+
+            authToken &&
+                url.searchParams.set("token", encodeURIComponent(authToken));
+
             webSocket = new WebSocket(url.toString());
         } catch (err) {
+            await this._storageStore.destroy();
+
             this._onAuthorizationFail(err);
 
             return;
@@ -259,7 +303,7 @@ export class PluvRoom<
         this._attachWsListeners();
     }
 
-    public disconnect(): void {
+    public async disconnect(): Promise<void> {
         if (!this._endpoints.wsEndpoint) {
             throw new Error("Must provide an wsEndpoint.");
         }
@@ -276,17 +320,12 @@ export class PluvRoom<
         this._clearInterval(this._intervals.heartbeat);
 
         this._closeWs();
+
+        await this._storageStore.destroy();
+
         this._crdtManager?.destroy();
 
         this._stateNotifier.subjects["my-presence"].next(null);
-
-        this._updateState((oldState) => {
-            oldState.authorization.token = null;
-            oldState.connection.state = ConnectionState.Closed;
-            oldState.webSocket = null;
-
-            return oldState;
-        });
     }
 
     public event = <TEvent extends keyof InferIOOutput<TIO>>(
@@ -365,6 +404,26 @@ export class PluvRoom<
         );
     };
 
+    private async _addToStorageStore(update: string): Promise<void> {
+        await this._storageStore.addUpdate(update);
+
+        this._flattenStorageStore();
+    }
+
+    private async _applyStorageStore(): Promise<void> {
+        const updates = await this._storageStore.getUpdates();
+
+        this._crdtManager.initialize({
+            onInitialized: () => {
+                this._observeCrdt();
+            },
+            origin: Y_ORIGIN_INITIALIZED,
+            update: updates,
+        });
+
+        this._emitSharedTypes();
+    }
+
     private _attachWindowListeners(): void {
         if (typeof window === "undefined") return;
         if (typeof document === "undefined") return;
@@ -442,8 +501,6 @@ export class PluvRoom<
         if (canClose) this._state.webSocket.close();
 
         this._detachWsListeners();
-
-        this._stateNotifier.subjects["myself"].next(null);
     }
 
     private _detachWindowListeners(): void {
@@ -486,27 +543,44 @@ export class PluvRoom<
         this._wsListeners = null;
     }
 
-    private async _getAuthorization(room: string): Promise<string | null> {
-        const fetchOptions = this._getAuthFetchOptions(room);
+    private _emitSharedTypes(): void {
+        const sharedTypes = this._crdtManager.doc.getSharedTypes();
 
-        if (!fetchOptions) return null;
+        Object.entries(sharedTypes).forEach(([prop, sharedType]) => {
+            const serialized = sharedType.toJSON();
 
-        const { url, options } = fetchOptions;
-
-        const res = await fetch(url, options);
-
-        if (!res.ok || res.status !== 200) {
-            throw new Error("Room is unauthorized");
-        }
-
-        try {
-            return await res.text().then((text) => text.trim());
-        } catch (err) {
-            throw new Error(
-                err instanceof Error ? err.message : "Room is unauthorized"
-            );
-        }
+            this._crdtNotifier.subject(prop).next(serialized);
+        });
     }
+
+    private _flattenStorageStore = debounce(
+        async (): Promise<void> => {
+            const shouldFlatten = await this._storageStore.getShouldFlatten();
+
+            if (!shouldFlatten) return;
+
+            const updates = await this._storageStore.getUpdates();
+
+            this._crdtManager.applyUpdate(updates, this);
+
+            const encodedState = this._crdtManager.doc.encodeStateAsUpdate();
+
+            await this._storageStore.flatten(encodedState);
+        },
+        { wait: ADD_TO_STORAGE_STATE_DEBOUNCE_MS }
+    );
+
+    private _getAddon = (
+        addons: readonly PluvRoomAddon<TIO, TPresence, TStorage>[]
+    ): PluvRoomAddon<TIO, TPresence, TStorage> => {
+        return addons.reduce<PluvRoomAddon<TIO, TPresence, TStorage>>(
+            (acc, addon) => () => ({
+                ...acc({ room: this }),
+                ...addon({ room: this }),
+            }),
+            DEFAULT_PLUV_CLIENT_ADDON
+        );
+    };
 
     private _getAuthFetchOptions(room: string): FetchOptions | null {
         if (typeof this._endpoints.authEndpoint === "undefined") return null;
@@ -530,6 +604,28 @@ export class PluvRoom<
         return typeof result === "string"
             ? { url: result, options: {} }
             : result;
+    }
+
+    private async _getAuthorization(room: string): Promise<string | null> {
+        const fetchOptions = this._getAuthFetchOptions(room);
+
+        if (!fetchOptions) return null;
+
+        const { url, options } = fetchOptions;
+
+        const res = await fetch(url, options);
+
+        if (!res.ok || res.status !== 200) {
+            throw new Error("Room is unauthorized");
+        }
+
+        try {
+            return await res.text().then((text) => text.trim());
+        } catch (err) {
+            throw new Error(
+                err instanceof Error ? err.message : "Room is unauthorized"
+            );
+        }
     }
 
     private _getWsEndpoint(room: string): string {
@@ -661,7 +757,9 @@ export class PluvRoom<
         });
     }
 
-    private _handleStorageReceivedMessage(message: IOEventMessage<TIO>): void {
+    private async _handleStorageReceivedMessage(
+        message: IOEventMessage<TIO>
+    ): Promise<void> {
         const { connectionId } = message;
 
         if (!connectionId) return;
@@ -672,27 +770,25 @@ export class PluvRoom<
             InferIOAuthorize<TIO>
         >["$STORAGE_RECEIVED"];
 
-        this._crdtManager = new CrdtManager<TStorage>({
-            encodedState: data.state,
-            initialStorage: this._initialStorage ?? undefined,
+        this._crdtManager.initialize({
+            onInitialized: async () => {
+                this._observeCrdt();
+            },
+            origin: Y_ORIGIN_INITIALIZED,
+            update: data.state,
         });
 
-        this._observeCrdt();
+        const encodedState = this._crdtManager.doc.encodeStateAsUpdate();
 
-        const sharedTypes = this._crdtManager.doc.getSharedTypes();
+        await this._storageStore.addUpdate(encodedState);
 
-        Object.keys(sharedTypes).forEach((key) => {
-            const sharedType = sharedTypes[key];
-            const serialized = sharedType.toJSON();
-
-            this._crdtNotifier.subject(key).next(serialized);
-        });
+        this._emitSharedTypes();
 
         const update = this._crdtManager.doc.encodeStateAsUpdate();
 
         this._sendMessage({
             type: "$UPDATE_STORAGE",
-            data: { origin: "$STORAGE_RECEIVED", update },
+            data: { origin: Y_ORIGIN_INITIALIZED, update },
         });
     }
 
@@ -713,16 +809,12 @@ export class PluvRoom<
 
         const sharedTypes = this._crdtManager.doc.getSharedTypes();
 
-        Object.keys(sharedTypes).forEach((key) => {
+        Object.entries(sharedTypes).forEach(([prop, sharedType]) => {
             if (!this._crdtManager) return;
-
-            const sharedType = sharedTypes[key];
-
-            if (!sharedType) return;
 
             const serialized = sharedType.toJSON();
 
-            this._crdtNotifier.subject(key).next(serialized);
+            this._crdtNotifier.subject(prop).next(serialized);
         });
     }
 
@@ -783,22 +875,16 @@ export class PluvRoom<
             (update, _origin) => {
                 const origin = _origin ?? null;
 
-                if (!this._crdtManager) return;
+                this._addToStorageStore(update);
+                this._emitSharedTypes();
+
+                if (origin === Y_ORIGIN_INITIALIZED || origin === this) return;
+
                 if (!this._state.webSocket) return;
                 if (!this._state.connection.id) return;
                 if (this._state.webSocket.readyState !== WebSocket.OPEN) return;
 
                 if (origin === "$STORAGE_UPDATED") return;
-
-                const sharedTypes = this._crdtManager.doc.getSharedTypes();
-
-                Object.entries(sharedTypes).forEach(([prop, sharedType]) => {
-                    if (!this._crdtManager) return;
-
-                    const serialized = sharedType.toJSON();
-
-                    this._crdtNotifier.subject(prop).next(serialized);
-                });
 
                 this._sendMessage({
                     type: "$UPDATE_STORAGE",
@@ -830,14 +916,17 @@ export class PluvRoom<
      * @author leedavidcs
      * @date August 19, 2022
      */
-    private _onClose(event: CloseEvent): void {
+    private async _onClose(event: CloseEvent): Promise<void> {
         this._logDebug("WebSocket closed");
         !!event.reason && this._logDebug(event.reason);
 
         this._clearInterval(this._intervals.heartbeat);
         this._clearTimeout(this._timeouts.pong);
 
+        this._stateNotifier.subjects["myself"].next(null);
+
         this._updateState((oldState) => {
+            oldState.authorization.token = null;
             oldState.connection.state = ConnectionState.Closed;
             oldState.webSocket = null;
 

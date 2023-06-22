@@ -3,6 +3,7 @@ packages:
   - "apps/storybook"
   - "apps/web"
 
+  - "packages/addon-indexeddb"
   - "packages/cli"
   - "packages/client"
   - "packages/crdt-yjs"

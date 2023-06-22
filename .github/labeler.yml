@@ -7,7 +7,7 @@
 '@pluv/client':
   - any: ['packages/client/**', '!packages/client/package.json']
 
-'@trpc/crdt-yjs':
+'@pluv/crdt-yjs':
   - any: ['packages/crdt-yjs/**', '!packages/crdt-yjs/package.json']
 
 '@pluv/io':

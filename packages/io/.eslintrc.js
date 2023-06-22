@@ -1,4 +1,4 @@
 module.exports = {
-  root: true,
-  extends: ["pluv"],
+    root: true,
+    extends: ["pluv"],
 };

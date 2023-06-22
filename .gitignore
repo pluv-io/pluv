@@ -36,11 +36,13 @@ yarn-error.log*
 .turbo
 
 # build artifacts
+dev.db-journal
 dist
 dist-ssr
+tsconfig.tsbuildinfo
 .cache
 .rollup.cache
-tsconfig.tsbuildinfo
+**/.wrangler/state/**
 
 **/public/tailwind.css
 **/generated/**
