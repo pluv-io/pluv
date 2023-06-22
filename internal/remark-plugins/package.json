@@ -15,17 +15,17 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@playwright/test": "^1.35.0",
-		"@types/react": "^18.2.12",
+		"@playwright/test": "^1.35.1",
+		"@types/react": "^18.2.13",
 		"@types/unist": "^2.0.6",
-		"acorn": "^8.8.2",
+		"acorn": "^8.9.0",
 		"gray-matter": "^4.0.3",
 		"vfile": "^6.0.0"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
-		"tsup": "^6.7.0",
+		"tsup": "^7.0.0",
 		"typescript": "^5.1.3"
 	}
 }

@@ -38,6 +38,7 @@
     }
   },
   "globalEnv": [
+    "npm_config_user_agent",
     "BASE_URL",
     "DEPLOY_URL",
     "NODE_ENV",

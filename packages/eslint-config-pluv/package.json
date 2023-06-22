@@ -15,16 +15,16 @@
     "access": "public"
   },
   "dependencies": {
-    "@playwright/test": "^1.35.0",
-    "@types/react": "^18.2.12",
-    "eslint": "^8.42.0",
-    "eslint-config-next": "^13.4.5",
+    "@playwright/test": "^1.35.1",
+    "@types/react": "^18.2.13",
+    "eslint": "^8.43.0",
+    "eslint-config-next": "^13.4.7",
     "eslint-config-prettier": "^8.8.0",
-    "eslint-config-turbo": "^1.10.3",
+    "eslint-config-turbo": "1.10.3",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "7.32.2",
     "eslint-plugin-tailwindcss": "^3.12.1",
-    "next": "^13.4.5",
+    "next": "^13.4.7",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.3.0"
   },
