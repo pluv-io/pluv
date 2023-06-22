@@ -88,14 +88,14 @@ export interface TokenInputProps {
     types: string[];
     content: string;
     empty?: boolean;
-};
+}
 
 export interface TokenOutputProps {
     style?: CSSProperties;
     className: string;
     children: string;
     [key: string]: unknown;
-};
+}
 
 export interface PrismCodeTokenProps {
     index: number;
