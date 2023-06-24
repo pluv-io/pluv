@@ -16,7 +16,7 @@
     "@playwright/test": "^1.35.1",
     "@pluv/io": "workspace:^",
     "@pluv/platform-cloudflare": "workspace:^",
-    "@types/react": "^18.2.13",
+    "@types/react": "^18.2.14",
     "zod": "^3.21.4"
   },
   "devDependencies": {
