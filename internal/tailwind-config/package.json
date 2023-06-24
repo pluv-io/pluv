@@ -5,7 +5,7 @@
 	"main": "./tailwind.config.js",
 	"dependencies": {
 		"@playwright/test": "^1.35.1",
-		"@types/react": "^18.2.13",
+		"@types/react": "^18.2.14",
 		"tailwindcss": "^3.3.2"
 	}
 }

@@ -17,7 +17,7 @@
 	"dependencies": {
 		"@playwright/test": "^1.35.1",
 		"@pluv/types": "workspace:^",
-		"@types/react": "^18.2.13",
+		"@types/react": "^18.2.14",
 		"path-to-regexp": "^6.2.1"
 	},
 	"devDependencies": {
