@@ -33,6 +33,16 @@ const config = {
     },
     pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
     reactStrictMode: true,
+    rewrites: () => {
+        return {
+            beforeFiles: [
+                {
+                    source: "/api/:path*",
+                    destination: "https://app.pluv.io/api/:path*",
+                },
+            ],
+        };
+    },
     env: {
         WS_ENDPOINT: process.env.WS_ENDPOINT,
     },
