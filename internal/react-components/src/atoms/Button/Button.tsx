@@ -12,8 +12,8 @@ export type ButtonVariant =
 export type ButtonProps = InferComponentProps<typeof Button>;
 
 export const Button = styled.button.withConfig({
-    shouldForwardProp(prop, defaultValidatorFn) {
-        return defaultValidatorFn(prop) && isPropValid(prop);
+    shouldForwardProp(prop) {
+        return isPropValid(prop);
     },
 })<{
     bounce?: boolean;

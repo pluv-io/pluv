@@ -176,7 +176,7 @@ export const HomeChessDemo: FC<HomeChessDemoProps> = ({ className, style }) => {
                         }}
                     />
                 ) : (
-                    <Board as={LoadingChessBoard} />
+                    <Board as={LoadingChessBoard} history={[]} />
                 )}
                 {gameOver && (
                     <GameOver>

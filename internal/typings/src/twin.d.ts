@@ -1,21 +1,14 @@
+import type { ComponentType } from "react";
+import type styledImport from "styled-components";
+import type { css as cssImport } from "styled-components";
 import "twin.macro";
-import type styledImport, {
-    css as cssImport,
-    StyledComponent,
-    ThemedStyledFunction,
-} from "styled-components";
-import type { ComponentType, DOMAttributes } from "react";
 
 declare module "twin.macro" {
     // The styled and css imports
     export const styled: typeof styledImport;
     export const css: typeof cssImport;
 
-    type TwComponentWrapper = <T extends ComponentType<any>>(
-        component: T
-    ) => ThemedStyledFunction<T, any, {}, never>;
-
-    const tw: TwFn & TwComponentWrapper & typeof styledImport;
+    const tw: typeof css & typeof styledImport;
 
     export = tw;
 }

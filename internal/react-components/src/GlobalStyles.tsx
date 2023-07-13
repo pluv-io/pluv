@@ -1,12 +1,12 @@
-import { createGlobalStyle, CSSObject } from "styled-components";
+import { createGlobalStyle } from "styled-components";
 import tw, { globalStyles } from "twin.macro";
 
 const baseStyles = Object.fromEntries(
     Object.entries(globalStyles).filter(
         ([prop]) =>
-            prop !== "button, [type='button'], [type='reset'], [type='submit']"
-    )
-) as CSSObject;
+            prop !== "button, [type='button'], [type='reset'], [type='submit']",
+    ),
+) as any;
 
 const CustomStyles = createGlobalStyle`
     ${tw`
