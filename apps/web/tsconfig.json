@@ -4,6 +4,8 @@
   "exclude": ["node_modules"],
 	"compilerOptions": {
 		"baseUrl": ".",
+		"declaration": false,
+		"declarationMap": false,
 		"paths": {
 			"@pluv-apps/server-cloudflare": ["../server-cloudflare/src"],
 			"@pluv-internal/cloudflare-utils": ["../../internal/cloudflare-utils/dist"],

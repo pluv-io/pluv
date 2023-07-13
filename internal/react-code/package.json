@@ -17,14 +17,13 @@
 		"@radix-ui/react-tabs": "^1.0.4",
 		"@types/react": "18.2.14",
 		"@types/react-dom": "^18.2.7",
-		"@types/styled-components": "^5.1.26",
 		"clsx": "^1.2.1",
 		"next": "^13.4.9",
 		"prism-react-renderer": "^2.0.6",
 		"react": "18.2.0",
 		"react-dom": "18.2.0",
 		"react-popper": "^2.3.0",
-		"styled-components": "^5.3.10",
+		"styled-components": "^6.0.4",
 		"twin.macro": "^3.3.1"
 	},
 	"devDependencies": {

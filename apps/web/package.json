@@ -37,7 +37,6 @@
         "@types/node": "^20.4.2",
         "@types/react": "18.2.14",
         "@types/react-dom": "^18.2.7",
-        "@types/styled-components": "^5.1.26",
         "@types/ws": "^8.5.5",
         "clsx": "^1.2.1",
         "common-tags": "^1.8.2",
@@ -47,7 +46,7 @@
         "polished": "^4.2.2",
         "react": "18.2.0",
         "react-dom": "18.2.0",
-        "styled-components": "^5.3.10",
+        "styled-components": "^6.0.4",
         "twin.macro": "^3.3.1",
         "yjs": "^13.6.6",
         "zod": "^3.21.4"

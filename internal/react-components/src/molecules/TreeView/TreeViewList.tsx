@@ -1,8 +1,7 @@
 import { ChevronDownIcon } from "@pluv-internal/react-icons";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { m } from "framer-motion";
-import { FC, ReactNode, useState } from "react";
-import { CSSProperties } from "styled-components";
+import { CSSProperties, FC, ReactNode, useState } from "react";
 import tw, { styled } from "twin.macro";
 import { NextLink } from "../../atoms";
 
