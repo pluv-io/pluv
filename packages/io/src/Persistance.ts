@@ -8,7 +8,7 @@ export class Persistance extends AbstractPersistance {
     public addUser(
         room: string,
         connectionId: string,
-        user: JsonObject | null
+        user: JsonObject | null,
     ): Promise<void> {
         const users =
             this._users.get(room) ?? new Map<string, JsonObject | null>();
@@ -58,7 +58,7 @@ export class Persistance extends AbstractPersistance {
 
     public getUser(
         room: string,
-        connectionId: string
+        connectionId: string,
     ): Promise<JsonObject | null> {
         const user = this._users.get(room)?.get(connectionId);
 

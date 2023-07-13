@@ -65,7 +65,7 @@ const SecondBox = tw(HomeCodeDemoBox)`
 
 const didClickIn = (
     element: HTMLDivElement | null,
-    event: MouseEvent<HTMLDivElement>
+    event: MouseEvent<HTMLDivElement>,
 ): boolean => {
     return !element || element.contains(event.target as Node | null);
 };
@@ -103,7 +103,7 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({
             (Object.keys(others)[0] ?? null) as
                 | keyof HomeCodeDemoSelections
                 | null,
-        [others]
+        [others],
     );
 
     const other = useMemo(() => {
@@ -127,16 +127,16 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({
 
             const newXPosition = Math.min(
                 Math.max(position.x, minWidth),
-                maxWidth
+                maxWidth,
             );
             const newYPosition = Math.min(
                 Math.max(position.y, minHeight),
-                maxHeight
+                maxHeight,
             );
 
             return { x: newXPosition, y: newYPosition };
         },
-        [boxSize, rootElem]
+        [boxSize, rootElem],
     );
 
     return (

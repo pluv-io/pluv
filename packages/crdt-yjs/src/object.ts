@@ -12,7 +12,7 @@ export type unstable__YObject<T extends unstable__YObjectValue> = YMap<
 > & { __$type: T };
 
 export const object = <T extends unstable__YObjectValue = {}>(
-    value: T
+    value: T,
 ): unstable__YObject<T> => {
     return new YMap(Object.entries(value)) as unstable__YObject<T>;
 };

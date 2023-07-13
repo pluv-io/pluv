@@ -50,14 +50,14 @@ export const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
                 .history()
                 .reduce(
                     (board, notation) => (board.move(notation), board),
-                    new Chess()
+                    new Chess(),
                 );
         }, []);
 
         const game = useMemo((): Chess => {
             return history.reduce(
                 (board, notation) => (board.move(notation), board),
-                new Chess()
+                new Chess(),
             );
         }, [history]);
 
@@ -97,7 +97,7 @@ export const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
 
                 return true;
             },
-            [clone, game, onMove, sounds]
+            [clone, game, onMove, sounds],
         );
 
         const clear = useCallback(() => game.clear(), [game]);
@@ -111,7 +111,7 @@ export const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
                 // Always promote to queen for simplicity
                 return move({ from, to, promotion: "q" });
             },
-            [move, onSquareSelect]
+            [move, onSquareSelect],
         );
 
         const isGameOver = game.isGameOver();
@@ -154,7 +154,7 @@ export const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
                 </div>
             </div>
         );
-    }
+    },
 );
 
 ChessBoard.displayName = "ChessBoard";

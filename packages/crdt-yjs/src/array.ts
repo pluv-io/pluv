@@ -1,7 +1,7 @@
 import { Array as YArray } from "yjs";
 
 export const array = <T extends unknown>(
-    value: readonly T[] = []
+    value: readonly T[] = [],
 ): YArray<T> => {
     const yarray = new YArray<T>();
 

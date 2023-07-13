@@ -11,7 +11,7 @@ export const getEncryptionKey = async (secret: string): Promise<Uint8Array> => {
         secret,
         "",
         "Pluv.io Generated Encryption Key",
-        32
+        32,
     );
 };
 
@@ -35,7 +35,7 @@ export interface AuthorizeParams {
 export interface AuthorizeModule {
     decode: <TUser extends BaseUser>(jwt: string) => Promise<TUser | null>;
     encode: <TUser extends BaseUser>(
-        params: JWTEncodeParams<TUser>
+        params: JWTEncodeParams<TUser>,
     ) => Promise<string>;
 }
 
@@ -45,7 +45,7 @@ export const authorize = (params: AuthorizeParams) => {
     const { platform, secret } = params;
 
     const encode = async <TUser extends BaseUser>(
-        encodeParams: JWTEncodeParams<TUser>
+        encodeParams: JWTEncodeParams<TUser>,
     ): Promise<string> => {
         const { maxAge = DEFAULT_MAX_AGE_MS, room, user } = encodeParams;
 
@@ -66,7 +66,7 @@ export const authorize = (params: AuthorizeParams) => {
     };
 
     const decode = async <TUser extends BaseUser>(
-        jwt: string
+        jwt: string,
     ): Promise<JWT<TUser> | null> => {
         const encryptionSecret = await getEncryptionKey(secret);
 

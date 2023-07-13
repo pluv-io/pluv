@@ -26,7 +26,7 @@ export const MdxPre = (props: MdxPreProps): ReactElement | null => {
         (element: ReactNode): element is ReactElement<PropsWithChildren> => {
             return isValidElement(element) && !!element.props.children;
         },
-        []
+        [],
     );
 
     const contents = useMemo(() => {

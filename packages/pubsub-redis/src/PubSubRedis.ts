@@ -18,7 +18,7 @@ export class PubSubRedis extends AbstractPubSub {
         number,
         [
             roomName: string,
-            onMessage: (message: IOPubSubEventMessage<any>) => void
+            onMessage: (message: IOPubSubEventMessage<any>) => void,
         ]
     >();
 
@@ -47,14 +47,14 @@ export class PubSubRedis extends AbstractPubSub {
 
     public async publish(
         roomName: string,
-        payload: IOPubSubEventMessage<any>
+        payload: IOPubSubEventMessage<any>,
     ): Promise<void> {
         await this._publisher.publish(roomName, JSON.stringify(payload));
     }
 
     public subscribe(
         roomName: string,
-        onMessage: (message: IOPubSubEventMessage<any>) => void
+        onMessage: (message: IOPubSubEventMessage<any>) => void,
     ): Promise<number> {
         const id = this._currentSubscriptionId++;
         const refs = this._subscriptionsRefs.get(roomName) ?? [];
@@ -89,7 +89,7 @@ export class PubSubRedis extends AbstractPubSub {
             roomName,
             index === -1
                 ? refs
-                : [...refs.slice(0, index), ...refs.slice(index + 1)]
+                : [...refs.slice(0, index), ...refs.slice(index + 1)],
         );
 
         this._subscriptions.delete(subscriptionId);

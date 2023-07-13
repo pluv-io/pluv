@@ -17,7 +17,7 @@ export class PubSub extends AbstractPubSub {
 
     public async publish(
         roomName: string,
-        payload: IOPubSubEventMessage<any>
+        payload: IOPubSubEventMessage<any>,
     ): Promise<void> {
         const subject = this._subjects.get(roomName);
 
@@ -28,7 +28,7 @@ export class PubSub extends AbstractPubSub {
 
     public subscribe(
         roomName: string,
-        onMessage: (message: IOPubSubEventMessage<any>) => void
+        onMessage: (message: IOPubSubEventMessage<any>) => void,
     ): Promise<number> {
         const id = this._currentSubscriptionId++;
         const refs = this._subscriptionsRefs.get(roomName) ?? [];
@@ -69,7 +69,7 @@ export class PubSub extends AbstractPubSub {
             roomName,
             index === -1
                 ? refs
-                : [...refs.slice(0, index), ...refs.slice(index + 1)]
+                : [...refs.slice(0, index), ...refs.slice(index + 1)],
         );
 
         unsubscribe();

@@ -92,7 +92,7 @@ export interface MultiPrismCodeProps<TTab extends string> {
 }
 
 export const MultiPrismCode = <TTab extends string>(
-    props: MultiPrismCodeProps<TTab>
+    props: MultiPrismCodeProps<TTab>,
 ): ReactElement => {
     const { className, style, tabs = [] } = props;
 

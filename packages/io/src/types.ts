@@ -33,7 +33,7 @@ export interface EventConfig<
     TData extends JsonObject = {},
     TResultBroadcast extends EventRecord<string, any> = {},
     TResultSelf extends EventRecord<string, any> = {},
-    TResultSync extends EventRecord<string, any> = {}
+    TResultSync extends EventRecord<string, any> = {},
 > {
     input?: InputZodLike<TData>;
     resolver:
@@ -59,23 +59,23 @@ export type EventConfigType = "broadcast" | "self" | "sync";
 export type SyncEventResolver<
     TContext extends Record<string, any> = {},
     TData extends JsonObject = {},
-    TResultBroadcast extends EventRecord<string, any> = {}
+    TResultBroadcast extends EventRecord<string, any> = {},
 > = (
     data: TData,
-    context: EventResolverContext<TContext>
+    context: EventResolverContext<TContext>,
 ) => MaybePromise<TResultBroadcast | void>;
 
 export type EventResolver<
     TContext extends Record<string, any> = {},
     TData extends JsonObject = {},
-    TResultBroadcast extends EventRecord<string, any> = {}
+    TResultBroadcast extends EventRecord<string, any> = {},
 > = (
     data: TData,
-    context: EventResolverContext<TContext>
+    context: EventResolverContext<TContext>,
 ) => MaybePromise<TResultBroadcast | void>;
 
 export interface EventResolverContext<
-    TContext extends Record<string, any> = {}
+    TContext extends Record<string, any> = {},
 > {
     context: TContext;
     doc: YjsDoc<any>;
@@ -102,7 +102,7 @@ export type EventResolverObject<
     TData extends JsonObject = {},
     TResultBroadcast extends EventRecord<string, any> = {},
     TResultSelf extends EventRecord<string, any> = {},
-    TResultSync extends EventRecord<string, any> = {}
+    TResultSync extends EventRecord<string, any> = {},
 > = {
     broadcast?: EventResolver<
         TContext &
@@ -127,7 +127,7 @@ export type InferEventConfig<
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
     TOutputSelf extends EventRecord<string, any> = {},
-    TOutputSync extends EventRecord<string, any> = {}
+    TOutputSync extends EventRecord<string, any> = {},
 > = {
     [P in keyof TInput]: P extends string
         ? Id<

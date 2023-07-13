@@ -60,7 +60,7 @@ type GetInitialStorageEvent<TPlatform extends AbstractPlatform> = {
 } & InferPlatformRoomContextType<TPlatform>;
 
 export type GetInitialStorageFn<TPlatform extends AbstractPlatform> = (
-    event: GetInitialStorageEvent<TPlatform>
+    event: GetInitialStorageEvent<TPlatform>,
 ) => MaybePromise<Maybe<string>>;
 
 export interface PluvIOListeners<TPlatform extends AbstractPlatform> {
@@ -75,7 +75,7 @@ export type PluvIOConfig<
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
     TOutputSelf extends EventRecord<string, any> = {},
-    TOutputSync extends EventRecord<string, any> = {}
+    TOutputSync extends EventRecord<string, any> = {},
 > = Partial<PluvIOListeners<TPlatform>> & {
     authorize?: TAuthorize;
     context?: TContext;
@@ -103,7 +103,7 @@ export class PluvIO<
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
     TOutputSelf extends EventRecord<string, any> = {},
-    TOutputSync extends EventRecord<string, any> = {}
+    TOutputSync extends EventRecord<string, any> = {},
 > implements
         IOLike<TAuthorize, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>
 {
@@ -153,7 +153,7 @@ export class PluvIO<
                                     user: user as InferIOAuthorizeUser<TAuthorize>,
                                 },
                             }),
-                            {}
+                            {},
                         );
 
                     return { $OTHERS_RECEIVED: { others } };
@@ -196,7 +196,7 @@ export class PluvIO<
 
                         await this._platform.persistance.setStorageState(
                             room,
-                            encodedState
+                            encodedState,
                         );
 
                         this._listeners.onStorageUpdated({
@@ -208,7 +208,7 @@ export class PluvIO<
 
                     const state =
                         (await this._platform.persistance.getStorageState(
-                            room
+                            room,
                         )) ?? doc.encodeStateAsUpdate();
 
                     return { $STORAGE_RECEIVED: { state } };
@@ -235,7 +235,7 @@ export class PluvIO<
                 session.presence = Object.assign(
                     Object.create(null),
                     session.presence,
-                    presence
+                    presence,
                 );
 
                 return { $PRESENCE_UPDATED: { presence } };
@@ -286,7 +286,7 @@ export class PluvIO<
             TOutputBroadcast,
             TOutputSelf,
             TOutputSync
-        >
+        >,
     ) {
         const {
             authorize,
@@ -314,11 +314,11 @@ export class PluvIO<
     }
 
     public async createToken(
-        params: JWTEncodeParams<InferIOAuthorizeUser<InferIOAuthorize<this>>>
+        params: JWTEncodeParams<InferIOAuthorizeUser<InferIOAuthorize<this>>>,
     ): Promise<string> {
         if (!this._authorize) {
             throw new Error(
-                "IO does not specify authorize during initialization."
+                "IO does not specify authorize during initialization.",
             );
         }
 
@@ -333,7 +333,7 @@ export class PluvIO<
         TData extends JsonObject = {},
         TResultBroadcast extends EventRecord<string, any> = {},
         TResultSelf extends EventRecord<string, any> = {},
-        TResultSync extends EventRecord<string, any> = {}
+        TResultSync extends EventRecord<string, any> = {},
     >(
         event: TEvent,
         config: EventConfig<
@@ -343,7 +343,7 @@ export class PluvIO<
             TResultBroadcast,
             TResultSelf,
             TResultSync
-        >
+        >,
     ): PluvIO<
         TPlatform,
         TAuthorize,
@@ -388,13 +388,13 @@ export class PluvIO<
             new PluvIO({
                 events: newEvent as any,
                 platform: this._platform,
-            })
+            }),
         ) as any;
     }
 
     public getRoom(
         room: string,
-        options: GetRoomOptions<TPlatform>
+        options: GetRoomOptions<TPlatform>,
     ): IORoom<
         TPlatform,
         TAuthorize,
@@ -437,7 +437,7 @@ export class PluvIO<
             events: this._events,
             onDestroy: ({ encodedState, room }) => {
                 this._logDebug(
-                    `${colors.blue("Deleting empty room:")} ${room}`
+                    `${colors.blue("Deleting empty room:")} ${room}`,
                 );
 
                 const roomContext = {
@@ -455,7 +455,9 @@ export class PluvIO<
 
                     this._logDebug(`${colors.blue("Deleted room:")} ${room}`);
                     this._logDebug(
-                        `${colors.blue("Rooms available:")} ${rooms.join(", ")}`
+                        `${colors.blue("Rooms available:")} ${rooms.join(
+                            ", ",
+                        )}`,
                     );
                 }
             },
@@ -469,7 +471,7 @@ export class PluvIO<
 
             this._logDebug(`${colors.blue("Created room:")} ${room}`);
             this._logDebug(
-                `${colors.blue("Rooms available:")} ${rooms.join(", ")}`
+                `${colors.blue("Rooms available:")} ${rooms.join(", ")}`,
             );
         }
 
@@ -478,7 +480,7 @@ export class PluvIO<
 
     public static merge<TIO1 extends PluvIO, TIO2 extends PluvIO>(
         first: TIO1,
-        second: TIO2
+        second: TIO2,
     ): PluvIO<
         InferIOPlatform<TIO1>,
         InferIOAuthorize<TIO1>,

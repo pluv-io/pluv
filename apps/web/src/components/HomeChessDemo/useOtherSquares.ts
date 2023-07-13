@@ -3,7 +3,7 @@ import { useMemo } from "react";
 
 export const useOtherSquares = (): Record<string, number> => {
     const otherSquares = usePluvOthers((others) =>
-        others.map((other) => other.presence.demoChessSquare)
+        others.map((other) => other.presence.demoChessSquare),
     );
 
     return useMemo(() => {
@@ -12,7 +12,7 @@ export const useOtherSquares = (): Record<string, number> => {
                 ...counts,
                 ...(square ? { [square]: (counts[square] ?? 0) + 1 } : {}),
             }),
-            {}
+            {},
         );
     }, [otherSquares]);
 };

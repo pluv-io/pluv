@@ -33,7 +33,7 @@ export interface AbstractWebSocketHandleErrorParams {
 }
 
 export type AbstractListener<TType extends keyof AbstractEventMap> = (
-    event: AbstractEventMap[TType]
+    event: AbstractEventMap[TType],
 ) => MaybePromise<void>;
 
 export interface AbstractWebSocketConfig {
@@ -74,12 +74,12 @@ export abstract class AbstractWebSocket {
      */
     public abstract addEventListener<TType extends EventType>(
         type: TType,
-        handler: AbstractListener<TType>
+        handler: AbstractListener<TType>,
     ): void;
 
     public abstract close(
         code?: number | undefined,
-        reason?: string | undefined
+        reason?: string | undefined,
     ): void;
 
     public abstract initialize(): Promise<() => void>;
@@ -110,7 +110,7 @@ export abstract class AbstractWebSocket {
     }
 
     public sendMessage<
-        TMessage extends IOEventMessage<any> = IOEventMessage<any>
+        TMessage extends IOEventMessage<any> = IOEventMessage<any>,
     >(data: TMessage): void {
         return this.send(JSON.stringify(data));
     }

@@ -36,7 +36,7 @@ export type UseTypistResult = readonly [TypistState, UseTypistActions];
 
 export const useTypist = <TElement extends HTMLElement>(
     ref: RefObject<TElement>,
-    params: UseTypistParams
+    params: UseTypistParams,
 ): UseTypistResult => {
     const {
         deleteDelay = ms("2s"),
@@ -69,7 +69,7 @@ export const useTypist = <TElement extends HTMLElement>(
         [
             timeout1: number | null,
             timeout2: number | null,
-            timeout3: number | null
+            timeout3: number | null,
         ]
     >([null, null, null]);
     const intervalsRef = useRef<
@@ -208,7 +208,7 @@ export const useTypist = <TElement extends HTMLElement>(
         if (hasDisplayedSentence) return;
 
         setIndex((oldIndex) =>
-            oldIndex >= sentencesCount - 1 ? 0 : oldIndex + 1
+            oldIndex >= sentencesCount - 1 ? 0 : oldIndex + 1,
         );
 
         setMode("starting");
@@ -246,7 +246,7 @@ export const useTypist = <TElement extends HTMLElement>(
 
     const typistState = useMemo(
         () => ({ completed, mode, text: displayedSentence }),
-        [completed, displayedSentence, mode]
+        [completed, displayedSentence, mode],
     );
 
     useUpdateEffect(() => {

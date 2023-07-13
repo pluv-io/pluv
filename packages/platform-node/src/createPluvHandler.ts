@@ -18,7 +18,7 @@ export interface AuthorizeFunctionContext {
     roomId: string;
 }
 export type AuthorizeFunction<TPluv extends PluvIO<NodePlatform>> = (
-    ctx: AuthorizeFunctionContext
+    ctx: AuthorizeFunctionContext,
 ) => MaybePromise<Maybe<InferIOAuthorizeUser<InferIOAuthorize<TPluv>>>>;
 
 export type CreatePluvHandlerConfig<TPluv extends PluvIO<NodePlatform>> = {
@@ -50,7 +50,7 @@ const handle = (ws: WS.WebSocket) => ({
 export type RequestHandler = (
     req: Http.IncomingMessage,
     res: Http.ServerResponse,
-    next?: () => void
+    next?: () => void,
 ) => void;
 
 export interface WebSocketHandlerResult {
@@ -59,7 +59,7 @@ export interface WebSocketHandlerResult {
 
 export type WebSocketHandler = (
     ws: WS.WebSocket,
-    req: Http.IncomingMessage
+    req: Http.IncomingMessage,
 ) => Promise<WebSocketHandlerResult>;
 
 export interface CreatePluvHandlerResult {
@@ -69,9 +69,9 @@ export interface CreatePluvHandlerResult {
 }
 
 export const createPluvHandler = <
-    TPluv extends PluvIO<NodePlatform, any, any, any, any, any, any>
+    TPluv extends PluvIO<NodePlatform, any, any, any, any, any, any>,
 >(
-    config: CreatePluvHandlerConfig<TPluv>
+    config: CreatePluvHandlerConfig<TPluv>,
 ): CreatePluvHandlerResult => {
     const { authorize, endpoint = "/api/pluv", io, server } = config;
 
@@ -79,7 +79,7 @@ export const createPluvHandler = <
 
     const wsHandler = async (
         ws: WS.WebSocket,
-        req: Http.IncomingMessage
+        req: Http.IncomingMessage,
     ): Promise<WebSocketHandlerResult> => {
         const url = req.url;
         const onError = handle(ws);
@@ -124,7 +124,7 @@ export const createPluvHandler = <
     const handler = async (
         req: Http.IncomingMessage,
         res: Http.ServerResponse,
-        next?: () => void
+        next?: () => void,
     ): Promise<Http.ServerResponse | null> => {
         if (!authorize) return next?.() ?? null;
         if (req.method !== "GET") return next?.() ?? null;

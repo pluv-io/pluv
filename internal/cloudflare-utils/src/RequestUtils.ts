@@ -11,7 +11,7 @@ export class RequestUtils {
 
     public static async handleErrors(
         request: Request,
-        event: (request: Request) => Promise<Response>
+        event: (request: Request) => Promise<Response>,
     ): Promise<Response> {
         try {
             return await event(request);

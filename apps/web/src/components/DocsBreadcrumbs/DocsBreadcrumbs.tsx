@@ -28,7 +28,7 @@ export const DocsBreadcrumbs = memo<DocsBreadcrumbsProps>((props) => {
         const [head, ...tail] = slugs;
 
         const path = [head, ...tail.map((part) => `[${part}]`)].join(
-            "[children]"
+            "[children]",
         );
 
         return get(routes, `${path}[name]`) ?? null;

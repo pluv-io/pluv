@@ -9,12 +9,12 @@ export interface HomeHeroRainfallProps {
 export const HomeHeroRainfall = memo<HomeHeroRainfallProps>(
     ({ className, style }) => {
         const [rainfallElem, rainfallRef] = useState<HTMLDivElement | null>(
-            null
+            null,
         );
         const [ready, setReady] = useState<boolean>(false);
         const rainfall = useMemo(
             () => new Rainfall({ onReady: () => setReady(true) }),
-            []
+            [],
         );
 
         useEffect(() => {
@@ -29,7 +29,7 @@ export const HomeHeroRainfall = memo<HomeHeroRainfallProps>(
         }, [rainfall, ready, rainfallElem]);
 
         return <div ref={rainfallRef} className={className} style={style} />;
-    }
+    },
 );
 
 HomeHeroRainfall.displayName = "HomeHeroRainfall";

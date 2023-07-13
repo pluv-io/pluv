@@ -61,18 +61,18 @@ const getFolderRoutes = (candidates: DocRoutes): readonly string[] => {
         (acc, [slug, node]) => {
             const isFolder = !!Object.keys(node.children).length;
             const children = getFolderRoutes(node.children).map(
-                (nested) => `${slug}/${nested}`
+                (nested) => `${slug}/${nested}`,
             );
 
             return isFolder ? [...acc, slug, ...children] : acc;
         },
-        []
+        [],
     );
 };
 
 const getSourcePath = (
     slugs: readonly string[],
-    candidates: DocRoutes
+    candidates: DocRoutes,
 ): string => {
     const [slug, ...rest] = slugs;
 

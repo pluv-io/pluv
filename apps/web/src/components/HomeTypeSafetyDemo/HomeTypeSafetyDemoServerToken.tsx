@@ -17,7 +17,7 @@ export const HomeTypeSafetyDemoServerToken =
 
                 return toMatch.includes(trimmed) || open;
             },
-            [open]
+            [open],
         );
 
         const padded = text.startsWith(" ");

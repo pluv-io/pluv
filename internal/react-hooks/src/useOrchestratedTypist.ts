@@ -26,12 +26,12 @@ export interface UseOrchestratedTypistActions {
 
 export type UseOrchestratedTypistResult = readonly [
     state: readonly TypistState[],
-    actions: UseOrchestratedTypistActions
+    actions: UseOrchestratedTypistActions,
 ];
 
 export const useOrchestratedTypist = <TElement extends HTMLElement>(
     ref: RefObject<TElement>,
-    params: UseOrchestratedTypistParams
+    params: UseOrchestratedTypistParams,
 ): UseOrchestratedTypistResult => {
     const {
         deleteDelay = ms("2s"),

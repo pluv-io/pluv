@@ -42,7 +42,7 @@ export const HomeTypeSafetyDemoClient = memo<HomeTypeSafetyDemoClientProps>(
                 // return ...
                 };
             `,
-            []
+            [],
         );
 
         const [
@@ -71,7 +71,7 @@ export const HomeTypeSafetyDemoClient = memo<HomeTypeSafetyDemoClientProps>(
                 {code}
             </PrismCode>
         );
-    }
+    },
 );
 
 HomeTypeSafetyDemoClient.displayName = "HomeTypeSafetyDemoClient";

@@ -15,19 +15,19 @@ export interface AuthorizeFunctionContext {
     roomId: string;
 }
 export type AuthorizeFunction<TPluv extends PluvIO<CloudflarePlatform>> = (
-    ctx: AuthorizeFunctionContext
+    ctx: AuthorizeFunctionContext,
 ) => MaybePromise<Maybe<InferIOAuthorizeUser<InferIOAuthorize<TPluv>>>>;
 
 export type CreatePluvHandlerConfig<
     TPluv extends PluvIO<CloudflarePlatform>,
-    TEnv extends Record<string, any>
+    TEnv extends Record<string, any>,
 > = {
     binding: string;
     endpoint?: string;
     modify?: (
         request: Request,
         response: Response,
-        env: TEnv
+        env: TEnv,
     ) => MaybePromise<Response>;
     io: TPluv;
 } & (InferIOAuthorizeRequired<InferIOAuthorize<TPluv>> extends true
@@ -36,11 +36,11 @@ export type CreatePluvHandlerConfig<
 
 export type PluvHandlerFetch<TEnv extends Record<string, any> = {}> = (
     request: Request,
-    env: TEnv
+    env: TEnv,
 ) => Promise<Response | null>;
 
 export interface CreatePluvHandlerResult<
-    TEnv extends Record<string, any> = {}
+    TEnv extends Record<string, any> = {},
 > {
     DurableObject: {
         new (state: DurableObjectState, env: TEnv): DurableObject;
@@ -50,7 +50,7 @@ export interface CreatePluvHandlerResult<
 }
 
 type InferCloudflarePluvHandlerEnv<
-    TPluv extends PluvIO<CloudflarePlatform, any, any, any, any, any, any>
+    TPluv extends PluvIO<CloudflarePlatform, any, any, any, any, any, any>,
 > = TPluv extends PluvIO<
     CloudflarePlatform<infer IEnv>,
     any,
@@ -64,12 +64,12 @@ type InferCloudflarePluvHandlerEnv<
     : {};
 
 export const createPluvHandler = <
-    TPluv extends PluvIO<CloudflarePlatform, any, any, any, any, any, any>
+    TPluv extends PluvIO<CloudflarePlatform, any, any, any, any, any, any>,
 >(
     config: CreatePluvHandlerConfig<
         TPluv,
         Id<InferCloudflarePluvHandlerEnv<TPluv>>
-    >
+    >,
 ): CreatePluvHandlerResult<Id<InferCloudflarePluvHandlerEnv<TPluv>>> => {
     const { authorize, binding, endpoint = "/api/pluv", modify, io } = config;
 
@@ -79,14 +79,28 @@ export const createPluvHandler = <
 
         constructor(
             state: DurableObjectState,
-            env: Id<InferCloudflarePluvHandlerEnv<TPluv>>
+            env: Id<InferCloudflarePluvHandlerEnv<TPluv>>,
         ) {
             this._env = env;
             this._io = io.getRoom(state.id.toString(), { env });
         }
 
+        webSocketClose(
+            ws: WebSocket,
+            code: number,
+            reason: string,
+            wasClean: boolean,
+        ): void | Promise<void> {}
+
+        webSocketError(ws: WebSocket, error: unknown): void | Promise<void> {}
+
+        webSocketMessage(
+            ws: WebSocket,
+            message: string | ArrayBuffer,
+        ): void | Promise<void> {}
+
         async fetch(
-            request: Request<any, CfProperties<any>>
+            request: Request<any, CfProperties<any>>,
         ): Promise<Response> {
             const isWSRequest = request.headers.get("Upgrade") === "websocket";
 
@@ -109,7 +123,7 @@ export const createPluvHandler = <
     };
 
     const getDurableObjectNamespace = (
-        env: Id<InferCloudflarePluvHandlerEnv<TPluv>>
+        env: Id<InferCloudflarePluvHandlerEnv<TPluv>>,
     ): DurableObjectNamespace => {
         const namespace = env[
             binding as keyof typeof env
@@ -165,7 +179,7 @@ export const createPluvHandler = <
                 {
                     headers: { "Content-Type": "text/plain" },
                     status: 403,
-                }
+                },
             );
         }
     };

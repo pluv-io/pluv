@@ -199,7 +199,7 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                 name: "server/pluv.ts",
             },
         ],
-        [codePositions]
+        [codePositions],
     );
 
     const isDesktop = useMediaQuery(`(min-width: ${theme`screens.md`})`);
