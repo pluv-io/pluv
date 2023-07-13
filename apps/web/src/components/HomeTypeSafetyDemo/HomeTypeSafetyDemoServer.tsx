@@ -40,7 +40,7 @@ export const HomeTypeSafetyDemoServer = memo<HomeTypeSafetyDemoServerProps>(
                     resolver: ({${RESOLVER_PARAMETER}}) => ({${RESOLVER_OUTPUT}}),
                 });
             `,
-            []
+            [],
         );
 
         const [
@@ -55,7 +55,7 @@ export const HomeTypeSafetyDemoServer = memo<HomeTypeSafetyDemoServerProps>(
                 .replace(RESOLVER_PARAMETER, resolverParam)
                 .replace(
                     RESOLVER_OUTPUT,
-                    resolverOutput ? `\n      ${resolverOutput}\n    ` : ""
+                    resolverOutput ? `\n      ${resolverOutput}\n    ` : "",
                 );
         }, [inputParam, resolverOutput, resolverParam, template]);
 
@@ -69,7 +69,7 @@ export const HomeTypeSafetyDemoServer = memo<HomeTypeSafetyDemoServerProps>(
                 {code}
             </PrismCode>
         );
-    }
+    },
 );
 
 HomeTypeSafetyDemoServer.displayName = "HomeTypeSafetyDemoServer";

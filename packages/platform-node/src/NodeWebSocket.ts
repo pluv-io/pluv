@@ -34,7 +34,7 @@ export class NodeWebSocket extends AbstractWebSocket {
 
     public addEventListener<TType extends keyof AbstractEventMap>(
         type: TType,
-        handler: AbstractListener<TType>
+        handler: AbstractListener<TType>,
     ): void {
         switch (type) {
             case "close":
@@ -43,7 +43,7 @@ export class NodeWebSocket extends AbstractWebSocket {
                         (handler as AbstractListener<"close">)({
                             code,
                             reason: reason.toString("utf-8"),
-                        })
+                        }),
                     );
                 });
 
@@ -54,7 +54,7 @@ export class NodeWebSocket extends AbstractWebSocket {
                         (handler as AbstractListener<"error">)({
                             error,
                             message: error.message,
-                        })
+                        }),
                     );
                 });
 
@@ -64,7 +64,7 @@ export class NodeWebSocket extends AbstractWebSocket {
                     await Promise.resolve(
                         (handler as AbstractListener<"message">)({
                             data,
-                        })
+                        }),
                     );
                 });
 
@@ -75,7 +75,7 @@ export class NodeWebSocket extends AbstractWebSocket {
 
     public close(code?: number | undefined, reason?: string | undefined): void {
         const canClose = [this.CONNECTING, this.OPEN].some(
-            (readyState) => readyState === this.readyState
+            (readyState) => readyState === this.readyState,
         );
 
         if (!canClose) return;

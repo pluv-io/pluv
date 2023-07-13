@@ -1,6 +1,6 @@
 export const get = <TResult>(
     obj: Record<string, any>,
-    path: string
+    path: string,
 ): TResult | undefined => {
     const travel = (regexp: RegExp) =>
         String.prototype.split
@@ -9,7 +9,7 @@ export const get = <TResult>(
             .reduce(
                 (res, key) =>
                     res !== null && res !== undefined ? res[key] : res,
-                obj
+                obj,
             );
 
     const result = (travel(/[,[\]]+?/) || travel(/[,[\].]+?/)) as TResult;

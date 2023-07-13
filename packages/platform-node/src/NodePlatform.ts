@@ -25,7 +25,7 @@ export class NodePlatform extends AbstractPlatform<
 
     public convertWebSocket(
         webSocket: WebSocket,
-        config: ConvertWebSocketConfig
+        config: ConvertWebSocketConfig,
     ): NodeWebSocket {
         const { room } = config;
 

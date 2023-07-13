@@ -27,7 +27,7 @@ export const DocsTreeViewNavigation = memo<DocsTreeViewNavigationProps>(
                 />
             </TreeView>
         );
-    }
+    },
 );
 
 DocsTreeViewNavigation.displayName = "DocsTreeViewNavigation";

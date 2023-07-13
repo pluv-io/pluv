@@ -130,7 +130,7 @@ export const HomeChessDemo: FC<HomeChessDemoProps> = ({ className, style }) => {
 
     const moveHistory = useMemo(
         () => demo?.chessHistory?.slice() ?? null,
-        [demo]
+        [demo],
     );
 
     const onGameOver = useCallback((winner: "b" | "w" | null) => {
@@ -140,7 +140,7 @@ export const HomeChessDemo: FC<HomeChessDemoProps> = ({ className, style }) => {
                 ? "Black wins!"
                 : winner === "w"
                 ? "White wins!"
-                : "Draw"
+                : "Draw",
         );
     }, []);
 
@@ -171,7 +171,7 @@ export const HomeChessDemo: FC<HomeChessDemoProps> = ({ className, style }) => {
                         onMove={({ game }) => {
                             sharedType?.set(
                                 "chessHistory",
-                                y.array(game.history())
+                                y.array(game.history()),
                             );
                         }}
                     />

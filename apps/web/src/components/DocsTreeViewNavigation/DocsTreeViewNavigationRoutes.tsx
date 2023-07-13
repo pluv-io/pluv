@@ -37,7 +37,7 @@ export const DocsTreeViewNavigationRoutes: FC<
 
     const routeSlug = useMemo(
         () => router.asPath.split("/")[level + 1],
-        [level, router.asPath]
+        [level, router.asPath],
     );
 
     const finalSlug = slugs.at(-1);
@@ -72,7 +72,7 @@ export const DocsTreeViewNavigationRoutes: FC<
                     >
                         {node.name}
                     </TreeView.Link>
-                )
+                ),
             )}
         </>
     );

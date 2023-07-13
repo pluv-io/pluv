@@ -25,14 +25,14 @@ export class PersistanceRedis extends AbstractPersistance {
     public async addUser(
         room: string,
         connectionId: string,
-        user: JsonObject | null
+        user: JsonObject | null,
     ): Promise<void> {
         await this._client
             .multi()
             .sadd(this._getRoomUsersKey(room), connectionId)
             .set(
                 this._getRoomUsersUserKey(room, connectionId),
-                JSON.stringify(user)
+                JSON.stringify(user),
             )
             .exec();
     }
@@ -60,15 +60,18 @@ export class PersistanceRedis extends AbstractPersistance {
 
     public async deleteUsers(room: string): Promise<void> {
         const members = await this._client.smembers(
-            this._getRoomUsersKey(room)
+            this._getRoomUsersKey(room),
         );
 
         await members
-            .reduce((commands, connectionId) => {
-                return commands.del(
-                    this._getRoomUsersUserKey(room, connectionId)
-                );
-            }, this._client.multi().del(this._getRoomUsersKey(room)))
+            .reduce(
+                (commands, connectionId) => {
+                    return commands.del(
+                        this._getRoomUsersUserKey(room, connectionId),
+                    );
+                },
+                this._client.multi().del(this._getRoomUsersKey(room)),
+            )
             .exec();
     }
 
@@ -86,24 +89,24 @@ export class PersistanceRedis extends AbstractPersistance {
 
     public async getUser(
         room: string,
-        connectionId: string
+        connectionId: string,
     ): Promise<JsonObject | null> {
         const data = await this._client.get(
-            this._getRoomUsersUserKey(room, connectionId)
+            this._getRoomUsersUserKey(room, connectionId),
         );
 
         return !data ? null : JSON.parse(data);
     }
 
     public async getUsers(
-        room: string
+        room: string,
     ): Promise<readonly (JsonObject | null)[]> {
         const members = await this._client.smembers(
-            this._getRoomUsersKey(room)
+            this._getRoomUsersKey(room),
         );
 
         return await Promise.all(
-            members.map((connectionId) => this.getUser(room, connectionId))
+            members.map((connectionId) => this.getUser(room, connectionId)),
         );
     }
 
@@ -121,7 +124,7 @@ export class PersistanceRedis extends AbstractPersistance {
 
     private _getRoomUsersUserKey(room: string, connectionId: string): string {
         return this._getClusterKey(
-            `${this._getRoomUsersKey(room)}${DELIMITER}${connectionId}`
+            `${this._getRoomUsersKey(room)}${DELIMITER}${connectionId}`,
         );
     }
 }

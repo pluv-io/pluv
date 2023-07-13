@@ -34,8 +34,8 @@ export const scaffoldProject = async (options: InstallerOptions) => {
                 `${colors
                     .cyan()
                     .bold(
-                        projectName ?? ""
-                    )} exists but is empty, continuing...\n`
+                        projectName ?? "",
+                    )} exists but is empty, continuing...\n`,
             );
         } else {
             spinner.stopAndPersist();
@@ -47,7 +47,7 @@ export const scaffoldProject = async (options: InstallerOptions) => {
                 message: `${colors.red().bold("Warning:")} ${colors
                     .cyan()
                     .bold(
-                        projectName ?? ""
+                        projectName ?? "",
                     )} already exists and isn't empty. How would you like to proceed?`,
                 choices: [
                     {
@@ -96,7 +96,7 @@ export const scaffoldProject = async (options: InstallerOptions) => {
                 spinner.info(
                     `Emptying ${colors
                         .cyan()
-                        .bold(projectName ?? "")} and creating t3 app..\n`
+                        .bold(projectName ?? "")} and creating t3 app..\n`,
                 );
                 fs.emptyDirSync(projectDir);
             }
@@ -108,13 +108,13 @@ export const scaffoldProject = async (options: InstallerOptions) => {
     fs.copySync(srcDir, projectDir);
     fs.renameSync(
         path.join(projectDir, "_gitignore"),
-        path.join(projectDir, ".gitignore")
+        path.join(projectDir, ".gitignore"),
     );
 
     const scaffoldedName =
         projectName === "." ? "App" : colors.cyan().bold(projectName ?? "");
 
     spinner.succeed(
-        `${scaffoldedName} ${colors.green("scaffolded successfully!")}\n`
+        `${scaffoldedName} ${colors.green("scaffolded successfully!")}\n`,
     );
 };

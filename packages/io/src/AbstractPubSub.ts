@@ -3,7 +3,7 @@ import type { SendMessageOptions } from "./types";
 
 export type IOPubSubEventMessage<
     TIO extends IOLike,
-    TEvent extends keyof InferIOOutput<TIO> = keyof InferIOOutput<TIO>
+    TEvent extends keyof InferIOOutput<TIO> = keyof InferIOOutput<TIO>,
 > = IOEventMessage<TIO, TEvent> & {
     options?: SendMessageOptions;
 };
@@ -11,12 +11,12 @@ export type IOPubSubEventMessage<
 export abstract class AbstractPubSub {
     public abstract publish(
         roomName: string,
-        payload: IOPubSubEventMessage<any>
+        payload: IOPubSubEventMessage<any>,
     ): Promise<void>;
 
     public abstract subscribe(
         roomName: string,
-        onMessage: (message: IOPubSubEventMessage<any>) => void
+        onMessage: (message: IOPubSubEventMessage<any>) => void,
     ): Promise<number>;
 
     public abstract unsubscribe(subscriptionId: number): void;

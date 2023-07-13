@@ -60,7 +60,7 @@ export type IORoomConfig<
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
     TOutputSelf extends EventRecord<string, any> = {},
-    TOutputSync extends EventRecord<string, any> = {}
+    TOutputSync extends EventRecord<string, any> = {},
 > = Partial<IORoomListeners<TPlatform>> & {
     authorize?: TAuthorize;
     context: TContext & InferPlatformRoomContextType<TPlatform>;
@@ -93,7 +93,7 @@ export class IORoom<
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
     TOutputSelf extends EventRecord<string, any> = {},
-    TOutputSync extends EventRecord<string, any> = {}
+    TOutputSync extends EventRecord<string, any> = {},
 > implements
         IOLike<TAuthorize, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>
 {
@@ -129,7 +129,7 @@ export class IORoom<
             TOutputBroadcast,
             TOutputSelf,
             TOutputSync
-        >
+        >,
     ) {
         const { authorize, context, debug, events, onDestroy, platform } =
             config;
@@ -150,7 +150,7 @@ export class IORoom<
 
     public broadcast<TEvent extends keyof InferIOInput<this>>(
         event: TEvent,
-        data: Id<InferIOInput<this>[TEvent]>
+        data: Id<InferIOInput<this>[TEvent]>,
     ): Promise<void> {
         const message = { type: event, data } as BroadcastMessage<this>;
 
@@ -177,7 +177,7 @@ export class IORoom<
 
     public async register(
         webSocket: InferPlatformWebSocketType<TPlatform>,
-        options: WebsocketRegisterOptions<TPlatform>
+        options: WebsocketRegisterOptions<TPlatform>,
     ): Promise<void> {
         const { token, ..._platformEventContext } = options;
         const platformEventContext =
@@ -193,8 +193,8 @@ export class IORoom<
 
         this._logDebug(
             `${colors.blue(
-                `Registering connection for room ${this.id}:`
-            )} ${sessionId}`
+                `Registering connection for room ${this.id}:`,
+            )} ${sessionId}`,
         );
 
         const uninitializeWs = await pluvWs.initialize();
@@ -206,14 +206,14 @@ export class IORoom<
         const isTokenInUse =
             !!user &&
             Array.from(this._sessions.values()).some(
-                (session) => session.user?.id === user.id
+                (session) => session.user?.id === user.id,
             );
 
         if (isUnauthorized || isTokenInUse) {
             this._logDebug(
                 `${colors.blue(
-                    "Authorization failed for connection:"
-                )} ${sessionId}`
+                    "Authorization failed for connection:",
+                )} ${sessionId}`,
             );
 
             pluvWs.handleError({ error: new Error("Not authorized") });
@@ -240,12 +240,12 @@ export class IORoom<
         await this._platform.persistance.addUser(
             this.id,
             sessionId,
-            user ?? {}
+            user ?? {},
         );
 
         const onClose = this._onClose(session, uninitializeWs).bind(this);
         const onMessage = this._onMessage(session, platformEventContext).bind(
-            this
+            this,
         );
 
         pluvWs.addEventListener("close", onClose);
@@ -256,8 +256,8 @@ export class IORoom<
 
         this._logDebug(
             `${colors.blue(
-                `Registered connection for room ${this.id}:`
-            )} ${sessionId}`
+                `Registered connection for room ${this.id}:`,
+            )} ${sessionId}`,
         );
 
         const size = this.getSize();
@@ -274,7 +274,7 @@ export class IORoom<
         const quitters = Array.from(this._sessions.values()).filter(
             (session) =>
                 session.quit ||
-                currentTime - session.timers.ping > PING_TIMEOUT_MS
+                currentTime - session.timers.ping > PING_TIMEOUT_MS,
         );
 
         quitters.forEach((session) => {
@@ -309,12 +309,12 @@ export class IORoom<
                 type: "$REGISTERED",
                 data: { sessionId: session.id },
             },
-            session
+            session,
         );
     }
 
     private async _getAuthorizedUser(
-        token: Maybe<string>
+        token: Maybe<string>,
     ): Promise<InferIOAuthorizeUser<InferIOAuthorize<this>> | null> {
         if (!this._authorize) return null;
         if (!token) return null;
@@ -333,7 +333,7 @@ export class IORoom<
 
         if (payload.room !== this.id) {
             this._logDebug(
-                colors.blue(`Token is not authorized for room ${this.id}:`)
+                colors.blue(`Token is not authorized for room ${this.id}:`),
             );
             this._logDebug(colors.blue("Received:"), payload.room);
             this._logDebug(token);
@@ -345,7 +345,7 @@ export class IORoom<
             return this._authorize.user.parse(payload.user) ?? null;
         } catch {
             this._logDebug(
-                `${colors.blue("Token fails validation:")} ${token}`
+                `${colors.blue("Token fails validation:")} ${token}`,
             );
 
             return null;
@@ -353,7 +353,7 @@ export class IORoom<
     }
 
     private _getEventConfig(
-        message: EventMessage<string, any>
+        message: EventMessage<string, any>,
     ):
         | InferEventConfig<
               TPlatform,
@@ -368,7 +368,7 @@ export class IORoom<
     }
 
     private _getEventInputs(
-        message: EventMessage<string, any>
+        message: EventMessage<string, any>,
     ): TInput[string] {
         const eventConfig = this._getEventConfig(message);
 
@@ -388,7 +388,7 @@ export class IORoom<
     }
 
     private _getEventResolverObject(
-        message: EventMessage<string, any>
+        message: EventMessage<string, any>,
     ): EventResolverObject<
         TPlatform,
         TContext,
@@ -441,7 +441,7 @@ export class IORoom<
                 };
 
                 this._sendMessage(message, session, options);
-            }
+            },
         );
 
         this._uninitialize = async () => {
@@ -468,7 +468,7 @@ export class IORoom<
 
     private _onClose(
         session: WebSocketSession,
-        callback?: () => void
+        callback?: () => void,
     ): () => void {
         return (): void => {
             if (!this._uninitialize) return;
@@ -477,8 +477,8 @@ export class IORoom<
 
             this._logDebug(
                 `${colors.blue(
-                    `(Unregistering connection for room ${this.id}:`
-                )} ${session.id}`
+                    `(Unregistering connection for room ${this.id}:`,
+                )} ${session.id}`,
             );
             this._sessions.delete(session.id);
 
@@ -499,11 +499,11 @@ export class IORoom<
 
                     this._logDebug(
                         `${colors.blue(
-                            `Unregistered connection for room ${this.id}:`
-                        )} ${session.id}`
+                            `Unregistered connection for room ${this.id}:`,
+                        )} ${session.id}`,
                     );
                     this._logDebug(
-                        `${colors.blue(`Room ${this.id} size:`)} ${size}`
+                        `${colors.blue(`Room ${this.id} size:`)} ${size}`,
                     );
 
                     if (size) return;
@@ -515,7 +515,7 @@ export class IORoom<
 
     private _onMessage(
         session: WebSocketSession,
-        platformEventContext: InferPlatformEventContextType<TPlatform>
+        platformEventContext: InferPlatformEventContextType<TPlatform>,
     ): (event: AbstractMessageEvent) => void {
         return (event: AbstractMessageEvent): void => {
             const baseContext: EventResolverContext<TContext> = {
@@ -619,7 +619,7 @@ export class IORoom<
     private _sendMessage(
         message: EventMessage<string, any>,
         sender: SendMessageSender | null,
-        options: SendMessageOptions = {}
+        options: SendMessageOptions = {},
     ): void {
         switch (options.type) {
             case "self": {
@@ -644,7 +644,7 @@ export class IORoom<
     private _sendBroadcastMessage(
         message: EventMessage<string, any>,
         sender: SendMessageSender | null,
-        sessionIds?: readonly string[]
+        sessionIds?: readonly string[],
     ): void {
         const senderId = sender?.id ?? null;
 
@@ -667,7 +667,7 @@ export class IORoom<
 
     private _sendSelfMessage(
         message: EventMessage<string, any>,
-        sender: SendMessageSender | null
+        sender: SendMessageSender | null,
     ): void {
         const senderId = sender?.id;
 
@@ -687,7 +687,7 @@ export class IORoom<
 
     private _sendSyncMessage(
         message: EventMessage<string, any>,
-        sender: SendMessageSender | null
+        sender: SendMessageSender | null,
     ): void {
         const senderId = sender?.id;
 

@@ -28,7 +28,7 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
 
     public applyUpdate(
         update?: string | Uint8Array | null,
-        origin?: string
+        origin?: string,
     ): this {
         if (update === null || typeof update === "undefined") return this;
 
@@ -55,7 +55,7 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
     public getSharedTypes(): T {
         return Array.from(this._storage.keys()).reduce(
             (acc, key) => ({ ...acc, [key]: this._storage.get(key) }),
-            {} as T
+            {} as T,
         );
     }
 
@@ -64,14 +64,14 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
             update: string,
             origin: any,
             doc: YDoc,
-            transaction: Transaction
-        ) => void
+            transaction: Transaction,
+        ) => void,
     ): () => void {
         const _fn = (
             update: Uint8Array,
             origin: any,
             doc: YDoc,
-            transaction: Transaction
+            transaction: Transaction,
         ) => fn(YjsDoc.fromUint8Array(update), origin, doc, transaction);
 
         this.value.on("update", _fn);
@@ -87,7 +87,7 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
 
     public transact(
         fn: (transaction: Transaction) => void,
-        origin?: any
+        origin?: any,
     ): void {
         this.value.transact((tx) => {
             fn(tx);
@@ -104,7 +104,7 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
 }
 
 export const doc = <T extends Record<string, AbstractType<any>> = {}>(
-    value?: T
+    value?: T,
 ): YjsDoc<T> => {
     return new YjsDoc(value);
 };

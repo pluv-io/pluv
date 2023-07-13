@@ -11,7 +11,7 @@ import path from "path";
  * e.g. dir/app => ["app", "dir/app"]
  **/
 export const parseNameAndPath = (
-    input: string
+    input: string,
 ): readonly [name: string, path: string] => {
     const paths = input.split("/");
 

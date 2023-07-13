@@ -1,6 +1,6 @@
 export const debounce = <TFunc extends (...args: any[]) => any>(
     fn: TFunc,
-    options?: { wait: number; immediate?: boolean }
+    options?: { wait: number; immediate?: boolean },
 ): ((...args: Parameters<TFunc>) => void) => {
     const { wait, immediate = false } = options ?? {};
 

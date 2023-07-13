@@ -7,7 +7,7 @@ export interface XmlElementParams {
 
 export const xmlElement = (
     name: string,
-    params: XmlElementParams = {}
+    params: XmlElementParams = {},
 ): YXmlElement => {
     const { children = [] } = params;
 

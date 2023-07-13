@@ -3,7 +3,7 @@ import { match } from "path-to-regexp";
 
 type PathParamRecord<
     TParamName extends string,
-    TParamValue extends string | string[] = string
+    TParamValue extends string | string[] = string,
 > = { [key in `${TParamName}`]: TParamValue };
 
 export type PathParams<T extends string> = T extends string
@@ -31,7 +31,7 @@ interface RouterPathHandlerHelpers<TContext> {
 
 type RouterPathHandler<TContext, T extends PathParamRecord<string, any>> = (
     params: Id<T>,
-    helpers: RouterPathHandlerHelpers<TContext>
+    helpers: RouterPathHandlerHelpers<TContext>,
 ) => MaybePromise<Response | void>;
 
 export type ParsedUrlQuery = Record<string, string | string[] | undefined>;
@@ -52,18 +52,18 @@ type RouterPathTuple<
     TContext,
     TMethod extends RouterMethod,
     TPathName extends string,
-    TPathParams extends PathParams<TPathName>
+    TPathParams extends PathParams<TPathName>,
 > = readonly [
     method: TMethod,
     path: TPathName,
-    handler: RouterPathHandler<TContext, Id<TPathParams>>
+    handler: RouterPathHandler<TContext, Id<TPathParams>>,
 ];
 
 type RouterPaths<
     TContext,
     TMethod extends RouterMethod,
     TPathName extends string,
-    TPathParams extends PathParams<TPathName>
+    TPathParams extends PathParams<TPathName>,
 > = readonly RouterPathTuple<TContext, TMethod, TPathName, TPathParams>[];
 
 export interface RouterConfigOptions<TContext> {
@@ -72,14 +72,14 @@ export interface RouterConfigOptions<TContext> {
 
 export interface RouterOptions<
     TContext,
-    TPaths extends RouterPaths<TContext, any, string, any>
+    TPaths extends RouterPaths<TContext, any, string, any>,
 > {
     paths?: TPaths;
 }
 
 export class Router<
     TContext,
-    TPaths extends RouterPaths<TContext, any, string, any> = []
+    TPaths extends RouterPaths<TContext, any, string, any> = [],
 > {
     private _config: RouterConfigOptions<TContext> | null = null;
 
@@ -92,7 +92,7 @@ export class Router<
     public async match(request: Request): Promise<Response> {
         if (!this._config) {
             throw new Error(
-                'Must call "setConfig" before matching a new request.'
+                'Must call "setConfig" before matching a new request.',
             );
         }
 
@@ -130,10 +130,10 @@ export class Router<
     public static merge<
         TContextStatic,
         TPathsStatic1 extends RouterPaths<TContextStatic, any, string, any>,
-        TPathsStatic2 extends RouterPaths<TContextStatic, any, string, any>
+        TPathsStatic2 extends RouterPaths<TContextStatic, any, string, any>,
     >(
         router1: Router<TContextStatic, TPathsStatic1>,
-        router2: Router<TContextStatic, TPathsStatic2>
+        router2: Router<TContextStatic, TPathsStatic2>,
     ): Router<TContextStatic, [...TPathsStatic1, ...TPathsStatic2]> {
         const paths1 = router1.paths;
         const paths2 = router2.paths;
@@ -144,7 +144,7 @@ export class Router<
     public path<TMethod extends RouterMethod, TPath extends string>(
         method: TMethod,
         pattern: TPath,
-        handler: RouterPathHandler<TContext, Id<PathParams<TPath>>>
+        handler: RouterPathHandler<TContext, Id<PathParams<TPath>>>,
     ): Router<
         TContext,
         [...TPaths, ...RouterPaths<TContext, TMethod, TPath, PathParams<TPath>>]
@@ -160,7 +160,7 @@ export class Router<
     }
 
     public setConfig(
-        options: RouterConfigOptions<TContext>
+        options: RouterConfigOptions<TContext>,
     ): Router<TContext, TPaths> {
         this._config = options;
 
@@ -190,7 +190,7 @@ export class Router<
                         : decoded,
                 };
             },
-            {} as ParsedUrlQuery
+            {} as ParsedUrlQuery,
         );
     }
 }

@@ -31,14 +31,14 @@ export class CloudflareWebSocket extends AbstractWebSocket {
 
     public addEventListener<TType extends keyof AbstractEventMap>(
         type: TType,
-        handler: AbstractListener<TType>
+        handler: AbstractListener<TType>,
     ) {
         this.webSocket.addEventListener(type, handler as any);
     }
 
     public close(code?: number | undefined, reason?: string | undefined): void {
         const canClose = [this.CONNECTING, this.OPEN].some(
-            (readyState) => readyState === this.readyState
+            (readyState) => readyState === this.readyState,
         );
 
         if (!canClose) return;

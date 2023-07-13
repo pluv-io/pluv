@@ -15,7 +15,7 @@ export const useNoSsr = (): NoSsrFunction => {
                     : (value as () => T)()
                 : fallback ?? null;
         },
-        [didMount]
+        [didMount],
     );
 
     return noSsr;

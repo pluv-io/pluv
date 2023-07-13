@@ -89,7 +89,7 @@ export const CodeTooltip: FC<CodeTooltipProps> = ({
                     },
                 },
             ],
-            []
+            [],
         ),
     });
 
@@ -124,7 +124,7 @@ export const CodeTooltip: FC<CodeTooltipProps> = ({
                     <Label>{label}</Label>
                     {!!helperText && <HelperText>{helperText}</HelperText>}
                 </Content>,
-                document.body
+                document.body,
             ),
         handlers: { onMouseOut, onMouseOver },
     });

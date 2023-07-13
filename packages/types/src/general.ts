@@ -27,7 +27,7 @@ type SpreadTwo<L, R> = Id<
 
 export type Spread<A extends readonly [...any]> = A extends [
     infer L,
-    ...infer R
+    ...infer R,
 ]
     ? SpreadTwo<L, Spread<R>>
     : unknown;
@@ -46,12 +46,12 @@ export type DeepWriteable<T> = {
 
 export type OptionalProps<
     T extends Record<string, any>,
-    K extends keyof T = keyof T
+    K extends keyof T = keyof T,
 > = Omit<T, K> & Partial<Pick<T, K>>;
 
 export type NonNilProps<
     T extends Record<string, any>,
-    K extends keyof T = keyof T
+    K extends keyof T = keyof T,
 > = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> };
 
 export type JsonPrimitive = string | number | boolean | null;

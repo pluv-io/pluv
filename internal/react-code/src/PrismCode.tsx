@@ -163,7 +163,7 @@ export const PrismCode = memo(
                 )}
             </Highlight>
         );
-    })
+    }),
 );
 
 PrismCode.displayName = "PrismCode";

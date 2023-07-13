@@ -71,7 +71,7 @@ export class IndexedDBStorage extends AbstractStorageStore {
 
         const updates = await db.getAll(
             UPGRADES_KEY,
-            this._getLowerBound(start)
+            this._getLowerBound(start),
         );
 
         const lastKey = await this._getLastKey();

@@ -18,12 +18,14 @@ export type InferYjsDocJson<TDoc extends YjsDoc<any>> = TDoc extends YjsDoc<
 
 export type InferYjsDocSharedType<
     TDoc extends YjsDoc<any>,
-    TKey extends keyof InferYjsDocSharedTypes<TDoc> = keyof InferYjsDocSharedTypes<TDoc>
+    TKey extends
+        keyof InferYjsDocSharedTypes<TDoc> = keyof InferYjsDocSharedTypes<TDoc>,
 > = InferYjsDocSharedTypes<TDoc>[TKey];
 
 export type InferYjsDocSharedTypeJson<
     TDoc extends YjsDoc<any>,
-    TKey extends keyof InferYjsDocSharedTypes<TDoc> = keyof InferYjsDocSharedTypes<TDoc>
+    TKey extends
+        keyof InferYjsDocSharedTypes<TDoc> = keyof InferYjsDocSharedTypes<TDoc>,
 > = InferYjsSharedTypeJson<InferYjsDocSharedTypes<TDoc>[TKey]>;
 
 export type InferYjsDocSharedTypes<TDoc extends YjsDoc<any>> =

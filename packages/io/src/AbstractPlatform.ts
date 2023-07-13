@@ -31,7 +31,7 @@ export interface ConvertWebSocketConfig {
 export abstract class AbstractPlatform<
     TWebSocket = any,
     TIOContext extends Record<string, any> = {},
-    TRoomContext extends Record<string, any> = {}
+    TRoomContext extends Record<string, any> = {},
 > {
     readonly _ioContext: TIOContext | undefined;
     readonly _roomContext: TRoomContext | undefined;
@@ -48,7 +48,7 @@ export abstract class AbstractPlatform<
 
     public abstract convertWebSocket(
         webSocket: TWebSocket,
-        config: ConvertWebSocketConfig
+        config: ConvertWebSocketConfig,
     ): AbstractWebSocket;
 
     public abstract parseData(data: string | ArrayBuffer): Record<string, any>;

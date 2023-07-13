@@ -47,7 +47,7 @@ const getGitVersion = () => {
 /** If git config value 'init.defaultBranch' is set return value else 'main' */
 const getDefaultBranch = () => {
     const stdout = execSync(
-        "git config --global init.defaultBranch || echo main"
+        "git config --global init.defaultBranch || echo main",
     )
         .toString()
         .trim();
@@ -81,7 +81,7 @@ export const initializeGit = async (projectDir: string) => {
             message: `${colors
                 .red()
                 .bold(
-                    "Warning:"
+                    "Warning:",
                 )} Git is already initialized in "${dirName}". Initializing a new git repository would delete the previous history. Would you like to continue anyways?`,
             default: false,
         });
@@ -102,7 +102,7 @@ export const initializeGit = async (projectDir: string) => {
             message: `${colors
                 .red()
                 .bold(
-                    "Warning:"
+                    "Warning:",
                 )} "${dirName}" is already in a git worktree. Would you still like to initialize a new git repository in this directory?`,
             default: false,
         });
@@ -132,7 +132,7 @@ export const initializeGit = async (projectDir: string) => {
         spinner.succeed(
             `${colors.green("Successfully initialized and staged")} ${colors
                 .green()
-                .bold("git")}\n`
+                .bold("git")}\n`,
         );
     } catch (error) {
         // Safeguard, should be unreachable
@@ -140,8 +140,8 @@ export const initializeGit = async (projectDir: string) => {
             `${colors
                 .red()
                 .bold(
-                    "Failed:"
-                )} could not initialize git. Update git to the latest version!\n`
+                    "Failed:",
+                )} could not initialize git. Update git to the latest version!\n`,
         );
     }
 };

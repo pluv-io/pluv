@@ -112,7 +112,7 @@ export const HomeCodeDemoBox = forwardRef<HTMLDivElement, HomeCodeDemoBoxProps>(
                 </Box>
             </Root>
         );
-    }
+    },
 );
 
 HomeCodeDemoBox.displayName = "HomeCodeDemoBox";

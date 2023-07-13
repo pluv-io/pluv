@@ -29,7 +29,7 @@ export interface BaseIOAuthorize {
 }
 
 export interface BaseIOAuthorizeEventRecord<
-    TAuthorize extends IOAuthorize<any, any>
+    TAuthorize extends IOAuthorize<any, any>,
 > {
     $OTHERS_RECEIVED: {
         others: {
@@ -74,7 +74,7 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> =
 
 export interface EventMessage<
     TEvent extends string,
-    TData extends JsonObject = {}
+    TData extends JsonObject = {},
 > {
     data: TData;
     type: TEvent;
@@ -86,12 +86,12 @@ export type EventRecord<TEvent extends string, TData extends JsonObject> = {
 
 export type GetEventMessage<
     T extends EventRecord<string, any>,
-    TEvent extends keyof T
+    TEvent extends keyof T,
 > = TEvent extends string ? EventMessage<TEvent, T[TEvent]> : never;
 
 export type InferEventMessage<
     TEvents extends EventRecord<string, any> = EventRecord<string, any>,
-    TEvent extends keyof TEvents = keyof TEvents
+    TEvent extends keyof TEvents = keyof TEvents,
 > = {
     [P in TEvent]: P extends string ? Id<EventMessage<P, TEvents[P]>> : never;
 }[TEvent];
@@ -163,7 +163,7 @@ export type InputZodLike<TData extends JsonObject> = {
 
 export interface IOAuthorize<
     TUser extends BaseUser = any,
-    TRequired extends boolean = false
+    TRequired extends boolean = false,
 > {
     required: TRequired;
     secret: string;
@@ -187,7 +187,7 @@ export type IOAuthorizeRequiredEventMessage<TIO extends IOLike> = NonNilProps<
 
 export type IOEventMessage<
     TIO extends IOLike,
-    TEvent extends keyof InferIOOutput<TIO> = keyof InferIOOutput<TIO>
+    TEvent extends keyof InferIOOutput<TIO> = keyof InferIOOutput<TIO>,
 > = Id<
     { room: string } & InferEventMessage<InferIOOutput<TIO>, TEvent> &
         (InferEventMessage<InferIOOutput<TIO>, TEvent>["type"] extends "$ERROR"
@@ -200,7 +200,7 @@ export interface IOLike<
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
     TOutputSelf extends EventRecord<string, any> = {},
-    TOutputSync extends EventRecord<string, any> = {}
+    TOutputSync extends EventRecord<string, any> = {},
 > {
     _authorize: TAuthorize | null;
     _events: {

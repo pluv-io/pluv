@@ -49,7 +49,7 @@ export const useWindowFocus = () => {
             window.removeEventListener("blur", onBlur);
             document.removeEventListener(
                 "visibilitychange",
-                onVisibilityChange
+                onVisibilityChange,
             );
         };
     }, [isBrowser]);
