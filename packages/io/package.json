@@ -24,7 +24,6 @@
 	},
 	"dependencies": {
 		"@panva/hkdf": "^1.1.1",
-		"@playwright/test": "^1.36.0",
 		"@pluv/crdt-yjs": "workspace:^",
 		"@pluv/types": "workspace:^",
 		"@types/react": "^18.2.14",

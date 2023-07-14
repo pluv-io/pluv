@@ -21,7 +21,6 @@
 		"typescript": "^5.1.6"
 	},
 	"dependencies": {
-		"@playwright/test": "^1.36.0",
 		"@types/pixi.js": "4.8.9",
 		"@types/react": "^18.2.14",
 		"pixi.js": "4.8.9"

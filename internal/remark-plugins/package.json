@@ -15,7 +15,6 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@playwright/test": "^1.36.0",
 		"@types/react": "^18.2.14",
 		"@types/unist": "^3.0.0",
 		"acorn": "^8.10.0",

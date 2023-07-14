@@ -12,7 +12,6 @@
 	},
 	"dependencies": {
 		"@mdx-js/react": "^2.3.0",
-		"@playwright/test": "^1.36.0",
 		"@pluv-internal/react-code": "workspace:^",
 		"@pluv-internal/react-components": "workspace:^",
 		"@pluv-internal/react-hooks": "workspace:^",

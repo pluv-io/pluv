@@ -23,7 +23,6 @@
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
 	"dependencies": {
-		"@playwright/test": "^1.36.0",
 		"@pluv/crdt-yjs": "workspace:^",
 		"@pluv/types": "workspace:^",
 		"@types/react": "^18.2.14",

@@ -11,7 +11,6 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@playwright/test": "^1.36.0",
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@popperjs/core": "^2.11.8",
 		"@radix-ui/react-tabs": "^1.0.4",

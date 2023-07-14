@@ -15,7 +15,6 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@playwright/test": "^1.36.0",
 		"@pluv/types": "workspace:^",
 		"@types/react": "^18.2.14",
 		"path-to-regexp": "^6.2.1"

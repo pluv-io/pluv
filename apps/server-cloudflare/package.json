@@ -13,7 +13,6 @@
     "wrangler": "wrangler"
   },
   "dependencies": {
-    "@playwright/test": "^1.36.0",
     "@pluv/io": "workspace:^",
     "@pluv/platform-cloudflare": "workspace:^",
     "@types/react": "^18.2.14",
