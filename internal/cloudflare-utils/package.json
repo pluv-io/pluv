@@ -16,11 +16,11 @@
 	},
 	"dependencies": {
 		"@pluv/types": "workspace:^",
-		"@types/react": "^18.2.14",
+		"@types/react": "^18.2.15",
 		"path-to-regexp": "^6.2.1"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20230710.0",
+		"@cloudflare/workers-types": "^4.20230710.1",
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^7.1.0",
