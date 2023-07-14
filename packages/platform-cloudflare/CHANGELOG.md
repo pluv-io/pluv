@@ -1,5 +1,16 @@
 # @pluv/platform-cloudflare
 
+## 0.3.3
+
+### Patch Changes
+
+- 8fba48b: fix including incorrect dependency
+- 8997c65: bumped dependencies
+- Updated dependencies [8fba48b]
+- Updated dependencies [8997c65]
+  - @pluv/types@0.2.2
+  - @pluv/io@0.7.1
+
 ## 0.3.2
 
 ### Patch Changes

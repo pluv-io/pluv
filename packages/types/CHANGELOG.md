@@ -1,5 +1,12 @@
 # @pluv/types
 
+## 0.2.2
+
+### Patch Changes
+
+- 8fba48b: fix including incorrect dependency
+- 8997c65: bumped dependencies
+
 ## 0.2.1
 
 ### Patch Changes

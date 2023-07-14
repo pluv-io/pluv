@@ -1,5 +1,12 @@
 # @pluv/tsconfig
 
+## 0.1.8
+
+### Patch Changes
+
+- 8fba48b: fix including incorrect dependency
+- 8997c65: bumped dependencies
+
 ## 0.1.7
 
 ### Patch Changes
