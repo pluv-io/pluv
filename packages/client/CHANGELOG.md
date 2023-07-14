@@ -1,5 +1,16 @@
 # @pluv/client
 
+## 0.9.1
+
+### Patch Changes
+
+- 8fba48b: fix including incorrect dependency
+- 8997c65: bumped dependencies
+- Updated dependencies [8fba48b]
+- Updated dependencies [8997c65]
+  - @pluv/crdt-yjs@0.4.1
+  - @pluv/types@0.2.2
+
 ## 0.9.0
 
 ### Minor Changes
