@@ -37,7 +37,7 @@
 		"@types/express": "^4.17.17",
 		"@types/ms": "^0.7.31",
 		"@types/node": "^20.4.2",
-		"@types/react": "18.2.14",
+		"@types/react": "18.2.15",
 		"@types/react-dom": "^18.2.7",
 		"@types/ws": "^8.5.5",
 		"body-parser": "^1.20.2",
@@ -57,7 +57,7 @@
 		"zod": "^3.21.4"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20230710.0",
+		"@cloudflare/workers-types": "^4.20230710.1",
 		"@playwright/test": "^1.36.0",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^8.2.0",

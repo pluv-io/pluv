@@ -22,7 +22,7 @@
 	},
 	"dependencies": {
 		"@types/pixi.js": "4.8.9",
-		"@types/react": "^18.2.14",
+		"@types/react": "^18.2.15",
 		"pixi.js": "4.8.9"
 	}
 }

@@ -24,7 +24,7 @@
 	},
 	"dependencies": {
 		"@pluv/types": "workspace:^",
-		"@types/react": "^18.2.14",
+		"@types/react": "^18.2.15",
 		"js-base64": "^3.7.5"
 	},
 	"peerDependencies": {

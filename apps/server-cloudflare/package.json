@@ -15,11 +15,11 @@
   "dependencies": {
     "@pluv/io": "workspace:^",
     "@pluv/platform-cloudflare": "workspace:^",
-    "@types/react": "^18.2.14",
+    "@types/react": "^18.2.15",
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20230710.0",
+    "@cloudflare/workers-types": "^4.20230710.1",
     "@pluv/tsconfig": "workspace:^",
     "@rollup/plugin-commonjs": "^25.0.2",
     "@rollup/plugin-dynamic-import-vars": "^2.0.4",
