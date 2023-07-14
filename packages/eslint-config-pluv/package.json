@@ -15,7 +15,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@playwright/test": "^1.36.0",
     "@types/react": "^18.2.14",
     "eslint": "^8.44.0",
     "eslint-config-next": "^13.4.9",

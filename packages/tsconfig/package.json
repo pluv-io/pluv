@@ -24,7 +24,6 @@
     "wrangler.json"
   ],
   "dependencies": {
-    "@playwright/test": "^1.36.0",
     "@types/react": "^18.2.14"
   }
 }

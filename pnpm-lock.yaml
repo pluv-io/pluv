@@ -29,9 +29,6 @@ importers:
 
   apps/server-cloudflare:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv/io':
         specifier: workspace:^
         version: link:../../packages/io
@@ -90,9 +87,6 @@ importers:
       '@faker-js/faker':
         specifier: ^8.0.2
         version: 8.0.2
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv-apps/web':
         specifier: workspace:^
         version: link:../web
@@ -150,7 +144,7 @@ importers:
         version: 13.4.9
       '@next/mdx':
         specifier: ^13.4.9
-        version: 13.4.9
+        version: 13.4.9(@mdx-js/loader@2.3.0)(@mdx-js/react@2.3.0)
       '@pluv-internal/remark-plugins':
         specifier: workspace:^
         version: link:../../internal/remark-plugins
@@ -237,7 +231,7 @@ importers:
         version: 3.0.0
       tailwindcss:
         specifier: ^3.3.2
-        version: 3.3.2
+        version: 3.3.2(ts-node@10.9.1)
       typescript:
         specifier: 5.1.6
         version: 5.1.6
@@ -256,9 +250,6 @@ importers:
       '@mdx-js/react':
         specifier: ^2.3.0
         version: 2.3.0(react@18.2.0)
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv-apps/server-cloudflare':
         specifier: workspace:^
         version: link:../server-cloudflare
@@ -434,9 +425,6 @@ importers:
 
   internal/cloudflare-utils:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv/types':
         specifier: workspace:^
         version: link:../../packages/types
@@ -468,9 +456,6 @@ importers:
       '@mdx-js/react':
         specifier: ^2.3.0
         version: 2.3.0(react@18.2.0)
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv-internal/react-code':
         specifier: workspace:^
         version: link:../react-code
@@ -491,7 +476,7 @@ importers:
         version: 18.2.7
       next:
         specifier: ^13.4.9
-        version: 13.4.9(@babel/core@7.22.9)(react-dom@18.2.0)(react@18.2.0)
+        version: 13.4.9(@babel/core@7.22.9)(babel-plugin-macros@3.1.0)(react-dom@18.2.0)(react@18.2.0)
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -500,7 +485,7 @@ importers:
         version: 18.2.0(react@18.2.0)
       styled-components:
         specifier: ^6.0.4
-        version: 6.0.4(react-dom@18.2.0)(react@18.2.0)
+        version: 6.0.4(babel-plugin-styled-components@2.1.4)(react-dom@18.2.0)(react@18.2.0)
       twin.macro:
         specifier: ^3.3.1
         version: 3.3.1(tailwindcss@3.3.2)
@@ -528,16 +513,13 @@ importers:
         version: 18.2.0
       tailwindcss:
         specifier: ^3.3.2
-        version: 3.3.2
+        version: 3.3.2(ts-node@10.9.1)
       typescript:
         specifier: ^5.1.6
         version: 5.1.6
 
   internal/rainfall:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@types/pixi.js':
         specifier: 4.8.9
         version: 4.8.9
@@ -563,9 +545,6 @@ importers:
 
   internal/react-chess:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv-internal/react-hooks':
         specifier: workspace:^
         version: link:../react-hooks
@@ -589,13 +568,13 @@ importers:
         version: 18.2.0
       react-chessboard:
         specifier: ^3.2.0
-        version: 3.2.0(@types/react@18.2.14)(react-dom@18.2.0)(react@18.2.0)
+        version: 3.2.0(@types/node@20.4.2)(@types/react@18.2.14)(react-dom@18.2.0)(react@18.2.0)
       react-dom:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
       styled-components:
         specifier: ^6.0.4
-        version: 6.0.4(react-dom@18.2.0)(react@18.2.0)
+        version: 6.0.4(babel-plugin-styled-components@2.1.4)(react-dom@18.2.0)(react@18.2.0)
       twin.macro:
         specifier: ^3.3.1
         version: 3.3.1(tailwindcss@3.3.2)
@@ -623,16 +602,13 @@ importers:
         version: 18.2.0
       tailwindcss:
         specifier: ^3.3.2
-        version: 3.3.2
+        version: 3.3.2(ts-node@10.9.1)
       typescript:
         specifier: ^5.1.6
         version: 5.1.6
 
   internal/react-code:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv-internal/react-hooks':
         specifier: workspace:^
         version: link:../react-hooks
@@ -653,7 +629,7 @@ importers:
         version: 1.2.1
       next:
         specifier: ^13.4.9
-        version: 13.4.9(@babel/core@7.22.9)(react-dom@18.2.0)(react@18.2.0)
+        version: 13.4.9(@babel/core@7.22.9)(babel-plugin-macros@3.1.0)(react-dom@18.2.0)(react@18.2.0)
       prism-react-renderer:
         specifier: ^2.0.6
         version: 2.0.6(react@18.2.0)
@@ -668,7 +644,7 @@ importers:
         version: 2.3.0(@popperjs/core@2.11.8)(react-dom@18.2.0)(react@18.2.0)
       styled-components:
         specifier: ^6.0.4
-        version: 6.0.4(react-dom@18.2.0)(react@18.2.0)
+        version: 6.0.4(babel-plugin-styled-components@2.1.4)(react-dom@18.2.0)(react@18.2.0)
       twin.macro:
         specifier: ^3.3.1
         version: 3.3.1(tailwindcss@3.3.2)
@@ -696,7 +672,7 @@ importers:
         version: 18.2.0
       tailwindcss:
         specifier: ^3.3.2
-        version: 3.3.2
+        version: 3.3.2(ts-node@10.9.1)
       typescript:
         specifier: ^5.1.6
         version: 5.1.6
@@ -706,9 +682,6 @@ importers:
       '@emotion/is-prop-valid':
         specifier: ^1.2.1
         version: 1.2.1
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv-internal/react-hooks':
         specifier: workspace:^
         version: link:../react-hooks
@@ -744,7 +717,7 @@ importers:
         version: 2.1.3
       next:
         specifier: ^13.4.9
-        version: 13.4.9(@babel/core@7.22.9)(react-dom@18.2.0)(react@18.2.0)
+        version: 13.4.9(@babel/core@7.22.9)(babel-plugin-macros@3.1.0)(react-dom@18.2.0)(react@18.2.0)
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -753,7 +726,7 @@ importers:
         version: 18.2.0(react@18.2.0)
       styled-components:
         specifier: ^6.0.4
-        version: 6.0.4(react-dom@18.2.0)(react@18.2.0)
+        version: 6.0.4(babel-plugin-styled-components@2.1.4)(react-dom@18.2.0)(react@18.2.0)
       twin.macro:
         specifier: ^3.3.1
         version: 3.3.1(tailwindcss@3.3.2)
@@ -781,16 +754,13 @@ importers:
         version: 18.2.0
       tailwindcss:
         specifier: ^3.3.2
-        version: 3.3.2
+        version: 3.3.2(ts-node@10.9.1)
       typescript:
         specifier: ^5.1.6
         version: 5.1.6
 
   internal/react-hooks:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@react-hookz/web':
         specifier: ^23.1.0
         version: 23.1.0(react-dom@18.2.0)(react@18.2.0)
@@ -831,9 +801,6 @@ importers:
 
   internal/react-icons:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@types/react':
         specifier: 18.2.14
         version: 18.2.14
@@ -895,9 +862,6 @@ importers:
 
   internal/remark-plugins:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@types/react':
         specifier: ^18.2.14
         version: 18.2.14
@@ -929,9 +893,6 @@ importers:
 
   internal/tailwind-config:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@types/react':
         specifier: ^18.2.14
         version: 18.2.14
@@ -941,9 +902,6 @@ importers:
 
   internal/typings:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@types/react':
         specifier: 18.2.14
         version: 18.2.14
@@ -952,7 +910,7 @@ importers:
         version: 18.2.0
       styled-components:
         specifier: ^6.0.4
-        version: 6.0.4(react-dom@18.2.0)(react@18.2.0)
+        version: 6.0.4(babel-plugin-styled-components@2.1.4)(react-dom@18.2.0)(react@18.2.0)
       twin.macro:
         specifier: ^3.3.1
         version: 3.3.1(tailwindcss@3.3.2)
@@ -974,16 +932,13 @@ importers:
         version: 18.2.0
       tailwindcss:
         specifier: ^3.3.2
-        version: 3.3.2
+        version: 3.3.2(ts-node@10.9.1)
       typescript:
         specifier: ^5.1.6
         version: 5.1.6
 
   internal/utils:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@types/react':
         specifier: ^18.2.14
         version: 18.2.14
@@ -1028,9 +983,6 @@ importers:
 
   packages/cli:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv/types':
         specifier: workspace:^
         version: link:../types
@@ -1088,16 +1040,13 @@ importers:
         version: link:../eslint-config-pluv
       tsup:
         specifier: ^7.1.0
-        version: 7.1.0(ts-node@10.9.1)(typescript@5.1.6)
+        version: 7.1.0(typescript@5.1.6)
       typescript:
         specifier: ^5.1.6
         version: 5.1.6
 
   packages/client:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv/crdt-yjs':
         specifier: workspace:^
         version: link:../crdt-yjs
@@ -1129,9 +1078,6 @@ importers:
 
   packages/crdt-yjs:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv/types':
         specifier: workspace:^
         version: link:../types
@@ -1160,9 +1106,6 @@ importers:
 
   packages/eslint-config-pluv:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@types/react':
         specifier: ^18.2.14
         version: 18.2.14
@@ -1212,9 +1155,6 @@ importers:
       '@panva/hkdf':
         specifier: ^1.1.1
         version: 1.1.1
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv/crdt-yjs':
         specifier: workspace:^
         version: link:../crdt-yjs
@@ -1252,9 +1192,6 @@ importers:
 
   packages/persistance-redis:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv/io':
         specifier: workspace:^
         version: link:../io
@@ -1286,9 +1223,6 @@ importers:
 
   packages/platform-cloudflare:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv/io':
         specifier: workspace:^
         version: link:../io
@@ -1320,9 +1254,6 @@ importers:
 
   packages/platform-node:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv/io':
         specifier: workspace:^
         version: link:../io
@@ -1360,9 +1291,6 @@ importers:
 
   packages/pubsub-redis:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv/io':
         specifier: workspace:^
         version: link:../io
@@ -1391,9 +1319,6 @@ importers:
 
   packages/react:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@pluv/client':
         specifier: workspace:^
         version: link:../client
@@ -1434,18 +1359,12 @@ importers:
 
   packages/tsconfig:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@types/react':
         specifier: ^18.2.14
         version: 18.2.14
 
   packages/types:
     dependencies:
-      '@playwright/test':
-        specifier: ^1.36.0
-        version: 1.36.0
       '@types/react':
         specifier: ^18.2.14
         version: 18.2.14
@@ -4289,7 +4208,7 @@ packages:
       react: '>=16.8.0'
     dependencies:
       react: 18.2.0
-      tslib: 2.5.0
+      tslib: 2.6.0
     dev: false
 
   /@dnd-kit/core@6.0.8(react-dom@18.2.0)(react@18.2.0):
@@ -4311,7 +4230,7 @@ packages:
       react: '>=16.8.0'
     dependencies:
       react: 18.2.0
-      tslib: 2.5.0
+      tslib: 2.6.0
     dev: false
 
   /@emotion/is-prop-valid@0.8.8:
@@ -5248,20 +5167,6 @@ packages:
       glob: 7.1.7
     dev: false
 
-  /@next/mdx@13.4.9:
-    resolution: {integrity: sha512-6ALqgOUsHWFWCl5LaYM96RzjBb/+Ca8IxVLhyZ4ukOZkFlYXInJmVLZhXWDxes7b8iVMMKZNgvNJR9dKLaGAQw==}
-    peerDependencies:
-      '@mdx-js/loader': '>=0.15.0'
-      '@mdx-js/react': '>=0.15.0'
-    peerDependenciesMeta:
-      '@mdx-js/loader':
-        optional: true
-      '@mdx-js/react':
-        optional: true
-    dependencies:
-      source-map: 0.7.4
-    dev: true
-
   /@next/mdx@13.4.9(@mdx-js/loader@2.3.0)(@mdx-js/react@2.3.0):
     resolution: {integrity: sha512-6ALqgOUsHWFWCl5LaYM96RzjBb/+Ca8IxVLhyZ4ukOZkFlYXInJmVLZhXWDxes7b8iVMMKZNgvNJR9dKLaGAQw==}
     peerDependencies:
@@ -5409,6 +5314,7 @@ packages:
       playwright-core: 1.36.0
     optionalDependencies:
       fsevents: 2.3.2
+    dev: true
 
   /@pmmmwh/react-refresh-webpack-plugin@0.5.10(react-refresh@0.11.0)(webpack@5.88.1):
     resolution: {integrity: sha512-j0Ya0hCFZPd4x40qLzbhGsh9TMtdb+CJQiso+WxLOPNasohq9cc5SNUcwsZaRH6++Xh91Xkm/xHCkuIiIu0LUA==}
@@ -7531,7 +7437,7 @@ packages:
     resolution: {integrity: sha512-CzNkWqQftcmk2jaCWdBTf9Sm7xSw4rkI1zpU/Udw3HX5//adEZUIm9STtoRP1qgWj0CWQtJ9UTvqmO2NNjhMJw==}
     dependencies:
       '@types/through': 0.0.30
-      rxjs: 7.8.0
+      rxjs: 7.8.1
     dev: false
 
   /@types/is-ci@3.0.0:
@@ -7610,7 +7516,7 @@ packages:
   /@types/node-fetch@2.6.4:
     resolution: {integrity: sha512-1ZX9fcN4Rvkvgv4E6PAY5WXUFWFcRWxZa3EW83UjycOB9ljJCedb2CupIP4RZMEwF/M3eTcCihbBRgwtGbg5Rg==}
     dependencies:
-      '@types/node': 16.18.38
+      '@types/node': 20.4.2
       form-data: 3.0.1
     dev: true
 
@@ -13793,49 +13699,6 @@ packages:
       - '@babel/core'
       - babel-plugin-macros
 
-  /next@13.4.9(@babel/core@7.22.9)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-vtefFm/BWIi/eWOqf1GsmKG3cjKw1k3LjuefKRcL3iiLl3zWzFdPG3as6xtxrGO6gwTzzaO1ktL4oiHt/uvTjA==}
-    engines: {node: '>=16.8.0'}
-    hasBin: true
-    peerDependencies:
-      '@opentelemetry/api': ^1.1.0
-      fibers: '>= 3.1.0'
-      react: ^18.2.0
-      react-dom: ^18.2.0
-      sass: ^1.3.0
-    peerDependenciesMeta:
-      '@opentelemetry/api':
-        optional: true
-      fibers:
-        optional: true
-      sass:
-        optional: true
-    dependencies:
-      '@next/env': 13.4.9
-      '@swc/helpers': 0.5.1
-      busboy: 1.6.0
-      caniuse-lite: 1.0.30001515
-      postcss: 8.4.14
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      styled-jsx: 5.1.1(@babel/core@7.22.9)(react@18.2.0)
-      watchpack: 2.4.0
-      zod: 3.21.4
-    optionalDependencies:
-      '@next/swc-darwin-arm64': 13.4.9
-      '@next/swc-darwin-x64': 13.4.9
-      '@next/swc-linux-arm64-gnu': 13.4.9
-      '@next/swc-linux-arm64-musl': 13.4.9
-      '@next/swc-linux-x64-gnu': 13.4.9
-      '@next/swc-linux-x64-musl': 13.4.9
-      '@next/swc-win32-arm64-msvc': 13.4.9
-      '@next/swc-win32-ia32-msvc': 13.4.9
-      '@next/swc-win32-x64-msvc': 13.4.9
-    transitivePeerDependencies:
-      - '@babel/core'
-      - babel-plugin-macros
-    dev: false
-
   /no-case@3.0.4:
     resolution: {integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==}
     dependencies:
@@ -14160,7 +14023,7 @@ packages:
       is-unicode-supported: 1.3.0
       log-symbols: 5.1.0
       stdin-discarder: 0.1.0
-      strip-ansi: 7.0.1
+      strip-ansi: 7.1.0
       wcwidth: 1.0.1
     dev: false
 
@@ -14476,6 +14339,7 @@ packages:
     resolution: {integrity: sha512-7RTr8P6YJPAqB+8j5ATGHqD6LvLLM39sYVNsslh78g8QeLcBs5750c6+msjrHUwwGt+kEbczBj1XB22WMwn+WA==}
     engines: {node: '>=16'}
     hasBin: true
+    dev: true
 
   /pnp-webpack-plugin@1.7.0(typescript@5.1.6):
     resolution: {integrity: sha512-2Rb3vm+EXble/sMXNSu6eoBx8e79gKqhNq9F5ZWW6ERNCTE/Q0wQNne5541tE5vKjfM8hpNCYL+LGc1YTfI0dg==}
@@ -14512,7 +14376,7 @@ packages:
       camelcase-css: 2.0.1
       postcss: 8.4.25
 
-  /postcss-load-config@4.0.1(postcss@8.4.25):
+  /postcss-load-config@4.0.1:
     resolution: {integrity: sha512-vEJIc8RdiBRu3oRAI0ymerOn+7rPuMvRXslTvZUKZonDHFIczxztIyJ1urxM1x9JXEikvpWWTUUqal5j/8QgvA==}
     engines: {node: '>= 14'}
     peerDependencies:
@@ -14525,8 +14389,8 @@ packages:
         optional: true
     dependencies:
       lilconfig: 2.1.0
-      postcss: 8.4.25
       yaml: 2.3.1
+    dev: true
 
   /postcss-load-config@4.0.1(postcss@8.4.25)(ts-node@10.9.1):
     resolution: {integrity: sha512-vEJIc8RdiBRu3oRAI0ymerOn+7rPuMvRXslTvZUKZonDHFIczxztIyJ1urxM1x9JXEikvpWWTUUqal5j/8QgvA==}
@@ -14991,14 +14855,14 @@ packages:
       strip-json-comments: 2.0.1
     dev: true
 
-  /react-chessboard@3.2.0(@types/react@18.2.14)(react-dom@18.2.0)(react@18.2.0):
+  /react-chessboard@3.2.0(@types/node@20.4.2)(@types/react@18.2.14)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-CvHfR/Jlg0wwYzXINML2TA3wLGaVeJJJFNOR6Lxx0A0HWx52b4AI15nm9lkZ5jjP8qSAMZfeL4N6BN1A1JwugQ==}
     peerDependencies:
       react: '>=16.14.0'
       react-dom: '>=16.14.0'
     dependencies:
       react: 18.2.0
-      react-dnd: 16.0.1(@types/react@18.2.14)(react@18.2.0)
+      react-dnd: 16.0.1(@types/node@20.4.2)(@types/react@18.2.14)(react@18.2.0)
       react-dnd-html5-backend: 16.0.1
       react-dnd-touch-backend: 16.0.1
       react-dom: 18.2.0(react@18.2.0)
@@ -15031,7 +14895,7 @@ packages:
       dnd-core: 16.0.1
     dev: false
 
-  /react-dnd@16.0.1(@types/react@18.2.14)(react@18.2.0):
+  /react-dnd@16.0.1(@types/node@20.4.2)(@types/react@18.2.14)(react@18.2.0):
     resolution: {integrity: sha512-QeoM/i73HHu2XF9aKksIUuamHPDvRglEwdHL4jsp784BgUuWcg6mzfxT0QDdQz8Wj0qyRKx2eMg8iZtWvU4E2Q==}
     peerDependencies:
       '@types/hoist-non-react-statics': '>= 3.3.1'
@@ -15048,6 +14912,7 @@ packages:
     dependencies:
       '@react-dnd/invariant': 4.0.2
       '@react-dnd/shallowequal': 4.0.2
+      '@types/node': 20.4.2
       '@types/react': 18.2.14
       dnd-core: 16.0.1
       fast-deep-equal: 3.1.3
@@ -15691,12 +15556,6 @@ packages:
     dependencies:
       queue-microtask: 1.2.3
 
-  /rxjs@7.8.0:
-    resolution: {integrity: sha512-F2+gxDshqmIub1KdvZkaEfGDwLNpPvk9Fs6LD/MyQxNgMds/WH9OdDDXOmxUZpME+iSK3rQCctkL0DYyytUqMg==}
-    dependencies:
-      tslib: 2.6.0
-    dev: false
-
   /rxjs@7.8.1:
     resolution: {integrity: sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg==}
     dependencies:
@@ -16295,19 +16154,11 @@ packages:
     dependencies:
       ansi-regex: 5.0.1
 
-  /strip-ansi@7.0.1:
-    resolution: {integrity: sha512-cXNxvT8dFNRVfhVME3JAe98mkXDYN2O1l7jmcwMnOslDeESg1rF/OZMtK0nRAhiari1unG5cD4jG3rapUAkLbw==}
-    engines: {node: '>=12'}
-    dependencies:
-      ansi-regex: 6.0.1
-    dev: false
-
   /strip-ansi@7.1.0:
     resolution: {integrity: sha512-iq6eVVI64nQQTRYq2KtEg2d2uU7LElhTJwsH4YzIHZshxlgZms/wIc4VoDQTlG/IvVIrBKG06CrZnp0qv7hkcQ==}
     engines: {node: '>=12'}
     dependencies:
       ansi-regex: 6.0.1
-    dev: true
 
   /strip-bom-string@1.0.0:
     resolution: {integrity: sha512-uCC2VHvQRYu+lMh4My/sFNmF2klFymLX1wHJeXnbEJERpV/ZsVuonzerjfrGpIGF7LBVa1O7i9kjiWvJiFck8g==}
@@ -16399,42 +16250,6 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /styled-components@6.0.4(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-lRJt4vg8hKJhlVG+VKz8QEqPCXKyTryZZ59odyK0UC0HHV3u/mshWTfSay8NpkN0Xijw1iN9r0Leld3dcCcp/w==}
-    engines: {node: '>= 16'}
-    peerDependencies:
-      babel-plugin-styled-components: '>= 2'
-      react: '>= 16.8.0'
-      react-dom: '>= 16.8.0'
-    peerDependenciesMeta:
-      babel-plugin-styled-components:
-        optional: true
-    dependencies:
-      '@babel/cli': 7.22.9(@babel/core@7.22.9)
-      '@babel/core': 7.22.9
-      '@babel/helper-module-imports': 7.22.5
-      '@babel/plugin-external-helpers': 7.22.5(@babel/core@7.22.9)
-      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.22.9)
-      '@babel/plugin-proposal-object-rest-spread': 7.20.7(@babel/core@7.22.9)
-      '@babel/preset-env': 7.22.9(@babel/core@7.22.9)
-      '@babel/preset-react': 7.22.5(@babel/core@7.22.9)
-      '@babel/preset-typescript': 7.22.5(@babel/core@7.22.9)
-      '@babel/traverse': 7.22.8
-      '@emotion/is-prop-valid': 1.2.1
-      '@emotion/unitless': 0.8.1
-      '@types/stylis': 4.2.0
-      css-to-react-native: 3.2.0
-      csstype: 3.1.2
-      postcss: 8.4.25
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      shallowequal: 1.1.0
-      stylis: 4.3.0
-      tslib: 2.6.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
   /styled-jsx@5.1.1(@babel/core@7.22.9)(babel-plugin-macros@3.1.0)(react@18.2.0):
     resolution: {integrity: sha512-pW7uC1l4mBZ8ugbiZrcIsiIvVx1UmTfw7UkC3Um2tmfUq9Bhk8IiyEIPl6F8agHgjzku6j0xQEZbfA5uSgSaCw==}
     engines: {node: '>= 12.0.0'}
@@ -16452,24 +16267,6 @@ packages:
       babel-plugin-macros: 3.1.0
       client-only: 0.0.1
       react: 18.2.0
-
-  /styled-jsx@5.1.1(@babel/core@7.22.9)(react@18.2.0):
-    resolution: {integrity: sha512-pW7uC1l4mBZ8ugbiZrcIsiIvVx1UmTfw7UkC3Um2tmfUq9Bhk8IiyEIPl6F8agHgjzku6j0xQEZbfA5uSgSaCw==}
-    engines: {node: '>= 12.0.0'}
-    peerDependencies:
-      '@babel/core': '*'
-      babel-plugin-macros: '*'
-      react: '>= 16.8.0 || 17.x.x || ^18.0.0-0'
-    peerDependenciesMeta:
-      '@babel/core':
-        optional: true
-      babel-plugin-macros:
-        optional: true
-    dependencies:
-      '@babel/core': 7.22.9
-      client-only: 0.0.1
-      react: 18.2.0
-    dev: false
 
   /stylis@4.3.0:
     resolution: {integrity: sha512-E87pIogpwUsUwXw7dNyU4QDjdgVMy52m+XEOPEKUn161cCzWjjhPSQhByfd1CcNvrOLnXQ6OnnZDwnJrz/Z4YQ==}
@@ -16538,37 +16335,6 @@ packages:
       '@pkgr/utils': 2.4.2
       tslib: 2.6.0
     dev: false
-
-  /tailwindcss@3.3.2:
-    resolution: {integrity: sha512-9jPkMiIBXvPc2KywkraqsUfbfj+dHDb+JPWtSJa9MLFdrPyazI7q6WX2sUrm7R9eVR7qqv3Pas7EvQFzxKnI6w==}
-    engines: {node: '>=14.0.0'}
-    hasBin: true
-    dependencies:
-      '@alloc/quick-lru': 5.2.0
-      arg: 5.0.2
-      chokidar: 3.5.3
-      didyoumean: 1.2.2
-      dlv: 1.1.3
-      fast-glob: 3.2.12
-      glob-parent: 6.0.2
-      is-glob: 4.0.3
-      jiti: 1.18.2
-      lilconfig: 2.1.0
-      micromatch: 4.0.5
-      normalize-path: 3.0.0
-      object-hash: 3.0.0
-      picocolors: 1.0.0
-      postcss: 8.4.25
-      postcss-import: 15.1.0(postcss@8.4.25)
-      postcss-js: 4.0.1(postcss@8.4.25)
-      postcss-load-config: 4.0.1(postcss@8.4.25)
-      postcss-nested: 6.0.1(postcss@8.4.25)
-      postcss-selector-parser: 6.0.11
-      postcss-value-parser: 4.2.0
-      resolve: 1.22.2
-      sucrase: 3.32.0
-    transitivePeerDependencies:
-      - ts-node
 
   /tailwindcss@3.3.2(ts-node@10.9.1):
     resolution: {integrity: sha512-9jPkMiIBXvPc2KywkraqsUfbfj+dHDb+JPWtSJa9MLFdrPyazI7q6WX2sUrm7R9eVR7qqv3Pas7EvQFzxKnI6w==}
@@ -16787,15 +16553,15 @@ packages:
       setimmediate: 1.0.5
     dev: true
 
-  /tinycolor2@1.5.1:
-    resolution: {integrity: sha512-BHlrsGeYN2OpkRpfAgkEwCMu6w8Quq8JkK/mp4c55NZP7OwceJObR1CPZt62TqiA0Y3J5pwuDX+fXDqc35REtg==}
+  /tinycolor2@1.6.0:
+    resolution: {integrity: sha512-XPaBkWQJdsf3pLKJV9p4qN/S+fm2Oj8AIPo1BTUhg5oxkvm9+SVEGFdhyOz7tTdUTfvxMiAs4sp6/eZO2Ew+pw==}
     dev: false
 
   /tinygradient@1.1.5:
     resolution: {integrity: sha512-8nIfc2vgQ4TeLnk2lFj4tRLvvJwEfQuabdsmvDdQPT0xlk9TaNtpGd6nNRxXoK6vQhN6RSzj+Cnp5tTQmpxmbw==}
     dependencies:
       '@types/tinycolor2': 1.4.3
-      tinycolor2: 1.5.1
+      tinycolor2: 1.6.0
     dev: false
 
   /titleize@3.0.0:
@@ -16997,6 +16763,42 @@ packages:
       - ts-node
     dev: true
 
+  /tsup@7.1.0(typescript@5.1.6):
+    resolution: {integrity: sha512-mazl/GRAk70j8S43/AbSYXGgvRP54oQeX8Un4iZxzATHt0roW0t6HYDVZIXMw0ZQIpvr1nFMniIVnN5186lW7w==}
+    engines: {node: '>=16.14'}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': ^1
+      postcss: ^8.4.12
+      typescript: '>=4.1.0'
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      postcss:
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      bundle-require: 4.0.1(esbuild@0.18.12)
+      cac: 6.7.14
+      chokidar: 3.5.3
+      debug: 4.3.4
+      esbuild: 0.18.12
+      execa: 5.1.1
+      globby: 11.1.0
+      joycon: 3.1.1
+      postcss-load-config: 4.0.1
+      resolve-from: 5.0.0
+      rollup: 3.26.2
+      source-map: 0.8.0-beta.0
+      sucrase: 3.32.0
+      tree-kill: 1.2.2
+      typescript: 5.1.6
+    transitivePeerDependencies:
+      - supports-color
+      - ts-node
+    dev: true
+
   /tsutils@3.21.0(typescript@5.1.6):
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}
     engines: {node: '>= 6'}
@@ -17104,7 +16906,7 @@ packages:
       lodash.get: 4.4.2
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.11
-      tailwindcss: 3.3.2
+      tailwindcss: 3.3.2(ts-node@10.9.1)
     dev: false
 
   /type-check@0.4.0:

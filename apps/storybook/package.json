@@ -17,7 +17,6 @@
     "license": "ISC",
     "dependencies": {
         "@faker-js/faker": "^8.0.2",
-        "@playwright/test": "^1.36.0",
         "@pluv-apps/web": "workspace:^",
         "@pluv-internal/react-chess": "workspace:^",
         "@pluv-internal/react-code": "workspace:^",
