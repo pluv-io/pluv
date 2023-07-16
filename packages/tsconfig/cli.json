@@ -3,11 +3,15 @@
 	"display": "CLI",
 	"extends": "./base.json",
 	"compilerOptions": {
-        "target": "ES2020",
-        "lib": ["DOM", "DOM.Iterable", "ES2020"],
-        "module": "Node16",
-        "moduleResolution": "node",
-		"resolveJsonModule": true,
-		"outDir": "./dist"
+		"allowSyntheticDefaultImports": true,
+		"jsx": "react",
+		"lib": ["DOM", "DOM.Iterable", "ES2020"],
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+		"moduleDetection": "force",
+		"noEmit": false,
+		"outDir": "./dist",
+		"resolveJsonModule": false,
+        "target": "es2021"
 	}
 }
