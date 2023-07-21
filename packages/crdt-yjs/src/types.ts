@@ -8,7 +8,7 @@ import type {
     XmlText as YXmlText,
 } from "yjs";
 import type { YjsDoc } from "./doc";
-import type { unstable__YObject } from "./object";
+import type { YObject } from "./object";
 
 export type InferYjsDocJson<TDoc extends YjsDoc<any>> = TDoc extends YjsDoc<
     infer ITypes
@@ -35,7 +35,7 @@ export type InferYjsSharedTypeJson<TShared extends unknown> =
     TShared extends AbstractType<any>
         ? TShared extends YArray<infer IItem>
             ? readonly InferYjsSharedTypeJson<IItem>[]
-            : TShared extends unstable__YObject<infer IObject>
+            : TShared extends YObject<infer IObject>
             ? { [P in keyof IObject]: InferYjsSharedTypeJson<IObject[P]> }
             : TShared extends YMap<infer IItem>
             ? Record<string, InferYjsSharedTypeJson<IItem>>
