@@ -1,1 +1,9 @@
-export { array, map, text, object } from "@pluv/crdt-yjs";
+export {
+    array,
+    map,
+    object,
+    text,
+    xmlElement,
+    xmlFragment,
+    xmlText,
+} from "@pluv/crdt-yjs";
