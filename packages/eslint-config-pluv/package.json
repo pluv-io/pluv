@@ -16,16 +16,16 @@
   },
   "dependencies": {
     "@types/react": "^18.2.15",
-    "eslint": "^8.44.0",
-    "eslint-config-next": "^13.4.9",
+    "eslint": "^8.45.0",
+    "eslint-config-next": "^13.4.11",
     "eslint-config-prettier": "^8.8.0",
     "eslint-config-turbo": "1.10.9",
     "eslint-plugin-prettier": "^5.0.0",
-    "eslint-plugin-react": "7.32.2",
+    "eslint-plugin-react": "7.33.0",
     "eslint-plugin-tailwindcss": "^3.13.0",
-    "next": "^13.4.9",
+    "next": "^13.4.11",
     "prettier": "^3.0.0",
-    "prettier-plugin-tailwindcss": "^0.4.0"
+    "prettier-plugin-tailwindcss": "^0.4.1"
   },
   "devDependencies": {
     "postcss": "^8.4.26",
