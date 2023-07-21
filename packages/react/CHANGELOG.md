@@ -1,5 +1,27 @@
 # @pluv/react
 
+## 0.6.2
+
+### Patch Changes
+
+- f4317ba: \* Renamed type `unstable_YObjectValue` to `YObjectValue`;
+
+  - Renamed type `unstable_YObject` to `YObject`.
+  - Re-exported `xmlElement`, `xmlFragment` and `xmlText` from `@pluv/client`.
+
+    ```ts
+    import { y } from "@pluv/client";
+    // or
+    import { y } from "@pluv/react";
+
+    y.xmlElement("MyElement", {});
+    y.xmlFragment({});
+    y.xmlText("hello world");
+    ```
+
+- Updated dependencies [f4317ba]
+  - @pluv/client@0.9.2
+
 ## 0.6.1
 
 ### Patch Changes
