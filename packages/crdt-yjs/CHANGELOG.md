@@ -1,5 +1,24 @@
 # @pluv/crdt-yjs
 
+## 0.4.2
+
+### Patch Changes
+
+- f4317ba: \* Renamed type `unstable_YObjectValue` to `YObjectValue`;
+
+  - Renamed type `unstable_YObject` to `YObject`.
+  - Re-exported `xmlElement`, `xmlFragment` and `xmlText` from `@pluv/client`.
+
+    ```ts
+    import { y } from "@pluv/client";
+    // or
+    import { y } from "@pluv/react";
+
+    y.xmlElement("MyElement", {});
+    y.xmlFragment({});
+    y.xmlText("hello world");
+    ```
+
 ## 0.4.1
 
 ### Patch Changes

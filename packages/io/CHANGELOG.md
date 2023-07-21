@@ -1,5 +1,12 @@
 # @pluv/io
 
+## 0.7.2
+
+### Patch Changes
+
+- Updated dependencies [f4317ba]
+  - @pluv/crdt-yjs@0.4.2
+
 ## 0.7.1
 
 ### Patch Changes
