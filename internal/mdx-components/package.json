@@ -16,13 +16,13 @@
 		"@pluv-internal/react-components": "workspace:^",
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@pluv-internal/react-icons": "workspace:^",
-		"@types/react": "18.2.15",
+		"@types/react": "18.2.18",
 		"@types/react-dom": "^18.2.7",
-		"next": "^13.4.11",
+		"next": "^13.4.12",
 		"react": "18.2.0",
 		"react-dom": "18.2.0",
-		"styled-components": "^6.0.4",
-		"twin.macro": "^3.3.1"
+		"styled-components": "^6.0.6",
+		"twin.macro": "^3.4.0"
 	},
 	"devDependencies": {
 		"@pluv-internal/tailwind-config": "workspace:^",
@@ -30,7 +30,7 @@
 		"@pluv/tsconfig": "workspace:^",
 		"autoprefixer": "^10.4.14",
 		"eslint-config-pluv": "workspace:^",
-		"postcss": "^8.4.26",
+		"postcss": "^8.4.27",
 		"react-is": "^18.2.0",
 		"tailwindcss": "^3.3.3",
 		"typescript": "^5.1.6"

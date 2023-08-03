@@ -24,6 +24,6 @@
     "wrangler.json"
   ],
   "dependencies": {
-    "@types/react": "^18.2.15"
+    "@types/react": "^18.2.18"
   }
 }

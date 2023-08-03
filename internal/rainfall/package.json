@@ -17,12 +17,12 @@
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
-		"tsup": "^7.1.0",
+		"tsup": "^7.2.0",
 		"typescript": "^5.1.6"
 	},
 	"dependencies": {
 		"@types/pixi.js": "4.8.9",
-		"@types/react": "^18.2.15",
+		"@types/react": "^18.2.18",
 		"pixi.js": "4.8.9"
 	}
 }

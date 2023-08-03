@@ -25,7 +25,7 @@
 	"dependencies": {
 		"@pluv/crdt-yjs": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/react": "^18.2.15",
+		"@types/react": "^18.2.18",
 		"wonka": "^6.3.3"
 	},
 	"peerDependencies": {
@@ -34,7 +34,7 @@
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
-		"tsup": "^7.1.0",
+		"tsup": "^7.2.0",
 		"typescript": "^5.1.6",
 		"yjs": "^13.6.7"
 	}
