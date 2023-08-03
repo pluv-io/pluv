@@ -26,7 +26,7 @@
 		"@panva/hkdf": "^1.1.1",
 		"@pluv/crdt-yjs": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/react": "^18.2.15",
+		"@types/react": "^18.2.18",
 		"jose": "^4.14.4",
 		"kleur": "^4.1.5",
 		"wonka": "^6.3.3"
@@ -37,7 +37,7 @@
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
-		"tsup": "^7.1.0",
+		"tsup": "^7.2.0",
 		"typescript": "^5.1.6",
 		"yjs": "^13.6.7"
 	}
