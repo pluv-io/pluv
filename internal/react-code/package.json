@@ -14,7 +14,7 @@
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@popperjs/core": "^2.11.8",
 		"@radix-ui/react-tabs": "^1.0.4",
-		"@types/react": "18.2.18",
+		"@types/react": "18.2.20",
 		"@types/react-dom": "^18.2.7",
 		"clsx": "^2.0.0",
 		"next": "^13.4.12",

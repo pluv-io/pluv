@@ -16,7 +16,7 @@
 		"@pluv-internal/react-components": "workspace:^",
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@pluv-internal/react-icons": "workspace:^",
-		"@types/react": "18.2.18",
+		"@types/react": "18.2.20",
 		"@types/react-dom": "^18.2.7",
 		"next": "^13.4.12",
 		"react": "18.2.0",
