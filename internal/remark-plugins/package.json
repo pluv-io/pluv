@@ -15,7 +15,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@types/react": "^18.2.18",
+		"@types/react": "^18.2.20",
 		"@types/unist": "^3.0.0",
 		"acorn": "^8.10.0",
 		"gray-matter": "^4.0.3",
