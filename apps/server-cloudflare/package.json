@@ -32,6 +32,6 @@
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-polyfills": "^0.2.1",
     "typescript": "^5.1.6",
-    "wrangler": "3.5.0"
+    "wrangler": "3.4.0"
   }
 }
