@@ -49,9 +49,9 @@ const Y_ORIGIN_INITIALIZED = "$INITIALIZED";
 export const DEFAULT_PLUV_CLIENT_ADDON = <
     TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {}
+    TStorage extends Record<string, AbstractType<any>> = {},
 >(
-    input: PluvRoomAddonInput<TIO, TPresence, TStorage>
+    input: PluvRoomAddonInput<TIO, TPresence, TStorage>,
 ): PluvRoomAddonResult => ({
     storage: new StorageStore(input.room.id),
 });
@@ -106,15 +106,15 @@ interface InternalListeners {
 export type PluvRoomAddon<
     TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {}
+    TStorage extends Record<string, AbstractType<any>> = {},
 > = (
-    input: PluvRoomAddonInput<TIO, TPresence, TStorage>
+    input: PluvRoomAddonInput<TIO, TPresence, TStorage>,
 ) => Partial<PluvRoomAddonResult>;
 
 export interface PluvRoomAddonInput<
     TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {}
+    TStorage extends Record<string, AbstractType<any>> = {},
 > {
     room: PluvRoom<TIO, TPresence, TStorage>;
 }
@@ -131,7 +131,7 @@ export type PluvRoomDebug<TIO extends IOLike> = Id<{
 export type PluvRoomOptions<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {}
+    TStorage extends Record<string, AbstractType<any>> = {},
 > = {
     addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
     debug?: boolean | PluvRoomDebug<TIO>;
@@ -142,13 +142,13 @@ export type PluvRoomOptions<
 export type RoomConfig<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {}
+    TStorage extends Record<string, AbstractType<any>> = {},
 > = RoomEndpoints<TIO> & PluvRoomOptions<TIO, TPresence, TStorage>;
 
 export class PluvRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {}
+    TStorage extends Record<string, AbstractType<any>> = {},
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     readonly _endpoints: RoomEndpoints<TIO>;
 
@@ -218,7 +218,7 @@ export class PluvRoom<
                 this._clearTimeout(this._timeouts.reconnect);
                 this._timeouts.reconnect = setTimeout(
                     this._reconnect.bind(this),
-                    RECONNECT_TIMEOUT_MS
+                    RECONNECT_TIMEOUT_MS,
                 );
 
                 onAuthorizationFail?.(error);
@@ -239,7 +239,7 @@ export class PluvRoom<
 
     public broadcast<TEvent extends keyof InferIOInput<TIO>>(
         event: TEvent,
-        data: Id<InferIOInput<TIO>[TEvent]>
+        data: Id<InferIOInput<TIO>[TEvent]>,
     ): void {
         if (!this._state.webSocket) return;
         if (this._state.connection.state !== ConnectionState.Open) return;
@@ -271,6 +271,8 @@ export class PluvRoom<
 
         await this._storageStore.initialize();
         await this._applyStorageStore();
+
+        console.log(this._getWsEndpoint(this.id));
 
         const url = new URL(this._getWsEndpoint(this.id));
 
@@ -330,7 +332,7 @@ export class PluvRoom<
 
     public event = <TEvent extends keyof InferIOOutput<TIO>>(
         event: TEvent,
-        callback: EventNotifierSubscriptionCallback<TIO, TEvent>
+        callback: EventNotifierSubscriptionCallback<TIO, TEvent>,
     ): (() => void) => {
         return this._eventNotifier.subscribe(event, callback);
     };
@@ -338,7 +340,7 @@ export class PluvRoom<
     public getConnection(): WebSocketConnection {
         // Create a read-only clone of the connection state
         return Object.freeze(
-            JSON.parse(JSON.stringify(this._state.connection))
+            JSON.parse(JSON.stringify(this._state.connection)),
         );
     }
 
@@ -351,7 +353,7 @@ export class PluvRoom<
     };
 
     public getOther = (
-        connectionId: string
+        connectionId: string,
     ): Id<UserInfo<TIO, TPresence>> | null => {
         return this._usersManager.getOther(connectionId);
     };
@@ -361,30 +363,30 @@ export class PluvRoom<
     };
 
     public getStorage = <TKey extends keyof TStorage>(
-        key: TKey
+        key: TKey,
     ): TStorage[TKey] | null => {
         return this._crdtManager?.get(key) ?? null;
     };
 
     public other = (
         connectionId: string,
-        callback: OtherNotifierSubscriptionCallback<TIO>
+        callback: OtherNotifierSubscriptionCallback<TIO>,
     ): (() => void) => {
         return this._otherNotifier.subscribe(connectionId, callback);
     };
 
     public storage = <TKey extends keyof TStorage>(
         key: TKey,
-        fn: (value: InferYjsSharedTypeJson<TStorage[TKey]>) => void
+        fn: (value: InferYjsSharedTypeJson<TStorage[TKey]>) => void,
     ): (() => void) => {
         return this._crdtNotifier.subscribe(key, fn);
     };
 
     public subscribe = <
-        TSubject extends keyof StateNotifierSubjects<TIO, TPresence>
+        TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
     >(
         name: TSubject,
-        callback: SubscriptionCallback<TIO, TPresence, TSubject>
+        callback: SubscriptionCallback<TIO, TPresence, TSubject>,
     ): (() => void) => {
         return this._stateNotifier.subscribe(name, callback);
     };
@@ -400,7 +402,7 @@ export class PluvRoom<
 
         this.broadcast(
             "$UPDATE_PRESENCE" as keyof InferIOInput<TIO>,
-            { presence } as any
+            { presence } as any,
         );
     };
 
@@ -435,11 +437,11 @@ export class PluvRoom<
 
         window.addEventListener(
             "online",
-            this._windowListeners.onNavigatorOnline
+            this._windowListeners.onNavigatorOnline,
         );
         document.addEventListener(
             "visibilitychange",
-            this._windowListeners.onVisibilityChange
+            this._windowListeners.onVisibilityChange,
         );
     }
 
@@ -455,19 +457,19 @@ export class PluvRoom<
 
         this._state.webSocket.addEventListener(
             "close",
-            this._wsListeners.onClose
+            this._wsListeners.onClose,
         );
         this._state.webSocket.addEventListener(
             "error",
-            this._wsListeners.onError
+            this._wsListeners.onError,
         );
         this._state.webSocket.addEventListener(
             "message",
-            this._wsListeners.onMessage
+            this._wsListeners.onMessage,
         );
         this._state.webSocket.addEventListener(
             "open",
-            this._wsListeners.onOpen
+            this._wsListeners.onOpen,
         );
     }
 
@@ -495,7 +497,7 @@ export class PluvRoom<
         this._usersManager.removeMyself();
 
         const canClose = [WebSocket.CONNECTING, WebSocket.OPEN].some(
-            (readyState) => readyState === this._state.webSocket?.readyState
+            (readyState) => readyState === this._state.webSocket?.readyState,
         );
 
         if (canClose) this._state.webSocket.close();
@@ -510,11 +512,11 @@ export class PluvRoom<
 
         window.removeEventListener(
             "online",
-            this._windowListeners.onNavigatorOnline
+            this._windowListeners.onNavigatorOnline,
         );
         document.removeEventListener(
             "visibilitychange",
-            this._windowListeners.onVisibilityChange
+            this._windowListeners.onVisibilityChange,
         );
 
         this._windowListeners = null;
@@ -525,19 +527,19 @@ export class PluvRoom<
 
         this._state.webSocket.removeEventListener(
             "close",
-            this._wsListeners.onClose
+            this._wsListeners.onClose,
         );
         this._state.webSocket.removeEventListener(
             "error",
-            this._wsListeners.onError
+            this._wsListeners.onError,
         );
         this._state.webSocket.removeEventListener(
             "message",
-            this._wsListeners.onMessage
+            this._wsListeners.onMessage,
         );
         this._state.webSocket.removeEventListener(
             "open",
-            this._wsListeners.onOpen
+            this._wsListeners.onOpen,
         );
 
         this._wsListeners = null;
@@ -567,18 +569,18 @@ export class PluvRoom<
 
             await this._storageStore.flatten(encodedState);
         },
-        { wait: ADD_TO_STORAGE_STATE_DEBOUNCE_MS }
+        { wait: ADD_TO_STORAGE_STATE_DEBOUNCE_MS },
     );
 
     private _getAddon = (
-        addons: readonly PluvRoomAddon<TIO, TPresence, TStorage>[]
+        addons: readonly PluvRoomAddon<TIO, TPresence, TStorage>[],
     ): PluvRoomAddon<TIO, TPresence, TStorage> => {
         return addons.reduce<PluvRoomAddon<TIO, TPresence, TStorage>>(
             (acc, addon) => () => ({
                 ...acc({ room: this }),
                 ...addon({ room: this }),
             }),
-            DEFAULT_PLUV_CLIENT_ADDON
+            DEFAULT_PLUV_CLIENT_ADDON,
         );
     };
 
@@ -623,7 +625,7 @@ export class PluvRoom<
             return await res.text().then((text) => text.trim());
         } catch (err) {
             throw new Error(
-                err instanceof Error ? err.message : "Room is unauthorized"
+                err instanceof Error ? err.message : "Room is unauthorized",
             );
         }
     }
@@ -668,7 +670,7 @@ export class PluvRoom<
 
         this._usersManager.patchPresence(
             connectionId,
-            data.presence as TPresence
+            data.presence as TPresence,
         );
 
         const myPresence = this._usersManager.myPresence;
@@ -709,7 +711,7 @@ export class PluvRoom<
             !!presence &&
                 this._usersManager.patchPresence(
                     connectionId,
-                    presence as TPresence
+                    presence as TPresence,
                 );
 
             this._otherNotifier.subject(connectionId).next(other);
@@ -737,7 +739,7 @@ export class PluvRoom<
 
         this._usersManager.setMyself(
             connectionId,
-            user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>
+            user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>,
         );
 
         const presence = this._usersManager.myPresence;
@@ -758,7 +760,7 @@ export class PluvRoom<
     }
 
     private async _handleStorageReceivedMessage(
-        message: IOEventMessage<TIO>
+        message: IOEventMessage<TIO>,
     ): Promise<void> {
         const { connectionId } = message;
 
@@ -839,7 +841,7 @@ export class PluvRoom<
         this._usersManager.setUser(
             connectionId,
             data.user,
-            data.presence as TPresence
+            data.presence as TPresence,
         );
 
         const other = this._usersManager.getOther(connectionId);
@@ -853,7 +855,7 @@ export class PluvRoom<
         this._clearTimeout(this._timeouts.pong);
         this._timeouts.pong = setTimeout(
             this._reconnect.bind(this),
-            PONG_TIMEOUT_MS
+            PONG_TIMEOUT_MS,
         );
 
         this._sendMessage({ type: "$PING", data: {} });
@@ -890,7 +892,7 @@ export class PluvRoom<
                     type: "$UPDATE_STORAGE",
                     data: { origin, update },
                 });
-            }
+            },
         );
 
         this._subscriptions.observeCrdt = unsubscribe;
@@ -1015,7 +1017,7 @@ export class PluvRoom<
         this._clearInterval(this._intervals.heartbeat);
         this._intervals.heartbeat = setInterval(
             this._heartbeat.bind(this),
-            HEARTBEAT_INTERVAL_MS
+            HEARTBEAT_INTERVAL_MS,
         );
     }
 
@@ -1090,7 +1092,7 @@ export class PluvRoom<
     }
 
     private _sendMessage<
-        TMessage extends EventMessage<string, any> = EventMessage<string, any>
+        TMessage extends EventMessage<string, any> = EventMessage<string, any>,
     >(data: TMessage): void {
         const webSocket = this._state.webSocket;
 
@@ -1109,13 +1111,13 @@ export class PluvRoom<
     }
 
     private _updateState(
-        updater: (oldState: WebSocketState<TIO>) => WebSocketState<TIO>
+        updater: (oldState: WebSocketState<TIO>) => WebSocketState<TIO>,
     ): WebSocketState<TIO> {
         let authorization: AuthorizationState<TIO>;
 
         try {
             authorization = JSON.parse(
-                JSON.stringify(this._state.authorization)
+                JSON.stringify(this._state.authorization),
             );
         } catch {
             throw new Error("User is not JSON serializable");

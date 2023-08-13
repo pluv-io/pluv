@@ -4,6 +4,7 @@ import {
     Container,
     Filter,
     Graphics,
+    utils,
 } from "pixi.js";
 import type { DropletAssets } from "./DropletAssets";
 import { DropletManager } from "./DropletManager";
@@ -21,7 +22,7 @@ export class EffectCanvas {
 
     public background: Graphics;
     public container: HTMLElement;
-    public renderer: CanvasRenderer;
+    public renderer: CanvasRenderer | null = null;
     public stage: Container;
 
     constructor(container: HTMLElement, resources: DropletAssets) {
@@ -68,13 +69,15 @@ export class EffectCanvas {
         this.dropletShader = new Filter(
             "",
             dropletShader.fragment,
-            dropletShader.uniforms
+            dropletShader.uniforms,
         );
 
         this.stage.filters = [this.dropletShader];
     }
 
     public destroy(): void {
+        if (!this.renderer) return;
+
         // this.dropletShader.destroy();
         this.stage.destroy({
             baseTexture: true,
@@ -85,6 +88,8 @@ export class EffectCanvas {
     }
 
     public resize(): void {
+        if (!this.renderer) return;
+
         const height = this.container.clientHeight;
         const width = this.container.clientWidth;
 
@@ -112,6 +117,8 @@ export class EffectCanvas {
     }
 
     public render(): void {
+        if (!this.renderer) return;
+
         this.renderer.render(this.stage);
     }
 }

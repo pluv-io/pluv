@@ -26,10 +26,10 @@
 		"@panva/hkdf": "^1.1.1",
 		"@pluv/crdt-yjs": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/react": "^18.2.18",
+		"@types/react": "^18.2.20",
 		"jose": "^4.14.4",
 		"kleur": "^4.1.5",
-		"wonka": "^6.3.3"
+		"wonka": "^6.3.4"
 	},
 	"peerDependencies": {
 		"yjs": "^13.0.0"
