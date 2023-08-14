@@ -1,5 +1,11 @@
 # pluv
 
+## 0.8.0
+
+### Minor Changes
+
+- f43f1cc: Change packages to all be versioned together for consistency.
+
 ## 0.7.0
 
 ### Minor Changes
