@@ -1,14 +1,14 @@
 {
-	"name": "@pluv/client",
+	"name": "@pluv/platform-node",
 	"version": "0.10.0",
-	"description": "@pluv/io frontend client",
+	"description": "@pluv/io adapter for node.js",
 	"author": "leedavidcs",
 	"license": "MIT",
 	"homepage": "https://github.com/pluv-io/pluv",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/pluv-io/pluv.git",
-		"directory": "packages/client"
+		"directory": "packages/platform-node"
 	},
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
@@ -23,18 +23,21 @@
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
 	"dependencies": {
-		"@pluv/crdt-yjs": "workspace:^",
+		"@pluv/io": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"wonka": "^6.3.4"
-	},
-	"peerDependencies": {
-		"yjs": "^13.0.0"
+		"@types/node": "^20.5.0",
+		"@types/react": "^18.2.20",
+		"@types/ws": "^8.5.5",
+		"path-to-regexp": "^6.2.1"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^7.2.0",
 		"typescript": "^5.1.6",
-		"yjs": "^13.6.7"
+		"ws": "^8.13.0"
+	},
+	"peerDependencies": {
+		"ws": "^8.0.0"
 	}
 }

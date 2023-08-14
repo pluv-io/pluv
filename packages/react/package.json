@@ -23,6 +23,7 @@
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
 	"dependencies": {
+		"@types/react": "18.2.20",
 		"@pluv/client": "workspace:^",
 		"@pluv/types": "workspace:^",
 		"@types/use-sync-external-store": "^0.0.3",
@@ -35,7 +36,6 @@
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"@types/react": "18.2.20",
 		"eslint-config-pluv": "workspace:^",
 		"react": "18.2.0",
 		"tsup": "^7.2.0",
