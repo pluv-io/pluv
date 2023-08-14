@@ -1,5 +1,11 @@
 # eslint-config-pluv
 
+## 0.2.0
+
+### Minor Changes
+
+- f43f1cc: Change packages to all be versioned together for consistency.
+
 ## 0.1.14
 
 ### Patch Changes

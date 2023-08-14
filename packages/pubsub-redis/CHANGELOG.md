@@ -1,5 +1,16 @@
 # @pluv/pubsub-redis
 
+## 0.10.0
+
+### Minor Changes
+
+- f43f1cc: Change packages to all be versioned together for consistency.
+
+### Patch Changes
+
+- Updated dependencies [f43f1cc]
+  - @pluv/io@0.10.0
+
 ## 0.1.25
 
 ### Patch Changes

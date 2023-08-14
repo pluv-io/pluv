@@ -1,5 +1,11 @@
 # @pluv/tsconfig
 
+## 0.10.0
+
+### Minor Changes
+
+- f43f1cc: Change packages to all be versioned together for consistency.
+
 ## 0.2.0
 
 ### Minor Changes
