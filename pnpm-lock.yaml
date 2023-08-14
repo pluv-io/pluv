@@ -1026,6 +1026,9 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      eslint:
+        specifier: ^8.47.0
+        version: 8.47.0
       eslint-config-pluv:
         specifier: workspace:^
         version: link:../eslint-config-pluv
@@ -1048,6 +1051,9 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      eslint:
+        specifier: ^8.47.0
+        version: 8.47.0
       eslint-config-pluv:
         specifier: workspace:^
         version: link:../eslint-config-pluv
@@ -1073,6 +1079,9 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      eslint:
+        specifier: ^8.47.0
+        version: 8.47.0
       eslint-config-pluv:
         specifier: workspace:^
         version: link:../eslint-config-pluv
@@ -1153,6 +1162,9 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      eslint:
+        specifier: ^8.47.0
+        version: 8.47.0
       eslint-config-pluv:
         specifier: workspace:^
         version: link:../eslint-config-pluv
@@ -1181,6 +1193,9 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      eslint:
+        specifier: ^8.47.0
+        version: 8.47.0
       eslint-config-pluv:
         specifier: workspace:^
         version: link:../eslint-config-pluv
@@ -1212,6 +1227,9 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      eslint:
+        specifier: ^8.47.0
+        version: 8.47.0
       eslint-config-pluv:
         specifier: workspace:^
         version: link:../eslint-config-pluv
@@ -1243,6 +1261,9 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      eslint:
+        specifier: ^8.47.0
+        version: 8.47.0
       eslint-config-pluv:
         specifier: workspace:^
         version: link:../eslint-config-pluv
@@ -1268,6 +1289,9 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      eslint:
+        specifier: ^8.47.0
+        version: 8.47.0
       eslint-config-pluv:
         specifier: workspace:^
         version: link:../eslint-config-pluv
@@ -1305,6 +1329,9 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      eslint:
+        specifier: ^8.47.0
+        version: 8.47.0
       eslint-config-pluv:
         specifier: workspace:^
         version: link:../eslint-config-pluv
