@@ -16,7 +16,6 @@
   "dependencies": {
     "@pluv/io": "workspace:^",
     "@pluv/platform-cloudflare": "workspace:^",
-    "@types/react": "^18.2.20",
     "zod": "^3.21.4"
   },
   "devDependencies": {

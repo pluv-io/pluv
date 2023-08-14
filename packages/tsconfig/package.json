@@ -22,8 +22,5 @@
     "node.json",
     "react-library.json",
     "wrangler.json"
-  ],
-  "dependencies": {
-    "@types/react": "^18.2.20"
-  }
+  ]
 }

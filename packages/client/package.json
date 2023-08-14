@@ -25,7 +25,6 @@
 	"dependencies": {
 		"@pluv/crdt-yjs": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/react": "^18.2.20",
 		"wonka": "^6.3.4"
 	},
 	"peerDependencies": {

@@ -25,7 +25,6 @@
 	"dependencies": {
 		"@pluv/io": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/react": "^18.2.20",
 		"path-to-regexp": "^6.2.1"
 	},
 	"devDependencies": {
