@@ -22,9 +22,9 @@ export class CloudflareWebSocket extends AbstractWebSocket {
     }
 
     constructor(webSocket: WebSocket, config: CloudflareWebSocketConfig) {
-        const { room } = config;
+        const { room, sessionId, userId } = config;
 
-        super({ room });
+        super({ room, sessionId, userId });
 
         this.webSocket = webSocket;
     }

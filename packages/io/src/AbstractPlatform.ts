@@ -1,6 +1,9 @@
 import { AbstractPersistance } from "./AbstractPersistance";
 import type { AbstractPubSub } from "./AbstractPubSub";
-import type { AbstractWebSocket } from "./AbstractWebSocket";
+import type {
+    AbstractWebSocket,
+    AbstractWebSocketConfig,
+} from "./AbstractWebSocket";
 import { Persistance } from "./Persistance";
 import { PubSub } from "./PubSub";
 
@@ -24,9 +27,7 @@ export type AbstractPlatformConfig =
           pubSub: AbstractPubSub;
       };
 
-export interface ConvertWebSocketConfig {
-    room: string;
-}
+export type ConvertWebSocketConfig = AbstractWebSocketConfig;
 
 export abstract class AbstractPlatform<
     TWebSocket = any,

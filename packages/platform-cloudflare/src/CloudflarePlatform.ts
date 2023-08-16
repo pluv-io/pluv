@@ -1,4 +1,4 @@
-import type { AbstractWebSocketConfig } from "@pluv/io";
+import type { ConvertWebSocketConfig } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
 import { CloudflareWebSocket } from "./CloudflareWebSocket";
 
@@ -7,7 +7,7 @@ export class CloudflarePlatform<
 > extends AbstractPlatform<WebSocket, { env: TEnv }, { request: Request }> {
     public convertWebSocket(
         webSocket: WebSocket,
-        config: AbstractWebSocketConfig,
+        config: ConvertWebSocketConfig,
     ): CloudflareWebSocket {
         return new CloudflareWebSocket(webSocket, config);
     }
