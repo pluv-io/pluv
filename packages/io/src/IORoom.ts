@@ -186,9 +186,13 @@ export class IORoom<
 
         if (!this._uninitialize) await this._initialize();
 
+        const user = await this._getAuthorizedUser(token);
+
         const sessionId = this._platform.randomUUID();
         const pluvWs = this._platform.convertWebSocket(webSocket, {
             room: this.id,
+            sessionId,
+            userId: user?.id ?? null,
         });
 
         this._logDebug(
@@ -198,8 +202,6 @@ export class IORoom<
         );
 
         const uninitializeWs = await pluvWs.initialize();
-
-        const user = await this._getAuthorizedUser(token);
 
         const isUnauthorized = !!this._authorize?.required && !user;
         // There is an attempt for multiple of the same identities. Probably malicious.

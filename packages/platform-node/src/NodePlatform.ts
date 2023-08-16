@@ -27,9 +27,7 @@ export class NodePlatform extends AbstractPlatform<
         webSocket: WebSocket,
         config: ConvertWebSocketConfig,
     ): NodeWebSocket {
-        const { room } = config;
-
-        return new NodeWebSocket(webSocket, { room });
+        return new NodeWebSocket(webSocket, config);
     }
 
     public parseData(data: string | ArrayBuffer): Record<string, any> {

@@ -1,5 +1,4 @@
 import type { IOEventMessage, MaybePromise } from "@pluv/types";
-import type { AbstractPubSub } from "./AbstractPubSub";
 import type { WebSocketSession } from "./types";
 
 export type AbstractEvent = {};
@@ -37,8 +36,9 @@ export type AbstractListener<TType extends keyof AbstractEventMap> = (
 ) => MaybePromise<void>;
 
 export interface AbstractWebSocketConfig {
-    pubSub?: AbstractPubSub;
     room: string;
+    sessionId: string;
+    userId: string | null;
 }
 
 export abstract class AbstractWebSocket {
@@ -51,15 +51,16 @@ export abstract class AbstractWebSocket {
     /** The connection is closed. */
     public readonly CLOSED = 3;
 
-    public pubSub?: AbstractPubSub;
     public room: string;
+    public sessionId: string;
 
     public abstract get readyState(): 0 | 1 | 2 | 3;
 
     constructor(config: AbstractWebSocketConfig) {
-        const { room } = config;
+        const { room, sessionId } = config;
 
         this.room = room;
+        this.sessionId = sessionId;
     }
 
     /**
