@@ -1,5 +1,11 @@
 # @pluv/types
 
+## 0.10.1
+
+### Patch Changes
+
+- 885835d: remove unnecessary dependency
+
 ## 0.10.0
 
 ### Minor Changes

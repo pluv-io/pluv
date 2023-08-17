@@ -1,5 +1,14 @@
 # @pluv/client
 
+## 0.10.1
+
+### Patch Changes
+
+- 885835d: remove unnecessary dependency
+- Updated dependencies [885835d]
+  - @pluv/crdt-yjs@0.10.1
+  - @pluv/types@0.10.1
+
 ## 0.10.0
 
 ### Minor Changes

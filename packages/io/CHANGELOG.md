@@ -1,5 +1,15 @@
 # @pluv/io
 
+## 0.10.1
+
+### Patch Changes
+
+- 0eeb67c: Passed through sessionId and userId into platform websockets.
+- 885835d: remove unnecessary dependency
+- Updated dependencies [885835d]
+  - @pluv/crdt-yjs@0.10.1
+  - @pluv/types@0.10.1
+
 ## 0.10.0
 
 ### Minor Changes
