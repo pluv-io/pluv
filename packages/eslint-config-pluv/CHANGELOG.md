@@ -1,5 +1,11 @@
 # eslint-config-pluv
 
+## 0.8.1
+
+### Patch Changes
+
+- 885835d: remove unnecessary dependency
+
 ## 0.2.0
 
 ### Minor Changes

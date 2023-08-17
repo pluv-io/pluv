@@ -1,5 +1,14 @@
 # @pluv/pubsub-redis
 
+## 0.10.1
+
+### Patch Changes
+
+- 885835d: remove unnecessary dependency
+- Updated dependencies [0eeb67c]
+- Updated dependencies [885835d]
+  - @pluv/io@0.10.1
+
 ## 0.10.0
 
 ### Minor Changes
