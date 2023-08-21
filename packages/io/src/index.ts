@@ -7,6 +7,7 @@ export type {
 export { AbstractPersistance } from "./AbstractPersistance";
 export { AbstractPlatform } from "./AbstractPlatform";
 export type {
+    AbstractPlatformConfig,
     ConvertWebSocketConfig,
     InferPlatformEventContextType,
     InferPlatformRoomContextType,
