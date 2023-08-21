@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.10.3
+
+### Patch Changes
+
+- a7d3ad1: Exposed context and getInitialProps from @pluv/io.
+  - @pluv/crdt-yjs@0.10.3
+  - @pluv/types@0.10.3
+
 ## 0.10.2
 
 ### Patch Changes
