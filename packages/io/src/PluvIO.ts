@@ -107,8 +107,6 @@ export class PluvIO<
 > implements
         IOLike<TAuthorize, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>
 {
-    private _context: TContext = {} as TContext;
-    private _getInitialStorage: GetInitialStorageFn<TPlatform> | null = null;
     private _rooms = new Map<
         string,
         IORoom<
@@ -123,6 +121,7 @@ export class PluvIO<
     >();
 
     readonly _authorize: TAuthorize | null = null;
+    readonly _context: TContext = {} as TContext;
     readonly _debug: boolean;
     readonly _events: InferEventConfig<
         TPlatform,
@@ -274,6 +273,7 @@ export class PluvIO<
         TOutputSelf,
         TOutputSync
     >;
+    readonly _getInitialStorage: GetInitialStorageFn<TPlatform> | null = null;
     readonly _listeners: PluvIOListeners<TPlatform>;
     readonly _platform: TPlatform;
 
@@ -492,8 +492,14 @@ export class PluvIO<
     > {
         const authorize = (first._authorize ??
             undefined) as InferIOAuthorize<TIO1>;
+        const context = first._context as InferIOContext<TIO1>;
         const debug = first._debug;
         const platform = first._platform as InferIOPlatform<TIO1>;
+
+        const getInitialStorage =
+            first._getInitialStorage as GetInitialStorageFn<
+                InferIOPlatform<TIO1>
+            >;
 
         const events1 = first._events;
         const events2 = second._events;
@@ -504,8 +510,10 @@ export class PluvIO<
 
         return new PluvIO({
             authorize,
+            context,
             debug,
             events,
+            getInitialStorage,
             onRoomDeleted,
             onStorageUpdated,
             platform,
