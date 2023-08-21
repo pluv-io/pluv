@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.10.2
+
+### Patch Changes
+
+- 3deee13: Expose type AbstractPlatformConfig from @pluv/io.
+  - @pluv/crdt-yjs@0.10.2
+  - @pluv/types@0.10.2
+
 ## 0.10.1
 
 ### Patch Changes
