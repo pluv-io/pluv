@@ -605,9 +605,9 @@ export class IORoom<
     private _parseMessage(message: {
         data: string | ArrayBuffer;
     }): EventMessage<string, any> | null {
-        const parsed = this._platform.parseData(message.data);
-
         try {
+            const parsed = this._platform.parseData(message.data);
+
             if (typeof parsed !== "object") return null;
             if (typeof parsed.type !== "string") return null;
             if (typeof parsed.data !== "object") return null;
