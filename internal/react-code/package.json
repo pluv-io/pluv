@@ -14,10 +14,10 @@
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@popperjs/core": "^2.11.8",
 		"@radix-ui/react-tabs": "^1.0.4",
-		"@types/react": "18.2.20",
+		"@types/react": "18.2.21",
 		"@types/react-dom": "^18.2.7",
 		"clsx": "^2.0.0",
-		"next": "^13.4.16",
+		"next": "^13.4.19",
 		"prism-react-renderer": "^2.0.6",
 		"react": "18.2.0",
 		"react-dom": "18.2.0",
@@ -34,7 +34,7 @@
 		"postcss": "^8.4.28",
 		"react-is": "^18.2.0",
 		"tailwindcss": "^3.3.3",
-		"typescript": "^5.1.6"
+		"typescript": "^5.2.2"
 	},
 	"babelMacros": {
 		"twin": {
