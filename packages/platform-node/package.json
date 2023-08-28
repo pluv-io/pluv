@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/platform-node",
-	"version": "0.10.3",
+	"version": "0.11.0",
 	"description": "@pluv/io adapter for node.js",
 	"author": "leedavidcs",
 	"license": "MIT",

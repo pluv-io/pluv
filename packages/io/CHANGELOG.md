@@ -1,5 +1,16 @@
 # @pluv/io
 
+## 0.11.0
+
+### Minor Changes
+
+- b538f5c: Exported class PluvIO from @pluv/io.
+
+### Patch Changes
+
+- @pluv/crdt-yjs@0.11.0
+- @pluv/types@0.11.0
+
 ## 0.10.3
 
 ### Patch Changes
