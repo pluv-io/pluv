@@ -27,12 +27,8 @@ export type {
     AbstractWebSocketHandleErrorParams,
 } from "./AbstractWebSocket";
 export type { IORoom } from "./IORoom";
-export type {
-    GetRoomOptions,
-    InferIORoom,
-    PluvIO,
-    PluvIOConfig,
-} from "./PluvIO";
+export { PluvIO } from "./PluvIO";
+export type { GetRoomOptions, InferIORoom, PluvIOConfig } from "./PluvIO";
 export type {
     AuthorizeModule,
     AuthorizeParams,
