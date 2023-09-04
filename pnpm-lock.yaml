@@ -1317,8 +1317,8 @@ importers:
         specifier: 18.2.21
         version: 18.2.21
       '@types/use-sync-external-store':
-        specifier: ^0.0.3
-        version: 0.0.3
+        specifier: ^0.0.4
+        version: 0.0.4
       fast-deep-equal:
         specifier: ^3.1.3
         version: 3.1.3
@@ -7127,8 +7127,8 @@ packages:
   /@types/unist@3.0.0:
     resolution: {integrity: sha512-MFETx3tbTjE7Uk6vvnWINA/1iJ7LuMdO4fcq8UfF0pRbj01aGLduVvQcRyswuACJdpnHgg8E3rQLhaRdNEJS0w==}
 
-  /@types/use-sync-external-store@0.0.3:
-    resolution: {integrity: sha512-EwmlvuaxPNej9+T4v5AuBPJa2x2UOJVdjCtDHgcDqitUeOtjnJKJ+apYjVcAoBEMjKW1VVFGZLUb5+qqa09XFA==}
+  /@types/use-sync-external-store@0.0.4:
+    resolution: {integrity: sha512-DMBc2WDEfaGsWXqH/Sk2oBaUkvlUwqgt/YEygpqX0MaiEjqR7afd1QgE4Pq2zBr/TRz0Mpu92eBBo5UQjtTD5Q==}
     dev: false
 
   /@types/ws@8.5.5:
