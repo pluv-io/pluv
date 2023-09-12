@@ -23,15 +23,15 @@
 		"@svgr/plugin-jsx": "^8.1.0",
 		"@svgr/plugin-prettier": "^8.1.0",
 		"@svgr/plugin-svgo": "^8.1.0",
-		"@types/common-tags": "^1.8.1",
+		"@types/common-tags": "^1.8.2",
 		"@types/fs-extra": "^11.0.1",
 		"@types/glob": "^8.1.0",
-		"@types/node": "^20.5.6",
+		"@types/node": "^20.6.0",
 		"common-tags": "^1.8.2",
 		"dotenv-cli": "^7.3.0",
 		"eslint-config-pluv": "workspace:^",
 		"fs-extra": "^11.1.1",
-		"glob": "^10.3.3",
+		"glob": "^10.3.4",
 		"ts-node": "^10.9.1",
 		"typescript": "^5.2.2"
 	}
