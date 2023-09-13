@@ -1,5 +1,11 @@
 # pluv
 
+## 0.11.1
+
+### Patch Changes
+
+- 74b3061: Bumped minor and patch dependencies.
+
 ## 0.11.0
 
 ## 0.10.3

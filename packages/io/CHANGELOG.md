@@ -1,5 +1,14 @@
 # @pluv/io
 
+## 0.11.1
+
+### Patch Changes
+
+- 74b3061: Bumped minor and patch dependencies.
+- Updated dependencies [74b3061]
+  - @pluv/crdt-yjs@0.11.1
+  - @pluv/types@0.11.1
+
 ## 0.11.0
 
 ### Minor Changes
