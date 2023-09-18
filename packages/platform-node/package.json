@@ -25,7 +25,7 @@
 	"dependencies": {
 		"@pluv/io": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^20.6.0",
+		"@types/node": "^20.6.2",
 		"@types/ws": "^8.5.5",
 		"path-to-regexp": "^6.2.1"
 	},
