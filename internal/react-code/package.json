@@ -22,7 +22,7 @@
 		"react": "18.2.0",
 		"react-dom": "18.2.0",
 		"react-popper": "^2.3.0",
-		"styled-components": "^6.0.7",
+		"styled-components": "^6.0.8",
 		"twin.macro": "^3.4.0"
 	},
 	"devDependencies": {
