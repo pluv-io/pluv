@@ -8,7 +8,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@types/react": "18.2.21",
+		"@types/react": "18.2.22",
 		"react": "18.2.0",
 		"styled-components": "^6.0.8",
 		"twin.macro": "^3.4.0"

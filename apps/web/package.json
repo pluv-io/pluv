@@ -34,7 +34,7 @@
         "@types/common-tags": "^1.8.2",
         "@types/ms": "^0.7.31",
         "@types/node": "^20.6.2",
-        "@types/react": "18.2.21",
+        "@types/react": "18.2.22",
         "@types/react-dom": "^18.2.7",
         "@types/ws": "^8.5.5",
         "clsx": "^2.0.0",

@@ -24,7 +24,7 @@
         "@pluv/react": "workspace:^",
         "@types/common-tags": "^1.8.2",
         "@types/ms": "^0.7.31",
-        "@types/react": "18.2.21",
+        "@types/react": "18.2.22",
         "@types/react-dom": "^18.2.7",
         "common-tags": "^1.8.2",
         "ms": "^2.1.3",
