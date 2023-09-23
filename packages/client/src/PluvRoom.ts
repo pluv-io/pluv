@@ -44,7 +44,8 @@ const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
 const HEARTBEAT_INTERVAL_MS = 10_000;
 const PONG_TIMEOUT_MS = 2_000;
 const RECONNECT_TIMEOUT_MS = 30_000;
-const Y_ORIGIN_INITIALIZED = "$INITIALIZED";
+const ORIGIN_INITIALIZED = "$INITIALIZED";
+const ORIGIN_STORAGE_UPDATED = "$STORAGE_UPDATED";
 
 export const DEFAULT_PLUV_CLIENT_ADDON = <
     TIO extends IOLike = IOLike,
@@ -272,8 +273,6 @@ export class PluvRoom<
         await this._storageStore.initialize();
         await this._applyStorageStore();
 
-        console.log(this._getWsEndpoint(this.id));
-
         const url = new URL(this._getWsEndpoint(this.id));
 
         let authToken: string | null = null;
@@ -419,7 +418,7 @@ export class PluvRoom<
             onInitialized: () => {
                 this._observeCrdt();
             },
-            origin: Y_ORIGIN_INITIALIZED,
+            origin: ORIGIN_INITIALIZED,
             update: updates,
         });
 
@@ -776,7 +775,7 @@ export class PluvRoom<
             onInitialized: async () => {
                 this._observeCrdt();
             },
-            origin: Y_ORIGIN_INITIALIZED,
+            origin: ORIGIN_INITIALIZED,
             update: data.state,
         });
 
@@ -790,7 +789,7 @@ export class PluvRoom<
 
         this._sendMessage({
             type: "$UPDATE_STORAGE",
-            data: { origin: Y_ORIGIN_INITIALIZED, update },
+            data: { origin: ORIGIN_INITIALIZED, update },
         });
     }
 
@@ -803,11 +802,11 @@ export class PluvRoom<
 
         const data = message.data as BaseIOEventRecord<
             InferIOAuthorize<TIO>
-        >["$STORAGE_UPDATED"];
+        >[typeof ORIGIN_STORAGE_UPDATED];
 
         if (!this._crdtManager) return;
 
-        this._crdtManager.doc.applyUpdate(data.state, "$STORAGE_UPDATED");
+        this._crdtManager.doc.applyUpdate(data.state, ORIGIN_STORAGE_UPDATED);
 
         const sharedTypes = this._crdtManager.doc.getSharedTypes();
 
@@ -880,13 +879,13 @@ export class PluvRoom<
                 this._addToStorageStore(update);
                 this._emitSharedTypes();
 
-                if (origin === Y_ORIGIN_INITIALIZED || origin === this) return;
+                if (origin === ORIGIN_INITIALIZED || origin === this) return;
 
                 if (!this._state.webSocket) return;
                 if (!this._state.connection.id) return;
                 if (this._state.webSocket.readyState !== WebSocket.OPEN) return;
 
-                if (origin === "$STORAGE_UPDATED") return;
+                if (origin === ORIGIN_STORAGE_UPDATED) return;
 
                 this._sendMessage({
                     type: "$UPDATE_STORAGE",

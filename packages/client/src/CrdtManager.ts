@@ -3,7 +3,7 @@ import { doc } from "@pluv/crdt-yjs";
 import type { AbstractType } from "yjs";
 
 export interface CrdtManagerOptions<
-    TStorage extends Record<string, AbstractType<any>> = {}
+    TStorage extends Record<string, AbstractType<any>> = {},
 > {
     encodedState?: string | Uint8Array | null;
     initialStorage?: () => TStorage;
@@ -81,9 +81,7 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
 
         if (!!Object.keys(_doc.toJSON()).length) {
             this.doc = _doc;
-        } else {
-            _doc.destroy();
-        }
+        } else _doc.destroy();
 
         onInitialized?.();
 
@@ -93,7 +91,7 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
     private _applyDocUpdates(
         yjsDoc: YjsDoc<TStorage>,
         updates: readonly string[],
-        origin?: string
+        origin?: string,
     ): YjsDoc<TStorage> {
         yjsDoc.transact(() => {
             updates.reduce((acc, _update) => acc.applyUpdate(_update), yjsDoc);

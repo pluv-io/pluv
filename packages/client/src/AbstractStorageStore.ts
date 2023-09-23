@@ -1,5 +1,3 @@
-import { MaybePromise } from "@pluv/types";
-
 export abstract class AbstractStorageStore {
     public room: string;
 
