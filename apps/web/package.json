@@ -67,7 +67,7 @@
         "babel-plugin-styled-components": "^2.1.4",
         "concurrently": "^8.2.1",
         "dotenv-cli": "^7.3.0",
-        "eslint": "8.49.0",
+        "eslint": "8.50.0",
         "eslint-config-pluv": "workspace:^",
         "fs-extra": "^11.1.1",
         "glob": "^10.3.4",
