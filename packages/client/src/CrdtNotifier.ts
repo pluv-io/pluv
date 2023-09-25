@@ -9,7 +9,7 @@ export class CrdtNotifier<TStorage extends Record<string, AbstractType<any>>> {
     >();
 
     public subject<TKey extends keyof TStorage>(
-        key: TKey
+        key: TKey,
     ): Subject<InferYjsSharedTypeJson<TStorage[TKey]>> {
         const subject = this.subjects.get(key);
 
@@ -27,7 +27,7 @@ export class CrdtNotifier<TStorage extends Record<string, AbstractType<any>>> {
 
     public subscribe<TKey extends keyof TStorage>(
         key: TKey,
-        callback: (value: InferYjsSharedTypeJson<TStorage[TKey]>) => void
+        callback: (value: InferYjsSharedTypeJson<TStorage[TKey]>) => void,
     ): () => void {
         const subject = this.subject(key);
 

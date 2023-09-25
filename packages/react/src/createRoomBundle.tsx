@@ -450,6 +450,10 @@ export const createRoomBundle = <
         );
     };
 
+    const usePluvRedo = () => {
+        const room = usePluvRoom();
+    };
+
     const usePluvStorage = <
         TKey extends keyof TStorage,
         TData extends unknown = InferYjsSharedTypeJson<TStorage[TKey]>,

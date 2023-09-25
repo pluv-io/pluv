@@ -31,14 +31,14 @@ import { UsersManager } from "./UsersManager";
 
 export type MockedRoomEvents<TIO extends IOLike> = Partial<{
     [P in keyof InferIOInput<TIO>]: (
-        data: Id<InferIOInput<TIO>[P]>
+        data: Id<InferIOInput<TIO>[P]>,
     ) => Partial<InferIOOutput<TIO>>;
 }>;
 
 export type MockedRoomConfig<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {}
+    TStorage extends Record<string, AbstractType<any>> = {},
 > = { events?: MockedRoomEvents<TIO> } & Omit<
     CrdtManagerOptions<TStorage>,
     "encodedState"
@@ -48,7 +48,7 @@ export type MockedRoomConfig<
 export class MockedRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {}
+    TStorage extends Record<string, AbstractType<any>> = {},
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     private _crdtManager: CrdtManager<TStorage> | null = null;
     private _crdtNotifier = new CrdtNotifier<TStorage>();
@@ -75,7 +75,7 @@ export class MockedRoom<
 
     constructor(
         room: string,
-        options: MockedRoomConfig<TIO, TPresence, TStorage>
+        options: MockedRoomConfig<TIO, TPresence, TStorage>,
     ) {
         const { events, initialPresence, initialStorage, presence } = options;
 
@@ -97,7 +97,7 @@ export class MockedRoom<
 
     public broadcast<TEvent extends keyof InferIOInput<TIO>>(
         event: TEvent,
-        data: Id<InferIOInput<TIO>[TEvent]>
+        data: Id<InferIOInput<TIO>[TEvent]>,
     ): void {
         if (!this._events) return;
 
@@ -119,7 +119,7 @@ export class MockedRoom<
 
     public event = <TEvent extends keyof InferIOOutput<TIO>>(
         event: TEvent,
-        callback: EventNotifierSubscriptionCallback<TIO, TEvent>
+        callback: EventNotifierSubscriptionCallback<TIO, TEvent>,
     ): (() => void) => {
         return this._eventNotifier.subscribe(event, callback);
     };
@@ -127,7 +127,7 @@ export class MockedRoom<
     public getConnection(): WebSocketConnection {
         // Create a read-only clone of the connection state
         return Object.freeze(
-            JSON.parse(JSON.stringify(this._state.connection))
+            JSON.parse(JSON.stringify(this._state.connection)),
         );
     }
 
@@ -140,7 +140,7 @@ export class MockedRoom<
     };
 
     public getOther = (
-        connectionId: string
+        connectionId: string,
     ): Id<UserInfo<TIO, TPresence>> | null => {
         return this._usersManager.getOther(connectionId);
     };
@@ -150,32 +150,40 @@ export class MockedRoom<
     };
 
     public getStorage = <TKey extends keyof TStorage>(
-        key: TKey
+        key: TKey,
     ): TStorage[TKey] | null => {
         return this._crdtManager?.get(key) ?? null;
     };
 
     public other = (
         connectionId: string,
-        callback: OtherNotifierSubscriptionCallback<TIO>
+        callback: OtherNotifierSubscriptionCallback<TIO>,
     ): (() => void) => {
         return this._otherNotifier.subscribe(connectionId, callback);
     };
 
+    public redo = (): void => {
+        this._crdtManager?.doc.redo();
+    };
+
     public storage = <TKey extends keyof TStorage>(
         key: TKey,
-        fn: (value: InferYjsSharedTypeJson<TStorage[TKey]>) => void
+        fn: (value: InferYjsSharedTypeJson<TStorage[TKey]>) => void,
     ): (() => void) => {
         return this._crdtNotifier.subscribe(key, fn);
     };
 
     public subscribe = <
-        TSubject extends keyof StateNotifierSubjects<TIO, TPresence>
+        TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
     >(
         name: TSubject,
-        callback: SubscriptionCallback<TIO, TPresence, TSubject>
+        callback: SubscriptionCallback<TIO, TPresence, TSubject>,
     ): (() => void) => {
         return this._stateNotifier.subscribe(name, callback);
+    };
+
+    public undo = (): void => {
+        this._crdtManager?.doc.undo();
     };
 
     public updateMyPresence = (presence: Partial<TPresence>): void => {
@@ -209,7 +217,7 @@ export class MockedRoom<
 
                     this._crdtNotifier.subject(prop).next(serialized);
                 });
-            }
+            },
         );
 
         this._subscriptions.observeCrdt = unsubscribe;

@@ -30,10 +30,10 @@ export class PluvClient<TIO extends IOLike = IOLike> {
 
     public createRoom = <
         TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractType<any>> = {}
+        TStorage extends Record<string, AbstractType<any>> = {},
     >(
         room: string,
-        options: PluvRoomOptions<TIO, TPresence, TStorage> = {}
+        options: PluvRoomOptions<TIO, TPresence, TStorage> = {},
     ): PluvRoom<TIO, TPresence, TStorage> => {
         const oldRoom = this.getRoom<TPresence, TStorage>(room);
 
@@ -57,7 +57,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
     };
 
     public enter = async (
-        room: string | PluvRoom<TIO, any, any>
+        room: string | PluvRoom<TIO, any, any>,
     ): Promise<PluvRoom<TIO, JsonObject, any>> => {
         const toEnter = typeof room === "string" ? this.getRoom(room) : room;
 
@@ -76,9 +76,9 @@ export class PluvClient<TIO extends IOLike = IOLike> {
 
     public getRoom = <
         TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractType<any>> = {}
+        TStorage extends Record<string, AbstractType<any>> = {},
     >(
-        room: string
+        room: string,
     ): PluvRoom<TIO, TPresence, TStorage> | null => {
         const found = this._rooms.get(room) as
             | PluvRoom<TIO, TPresence, TStorage>
@@ -92,7 +92,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
     };
 
     public leave = async (
-        room: string | PluvRoom<TIO, any, any>
+        room: string | PluvRoom<TIO, any, any>,
     ): Promise<void> => {
         const toLeave = typeof room === "string" ? this.getRoom(room) : room;
 
