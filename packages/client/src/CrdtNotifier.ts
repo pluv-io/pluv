@@ -3,6 +3,10 @@ import { makeSubject, Subject, subscribe } from "wonka";
 import type { AbstractType } from "yjs";
 
 export class CrdtNotifier<TStorage extends Record<string, AbstractType<any>>> {
+    public rootSubject = makeSubject<{
+        [P in keyof TStorage]: InferYjsSharedTypeJson<TStorage[P]>;
+    }>();
+
     public subjects = new Map<
         keyof TStorage,
         Subject<InferYjsSharedTypeJson<TStorage[keyof TStorage]>> | null
@@ -23,6 +27,14 @@ export class CrdtNotifier<TStorage extends Record<string, AbstractType<any>>> {
         this.subjects.set(key, newSubject);
 
         return newSubject as Subject<InferYjsSharedTypeJson<TStorage[TKey]>>;
+    }
+
+    public subcribeRoot(
+        callback: (value: {
+            [P in keyof TStorage]: InferYjsSharedTypeJson<TStorage[P]>;
+        }) => void,
+    ): () => void {
+        return subscribe(callback)(this.rootSubject.source).unsubscribe;
     }
 
     public subscribe<TKey extends keyof TStorage>(

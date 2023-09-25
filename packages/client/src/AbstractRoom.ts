@@ -68,6 +68,12 @@ export abstract class AbstractRoom<
         fn: (value: InferYjsSharedTypeJson<TStorage[TKey]>) => void,
     ): () => void;
 
+    public abstract storageRoot(
+        fn: (value: {
+            [P in keyof TStorage]: InferYjsSharedTypeJson<TStorage[P]>;
+        }) => void,
+    ): () => void;
+
     public abstract subscribe<
         TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
     >(

@@ -181,6 +181,14 @@ export class MockedRoom<
         return this._crdtNotifier.subscribe(key, fn);
     };
 
+    public storageRoot = (
+        fn: (value: {
+            [P in keyof TStorage]: InferYjsSharedTypeJson<TStorage[P]>;
+        }) => void,
+    ): (() => void) => {
+        return this._crdtNotifier.subcribeRoot(fn);
+    };
+
     public subscribe = <
         TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
     >(
@@ -218,13 +226,24 @@ export class MockedRoom<
 
                 const sharedTypes = this._crdtManager.doc.getSharedTypes();
 
-                Object.entries(sharedTypes).forEach(([prop, sharedType]) => {
-                    if (!this._crdtManager) return;
+                const storageRoot = Object.entries(sharedTypes).reduce(
+                    (acc, [prop, sharedType]) => {
+                        if (!this._crdtManager) return acc;
 
-                    const serialized = sharedType.toJSON();
+                        const serialized = sharedType.toJSON();
 
-                    this._crdtNotifier.subject(prop).next(serialized);
-                });
+                        this._crdtNotifier.subject(prop).next(serialized);
+
+                        return { ...acc, [prop]: serialized };
+                    },
+                    {} as {
+                        [P in keyof TStorage]: InferYjsSharedTypeJson<
+                            TStorage[P]
+                        >;
+                    },
+                );
+
+                this._crdtNotifier.rootSubject.next(storageRoot);
             },
         );
 

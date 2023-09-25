@@ -393,6 +393,14 @@ export class PluvRoom<
         return this._crdtNotifier.subscribe(key, fn);
     };
 
+    public storageRoot = (
+        fn: (value: {
+            [P in keyof TStorage]: InferYjsSharedTypeJson<TStorage[P]>;
+        }) => void,
+    ): (() => void) => {
+        return this._crdtNotifier.subcribeRoot(fn);
+    };
+
     public subscribe = <
         TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
     >(
@@ -583,11 +591,20 @@ export class PluvRoom<
     private _emitSharedTypes(): void {
         const sharedTypes = this._crdtManager.doc.getSharedTypes();
 
-        Object.entries(sharedTypes).forEach(([prop, sharedType]) => {
-            const serialized = sharedType.toJSON();
+        const storageRoot = Object.entries(sharedTypes).reduce(
+            (acc, [prop, sharedType]) => {
+                const serialized = sharedType.toJSON();
 
-            this._crdtNotifier.subject(prop).next(serialized);
-        });
+                this._crdtNotifier.subject(prop).next(serialized);
+
+                return { ...acc, [prop]: serialized };
+            },
+            {} as {
+                [P in keyof TStorage]: InferYjsSharedTypeJson<TStorage[P]>;
+            },
+        );
+
+        this._crdtNotifier.rootSubject.next(storageRoot);
     }
 
     private _flattenStorageStore = debounce(
