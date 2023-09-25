@@ -117,6 +117,14 @@ export class MockedRoom<
         });
     }
 
+    public canRedo = (): boolean => {
+        return !!this._crdtManager?.doc.canRedo();
+    };
+
+    public canUndo = (): boolean => {
+        return !!this._crdtManager?.doc.canUndo();
+    };
+
     public event = <TEvent extends keyof InferIOOutput<TIO>>(
         event: TEvent,
         callback: EventNotifierSubscriptionCallback<TIO, TEvent>,

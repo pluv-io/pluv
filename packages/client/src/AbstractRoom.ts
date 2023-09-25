@@ -31,6 +31,10 @@ export abstract class AbstractRoom<
         data: Id<InferIOInput<TIO>[TEvent]>,
     ): void;
 
+    public abstract canRedo(): boolean;
+
+    public abstract canUndo(): boolean;
+
     public abstract event<TEvent extends keyof InferIOOutput<TIO>>(
         event: TEvent,
         callback: EventNotifierSubscriptionCallback<TIO, TEvent>,

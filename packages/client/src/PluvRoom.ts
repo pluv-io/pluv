@@ -250,6 +250,14 @@ export class PluvRoom<
         this._sendMessage({ data, type });
     }
 
+    public canRedo = (): boolean => {
+        return !!this._crdtManager.doc.canRedo();
+    };
+
+    public canUndo = (): boolean => {
+        return !!this._crdtManager.doc.canUndo();
+    };
+
     public async connect(): Promise<void> {
         if (!this._endpoints.wsEndpoint) {
             throw new Error("Must provide an wsEndpoint.");
