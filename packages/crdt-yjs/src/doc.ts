@@ -65,7 +65,16 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
         return this;
     }
 
+    public canRedo(): boolean {
+        return !!this._undoManager?.canRedo();
+    }
+
+    public canUndo(): boolean {
+        return !!this._undoManager?.canUndo();
+    }
+
     public destroy(): void {
+        this._undoManager?.destroy();
         this.value.destroy();
     }
 

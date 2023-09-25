@@ -452,6 +452,8 @@ export const createRoomBundle = <
 
     const usePluvRedo = () => {
         const room = usePluvRoom();
+
+        return room.redo;
     };
 
     const usePluvStorage = <
