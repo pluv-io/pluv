@@ -1,4 +1,7 @@
-export type { InferYjsSharedTypeJson } from "@pluv/crdt-yjs";
+export type {
+    InferYjsSharedTypeJson,
+    TrackOriginOptions,
+} from "@pluv/crdt-yjs";
 export type {
     BaseUser,
     EventMessage,

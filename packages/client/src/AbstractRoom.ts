@@ -81,6 +81,11 @@ export abstract class AbstractRoom<
         callback: SubscriptionCallback<TIO, TPresence, TSubject>,
     ): () => void;
 
+    public abstract transact(
+        fn: (storage: TStorage) => void,
+        origin?: string,
+    ): void;
+
     public abstract undo(): void;
 
     public abstract updateMyPresence(presence: Partial<TPresence>): void;

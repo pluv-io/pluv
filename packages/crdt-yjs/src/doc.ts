@@ -10,7 +10,7 @@ import {
 } from "yjs";
 import type { InferYjsDocJson } from "./types";
 
-export interface YjsDocOptions {
+export interface TrackOriginOptions {
     captureTimeout?: number;
     trackedOrigins?: readonly string[];
 }
@@ -34,17 +34,10 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
         return this.value.getMap("storage");
     }
 
-    constructor(value?: T, options: YjsDocOptions = {}) {
-        const { captureTimeout, trackedOrigins } = options;
-
+    constructor(value?: T) {
         if (!value) return;
 
         const storage = this.value.getMap("storage");
-
-        this._undoManager = new UndoManager(storage, {
-            captureTimeout,
-            trackedOrigins: new Set<string>(trackedOrigins),
-        });
 
         Object.entries(value).forEach(([key, node]) => {
             storage.set(key, node);
@@ -121,6 +114,21 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
 
     public toJSON(): InferYjsDocJson<this> {
         return this._storage.toJSON() as InferYjsDocJson<this>;
+    }
+
+    public trackOrigins(options: TrackOriginOptions): void {
+        const { captureTimeout, trackedOrigins } = options;
+
+        if (this._undoManager) {
+            this._undoManager.destroy();
+        }
+
+        this._undoManager = new UndoManager(this._storage, {
+            captureTimeout,
+            trackedOrigins: trackedOrigins
+                ? new Set<string>(trackedOrigins)
+                : undefined,
+        });
     }
 
     public transact(

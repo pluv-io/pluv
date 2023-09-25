@@ -1,4 +1,4 @@
-import { InferYjsSharedTypeJson } from "@pluv/crdt-yjs";
+import { InferYjsSharedTypeJson, TrackOriginOptions } from "@pluv/crdt-yjs";
 import type {
     BaseIOEventRecord,
     EventMessage,
@@ -144,7 +144,9 @@ export type RoomConfig<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, AbstractType<any>> = {},
-> = RoomEndpoints<TIO> & PluvRoomOptions<TIO, TPresence, TStorage>;
+> = RoomEndpoints<TIO> &
+    PluvRoomOptions<TIO, TPresence, TStorage> &
+    TrackOriginOptions;
 
 export class PluvRoom<
     TIO extends IOLike,
@@ -153,6 +155,7 @@ export class PluvRoom<
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     readonly _endpoints: RoomEndpoints<TIO>;
 
+    private _captureTimeout: number | null = null;
     private _crdtManager: CrdtManager<TStorage>;
     private _crdtNotifier = new CrdtNotifier<TStorage>();
     private _debug: boolean | PluvRoomDebug<TIO>;
@@ -183,6 +186,7 @@ export class PluvRoom<
         pong: null,
         reconnect: null,
     };
+    private _trackedOrigins: readonly string[] | null = null;
     private _windowListeners: WindowListeners | null = null;
     private _wsListeners: WebSocketListeners | null = null;
     private _usersManager: UsersManager<TIO, TPresence>;
@@ -191,11 +195,13 @@ export class PluvRoom<
         const {
             addons = [],
             authEndpoint,
+            captureTimeout,
             debug = false,
             initialPresence,
             initialStorage,
             onAuthorizationFail,
             presence,
+            trackedOrigins,
             wsEndpoint,
         } = options;
 
@@ -231,7 +237,14 @@ export class PluvRoom<
             presence,
         });
 
-        this._crdtManager = new CrdtManager<TStorage>({ initialStorage });
+        this._crdtManager = new CrdtManager<TStorage>({
+            captureTimeout,
+            initialStorage,
+            trackedOrigins,
+        });
+
+        this._captureTimeout = captureTimeout ?? null;
+        this._trackedOrigins = trackedOrigins ?? null;
     }
 
     public get webSocket(): WebSocket | null {
@@ -457,12 +470,15 @@ export class PluvRoom<
 
     private async _applyStorageStore(): Promise<void> {
         const updates = await this._storageStore.getUpdates();
+        const trackedOrigins = this._getTrackedOrigins();
 
         this._crdtManager.initialize({
+            captureTimeout: this._captureTimeout ?? undefined,
             onInitialized: () => {
                 this._observeCrdt();
             },
             origin: ORIGIN_INITIALIZED,
+            trackedOrigins: trackedOrigins ?? undefined,
             update: updates,
         });
 
@@ -682,6 +698,14 @@ export class PluvRoom<
         }
     }
 
+    private _getTrackedOrigins(): readonly string[] | null {
+        const connectionId = this._state.connection.id;
+
+        return !connectionId
+            ? this._trackedOrigins
+            : [connectionId, ...(this._trackedOrigins ?? [])];
+    }
+
     private _getWsEndpoint(room: string): string {
         switch (typeof this._endpoints.wsEndpoint) {
             case "undefined":
@@ -824,11 +848,15 @@ export class PluvRoom<
             InferIOAuthorize<TIO>
         >["$STORAGE_RECEIVED"];
 
+        const trackedOrigins = this._getTrackedOrigins();
+
         this._crdtManager.initialize({
+            captureTimeout: this._captureTimeout ?? undefined,
             onInitialized: async () => {
                 this._observeCrdt();
             },
             origin: ORIGIN_INITIALIZED,
+            trackedOrigins: trackedOrigins ?? undefined,
             update: data.state,
         });
 
@@ -863,13 +891,22 @@ export class PluvRoom<
 
         const sharedTypes = this._crdtManager.doc.getSharedTypes();
 
-        Object.entries(sharedTypes).forEach(([prop, sharedType]) => {
-            if (!this._crdtManager) return;
+        const storageRoot = Object.entries(sharedTypes).reduce(
+            (acc, [prop, sharedType]) => {
+                if (!this._crdtManager) return acc;
 
-            const serialized = sharedType.toJSON();
+                const serialized = sharedType.toJSON();
 
-            this._crdtNotifier.subject(prop).next(serialized);
-        });
+                this._crdtNotifier.subject(prop).next(serialized);
+
+                return { ...acc, [prop]: serialized };
+            },
+            {} as {
+                [P in keyof TStorage]: InferYjsSharedTypeJson<TStorage[P]>;
+            },
+        );
+
+        this._crdtNotifier.rootSubject.next(storageRoot);
     }
 
     private _handleUserJoinedMessage(message: IOEventMessage<TIO>): void {

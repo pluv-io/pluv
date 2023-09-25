@@ -1,5 +1,6 @@
 export type { AbstractType, Array, Map, Text } from "yjs";
 export { array } from "./array";
+export type { TrackOriginOptions } from "./doc";
 export { YjsDoc, doc } from "./doc";
 export { map } from "./map";
 export { object } from "./object";

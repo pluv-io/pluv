@@ -198,6 +198,28 @@ export class MockedRoom<
         return this._stateNotifier.subscribe(name, callback);
     };
 
+    public transact = (
+        fn: (storage: TStorage) => void,
+        origin?: string,
+    ): void => {
+        const _origin = origin ?? this._state.connection.id;
+        const crdtManager = this._crdtManager;
+
+        /**
+         * !HACK
+         * @description Don't transact anything if there is no origin, because
+         * that means the user isn't connected yet. This will mean events are
+         * lost unfortunately.
+         * @date September 23, 2023
+         */
+        if (typeof _origin !== "string") return;
+        if (!crdtManager) return;
+
+        crdtManager.doc.transact(() => {
+            fn(crdtManager.doc.storage);
+        }, _origin);
+    };
+
     public undo = (): void => {
         this._crdtManager?.doc.undo();
     };

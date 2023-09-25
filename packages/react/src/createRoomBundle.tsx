@@ -6,6 +6,7 @@ import type {
     PluvRoom,
     PluvRoomAddon,
     PluvRoomDebug,
+    TrackOriginOptions,
     UserInfo,
     WebSocketConnection,
 } from "@pluv/client";
@@ -37,15 +38,15 @@ import {
     useSyncExternalStoreWithSelector,
 } from "./internal";
 
-export interface CreateRoomBundleOptions<
+export type CreateRoomBundleOptions<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, AbstractType<any>> = {},
-> {
+> = {
     addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
     initialStorage?: () => TStorage;
     presence?: InputZodLike<TPresence>;
-}
+} & TrackOriginOptions;
 
 type BaseRoomProviderProps<
     TPresence extends JsonObject,
@@ -137,6 +138,10 @@ export interface CreateRoomBundle<
         selector?: (data: InferYjsSharedTypeJson<TStorage[TKey]>) => TData,
         options?: SubscriptionHookOptions<TData | null>,
     ) => [data: TData | null, sharedType: TStorage[TKey] | null];
+    usePluvTransact: () => (
+        fn: (storage: TStorage) => void,
+        origin?: string,
+    ) => void;
     usePluvUndo: () => () => void;
 }
 
@@ -176,6 +181,7 @@ export const createRoomBundle = <
 
         const [room] = useState<MockedRoom<TIO, TPresence, TStorage>>(() => {
             return new MockedRoom<TIO, TPresence, TStorage>(_room, {
+                captureTimeout: options.captureTimeout,
                 events,
                 initialPresence,
                 initialStorage:
@@ -183,6 +189,7 @@ export const createRoomBundle = <
                         ? initialStorage
                         : options.initialStorage,
                 presence: options.presence,
+                trackedOrigins: options.trackedOrigins,
             });
         });
 
@@ -215,6 +222,7 @@ export const createRoomBundle = <
         const [room] = useState<PluvRoom<TIO, TPresence, TStorage>>(() => {
             return client.createRoom<TPresence, TStorage>(_room, {
                 addons: options.addons,
+                captureTimeout: options.captureTimeout,
                 debug,
                 initialPresence,
                 initialStorage:
@@ -223,6 +231,7 @@ export const createRoomBundle = <
                         : options.initialStorage,
                 presence: options.presence,
                 onAuthorizationFail,
+                trackedOrigins: options.trackedOrigins,
             });
         });
 
@@ -543,6 +552,12 @@ export const createRoomBundle = <
         return [data, sharedType];
     };
 
+    const usePluvTransact = () => {
+        const room = usePluvRoom();
+
+        return room.transact;
+    };
+
     const usePluvUndo = () => {
         const room = usePluvRoom();
 
@@ -567,6 +582,7 @@ export const createRoomBundle = <
         usePluvRedo,
         usePluvRoom,
         usePluvStorage,
+        usePluvTransact,
         usePluvUndo,
     };
 };

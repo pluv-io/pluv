@@ -1,26 +1,31 @@
-import type { YjsDoc } from "@pluv/crdt-yjs";
+import type { TrackOriginOptions, YjsDoc } from "@pluv/crdt-yjs";
 import { doc } from "@pluv/crdt-yjs";
 import type { AbstractType } from "yjs";
 
-export interface CrdtManagerOptions<
+export type CrdtManagerOptions<
     TStorage extends Record<string, AbstractType<any>> = {},
-> {
+> = {
     encodedState?: string | Uint8Array | null;
     initialStorage?: () => TStorage;
-}
+} & TrackOriginOptions;
 
-interface CrdtManagerInitializeParams {
+type CrdtManagerInitializeParams = {
     onInitialized?: () => void;
     origin?: any;
     update: string | readonly string[];
-}
+} & TrackOriginOptions;
 
 export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
     public doc: YjsDoc<TStorage>;
     public initialized: boolean = false;
 
     constructor(options: CrdtManagerOptions<TStorage> = {}) {
-        const { encodedState, initialStorage } = options;
+        const {
+            captureTimeout,
+            encodedState,
+            initialStorage,
+            trackedOrigins = [],
+        } = options;
 
         const _doc = encodedState
             ? doc<TStorage>().applyUpdate(encodedState)
@@ -28,6 +33,7 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
 
         if (_doc && !!Object.keys(_doc.toJSON()).length) {
             this.doc = _doc;
+            this.trackOrigins({ captureTimeout, trackedOrigins });
 
             return;
         }
@@ -35,6 +41,7 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
         _doc?.destroy();
 
         this.doc = doc<TStorage>(initialStorage?.());
+        this.trackOrigins({ captureTimeout, trackedOrigins });
     }
 
     /**
@@ -63,9 +70,17 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
     }
 
     public initialize(params: CrdtManagerInitializeParams): this {
-        const { onInitialized, origin, update } = params;
+        const {
+            captureTimeout,
+            onInitialized,
+            origin,
+            trackedOrigins,
+            update,
+        } = params;
 
         const updates = typeof update === "string" ? [update] : update;
+
+        this.trackOrigins({ captureTimeout, trackedOrigins });
 
         if (!updates.length) return this;
 
@@ -81,11 +96,21 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
 
         if (!!Object.keys(_doc.toJSON()).length) {
             this.doc = _doc;
-        } else _doc.destroy();
+        } else {
+            _doc.destroy();
+        }
 
         onInitialized?.();
 
+        this.trackOrigins({ captureTimeout, trackedOrigins });
+
         return this;
+    }
+
+    public trackOrigins(options: TrackOriginOptions): void {
+        const { captureTimeout, trackedOrigins } = options;
+
+        this.doc.trackOrigins({ captureTimeout, trackedOrigins });
     }
 
     private _applyDocUpdates(
