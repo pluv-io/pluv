@@ -374,6 +374,10 @@ export class PluvRoom<
         return this._otherNotifier.subscribe(connectionId, callback);
     };
 
+    public redo = (): void => {
+        this._crdtManager.doc.redo();
+    };
+
     public storage = <TKey extends keyof TStorage>(
         key: TKey,
         fn: (value: InferYjsSharedTypeJson<TStorage[TKey]>) => void,
@@ -388,6 +392,30 @@ export class PluvRoom<
         callback: SubscriptionCallback<TIO, TPresence, TSubject>,
     ): (() => void) => {
         return this._stateNotifier.subscribe(name, callback);
+    };
+
+    public transact = (
+        fn: (storage: TStorage) => void,
+        origin?: string,
+    ): void => {
+        const _origin = origin ?? this._state.connection.id;
+
+        /**
+         * !HACK
+         * @description Don't transact anything if there is no origin, because
+         * that means the user isn't connected yet. This will mean events are
+         * lost unfortunately.
+         * @date September 23, 2023
+         */
+        if (typeof _origin !== "string") return;
+
+        this._crdtManager.doc.transact(() => {
+            fn(this._crdtManager.doc.storage);
+        }, _origin);
+    };
+
+    public undo = (): void => {
+        this._crdtManager.doc.undo();
     };
 
     public updateMyPresence = (presence: Partial<TPresence>): void => {
