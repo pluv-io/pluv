@@ -40,7 +40,7 @@ import {
 export interface CreateRoomBundleOptions<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {}
+    TStorage extends Record<string, AbstractType<any>> = {},
 > {
     addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
     initialStorage?: () => TStorage;
@@ -49,7 +49,7 @@ export interface CreateRoomBundleOptions<
 
 type BaseRoomProviderProps<
     TPresence extends JsonObject,
-    TStorage extends Record<string, AbstractType<any>>
+    TStorage extends Record<string, AbstractType<any>>,
 > = {
     children?: ReactNode;
     initialStorage?: keyof TStorage extends never ? never : () => TStorage;
@@ -61,7 +61,7 @@ type BaseRoomProviderProps<
 export type MockedRoomProviderProps<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TStorage extends Record<string, AbstractType<any>>
+    TStorage extends Record<string, AbstractType<any>>,
 > = BaseRoomProviderProps<TPresence, TStorage> & {
     events?: MockedRoomEvents<TIO>;
 };
@@ -69,7 +69,7 @@ export type MockedRoomProviderProps<
 export type PluvRoomProviderProps<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TStorage extends Record<string, AbstractType<any>>
+    TStorage extends Record<string, AbstractType<any>>,
 > = BaseRoomProviderProps<TPresence, TStorage> & {
     debug?: boolean | PluvRoomDebug<TIO>;
     onAuthorizationFail?: (error: Error) => void;
@@ -86,7 +86,7 @@ export type UpdateMyPresenceAction<TPresence extends JsonObject> =
 export interface CreateRoomBundle<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TStorage extends Record<string, AbstractType<any>>
+    TStorage extends Record<string, AbstractType<any>>,
 > {
     // components
     MockedRoomProvider: FC<MockedRoomProviderProps<TIO, TPresence, TStorage>>;
@@ -95,54 +95,54 @@ export interface CreateRoomBundle<
     // hooks
     usePluvBroadcast: () => <TEvent extends keyof InferIOInput<TIO>>(
         event: TEvent,
-        data: Id<InferIOInput<TIO>[TEvent]>
+        data: Id<InferIOInput<TIO>[TEvent]>,
     ) => void;
     usePluvConnection: <T extends unknown = WebSocketConnection>(
         selector: (connection: WebSocketConnection) => T,
-        options?: SubscriptionHookOptions<Id<T>>
+        options?: SubscriptionHookOptions<Id<T>>,
     ) => Id<T>;
     usePluvEvent: <TType extends keyof InferIOOutput<TIO>>(
         type: TType,
-        callback: (data: Id<IOEventMessage<TIO, TType>>) => void
+        callback: (data: Id<IOEventMessage<TIO, TType>>) => void,
     ) => void;
     usePluvMyPresence: <T extends unknown = TPresence>(
         selector?: (myPresence: TPresence) => T,
-        options?: SubscriptionHookOptions<Id<T> | null>
+        options?: SubscriptionHookOptions<Id<T> | null>,
     ) => [
         myPresence: Id<T>,
-        updateMyPresence: Dispatch<UpdateMyPresenceAction<TPresence>>
+        updateMyPresence: Dispatch<UpdateMyPresenceAction<TPresence>>,
     ];
     usePluvMyself: <T extends unknown = UserInfo<TIO, TPresence>>(
         selector?: (myself: Id<UserInfo<TIO, TPresence>>) => T,
-        options?: SubscriptionHookOptions<Id<T> | null>
+        options?: SubscriptionHookOptions<Id<T> | null>,
     ) => Id<T> | null;
     usePluvOther: <T extends unknown = UserInfo<TIO, TPresence>>(
         connectionId: string,
         selector?: (other: UserInfo<TIO, TPresence>) => T,
-        options?: SubscriptionHookOptions<Id<T> | null>
+        options?: SubscriptionHookOptions<Id<T> | null>,
     ) => Id<T> | null;
     usePluvOthers: <T extends unknown = UserInfo<TIO, TPresence>>(
         selector?: (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T[],
-        options?: SubscriptionHookOptions<readonly Id<T>[]>
+        options?: SubscriptionHookOptions<readonly Id<T>[]>,
     ) => readonly Id<T>[];
     usePluvRoom: () => AbstractRoom<TIO, TPresence, TStorage>;
     usePluvStorage: <
         TKey extends keyof TStorage,
-        TData extends unknown = InferYjsSharedTypeJson<TStorage[TKey]>
+        TData extends unknown = InferYjsSharedTypeJson<TStorage[TKey]>,
     >(
         key: TKey,
         selector?: (data: InferYjsSharedTypeJson<TStorage[TKey]>) => TData,
-        options?: SubscriptionHookOptions<TData | null>
+        options?: SubscriptionHookOptions<TData | null>,
     ) => [data: TData | null, sharedType: TStorage[TKey] | null];
 }
 
 export const createRoomBundle = <
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {}
+    TStorage extends Record<string, AbstractType<any>> = {},
 >(
     client: PluvClient<TIO>,
-    options: CreateRoomBundleOptions<TIO, TPresence, TStorage> = {}
+    options: CreateRoomBundleOptions<TIO, TPresence, TStorage> = {},
 ): CreateRoomBundle<TIO, TPresence, TStorage> => {
     /**
      * !HACK
@@ -253,24 +253,24 @@ export const createRoomBundle = <
 
     const usePluvBroadcast = (): (<TEvent extends keyof InferIOInput<TIO>>(
         event: TEvent,
-        data: Id<InferIOInput<TIO>[TEvent]>
+        data: Id<InferIOInput<TIO>[TEvent]>,
     ) => void) => {
         const room = usePluvRoom();
 
         return useCallback(
             <TEvent extends keyof InferIOInput<TIO>>(
                 event: TEvent,
-                data: Id<InferIOInput<TIO>[TEvent]>
+                data: Id<InferIOInput<TIO>[TEvent]>,
             ) => {
                 room.broadcast(event, data);
             },
-            [room]
+            [room],
         );
     };
 
     const usePluvConnection = <T extends unknown = WebSocketConnection>(
         selector = identity as (connection: WebSocketConnection) => T,
-        options?: SubscriptionHookOptions<Id<T>>
+        options?: SubscriptionHookOptions<Id<T>>,
     ): Id<T> => {
         const room = usePluvRoom();
 
@@ -278,14 +278,14 @@ export const createRoomBundle = <
             (onStoreChange: () => void) => {
                 return room.subscribe("connection", onStoreChange);
             },
-            [room]
+            [room],
         );
 
         const getSnapshot = room.getConnection;
 
         const _selector = useCallback(
             (snapshot: WebSocketConnection) => selector(snapshot) as Id<T>,
-            [selector]
+            [selector],
         );
 
         return useSyncExternalStoreWithSelector(
@@ -293,13 +293,13 @@ export const createRoomBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual ?? fastDeepEqual
+            options?.isEqual ?? fastDeepEqual,
         );
     };
 
     const usePluvEvent = <TType extends keyof InferIOOutput<TIO>>(
         type: TType,
-        callback: (data: Id<IOEventMessage<TIO, TType>>) => void
+        callback: (data: Id<IOEventMessage<TIO, TType>>) => void,
     ): void => {
         const room = usePluvRoom();
 
@@ -314,7 +314,7 @@ export const createRoomBundle = <
 
     const usePluvMyPresence = <T extends unknown = TPresence>(
         selector = identity as (myPresence: TPresence) => T,
-        options?: SubscriptionHookOptions<Id<T> | null>
+        options?: SubscriptionHookOptions<Id<T> | null>,
     ): [Id<T>, Dispatch<UpdateMyPresenceAction<TPresence>>] => {
         const room = usePluvRoom();
 
@@ -322,14 +322,14 @@ export const createRoomBundle = <
             (onStoreChange: () => void) => {
                 return room.subscribe("my-presence", onStoreChange);
             },
-            [room]
+            [room],
         );
 
         const getSnapshot = room.getMyPresence;
 
         const _selector = useCallback(
             (snapshot: TPresence) => selector(snapshot) as Id<T>,
-            [selector]
+            [selector],
         );
 
         const myPresence = useSyncExternalStoreWithSelector(
@@ -337,7 +337,7 @@ export const createRoomBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual ?? fastDeepEqual
+            options?.isEqual ?? fastDeepEqual,
         );
 
         const updateMyPresence: Dispatch<UpdateMyPresenceAction<TPresence>> =
@@ -350,7 +350,7 @@ export const createRoomBundle = <
 
                     room.updateMyPresence(presence);
                 },
-                [room]
+                [room],
             );
 
         return [myPresence, updateMyPresence];
@@ -358,7 +358,7 @@ export const createRoomBundle = <
 
     const usePluvMyself = <T extends unknown = UserInfo<TIO, TPresence>>(
         selector = identity as (myself: Id<UserInfo<TIO, TPresence>>) => T,
-        options?: SubscriptionHookOptions<Id<T> | null>
+        options?: SubscriptionHookOptions<Id<T> | null>,
     ): Id<T> | null => {
         const room = usePluvRoom();
 
@@ -366,7 +366,7 @@ export const createRoomBundle = <
             (onStoreChange: () => void) => {
                 return room.subscribe("myself", onStoreChange);
             },
-            [room]
+            [room],
         );
 
         const getSnapshot = room.getMyself;
@@ -375,7 +375,7 @@ export const createRoomBundle = <
             (snapshot: Id<UserInfo<TIO, TPresence>> | null) => {
                 return !snapshot ? null : (selector(snapshot) as Id<T>);
             },
-            [selector]
+            [selector],
         );
 
         return useSyncExternalStoreWithSelector(
@@ -383,14 +383,14 @@ export const createRoomBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual ?? fastDeepEqual
+            options?.isEqual ?? fastDeepEqual,
         );
     };
 
     const usePluvOther = <T extends unknown = UserInfo<TIO, TPresence>>(
         connectionId: string,
         selector = identity as (other: UserInfo<TIO, TPresence>) => T,
-        options?: SubscriptionHookOptions<Id<T> | null>
+        options?: SubscriptionHookOptions<Id<T> | null>,
     ): Id<T> | null => {
         const room = usePluvRoom();
 
@@ -398,19 +398,19 @@ export const createRoomBundle = <
             (onStoreChange: () => void) => {
                 return room.other(connectionId, onStoreChange);
             },
-            [room, connectionId]
+            [room, connectionId],
         );
 
         const getSnapshot = useCallback(
             () => room.getOther(connectionId),
-            [room, connectionId]
+            [room, connectionId],
         );
 
         const _selector = useCallback(
             (snapshot: Id<UserInfo<TIO, TPresence>> | null) => {
                 return !snapshot ? null : (selector(snapshot) as Id<T>);
             },
-            [selector]
+            [selector],
         );
 
         return useSyncExternalStoreWithSelector(
@@ -418,15 +418,15 @@ export const createRoomBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual ?? fastDeepEqual
+            options?.isEqual ?? fastDeepEqual,
         );
     };
 
     const usePluvOthers = <T extends unknown = UserInfo<TIO, TPresence>>(
         selector = identity as (
-            other: readonly Id<UserInfo<TIO, TPresence>>[]
+            other: readonly Id<UserInfo<TIO, TPresence>>[],
         ) => T[],
-        options?: SubscriptionHookOptions<readonly Id<T>[]>
+        options?: SubscriptionHookOptions<readonly Id<T>[]>,
     ): readonly Id<T>[] => {
         const room = usePluvRoom();
 
@@ -434,7 +434,7 @@ export const createRoomBundle = <
             (onStoreChange: () => void) => {
                 return room.subscribe("others", onStoreChange);
             },
-            [room]
+            [room],
         );
 
         const getSnapshot = room.getOthers;
@@ -444,27 +444,27 @@ export const createRoomBundle = <
             getSnapshot,
             getSnapshot,
             selector as (
-                other: readonly Id<UserInfo<TIO, TPresence>>[]
+                other: readonly Id<UserInfo<TIO, TPresence>>[],
             ) => Id<T>[],
-            options?.isEqual ?? shallowArrayEqual
+            options?.isEqual ?? shallowArrayEqual,
         );
     };
 
     const usePluvStorage = <
         TKey extends keyof TStorage,
-        TData extends unknown = InferYjsSharedTypeJson<TStorage[TKey]>
+        TData extends unknown = InferYjsSharedTypeJson<TStorage[TKey]>,
     >(
         key: TKey,
         selector = identity as (
-            data: InferYjsSharedTypeJson<TStorage[TKey]>
+            data: InferYjsSharedTypeJson<TStorage[TKey]>,
         ) => TData,
-        options?: SubscriptionHookOptions<TData | null>
+        options?: SubscriptionHookOptions<TData | null>,
     ): [data: TData | null, sharedType: TStorage[TKey] | null] => {
         const room = usePluvRoom();
 
         const subscribe = useCallback(
             (onStoreChange: () => void) => room.storage(key, onStoreChange),
-            [key, room]
+            [key, room],
         );
 
         const getSnapshot = useCallback((): InferYjsSharedTypeJson<
@@ -477,7 +477,7 @@ export const createRoomBundle = <
             (snapshot: InferYjsSharedTypeJson<TStorage[TKey]> | null) => {
                 return !snapshot ? null : selector(snapshot);
             },
-            [selector]
+            [selector],
         );
 
         const data = useSyncExternalStoreWithSelector(
@@ -485,7 +485,7 @@ export const createRoomBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual ?? fastDeepEqual
+            options?.isEqual ?? fastDeepEqual,
         );
 
         const sharedType = room.getStorage(key);
