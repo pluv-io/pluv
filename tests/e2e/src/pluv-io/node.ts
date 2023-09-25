@@ -29,14 +29,19 @@ export const {
 
     // hooks
     usePluvBroadcast,
+    usePluvCanRedo,
+    usePluvCanUndo,
     usePluvConnection,
     usePluvEvent,
     usePluvMyPresence,
     usePluvMyself,
     usePluvOther,
     usePluvOthers,
+    usePluvRedo,
     usePluvRoom,
     usePluvStorage,
+    usePluvTransact,
+    usePluvUndo,
 } = createRoomBundle({
     addons: [
         addonIndexedDB({
