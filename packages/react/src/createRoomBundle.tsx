@@ -97,6 +97,8 @@ export interface CreateRoomBundle<
         event: TEvent,
         data: Id<InferIOInput<TIO>[TEvent]>,
     ) => void;
+    usePluvCanRedo: () => boolean;
+    usePluvCanUndo: () => boolean;
     usePluvConnection: <T extends unknown = WebSocketConnection>(
         selector: (connection: WebSocketConnection) => T,
         options?: SubscriptionHookOptions<Id<T>>,
@@ -125,6 +127,7 @@ export interface CreateRoomBundle<
         selector?: (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T[],
         options?: SubscriptionHookOptions<readonly Id<T>[]>,
     ) => readonly Id<T>[];
+    usePluvRedo: () => () => void;
     usePluvRoom: () => AbstractRoom<TIO, TPresence, TStorage>;
     usePluvStorage: <
         TKey extends keyof TStorage,
@@ -134,6 +137,7 @@ export interface CreateRoomBundle<
         selector?: (data: InferYjsSharedTypeJson<TStorage[TKey]>) => TData,
         options?: SubscriptionHookOptions<TData | null>,
     ) => [data: TData | null, sharedType: TStorage[TKey] | null];
+    usePluvUndo: () => () => void;
 }
 
 export const createRoomBundle = <
@@ -266,6 +270,46 @@ export const createRoomBundle = <
             },
             [room],
         );
+    };
+
+    const usePluvCanRedo = (): boolean => {
+        const room = usePluvRoom();
+
+        const subscribe = useCallback(
+            (onStoreChange: () => void) => room.storageRoot(onStoreChange),
+            [room],
+        );
+
+        const getSnapshot = useCallback((): boolean => room.canRedo(), [room]);
+
+        const canRedo = useSyncExternalStoreWithSelector(
+            subscribe,
+            getSnapshot,
+            getSnapshot,
+            identity,
+        );
+
+        return canRedo;
+    };
+
+    const usePluvCanUndo = (): boolean => {
+        const room = usePluvRoom();
+
+        const subscribe = useCallback(
+            (onStoreChange: () => void) => room.storageRoot(onStoreChange),
+            [room],
+        );
+
+        const getSnapshot = useCallback((): boolean => room.canUndo(), [room]);
+
+        const canRedo = useSyncExternalStoreWithSelector(
+            subscribe,
+            getSnapshot,
+            getSnapshot,
+            identity,
+        );
+
+        return canRedo;
     };
 
     const usePluvConnection = <T extends unknown = WebSocketConnection>(
@@ -499,6 +543,12 @@ export const createRoomBundle = <
         return [data, sharedType];
     };
 
+    const usePluvUndo = () => {
+        const room = usePluvRoom();
+
+        return room.undo;
+    };
+
     return {
         // components
         MockedRoomProvider,
@@ -506,13 +556,17 @@ export const createRoomBundle = <
 
         // hooks
         usePluvBroadcast,
+        usePluvCanRedo,
+        usePluvCanUndo,
         usePluvConnection,
         usePluvEvent,
         usePluvMyPresence,
         usePluvMyself,
         usePluvOther,
         usePluvOthers,
+        usePluvRedo,
         usePluvRoom,
         usePluvStorage,
+        usePluvUndo,
     };
 };
