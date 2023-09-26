@@ -26,7 +26,7 @@ test.describe("Node Redis Storage", () => {
                 .then((messages) => expect(messages.length).toEqual(1));
 
             await firstPage.close();
-        }
+        },
     );
 
     test(
@@ -96,7 +96,7 @@ test.describe("Node Redis Storage", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -168,7 +168,7 @@ test.describe("Node Redis Storage", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -238,7 +238,7 @@ test.describe("Node Redis Storage", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -310,6 +310,6 @@ test.describe("Node Redis Storage", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 });

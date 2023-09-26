@@ -26,7 +26,7 @@ test.describe("Cloudflare Storage", () => {
                 .then((messages) => expect(messages.length).toEqual(1));
 
             await firstPage.close();
-        }
+        },
     );
 
     test(
@@ -96,7 +96,7 @@ test.describe("Cloudflare Storage", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -168,6 +168,6 @@ test.describe("Cloudflare Storage", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 });
