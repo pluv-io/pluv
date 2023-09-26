@@ -17,9 +17,9 @@ export interface CreateBundle<TIO extends IOLike> {
     // factories
     createRoomBundle: <
         TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractType<any>> = {}
+        TStorage extends Record<string, AbstractType<any>> = {},
     >(
-        options?: CreateRoomBundleOptions<TIO, TPresence, TStorage>
+        options?: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
     ) => CreateRoomBundle<TIO, TPresence, TStorage>;
 
     // components
@@ -30,7 +30,7 @@ export interface CreateBundle<TIO extends IOLike> {
 }
 
 export const createBundle = <TIO extends IOLike>(
-    client: PluvClient<TIO>
+    client: PluvClient<TIO>,
 ): CreateBundle<TIO> => {
     /**
      * !HACK
@@ -57,9 +57,9 @@ export const createBundle = <TIO extends IOLike>(
 
     const createRoomBundle = <
         TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractType<any>> = {}
+        TStorage extends Record<string, AbstractType<any>> = {},
     >(
-        options: CreateRoomBundleOptions<TIO, TPresence, TStorage> = {}
+        options: CreateRoomBundleOptions<TIO, TPresence, TStorage> = {},
     ): CreateRoomBundle<TIO, TPresence, TStorage> =>
         _createRoomBundle(client, options);
 

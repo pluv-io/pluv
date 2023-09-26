@@ -2,6 +2,7 @@ import { fromUint8Array, toUint8Array } from "js-base64";
 import {
     AbstractType,
     Transaction,
+    UndoManager,
     Doc as YDoc,
     Map as YMap,
     applyUpdate,
@@ -9,8 +10,25 @@ import {
 } from "yjs";
 import type { InferYjsDocJson } from "./types";
 
+export interface TrackOriginOptions {
+    captureTimeout?: number;
+    trackedOrigins?: readonly string[];
+}
+
 export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
     public value: YDoc = new YDoc();
+    private _undoManager: UndoManager | null = null;
+
+    public get storage(): T {
+        const storage = this._storage;
+
+        const keys = Array.from(storage.keys());
+
+        return keys.reduce<T>(
+            (acc, key) => ({ ...acc, [key]: storage.get(key) }),
+            {} as T,
+        );
+    }
 
     private get _storage(): YMap<any> {
         return this.value.getMap("storage");
@@ -40,7 +58,16 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
         return this;
     }
 
+    public canRedo(): boolean {
+        return !!this._undoManager?.canRedo();
+    }
+
+    public canUndo(): boolean {
+        return !!this._undoManager?.canUndo();
+    }
+
     public destroy(): void {
+        this._undoManager?.destroy();
         this.value.destroy();
     }
 
@@ -57,6 +84,10 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
             (acc, key) => ({ ...acc, [key]: this._storage.get(key) }),
             {} as T,
         );
+    }
+
+    public redo(): void {
+        this._undoManager?.redo();
     }
 
     public subscribe(
@@ -85,6 +116,21 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
         return this._storage.toJSON() as InferYjsDocJson<this>;
     }
 
+    public trackOrigins(options: TrackOriginOptions): void {
+        const { captureTimeout, trackedOrigins } = options;
+
+        if (this._undoManager) {
+            this._undoManager.destroy();
+        }
+
+        this._undoManager = new UndoManager(this._storage, {
+            captureTimeout,
+            trackedOrigins: trackedOrigins
+                ? new Set<string>(trackedOrigins)
+                : undefined,
+        });
+    }
+
     public transact(
         fn: (transaction: Transaction) => void,
         origin?: any,
@@ -100,6 +146,10 @@ export class YjsDoc<T extends Record<string, AbstractType<any>> = {}> {
 
     public static toUint8Array(str: string): Uint8Array {
         return toUint8Array(str);
+    }
+
+    public undo(): void {
+        this._undoManager?.undo();
     }
 }
 

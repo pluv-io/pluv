@@ -5,7 +5,7 @@ import type { UserInfo, WebSocketState } from "./types";
 
 export interface StateNotifierSubjects<
     TIO extends IOLike,
-    TPresence extends JsonObject
+    TPresence extends JsonObject,
 > {
     connection: Subject<Id<WebSocketState<TIO>>>;
     "my-presence": Subject<TPresence | null>;
@@ -16,7 +16,7 @@ export interface StateNotifierSubjects<
 type InferSubjectValue<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TSubject extends keyof StateNotifierSubjects<TIO, TPresence>
+    TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
 > = StateNotifierSubjects<TIO, TPresence>[TSubject] extends Subject<
     infer IValue
 >
@@ -26,12 +26,12 @@ type InferSubjectValue<
 export type SubscriptionCallback<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TSubject extends keyof StateNotifierSubjects<TIO, TPresence>
+    TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
 > = (value: InferSubjectValue<TIO, TPresence, TSubject>) => void;
 
 export class StateNotifier<
     TIO extends IOLike,
-    TPresence extends JsonObject = {}
+    TPresence extends JsonObject = {},
 > {
     public subjects: StateNotifierSubjects<TIO, TPresence> = {
         connection: makeSubject<Id<WebSocketState<TIO>>>(),
@@ -41,10 +41,10 @@ export class StateNotifier<
     };
 
     public subscribe<
-        TSubject extends keyof StateNotifierSubjects<TIO, TPresence>
+        TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
     >(
         name: TSubject,
-        callback: SubscriptionCallback<TIO, TPresence, TSubject>
+        callback: SubscriptionCallback<TIO, TPresence, TSubject>,
     ): () => void {
         const source = this.subjects[name]?.source as any;
 

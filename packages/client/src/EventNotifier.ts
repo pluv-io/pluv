@@ -4,7 +4,7 @@ import { makeSubject, subscribe } from "wonka";
 
 export type EventNotifierSubscriptionCallback<
     TIO extends IOLike,
-    TEvent extends keyof InferIOOutput<TIO>
+    TEvent extends keyof InferIOOutput<TIO>,
 > = (value: Id<IOEventMessage<TIO, TEvent>>) => void;
 
 export class EventNotifier<TIO extends IOLike> {
@@ -14,7 +14,7 @@ export class EventNotifier<TIO extends IOLike> {
     >();
 
     public subject<TEvent extends keyof InferIOOutput<TIO>>(
-        name: TEvent
+        name: TEvent,
     ): Subject<Id<IOEventMessage<TIO, TEvent>>> {
         const subject = this.subjects.get(name);
 
@@ -29,7 +29,7 @@ export class EventNotifier<TIO extends IOLike> {
 
     public subscribe<TEvent extends keyof InferIOOutput<TIO>>(
         name: TEvent,
-        callback: EventNotifierSubscriptionCallback<TIO, TEvent>
+        callback: EventNotifierSubscriptionCallback<TIO, TEvent>,
     ): () => void {
         const subject = this.subject(name);
 

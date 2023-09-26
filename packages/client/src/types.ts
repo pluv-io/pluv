@@ -37,7 +37,7 @@ export interface WebSocketState<TIO extends IOLike> {
 
 export interface UserInfo<
     TIO extends IOLike,
-    TPresence extends JsonObject = {}
+    TPresence extends JsonObject = {},
 > {
     connectionId: string;
     presence: TPresence;

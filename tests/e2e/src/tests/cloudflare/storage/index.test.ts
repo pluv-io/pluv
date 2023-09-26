@@ -26,7 +26,7 @@ test.describe("Cloudflare Storage", () => {
                 .then((messages) => expect(messages.length).toEqual(1));
 
             await firstPage.close();
-        }
+        },
     );
 
     test(
@@ -96,7 +96,7 @@ test.describe("Cloudflare Storage", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -168,6 +168,146 @@ test.describe("Cloudflare Storage", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
+    );
+
+    test(
+        oneLine`
+            undo, redo, canUndo, canRedo modifies storage correctly
+        `,
+        async () => {
+            const testUrl = `${TEST_URL}?room=e2e-node-storage-undo-redo`;
+
+            const firstPage = await openTestPage(testUrl);
+
+            await firstPage.waitForSelector("#storage");
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#can-undo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Undo: false`));
+
+            await firstPage
+                .locator("#can-redo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Redo: false`));
+
+            await firstPage.click("#button-add-message");
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#can-undo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Undo: true`));
+
+            await firstPage
+                .locator("#can-redo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Redo: false`));
+
+            const secondPage = await openTestPage(testUrl);
+
+            await secondPage.waitForSelector("#storage");
+            await waitMs(ms("0.25s"));
+
+            await secondPage
+                .locator("#storage")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((messages) => expect(messages.length).toEqual(2));
+
+            await secondPage
+                .locator("#can-undo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Undo: false`));
+
+            await secondPage
+                .locator("#can-redo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Redo: false`));
+
+            await secondPage.click("#button-add-message");
+            await waitMs(ms("0.25s"));
+
+            await secondPage
+                .locator("#can-undo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Undo: true`));
+
+            await secondPage
+                .locator("#can-redo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Redo: false`));
+
+            await firstPage
+                .locator("#storage")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((messages) => expect(messages.length).toEqual(3));
+
+            await firstPage.click("#button-undo");
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#storage")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((messages) => expect(messages.length).toEqual(2));
+
+            await firstPage
+                .locator("#can-undo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Undo: false`));
+
+            await firstPage
+                .locator("#can-redo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Redo: true`));
+
+            await firstPage.click("#button-undo");
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#can-undo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Undo: false`));
+
+            await firstPage
+                .locator("#can-redo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Redo: true`));
+
+            await firstPage.click("#button-redo");
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#can-undo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Undo: true`));
+
+            await firstPage
+                .locator("#can-redo")
+                .innerText()
+                .then((text) => expect(text).toEqual(`Can Redo: false`));
+
+            await firstPage
+                .locator("#storage")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((messages) => expect(messages.length).toEqual(3));
+
+            await secondPage.click("#button-undo");
+            await waitMs(ms("0.25s"));
+
+            await firstPage.click("#button-undo");
+            await waitMs(ms("0.25s"));
+
+            await secondPage
+                .locator("#storage")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((messages) => expect(messages.length).toEqual(1));
+        },
     );
 });

@@ -17,7 +17,7 @@ export type UsersManagerConfig<TPresence extends JsonObject = {}> = {
 
 export class UsersManager<
     TIO extends IOLike,
-    TPresence extends JsonObject = {}
+    TPresence extends JsonObject = {},
 > {
     private _initialPresence: TPresence;
     /**
@@ -62,7 +62,7 @@ export class UsersManager<
 
     public patchPresence(
         connectionId: string,
-        patch: Partial<TPresence>
+        patch: Partial<TPresence>,
     ): void {
         if (this._myself?.connectionId === connectionId) {
             const presence = {
@@ -100,7 +100,7 @@ export class UsersManager<
 
     public setMyself(
         connectionId: string,
-        user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>
+        user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>,
     ): void {
         this._myself = {
             connectionId,
@@ -129,7 +129,7 @@ export class UsersManager<
     public setUser(
         connectionId: string,
         user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>,
-        presence?: TPresence
+        presence?: TPresence,
     ): void {
         if (this._myself?.connectionId === connectionId) return;
 
