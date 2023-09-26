@@ -25,7 +25,7 @@ export const HomeTypeSafetyDemoServer = memo<HomeTypeSafetyDemoServerProps>(
 
                 // Create your PluvIO server
                 const io = createIO({
-                platform: platformCloudflare(),
+                    platform: platformCloudflare(),
                 })
                 .event("EMIT_FIREWORK", {
                     input: z.object({ color: z.string() }),
@@ -55,7 +55,7 @@ export const HomeTypeSafetyDemoServer = memo<HomeTypeSafetyDemoServerProps>(
                 .replace(RESOLVER_PARAMETER, resolverParam)
                 .replace(
                     RESOLVER_OUTPUT,
-                    resolverOutput ? `\n      ${resolverOutput}\n    ` : "",
+                    resolverOutput ? `\n        ${resolverOutput}\n    ` : "",
                 );
         }, [inputParam, resolverOutput, resolverParam, template]);
 
