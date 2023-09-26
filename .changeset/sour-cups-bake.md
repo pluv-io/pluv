@@ -86,8 +86,8 @@ const client = createClient({});
 
 /**
  * @description When a room is created, undo/redo will automatically
- * be configured and configured to filter for changes made by the
- * connected user (so that users only undo/redo their changes).
+ * be configured to filter for changes made by the connected user
+ * (so that users only undo/redo their changes).
  */
 const room = client.createRoom("my-room", {
     initialStorage: () => ({
