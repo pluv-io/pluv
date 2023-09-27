@@ -23,23 +23,23 @@ export const HomeTypeSafetyDemoClient = memo<HomeTypeSafetyDemoClientProps>(
                 import { FC, useCallback, useState } from "react";
 
                 export const Room: FC = () => {
-                const [messages, setMessages] = useState<string[]>([]);
+                    const [messages, setMessages] = useState<string[]>([]);
 
-                // Listen to new messages from the server
-                // Get types from the SEND_MESSAGE resolver output
-                usePluvEvent("MESSAGE_RECEIVED", ({${INPUT_PARAMETER}}) => {
-                    setMessages((prev) => [...prev${NEW_MESSAGE}]);
-                });
+                    // Listen to new messages from the server
+                    // Get types from the SEND_MESSAGE resolver output
+                    usePluvEvent("MESSAGE_RECEIVED", ({${INPUT_PARAMETER}}) => {
+                        setMessages((prev) => [...prev${NEW_MESSAGE}]);
+                    });
 
-                const broadcast = usePluvBroadcast();
+                    const broadcast = usePluvBroadcast();
 
-                const onSubmit = useCallback((message: string) => {
-                    // Broadcast to all users
-                    // Get types from the SEND_MESSAGE zod input
-                    broadcast("SEND_MESSAGE", {${SEND_MESSAGE_INPUT}});
-                }, [broadcast]);
+                    const onSubmit = useCallback((message: string) => {
+                        // Broadcast to all users
+                        // Get types from the SEND_MESSAGE zod input
+                        broadcast("SEND_MESSAGE", {${SEND_MESSAGE_INPUT}});
+                    }, [broadcast]);
 
-                // return ...
+                    // return ...
                 };
             `,
             [],
