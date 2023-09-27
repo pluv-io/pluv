@@ -56,7 +56,7 @@ export const HomeTypeSafetyDemoServer = memo<HomeTypeSafetyDemoServerProps>(
                 .replace(
                     RESOLVER_OUTPUT,
                     resolverOutput
-                        ? `\n            ${resolverOutput}\n    `
+                        ? `\n            ${resolverOutput}\n        `
                         : "",
                 );
         }, [inputParam, resolverOutput, resolverParam, template]);
