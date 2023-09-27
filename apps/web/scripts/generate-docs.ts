@@ -1,5 +1,5 @@
 import fs from "fs-extra";
-import { globSync } from "glob";
+import { sync } from "glob";
 import path from "path";
 
 const srcPath = path.resolve(__dirname, "../src");
@@ -8,9 +8,7 @@ const outputDocs = path.resolve(srcPath, "pages/docs");
 const outputRoutes = path.resolve(srcPath, "generated/doc-routes.json");
 
 const getFilePaths = (): readonly string[] => {
-    return globSync(`${sourcePath}/**/*.mdx`).sort((a, b) =>
-        a.localeCompare(b)
-    );
+    return sync(`${sourcePath}/**/*.mdx`).sort((a, b) => a.localeCompare(b));
 };
 
 const normalize = (filePath: string): string => {
@@ -67,7 +65,7 @@ const generateRoutes = (): void => {
     const filePaths = getFilePaths();
 
     const toRouteNode = (
-        filePath: string
+        filePath: string,
     ): null | [slug: string, node: RouteNode] => {
         const [normalized, ...parts] = normalize(filePath).split("/");
 
@@ -81,36 +79,39 @@ const generateRoutes = (): void => {
         return [slug, { name, children }];
     };
 
-    const output = filePaths.reduce((acc, filePath, i) => {
-        const result = toRouteNode(filePath);
+    const output = filePaths.reduce(
+        (acc, filePath, i) => {
+            const result = toRouteNode(filePath);
 
-        if (!result) return acc;
+            if (!result) return acc;
 
-        const [slug, node] = result;
-        const parts = normalize(filePath).replace(/\s+/g, "-").split("/");
-        const name = node.name;
+            const [slug, node] = result;
+            const parts = normalize(filePath).replace(/\s+/g, "-").split("/");
+            const name = node.name;
 
-        const prefixed = parts.length > 1 ? `@pluv/${name}` : name;
+            const prefixed = parts.length > 1 ? `@pluv/${name}` : name;
 
-        return {
-            ...acc,
-            [slug]: {
-                ...node,
-                name: prefixed,
-                children: {
-                    ...acc[slug]?.children,
-                    ...node.children,
+            return {
+                ...acc,
+                [slug]: {
+                    ...node,
+                    name: prefixed,
+                    children: {
+                        ...acc[slug]?.children,
+                        ...node.children,
+                    },
                 },
-            },
-        };
-    }, {} as Record<string, RouteNode>);
+            };
+        },
+        {} as Record<string, RouteNode>,
+    );
 
     fs.ensureFileSync(outputRoutes);
     fs.writeFileSync(outputRoutes, JSON.stringify(output, null, 4));
 };
 
 const main = (): void => {
-    const filePaths = globSync(`${sourcePath}/**/*.mdx`)
+    const filePaths = sync(`${sourcePath}/**/*.mdx`)
         .sort((a, b) => a.localeCompare(b))
         .map(normalize);
 
