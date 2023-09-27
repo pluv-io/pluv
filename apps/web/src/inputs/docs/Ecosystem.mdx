@@ -1,0 +1,55 @@
+---
+title: Ecosystem
+description: Packages to use alongside pluv
+---
+
+import { DocsLayout } from "../../components";
+
+# Ecosystem
+
+Packages to use alongside pluv
+
+## @pluv/addon-indexeddb
+
+Use IndexedDB to persist room storage so that when the page is reloaded, the room will load from IndexedDB on the browser. This enables offline editing.
+
+### Installation
+
+```bash
+npm install @pluv/addon-indexeddb
+```
+
+<br />
+
+```tsx
+// Using @pluv/client
+
+import { addonIndexedDB } from "@pluv/addon-indexeddb";
+import { createClient } from "@pluv/client";
+import { type io } from "../server/io";
+
+const client = createClient<typeof io>();
+
+const room = client.createRoom("my-room", {
+    addons: [addonIndexedDB({ enabled: true })],
+    // Alternatively
+    addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],
+});
+
+// Using @pluv/react
+
+import { addonIndexedDB } from "@pluv/addon-indexeddb";
+import { createBundle, createClient } from "@pluv/react";
+
+const client = createClient<typeof io>();
+
+const { createRoomBundle } = createBundle(client);
+
+const { usePluvRoom } = createRoomBundle({
+    addons: [addonIndexedDB({ enabled: true })],
+        // Alternatively
+    addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],
+});
+```
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;
