@@ -1,5 +1,6 @@
 export interface DocRouteNode {
     name: string;
+    order: number;
     children: Record<string, DocRouteNode>;
 }
 
