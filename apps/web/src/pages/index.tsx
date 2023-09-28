@@ -10,25 +10,19 @@ import {
     SiteWideLayout,
 } from "../components";
 
-const Root = tw(SiteWideLayout.Content)`
-    p-0
-`;
-
 export const Page: NextPage = () => {
     return (
-        <Root>
-            <PluvRoomProvider
-                debug={process.env.NODE_ENV === "development"}
-                initialPresence={{ demoChessSquare: null }}
-                room="home-page"
-            >
-                <HomeHero className="w-full" />
-                <HomeIntroSection />
-                <HomeFeaturesSection />
-                <HomeBoxesDemoSection />
-                <HomeTypeSafetyDemoSection />
-            </PluvRoomProvider>
-        </Root>
+        <PluvRoomProvider
+            debug={process.env.NODE_ENV === "development"}
+            initialPresence={{ demoChessSquare: null }}
+            room="home-page"
+        >
+            <HomeHero className="w-full" />
+            <HomeIntroSection />
+            <HomeFeaturesSection />
+            <HomeBoxesDemoSection />
+            <HomeTypeSafetyDemoSection />
+        </PluvRoomProvider>
     );
 };
 

@@ -3,7 +3,6 @@ import { CSSProperties, memo, ReactNode } from "react";
 import tw from "twin.macro";
 import { SiteWideAppBar } from "../SiteWideAppBar";
 import { SiteWideFooter } from "../SiteWideFooter";
-import { SiteWideLayoutContent } from "./SiteWideLayoutContent";
 
 const SHOW_BANNER: boolean = true;
 
@@ -15,6 +14,7 @@ const Root = tw.div`
     flex
     flex-col
     min-h-screen
+    max-h-screen
 `;
 
 const StyledBanner = tw(Banner)`
@@ -23,6 +23,13 @@ const StyledBanner = tw(Banner)`
 
 const StyledSiteWideAppBar = tw(SiteWideAppBar)`
     shrink-0
+`;
+
+export const SiteWideLayoutContent = tw.div`
+    grow
+    max-h-screen
+    min-h-0
+    overflow-auto
 `;
 
 const StyledSiteWideFooter = tw(SiteWideFooter)`
@@ -52,8 +59,10 @@ const _SiteWideLayout = memo<SiteWideLayoutProps>((props) => {
                 </StyledBanner>
             )}
             <StyledSiteWideAppBar />
-            {children}
-            <StyledSiteWideFooter />
+            <SiteWideLayoutContent>
+                {children}
+                <StyledSiteWideFooter />
+            </SiteWideLayoutContent>
         </Root>
     );
 });
