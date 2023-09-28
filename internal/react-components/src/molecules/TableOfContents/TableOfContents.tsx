@@ -10,11 +10,42 @@ import {
 } from "react";
 import tw from "twin.macro";
 import { Anchor } from "../../atoms";
+import { styled } from "twin.macro";
 
-const Root = tw.ul`
-    flex
-    flex-col
-    items-stretch
+const Root = styled.ul`
+    ${tw`
+        flex
+        flex-col
+        items-stretch
+    `}
+
+    &::-webkit-scrollbar {
+        ${tw`w-2`}
+    }
+
+    &::-webkit-scrollbar-track {
+        ${tw`bg-transparent`}
+    }
+
+    &::-webkit-scrollbar-thumb {
+        ${tw`
+            rounded-full
+            bg-indigo-700/30
+            transition-colors
+            duration-150
+            ease-in
+            border
+            border-solid
+            border-indigo-700/50
+        `}
+    }
+
+    &:hover::-webkit-scrollbar-thumb {
+        ${tw`
+            rounded-full
+            bg-indigo-700/50
+        `}
+    }
 `;
 
 const Item = tw.li`
@@ -65,7 +96,7 @@ export const TableOfContents = memo<TableOfContentsProps>((props) => {
     // Ensure options is referentially stable
     const options = useMemo(
         () => ({ root, rootMargin, threshold }),
-        [root, rootMargin, threshold]
+        [root, rootMargin, threshold],
     );
 
     const getTocItem = useCallback((id: string): Element | null => {
@@ -79,7 +110,7 @@ export const TableOfContents = memo<TableOfContentsProps>((props) => {
 
     const getHeadings = useCallback((): readonly HTMLHeadingElement[] => {
         return Array.from(
-            document.querySelectorAll(`${selector} :is(h1,h2,h3)`)
+            document.querySelectorAll(`${selector} :is(h1,h2,h3)`),
         ) as readonly HTMLHeadingElement[];
     }, [selector]);
 
@@ -147,7 +178,7 @@ export const TableOfContents = memo<TableOfContentsProps>((props) => {
 
     const activeId = useMemo(
         (): string | null => items.find((item) => item.active)?.id ?? null,
-        [items]
+        [items],
     );
 
     return (

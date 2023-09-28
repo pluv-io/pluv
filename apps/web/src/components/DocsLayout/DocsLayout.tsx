@@ -1,14 +1,13 @@
 import { MdxProvider } from "@pluv-internal/mdx-components";
 import { SideBar, TableOfContents } from "@pluv-internal/react-components";
 import { useRouter } from "next/router";
-import { CSSProperties, memo, ReactNode } from "react";
-import tw from "twin.macro";
+import { CSSProperties, ReactNode, memo } from "react";
+import tw, { styled, theme } from "twin.macro";
 import { DocsBreadcrumbs } from "../DocsBreadcrumbs";
 import { DocsSeo } from "../DocsSeo";
 import { DocsTreeViewNavigation } from "../DocsTreeViewNavigation";
-import { SiteWideLayout } from "../SiteWideLayout";
 
-const Root = tw(SiteWideLayout.Content)`
+const Root = tw.div`
     flex
     flex-row
     p-0
@@ -16,7 +15,6 @@ const Root = tw(SiteWideLayout.Content)`
 
 const StyledSideBar = tw(SideBar)`
     sticky
-    top-16
     shrink-0
     hidden
     flex-col
@@ -75,6 +73,8 @@ const StyledToC = tw(TableOfContents)`
     sticky
     top-24
     w-72
+    max-h-[calc(100vh - 16rem)]
+    overflow-auto
     sm:top-28
     lg:flex
 `;
