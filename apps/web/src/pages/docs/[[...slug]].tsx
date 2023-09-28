@@ -80,7 +80,7 @@ const getSourcePath = (
 
     const node = candidates[slug];
 
-    const prefix = node.name.replace(/^@pluv\//, "");
+    const prefix = node.name.replace(/^@pluv\//, "@pluv_");
     const suffix = getSourcePath(rest, node.children);
 
     return suffix ? `${prefix}/${suffix}` : prefix;

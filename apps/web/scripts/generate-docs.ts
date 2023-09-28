@@ -2,6 +2,8 @@ import fs from "fs-extra";
 import { sync } from "glob";
 import path from "path";
 
+const MAX_ORDER = 9999;
+
 const srcPath = path.resolve(__dirname, "../src");
 const sourcePath = path.resolve(srcPath, "inputs/docs");
 const outputDocs = path.resolve(srcPath, "pages/docs");
@@ -21,13 +23,21 @@ const removeExt = (filePath: string): string => {
 
 const toRouteSlug = (fileName: string): string => {
     return normalize(fileName)
+        .replace(/^@pluv_/, "")
         .replace(/\s+/g, "-")
         .replace(/[^a-zA-Z0-9-\.]/g, "")
         .toLowerCase();
 };
 
 const toRoute = (filePath: string): string => {
-    return normalize(filePath).split("/").map(toRouteSlug).join("/");
+    const normalized = normalize(filePath)
+        .split("/")
+        .map(toRouteSlug)
+        .join("/");
+
+    const split = normalized.split("--");
+
+    return split.length === 1 ? split[0] : split[1];
 };
 
 const generateDocPages = (): void => {
@@ -56,55 +66,58 @@ const generateDocPages = (): void => {
     });
 };
 
+const formatName = (name: string): string => {
+    return name.replace(/^@pluv_/, "@pluv/");
+};
+
 interface RouteNode {
     name: string;
+    order: number;
     children: Record<string, RouteNode>;
 }
 
 const generateRoutes = (): void => {
     const filePaths = getFilePaths();
 
-    const toRouteNode = (
-        filePath: string,
-    ): null | [slug: string, node: RouteNode] => {
+    const toRouteNode = (filePath: string): Record<string, RouteNode> => {
         const [normalized, ...parts] = normalize(filePath).split("/");
 
-        if (!normalized) return null;
+        if (!normalized) return {};
 
-        const name = removeExt(normalized);
-        const slug = toRouteSlug(name);
-        const result = toRouteNode(parts.join("/"));
-        const children = result ? { [result[0]]: result[1] } : {};
+        const withoutExt = removeExt(normalized);
+        const split = withoutExt.split("--");
 
-        return [slug, { name, children }];
+        const order = split.length === 1 ? MAX_ORDER : parseInt(split[0], 10);
+        const rawName = split.length === 1 ? split[0] : split[1];
+        const name = formatName(rawName);
+        const slug = toRouteSlug(rawName);
+
+        return {
+            [slug]: {
+                name,
+                order,
+                children: toRouteNode(parts.join("/")),
+            },
+        };
     };
 
-    const output = filePaths.reduce(
-        (acc, filePath, i) => {
-            const result = toRouteNode(filePath);
-
-            if (!result) return acc;
-
-            const [slug, node] = result;
-            const parts = normalize(filePath).replace(/\s+/g, "-").split("/");
-            const name = node.name;
-
-            const prefixed = parts.length > 1 ? `@pluv/${name}` : name;
-
-            return {
-                ...acc,
-                [slug]: {
-                    ...node,
-                    name: prefixed,
-                    children: {
-                        ...acc[slug]?.children,
-                        ...node.children,
+    const output = filePaths
+        .map((filePath) => toRouteNode(filePath))
+        .reduce<Record<string, RouteNode>>((acc1, nodes) => {
+            return Object.entries(nodes).reduce(
+                (acc2, [slug, node]) => ({
+                    ...acc2,
+                    [slug]: {
+                        ...node,
+                        children: {
+                            ...acc2[slug]?.children,
+                            ...node.children,
+                        },
                     },
-                },
-            };
-        },
-        {} as Record<string, RouteNode>,
-    );
+                }),
+                acc1,
+            );
+        }, {});
 
     fs.ensureFileSync(outputRoutes);
     fs.writeFileSync(outputRoutes, JSON.stringify(output, null, 4));

@@ -23,7 +23,9 @@ export const DocsTreeViewNavigationRoutes: FC<
             if (!startsWithAZ(a.name) && startsWithAZ(b.name)) return 1;
             if (startsWithAZ(a.name) && !startsWithAZ(b.name)) return -1;
 
-            return a.name.localeCompare(b.name);
+            const orderSort = a.order - b.order;
+
+            return orderSort || a.name.localeCompare(b.name);
         });
     }, [routes]);
 
