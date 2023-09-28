@@ -517,8 +517,11 @@ You can specify a 2nd parameter to transact with a different transaction origin.
 ```ts
 // frontend/transact
 
-room.transact(() => {
+room.transact((tx) => {
     room.get("messages").push(["hello world!"]);
+
+    // Alternatively, access your storage from here
+    tx.messages.push(["hello world!"]);
 });
 
 // This will also be undoable because `"user-123"` is a tracked origin.
