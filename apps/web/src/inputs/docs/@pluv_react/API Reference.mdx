@@ -119,6 +119,7 @@ import { MockedRoomProvider } from "./io";
      * @description Mock events sent and received for hooks in child components.
      */
     // 
+    events={{
         EMIT_EMOJI: ({ emojiCode }) => ({
             EMOJI_RECEIVED: { emojiCode },
         }),
