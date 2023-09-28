@@ -29,6 +29,65 @@ Returns a `CreateRoomBundle` instance.
 
 Creates a bundle to be able to access `PluvRoom` capabilities from various react hooks.
 
+```ts
+export const {
+    // components
+    PluvRoomProvider,
+
+    // hooks
+    usePluvBroadcast,
+    usePluvCanRedo,
+    usePluvCanUndo,
+    usePluvConnection,
+    usePluvEvent,
+    usePluvMyPresence,
+    usePluvMyself,
+    usePluvOther,
+    usePluvOthers,
+    usePluvRedo,
+    usePluvRoom,
+    usePluvStorage,
+    usePluvTransact,
+    usePluvUndo,
+} = createRoomBundle({
+    /**
+     * @description Define the initial storage for the room
+     */
+    initialStorage: () => ({
+        messages: y.array([
+            y.object({
+                message: "hello",
+                name: "leedavidcs",
+            }),
+        ]),
+    }),
+    /**
+     * @description Define your presence schema
+     */
+    presence: z.object({
+        count: z.number(),
+    }),
+    /**
+     * @description This is the same `captureTimeout` option from yjs's UndoManager.
+     * This specifies a number in ms, during which edits are merged together to be
+     * undone together. Set this to 0, to track each transacted change individually.
+     * @see https://docs.yjs.dev/api/undo-manager
+     * @default 500
+     */
+    captureTimeout: 500,
+    /**
+     * @desription This is the same `trackedOrigins` option from yjs's UndoManager.
+     * This specifies transaction origins (strings only) to filter which transactions
+     * can be undone.
+     * When omitted, the user's connection id will be tracked. When provided,
+     * specifies additional tracked origins besides the user's connection id.
+     * @see https://docs.yjs.dev/api/undo-manager
+     * @default undefined
+     */
+    trackedOrigins: ["user-123"],
+});
+```
+
 ### PluvProvider
 
 React provider component to allow the `PluvClient` created by `createClient` to be accessible in child components via `usePluvClient`. This is identical to importing the created client, so this is primarily useful for dependency injection when testing.
@@ -49,28 +108,36 @@ This is the bundle returned from `createRoomBundle`.
 
 ### MockedRoomProvider
 
-React provider component to mock `PluvRoomProvider`. Enables hooks from `CreateRoomBundle` while completely offline. This can be useful as in [Storybook](https://storybook.js.org/) within a decorator when mocking `PluvRoomProvider`.
+React provider component to mock `PluvRoomProvider`. Enables hooks from `CreateRoomBundle` while completely offline. This can be useful in [Storybook](https://storybook.js.org/) within a decorator when mocking `PluvRoomProvider`.
 
 ```tsx
 import { y } from "@pluv/react";
 import { MockedRoomProvider } from "./io";
 
 <MockedRoomProvider
-    // Mock events sent and received for hooks in child components.
-    events={{
+    /**
+     * @description Mock events sent and received for hooks in child components.
+     */
+    // 
         EMIT_EMOJI: ({ emojiCode }) => ({
             EMOJI_RECEIVED: { emojiCode },
         }),
     }}
-    // Set initial presence for the current user
+    /**
+     * @description Define your initial presence
+     */
     initialPresence={{
         selectionId: null,
     }}
-    // Set initial storage for usePluvStorage
+    /**
+     * @description Define the initial initial storage for the room
+     */
     initialStorage={() => ({
         messages: y.array([]),
     })}
-    // Set the room id
+    /**
+     * @description Set the room id
+     */
     room="my-mock-room"
 >
     {children}
@@ -86,20 +153,28 @@ import { y } from "@pluv/react";
 import { MockedRoomProvider } from "./io";
 
 <PluvRoomProvider
-    // Set initial presence for the current user
+    /**
+     * @description Define the user's initial presence
+     */
     initialPresence={{
         selectionId: null,
     }}
-    // Set initial storage for usePluvStorage
+    /**
+     * @description Define the initial storage for the room
+     */
     initialStorage={() => ({
         messages: y.array([]),
     })}
-    // Emits an error whenever authorization fails, for monitoring or
-    // debugging purposes
+    /**
+     * @description Emits an error whenever authorization fails, for
+     * monitoring or debugging purposes
+     */
     onAuthorizationFail={(error: Error) => {
         console.error(error);
     }}
-    // Set the room id
+    /**
+     * @description Set the room id
+     */
     room="my-room-id"
 >
     {children}
@@ -116,6 +191,26 @@ Returns a broadcast function to emit an event and data to all connected clients.
 const broadcast = usePluvBroadcast();
 
 broadcast("EMIT_RECEIVED", { emojiCode: 123 });
+```
+
+### usePluvCanRedo
+
+Returns `boolean`
+
+Checks whether calling [PluvRoom.redo](/docs/react/api-reference#usePluvRedo) will mutate storage.
+
+```ts
+const canRedo: boolean = usePluvCanRedo();
+```
+
+### usePluvCanUndo
+
+Returns `boolean`
+
+Checks whether calling [PluvRoom.undo](/docs/react/api-reference#usePluvUndo) will mutate storage.
+
+```ts
+const canUndo: boolean = usePluvCanUndo();
 ```
 
 ### usePluvConnection
@@ -229,6 +324,18 @@ const connectionIds = usePluvOthers((others) => {
 });
 ```
 
+### usePluvRedo
+
+Returns `void`.
+
+Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/react/api-reference#usePluvUndo).
+
+```ts
+const redo = usePluvRedo();
+
+redo();
+```
+
 ### usePluvStorage
 
 Returns `[TData | null, Yjs.SharedType | null]`.
@@ -249,6 +356,43 @@ const [messages, sharedType] = usePluvStorage("messages");
 sharedType?.push(["world~!"]);
 
 messages?.map((message, key) => <div key={key}>{message}</div>);
+```
+
+### usePluvTransact
+
+Returns `void`.
+
+Performs a mutation that can be tracked as an operation to be undone/redone (undo/redo). When called without an origin, the origin will default to the user's connection id.
+
+You can specify a 2nd parameter to transact with a different transaction origin.
+
+```ts
+const [messages, sharedType] = usePluvStorage("messages");
+const transact = usePluvTransact();
+
+transact((tx) => {
+    sharedType?.push(["hello world!"]);
+
+    // Alternatively, access your storage from here
+    tx.messages.push(["hello world!"]);
+});
+
+// This will also be undoable because `"user-123"` is a tracked origin.
+transact(() => {
+    sharedType?.push(["hello world!"]);
+}, "user-123");
+```
+
+### usePluvUndo
+
+Returns `void`.
+
+Undoes the last mutation that was applied via [PluvRoom.transact](/docs/react/api-reference#usePluvTransact).
+
+```ts
+const undo = usePluvUndo();
+
+undo();
 ```
 
 export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;
