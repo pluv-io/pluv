@@ -71,11 +71,10 @@ const StyledToC = tw(TableOfContents)`
     shrink-0
     hidden
     sticky
-    top-24
+    top-12
     w-72
-    max-h-[calc(100vh - 16rem)]
+    max-h-[calc(100vh - 12rem)]
     overflow-auto
-    sm:top-28
     lg:flex
 `;
 
