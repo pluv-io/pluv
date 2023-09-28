@@ -80,24 +80,48 @@ import { z } from "zod";
 import { client } from "./io.ts";
 
 const room = client.createRoom("my-example-room", {
-    // Define your presence schema
+    /**
+     * @description Define your presence schema
+     */
     presence: z.object({
         selectionId: z.nullable(z.string()),
     }),
-    // Define the user's initial presence
+    /**
+     * @description Define the user's initial presence
+     */
     initialPresence: {
         selectionId: null,
     },
-    // Define the initial storage for the room
+    /**
+     * @description Define the initial storage for the room
+     */
     initialStorage: () => ({
         messages: y.array(["hello world!"]),
     }),
+    /**
+     * @description This is the same `captureTimeout` option from yjs's UndoManager.
+     * This specifies a number in ms, during which edits are merged together to be
+     * undone together. Set this to 0, to track each transacted change individually.
+     * @see https://docs.yjs.dev/api/undo-manager
+     * @default 500
+     */
+    captureTimeout: 500,
+    /**
+     * @desription This is the same `trackedOrigins` option from yjs's UndoManager.
+     * This specifies transaction origins (strings only) to filter which transactions
+     * can be undone.
+     * When omitted, the user's connection id will be tracked. When provided,
+     * specifies additional tracked origins besides the user's connection id.
+     * @see https://docs.yjs.dev/api/undo-manager
+     * @default undefined
+     */
+    trackedOrigins: ["user-123"],
 });
 ```
 
 ### PluvClient.enter
 
-Returns `Promise<PluvRoom>`.
+Returns `Promise<PluvRoom>`
 
 Establishes a websocket connection with a room. If the `PluvClient` specifies an `authEndpoint`, the endpoint will be called when this function is called. Returns the `PluvRoom` that was entered.
 
@@ -136,7 +160,7 @@ const room = client.getRoom("my-example-room");
 
 ### PluvClient.getRooms
 
-Returns a `PluvRoom` array.
+Returns `PluvRoom[]`
 
 Retrieves all active rooms under the current `PluvClient` instance.
 
@@ -150,7 +174,7 @@ const rooms = client.getRooms();
 
 ### PluvClient.leave
 
-Returns `void`.
+Returns `void`
 
 Disconnects from a `PluvRoom` and deletes the room on the `PluvClient`. If the room does not exist, nothing happens and the function returns immediately.
 
@@ -182,7 +206,7 @@ This is the WebSocket that is created and attached to the room when connected to
 
 ### PluvRoom.broadcast
 
-Returns `void`.
+Returns `void`
 
 Broadcasts an event to all websockets connected to the room.
 
@@ -192,9 +216,33 @@ Broadcasts an event to all websockets connected to the room.
 room.broadcast("EMIT_EMOJI", { emojiCode: 123 });
 ```
 
+### PluvRoom.canRedo
+
+Returns `boolean`
+
+Checks whether calling [PluvRoom.redo](/docs/client/api-reference#PluvRoom.redo) will mutate storage.
+
+```ts
+// frontend/room.ts
+
+const canRedo: boolean = room.canRedo();
+```
+
+### PluvRoom.canUndo
+
+Returns `boolean`
+
+Checks whether calling [PluvRoom.undo](/docs/client/api-reference#PluvRoom.undo) will mutate storage.
+
+```ts
+// frontend/room.ts
+
+const canUndo: boolean = room.canUndo();
+```
+
 ### PluvRoom.connect
 
-Returns `Promise<void>`.
+Returns `Promise<void>`
 
 Connects to the room if not connected to already. If an `authEndpoint` is configured, this function will call your `authEndpoint`.
 
@@ -208,13 +256,13 @@ room.connect().then(() => {
 
 ### PluvRoom.disconnect
 
-Returns `void`.
+Returns `void`
 
 Disconnects from the room if already connected.
 
 ### PluvRoom.event
 
-Returns `() => void`.
+Returns `() => void`
 
 Subscribes to an event. These events are defined by `PluvIO.event` and are emitted when other websockets emit events via `PluvRoom.broadcast`.
 
@@ -232,7 +280,7 @@ unsubscribe();
 
 ### PluvRoom.getConnection
 
-Returns `WebSocketConnection`.
+Returns `WebSocketConnection`
 
 This returns state information for the current connection to this room.
 
@@ -242,7 +290,7 @@ const connection = room.getConnection();
 
 ### PluvRoom.getMyPresence
 
-Returns `TPresence | null`.
+Returns `TPresence | null`
 
 Returns the user's current presence data.
 
@@ -252,7 +300,7 @@ const myPresence = room.getMyPresence();
 
 ### PluvRoom.getMyself
 
-Returns `UserInfo | null`.
+Returns `UserInfo | null`
 
 Returns a user info object containing data used when generating the JWT during authentication (see [Authorization](/docs/io/authorization)), the user's presence, and the user's connection id.
 
@@ -262,7 +310,7 @@ const myself = room.getMyself();
 
 ### PluvRoom.getOther
 
-Returns `UserInfo | null`.
+Returns `UserInfo | null`
 
 Returns a user info object for the given `connectionId`.
 
@@ -274,7 +322,7 @@ const other = room.getOther(connectionId);
 
 ### PluvRoom.getOthers
 
-Returns `UserInfo[]`.
+Returns `UserInfo[]`
 
 Returns all user info objects for connections that are not the current user's.
 
@@ -312,7 +360,7 @@ const messages = room.getStorage("messages");
 
 ### PluvRoom.other
 
-Returns `() => void`.
+Returns `() => void`
 
 Subscribes to a given user info object for a connection that isn't the current user's.
 
@@ -333,9 +381,21 @@ const unsubscribe = room.other(connectionId, ({
 unsubscribe();
 ```
 
+### PluvRoom.redo
+
+Returns `void`
+
+Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/client/api-reference#PluvRoom.undo).
+
+```ts
+// frontend/room.ts
+
+room.redo();
+```
+
 ### PluvRoom.storage
 
-Returns `() => void`.
+Returns `() => void`
 
 Subscribes to a given root-level value in the [yjs](https://yjs.dev) document storage.
 
@@ -372,7 +432,7 @@ unsubscribe();
 
 ### PluvRoom.subscribe("connection")
 
-Returns `() => void`.
+Returns `() => void`
 
 Subscribes to the user's connection state.
 
@@ -396,7 +456,7 @@ unsubscribe();
 
 ### PluvRoom.subscribe("my-presence")
 
-Returns `() => void`.
+Returns `() => void`
 
 Subscribes to the user's presence state.
 
@@ -413,7 +473,7 @@ unsubscribe();
 
 ### PluvRoom.subscribe("myself")
 
-Returns `() => void`.
+Returns `() => void`
 
 Subscribes to the user's info object.
 
@@ -430,7 +490,7 @@ unsubscribe();
 
 ### PluvRoom.subscribe("others")
 
-Returns `() => void`.
+Returns `() => void`
 
 Subscribes to the list of user info objects of the other connections that aren't the user's.
 
@@ -443,6 +503,40 @@ const unsubscribe = room.subscribe("others", (others) => {
 
 // Unsubscribe to the listener later on.
 unsubscribe();
+```
+
+### PluvRoom.transact
+
+Returns `void`
+
+Performs a mutation that can be tracked as an operation to be undone/redone (undo/redo).
+When called without an origin, the origin will default to the user's connection id.
+
+You can specify a 2nd parameter to transact with a different transaction origin.
+
+```ts
+// frontend/transact
+
+room.transact(() => {
+    room.get("messages").push(["hello world!"]);
+});
+
+// This will also be undoable because `"user-123"` is a tracked origin.
+room.transact(() => {
+    room.get("messages").push(["hello world!"]);
+}, "user-123");
+```
+
+### PluvRoom.undo
+
+Returns `void`
+
+Undoes the last mutation that was applied via [PluvRoom.transact](/docs/client/api-reference#PluvRoom.transact).
+
+```ts
+// frontend/room.ts
+
+room.undo();
 ```
 
 export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;
