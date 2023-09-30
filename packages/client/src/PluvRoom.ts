@@ -345,7 +345,7 @@ export class PluvRoom<
 
         await this._storageStore.destroy();
 
-        this._crdtManager?.destroy();
+        this._crdtManager.destroy();
 
         this._stateNotifier.subjects["my-presence"].next(null);
     }
@@ -384,8 +384,14 @@ export class PluvRoom<
 
     public getStorage = <TKey extends keyof TStorage>(
         key: TKey,
-    ): TStorage[TKey] | null => {
-        return this._crdtManager?.get(key) ?? null;
+    ): TStorage[TKey] => {
+        const sharedType = this._crdtManager.get(key);
+
+        if (typeof sharedType === "undefined") {
+            throw new Error(`Could not find storege: ${key.toString()}`);
+        }
+
+        return sharedType;
     };
 
     public other = (
@@ -826,7 +832,7 @@ export class PluvRoom<
 
         const update =
             this._state.connection.count > 1
-                ? this._crdtManager?.doc.encodeStateAsUpdate() ?? null
+                ? this._crdtManager.doc.encodeStateAsUpdate() ?? null
                 : null;
 
         this._sendMessage({

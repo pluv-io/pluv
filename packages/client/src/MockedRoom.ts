@@ -50,7 +50,7 @@ export class MockedRoom<
     TPresence extends JsonObject = {},
     TStorage extends Record<string, AbstractType<any>> = {},
 > extends AbstractRoom<TIO, TPresence, TStorage> {
-    private _crdtManager: CrdtManager<TStorage> | null = null;
+    private _crdtManager: CrdtManager<TStorage>;
     private _crdtNotifier = new CrdtNotifier<TStorage>();
     private _eventNotifier = new EventNotifier<TIO>();
     private _events?: MockedRoomEvents<TIO>;
@@ -118,11 +118,11 @@ export class MockedRoom<
     }
 
     public canRedo = (): boolean => {
-        return !!this._crdtManager?.doc.canRedo();
+        return !!this._crdtManager.doc.canRedo();
     };
 
     public canUndo = (): boolean => {
-        return !!this._crdtManager?.doc.canUndo();
+        return !!this._crdtManager.doc.canUndo();
     };
 
     public event = <TEvent extends keyof InferIOOutput<TIO>>(
@@ -159,8 +159,14 @@ export class MockedRoom<
 
     public getStorage = <TKey extends keyof TStorage>(
         key: TKey,
-    ): TStorage[TKey] | null => {
-        return this._crdtManager?.get(key) ?? null;
+    ): TStorage[TKey] => {
+        const sharedType = this._crdtManager.get(key);
+
+        if (typeof sharedType === "undefined") {
+            throw new Error(`Could not find storege: ${key.toString()}`);
+        }
+
+        return sharedType;
     };
 
     public other = (
@@ -171,7 +177,7 @@ export class MockedRoom<
     };
 
     public redo = (): void => {
-        this._crdtManager?.doc.redo();
+        this._crdtManager.doc.redo();
     };
 
     public storage = <TKey extends keyof TStorage>(
@@ -221,7 +227,7 @@ export class MockedRoom<
     };
 
     public undo = (): void => {
-        this._crdtManager?.doc.undo();
+        this._crdtManager.doc.undo();
     };
 
     public updateMyPresence = (presence: Partial<TPresence>): void => {

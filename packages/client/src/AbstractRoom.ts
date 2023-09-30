@@ -54,7 +54,7 @@ export abstract class AbstractRoom<
 
     public abstract getStorage<TKey extends keyof TStorage>(
         key: TKey,
-    ): TStorage[TKey] | null;
+    ): TStorage[TKey];
 
     public abstract other(
         connectionId: string,

@@ -136,8 +136,8 @@ export interface CreateRoomBundle<
     >(
         key: TKey,
         selector?: (data: InferYjsSharedTypeJson<TStorage[TKey]>) => TData,
-        options?: SubscriptionHookOptions<TData | null>,
-    ) => [data: TData | null, sharedType: TStorage[TKey] | null];
+        options?: SubscriptionHookOptions<TData>,
+    ) => [data: TData, sharedType: TStorage[TKey]];
     usePluvTransact: () => (
         fn: (storage: TStorage) => void,
         origin?: string,
@@ -517,8 +517,8 @@ export const createRoomBundle = <
         selector = identity as (
             data: InferYjsSharedTypeJson<TStorage[TKey]>,
         ) => TData,
-        options?: SubscriptionHookOptions<TData | null>,
-    ): [data: TData | null, sharedType: TStorage[TKey] | null] => {
+        options?: SubscriptionHookOptions<TData>,
+    ): [data: TData, sharedType: TStorage[TKey]] => {
         const room = usePluvRoom();
 
         const subscribe = useCallback(
@@ -528,13 +528,13 @@ export const createRoomBundle = <
 
         const getSnapshot = useCallback((): InferYjsSharedTypeJson<
             TStorage[TKey]
-        > | null => {
-            return room.getStorage(key)?.toJSON() ?? null;
+        > => {
+            return room.getStorage(key).toJSON();
         }, [key, room]);
 
         const _selector = useCallback(
-            (snapshot: InferYjsSharedTypeJson<TStorage[TKey]> | null) => {
-                return !snapshot ? null : selector(snapshot);
+            (snapshot: InferYjsSharedTypeJson<TStorage[TKey]>) => {
+                return selector(snapshot);
             },
             [selector],
         );
