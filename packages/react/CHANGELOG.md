@@ -1,5 +1,14 @@
 # @pluv/react
 
+## 0.12.1
+
+### Patch Changes
+
+- cae08aa: Updated storage from `getStorage` to never return null
+- Updated dependencies [cae08aa]
+  - @pluv/client@0.12.1
+  - @pluv/types@0.12.1
+
 ## 0.12.0
 
 ### Minor Changes
