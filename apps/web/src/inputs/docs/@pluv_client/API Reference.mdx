@@ -524,7 +524,7 @@ room.transact((tx) => {
     tx.messages.push(["hello world!"]);
 });
 
-// This will also be undoable because `"user-123"` is a tracked origin.
+// This will also be undoable if `"user-123"` is a tracked origin.
 room.transact(() => {
     room.get("messages").push(["hello world!"]);
 }, "user-123");
