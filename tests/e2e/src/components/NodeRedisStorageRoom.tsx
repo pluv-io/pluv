@@ -30,11 +30,9 @@ export const NodeRedisStorageRoom: FC<NodeRedisStorageRoomProps> = () => {
                     id="button-add-message"
                     onClick={() => {
                         transact(() => {
-                            sharedType?.push([
+                            sharedType.push([
                                 y.object({
-                                    message: `new message ${
-                                        messages?.length ?? 0
-                                    }`,
+                                    message: `new message ${messages.length}`,
                                     name: "John Doe",
                                 }),
                             ]);

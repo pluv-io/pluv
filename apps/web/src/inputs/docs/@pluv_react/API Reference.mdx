@@ -354,9 +354,9 @@ const { usePluvStorage } = createRoomBundle({
 
 const [messages, sharedType] = usePluvStorage("messages");
 
-sharedType?.push(["world~!"]);
+sharedType.push(["world~!"]);
 
-messages?.map((message, key) => <div key={key}>{message}</div>);
+messages.map((message, key) => <div key={key}>{message}</div>);
 ```
 
 ### usePluvTransact
@@ -372,7 +372,7 @@ const [messages, sharedType] = usePluvStorage("messages");
 const transact = usePluvTransact();
 
 transact((tx) => {
-    sharedType?.push(["hello world!"]);
+    sharedType.push(["hello world!"]);
 
     // Alternatively, access your storage from here
     tx.messages.push(["hello world!"]);
@@ -380,7 +380,7 @@ transact((tx) => {
 
 // This will also be undoable if `"user-123"` is a tracked origin.
 transact(() => {
-    sharedType?.push(["hello world!"]);
+    sharedType.push(["hello world!"]);
 }, "user-123");
 ```
 
