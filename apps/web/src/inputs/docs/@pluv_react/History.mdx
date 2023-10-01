@@ -1,0 +1,132 @@
+---
+title: History
+description: "How to undo and redo on @pluv/react"
+---
+
+import { DocsLayout } from "../../../components";
+
+# Undo and Redo for @pluv/react
+
+`@pluv/react` comes with hooks to manipulate history that are built on top of Yjs's [UndoManager](https://docs.yjs.dev/api/undo-manager). 
+
+This will allow users to apply undos and redos to Pluv storage mutations.
+
+## Relevant Hooks
+
+* [usePluvCanRedo](/doc/react/api-reference#usePluvCanRedo)
+* [usePluvCanUndo](/doc/react/api-reference#usePluvCanUndo)
+* [usePluvRedo](/doc/react/api-reference#usePluvRedo)
+* [usePluvTransact](/doc/react/api-reference#usePluvTransact)
+* [usePluvUndo](/doc/react/api-reference#usePluvUndo)
+
+## Undoing a storage mutation
+
+Assume you have storage defined like so:
+
+```ts
+import { createBundle, createClient, y } from "@pluv/react";
+import type { io } from "../server/io";
+
+const client = createClient<typeof io>({ /* ... */ });
+
+export const { createRoomBundle } = createBundle(client);
+
+export const {
+    usePluvCanRedo,
+    usePluvCanUndo,
+    usePluvRedo,
+    usePluvStorage,
+    usePluvTransact,
+    usePluvUndo,
+} = createRoomBundle({
+    initialStorage: () => ({
+        messages: y.array([
+            y.object({
+                message: "hello",
+                name: "leedavidcs",
+            }),
+        ]),
+    }),
+});
+```
+
+To undo a storage mutation, you will need to wrap your mutation with a transaction.
+
+```ts
+const transact = usePluvTransact();
+const [messages, sharedType] = usePluvStorage();
+
+// We can undo this
+transact(() => {
+    sharedType.push(["world!"]);
+});
+
+// We can also access all shared types to undo like this
+transact((tx) => {
+    tx.messages.push(["world!"]);
+});
+
+// We cannot undo this
+sharedType.push(["world!"]);
+```
+
+Then from anywhere within the `PluvRoomProvider`, you can undo your last transacted operation.
+
+```ts
+const undo = usePluvUndo();
+const redo = usePluvRedo();
+
+undo();
+redo();
+```
+
+### Custom transaction origins
+
+By default when `transact` is called, it will use the user's connection id as the transaction's origin. This should cover the majority of use-cases most of the time. However, if you need additional transaction origins, you can specify them with `trackedOrigins` on `createRoomBundle`.
+
+```ts
+export const { /* ... */ } = createRoomBundle({
+    initialStorage: () => ({
+        messages: y.array([
+            y.object({
+                message: "hello",
+                name: "leedavidcs",
+            }),
+        ]),
+    }),
+    // Additionally track "my-custom-origin"
+    trackedOrigins: ["my-custom-origin"],
+});
+
+const transact = usePluvTransact();
+
+// We can undo this transaction, because "my-custom-origin" is tracked
+transact((tx) => {
+    tx.messages.push(["world!"]);
+}, "my-custom-origin");
+```
+
+### Custom capture timeout
+
+By default, when tracked storage mutations are transacted, Pluv will merge all mutations within 500ms to be undone together. To capture each transaction individually, you can configure this capture timeout to 0ms.
+
+```ts
+export const { /* ... */ } = createRoomBundle({
+    initialStorage: () => ({
+        messages: y.array([
+            y.object({
+                message: "hello",
+                name: "leedavidcs",
+            }),
+        ]),
+    }),
+    // By default, this is 500ms
+    captureTimeout: 500,
+});
+```
+
+## References
+
+* [Yjs UndoManager](https://docs.yjs.dev/api/undo-manager)
+
+export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;
