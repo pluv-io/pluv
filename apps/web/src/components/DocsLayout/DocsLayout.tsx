@@ -8,17 +8,12 @@ import { DocsSeo } from "../DocsSeo";
 import { DocsTreeViewNavigation } from "../DocsTreeViewNavigation";
 
 const Root = tw.div`
-    sticky
-    top-4
     flex
     flex-row
-    pt-0
-    px-0
-    pb-24
+    inset-0
 `;
 
 const StyledSideBar = tw(SideBar)`
-    sticky
     top-16
     shrink-0
     hidden
