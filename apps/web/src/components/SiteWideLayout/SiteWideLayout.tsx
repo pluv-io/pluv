@@ -30,6 +30,7 @@ export const SiteWideLayoutContent = tw.div`
     max-h-screen
     min-h-0
     overflow-auto
+    scroll-pt-4
 `;
 
 const StyledSiteWideFooter = tw(SiteWideFooter)`

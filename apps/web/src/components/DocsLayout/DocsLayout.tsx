@@ -109,7 +109,7 @@ export const DocsLayout = memo<DocsLayoutProps>((props) => {
                 <StyledToC
                     key={router.asPath}
                     intersection={{
-                        rootMargin: "-64px 0% 0%",
+                        rootMargin: "-56px 0% 0%",
                         threshold: 1,
                     }}
                     selector="#docs-content"
