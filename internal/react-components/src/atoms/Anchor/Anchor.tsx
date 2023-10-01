@@ -1,7 +1,6 @@
-import { NextLink } from "../NextLink";
-import tw from "twin.macro";
-import styled from "styled-components";
 import { InferComponentProps } from "@pluv-internal/typings";
+import tw from "twin.macro";
+import { NextLink } from "../NextLink";
 
 export type AnchorProps = InferComponentProps<typeof Anchor>;
 

@@ -1,6 +1,6 @@
-import { Anchor, Banner } from "@pluv-internal/react-components";
+import { Anchor, Banner, getZIndex } from "@pluv-internal/react-components";
 import { CSSProperties, memo, ReactNode } from "react";
-import tw from "twin.macro";
+import tw, { styled } from "twin.macro";
 import { SiteWideAppBar } from "../SiteWideAppBar";
 import { SiteWideFooter } from "../SiteWideFooter";
 
@@ -13,8 +13,6 @@ const PluvIOLink = tw(Anchor)`
 const Root = tw.div`
     flex
     flex-col
-    min-h-screen
-    max-h-screen
 `;
 
 const StyledBanner = tw(Banner)`
@@ -25,16 +23,10 @@ const StyledSiteWideAppBar = tw(SiteWideAppBar)`
     shrink-0
 `;
 
-export const SiteWideLayoutContent = tw.div`
-    grow
-    max-h-screen
-    min-h-0
-    overflow-auto
-    scroll-pt-4
-`;
+const StyledSiteWideFooter = styled(SiteWideFooter)`
+    ${tw`shrink-0`}
 
-const StyledSiteWideFooter = tw(SiteWideFooter)`
-    shrink-0
+    z-index: ${getZIndex("footer")};
 `;
 
 export interface SiteWideLayoutProps {
@@ -43,7 +35,7 @@ export interface SiteWideLayoutProps {
     style?: CSSProperties;
 }
 
-const _SiteWideLayout = memo<SiteWideLayoutProps>((props) => {
+export const SiteWideLayout = memo<SiteWideLayoutProps>((props) => {
     const { children, className, style } = props;
 
     return (
@@ -60,16 +52,10 @@ const _SiteWideLayout = memo<SiteWideLayoutProps>((props) => {
                 </StyledBanner>
             )}
             <StyledSiteWideAppBar />
-            <SiteWideLayoutContent>
-                {children}
-                <StyledSiteWideFooter />
-            </SiteWideLayoutContent>
+            {children}
+            <StyledSiteWideFooter />
         </Root>
     );
 });
 
-_SiteWideLayout.displayName = "SiteWideLayout";
-
-export const SiteWideLayout = Object.assign(_SiteWideLayout, {
-    Content: SiteWideLayoutContent,
-});
+SiteWideLayout.displayName = "SiteWideLayout";
