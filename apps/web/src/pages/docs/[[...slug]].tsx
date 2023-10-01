@@ -43,7 +43,7 @@ const Page: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
         <DocsLayout meta={meta}>
             <Heading>{meta?.title}</Heading>
             <Contents>
-                {children.map((child) => (
+                {children?.map((child) => (
                     <Card
                         key={child.route}
                         description={child.data.description}
