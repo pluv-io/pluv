@@ -70,7 +70,7 @@ import { useCallback } from "react";
 const [messages, sharedType] = usePluvStorage("messages");
 
 const addMessage = useCallback((message: string) => {
-    sharedType?.push([message]);
+    sharedType.push([message]);
 });
 
 messages.map((message, i) => <div key={i}>{message}</div>)

@@ -8,7 +8,7 @@ export type NextLinkProps = Omit<LinkProps, "as"> &
 export const NextLink = forwardRef<HTMLAnchorElement, NextLinkProps>(
     (props, ref) => {
         return <Link {...props} ref={ref} />;
-    }
+    },
 );
 
 NextLink.displayName = "NextLink";

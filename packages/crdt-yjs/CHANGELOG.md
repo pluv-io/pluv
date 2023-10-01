@@ -223,12 +223,12 @@
   const transact = usePluvTransact();
 
   transact(() => {
-    sharedType?.push(["hello world!"]);
+    sharedType.push(["hello world!"]);
   });
 
   // This will also be undoable because `"user-123"` is a tracked origin.
   transact(() => {
-    sharedType?.push(["hello world!"]);
+    sharedType.push(["hello world!"]);
   }, "user-123");
 
   /**

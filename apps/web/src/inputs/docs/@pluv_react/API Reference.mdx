@@ -9,13 +9,13 @@ import { DocsLayout } from "../../../components";
 
 ## createClient
 
-Returns a `PluvClient` instance.
+Returns a `PluvClient` instance
 
 This is a re-export of [createClient](/docs/client/api-reference#createclient) from [@pluv/client](/docs/client/api-reference).
 
 ## createBundle
 
-Returns a `CreateBundle` instance.
+Returns a `CreateBundle` instance
 
 Creates a bundle to be able to access the `PluvClient` from a react hook.
 
@@ -25,7 +25,7 @@ This is the bundle returned from `createBundle`.
 
 ### createRoomBundle
 
-Returns a `CreateRoomBundle` instance.
+Returns a `CreateRoomBundle` instance
 
 Creates a bundle to be able to access `PluvRoom` capabilities from various react hooks.
 
@@ -98,7 +98,7 @@ React provider component to allow the `PluvClient` created by `createClient` to 
 
 ### usePluvClient
 
-Returns `PluvClient`.
+Returns `PluvClient`
 
 Returns the `PluvClient` that was created via `createClient`.
 
@@ -184,7 +184,7 @@ import { MockedRoomProvider } from "./io";
 
 ### usePluvBroadcast
 
-Returns `(event, data) => void`.
+Returns `(event, data) => void`
 
 Returns a broadcast function to emit an event and data to all connected clients. This is type-safe. The first parameter `event` will be the name of the event specified when creating your backend `PluvIO` instance and the second parameter `data` will be the associated response type. See [Define Events](/docs/io/define-events) for more details.
 
@@ -216,7 +216,7 @@ const canUndo: boolean = usePluvCanUndo();
 
 ### usePluvConnection
 
-Returns `WebSocketConnection`.
+Returns `WebSocketConnection`
 
 Returns the websocket connection start of the current user.
 
@@ -230,7 +230,7 @@ const connection = usePluvConnection();
 
 ### usePluvEvent
 
-Returns `void`.
+Returns `void`
 
 Defines a listener for events broadcasted by connected clients. This is type-safe. The first parameter `event` is the name of the event to listen to from your backend `PluvIO` instance. The second parameter is a callback containing the data emitted from the broadcasted event.
 
@@ -242,7 +242,7 @@ usePluvEvent("EMOJI_RECEIVED", ({ emojiCode }) => {
 
 ### usePluvMyPresence
 
-Returns `[myPresence: TPresence | null, updatePresence: Function]`.
+Returns `[myPresence: TPresence | null, updatePresence: Function]`
 
 Returns the current user's presence, and a function to update the user's presence. Using this hook rerenders the component based on a deep-equality check on the user's presence value. This hook accepts a selector to return a modified presence to reduce rerenders.
 
@@ -283,7 +283,7 @@ const [, updateMyPresence] = usePluvMyPresence(
 
 ### usePluvMyself
 
-Returns `UserInfo | null`.
+Returns `UserInfo | null`
 
 Returns the user-info object for the current user. This hook accepts a selector to return a modified user-info to reduce rerenders.
 
@@ -296,7 +296,7 @@ const myself = usePluvMyself(({ connectionId }) => connectionId);
 
 ### usePluvOther
 
-Returns `UserInfo | null`.
+Returns `UserInfo | null`
 
 Returns the user-info object for a connected user by `connectionId` string.
 
@@ -309,7 +309,7 @@ const other = usePluvOther(({ connectionId }) => connectionId);
 
 ### usePluvOthers
 
-Returns `readonly UserInfo[]`.
+Returns `readonly UserInfo[]`
 
 Returns all user-info objects for all connected users. This may trigger a lot of re-renders if presence updates frequently.
 
@@ -327,9 +327,11 @@ const connectionIds = usePluvOthers((others) => {
 
 ### usePluvRedo
 
-Returns `void`.
+Returns `void`
 
 Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/react/api-reference#usePluvUndo).
+
+For more information see: [History](/docs/react/history)
 
 ```ts
 const redo = usePluvRedo();
@@ -339,7 +341,7 @@ redo();
 
 ### usePluvStorage
 
-Returns `[TData | null, Yjs.SharedType | null]`.
+Returns `[TData | null, Yjs.SharedType | null]`
 
 Returns a base-level property of our [yjs](https://yjs.dev) storage as a serialized value and a [Yjs SharedType](https://docs.yjs.dev/getting-started/working-with-shared-types). The component is re-rendered whenever the Yjs SharedType is updated.
 
@@ -354,25 +356,27 @@ const { usePluvStorage } = createRoomBundle({
 
 const [messages, sharedType] = usePluvStorage("messages");
 
-sharedType?.push(["world~!"]);
+sharedType.push(["world~!"]);
 
-messages?.map((message, key) => <div key={key}>{message}</div>);
+messages.map((message, key) => <div key={key}>{message}</div>);
 ```
 
 ### usePluvTransact
 
-Returns `void`.
+Returns `void`
 
 Performs a mutation that can be tracked as an operation to be undone/redone (undo/redo). When called without an origin, the origin will default to the user's connection id.
 
 You can specify a 2nd parameter to transact with a different transaction origin.
+
+For more information see: [History](/docs/react/history)
 
 ```ts
 const [messages, sharedType] = usePluvStorage("messages");
 const transact = usePluvTransact();
 
 transact((tx) => {
-    sharedType?.push(["hello world!"]);
+    sharedType.push(["hello world!"]);
 
     // Alternatively, access your storage from here
     tx.messages.push(["hello world!"]);
@@ -380,15 +384,18 @@ transact((tx) => {
 
 // This will also be undoable if `"user-123"` is a tracked origin.
 transact(() => {
-    sharedType?.push(["hello world!"]);
+    sharedType.push(["hello world!"]);
 }, "user-123");
 ```
 
 ### usePluvUndo
 
-Returns `void`.
+Returns `void`
 
 Undoes the last mutation that was applied via [PluvRoom.transact](/docs/react/api-reference#usePluvTransact).
+
+For more information see: [History](/docs/react/history)
+
 
 ```ts
 const undo = usePluvUndo();

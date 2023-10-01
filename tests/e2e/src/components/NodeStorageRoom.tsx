@@ -31,11 +31,9 @@ export const NodeStorageRoom: FC<NodeStorageRoomProps> = () => {
                     id="button-add-message"
                     onClick={() => {
                         transact((tx) => {
-                            sharedType?.push([
+                            sharedType.push([
                                 y.object({
-                                    message: `new message ${
-                                        messages?.length ?? 0
-                                    }`,
+                                    message: `new message ${messages.length}`,
                                     name: "John Doe",
                                 }),
                             ]);

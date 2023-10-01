@@ -150,7 +150,7 @@ export const HomeChessDemo: FC<HomeChessDemoProps> = ({ className, style }) => {
         const timeout = setTimeout(() => {
             chessRef.current?.clear();
 
-            sharedType?.set("chessHistory", y.array<string>([]));
+            sharedType.set("chessHistory", y.array<string>([]));
 
             setGameOver(false);
         }, ms("5s"));
@@ -169,7 +169,7 @@ export const HomeChessDemo: FC<HomeChessDemoProps> = ({ className, style }) => {
                         id="home-chess"
                         onGameOver={onGameOver}
                         onMove={({ game }) => {
-                            sharedType?.set(
+                            sharedType.set(
                                 "chessHistory",
                                 y.array(game.history()),
                             );
