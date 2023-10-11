@@ -29,7 +29,7 @@
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"eslint": "^8.50.0",
+		"eslint": "^8.51.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^7.2.0",
 		"typescript": "^5.2.2"
