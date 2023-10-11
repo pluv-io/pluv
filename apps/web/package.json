@@ -33,10 +33,10 @@
         "@seznam/compose-react-refs": "^1.0.6",
         "@types/common-tags": "^1.8.2",
         "@types/ms": "^0.7.32",
-        "@types/node": "^20.8.2",
-        "@types/react": "^18.2.24",
-        "@types/react-dom": "^18.2.8",
-        "@types/ws": "^8.5.6",
+        "@types/node": "^20.8.4",
+        "@types/react": "^18.2.28",
+        "@types/react-dom": "^18.2.13",
+        "@types/ws": "^8.5.7",
         "clsx": "^2.0.0",
         "common-tags": "^1.8.2",
         "gray-matter": "^4.0.3",
@@ -48,7 +48,7 @@
         "styled-components": "^6.0.8",
         "twin.macro": "^3.4.0",
         "yjs": "^13.6.8",
-        "zod": "^3.22.2"
+        "zod": "^3.22.4"
     },
     "devDependencies": {
         "@babel/core": "^7.23.0",
@@ -67,7 +67,7 @@
         "babel-plugin-styled-components": "^2.1.4",
         "concurrently": "^8.2.1",
         "dotenv-cli": "^7.3.0",
-        "eslint": "8.50.0",
+        "eslint": "^8.51.0",
         "eslint-config-pluv": "workspace:^",
         "fs-extra": "^11.1.1",
         "glob": "^10.3.10",
