@@ -31,11 +31,11 @@
         "next": "^13.5.4",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "styled-components": "^6.0.8",
+        "styled-components": "^6.1.0",
         "twin.macro": "^3.4.0"
     },
     "devDependencies": {
-        "@babel/core": "^7.23.0",
+        "@babel/core": "^7.23.2",
         "@next/bundle-analyzer": "^13.5.4",
         "@next/mdx": "^13.5.4",
         "@pluv-internal/remark-plugins": "workspace:^",
@@ -69,7 +69,7 @@
         "tailwindcss": "^3.3.3",
         "typescript": "5.2.2",
         "url": "^0.11.3",
-        "webpack": "^5.88.2"
+        "webpack": "^5.89.0"
     },
     "babelMacros": {
         "twin": {
