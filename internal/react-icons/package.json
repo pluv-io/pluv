@@ -23,7 +23,7 @@
 		"@svgr/plugin-jsx": "^8.1.0",
 		"@svgr/plugin-prettier": "^8.1.0",
 		"@svgr/plugin-svgo": "^8.1.0",
-		"@types/common-tags": "^1.8.2",
+		"@types/common-tags": "^1.8.3",
 		"@types/fs-extra": "^11.0.2",
 		"@types/glob": "^8.1.0",
 		"@types/node": "^20.8.6",
