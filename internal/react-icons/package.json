@@ -13,7 +13,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@types/react": "^18.2.28",
+		"@types/react": "^18.2.33",
 		"react": "^18.2.0"
 	},
 	"devDependencies": {
@@ -24,9 +24,9 @@
 		"@svgr/plugin-prettier": "^8.1.0",
 		"@svgr/plugin-svgo": "^8.1.0",
 		"@types/common-tags": "^1.8.3",
-		"@types/fs-extra": "^11.0.2",
+		"@types/fs-extra": "^11.0.3",
 		"@types/glob": "^8.1.0",
-		"@types/node": "^20.8.6",
+		"@types/node": "^20.8.9",
 		"common-tags": "^1.8.2",
 		"dotenv-cli": "^7.3.0",
 		"eslint-config-pluv": "workspace:^",
