@@ -16,6 +16,6 @@
 		"typescript": "^5.2.2"
 	},
 	"dependencies": {
-		"@types/react": "^18.2.28"
+		"@types/react": "^18.2.33"
 	}
 }
