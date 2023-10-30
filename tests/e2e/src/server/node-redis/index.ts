@@ -1,10 +1,9 @@
 import bodyParser from "body-parser";
 import { program } from "commander";
 import cors from "cors";
-import Crypto from "crypto";
+import Crypto, { randomBytes } from "crypto";
 import express from "express";
 import Http from "http";
-import { nanoid } from "nanoid";
 import { match } from "path-to-regexp";
 import Url from "url";
 import WebSocket from "ws";
@@ -12,8 +11,6 @@ import { cluster } from "./cluster";
 import { io1st, io2nd } from "./pluv-io";
 
 export type { io1st as io } from "./pluv-io";
-
-const NEW_ROOM_ID_SIZE = 21;
 
 type CommanderOptionValue = string | boolean | string[] | undefined;
 
@@ -84,7 +81,7 @@ app.get("/api/authorize", async (req, res) => {
 });
 
 app.post("/api/room", (req, res) => {
-    return res.send(nanoid(NEW_ROOM_ID_SIZE)).status(200);
+    return res.send(randomBytes(48).toString("hex")).status(200);
 });
 
 cluster.once("connect", () => {
