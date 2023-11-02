@@ -24,7 +24,7 @@
 	},
 	"dependencies": {
 		"@pluv/io": "workspace:^",
-		"@types/node": "^20.8.9"
+		"@types/node": "^20.8.10"
 	},
 	"peerDependencies": {
 		"ioredis": "^5.0.0"
