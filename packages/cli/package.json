@@ -51,6 +51,6 @@
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^8.54.0",
 		"eslint-config-pluv": "workspace:^",
-		"typescript": "^5.3.2"
+		"typescript": "^5.2.2"
 	}
 }

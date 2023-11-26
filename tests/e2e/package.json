@@ -64,7 +64,7 @@
 		"miniflare": "^3.20231030.1",
 		"prisma": "^5.6.0",
 		"ts-node": "^10.9.1",
-		"typescript": "^5.3.2",
+		"typescript": "^5.2.2",
 		"wrangler": "^3.17.1"
 	}
 }
