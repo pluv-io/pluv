@@ -4,13 +4,7 @@
 
 ### Patch Changes
 
-- 3ed82c7: Bumped dependency jose to latest major version.
 - 259a7da: Bumped dependencies
-- 8fdc159: Upgraded dependencies.
-- Updated dependencies [259a7da]
-- Updated dependencies [8fdc159]
-  - @pluv/crdt-yjs@0.12.2
-  - @pluv/types@0.12.2
 
 ## 0.12.1
 
