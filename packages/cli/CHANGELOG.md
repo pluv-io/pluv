@@ -1,5 +1,12 @@
 # pluv
 
+## 0.12.2
+
+### Patch Changes
+
+- 259a7da: Bumped dependencies
+- 8fdc159: Upgraded dependencies.
+
 ## 0.12.1
 
 ## 0.12.0
