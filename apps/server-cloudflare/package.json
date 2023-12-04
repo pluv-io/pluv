@@ -22,15 +22,15 @@
     "@cloudflare/workers-types": "^4.20231121.0",
     "@pluv/tsconfig": "workspace:^",
     "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-dynamic-import-vars": "^2.1.1",
+    "@rollup/plugin-dynamic-import-vars": "^2.1.2",
     "@rollup/plugin-json": "^6.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.5",
-    "rollup": "^4.5.2",
+    "rollup": "^4.6.1",
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-polyfills": "^0.2.1",
     "typescript": "^5.2.2",
-    "wrangler": "^3.17.1"
+    "wrangler": "^3.18.0"
   }
 }
