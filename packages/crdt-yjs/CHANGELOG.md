@@ -1,5 +1,12 @@
 # @pluv/crdt-yjs
 
+## 0.12.3
+
+### Patch Changes
+
+- da9f600: Upgraded dependencies
+  - @pluv/types@0.12.3
+
 ## 0.12.2
 
 ### Patch Changes
