@@ -1,5 +1,11 @@
 # eslint-config-pluv
 
+## 0.12.3
+
+### Patch Changes
+
+- da9f600: Upgraded dependencies
+
 ## 0.12.2
 
 ### Patch Changes
