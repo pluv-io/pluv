@@ -6,7 +6,7 @@ import type {
     IOLike,
     JsonObject,
 } from "@pluv/types";
-import type { AbstractType } from "yjs";
+import type { AbstractType, Doc } from "yjs";
 import { AbstractRoom } from "./AbstractRoom";
 import { CrdtManager, CrdtManagerOptions } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
@@ -137,6 +137,10 @@ export class MockedRoom<
         return Object.freeze(
             JSON.parse(JSON.stringify(this._state.connection)),
         );
+    }
+
+    public getDoc(): Doc {
+        return this._crdtManager.doc.value;
     }
 
     public getMyPresence = (): TPresence => {

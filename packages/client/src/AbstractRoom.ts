@@ -6,7 +6,7 @@ import type {
     IOLike,
     JsonObject,
 } from "@pluv/types";
-import type { AbstractType } from "yjs";
+import type { AbstractType, Doc } from "yjs";
 import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
 import type {
@@ -34,6 +34,8 @@ export abstract class AbstractRoom<
     public abstract canRedo(): boolean;
 
     public abstract canUndo(): boolean;
+
+    public abstract getDoc(): Doc;
 
     public abstract event<TEvent extends keyof InferIOOutput<TIO>>(
         event: TEvent,
