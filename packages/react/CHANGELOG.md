@@ -1,5 +1,23 @@
 # @pluv/react
 
+## 0.13.0
+
+### Minor Changes
+
+- 4c4b47f: Added `usePluvDoc` to access the root Yjs doc.
+
+  ```ts
+  import type { Doc } from "yjs";
+
+  const doc: Doc = usePluvDoc();
+  ```
+
+### Patch Changes
+
+- Updated dependencies [1126215]
+  - @pluv/client@0.13.0
+  - @pluv/types@0.13.0
+
 ## 0.12.3
 
 ### Patch Changes

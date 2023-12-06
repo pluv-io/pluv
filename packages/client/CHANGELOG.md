@@ -1,5 +1,26 @@
 # @pluv/client
 
+## 0.13.0
+
+### Minor Changes
+
+- 1126215: Added `getDoc` on `PluvRoom` to access the root Yjs doc.
+
+  ```ts
+  import { createClient } from "@pluv/client";
+  import type { Doc } from "yjs";
+
+  const client = createClient(/* ... */);
+  const room = client.createRoom(/* ... */);
+
+  const doc: Doc = room.getDoc();
+  ```
+
+### Patch Changes
+
+- @pluv/crdt-yjs@0.13.0
+- @pluv/types@0.13.0
+
 ## 0.12.3
 
 ### Patch Changes
