@@ -12,7 +12,7 @@ import type {
     IOLike,
     JsonObject,
 } from "@pluv/types";
-import type { AbstractType } from "yjs";
+import type { AbstractType, Doc } from "yjs";
 import { AbstractRoom } from "./AbstractRoom";
 import { AbstractStorageStore } from "./AbstractStorageStore";
 import type { CrdtManagerOptions } from "./CrdtManager";
@@ -362,6 +362,10 @@ export class PluvRoom<
         return Object.freeze(
             JSON.parse(JSON.stringify(this._state.connection)),
         );
+    }
+
+    public getDoc(): Doc {
+        return this._crdtManager.doc.value;
     }
 
     public getMyPresence = (): TPresence => {
