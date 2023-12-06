@@ -30,7 +30,7 @@ import {
     useEffect,
     useState,
 } from "react";
-import type { AbstractType } from "yjs";
+import type { AbstractType, Doc } from "yjs";
 import {
     identity,
     shallowArrayEqual,
@@ -104,6 +104,7 @@ export interface CreateRoomBundle<
         selector: (connection: WebSocketConnection) => T,
         options?: SubscriptionHookOptions<Id<T>>,
     ) => Id<T>;
+    usePluvDoc: () => Doc;
     usePluvEvent: <TType extends keyof InferIOOutput<TIO>>(
         type: TType,
         callback: (data: Id<IOEventMessage<TIO, TType>>) => void,
@@ -350,6 +351,12 @@ export const createRoomBundle = <
         );
     };
 
+    const usePluvDoc = () => {
+        const room = usePluvRoom();
+
+        return room.getDoc();
+    };
+
     const usePluvEvent = <TType extends keyof InferIOOutput<TIO>>(
         type: TType,
         callback: (data: Id<IOEventMessage<TIO, TType>>) => void,
@@ -574,6 +581,7 @@ export const createRoomBundle = <
         usePluvCanRedo,
         usePluvCanUndo,
         usePluvConnection,
+        usePluvDoc,
         usePluvEvent,
         usePluvMyPresence,
         usePluvMyself,
