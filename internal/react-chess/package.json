@@ -15,7 +15,7 @@
 		"@types/ms": "^0.7.34",
 		"@types/react": "^18.2.41",
 		"@types/react-dom": "^18.2.17",
-		"chess.js": "1.0.0-beta.6",
+		"chess.js": "1.0.0-beta.7",
 		"ms": "^2.1.3",
 		"react": "^18.2.0",
 		"react-chessboard": "^4.3.2",
