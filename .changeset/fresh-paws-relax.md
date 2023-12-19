@@ -4,7 +4,7 @@
 
 Added support for environment variables in the pluv cli.
 
-Example `pluv.json` file:
+Example `pluv.config.json` file:
 
 ```json
 {
