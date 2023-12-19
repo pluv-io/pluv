@@ -25,8 +25,9 @@ interface Props {
 }
 
 const Command: FC<Props> = ({ args }) => {
-    const { input, outDir } = useConfig();
+    const { env, input, outDir } = useConfig();
     const { error, isLoading } = useBuildApp({
+        env,
         input,
         outDir: args?.[0] ?? outDir,
     });
