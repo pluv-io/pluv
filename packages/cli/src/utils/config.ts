@@ -2,11 +2,7 @@ import { readdirSync } from "fs";
 import path from "path";
 import { z } from "zod";
 import { require } from "../require.js";
-
-export const ZodPluvConfig = z.object({
-    input: z.string().default("./pluv.ts"),
-    outDir: z.string().default("./.pluv"),
-});
+import { ZodPluvConfig } from "../schemas/index.js";
 
 export type PluvConfig = z.input<typeof ZodPluvConfig>;
 export type ParsedPluvConfig = z.output<typeof ZodPluvConfig>;
@@ -18,7 +14,7 @@ export const getConfig = (): ParsedPluvConfig => {
         (validName) => filenames.some((filename) => filename === validName),
     );
 
-    const config = configName
+    const config: PluvConfig = configName
         ? require(path.resolve(process.cwd(), `./${configName}`))
         : {};
     const parsed = ZodPluvConfig.parse(config);

@@ -2,6 +2,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import dynamicImportVars from "@rollup/plugin-dynamic-import-vars";
 import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
+import replace from "@rollup/plugin-replace";
 import terser from "@rollup/plugin-terser";
 import typescript from "@rollup/plugin-typescript";
 import fs from "fs-extra";
@@ -27,6 +28,7 @@ const saveChunk = (outDir: string, chunk: OutputChunk | OutputAsset) => {
 };
 
 export interface BuildAppOptions {
+    env: Record<string, string>;
     input: string;
     outDir: string;
 }
@@ -36,7 +38,16 @@ export const buildApp = async (options: BuildAppOptions) => {
         input: options.input,
         output: { format: "esm" },
         plugins: [
-            (typescript as any)({
+            (replace as unknown as typeof replace.default)({
+                values: Object.entries(options).reduce<Record<string, string>>(
+                    (acc, [key, value]) => ({
+                        ...acc,
+                        [`process.env.${key}`]: JSON.stringify(value),
+                    }),
+                    {},
+                ),
+            }),
+            (typescript as unknown as typeof typescript.default)({
                 allowJs: true,
                 allowSyntheticDefaultImports: true,
                 checkJs: false,
@@ -59,24 +70,24 @@ export const buildApp = async (options: BuildAppOptions) => {
                 target: "es2021",
             }),
             // Converts CommonJS modules to ES6.
-            (commonjs as any)({
+            (commonjs as unknown as typeof commonjs.default)({
                 transformMixedEsModules: true,
             }),
             // Resolves JSON files as objects.
-            (json as any)(),
+            (json as unknown as typeof json.default)(),
             // Resolves NPM packages from node_modules/.
-            (nodeResolve as any)({
+            nodeResolve({
                 browser: true,
             }),
             // Polyfills NodeJS APIs, when possible.
-            (nodePolyfills as any)({
+            (nodePolyfills as unknown as typeof nodePolyfills.default)({
                 crypto: true,
             }) as Plugin,
             // Resolves non-toplevel imports using static analysis.
-            (dynamicImportVars as any)({
+            (dynamicImportVars as unknown as typeof dynamicImportVars.default)({
                 warnOnError: true,
             }),
-            (terser as any)({
+            (terser as unknown as typeof terser.default)({
                 module: true,
             }),
         ],
