@@ -34,18 +34,36 @@ export interface BuildAppOptions {
 }
 
 export const buildApp = async (options: BuildAppOptions) => {
+    const replaceEnv = Object.entries(options.env).reduce<
+        Record<string, string>
+    >(
+        (acc, [key, value]) => ({
+            ...acc,
+            [`process.env.${key}`]: JSON.stringify(value),
+        }),
+        {},
+    );
+
     const bundle = await rollup({
         input: options.input,
         output: { format: "esm" },
+        onLog: (level, log) => {
+            const { frame, loc, message } = log;
+
+            if (loc) {
+                console.warn(
+                    `${loc.file} (${loc.line}:${loc.column}) ${message}`,
+                );
+                if (frame) console.warn(frame);
+            } else {
+                console.warn(log);
+            }
+        },
         plugins: [
             (replace as unknown as typeof replace.default)({
-                values: Object.entries(options).reduce<Record<string, string>>(
-                    (acc, [key, value]) => ({
-                        ...acc,
-                        [`process.env.${key}`]: JSON.stringify(value),
-                    }),
-                    {},
-                ),
+                include: options.input,
+                preventAssignment: true,
+                values: replaceEnv,
             }),
             (typescript as unknown as typeof typescript.default)({
                 allowJs: true,
