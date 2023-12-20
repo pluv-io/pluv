@@ -5,6 +5,7 @@
 	"author": "leedavidcs",
 	"license": "MIT",
 	"type": "module",
+	"types": "./dist/cli",
 	"bin": {
 		"pluv": "./dist/cli.js"
 	},
