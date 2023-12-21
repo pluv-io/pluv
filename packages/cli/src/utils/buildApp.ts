@@ -28,6 +28,21 @@ const saveChunk = (outDir: string, chunk: OutputChunk | OutputAsset) => {
     fs.writeFileSync(outFile, chunk.code, { encoding: "utf-8" });
 };
 
+const getEnv = (
+    env: Record<string, string> | string = path.resolve(
+        process.cwd(),
+        "./.env",
+    ),
+): Record<string, string> => {
+    if (typeof env !== "string") return env;
+
+    try {
+        return dotenv.config({ path: env }).parsed ?? {};
+    } catch {
+        return {};
+    }
+};
+
 export interface BuildAppOptions {
     env?: Record<string, string> | string;
     input: string;
@@ -35,18 +50,11 @@ export interface BuildAppOptions {
 }
 
 export const buildApp = async (options: BuildAppOptions) => {
-    const {
-        env: _env = path.resolve(process.cwd(), "./.env"),
-        input,
-        outDir: _outDir,
-    } = options;
+    const { env, input, outDir: _outDir } = options;
 
-    const env =
-        typeof _env === "string"
-            ? dotenv.config({ path: _env }).parsed ?? {}
-            : _env;
-
-    const replaceEnv = Object.entries(env).reduce<Record<string, string>>(
+    const replaceEnv = Object.entries(getEnv(env)).reduce<
+        Record<string, string>
+    >(
         (acc, [key, value]) => ({
             ...acc,
             [`process.env.${key}`]: JSON.stringify(value),
