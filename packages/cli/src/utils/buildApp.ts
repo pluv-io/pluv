@@ -5,6 +5,7 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import terser from "@rollup/plugin-terser";
 import typescript from "@rollup/plugin-typescript";
+import dotenv from "dotenv";
 import fs from "fs-extra";
 import path from "path";
 import { OutputAsset, OutputChunk, Plugin, rollup } from "rollup";
@@ -27,14 +28,31 @@ const saveChunk = (outDir: string, chunk: OutputChunk | OutputAsset) => {
     fs.writeFileSync(outFile, chunk.code, { encoding: "utf-8" });
 };
 
+const getEnv = (
+    env: Record<string, string> | string = path.resolve(
+        process.cwd(),
+        "./.env",
+    ),
+): Record<string, string> => {
+    if (typeof env !== "string") return env;
+
+    try {
+        return dotenv.config({ path: env }).parsed ?? {};
+    } catch {
+        return {};
+    }
+};
+
 export interface BuildAppOptions {
-    env: Record<string, string>;
+    env?: Record<string, string> | string;
     input: string;
     outDir: string;
 }
 
 export const buildApp = async (options: BuildAppOptions) => {
-    const replaceEnv = Object.entries(options.env).reduce<
+    const { env, input, outDir: _outDir } = options;
+
+    const replaceEnv = Object.entries(getEnv(env)).reduce<
         Record<string, string>
     >(
         (acc, [key, value]) => ({
@@ -45,7 +63,7 @@ export const buildApp = async (options: BuildAppOptions) => {
     );
 
     const bundle = await rollup({
-        input: options.input,
+        input,
         output: { format: "esm" },
         onLog: (level, log) => {
             const { frame, loc, message } = log;
@@ -61,7 +79,6 @@ export const buildApp = async (options: BuildAppOptions) => {
         },
         plugins: [
             (replace as unknown as typeof replace.default)({
-                include: options.input,
                 preventAssignment: true,
                 values: replaceEnv,
             }),

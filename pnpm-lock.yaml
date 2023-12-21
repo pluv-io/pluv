@@ -998,6 +998,9 @@ importers:
       '@types/react':
         specifier: ^18.2.45
         version: 18.2.45
+      dotenv:
+        specifier: ^16.3.1
+        version: 16.3.1
       execa:
         specifier: ^8.0.1
         version: 8.0.1
@@ -9404,7 +9407,6 @@ packages:
   /dotenv@16.3.1:
     resolution: {integrity: sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==}
     engines: {node: '>=12'}
-    dev: true
 
   /duplexer@0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
