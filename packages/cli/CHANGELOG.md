@@ -1,5 +1,27 @@
 # pluv
 
+## 0.15.0
+
+### Minor Changes
+
+- 59b5d26: Added support for .env files.
+
+  `pluv.config.js`
+
+  ```js
+  module.exports = {
+    // Use key-value pairs
+    env: {
+      MY_SECRET_KEY: "abc123",
+    },
+
+    // Alternatively, use a file path to a .env file
+    env: "./.env",
+
+    // Or don't provide an env property in your config at all. Defaults to "./.env"
+  };
+  ```
+
 ## 0.14.1
 
 ### Patch Changes
