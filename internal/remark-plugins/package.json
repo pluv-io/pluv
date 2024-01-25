@@ -16,7 +16,7 @@
 	},
 	"dependencies": {
 		"@types/unist": "^3.0.2",
-		"acorn": "^8.11.2",
+		"acorn": "^8.11.3",
 		"gray-matter": "^4.0.3",
 		"vfile": "^6.0.1"
 	},
@@ -24,6 +24,6 @@
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.0.1",
-		"typescript": "^5.2.2"
+		"typescript": "^5.3.3"
 	}
 }
