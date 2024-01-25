@@ -35,7 +35,7 @@
 		"eslint": "^8.56.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.0.1",
-		"typescript": "^5.2.2",
-		"yjs": "^13.6.10"
+		"typescript": "^5.3.3",
+		"yjs": "^13.6.11"
 	}
 }
