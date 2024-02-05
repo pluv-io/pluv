@@ -39,7 +39,7 @@ test.describe("Node Presence", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -89,7 +89,7 @@ test.describe("Node Presence", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -139,7 +139,7 @@ test.describe("Node Presence", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -214,6 +214,6 @@ test.describe("Node Presence", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 });

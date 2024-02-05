@@ -1,3 +1,4 @@
+import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
@@ -11,6 +12,7 @@ export const io = createIO({
             name: z.string(),
         }),
     },
+    crdt: yjs,
     platform: platformNode(),
 }).event("SEND_MESSAGE", {
     input: z.object({ message: z.string() }),

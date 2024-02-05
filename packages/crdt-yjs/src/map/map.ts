@@ -1,7 +1,7 @@
-import { Map as YMap } from "yjs";
+import { CrdtYjsMap } from "./CrdtYjsMap";
 
 export const map = <T extends unknown>(
     value: readonly (readonly [key: string, value: T])[] = [],
-): YMap<T> => {
-    return new YMap(value);
+): CrdtYjsMap<T> => {
+    return new CrdtYjsMap<T>(value);
 };

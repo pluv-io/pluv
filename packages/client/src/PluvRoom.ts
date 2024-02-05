@@ -1,4 +1,8 @@
-import { InferYjsSharedTypeJson, TrackOriginOptions } from "@pluv/crdt-yjs";
+import type {
+    AbstractCrdtDoc,
+    AbstractCrdtType,
+    InferCrdtStorageJson,
+} from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
     EventMessage,
@@ -12,7 +16,6 @@ import type {
     IOLike,
     JsonObject,
 } from "@pluv/types";
-import type { AbstractType, Doc } from "yjs";
 import { AbstractRoom } from "./AbstractRoom";
 import { AbstractStorageStore } from "./AbstractStorageStore";
 import type { CrdtManagerOptions } from "./CrdtManager";
@@ -50,7 +53,7 @@ const ORIGIN_STORAGE_UPDATED = "$STORAGE_UPDATED";
 export const DEFAULT_PLUV_CLIENT_ADDON = <
     TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any>> = {},
 >(
     input: PluvRoomAddonInput<TIO, TPresence, TStorage>,
 ): PluvRoomAddonResult => ({
@@ -107,7 +110,7 @@ interface InternalListeners {
 export type PluvRoomAddon<
     TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any>> = {},
 > = (
     input: PluvRoomAddonInput<TIO, TPresence, TStorage>,
 ) => Partial<PluvRoomAddonResult>;
@@ -115,7 +118,7 @@ export type PluvRoomAddon<
 export interface PluvRoomAddonInput<
     TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any>> = {},
 > {
     room: PluvRoom<TIO, TPresence, TStorage>;
 }
@@ -132,7 +135,7 @@ export type PluvRoomDebug<TIO extends IOLike> = Id<{
 export type PluvRoomOptions<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any>> = {},
 > = {
     addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
     debug?: boolean | PluvRoomDebug<TIO>;
@@ -143,15 +146,13 @@ export type PluvRoomOptions<
 export type RoomConfig<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {},
-> = RoomEndpoints<TIO> &
-    PluvRoomOptions<TIO, TPresence, TStorage> &
-    TrackOriginOptions;
+    TStorage extends Record<string, AbstractCrdtType<any>> = {},
+> = RoomEndpoints<TIO> & PluvRoomOptions<TIO, TPresence, TStorage>;
 
 export class PluvRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any>> = {},
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     readonly _endpoints: RoomEndpoints<TIO>;
 
@@ -195,13 +196,11 @@ export class PluvRoom<
         const {
             addons = [],
             authEndpoint,
-            captureTimeout,
             debug = false,
             initialPresence,
             initialStorage,
             onAuthorizationFail,
             presence,
-            trackedOrigins,
             wsEndpoint,
         } = options;
 
@@ -238,13 +237,8 @@ export class PluvRoom<
         });
 
         this._crdtManager = new CrdtManager<TStorage>({
-            captureTimeout,
             initialStorage,
-            trackedOrigins,
         });
-
-        this._captureTimeout = captureTimeout ?? null;
-        this._trackedOrigins = trackedOrigins ?? null;
     }
 
     public get webSocket(): WebSocket | null {
@@ -364,8 +358,8 @@ export class PluvRoom<
         );
     }
 
-    public getDoc(): Doc {
-        return this._crdtManager.doc.value;
+    public getDoc(): AbstractCrdtDoc<TStorage> {
+        return this._crdtManager.doc;
     }
 
     public getMyPresence = (): TPresence => {
@@ -411,14 +405,14 @@ export class PluvRoom<
 
     public storage = <TKey extends keyof TStorage>(
         key: TKey,
-        fn: (value: InferYjsSharedTypeJson<TStorage[TKey]>) => void,
+        fn: (value: InferCrdtStorageJson<TStorage[TKey]>) => void,
     ): (() => void) => {
         return this._crdtNotifier.subscribe(key, fn);
     };
 
     public storageRoot = (
         fn: (value: {
-            [P in keyof TStorage]: InferYjsSharedTypeJson<TStorage[P]>;
+            [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;
         }) => void,
     ): (() => void) => {
         return this._crdtNotifier.subcribeRoot(fn);
@@ -449,7 +443,9 @@ export class PluvRoom<
         if (typeof _origin !== "string") return;
 
         this._crdtManager.doc.transact(() => {
-            fn(this._crdtManager.doc.storage);
+            const storage = this._crdtManager.doc.get();
+
+            fn(storage);
         }, _origin);
     };
 
@@ -483,12 +479,10 @@ export class PluvRoom<
         const trackedOrigins = this._getTrackedOrigins();
 
         this._crdtManager.initialize({
-            captureTimeout: this._captureTimeout ?? undefined,
             onInitialized: () => {
                 this._observeCrdt();
             },
             origin: ORIGIN_INITIALIZED,
-            trackedOrigins: trackedOrigins ?? undefined,
             update: updates,
         });
 
@@ -615,18 +609,18 @@ export class PluvRoom<
     }
 
     private _emitSharedTypes(): void {
-        const sharedTypes = this._crdtManager.doc.getSharedTypes();
+        const sharedTypes = this._crdtManager.doc.get();
 
         const storageRoot = Object.entries(sharedTypes).reduce(
             (acc, [prop, sharedType]) => {
-                const serialized = sharedType.toJSON();
+                const serialized = sharedType.toJson();
 
                 this._crdtNotifier.subject(prop).next(serialized);
 
                 return { ...acc, [prop]: serialized };
             },
             {} as {
-                [P in keyof TStorage]: InferYjsSharedTypeJson<TStorage[P]>;
+                [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;
             },
         );
 
@@ -643,7 +637,7 @@ export class PluvRoom<
 
             this._crdtManager.applyUpdate(updates, this);
 
-            const encodedState = this._crdtManager.doc.encodeStateAsUpdate();
+            const encodedState = this._crdtManager.doc.getEncodedState();
 
             await this._storageStore.flatten(encodedState);
         },
@@ -836,7 +830,7 @@ export class PluvRoom<
 
         const update =
             this._state.connection.count > 1
-                ? this._crdtManager.doc.encodeStateAsUpdate() ?? null
+                ? this._crdtManager.doc.getEncodedState() ?? null
                 : null;
 
         this._sendMessage({
@@ -861,22 +855,20 @@ export class PluvRoom<
         const trackedOrigins = this._getTrackedOrigins();
 
         this._crdtManager.initialize({
-            captureTimeout: this._captureTimeout ?? undefined,
             onInitialized: async () => {
                 this._observeCrdt();
             },
             origin: ORIGIN_INITIALIZED,
-            trackedOrigins: trackedOrigins ?? undefined,
             update: data.state,
         });
 
-        const encodedState = this._crdtManager.doc.encodeStateAsUpdate();
+        const encodedState = this._crdtManager.doc.getEncodedState();
 
         await this._storageStore.addUpdate(encodedState);
 
         this._emitSharedTypes();
 
-        const update = this._crdtManager.doc.encodeStateAsUpdate();
+        const update = this._crdtManager.doc.getEncodedState();
 
         this._sendMessage({
             type: "$UPDATE_STORAGE",
@@ -897,22 +889,25 @@ export class PluvRoom<
 
         if (!this._crdtManager) return;
 
-        this._crdtManager.doc.applyUpdate(data.state, ORIGIN_STORAGE_UPDATED);
+        this._crdtManager.doc.applyEncodedState({
+            origin: ORIGIN_STORAGE_UPDATED,
+            update: data.state,
+        });
 
-        const sharedTypes = this._crdtManager.doc.getSharedTypes();
+        const sharedTypes = this._crdtManager.doc.get();
 
         const storageRoot = Object.entries(sharedTypes).reduce(
             (acc, [prop, sharedType]) => {
                 if (!this._crdtManager) return acc;
 
-                const serialized = sharedType.toJSON();
+                const serialized = sharedType.toJson();
 
                 this._crdtNotifier.subject(prop).next(serialized);
 
                 return { ...acc, [prop]: serialized };
             },
             {} as {
-                [P in keyof TStorage]: InferYjsSharedTypeJson<TStorage[P]>;
+                [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;
             },
         );
 
@@ -972,27 +967,24 @@ export class PluvRoom<
 
         if (!this._crdtManager) return;
 
-        const unsubscribe = this._crdtManager.doc.subscribe(
-            (update, _origin) => {
-                const origin = _origin ?? null;
+        const unsubscribe = this._crdtManager.doc.subscribe((event) => {
+            const origin = event.origin ?? null;
 
-                this._addToStorageStore(update);
-                this._emitSharedTypes();
+            this._addToStorageStore(event.update);
+            this._emitSharedTypes();
 
-                if (origin === ORIGIN_INITIALIZED || origin === this) return;
+            if (origin === ORIGIN_INITIALIZED || !origin) return;
+            if (!this._state.webSocket) return;
+            if (!this._state.connection.id) return;
+            if (this._state.webSocket.readyState !== WebSocket.OPEN) return;
 
-                if (!this._state.webSocket) return;
-                if (!this._state.connection.id) return;
-                if (this._state.webSocket.readyState !== WebSocket.OPEN) return;
+            if (origin === ORIGIN_STORAGE_UPDATED) return;
 
-                if (origin === ORIGIN_STORAGE_UPDATED) return;
-
-                this._sendMessage({
-                    type: "$UPDATE_STORAGE",
-                    data: { origin, update },
-                });
-            },
-        );
+            this._sendMessage({
+                type: "$UPDATE_STORAGE",
+                data: { origin, update: event.update },
+            });
+        });
 
         this._subscriptions.observeCrdt = unsubscribe;
     }

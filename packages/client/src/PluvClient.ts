@@ -1,5 +1,5 @@
+import type { AbstractCrdtType } from "@pluv/crdt";
 import type { IOLike, JsonObject } from "@pluv/types";
-import { AbstractType } from "yjs";
 import {
     AuthEndpoint,
     PluvRoom,
@@ -30,10 +30,10 @@ export class PluvClient<TIO extends IOLike = IOLike> {
 
     public createRoom = <
         TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractType<any>> = {},
+        TStorage extends Record<string, AbstractCrdtType<any>> = {},
     >(
         room: string,
-        options: PluvRoomOptions<TIO, TPresence, TStorage> = {},
+        options: PluvRoomOptions<TIO, TPresence, TStorage>,
     ): PluvRoom<TIO, TPresence, TStorage> => {
         const oldRoom = this.getRoom<TPresence, TStorage>(room);
 
@@ -76,7 +76,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
 
     public getRoom = <
         TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractType<any>> = {},
+        TStorage extends Record<string, AbstractCrdtType<any>> = {},
     >(
         room: string,
     ): PluvRoom<TIO, TPresence, TStorage> | null => {

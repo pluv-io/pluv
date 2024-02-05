@@ -1,4 +1,4 @@
-import { y } from "@pluv/react";
+import { yjs } from "@pluv/crdt-yjs";
 import type { FC } from "react";
 import {
     usePluvCanRedo,
@@ -30,12 +30,12 @@ export const NodeRedisStorageRoom: FC<NodeRedisStorageRoomProps> = () => {
                     id="button-add-message"
                     onClick={() => {
                         transact(() => {
-                            sharedType.push([
-                                y.object({
+                            sharedType.push(
+                                yjs.object({
                                     message: `new message ${messages.length}`,
                                     name: "John Doe",
                                 }),
-                            ]);
+                            );
                         });
                     }}
                     type="button"

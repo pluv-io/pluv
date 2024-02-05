@@ -1,5 +1,6 @@
 import { addonIndexedDB } from "@pluv/addon-indexeddb";
-import { createBundle, createClient, y } from "@pluv/react";
+import { yjs } from "@pluv/crdt-yjs";
+import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
 import type { io } from "../server/node";
 
@@ -48,9 +49,9 @@ export const {
             enabled: (room) => room.id === "e2e-node-storage-addon-indexeddb",
         }),
     ],
-    initialStorage: () => ({
-        messages: y.array([
-            y.object({
+    initialStorage: yjs.doc({
+        messages: yjs.array([
+            yjs.object({
                 message: "hello",
                 name: "leedavidcs",
             }),

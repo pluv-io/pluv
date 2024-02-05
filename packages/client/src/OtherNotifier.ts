@@ -1,7 +1,7 @@
 import type { Id, IOLike } from "@pluv/types";
 import type { Subject } from "wonka";
 import { makeSubject, subscribe } from "wonka";
-import { UserInfo } from "./types";
+import type { UserInfo } from "./types";
 
 export type OtherNotifierSubscriptionCallback<TIO extends IOLike> = (
     value: Id<UserInfo<TIO>> | null,

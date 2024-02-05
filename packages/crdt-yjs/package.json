@@ -23,6 +23,7 @@
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
 	"dependencies": {
+		"@pluv/crdt": "workspace:^",
 		"@pluv/types": "workspace:^",
 		"js-base64": "^3.7.6"
 	},

@@ -1,10 +1,9 @@
-import { y } from "@pluv/react";
+import { yjs } from "@pluv/crdt-yjs";
 import type { FC } from "react";
 import {
     usePluvCanRedo,
     usePluvCanUndo,
     usePluvRedo,
-    usePluvRoom,
     usePluvStorage,
     usePluvTransact,
     usePluvUndo,
@@ -31,12 +30,12 @@ export const NodeStorageRoom: FC<NodeStorageRoomProps> = () => {
                     id="button-add-message"
                     onClick={() => {
                         transact((tx) => {
-                            sharedType.push([
-                                y.object({
+                            sharedType.push(
+                                yjs.object({
                                     message: `new message ${messages.length}`,
                                     name: "John Doe",
                                 }),
-                            ]);
+                            );
                         });
                     }}
                     type="button"

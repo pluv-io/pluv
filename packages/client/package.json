@@ -23,19 +23,15 @@
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
 	"dependencies": {
-		"@pluv/crdt-yjs": "workspace:^",
+		"@pluv/crdt": "workspace:^",
 		"@pluv/types": "workspace:^",
 		"wonka": "^6.3.4"
-	},
-	"peerDependencies": {
-		"yjs": "^13.0.0"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^8.56.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.0.1",
-		"typescript": "^5.3.3",
-		"yjs": "^13.6.11"
+		"typescript": "^5.3.3"
 	}
 }

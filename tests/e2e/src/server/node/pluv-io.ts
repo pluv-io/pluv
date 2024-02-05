@@ -1,3 +1,4 @@
+import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
@@ -6,7 +7,6 @@ import { prisma } from "../../prisma";
 const PLUV_AUTH_SECRET = "secret123";
 
 export const io = createIO({
-    debug: true,
     authorize: {
         required: true,
         secret: PLUV_AUTH_SECRET,
@@ -15,6 +15,8 @@ export const io = createIO({
             name: z.string(),
         }),
     },
+    crdt: yjs,
+    debug: true,
     platform: platformNode(),
     onRoomDeleted: async ({ room: name, encodedState: storage }) => {
         if (name !== "e2e-node-storage-saved") return;

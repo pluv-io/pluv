@@ -24,6 +24,7 @@
 	},
 	"dependencies": {
 		"@pluv/client": "workspace:^",
+		"@pluv/crdt": "workspace:^",
 		"@pluv/types": "workspace:^",
 		"@types/react": "^18.2.48",
 		"@types/use-sync-external-store": "^0.0.6",
@@ -31,8 +32,7 @@
 		"use-sync-external-store": "^1.2.0"
 	},
 	"peerDependencies": {
-		"react": "^17.0.0 || ^18.0.0",
-		"yjs": "^13.0.0"
+		"react": "^17.0.0 || ^18.0.0"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
@@ -40,7 +40,6 @@
 		"eslint-config-pluv": "workspace:^",
 		"react": "^18.2.0",
 		"tsup": "^8.0.1",
-		"typescript": "^5.3.3",
-		"yjs": "^13.6.11"
+		"typescript": "^5.3.3"
 	}
 }

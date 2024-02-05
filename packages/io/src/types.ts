@@ -1,4 +1,4 @@
-import { YjsDoc } from "@pluv/crdt-yjs";
+import type { AbstractCrdtDoc } from "@pluv/crdt";
 import type {
     EventRecord,
     Id,
@@ -12,14 +12,6 @@ import {
     InferPlatformRoomContextType,
 } from "./AbstractPlatform";
 import type { AbstractWebSocket } from "./AbstractWebSocket";
-
-export interface Console {
-    debug(...data: any[]): void;
-    error(...data: any[]): void;
-    info(...data: any[]): void;
-    log(...data: any[]): void;
-    warn(...data: any[]): void;
-}
 
 declare global {
     var console: {
@@ -78,7 +70,7 @@ export interface EventResolverContext<
     TContext extends Record<string, any> = {},
 > {
     context: TContext;
-    doc: YjsDoc<any>;
+    doc: AbstractCrdtDoc<any>;
     room: string;
     /**
      * !HACK

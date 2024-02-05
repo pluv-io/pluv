@@ -7,6 +7,7 @@
     "packageManager": "pnpm@8.15.1",
     "scripts": {
         "build": "turbo run build",
+        "build:packages": "turbo run build --filter=./packages/*",
         "changeset": "changeset",
         "clean": "turbo run clean && rm -rf node_modules",
         "commit": "cz",

@@ -1,14 +1,18 @@
-import type { InferYjsSharedTypeJson } from "@pluv/crdt-yjs";
 import type {
+    AbstractCrdtDoc,
+    AbstractCrdtType,
+    InferCrdtStorageJson,
+} from "@pluv/crdt";
+import type {
+    IOLike,
     Id,
     InferIOInput,
     InferIOOutput,
-    IOLike,
     JsonObject,
 } from "@pluv/types";
-import type { AbstractType, Doc } from "yjs";
 import { AbstractRoom } from "./AbstractRoom";
-import { CrdtManager, CrdtManagerOptions } from "./CrdtManager";
+import type { CrdtManagerOptions } from "./CrdtManager";
+import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
 import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import { EventNotifier } from "./EventNotifier";
@@ -19,6 +23,8 @@ import type {
     SubscriptionCallback,
 } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
+import type { UsersManagerConfig } from "./UsersManager";
+import { UsersManager } from "./UsersManager";
 import type {
     InternalSubscriptions,
     UserInfo,
@@ -26,8 +32,6 @@ import type {
     WebSocketState,
 } from "./types";
 import { ConnectionState } from "./types";
-import type { UsersManagerConfig } from "./UsersManager";
-import { UsersManager } from "./UsersManager";
 
 export type MockedRoomEvents<TIO extends IOLike> = Partial<{
     [P in keyof InferIOInput<TIO>]: (
@@ -38,7 +42,7 @@ export type MockedRoomEvents<TIO extends IOLike> = Partial<{
 export type MockedRoomConfig<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any>> = {},
 > = { events?: MockedRoomEvents<TIO> } & Omit<
     CrdtManagerOptions<TStorage>,
     "encodedState"
@@ -48,7 +52,7 @@ export type MockedRoomConfig<
 export class MockedRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any>> = {},
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     private _crdtManager: CrdtManager<TStorage>;
     private _crdtNotifier = new CrdtNotifier<TStorage>();
@@ -139,8 +143,8 @@ export class MockedRoom<
         );
     }
 
-    public getDoc(): Doc {
-        return this._crdtManager.doc.value;
+    public getDoc(): AbstractCrdtDoc<TStorage> {
+        return this._crdtManager.doc;
     }
 
     public getMyPresence = (): TPresence => {
@@ -186,14 +190,14 @@ export class MockedRoom<
 
     public storage = <TKey extends keyof TStorage>(
         key: TKey,
-        fn: (value: InferYjsSharedTypeJson<TStorage[TKey]>) => void,
+        fn: (value: InferCrdtStorageJson<TStorage[TKey]>) => void,
     ): (() => void) => {
         return this._crdtNotifier.subscribe(key, fn);
     };
 
     public storageRoot = (
         fn: (value: {
-            [P in keyof TStorage]: InferYjsSharedTypeJson<TStorage[P]>;
+            [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;
         }) => void,
     ): (() => void) => {
         return this._crdtNotifier.subcribeRoot(fn);
@@ -226,7 +230,9 @@ export class MockedRoom<
         if (!crdtManager) return;
 
         crdtManager.doc.transact(() => {
-            fn(crdtManager.doc.storage);
+            const storage = crdtManager.doc.get();
+
+            fn(storage);
         }, _origin);
     };
 
@@ -249,35 +255,31 @@ export class MockedRoom<
 
         if (!this._crdtManager) return;
 
-        const unsubscribe = this._crdtManager.doc.subscribe(
-            (update, _origin) => {
-                const origin = _origin ?? null;
+        const unsubscribe = this._crdtManager.doc.subscribe((event) => {
+            const origin = event.origin ?? null;
 
-                if (!this._crdtManager) return;
-                if (origin === "$STORAGE_UPDATED") return;
+            if (!this._crdtManager) return;
+            if (origin === "$STORAGE_UPDATED") return;
 
-                const sharedTypes = this._crdtManager.doc.getSharedTypes();
+            const sharedTypes = this._crdtManager.doc.get();
 
-                const storageRoot = Object.entries(sharedTypes).reduce(
-                    (acc, [prop, sharedType]) => {
-                        if (!this._crdtManager) return acc;
+            const storageRoot = Object.entries(sharedTypes).reduce(
+                (acc, [prop, sharedType]) => {
+                    if (!this._crdtManager) return acc;
 
-                        const serialized = sharedType.toJSON();
+                    const serialized = sharedType.toJson();
 
-                        this._crdtNotifier.subject(prop).next(serialized);
+                    this._crdtNotifier.subject(prop).next(serialized);
 
-                        return { ...acc, [prop]: serialized };
-                    },
-                    {} as {
-                        [P in keyof TStorage]: InferYjsSharedTypeJson<
-                            TStorage[P]
-                        >;
-                    },
-                );
+                    return { ...acc, [prop]: serialized };
+                },
+                {} as {
+                    [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;
+                },
+            );
 
-                this._crdtNotifier.rootSubject.next(storageRoot);
-            },
-        );
+            this._crdtNotifier.rootSubject.next(storageRoot);
+        });
 
         this._subscriptions.observeCrdt = unsubscribe;
     }

@@ -1,3 +1,4 @@
+import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { PersistanceRedis } from "@pluv/persistance-redis";
 import { platformNode } from "@pluv/platform-node";
@@ -8,7 +9,6 @@ import { cluster } from "../cluster";
 const PLUV_AUTH_SECRET = "secret123";
 
 export const io = createIO({
-    debug: true,
     authorize: {
         required: true,
         secret: PLUV_AUTH_SECRET,
@@ -17,6 +17,8 @@ export const io = createIO({
             name: z.string(),
         }),
     },
+    crdt: yjs,
+    debug: true,
     platform: platformNode({
         persistance: new PersistanceRedis({ client: cluster }),
         pubSub: new PubSubRedis({

@@ -1,47 +1,42 @@
-import type { TrackOriginOptions, YjsDoc } from "@pluv/crdt-yjs";
-import { doc } from "@pluv/crdt-yjs";
-import type { AbstractType } from "yjs";
+import type { AbstractCrdtDoc, AbstractCrdtType } from "@pluv/crdt";
 
 export type CrdtManagerOptions<
-    TStorage extends Record<string, AbstractType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any>> = {},
 > = {
     encodedState?: string | Uint8Array | null;
-    initialStorage?: () => TStorage;
-} & TrackOriginOptions;
+    initialStorage: AbstractCrdtDoc<TStorage>;
+};
 
 type CrdtManagerInitializeParams = {
     onInitialized?: () => void;
     origin?: any;
     update: string | readonly string[];
-} & TrackOriginOptions;
+};
 
-export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
-    public doc: YjsDoc<TStorage>;
+export class CrdtManager<
+    TStorage extends Record<string, AbstractCrdtType<any>>,
+> {
+    public doc: AbstractCrdtDoc<TStorage>;
     public initialized: boolean = false;
 
-    constructor(options: CrdtManagerOptions<TStorage> = {}) {
-        const {
-            captureTimeout,
-            encodedState,
-            initialStorage,
-            trackedOrigins = [],
-        } = options;
+    constructor(options: CrdtManagerOptions<TStorage>) {
+        const { encodedState, initialStorage } = options;
 
         const _doc = encodedState
-            ? doc<TStorage>().applyUpdate(encodedState)
+            ? initialStorage.fresh().applyEncodedState({ update: encodedState })
             : null;
 
-        if (_doc && !!Object.keys(_doc.toJSON()).length) {
+        if (_doc && !!Object.keys(_doc.toJson()).length) {
             this.doc = _doc;
-            this.trackOrigins({ captureTimeout, trackedOrigins });
+            this.track();
 
             return;
         }
 
         _doc?.destroy();
 
-        this.doc = doc<TStorage>(initialStorage?.());
-        this.trackOrigins({ captureTimeout, trackedOrigins });
+        this.doc = initialStorage;
+        this.track();
     }
 
     /**
@@ -70,17 +65,11 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
     }
 
     public initialize(params: CrdtManagerInitializeParams): this {
-        const {
-            captureTimeout,
-            onInitialized,
-            origin,
-            trackedOrigins,
-            update,
-        } = params;
+        const { onInitialized, origin, update } = params;
 
         const updates = typeof update === "string" ? [update] : update;
 
-        this.trackOrigins({ captureTimeout, trackedOrigins });
+        this.track();
 
         if (!updates.length) return this;
 
@@ -90,11 +79,11 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
             return this;
         }
 
-        const _doc = this._applyDocUpdates(doc<TStorage>(), updates, origin);
+        const _doc = this._applyDocUpdates(this.doc.fresh(), updates, origin);
 
         this.initialized = true;
 
-        if (!!Object.keys(_doc.toJSON()).length) {
+        if (!!Object.keys(_doc.toJson()).length) {
             this.doc = _doc;
         } else {
             _doc.destroy();
@@ -102,26 +91,26 @@ export class CrdtManager<TStorage extends Record<string, AbstractType<any>>> {
 
         onInitialized?.();
 
-        this.trackOrigins({ captureTimeout, trackedOrigins });
+        this.track();
 
         return this;
     }
 
-    public trackOrigins(options: TrackOriginOptions): void {
-        const { captureTimeout, trackedOrigins } = options;
-
-        this.doc.trackOrigins({ captureTimeout, trackedOrigins });
+    public track(): void {
+        this.doc.track();
     }
 
     private _applyDocUpdates(
-        yjsDoc: YjsDoc<TStorage>,
+        doc: AbstractCrdtDoc<TStorage>,
         updates: readonly string[],
         origin?: string,
-    ): YjsDoc<TStorage> {
-        yjsDoc.transact(() => {
-            updates.reduce((acc, _update) => acc.applyUpdate(_update), yjsDoc);
+    ): AbstractCrdtDoc<TStorage> {
+        doc.transact(() => {
+            doc.batchApplyEncodedState(
+                updates.map((update) => ({ origin, update })),
+            );
         }, origin);
 
-        return yjsDoc;
+        return doc;
     }
 }

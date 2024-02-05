@@ -1,11 +1,12 @@
-import type { AbstractType, PluvRoom, PluvRoomAddon } from "@pluv/client";
+import type { PluvRoom, PluvRoomAddon } from "@pluv/client";
+import type { AbstractCrdtType } from "@pluv/crdt";
 import type { IOLike, JsonObject } from "@pluv/types";
 import { IndexedDBStorage } from "./IndexedDBStorage";
 
 export interface AddonIndexedDBConfig<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any>> = {},
 > {
     enabled?: boolean | ((room: PluvRoom<TIO, TPresence, TStorage>) => boolean);
 }
@@ -13,7 +14,7 @@ export interface AddonIndexedDBConfig<
 export const addonIndexedDB = <
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any>> = {},
 >(
     config?: AddonIndexedDBConfig<TIO, TPresence, TStorage>,
 ): PluvRoomAddon<TIO, TPresence, TStorage> => {

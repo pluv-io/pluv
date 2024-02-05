@@ -13,7 +13,7 @@ export const ChatRoom: FC<Record<string, never>> = () => {
         (message: string) => {
             broadcast("SEND_MESSAGE", { message });
         },
-        [broadcast]
+        [broadcast],
     );
 
     return <div>{/* ... */}</div>;

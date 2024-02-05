@@ -1,4 +1,4 @@
-import { JsonObject } from "@pluv/types";
+import type { JsonObject } from "@pluv/types";
 
 export abstract class AbstractPersistance {
     public abstract addUser(

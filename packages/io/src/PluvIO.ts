@@ -1,3 +1,4 @@
+import type { AbstractCrdtDoc } from "@pluv/crdt";
 import type {
     BaseIOAuthorize,
     EventRecord,
@@ -19,7 +20,8 @@ import type {
     AbstractPlatform,
     InferPlatformRoomContextType,
 } from "./AbstractPlatform";
-import { IORoom, IORoomListenerEvent } from "./IORoom";
+import type { IORoomListenerEvent } from "./IORoom";
+import { IORoom } from "./IORoom";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
 import type { EventConfig, InferEventConfig } from "./types";
@@ -79,6 +81,7 @@ export type PluvIOConfig<
 > = Partial<PluvIOListeners<TPlatform>> & {
     authorize?: TAuthorize;
     context?: TContext;
+    crdt: { doc: (value: any) => AbstractCrdtDoc<any> };
     debug?: boolean;
     events?: InferEventConfig<
         TPlatform,
@@ -122,6 +125,7 @@ export class PluvIO<
 
     readonly _authorize: TAuthorize | null = null;
     readonly _context: TContext = {} as TContext;
+    readonly _crdt: { doc: (value: any) => AbstractCrdtDoc<any> };
     readonly _debug: boolean;
     readonly _events: InferEventConfig<
         TPlatform,
@@ -189,9 +193,9 @@ export class PluvIO<
                     ];
 
                     if (updates.some((_update) => !!_update)) {
-                        const encodedState = updates
-                            .reduce((_doc, _up) => _doc.applyUpdate(_up), doc)
-                            .encodeStateAsUpdate();
+                        const encodedState = doc
+                            .batchApplyEncodedState(updates)
+                            .getEncodedState();
 
                         await this._platform.persistance.setStorageState(
                             room,
@@ -208,7 +212,7 @@ export class PluvIO<
                     const state =
                         (await this._platform.persistance.getStorageState(
                             room,
-                        )) ?? doc.encodeStateAsUpdate();
+                        )) ?? doc.getEncodedState();
 
                     return { $STORAGE_RECEIVED: { state } };
                 },
@@ -244,13 +248,13 @@ export class PluvIO<
             resolver: ({ origin, update }, { context, doc, room }) => {
                 if (
                     origin === "$INITIALIZED" &&
-                    Object.keys(doc.toJSON()).length
+                    Object.keys(doc.toJson()).length
                 ) {
                     return;
                 }
 
-                const updated = doc.applyUpdate(update);
-                const encodedState = updated.encodeStateAsUpdate();
+                const updated = doc.applyEncodedState({ update });
+                const encodedState = updated.getEncodedState();
 
                 this._platform.persistance
                     .setStorageState(room, encodedState)
@@ -291,6 +295,7 @@ export class PluvIO<
         const {
             authorize,
             context,
+            crdt,
             debug = false,
             events,
             getInitialStorage,
@@ -299,6 +304,7 @@ export class PluvIO<
             platform,
         } = options;
 
+        this._crdt = crdt;
         this._debug = debug;
         this._platform = platform;
 
@@ -386,6 +392,7 @@ export class PluvIO<
         return PluvIO.merge(
             this as any,
             new PluvIO({
+                crdt: this._crdt,
                 events: newEvent as any,
                 platform: this._platform,
             }),
@@ -433,6 +440,7 @@ export class PluvIO<
         >(room, {
             authorize: this._authorize ?? undefined,
             context: roomContext,
+            crdt: this._crdt,
             debug: debug ?? this._debug,
             events: this._events,
             onDestroy: ({ encodedState, room }) => {
@@ -493,6 +501,7 @@ export class PluvIO<
         const authorize = (first._authorize ??
             undefined) as InferIOAuthorize<TIO1>;
         const context = first._context as InferIOContext<TIO1>;
+        const crdt = first._crdt;
         const debug = first._debug;
         const platform = first._platform as InferIOPlatform<TIO1>;
 
@@ -511,6 +520,7 @@ export class PluvIO<
         return new PluvIO({
             authorize,
             context,
+            crdt,
             debug,
             events,
             getInitialStorage,

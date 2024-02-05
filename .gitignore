@@ -42,7 +42,7 @@ dist-ssr
 tsconfig.tsbuildinfo
 .cache
 .rollup.cache
-**/.wrangler/state/**
+**/.wrangler/**
 
 **/public/tailwind.css
 **/generated/**
