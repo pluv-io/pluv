@@ -2,7 +2,7 @@ import type { AbstractCrdtType, InferCrdtStorageJson } from "@pluv/crdt";
 import { makeSubject, Subject, subscribe } from "wonka";
 
 export class CrdtNotifier<
-    TStorage extends Record<string, AbstractCrdtType<any>>,
+    TStorage extends Record<string, AbstractCrdtType<any, any>>,
 > {
     public rootSubject = makeSubject<{
         [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;

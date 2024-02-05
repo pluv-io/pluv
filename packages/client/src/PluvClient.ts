@@ -30,7 +30,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
 
     public createRoom = <
         TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractCrdtType<any>> = {},
+        TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
     >(
         room: string,
         options: PluvRoomOptions<TIO, TPresence, TStorage>,
@@ -76,7 +76,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
 
     public getRoom = <
         TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractCrdtType<any>> = {},
+        TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
     >(
         room: string,
     ): PluvRoom<TIO, TPresence, TStorage> | null => {

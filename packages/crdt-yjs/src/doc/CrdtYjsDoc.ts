@@ -28,7 +28,7 @@ import { CrdtYjsXmlFragment } from "../xmlFragment/CrdtYjsXmlFragment";
 import { CrdtYjsXmlText } from "../xmlText/CrdtYjsXmlText";
 
 export class CrdtYjsDoc<
-    TStorage extends Record<string, AbstractCrdtType<any>>,
+    TStorage extends Record<string, AbstractCrdtType<any, any>>,
 > extends AbstractCrdtDoc<TStorage> {
     public value: YDoc = new YDoc();
 
@@ -39,11 +39,9 @@ export class CrdtYjsDoc<
         super();
 
         this._storage = Object.entries(value).reduce((acc, [key, node]) => {
-            console.log("node", node);
-
             if (node instanceof CrdtYjsArray) {
                 const yArray = this.value.get(key, YArray) as YArray<any>;
-                yArray.insert(0, node.value.slice(0));
+                yArray.insert(0, node.initialValue.slice(0));
 
                 node.value = yArray;
 
@@ -52,8 +50,8 @@ export class CrdtYjsDoc<
 
             if (node instanceof CrdtYjsMap || node instanceof CrdtYjsObject) {
                 const yMap = this.value.get(key, YMap) as YMap<any>;
-                Array.from(node.value.entries()).forEach(([k, v]) => {
-                    yMap.set(k, v);
+                Array.from(node.initialValue.entries()).forEach(([k, v]) => {
+                    yMap.set(k.toString(), v);
                 });
 
                 node.value = yMap;
@@ -63,7 +61,7 @@ export class CrdtYjsDoc<
 
             if (node instanceof CrdtYjsText) {
                 const yText = this.value.get(key, YText) as YText;
-                yText.insert(0, node.value.toJSON());
+                yText.insert(0, node.initialValue);
 
                 node.value = yText;
 
@@ -75,7 +73,7 @@ export class CrdtYjsDoc<
                     key,
                     YXmlElement,
                 ) as YXmlElement;
-                yXmlElement.insert(0, node.value.slice(0));
+                yXmlElement.insert(0, node.initialValue.slice(0));
 
                 node.value = yXmlElement;
 
@@ -87,7 +85,7 @@ export class CrdtYjsDoc<
                     key,
                     YXmlFragment,
                 ) as YXmlFragment;
-                yXmlFragment.insert(0, node.value.slice(0));
+                yXmlFragment.insert(0, node.initialValue.slice(0));
 
                 node.value = yXmlFragment;
 
@@ -96,7 +94,7 @@ export class CrdtYjsDoc<
 
             if (node instanceof CrdtYjsXmlText) {
                 const yXmlText = this.value.get(key, YXmlText) as YXmlText;
-                yXmlText.insert(0, node.value.toJSON());
+                yXmlText.insert(0, node.initialValue);
 
                 node.value = yXmlText;
 
@@ -105,8 +103,6 @@ export class CrdtYjsDoc<
 
             return acc;
         }, {} as TStorage);
-
-        console.log("storage", this._storage);
     }
 
     public applyEncodedState(params: DocApplyEncodedStateParams): this {

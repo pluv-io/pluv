@@ -7,7 +7,7 @@ export interface DocApplyEncodedStateParams {
 }
 
 export interface DocSubscribeCallbackParams<
-    T extends Record<string, AbstractCrdtType<any>>,
+    T extends Record<string, AbstractCrdtType<any, any>>,
 > {
     doc: AbstractCrdtDoc<T>;
     local: boolean;
@@ -16,7 +16,7 @@ export interface DocSubscribeCallbackParams<
 }
 
 export abstract class AbstractCrdtDoc<
-    T extends Record<string, AbstractCrdtType<any>>,
+    T extends Record<string, AbstractCrdtType<any, any>>,
 > {
     public abstract applyEncodedState(params: DocApplyEncodedStateParams): this;
     public abstract batchApplyEncodedState(

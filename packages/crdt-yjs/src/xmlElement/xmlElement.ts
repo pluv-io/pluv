@@ -1,9 +1,9 @@
-import type { CrdtYjsXmlElementParams } from "./CrdtYjsXmlElement";
+import type { CrdtYjsXmlText } from "../xmlText";
 import { CrdtYjsXmlElement } from "./CrdtYjsXmlElement";
 
 export const xmlElement = (
     name: string,
-    params: CrdtYjsXmlElementParams,
+    children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[],
 ): CrdtYjsXmlElement => {
-    return new CrdtYjsXmlElement(name, params);
+    return new CrdtYjsXmlElement(name, children);
 };

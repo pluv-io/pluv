@@ -1,10 +1,9 @@
-import {
-    CrdtYjsXmlFragment,
-    CrdtYjsXmlFragmentParams,
-} from "./CrdtYjsXmlFragment";
+import type { CrdtYjsXmlElement } from "../xmlElement";
+import type { CrdtYjsXmlText } from "../xmlText";
+import { CrdtYjsXmlFragment } from "./CrdtYjsXmlFragment";
 
 export const xmlFragment = (
-    params: CrdtYjsXmlFragmentParams,
+    children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[],
 ): CrdtYjsXmlFragment => {
-    return new CrdtYjsXmlFragment(params);
+    return new CrdtYjsXmlFragment(children);
 };

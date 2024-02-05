@@ -1,5 +1,10 @@
 import { InferCrdtStorageJson } from "./types";
 
-export abstract class AbstractCrdtType<T extends unknown> {
-    public abstract toJson(): InferCrdtStorageJson<T>;
+export abstract class AbstractCrdtType<
+    TValue extends unknown,
+    TJson extends unknown,
+> {
+    public abstract value: TValue;
+
+    public abstract toJson(): InferCrdtStorageJson<TJson>;
 }

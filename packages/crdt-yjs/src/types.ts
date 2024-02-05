@@ -33,3 +33,32 @@ export type InferYjsType<T extends unknown> =
                     : T extends Json
                       ? T
                       : never;
+
+export type InferYjsJson<T extends unknown> =
+    T extends CrdtYjsArray<infer IType>
+        ? InferYjsJson<IType>[]
+        : T extends CrdtYjsMap<infer IType>
+          ? Record<string, InferYjsJson<IType>>
+          : T extends CrdtYjsObject<infer IType>
+            ? { [P in keyof IType]: InferYjsJson<IType[P]> }
+            : T extends
+                    | CrdtYjsText
+                    | CrdtYjsXmlElement
+                    | CrdtYjsXmlFragment
+                    | CrdtYjsXmlText
+                    | YText
+                    | YXmlElement
+                    | YXmlFragment
+                    | YXmlText
+              ? string
+              : T extends YArray<infer IType>
+                ? InferYjsJson<IType>[]
+                : T extends YMap<infer IType>
+                  ? Record<string, InferYjsJson<IType>>
+                  : T extends (infer IType)[]
+                    ? InferYjsJson<IType>[]
+                    : T extends Record<any, any>
+                      ? { [P in keyof T]: InferYjsJson<T[P]> }
+                      : T extends Json
+                        ? T
+                        : never;

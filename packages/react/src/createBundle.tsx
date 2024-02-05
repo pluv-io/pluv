@@ -17,7 +17,7 @@ export interface CreateBundle<TIO extends IOLike> {
     // factories
     createRoomBundle: <
         TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractCrdtType<any>> = {},
+        TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
     >(
         options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
     ) => CreateRoomBundle<TIO, TPresence, TStorage>;
@@ -57,7 +57,7 @@ export const createBundle = <TIO extends IOLike>(
 
     const createRoomBundle = <
         TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractCrdtType<any>> = {},
+        TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
     >(
         options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
     ): CreateRoomBundle<TIO, TPresence, TStorage> =>

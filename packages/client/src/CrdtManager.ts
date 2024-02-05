@@ -1,7 +1,7 @@
 import type { AbstractCrdtDoc, AbstractCrdtType } from "@pluv/crdt";
 
 export type CrdtManagerOptions<
-    TStorage extends Record<string, AbstractCrdtType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > = {
     encodedState?: string | Uint8Array | null;
     initialStorage: AbstractCrdtDoc<TStorage>;
@@ -14,7 +14,7 @@ type CrdtManagerInitializeParams = {
 };
 
 export class CrdtManager<
-    TStorage extends Record<string, AbstractCrdtType<any>>,
+    TStorage extends Record<string, AbstractCrdtType<any, any>>,
 > {
     public doc: AbstractCrdtDoc<TStorage>;
     public initialized: boolean = false;

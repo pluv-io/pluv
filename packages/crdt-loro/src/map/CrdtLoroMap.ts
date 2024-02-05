@@ -1,50 +1,34 @@
 import type { InferCrdtStorageJson } from "@pluv/crdt";
-import { AbstractCrdtObject } from "@pluv/crdt";
-import { LoroMap, getType, isContainer } from "loro-crdt";
-import { cloneType, isWrapper } from "../shared";
+import { AbstractCrdtType } from "@pluv/crdt";
+import { LoroMap } from "loro-crdt";
+import { isWrapper } from "../shared";
+import type { InferLoroJson, InferLoroType } from "../types";
 
-export class CrdtLoroMap<T extends unknown> extends AbstractCrdtObject<
-    Record<string, T>
+export class CrdtLoroMap<T extends unknown> extends AbstractCrdtType<
+    LoroMap<Record<string, T>>,
+    Record<string, InferLoroJson<T>>
 > {
+    public readonly initialValue: readonly (readonly [
+        key: string,
+        value: InferLoroType<T>,
+    ])[];
     public value: LoroMap<Record<string, T>>;
 
     constructor(value: readonly (readonly [key: string, value: T])[] = []) {
         super();
 
+        this.initialValue = value.map(([k, v]) => [
+            k,
+            isWrapper(v) ? v.value : v,
+        ]) as readonly (readonly [key: string, value: InferLoroType<T>])[];
         this.value = new LoroMap();
-        value.forEach(([key, item]) => {
-            this.set(key, item);
+
+        this.initialValue.forEach(([k, v]) => {
+            this.value.set(k, v);
         });
     }
 
-    public get size(): number {
-        return this.value.size;
-    }
-
-    public get(prop: string): T | undefined {
-        const result = this.value.get(prop) as T;
-
-        return result;
-    }
-
-    public set(prop: string, item: T): this {
-        const source = isWrapper(item) ? item.value : item;
-
-        if (isContainer(source)) {
-            const containerType = getType(source);
-            const target = this.value.setContainer(prop, containerType);
-
-            cloneType({ source, target });
-
-            return this;
-        }
-
-        this.value.set(prop, item);
-
-        return this;
-    }
-
-    public toJson(): Record<string, InferCrdtStorageJson<T>> {
+    public toJson(): InferCrdtStorageJson<Record<string, InferLoroJson<T>>> {
         return this.value.toJson();
     }
 }

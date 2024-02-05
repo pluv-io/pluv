@@ -42,7 +42,7 @@ export type MockedRoomEvents<TIO extends IOLike> = Partial<{
 export type MockedRoomConfig<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > = { events?: MockedRoomEvents<TIO> } & Omit<
     CrdtManagerOptions<TStorage>,
     "encodedState"
@@ -52,7 +52,7 @@ export type MockedRoomConfig<
 export class MockedRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     private _crdtManager: CrdtManager<TStorage>;
     private _crdtNotifier = new CrdtNotifier<TStorage>();
@@ -174,7 +174,7 @@ export class MockedRoom<
             throw new Error(`Could not find storege: ${key.toString()}`);
         }
 
-        return sharedType;
+        return sharedType.value;
     };
 
     public other = (

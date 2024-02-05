@@ -1,22 +1,19 @@
 import { AbstractCrdtType } from "@pluv/crdt";
+import type { XmlElement as YXmlElement, XmlText as YXmlText } from "yjs";
 import { XmlFragment as YXmlFragment } from "yjs";
 import type { CrdtYjsXmlElement } from "../xmlElement/CrdtYjsXmlElement";
 import type { CrdtYjsXmlText } from "../xmlText/CrdtYjsXmlText";
 
-export interface CrdtYjsXmlFragmentParams {
-    children?: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[];
-}
-
-export class CrdtYjsXmlFragment extends AbstractCrdtType<string> {
+export class CrdtYjsXmlFragment extends AbstractCrdtType<YXmlFragment, string> {
+    public readonly initialValue: readonly (YXmlElement | YXmlText)[];
     public value: YXmlFragment;
 
-    constructor(params: CrdtYjsXmlFragmentParams) {
-        const { children = [] } = params;
-
+    constructor(children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]) {
         super();
 
+        this.initialValue = children.map((item) => item.value);
         this.value = new YXmlFragment();
-        this.value.push(children.map((item) => item.value));
+        this.value.push(this.initialValue.slice());
     }
 
     public toJson(): string {

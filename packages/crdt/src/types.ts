@@ -1,8 +1,8 @@
 import type { Json } from "@pluv/types";
-import { AbstractCrdtType } from "./AbstractCrdtType";
+import type { AbstractCrdtType } from "./AbstractCrdtType";
 
 export type InferCrdtStorageJson<T extends unknown> =
-    T extends AbstractCrdtType<infer ICrdtJson>
+    T extends AbstractCrdtType<any, infer ICrdtJson>
         ? InferCrdtStorageJson<ICrdtJson>
         : T extends Record<string, any>
           ? { [P in keyof T]: InferCrdtStorageJson<T[P]> }
@@ -12,4 +12,4 @@ export type InferCrdtStorageJson<T extends unknown> =
               ? InferCrdtStorageJson<IReadonlyArrayCrdtItem>
               : T extends Json
                 ? T
-                : never;
+                : string;

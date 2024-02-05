@@ -43,7 +43,7 @@ import {
 export type CreateRoomBundleOptions<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > = {
     addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
     initialStorage: AbstractCrdtDoc<TStorage>;
@@ -52,7 +52,7 @@ export type CreateRoomBundleOptions<
 
 type BaseRoomProviderProps<
     TPresence extends JsonObject,
-    TStorage extends Record<string, AbstractCrdtType<any>>,
+    TStorage extends Record<string, AbstractCrdtType<any, any>>,
 > = {
     children?: ReactNode;
     initialStorage?: keyof TStorage extends never
@@ -66,7 +66,7 @@ type BaseRoomProviderProps<
 export type MockedRoomProviderProps<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TStorage extends Record<string, AbstractCrdtType<any>>,
+    TStorage extends Record<string, AbstractCrdtType<any, any>>,
 > = BaseRoomProviderProps<TPresence, TStorage> & {
     events?: MockedRoomEvents<TIO>;
 };
@@ -74,7 +74,7 @@ export type MockedRoomProviderProps<
 export type PluvRoomProviderProps<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TStorage extends Record<string, AbstractCrdtType<any>>,
+    TStorage extends Record<string, AbstractCrdtType<any, any>>,
 > = BaseRoomProviderProps<TPresence, TStorage> & {
     debug?: boolean | PluvRoomDebug<TIO>;
     onAuthorizationFail?: (error: Error) => void;
@@ -91,7 +91,7 @@ export type UpdateMyPresenceAction<TPresence extends JsonObject> =
 export interface CreateRoomBundle<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TStorage extends Record<string, AbstractCrdtType<any>>,
+    TStorage extends Record<string, AbstractCrdtType<any, any>>,
 > {
     // components
     MockedRoomProvider: FC<MockedRoomProviderProps<TIO, TPresence, TStorage>>;
@@ -142,7 +142,7 @@ export interface CreateRoomBundle<
         key: TKey,
         selector?: (data: InferCrdtStorageJson<TStorage[TKey]>) => TData,
         options?: SubscriptionHookOptions<TData>,
-    ) => [data: TData, sharedType: TStorage[TKey]];
+    ) => [data: TData, sharedType: TStorage[TKey]["value"]];
     usePluvTransact: () => (
         fn: (storage: TStorage) => void,
         origin?: string,
@@ -153,7 +153,7 @@ export interface CreateRoomBundle<
 export const createRoomBundle = <
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 >(
     client: PluvClient<TIO>,
     options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
@@ -522,7 +522,7 @@ export const createRoomBundle = <
             data: InferCrdtStorageJson<TStorage[TKey]>,
         ) => TData,
         options?: SubscriptionHookOptions<TData>,
-    ): [data: TData, sharedType: TStorage[TKey]] => {
+    ): [data: TData, sharedType: TStorage[TKey]["value"]] => {
         const room = usePluvRoom();
 
         const subscribe = useCallback(

@@ -1,38 +1,31 @@
-import type { InferCrdtStorageJson } from "@pluv/crdt";
-import { AbstractCrdtObject } from "@pluv/crdt";
+import { AbstractCrdtType, type InferCrdtStorageJson } from "@pluv/crdt";
 import { Map as YMap } from "yjs";
-import { isWrapper } from "../shared";
+import { toYjsValue } from "../shared";
+import type { InferYjsJson, InferYjsType } from "../types";
 
 export class CrdtYjsObject<
     T extends Record<string, any>,
-> extends AbstractCrdtObject<T> {
-    public value: YMap<T[keyof T]>;
+> extends AbstractCrdtType<YMap<InferYjsType<T[keyof T]>>, InferYjsJson<T>> {
+    public initialValue: readonly (readonly [
+        key: string,
+        value: InferYjsType<T[keyof T]>,
+    ])[];
+    public value: YMap<InferYjsType<T[keyof T]>>;
 
     constructor(value: T = {} as T) {
         super();
 
-        this.value = new YMap(Object.entries(value));
+        this.initialValue = Object.entries(value).map(
+            ([k, v]) =>
+                [k, toYjsValue(v)] as readonly [
+                    key: string,
+                    value: InferYjsType<T[keyof T]>,
+                ],
+        );
+        this.value = new YMap(this.initialValue);
     }
 
-    public get size(): number {
-        return this.value.size;
-    }
-
-    public get<P extends keyof T>(prop: P): T[P] | undefined {
-        const result = this.value.get(prop.toString());
-
-        return result;
-    }
-
-    public set<P extends keyof T>(prop: P, value: T[P]): this {
-        const toSet = isWrapper(value) ? (value as any).value : value;
-
-        this.value.set(prop.toString(), toSet);
-
-        return this;
-    }
-
-    public toJson(): InferCrdtStorageJson<T> {
-        return this.value.toJSON() as InferCrdtStorageJson<T>;
+    public toJson(): InferCrdtStorageJson<InferYjsJson<T>> {
+        return this.value.toJSON() as InferCrdtStorageJson<InferYjsJson<T>>;
     }
 }

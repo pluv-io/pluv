@@ -21,7 +21,7 @@ import type { UserInfo, WebSocketConnection } from "./types";
 export abstract class AbstractRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > {
     public readonly id: string;
 

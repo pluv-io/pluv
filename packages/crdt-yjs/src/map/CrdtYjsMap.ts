@@ -1,22 +1,23 @@
-import type { InferCrdtStorageJson } from "@pluv/crdt";
-import { AbstractCrdtObject } from "@pluv/crdt";
+import { AbstractCrdtType, type InferCrdtStorageJson } from "@pluv/crdt";
 import { Map as YMap } from "yjs";
 import { toYjsValue } from "../shared";
+import type { InferYjsJson, InferYjsType } from "../types";
 
-export class CrdtYjsMap<T extends unknown> extends AbstractCrdtObject<
-    Record<string, T>
+export class CrdtYjsMap<T extends unknown> extends AbstractCrdtType<
+    YMap<T>,
+    Record<string, InferYjsJson<T>>
 > {
-    public initialValue: readonly (readonly [key: string, value: T])[];
+    public initialValue: readonly (readonly [
+        key: string,
+        value: InferYjsType<T>,
+    ])[];
     public value: YMap<T>;
 
     constructor(value: readonly (readonly [key: string, value: T])[] = []) {
         super();
 
-        this.initialValue = value.map(
-            ([k, v]) => [k, toYjsValue(v)] as [key: string, value: T],
-        );
-
-        this.value = new YMap(value);
+        this.initialValue = value.map(([k, v]) => [k, toYjsValue(v)]);
+        this.value = new YMap(this.initialValue);
     }
 
     public get size(): number {
@@ -35,7 +36,7 @@ export class CrdtYjsMap<T extends unknown> extends AbstractCrdtObject<
         return this;
     }
 
-    public toJson(): Record<string, InferCrdtStorageJson<T>> {
+    public toJson(): InferCrdtStorageJson<Record<string, InferYjsJson<T>>> {
         return this.value.toJSON();
     }
 }

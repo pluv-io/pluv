@@ -14,7 +14,7 @@ import { cloneType } from "../shared";
 import { CrdtLoroText } from "../text/CrdtLoroText";
 
 export class CrdtLoroDoc<
-    TStorage extends Record<string, AbstractCrdtType<any>>,
+    TStorage extends Record<string, AbstractCrdtType<any, any>>,
 > extends AbstractCrdtDoc<TStorage> {
     public value: Loro = new Loro();
 

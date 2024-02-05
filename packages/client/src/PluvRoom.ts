@@ -53,7 +53,7 @@ const ORIGIN_STORAGE_UPDATED = "$STORAGE_UPDATED";
 export const DEFAULT_PLUV_CLIENT_ADDON = <
     TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 >(
     input: PluvRoomAddonInput<TIO, TPresence, TStorage>,
 ): PluvRoomAddonResult => ({
@@ -110,7 +110,7 @@ interface InternalListeners {
 export type PluvRoomAddon<
     TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > = (
     input: PluvRoomAddonInput<TIO, TPresence, TStorage>,
 ) => Partial<PluvRoomAddonResult>;
@@ -118,7 +118,7 @@ export type PluvRoomAddon<
 export interface PluvRoomAddonInput<
     TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > {
     room: PluvRoom<TIO, TPresence, TStorage>;
 }
@@ -135,7 +135,7 @@ export type PluvRoomDebug<TIO extends IOLike> = Id<{
 export type PluvRoomOptions<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > = {
     addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
     debug?: boolean | PluvRoomDebug<TIO>;
@@ -146,13 +146,13 @@ export type PluvRoomOptions<
 export type RoomConfig<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > = RoomEndpoints<TIO> & PluvRoomOptions<TIO, TPresence, TStorage>;
 
 export class PluvRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     readonly _endpoints: RoomEndpoints<TIO>;
 
