@@ -1,5 +1,5 @@
 import { AbstractCrdtType } from "./AbstractCrdtType";
-import { InferCrdtStorageJson } from "./types";
+import type { InferCrdtStorageJson } from "./types";
 
 export interface DocApplyEncodedStateParams {
     origin?: string;
@@ -34,6 +34,7 @@ export abstract class AbstractCrdtDoc<
     public abstract get(key?: undefined): T;
     public abstract get<TKey extends keyof T>(key: TKey): T[TKey];
     public abstract getEncodedState(): string;
+    public abstract isEmpty(): boolean;
     public abstract redo(): this;
     public abstract subscribe(
         listener: (params: DocSubscribeCallbackParams<T>) => void,

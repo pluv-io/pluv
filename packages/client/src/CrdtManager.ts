@@ -19,24 +19,16 @@ export class CrdtManager<
     public doc: AbstractCrdtDoc<TStorage>;
     public initialized: boolean = false;
 
+    private readonly _initialStorage: AbstractCrdtDoc<TStorage>;
+
     constructor(options: CrdtManagerOptions<TStorage>) {
         const { encodedState, initialStorage } = options;
 
-        const _doc = encodedState
+        this._initialStorage = initialStorage;
+
+        this.doc = encodedState
             ? initialStorage.fresh().applyEncodedState({ update: encodedState })
-            : null;
-
-        if (_doc && !!Object.keys(_doc.toJson()).length) {
-            this.doc = _doc;
-            this.track();
-
-            return;
-        }
-
-        _doc?.destroy();
-
-        this.doc = initialStorage;
-        this.track();
+            : initialStorage.fresh();
     }
 
     /**
@@ -69,35 +61,24 @@ export class CrdtManager<
 
         const updates = typeof update === "string" ? [update] : update;
 
-        this.track();
-
         if (!updates.length) return this;
 
-        if (this.initialized) {
-            this._applyDocUpdates(this.doc, updates, origin);
+        this.doc = this._applyDocUpdates(
+            this.initialized ? this.doc : this.doc.fresh(),
+            updates,
+            origin,
+        );
 
-            return this;
+        if (!this.initialized && this.doc.isEmpty()) {
+            this.doc.destroy();
+            this.doc = this._initialStorage;
         }
-
-        const _doc = this._applyDocUpdates(this.doc.fresh(), updates, origin);
 
         this.initialized = true;
 
-        if (!!Object.keys(_doc.toJson()).length) {
-            this.doc = _doc;
-        } else {
-            _doc.destroy();
-        }
-
         onInitialized?.();
 
-        this.track();
-
         return this;
-    }
-
-    public track(): void {
-        this.doc.track();
     }
 
     private _applyDocUpdates(

@@ -1,4 +1,4 @@
-import { InferCrdtStorageJson } from "./types";
+import type { InferCrdtStorageJson } from "./types";
 
 export abstract class AbstractCrdtType<
     TValue extends unknown,

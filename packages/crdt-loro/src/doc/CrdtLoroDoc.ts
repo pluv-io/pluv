@@ -151,6 +151,12 @@ export class CrdtLoroDoc<
         return fromUint8Array(this.value.exportSnapshot());
     }
 
+    public isEmpty(): boolean {
+        const serialized = this.value.toJson();
+
+        return !serialized || !Object.keys(serialized).length;
+    }
+
     /**
      * TODO
      * @description This method is not yet supported for loro

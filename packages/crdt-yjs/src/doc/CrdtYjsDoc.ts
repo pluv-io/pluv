@@ -184,6 +184,10 @@ export class CrdtYjsDoc<
         return fromUint8Array(encodeStateAsUpdate(this.value));
     }
 
+    public isEmpty(): boolean {
+        return !this.value.share.size;
+    }
+
     public redo(): this {
         this._undoManager?.redo();
 
@@ -229,6 +233,13 @@ export class CrdtYjsDoc<
 
             return acc;
         }, []);
+
+        if (!sharedTypes.length) {
+            this._undoManager?.destroy();
+            this._undoManager = null;
+
+            return this;
+        }
 
         this._undoManager = new UndoManager(sharedTypes, { captureTimeout: 0 });
 

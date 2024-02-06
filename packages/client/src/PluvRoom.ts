@@ -476,7 +476,6 @@ export class PluvRoom<
 
     private async _applyStorageStore(): Promise<void> {
         const updates = await this._storageStore.getUpdates();
-        const trackedOrigins = this._getTrackedOrigins();
 
         this._crdtManager.initialize({
             onInitialized: () => {
@@ -702,14 +701,6 @@ export class PluvRoom<
         }
     }
 
-    private _getTrackedOrigins(): readonly string[] | null {
-        const connectionId = this._state.connection.id;
-
-        return !connectionId
-            ? this._trackedOrigins
-            : [connectionId, ...(this._trackedOrigins ?? [])];
-    }
-
     private _getWsEndpoint(room: string): string {
         switch (typeof this._endpoints.wsEndpoint) {
             case "undefined":
@@ -851,8 +842,6 @@ export class PluvRoom<
         const data = message.data as BaseIOEventRecord<
             InferIOAuthorize<TIO>
         >["$STORAGE_RECEIVED"];
-
-        const trackedOrigins = this._getTrackedOrigins();
 
         this._crdtManager.initialize({
             onInitialized: async () => {
