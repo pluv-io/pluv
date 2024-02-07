@@ -141,8 +141,8 @@ export interface CreateRoomBundle<
     >(
         key: TKey,
         selector?: (data: InferCrdtStorageJson<TStorage[TKey]>) => TData,
-        options?: SubscriptionHookOptions<TData>,
-    ) => [data: TData, sharedType: TStorage[TKey]["value"]];
+        options?: SubscriptionHookOptions<TData | null>,
+    ) => [data: TData | null, sharedType: TStorage[TKey]["value"] | null];
     usePluvTransact: () => (
         fn: (storage: TStorage) => void,
         origin?: string,
@@ -521,9 +521,17 @@ export const createRoomBundle = <
         selector = identity as (
             data: InferCrdtStorageJson<TStorage[TKey]>,
         ) => TData,
-        options?: SubscriptionHookOptions<TData>,
-    ): [data: TData, sharedType: TStorage[TKey]["value"]] => {
+        options?: SubscriptionHookOptions<TData | null>,
+    ): [data: TData | null, sharedType: TStorage[TKey]["value"] | null] => {
         const room = usePluvRoom();
+        const rerender = useRerender();
+
+        room.subscribe("storage-loaded", () => {
+            // @ts-ignore
+            console.log("loaded");
+
+            rerender();
+        });
 
         const subscribe = useCallback(
             (onStoreChange: () => void) => room.storage(key, onStoreChange),
@@ -532,13 +540,13 @@ export const createRoomBundle = <
 
         const getSnapshot = useCallback((): InferCrdtStorageJson<
             TStorage[TKey]
-        > => {
-            return room.getStorage(key).toJson();
+        > | null => {
+            return room.getStorage(key)?.toJson();
         }, [key, room]);
 
         const _selector = useCallback(
-            (snapshot: InferCrdtStorageJson<TStorage[TKey]>) => {
-                return selector(snapshot);
+            (snapshot: InferCrdtStorageJson<TStorage[TKey]> | null) => {
+                return snapshot === null ? null : selector(snapshot);
             },
             [selector],
         );
@@ -551,8 +559,9 @@ export const createRoomBundle = <
             options?.isEqual ?? fastDeepEqual,
         );
 
-        const sharedType = room.getStorage(key);
+        const sharedType = room.getStorage(key)?.value ?? null;
 
+        // @ts-ignore
         return [data, sharedType];
     };
 

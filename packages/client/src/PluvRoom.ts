@@ -6,14 +6,14 @@ import type {
 import type {
     BaseIOEventRecord,
     EventMessage,
+    IOEventMessage,
+    IOLike,
     Id,
     InferIOAuthorize,
     InferIOAuthorizeRequired,
     InferIOAuthorizeUser,
     InferIOInput,
     InferIOOutput,
-    IOEventMessage,
-    IOLike,
     JsonObject,
 } from "@pluv/types";
 import { AbstractRoom } from "./AbstractRoom";
@@ -31,6 +31,8 @@ import type {
 } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import { StorageStore } from "./StorageStore";
+import type { UsersManagerConfig } from "./UsersManager";
+import { UsersManager } from "./UsersManager";
 import type {
     AuthorizationState,
     InternalSubscriptions,
@@ -39,8 +41,6 @@ import type {
     WebSocketState,
 } from "./types";
 import { ConnectionState } from "./types";
-import type { UsersManagerConfig } from "./UsersManager";
-import { UsersManager } from "./UsersManager";
 import { debounce } from "./utils";
 
 const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
@@ -156,7 +156,6 @@ export class PluvRoom<
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     readonly _endpoints: RoomEndpoints<TIO>;
 
-    private _captureTimeout: number | null = null;
     private _crdtManager: CrdtManager<TStorage>;
     private _crdtNotifier = new CrdtNotifier<TStorage>();
     private _debug: boolean | PluvRoomDebug<TIO>;
@@ -187,7 +186,6 @@ export class PluvRoom<
         pong: null,
         reconnect: null,
     };
-    private _trackedOrigins: readonly string[] | null = null;
     private _windowListeners: WindowListeners | null = null;
     private _wsListeners: WebSocketListeners | null = null;
     private _usersManager: UsersManager<TIO, TPresence>;
@@ -239,6 +237,10 @@ export class PluvRoom<
         this._crdtManager = new CrdtManager<TStorage>({
             initialStorage,
         });
+    }
+
+    public get storageLoaded(): boolean {
+        return this._crdtManager.initialized;
     }
 
     public get webSocket(): WebSocket | null {
@@ -382,12 +384,10 @@ export class PluvRoom<
 
     public getStorage = <TKey extends keyof TStorage>(
         key: TKey,
-    ): TStorage[TKey] => {
+    ): TStorage[TKey] | null => {
         const sharedType = this._crdtManager.get(key);
 
-        if (typeof sharedType === "undefined") {
-            throw new Error(`Could not find storege: ${key.toString()}`);
-        }
+        if (typeof sharedType === "undefined") return null;
 
         return sharedType;
     };
@@ -479,6 +479,8 @@ export class PluvRoom<
 
         this._crdtManager.initialize({
             onInitialized: () => {
+                this._stateNotifier.subjects["storage-loaded"].next(true);
+
                 this._observeCrdt();
             },
             origin: ORIGIN_INITIALIZED,
@@ -844,8 +846,12 @@ export class PluvRoom<
         >["$STORAGE_RECEIVED"];
 
         this._crdtManager.initialize({
-            onInitialized: async () => {
+            onInitialized: async (update) => {
+                this._addToStorageStore(update);
+                this._emitSharedTypes();
+
                 this._observeCrdt();
+                this._stateNotifier.subjects["storage-loaded"].next(true);
             },
             origin: ORIGIN_INITIALIZED,
             update: data.state,

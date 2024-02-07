@@ -8,7 +8,7 @@ export type CrdtManagerOptions<
 };
 
 type CrdtManagerInitializeParams = {
-    onInitialized?: () => void;
+    onInitialized?: (state: string) => void;
     origin?: any;
     update: string | readonly string[];
 };
@@ -27,8 +27,10 @@ export class CrdtManager<
         this._initialStorage = initialStorage;
 
         this.doc = encodedState
-            ? initialStorage.fresh().applyEncodedState({ update: encodedState })
-            : initialStorage.fresh();
+            ? initialStorage
+                  .getFresh()
+                  .applyEncodedState({ update: encodedState })
+            : initialStorage.getFresh();
     }
 
     /**
@@ -63,20 +65,38 @@ export class CrdtManager<
 
         if (!updates.length) return this;
 
-        this.doc = this._applyDocUpdates(
-            this.initialized ? this.doc : this.doc.fresh(),
+        if (this.initialized) {
+            this.doc = this._applyDocUpdates(this.doc, updates, origin).track();
+
+            return this;
+        }
+
+        const onEmpty = this._applyDocUpdates(
+            this.doc.getEmpty(),
             updates,
             origin,
         );
 
-        if (!this.initialized && this.doc.isEmpty()) {
-            this.doc.destroy();
-            this.doc = this._initialStorage;
+        if (!onEmpty.isEmpty()) {
+            onEmpty.destroy();
+
+            this.doc = this._applyDocUpdates(
+                this.doc.getFresh(),
+                updates,
+                origin,
+            ).track();
+            this.initialized = true;
+
+            onInitialized?.(this.doc.getEncodedState());
+
+            return this;
         }
 
+        onEmpty.destroy();
+        this.doc = this._initialStorage.track();
         this.initialized = true;
 
-        onInitialized?.();
+        onInitialized?.(this.doc.getEncodedState());
 
         return this;
     }

@@ -29,6 +29,8 @@ export abstract class AbstractRoom<
         this.id = room;
     }
 
+    public abstract storageLoaded: boolean;
+
     public abstract broadcast<TEvent extends keyof InferIOInput<TIO>>(
         event: TEvent,
         data: Id<InferIOInput<TIO>[TEvent]>,
@@ -59,7 +61,7 @@ export abstract class AbstractRoom<
 
     public abstract getStorage<TKey extends keyof TStorage>(
         key: TKey,
-    ): TStorage[TKey];
+    ): TStorage[TKey] | null;
 
     public abstract other(
         connectionId: string,

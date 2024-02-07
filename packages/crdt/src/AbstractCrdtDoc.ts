@@ -30,10 +30,11 @@ export abstract class AbstractCrdtDoc<
     public abstract canRedo(): boolean;
     public abstract canUndo(): boolean;
     public abstract destroy(): void;
-    public abstract fresh(): AbstractCrdtDoc<T>;
     public abstract get(key?: undefined): T;
     public abstract get<TKey extends keyof T>(key: TKey): T[TKey];
+    public abstract getEmpty(): AbstractCrdtDoc<T>;
     public abstract getEncodedState(): string;
+    public abstract getFresh(): AbstractCrdtDoc<T>;
     public abstract isEmpty(): boolean;
     public abstract redo(): this;
     public abstract subscribe(

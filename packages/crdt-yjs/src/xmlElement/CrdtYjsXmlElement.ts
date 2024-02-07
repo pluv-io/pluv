@@ -5,6 +5,7 @@ import type { CrdtYjsXmlText } from "../xmlText/CrdtYjsXmlText";
 
 export class CrdtYjsXmlElement extends AbstractCrdtType<YXmlElement, string> {
     public readonly initialValue: readonly (YXmlElement | YXmlText)[];
+    public readonly name: string;
     public value: YXmlElement;
 
     constructor(
@@ -14,6 +15,7 @@ export class CrdtYjsXmlElement extends AbstractCrdtType<YXmlElement, string> {
         super();
 
         this.initialValue = children.map((item) => item.value);
+        this.name = name;
         this.value = new YXmlElement(name);
         this.value.push(this.initialValue.slice());
     }

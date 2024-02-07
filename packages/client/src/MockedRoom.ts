@@ -99,6 +99,10 @@ export class MockedRoom<
         this._observeCrdt();
     }
 
+    public get storageLoaded(): boolean {
+        return true;
+    }
+
     public broadcast<TEvent extends keyof InferIOInput<TIO>>(
         event: TEvent,
         data: Id<InferIOInput<TIO>[TEvent]>,
@@ -167,12 +171,10 @@ export class MockedRoom<
 
     public getStorage = <TKey extends keyof TStorage>(
         key: TKey,
-    ): TStorage[TKey] => {
+    ): TStorage[TKey] | null => {
         const sharedType = this._crdtManager.get(key);
 
-        if (typeof sharedType === "undefined") {
-            throw new Error(`Could not find storege: ${key.toString()}`);
-        }
+        if (typeof sharedType === "undefined") return null;
 
         return sharedType.value;
     };

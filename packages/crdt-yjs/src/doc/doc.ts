@@ -6,7 +6,5 @@ export const doc = <
 >(
     value: TStorage = {} as TStorage,
 ): CrdtYjsDoc<TStorage> => {
-    console.log("value", value);
-
     return new CrdtYjsDoc<TStorage>(value);
 };

@@ -11,6 +11,7 @@ export interface StateNotifierSubjects<
     "my-presence": Subject<TPresence | null>;
     myself: Subject<Readonly<Id<UserInfo<TIO>>> | null>;
     others: Subject<readonly Id<UserInfo<TIO>>[]>;
+    "storage-loaded": Subject<boolean>;
 }
 
 type InferSubjectValue<
@@ -39,6 +40,7 @@ export class StateNotifier<
         "my-presence": makeSubject<TPresence>(),
         myself: makeSubject<Readonly<Id<UserInfo<TIO>>> | null>(),
         others: makeSubject<readonly Id<UserInfo<TIO>>[]>(),
+        "storage-loaded": makeSubject<true>(),
     };
 
     public subscribe<
