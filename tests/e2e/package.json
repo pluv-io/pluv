@@ -14,7 +14,7 @@
 		"start": "next start",
 		"test": "playwright test",
 		"test:cloudflare": "wrangler deploy --dry-run && playwright test ./src/tests/cloudflare/**/*",
-		"test:node": "playwright test ./src/tests/node/**/*",
+		"test:node": "prisma migrate reset --force && playwright test ./src/tests/node/**/*",
 		"test:node-redis": "playwright test ./src/tests/node-redis/**/*",
 		"tsc:check": "tsc --noEmit"
 	},
