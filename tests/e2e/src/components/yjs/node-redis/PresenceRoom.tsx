@@ -3,11 +3,11 @@ import {
     usePluvMyPresence,
     usePluvMyself,
     usePluvOthers,
-} from "../pluv-io/yjs/node-redis";
+} from "../../../pluv-io/yjs/node-redis";
 
-export type NodeRedisPresenceRoomProps = Record<string, never>;
+export type PresenceRoomProps = Record<string, never>;
 
-export const NodeRedisPresenceRoom: FC<NodeRedisPresenceRoomProps> = () => {
+export const PresenceRoom: FC<PresenceRoomProps> = () => {
     const myself = usePluvMyself();
     const [myPresence, updateMyPresence] = usePluvMyPresence();
     const others = usePluvOthers();

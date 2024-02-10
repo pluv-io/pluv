@@ -7,11 +7,11 @@ import {
     usePluvStorage,
     usePluvTransact,
     usePluvUndo,
-} from "../pluv-io/yjs/cloudflare";
+} from "../../../pluv-io/yjs/cloudflare";
 
-export type CloudflareStorageRoomProps = Record<string, never>;
+export type StorageRoomProps = Record<string, never>;
 
-export const CloudflareStorageRoom: FC<CloudflareStorageRoomProps> = () => {
+export const StorageRoom: FC<StorageRoomProps> = () => {
     const [messages, sharedType] = usePluvStorage("messages");
 
     const canUndo = usePluvCanUndo();

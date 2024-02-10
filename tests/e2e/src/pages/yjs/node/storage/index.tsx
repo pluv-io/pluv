@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { NodeStorageRoom } from "../../../../components";
+import { StorageRoom } from "../../../../components/yjs/node";
 import { PluvRoomProvider } from "../../../../pluv-io/yjs/node";
 
 export const Page: NextPage = () => {
@@ -43,7 +43,7 @@ export const Page: NextPage = () => {
                     initialPresence={{ count: 0 }}
                     room={roomId}
                 >
-                    <NodeStorageRoom />
+                    <StorageRoom />
                 </PluvRoomProvider>
             )}
         </div>

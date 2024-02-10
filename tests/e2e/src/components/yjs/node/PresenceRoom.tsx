@@ -3,11 +3,11 @@ import {
     usePluvMyPresence,
     usePluvMyself,
     usePluvOthers,
-} from "../pluv-io/yjs/cloudflare";
+} from "../../../pluv-io/yjs/node";
 
-export type CloudflarePresenceRoomProps = Record<string, never>;
+export type PresenceRoomProps = Record<string, never>;
 
-export const CloudflarePresenceRoom: FC<CloudflarePresenceRoomProps> = () => {
+export const PresenceRoom: FC<PresenceRoomProps> = () => {
     const myself = usePluvMyself();
     const [myPresence, updateMyPresence] = usePluvMyPresence();
     const others = usePluvOthers();

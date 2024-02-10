@@ -7,11 +7,11 @@ import {
     usePluvStorage,
     usePluvTransact,
     usePluvUndo,
-} from "../pluv-io/yjs/node";
+} from "../../../pluv-io/yjs/node-redis";
 
-export type NodeStorageRoomProps = Record<string, never>;
+export type StorageRoomProps = Record<string, never>;
 
-export const NodeStorageRoom: FC<NodeStorageRoomProps> = () => {
+export const StorageRoom: FC<StorageRoomProps> = () => {
     const [messages, sharedType] = usePluvStorage("messages");
 
     const canUndo = usePluvCanUndo();
@@ -29,7 +29,7 @@ export const NodeStorageRoom: FC<NodeStorageRoomProps> = () => {
                 <button
                     id="button-add-message"
                     onClick={() => {
-                        transact((tx) => {
+                        transact(() => {
                             sharedType?.push(
                                 yjs.object({
                                     message: `new message ${messages?.length ?? 0}`,

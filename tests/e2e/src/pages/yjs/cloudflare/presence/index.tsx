@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
-import { CloudflarePresenceRoom } from "../../../../components";
+import { useState } from "react";
+import { PresenceRoom } from "../../../../components/yjs/cloudflare";
 import { PluvRoomProvider } from "../../../../pluv-io/yjs/cloudflare";
 
 export const Page: NextPage = () => {
@@ -43,7 +43,7 @@ export const Page: NextPage = () => {
                     initialPresence={{ count: 0 }}
                     room={roomId}
                 >
-                    <CloudflarePresenceRoom />
+                    <PresenceRoom />
                 </PluvRoomProvider>
             )}
         </div>

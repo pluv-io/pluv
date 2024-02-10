@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
-import { NodeRedisPresenceRoom } from "../../../../components";
+import { useState } from "react";
+import { PresenceRoom } from "../../../../components/yjs/node-redis";
 import { PluvRoomProvider } from "../../../../pluv-io/yjs/node-redis";
 
 export const Page: NextPage = () => {
@@ -36,7 +36,7 @@ export const Page: NextPage = () => {
             <div>roomId: {roomId}</div>
             {enabled && (
                 <PluvRoomProvider initialPresence={{ count: 0 }} room={roomId}>
-                    <NodeRedisPresenceRoom />
+                    <PresenceRoom />
                 </PluvRoomProvider>
             )}
         </div>
