@@ -32,7 +32,7 @@ export class CrdtYjsArray<T extends unknown> extends AbstractCrdtType<
     public insert(index: number, ...items: T[]): this {
         const converted = items.map((item) => toYjsValue(item)) as T[];
 
-        this.value.insert(0, converted);
+        this.value.insert(index, converted);
 
         return this;
     }

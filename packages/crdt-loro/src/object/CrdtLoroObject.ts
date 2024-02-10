@@ -1,6 +1,6 @@
 import { AbstractCrdtType, type InferCrdtStorageJson } from "@pluv/crdt";
 import { LoroMap } from "loro-crdt";
-import { isWrapper } from "../shared";
+import { toLoroValue } from "../shared";
 import type { InferLoroJson, InferLoroType } from "../types";
 
 export class CrdtLoroObject<
@@ -17,13 +17,19 @@ export class CrdtLoroObject<
 
         this.initialValue = Object.entries(value).map(([k, v]) => [
             k,
-            isWrapper(v) ? v.value : v,
+            toLoroValue(v),
         ]) as readonly (readonly [key: string, value: InferLoroType<T>])[];
         this.value = new LoroMap();
 
         this.initialValue.forEach(([k, v]) => {
             this.value.set(k, v);
         });
+    }
+
+    public set(prop: string, value: T): this {
+        this.value.set(prop, toLoroValue(value));
+
+        return this;
     }
 
     public toJson(): InferCrdtStorageJson<InferLoroJson<T>> {
