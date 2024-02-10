@@ -136,36 +136,8 @@ export class CrdtLoroDoc<
         return this._storage[key as TKey];
     }
 
-    public getEmpty(): CrdtLoroDoc<TStorage> {
-        return new CrdtLoroDoc<TStorage>();
-    }
-
     public getEncodedState(): string {
         return fromUint8Array(this.value.exportSnapshot());
-    }
-
-    public getFresh(): CrdtLoroDoc<TStorage> {
-        return new CrdtLoroDoc<TStorage>(
-            Object.entries(this._storage).reduce((acc, [key, node]) => {
-                if (node instanceof CrdtLoroArray) {
-                    return { ...acc, [key]: new CrdtLoroArray([]) };
-                }
-
-                if (node instanceof CrdtLoroMap) {
-                    return { ...acc, [key]: new CrdtLoroMap([]) };
-                }
-
-                if (node instanceof CrdtLoroObject) {
-                    return { ...acc, [key]: new CrdtLoroObject({}) };
-                }
-
-                if (node instanceof CrdtLoroText) {
-                    return { ...acc, [key]: new CrdtLoroText("") };
-                }
-
-                return acc;
-            }, {} as TStorage),
-        );
     }
 
     public toJson(): InferCrdtStorageJson<TStorage> {

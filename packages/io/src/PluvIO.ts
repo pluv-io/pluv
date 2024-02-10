@@ -1,4 +1,4 @@
-import type { AbstractCrdtDoc } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import type {
     BaseIOAuthorize,
     EventRecord,
@@ -81,7 +81,7 @@ export type PluvIOConfig<
 > = Partial<PluvIOListeners<TPlatform>> & {
     authorize?: TAuthorize;
     context?: TContext;
-    crdt: { doc: (value: any) => AbstractCrdtDoc<any> };
+    crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug?: boolean;
     events?: InferEventConfig<
         TPlatform,
@@ -125,7 +125,7 @@ export class PluvIO<
 
     readonly _authorize: TAuthorize | null = null;
     readonly _context: TContext = {} as TContext;
-    readonly _crdt: { doc: (value: any) => AbstractCrdtDoc<any> };
+    readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     readonly _debug: boolean;
     readonly _events: InferEventConfig<
         TPlatform,

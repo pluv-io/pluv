@@ -1,10 +1,10 @@
-import { AbstractCrdtType } from "@pluv/crdt";
-import { CrdtLoroDoc } from "./CrdtLoroDoc";
+import type { AbstractCrdtType } from "@pluv/crdt";
+import { CrdtLoroDocFactory } from "./CrdtLoroDocFactory";
 
 export const doc = <
     TStorage extends Record<string, AbstractCrdtType<any, any>>,
 >(
-    value: TStorage = {} as TStorage,
-): CrdtLoroDoc<TStorage> => {
-    return new CrdtLoroDoc<TStorage>(value);
+    value: () => TStorage = () => ({}) as TStorage,
+): CrdtLoroDocFactory<TStorage> => {
+    return new CrdtLoroDocFactory<TStorage>(value);
 };

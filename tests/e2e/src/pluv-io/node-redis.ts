@@ -51,14 +51,14 @@ export const {
     usePluvTransact,
     usePluvUndo,
 } = createRoomBundle({
-    initialStorage: yjs.doc({
+    initialStorage: yjs.doc(() => ({
         messages: yjs.array([
             yjs.object({
                 message: "hello",
                 name: "leedavidcs",
             }),
         ]),
-    }),
+    })),
     presence: z.object({
         count: z.number(),
     }),

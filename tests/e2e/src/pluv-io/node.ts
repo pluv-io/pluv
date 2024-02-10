@@ -49,14 +49,14 @@ export const {
             enabled: (room) => room.id === "e2e-node-storage-addon-indexeddb",
         }),
     ],
-    initialStorage: yjs.doc({
+    initialStorage: yjs.doc(() => ({
         messages: yjs.array([
             yjs.object({
                 message: "hello",
                 name: "leedavidcs",
             }),
         ]),
-    }),
+    })),
     presence: z.object({
         count: z.number(),
     }),

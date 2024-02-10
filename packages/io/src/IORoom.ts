@@ -1,16 +1,16 @@
-import type { AbstractCrdtDoc } from "@pluv/crdt";
+import type { AbstractCrdtDoc, AbstractCrdtDocFactory } from "@pluv/crdt";
 import type {
     BaseIOAuthorize,
     BaseIOEventRecord,
     EventMessage,
     EventRecord,
+    IOAuthorize,
+    IOLike,
     Id,
     InferEventMessage,
     InferIOAuthorize,
     InferIOAuthorizeUser,
     InferIOInput,
-    IOAuthorize,
-    IOLike,
     JsonObject,
     Maybe,
 } from "@pluv/types";
@@ -63,7 +63,7 @@ export type IORoomConfig<
 > = Partial<IORoomListeners<TPlatform>> & {
     authorize?: TAuthorize;
     context: TContext & InferPlatformRoomContextType<TPlatform>;
-    crdt: { doc: (value: any) => AbstractCrdtDoc<any> };
+    crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug: boolean;
     events: InferEventConfig<
         TPlatform,
@@ -99,7 +99,9 @@ export class IORoom<
 {
     private readonly _context: TContext &
         InferPlatformRoomContextType<TPlatform>;
-    private readonly _crdt: { doc: (value: any) => AbstractCrdtDoc<any> };
+    private readonly _crdt: {
+        doc: (value: any) => AbstractCrdtDocFactory<any>;
+    };
     private readonly _debug: boolean;
     private readonly _platform: TPlatform;
 
@@ -138,7 +140,7 @@ export class IORoom<
         this._context = context;
         this._crdt = crdt;
         this._debug = debug;
-        this._doc = crdt.doc({});
+        this._doc = crdt.doc({}).getEmpty();
         this._events = events;
         this._platform = platform;
 
@@ -455,7 +457,7 @@ export class IORoom<
             const encodedState = this._doc.getEncodedState();
 
             this._doc.destroy();
-            this._doc = this._crdt.doc({});
+            this._doc = this._crdt.doc({}).getEmpty();
 
             this._listeners.onDestroy({
                 ...this._context,

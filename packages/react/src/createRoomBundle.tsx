@@ -11,6 +11,7 @@ import type {
 import { MockedRoom } from "@pluv/client";
 import type {
     AbstractCrdtDoc,
+    AbstractCrdtDocFactory,
     AbstractCrdtType,
     InferCrdtStorageJson,
 } from "@pluv/crdt";
@@ -46,7 +47,7 @@ export type CreateRoomBundleOptions<
     TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > = {
     addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
-    initialStorage: AbstractCrdtDoc<TStorage>;
+    initialStorage: AbstractCrdtDocFactory<TStorage>;
     presence?: InputZodLike<TPresence>;
 };
 
@@ -57,7 +58,7 @@ type BaseRoomProviderProps<
     children?: ReactNode;
     initialStorage?: keyof TStorage extends never
         ? never
-        : AbstractCrdtDoc<TStorage>;
+        : AbstractCrdtDocFactory<TStorage>;
     room: string;
 } & (keyof TPresence extends never
     ? { initialPresence?: never }

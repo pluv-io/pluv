@@ -1,4 +1,4 @@
-import type { AbstractCrdtDoc } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import type {
     BaseClientEventRecord,
     BaseIOEventRecord,
@@ -18,7 +18,7 @@ export type CreateIOParams<
 > = Partial<PluvIOListeners<TPlatform>> & {
     authorize?: IOAuthorize<TAuthorizeUser, TAuthorizeRequired>;
     context?: TContext;
-    crdt: { doc: (value: any) => AbstractCrdtDoc<any> };
+    crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug?: boolean;
     getInitialStorage?: GetInitialStorageFn<TPlatform>;
     platform: TPlatform;

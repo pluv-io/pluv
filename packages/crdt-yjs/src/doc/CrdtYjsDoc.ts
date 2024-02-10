@@ -176,51 +176,8 @@ export class CrdtYjsDoc<
         return this._storage[key as TKey];
     }
 
-    public getEmpty(): AbstractCrdtDoc<TStorage> {
-        return new CrdtYjsDoc<TStorage>();
-    }
-
     public getEncodedState(): string {
         return fromUint8Array(encodeStateAsUpdate(this.value));
-    }
-
-    public getFresh(): CrdtYjsDoc<TStorage> {
-        return new CrdtYjsDoc<TStorage>(
-            Object.entries(this._storage).reduce((acc, [key, node]) => {
-                if (node instanceof CrdtYjsArray) {
-                    return { ...acc, [key]: new CrdtYjsArray([]) };
-                }
-
-                if (node instanceof CrdtYjsMap) {
-                    return { ...acc, [key]: new CrdtYjsMap([]) };
-                }
-
-                if (node instanceof CrdtYjsObject) {
-                    return { ...acc, [key]: new CrdtYjsObject({}) };
-                }
-
-                if (node instanceof CrdtYjsText) {
-                    return { ...acc, [key]: new CrdtYjsText("") };
-                }
-
-                if (node instanceof CrdtYjsXmlElement) {
-                    return {
-                        ...acc,
-                        [key]: new CrdtYjsXmlElement(node.name, []),
-                    };
-                }
-
-                if (node instanceof CrdtYjsXmlFragment) {
-                    return { ...acc, [key]: new CrdtYjsXmlFragment([]) };
-                }
-
-                if (node instanceof CrdtYjsXmlText) {
-                    return { ...acc, [key]: new CrdtYjsXmlText("") };
-                }
-
-                return acc;
-            }, {} as TStorage),
-        );
     }
 
     public isEmpty(): boolean {
