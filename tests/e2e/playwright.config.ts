@@ -63,15 +63,15 @@ const config: PlaywrightTestConfig = {
             port: 3100,
         },
         {
-            command: "pnpm dev:server:cloudflare",
+            command: "pnpm dev:yjs:server:cloudflare",
             port: 3101,
         },
         {
-            command: "pnpm dev:server:node",
+            command: "pnpm dev:yjs:server:node",
             port: 3102,
         },
         {
-            command: "pnpm dev:server:node-redis",
+            command: "pnpm dev:yjs:server:node-redis",
             port: 3103,
         },
     ],
