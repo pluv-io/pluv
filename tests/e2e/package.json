@@ -24,6 +24,7 @@
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@pluv/addon-indexeddb": "workspace:^",
 		"@pluv/client": "workspace:^",
+		"@pluv/crdt-loro": "workspace:^",
 		"@pluv/crdt-yjs": "workspace:^",
 		"@pluv/io": "workspace:^",
 		"@pluv/persistance-redis": "workspace:^",

@@ -4,10 +4,11 @@ import React from "react";
 
 export const Page: NextPage = () => {
     return (
-        <div>
-            <NextLink href="/cloudflare">cloudflare</NextLink>
-            <NextLink href="/node">node</NextLink>
-            <NextLink href="/node-redis">node-redis</NextLink>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+            <NextLink href="/loro/node">loro node</NextLink>
+            <NextLink href="/yjs/cloudflare">yjs cloudflare</NextLink>
+            <NextLink href="/yjs/node">yjs node</NextLink>
+            <NextLink href="/yjs/node-redis">yjs node-redis</NextLink>
         </div>
     );
 };

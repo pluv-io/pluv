@@ -1,5 +1,4 @@
-import { addonIndexedDB } from "@pluv/addon-indexeddb";
-import { yjs } from "@pluv/crdt-yjs";
+import { loro } from "@pluv/crdt-loro";
 import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
 import type { io } from "../../server/yjs/node";
@@ -44,9 +43,9 @@ export const {
     usePluvTransact,
     usePluvUndo,
 } = createRoomBundle({
-    initialStorage: yjs.doc(() => ({
-        messages: yjs.array([
-            yjs.object({
+    initialStorage: loro.doc(() => ({
+        messages: loro.array([
+            loro.object({
                 message: "hello",
                 name: "leedavidcs",
             }),

@@ -5,8 +5,8 @@ import React from "react";
 export const Page: NextPage = () => {
     return (
         <div>
-            <NextLink href="/cloudflare/presence">presence</NextLink>
-            <NextLink href="/cloudflare/storage">storage</NextLink>
+            <NextLink href="/yjs/cloudflare/presence">presence</NextLink>
+            <NextLink href="/yjs/cloudflare/storage">storage</NextLink>
         </div>
     );
 };
