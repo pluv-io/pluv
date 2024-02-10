@@ -3,7 +3,7 @@ import {
     usePluvMyPresence,
     usePluvMyself,
     usePluvOthers,
-} from "../pluv-io/cloudflare";
+} from "../pluv-io/yjs/cloudflare";
 
 export type CloudflarePresenceRoomProps = Record<string, never>;
 

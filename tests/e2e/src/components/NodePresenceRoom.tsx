@@ -3,7 +3,7 @@ import {
     usePluvMyPresence,
     usePluvMyself,
     usePluvOthers,
-} from "../pluv-io/node";
+} from "../pluv-io/yjs/node";
 
 export type NodePresenceRoomProps = Record<string, never>;
 

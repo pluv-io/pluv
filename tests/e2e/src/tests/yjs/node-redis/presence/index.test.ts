@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { oneLine } from "common-tags";
 import ms from "ms";
-import { openTestPage, waitMs } from "../../../utils";
+import { openTestPage, waitMs } from "../../../../utils";
 
 const TEST_URL = "http://localhost:3100/node-redis/presence";
 
@@ -39,7 +39,7 @@ test.describe("Node Redis Presence", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -89,7 +89,7 @@ test.describe("Node Redis Presence", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -139,7 +139,7 @@ test.describe("Node Redis Presence", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -214,7 +214,7 @@ test.describe("Node Redis Presence", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -250,7 +250,7 @@ test.describe("Node Redis Presence", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -300,7 +300,7 @@ test.describe("Node Redis Presence", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -350,7 +350,7 @@ test.describe("Node Redis Presence", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 
     test(
@@ -425,6 +425,6 @@ test.describe("Node Redis Presence", () => {
 
             await firstPage.close();
             await secondPage.close();
-        }
+        },
     );
 });

@@ -2,7 +2,7 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { NodeStorageRoom } from "../../../components";
-import { PluvRoomProvider } from "../../../pluv-io/node";
+import { PluvRoomProvider } from "../../../pluv-io/yjs/node";
 
 export const Page: NextPage = () => {
     const router = useRouter();

@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 import { oneLine } from "common-tags";
 import ms from "ms";
-import { openTestPage, waitMs } from "../../../utils";
+import { openTestPage, waitMs } from "../../../../utils";
 
-const TEST_URL = "http://localhost:3100/node/storage";
+const TEST_URL = "http://localhost:3100/cloudflare/storage";
 
-test.describe("Node Storage", () => {
+test.describe("Cloudflare Storage", () => {
     test(
         oneLine`
 			connect 1 ->
@@ -173,37 +173,6 @@ test.describe("Node Storage", () => {
 
     test(
         oneLine`
-            storage saved in db and retrieved via getInitialStorage
-        `,
-        async () => {
-            const testUrl = `${TEST_URL}?room=e2e-node-storage-saved`;
-
-            const firstPage = await openTestPage(testUrl);
-
-            await firstPage.waitForSelector("#storage");
-            await waitMs(ms("0.25s"));
-
-            await firstPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
-
-            await firstPage.click("#disconnect-room");
-            await waitMs(ms("0.5s"));
-
-            await firstPage.click("#connect-room");
-            await waitMs(ms("0.5s"));
-
-            await firstPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(2));
-
-            await firstPage.close();
-        },
-    );
-
-    test(
-        oneLine`
             undo, redo, canUndo, canRedo modifies storage correctly
         `,
         async () => {
@@ -339,48 +308,6 @@ test.describe("Node Storage", () => {
                 .innerText()
                 .then((text) => JSON.parse(text))
                 .then((messages) => expect(messages.length).toEqual(1));
-        },
-    );
-
-    test(
-        oneLine`
-            addonIndexedDB persists old storage on refresh
-        `,
-        async () => {
-            const roomName = "e2e-node-storage-addon-indexeddb";
-            const testUrl = `${TEST_URL}?room=${roomName}`;
-
-            const firstPage = await openTestPage(testUrl);
-
-            await firstPage.waitForSelector("#storage");
-            await waitMs(ms("0.25s"));
-
-            await firstPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(1));
-
-            await firstPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
-
-            await firstPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(2));
-
-            await firstPage.reload({ waitUntil: "load" });
-            await waitMs(ms("0.25s"));
-
-            await firstPage.waitForSelector("#storage");
-            await waitMs(ms("0.25s"));
-
-            await firstPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(2));
         },
     );
 });

@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 import { oneLine } from "common-tags";
 import ms from "ms";
-import { openTestPage, waitMs } from "../../../utils";
+import { openTestPage, waitMs } from "../../../../utils";
 
-const TEST_URL = "http://localhost:3100/node-redis/storage";
+const TEST_URL = "http://localhost:3100/node/storage";
 
-test.describe("Node Redis Storage", () => {
+test.describe("Node Storage", () => {
     test(
         oneLine`
 			connect 1 ->
@@ -173,91 +173,10 @@ test.describe("Node Redis Storage", () => {
 
     test(
         oneLine`
-            connect 1 to pluv1 ->
-            connect 2 to pluv2 ->
-            verify storage on 1 + 2 ->
-            add message on 1 ->
-            verify storage on 1 + 2 ->
-            add mesage on 2 ->
-            verify storage on 1 + 2
+            storage saved in db and retrieved via getInitialStorage
         `,
         async () => {
-            const testUrl = `${TEST_URL}?room=e2e-storage-4`;
-
-            const firstPage = await openTestPage(testUrl);
-            const secondPage = await openTestPage(`${testUrl}_1`);
-
-            await Promise.all([
-                firstPage.waitForSelector("#storage"),
-                secondPage.waitForSelector("#storage"),
-            ]);
-
-            await waitMs(ms("0.25s"));
-
-            await firstPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(1));
-
-            await secondPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(1));
-
-            await firstPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
-
-            await firstPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(2));
-
-            await secondPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(2));
-
-            await secondPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
-
-            await firstPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(3));
-
-            await secondPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(3));
-
-            await firstPage.close();
-            await secondPage.close();
-        },
-    );
-
-    test(
-        oneLine`
-            connect 1 to pluv1 ->
-            add message on 1 ->
-            connect 2 to pluv2 ->
-            verify storage on 2 ->
-            disconnect 1 ->
-            add message on 2 ->
-            connect 1 to pluv1 ->
-            verify storage on 1 ->
-            disconnect 1 ->
-            disconnect 2 ->
-            connect 1 ->
-            verify storage on 1 + 2
-        `,
-        async () => {
-            const testUrl = `${TEST_URL}?room=e2e-storage-5`;
+            const testUrl = `${TEST_URL}?room=e2e-node-storage-saved`;
 
             const firstPage = await openTestPage(testUrl);
 
@@ -267,49 +186,19 @@ test.describe("Node Redis Storage", () => {
             await firstPage.click("#button-add-message");
             await waitMs(ms("0.25s"));
 
-            const secondPage = await openTestPage(`${testUrl}_1`);
+            await firstPage.click("#disconnect-room");
+            await waitMs(ms("0.5s"));
 
-            await secondPage.waitForSelector("#storage");
-            await waitMs(ms("0.25s"));
+            await firstPage.click("#connect-room");
+            await waitMs(ms("0.5s"));
 
-            await secondPage
+            await firstPage
                 .locator("#storage")
                 .innerText()
                 .then((text) => JSON.parse(text))
                 .then((messages) => expect(messages.length).toEqual(2));
 
-            await firstPage.click("#disconnect-room");
-            await waitMs(ms("0.25s"));
-
-            await secondPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
-
-            await firstPage.click("#connect-room");
-            await firstPage.waitForSelector("#storage-room");
-            await waitMs(ms("0.25s"));
-
-            await firstPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(3));
-
-            await firstPage.click("#disconnect-room");
-            await secondPage.click("#disconnect-room");
-            await waitMs(ms("0.25s"));
-
-            await firstPage.click("#connect-room");
-            await firstPage.waitForSelector("#storage-room");
-            await waitMs(ms("0.25s"));
-
-            await firstPage
-                .locator("#storage")
-                .innerText()
-                .then((text) => JSON.parse(text))
-                .then((messages) => expect(messages.length).toEqual(1));
-
             await firstPage.close();
-            await secondPage.close();
         },
     );
 
@@ -450,6 +339,48 @@ test.describe("Node Redis Storage", () => {
                 .innerText()
                 .then((text) => JSON.parse(text))
                 .then((messages) => expect(messages.length).toEqual(1));
+        },
+    );
+
+    test(
+        oneLine`
+            addonIndexedDB persists old storage on refresh
+        `,
+        async () => {
+            const roomName = "e2e-node-storage-addon-indexeddb";
+            const testUrl = `${TEST_URL}?room=${roomName}`;
+
+            const firstPage = await openTestPage(testUrl);
+
+            await firstPage.waitForSelector("#storage");
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#storage")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((messages) => expect(messages.length).toEqual(1));
+
+            await firstPage.click("#button-add-message");
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#storage")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((messages) => expect(messages.length).toEqual(2));
+
+            await firstPage.reload({ waitUntil: "load" });
+            await waitMs(ms("0.25s"));
+
+            await firstPage.waitForSelector("#storage");
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#storage")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((messages) => expect(messages.length).toEqual(2));
         },
     );
 });

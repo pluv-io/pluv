@@ -3,7 +3,7 @@ import {
     usePluvMyPresence,
     usePluvMyself,
     usePluvOthers,
-} from "../pluv-io/node-redis";
+} from "../pluv-io/yjs/node-redis";
 
 export type NodeRedisPresenceRoomProps = Record<string, never>;
 

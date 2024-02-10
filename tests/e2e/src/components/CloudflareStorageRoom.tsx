@@ -7,7 +7,7 @@ import {
     usePluvStorage,
     usePluvTransact,
     usePluvUndo,
-} from "../pluv-io/cloudflare";
+} from "../pluv-io/yjs/cloudflare";
 
 export type CloudflareStorageRoomProps = Record<string, never>;
 

@@ -7,7 +7,7 @@ import {
     usePluvStorage,
     usePluvTransact,
     usePluvUndo,
-} from "../pluv-io/node";
+} from "../pluv-io/yjs/node";
 
 export type NodeStorageRoomProps = Record<string, never>;
 

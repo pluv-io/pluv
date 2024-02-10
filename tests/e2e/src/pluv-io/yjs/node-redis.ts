@@ -1,7 +1,7 @@
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
-import type { io } from "../server/node-redis";
+import type { io } from "../../server/yjs/node-redis";
 
 const client = createClient<typeof io>({
     authEndpoint: (roomName) => {

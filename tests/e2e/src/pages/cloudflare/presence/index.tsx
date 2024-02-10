@@ -2,7 +2,7 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { CloudflarePresenceRoom } from "../../../components";
-import { PluvRoomProvider } from "../../../pluv-io/cloudflare";
+import { PluvRoomProvider } from "../../../pluv-io/yjs/cloudflare";
 
 export const Page: NextPage = () => {
     const router = useRouter();

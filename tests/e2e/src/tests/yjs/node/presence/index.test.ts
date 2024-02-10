@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { oneLine } from "common-tags";
 import ms from "ms";
-import { openTestPage, waitMs } from "../../../utils";
+import { openTestPage, waitMs } from "../../../../utils";
 
 const TEST_URL = "http://localhost:3100/node/presence";
 

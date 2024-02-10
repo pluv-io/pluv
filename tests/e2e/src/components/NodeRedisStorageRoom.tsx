@@ -7,7 +7,7 @@ import {
     usePluvStorage,
     usePluvTransact,
     usePluvUndo,
-} from "../pluv-io/node-redis";
+} from "../pluv-io/yjs/node-redis";
 
 export type NodeRedisStorageRoomProps = Record<string, never>;
 
