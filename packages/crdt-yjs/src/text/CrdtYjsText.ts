@@ -12,6 +12,22 @@ export class CrdtYjsText extends AbstractCrdtType<YText, string> {
         this.value = new YText(value);
     }
 
+    public get length(): number {
+        return this.value.length;
+    }
+
+    public delete(index: number, length: number = 1): this {
+        this.value.delete(index, length);
+
+        return this;
+    }
+
+    public insert(index: number, text: string): this {
+        this.value.insert(index, text);
+
+        return this;
+    }
+
     public toJson(): string {
         return this.value.toJSON();
     }

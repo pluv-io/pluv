@@ -143,7 +143,7 @@ export interface CreateRoomBundle<
         key: TKey,
         selector?: (data: InferCrdtStorageJson<TStorage[TKey]>) => TData,
         options?: SubscriptionHookOptions<TData | null>,
-    ) => [data: TData | null, sharedType: TStorage[TKey]["value"] | null];
+    ) => [data: TData | null, sharedType: TStorage[TKey] | null];
     usePluvTransact: () => (
         fn: (storage: TStorage) => void,
         origin?: string,
@@ -523,14 +523,11 @@ export const createRoomBundle = <
             data: InferCrdtStorageJson<TStorage[TKey]>,
         ) => TData,
         options?: SubscriptionHookOptions<TData | null>,
-    ): [data: TData | null, sharedType: TStorage[TKey]["value"] | null] => {
+    ): [data: TData | null, sharedType: TStorage[TKey] | null] => {
         const room = usePluvRoom();
         const rerender = useRerender();
 
         room.subscribe("storage-loaded", () => {
-            // @ts-ignore
-            console.log("loaded");
-
             rerender();
         });
 
@@ -560,9 +557,8 @@ export const createRoomBundle = <
             options?.isEqual ?? fastDeepEqual,
         );
 
-        const sharedType = room.getStorage(key)?.value ?? null;
+        const sharedType = room.getStorage(key) ?? null;
 
-        // @ts-ignore
         return [data, sharedType];
     };
 

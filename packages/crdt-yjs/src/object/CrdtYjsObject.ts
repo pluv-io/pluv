@@ -25,6 +25,12 @@ export class CrdtYjsObject<
         this.value = new YMap(this.initialValue);
     }
 
+    public set(prop: string, value: T): this {
+        this.value.set(prop, toYjsValue(value));
+
+        return this;
+    }
+
     public toJson(): InferCrdtStorageJson<InferYjsJson<T>> {
         return this.value.toJSON() as InferCrdtStorageJson<InferYjsJson<T>>;
     }

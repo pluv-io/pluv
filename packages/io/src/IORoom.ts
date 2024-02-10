@@ -99,10 +99,8 @@ export class IORoom<
 {
     private readonly _context: TContext &
         InferPlatformRoomContextType<TPlatform>;
-    private readonly _crdt: {
-        doc: (value: any) => AbstractCrdtDocFactory<any>;
-    };
     private readonly _debug: boolean;
+    private readonly _docFactory: AbstractCrdtDocFactory<any>;
     private readonly _platform: TPlatform;
 
     private _doc: AbstractCrdtDoc<any>;
@@ -138,9 +136,9 @@ export class IORoom<
             config;
 
         this._context = context;
-        this._crdt = crdt;
         this._debug = debug;
-        this._doc = crdt.doc({}).getEmpty();
+        this._docFactory = crdt.doc({});
+        this._doc = this._docFactory.getEmpty();
         this._events = events;
         this._platform = platform;
 
@@ -457,7 +455,7 @@ export class IORoom<
             const encodedState = this._doc.getEncodedState();
 
             this._doc.destroy();
-            this._doc = this._crdt.doc({}).getEmpty();
+            this._doc = this._docFactory.getEmpty();
 
             this._listeners.onDestroy({
                 ...this._context,

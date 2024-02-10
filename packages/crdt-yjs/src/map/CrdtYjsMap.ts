@@ -24,10 +24,10 @@ export class CrdtYjsMap<T extends unknown> extends AbstractCrdtType<
         return this.value.size;
     }
 
-    public get(prop: string): T | undefined {
-        const result = this.value.get(prop);
+    public delete(prop: string): this {
+        this.value.delete(prop);
 
-        return result;
+        return this;
     }
 
     public set(prop: string, value: T): this {

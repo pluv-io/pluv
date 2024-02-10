@@ -30,12 +30,12 @@ export const NodeRedisStorageRoom: FC<NodeRedisStorageRoomProps> = () => {
                     id="button-add-message"
                     onClick={() => {
                         transact(() => {
-                            sharedType?.push([
+                            sharedType?.push(
                                 yjs.object({
                                     message: `new message ${messages?.length ?? 0}`,
                                     name: "John Doe",
-                                }).value,
-                            ]);
+                                }),
+                            );
                         });
                     }}
                     type="button"
