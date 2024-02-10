@@ -3,7 +3,7 @@ import { oneLine } from "common-tags";
 import ms from "ms";
 import { openTestPage, waitMs } from "../../../../utils";
 
-const TEST_URL = "http://localhost:3100/node-redis/storage";
+const TEST_URL = "http://localhost:3100/yjs/node-redis/storage";
 
 test.describe("Node Redis Storage", () => {
     test(

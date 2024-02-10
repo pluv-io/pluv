@@ -1,8 +1,8 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useState } from "react";
-import { CloudflareStorageRoom } from "../../../components";
-import { PluvRoomProvider } from "../../../pluv-io/yjs/cloudflare";
+import React, { useState } from "react";
+import { NodeRedisPresenceRoom } from "../../../../components";
+import { PluvRoomProvider } from "../../../../pluv-io/yjs/node-redis";
 
 export const Page: NextPage = () => {
     const router = useRouter();
@@ -11,7 +11,7 @@ export const Page: NextPage = () => {
 
     if (!router.isReady) return null;
 
-    const roomId = (router.query.room as string) ?? "e2e-cloudflare-storage";
+    const roomId = (router.query.room as string) ?? "e2e-node-redis-presence";
 
     return (
         <div>
@@ -35,15 +35,8 @@ export const Page: NextPage = () => {
             </button>
             <div>roomId: {roomId}</div>
             {enabled && (
-                <PluvRoomProvider
-                    debug={{
-                        input: ["$UPDATE_STORAGE"],
-                        output: ["$STORAGE_UPDATED", "$STORAGE_RECEIVED"],
-                    }}
-                    initialPresence={{ count: 0 }}
-                    room={roomId}
-                >
-                    <CloudflareStorageRoom />
+                <PluvRoomProvider initialPresence={{ count: 0 }} room={roomId}>
+                    <NodeRedisPresenceRoom />
                 </PluvRoomProvider>
             )}
         </div>

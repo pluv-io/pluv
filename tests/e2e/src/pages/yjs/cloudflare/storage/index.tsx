@@ -1,8 +1,8 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { NodeStorageRoom } from "../../../components";
-import { PluvRoomProvider } from "../../../pluv-io/yjs/node";
+import { CloudflareStorageRoom } from "../../../../components";
+import { PluvRoomProvider } from "../../../../pluv-io/yjs/cloudflare";
 
 export const Page: NextPage = () => {
     const router = useRouter();
@@ -11,7 +11,7 @@ export const Page: NextPage = () => {
 
     if (!router.isReady) return null;
 
-    const roomId = (router.query.room as string) ?? "e2e-node-storage";
+    const roomId = (router.query.room as string) ?? "e2e-cloudflare-storage";
 
     return (
         <div>
@@ -43,7 +43,7 @@ export const Page: NextPage = () => {
                     initialPresence={{ count: 0 }}
                     room={roomId}
                 >
-                    <NodeStorageRoom />
+                    <CloudflareStorageRoom />
                 </PluvRoomProvider>
             )}
         </div>

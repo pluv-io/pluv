@@ -1,8 +1,8 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
-import { NodeRedisPresenceRoom } from "../../../components";
-import { PluvRoomProvider } from "../../../pluv-io/yjs/node-redis";
+import { CloudflarePresenceRoom } from "../../../../components";
+import { PluvRoomProvider } from "../../../../pluv-io/yjs/cloudflare";
 
 export const Page: NextPage = () => {
     const router = useRouter();
@@ -11,7 +11,7 @@ export const Page: NextPage = () => {
 
     if (!router.isReady) return null;
 
-    const roomId = (router.query.room as string) ?? "e2e-node-redis-presence";
+    const roomId = (router.query.room as string) ?? "e2e-cloudflare-presence";
 
     return (
         <div>
@@ -35,8 +35,15 @@ export const Page: NextPage = () => {
             </button>
             <div>roomId: {roomId}</div>
             {enabled && (
-                <PluvRoomProvider initialPresence={{ count: 0 }} room={roomId}>
-                    <NodeRedisPresenceRoom />
+                <PluvRoomProvider
+                    debug={{
+                        input: ["$GET_OTHERS", "SEND_MESSAGE"],
+                        output: ["$REGISTERED"],
+                    }}
+                    initialPresence={{ count: 0 }}
+                    room={roomId}
+                >
+                    <CloudflarePresenceRoom />
                 </PluvRoomProvider>
             )}
         </div>

@@ -1,8 +1,8 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { NodeRedisStorageRoom } from "../../../components";
-import { PluvRoomProvider } from "../../../pluv-io/yjs/node-redis";
+import { NodeStorageRoom } from "../../../../components";
+import { PluvRoomProvider } from "../../../../pluv-io/yjs/node";
 
 export const Page: NextPage = () => {
     const router = useRouter();
@@ -11,7 +11,7 @@ export const Page: NextPage = () => {
 
     if (!router.isReady) return null;
 
-    const roomId = (router.query.room as string) ?? "e2e-node-redis-storage";
+    const roomId = (router.query.room as string) ?? "e2e-node-storage";
 
     return (
         <div>
@@ -43,7 +43,7 @@ export const Page: NextPage = () => {
                     initialPresence={{ count: 0 }}
                     room={roomId}
                 >
-                    <NodeRedisStorageRoom />
+                    <NodeStorageRoom />
                 </PluvRoomProvider>
             )}
         </div>

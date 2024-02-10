@@ -3,7 +3,7 @@ import { oneLine } from "common-tags";
 import ms from "ms";
 import { openTestPage, waitMs } from "../../../../utils";
 
-const TEST_URL = "http://localhost:3100/cloudflare/presence";
+const TEST_URL = "http://localhost:3100/yjs/cloudflare/presence";
 
 test.describe("Cloudflare Presence", () => {
     test(
