@@ -1,22 +1,26 @@
 import type { InferCrdtStorageJson } from "@pluv/crdt";
 import { AbstractCrdtType } from "@pluv/crdt";
 import { Array as YArray } from "yjs";
-import { isWrapper, toYjsValue } from "../shared";
+import { toYjsValue } from "../shared";
 import type { InferYjsJson, InferYjsType } from "../types";
 
 export class CrdtYjsArray<T extends unknown> extends AbstractCrdtType<
-    YArray<T>,
+    YArray<InferYjsType<T>>,
     InferYjsJson<T>[]
 > {
-    public readonly initialValue: T[] | readonly T[];
-    public value: YArray<T>;
+    public readonly initialValue:
+        | InferYjsType<T>[]
+        | readonly InferYjsType<T>[];
+    public value: YArray<InferYjsType<T>>;
 
     constructor(value: T[] | readonly T[] = []) {
         super();
 
-        this.initialValue = value.map((item) => toYjsValue(item));
-        this.value = new YArray<T>();
-        this.value.push(this.initialValue.slice());
+        const initialValue = value.map((item) => toYjsValue(item));
+
+        this.initialValue = initialValue;
+        this.value = new YArray<InferYjsType<T>>();
+        this.push(...initialValue.slice());
     }
 
     public get length(): number {
@@ -30,7 +34,7 @@ export class CrdtYjsArray<T extends unknown> extends AbstractCrdtType<
     }
 
     public insert(index: number, ...items: T[]): this {
-        const converted = items.map((item) => toYjsValue(item)) as T[];
+        const converted = items.map((item) => toYjsValue(item));
 
         this.value.insert(index, converted);
 

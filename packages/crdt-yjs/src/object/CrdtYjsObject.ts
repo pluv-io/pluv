@@ -1,4 +1,5 @@
-import { AbstractCrdtType, type InferCrdtStorageJson } from "@pluv/crdt";
+import type { InferCrdtStorageJson } from "@pluv/crdt";
+import { AbstractCrdtType } from "@pluv/crdt";
 import { Map as YMap } from "yjs";
 import { toYjsValue } from "../shared";
 import type { InferYjsJson, InferYjsType } from "../types";
@@ -6,10 +7,7 @@ import type { InferYjsJson, InferYjsType } from "../types";
 export class CrdtYjsObject<
     T extends Record<string, any>,
 > extends AbstractCrdtType<YMap<InferYjsType<T[keyof T]>>, InferYjsJson<T>> {
-    public initialValue: readonly (readonly [
-        key: string,
-        value: InferYjsType<T[keyof T]>,
-    ])[];
+    public initialValue: readonly (readonly [key: string, value: T[keyof T]])[];
     public value: YMap<InferYjsType<T[keyof T]>>;
 
     constructor(value: T = {} as T) {
@@ -25,8 +23,8 @@ export class CrdtYjsObject<
         this.value = new YMap(this.initialValue);
     }
 
-    public set(prop: string, value: T): this {
-        this.value.set(prop, toYjsValue(value));
+    public set<TProp extends keyof T>(prop: TProp, value: T[TProp]): this {
+        this.value.set(prop.toString(), toYjsValue(value));
 
         return this;
     }

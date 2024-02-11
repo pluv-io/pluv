@@ -1,4 +1,5 @@
-import { AbstractCrdtType, type InferCrdtStorageJson } from "@pluv/crdt";
+import type { InferCrdtStorageJson } from "@pluv/crdt";
+import { AbstractCrdtType } from "@pluv/crdt";
 import { Map as YMap } from "yjs";
 import { toYjsValue } from "../shared";
 import type { InferYjsJson, InferYjsType } from "../types";

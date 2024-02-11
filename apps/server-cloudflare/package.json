@@ -14,6 +14,7 @@
     "wrangler": "wrangler"
   },
   "dependencies": {
+    "@pluv/crdt-yjs": "workspace:^",
     "@pluv/io": "workspace:^",
     "@pluv/platform-cloudflare": "workspace:^",
     "zod": "^3.22.4"

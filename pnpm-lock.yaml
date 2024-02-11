@@ -29,6 +29,9 @@ importers:
 
   apps/server-cloudflare:
     dependencies:
+      '@pluv/crdt-yjs':
+        specifier: workspace:^
+        version: link:../../packages/crdt-yjs
       '@pluv/io':
         specifier: workspace:^
         version: link:../../packages/io
@@ -274,6 +277,9 @@ importers:
       '@pluv-internal/remark-plugins':
         specifier: workspace:^
         version: link:../../internal/remark-plugins
+      '@pluv/crdt-yjs':
+        specifier: workspace:^
+        version: link:../../packages/crdt-yjs
       '@pluv/react':
         specifier: workspace:^
         version: link:../../packages/react
