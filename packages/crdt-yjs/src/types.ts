@@ -1,5 +1,5 @@
+import type { Json } from "@pluv/types";
 import type {
-    AbstractType,
     Array as YArray,
     Map as YMap,
     Text as YText,
@@ -7,39 +7,58 @@ import type {
     XmlFragment as YXmlFragment,
     XmlText as YXmlText,
 } from "yjs";
-import type { YjsDoc } from "./doc";
-import type { YObject } from "./object";
+import type { CrdtYjsArray } from "./array";
+import type { CrdtYjsMap } from "./map";
+import type { CrdtYjsObject } from "./object";
+import type { CrdtYjsText } from "./text";
+import type { CrdtYjsXmlElement } from "./xmlElement";
+import type { CrdtYjsXmlFragment } from "./xmlFragment";
+import type { CrdtYjsXmlText } from "./xmlText";
 
-export type InferYjsDocJson<TDoc extends YjsDoc<any>> = TDoc extends YjsDoc<
-    infer ITypes
->
-    ? { [P in keyof ITypes]: InferYjsSharedTypeJson<ITypes[P]> }
-    : never;
+export type InferYjsType<T extends unknown> =
+    T extends CrdtYjsArray<infer IType>
+        ? YArray<IType>
+        : T extends CrdtYjsMap<infer IType>
+          ? YMap<IType>
+          : T extends CrdtYjsObject<infer IType>
+            ? YMap<IType[keyof IType]>
+            : T extends CrdtYjsText
+              ? YText
+              : T extends CrdtYjsXmlElement
+                ? YXmlElement
+                : T extends CrdtYjsXmlFragment
+                  ? YXmlFragment
+                  : T extends CrdtYjsXmlText
+                    ? YXmlText
+                    : T extends Json
+                      ? T
+                      : never;
 
-export type InferYjsDocSharedType<
-    TDoc extends YjsDoc<any>,
-    TKey extends
-        keyof InferYjsDocSharedTypes<TDoc> = keyof InferYjsDocSharedTypes<TDoc>,
-> = InferYjsDocSharedTypes<TDoc>[TKey];
-
-export type InferYjsDocSharedTypeJson<
-    TDoc extends YjsDoc<any>,
-    TKey extends
-        keyof InferYjsDocSharedTypes<TDoc> = keyof InferYjsDocSharedTypes<TDoc>,
-> = InferYjsSharedTypeJson<InferYjsDocSharedTypes<TDoc>[TKey]>;
-
-export type InferYjsDocSharedTypes<TDoc extends YjsDoc<any>> =
-    TDoc extends YjsDoc<infer ITypes> ? ITypes : never;
-
-export type InferYjsSharedTypeJson<TShared extends unknown> =
-    TShared extends AbstractType<any>
-        ? TShared extends YArray<infer IItem>
-            ? readonly InferYjsSharedTypeJson<IItem>[]
-            : TShared extends YObject<infer IObject>
-            ? { [P in keyof IObject]: InferYjsSharedTypeJson<IObject[P]> }
-            : TShared extends YMap<infer IItem>
-            ? Record<string, InferYjsSharedTypeJson<IItem>>
-            : TShared extends YText | YXmlElement | YXmlFragment | YXmlText
-            ? string
-            : never
-        : TShared;
+export type InferYjsJson<T extends unknown> =
+    T extends CrdtYjsArray<infer IType>
+        ? InferYjsJson<IType>[]
+        : T extends CrdtYjsMap<infer IType>
+          ? Record<string, InferYjsJson<IType>>
+          : T extends CrdtYjsObject<infer IType>
+            ? { [P in keyof IType]: InferYjsJson<IType[P]> }
+            : T extends
+                    | CrdtYjsText
+                    | CrdtYjsXmlElement
+                    | CrdtYjsXmlFragment
+                    | CrdtYjsXmlText
+                    | YText
+                    | YXmlElement
+                    | YXmlFragment
+                    | YXmlText
+              ? string
+              : T extends YArray<infer IType>
+                ? InferYjsJson<IType>[]
+                : T extends YMap<infer IType>
+                  ? Record<string, InferYjsJson<IType>>
+                  : T extends (infer IType)[]
+                    ? InferYjsJson<IType>[]
+                    : T extends Record<any, any>
+                      ? { [P in keyof T]: InferYjsJson<T[P]> }
+                      : T extends Json
+                        ? T
+                        : never;

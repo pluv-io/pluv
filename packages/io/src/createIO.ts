@@ -1,11 +1,10 @@
+import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import type {
     BaseClientEventRecord,
     BaseIOEventRecord,
     BaseUser,
     IOAuthorize,
     JsonObject,
-    Maybe,
-    MaybePromise,
 } from "@pluv/types";
 import type { AbstractPlatform } from "./AbstractPlatform";
 import type { GetInitialStorageFn, PluvIOListeners } from "./PluvIO";
@@ -19,6 +18,7 @@ export type CreateIOParams<
 > = Partial<PluvIOListeners<TPlatform>> & {
     authorize?: IOAuthorize<TAuthorizeUser, TAuthorizeRequired>;
     context?: TContext;
+    crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug?: boolean;
     getInitialStorage?: GetInitialStorageFn<TPlatform>;
     platform: TPlatform;
@@ -46,6 +46,7 @@ export const createIO = <
     const {
         authorize,
         context,
+        crdt,
         debug,
         getInitialStorage,
         onRoomDeleted,
@@ -62,6 +63,7 @@ export const createIO = <
     >({
         authorize,
         context,
+        crdt,
         debug,
         getInitialStorage,
         onRoomDeleted,

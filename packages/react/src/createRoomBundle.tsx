@@ -1,16 +1,20 @@
 import type {
     AbstractRoom,
-    InferYjsSharedTypeJson,
     MockedRoomEvents,
     PluvClient,
     PluvRoom,
     PluvRoomAddon,
     PluvRoomDebug,
-    TrackOriginOptions,
     UserInfo,
     WebSocketConnection,
 } from "@pluv/client";
 import { MockedRoom } from "@pluv/client";
+import type {
+    AbstractCrdtDoc,
+    AbstractCrdtDocFactory,
+    AbstractCrdtType,
+    InferCrdtStorageJson,
+} from "@pluv/crdt";
 import type {
     IOEventMessage,
     IOLike,
@@ -30,7 +34,6 @@ import {
     useEffect,
     useState,
 } from "react";
-import type { AbstractType, Doc } from "yjs";
 import {
     identity,
     shallowArrayEqual,
@@ -41,19 +44,21 @@ import {
 export type CreateRoomBundleOptions<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > = {
     addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
-    initialStorage?: () => TStorage;
+    initialStorage: AbstractCrdtDocFactory<TStorage>;
     presence?: InputZodLike<TPresence>;
-} & TrackOriginOptions;
+};
 
 type BaseRoomProviderProps<
     TPresence extends JsonObject,
-    TStorage extends Record<string, AbstractType<any>>,
+    TStorage extends Record<string, AbstractCrdtType<any, any>>,
 > = {
     children?: ReactNode;
-    initialStorage?: keyof TStorage extends never ? never : () => TStorage;
+    initialStorage?: keyof TStorage extends never
+        ? never
+        : AbstractCrdtDocFactory<TStorage>;
     room: string;
 } & (keyof TPresence extends never
     ? { initialPresence?: never }
@@ -62,7 +67,7 @@ type BaseRoomProviderProps<
 export type MockedRoomProviderProps<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TStorage extends Record<string, AbstractType<any>>,
+    TStorage extends Record<string, AbstractCrdtType<any, any>>,
 > = BaseRoomProviderProps<TPresence, TStorage> & {
     events?: MockedRoomEvents<TIO>;
 };
@@ -70,7 +75,7 @@ export type MockedRoomProviderProps<
 export type PluvRoomProviderProps<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TStorage extends Record<string, AbstractType<any>>,
+    TStorage extends Record<string, AbstractCrdtType<any, any>>,
 > = BaseRoomProviderProps<TPresence, TStorage> & {
     debug?: boolean | PluvRoomDebug<TIO>;
     onAuthorizationFail?: (error: Error) => void;
@@ -87,7 +92,7 @@ export type UpdateMyPresenceAction<TPresence extends JsonObject> =
 export interface CreateRoomBundle<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TStorage extends Record<string, AbstractType<any>>,
+    TStorage extends Record<string, AbstractCrdtType<any, any>>,
 > {
     // components
     MockedRoomProvider: FC<MockedRoomProviderProps<TIO, TPresence, TStorage>>;
@@ -104,7 +109,7 @@ export interface CreateRoomBundle<
         selector: (connection: WebSocketConnection) => T,
         options?: SubscriptionHookOptions<Id<T>>,
     ) => Id<T>;
-    usePluvDoc: () => Doc;
+    usePluvDoc: () => AbstractCrdtDoc<TStorage>;
     usePluvEvent: <TType extends keyof InferIOOutput<TIO>>(
         type: TType,
         callback: (data: Id<IOEventMessage<TIO, TType>>) => void,
@@ -133,12 +138,12 @@ export interface CreateRoomBundle<
     usePluvRoom: () => AbstractRoom<TIO, TPresence, TStorage>;
     usePluvStorage: <
         TKey extends keyof TStorage,
-        TData extends unknown = InferYjsSharedTypeJson<TStorage[TKey]>,
+        TData extends unknown = InferCrdtStorageJson<TStorage[TKey]>,
     >(
         key: TKey,
-        selector?: (data: InferYjsSharedTypeJson<TStorage[TKey]>) => TData,
-        options?: SubscriptionHookOptions<TData>,
-    ) => [data: TData, sharedType: TStorage[TKey]];
+        selector?: (data: InferCrdtStorageJson<TStorage[TKey]>) => TData,
+        options?: SubscriptionHookOptions<TData | null>,
+    ) => [data: TData | null, sharedType: TStorage[TKey] | null];
     usePluvTransact: () => (
         fn: (storage: TStorage) => void,
         origin?: string,
@@ -149,10 +154,10 @@ export interface CreateRoomBundle<
 export const createRoomBundle = <
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 >(
     client: PluvClient<TIO>,
-    options: CreateRoomBundleOptions<TIO, TPresence, TStorage> = {},
+    options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
 ): CreateRoomBundle<TIO, TPresence, TStorage> => {
     /**
      * !HACK
@@ -182,15 +187,10 @@ export const createRoomBundle = <
 
         const [room] = useState<MockedRoom<TIO, TPresence, TStorage>>(() => {
             return new MockedRoom<TIO, TPresence, TStorage>(_room, {
-                captureTimeout: options.captureTimeout,
                 events,
                 initialPresence,
-                initialStorage:
-                    typeof initialStorage === "function"
-                        ? initialStorage
-                        : options.initialStorage,
+                initialStorage: initialStorage ?? options.initialStorage,
                 presence: options.presence,
-                trackedOrigins: options.trackedOrigins,
             });
         });
 
@@ -223,7 +223,6 @@ export const createRoomBundle = <
         const [room] = useState<PluvRoom<TIO, TPresence, TStorage>>(() => {
             return client.createRoom<TPresence, TStorage>(_room, {
                 addons: options.addons,
-                captureTimeout: options.captureTimeout,
                 debug,
                 initialPresence,
                 initialStorage:
@@ -232,7 +231,6 @@ export const createRoomBundle = <
                         : options.initialStorage,
                 presence: options.presence,
                 onAuthorizationFail,
-                trackedOrigins: options.trackedOrigins,
             });
         });
 
@@ -518,30 +516,35 @@ export const createRoomBundle = <
 
     const usePluvStorage = <
         TKey extends keyof TStorage,
-        TData extends unknown = InferYjsSharedTypeJson<TStorage[TKey]>,
+        TData extends unknown = InferCrdtStorageJson<TStorage[TKey]>,
     >(
         key: TKey,
         selector = identity as (
-            data: InferYjsSharedTypeJson<TStorage[TKey]>,
+            data: InferCrdtStorageJson<TStorage[TKey]>,
         ) => TData,
-        options?: SubscriptionHookOptions<TData>,
-    ): [data: TData, sharedType: TStorage[TKey]] => {
+        options?: SubscriptionHookOptions<TData | null>,
+    ): [data: TData | null, sharedType: TStorage[TKey] | null] => {
         const room = usePluvRoom();
+        const rerender = useRerender();
+
+        room.subscribe("storage-loaded", () => {
+            rerender();
+        });
 
         const subscribe = useCallback(
             (onStoreChange: () => void) => room.storage(key, onStoreChange),
             [key, room],
         );
 
-        const getSnapshot = useCallback((): InferYjsSharedTypeJson<
+        const getSnapshot = useCallback((): InferCrdtStorageJson<
             TStorage[TKey]
-        > => {
-            return room.getStorage(key).toJSON();
+        > | null => {
+            return room.getStorage(key)?.toJson();
         }, [key, room]);
 
         const _selector = useCallback(
-            (snapshot: InferYjsSharedTypeJson<TStorage[TKey]>) => {
-                return selector(snapshot);
+            (snapshot: InferCrdtStorageJson<TStorage[TKey]> | null) => {
+                return snapshot === null ? null : selector(snapshot);
             },
             [selector],
         );
@@ -554,7 +557,7 @@ export const createRoomBundle = <
             options?.isEqual ?? fastDeepEqual,
         );
 
-        const sharedType = room.getStorage(key);
+        const sharedType = room.getStorage(key) ?? null;
 
         return [data, sharedType];
     };

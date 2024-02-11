@@ -1,7 +1,7 @@
 import hkdf from "@panva/hkdf";
-import { BaseUser } from "@pluv/types";
+import type { BaseUser } from "@pluv/types";
 import { EncryptJWT, jwtDecrypt } from "jose";
-import { AbstractPlatform } from "./AbstractPlatform";
+import type { AbstractPlatform } from "./AbstractPlatform";
 
 const DEFAULT_MAX_AGE_MS = 60_000;
 

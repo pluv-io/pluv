@@ -1,5 +1,5 @@
 name = "pluv-e2e-test"
-main = "src/server/cloudflare/index.ts"
+main = "src/server/yjs/cloudflare/index.ts"
 compatibility_date = "2022-09-29"
 
 [durable_objects]

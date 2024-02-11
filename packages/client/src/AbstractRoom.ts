@@ -1,12 +1,15 @@
-import type { InferYjsSharedTypeJson } from "@pluv/crdt-yjs";
 import type {
+    AbstractCrdtDoc,
+    AbstractCrdtType,
+    InferCrdtStorageJson,
+} from "@pluv/crdt";
+import type {
+    IOLike,
     Id,
     InferIOInput,
     InferIOOutput,
-    IOLike,
     JsonObject,
 } from "@pluv/types";
-import type { AbstractType, Doc } from "yjs";
 import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
 import type {
@@ -18,13 +21,15 @@ import type { UserInfo, WebSocketConnection } from "./types";
 export abstract class AbstractRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractType<any>> = {},
+    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > {
     public readonly id: string;
 
     constructor(room: string) {
         this.id = room;
     }
+
+    public abstract storageLoaded: boolean;
 
     public abstract broadcast<TEvent extends keyof InferIOInput<TIO>>(
         event: TEvent,
@@ -35,7 +40,7 @@ export abstract class AbstractRoom<
 
     public abstract canUndo(): boolean;
 
-    public abstract getDoc(): Doc;
+    public abstract getDoc(): AbstractCrdtDoc<TStorage>;
 
     public abstract event<TEvent extends keyof InferIOOutput<TIO>>(
         event: TEvent,
@@ -56,7 +61,7 @@ export abstract class AbstractRoom<
 
     public abstract getStorage<TKey extends keyof TStorage>(
         key: TKey,
-    ): TStorage[TKey];
+    ): TStorage[TKey] | null;
 
     public abstract other(
         connectionId: string,
@@ -67,12 +72,12 @@ export abstract class AbstractRoom<
 
     public abstract storage<TKey extends keyof TStorage>(
         key: TKey,
-        fn: (value: InferYjsSharedTypeJson<TStorage[TKey]>) => void,
+        fn: (value: InferCrdtStorageJson<TStorage[TKey]>) => void,
     ): () => void;
 
     public abstract storageRoot(
         fn: (value: {
-            [P in keyof TStorage]: InferYjsSharedTypeJson<TStorage[P]>;
+            [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;
         }) => void,
     ): () => void;
 

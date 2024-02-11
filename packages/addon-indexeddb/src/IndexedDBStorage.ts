@@ -1,5 +1,6 @@
 import { AbstractStorageStore } from "@pluv/client";
-import { IDBPDatabase, openDB } from "idb";
+import type { IDBPDatabase } from "idb";
+import { openDB } from "idb";
 
 const STORAGE_STORE_FLATTEN_THRESHOLD = 500;
 const UPGRADES_KEY = "__PLUV_UPDATES";

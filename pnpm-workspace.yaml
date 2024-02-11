@@ -6,6 +6,8 @@ packages:
   - "packages/addon-indexeddb"
   - "packages/cli"
   - "packages/client"
+  - "packages/crdt"
+  - "packages/crdt-loro"
   - "packages/crdt-yjs"
   - "packages/eslint-config-pluv"
   - "packages/io"

@@ -11,17 +11,19 @@ export interface StateNotifierSubjects<
     "my-presence": Subject<TPresence | null>;
     myself: Subject<Readonly<Id<UserInfo<TIO>>> | null>;
     others: Subject<readonly Id<UserInfo<TIO>>[]>;
+    "storage-loaded": Subject<boolean>;
 }
 
 type InferSubjectValue<
     TIO extends IOLike,
     TPresence extends JsonObject,
     TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
-> = StateNotifierSubjects<TIO, TPresence>[TSubject] extends Subject<
-    infer IValue
->
-    ? Id<IValue>
-    : never;
+> =
+    StateNotifierSubjects<TIO, TPresence>[TSubject] extends Subject<
+        infer IValue
+    >
+        ? Id<IValue>
+        : never;
 
 export type SubscriptionCallback<
     TIO extends IOLike,
@@ -38,6 +40,7 @@ export class StateNotifier<
         "my-presence": makeSubject<TPresence>(),
         myself: makeSubject<Readonly<Id<UserInfo<TIO>>> | null>(),
         others: makeSubject<readonly Id<UserInfo<TIO>>[]>(),
+        "storage-loaded": makeSubject<true>(),
     };
 
     public subscribe<

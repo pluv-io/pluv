@@ -24,6 +24,7 @@
 	},
 	"dependencies": {
 		"@pluv/client": "workspace:^",
+		"@pluv/crdt": "workspace:^",
 		"idb": "^8.0.0"
 	},
 	"devDependencies": {

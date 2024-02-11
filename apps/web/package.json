@@ -29,6 +29,7 @@
         "@pluv-internal/react-hooks": "workspace:^",
         "@pluv-internal/react-icons": "workspace:^",
         "@pluv-internal/remark-plugins": "workspace:^",
+        "@pluv/crdt-yjs": "workspace:^",
         "@pluv/react": "workspace:^",
         "@seznam/compose-react-refs": "^1.0.6",
         "@types/common-tags": "^1.8.4",
@@ -47,7 +48,7 @@
         "react-dom": "^18.2.0",
         "styled-components": "^6.1.8",
         "twin.macro": "^3.4.1",
-        "yjs": "^13.6.11",
+        "yjs": "^13.6.12",
         "zod": "^3.22.4"
     },
     "devDependencies": {

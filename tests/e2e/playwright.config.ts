@@ -59,19 +59,23 @@ const config: PlaywrightTestConfig = {
     /* Run your local dev server before starting the tests */
     webServer: [
         {
-            command: "pnpm dev-client",
+            command: "pnpm dev:client",
             port: 3100,
         },
         {
-            command: "pnpm dev-server-cloudflare",
+            command: "pnpm dev:loro:server:node",
+            port: 3112,
+        },
+        {
+            command: "pnpm dev:yjs:server:cloudflare",
             port: 3101,
         },
         {
-            command: "pnpm dev-server-node",
+            command: "pnpm dev:yjs:server:node",
             port: 3102,
         },
         {
-            command: "pnpm dev-server-node-redis",
+            command: "pnpm dev:yjs:server:node-redis",
             port: 3103,
         },
     ],

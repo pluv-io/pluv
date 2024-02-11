@@ -1,5 +1,6 @@
 import type { io } from "@pluv-apps/server-cloudflare/src/pluv-io";
-import { createBundle, createClient, y } from "@pluv/react";
+import { yjs } from "@pluv/crdt-yjs";
+import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
 
 const client = createClient<typeof io>({
@@ -36,9 +37,9 @@ export const {
     presence: z.object({
         demoChessSquare: z.nullable(z.string()),
     }),
-    initialStorage: () => ({
-        demo: y.object({
-            chessHistory: y.array(["e4"]),
+    initialStorage: yjs.doc(() => ({
+        demo: yjs.object({
+            chessHistory: yjs.array(["e4"]),
         }),
-    }),
+    })),
 });

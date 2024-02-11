@@ -1,0 +1,19 @@
+{
+	"extends": "@pluv/tsconfig/node.json",
+	"include": ["**/*.ts"],
+	"compilerOptions": {
+		"baseUrl": ".",
+		"declaration": false,
+		"declarationMap": false,
+		"types": ["@types/node"],
+		"paths": {
+			"@pluv/client": ["../../../../../../packages/client/dist"],
+			"@pluv/crdt-loro": ["../../../../../../packages/crdt-loro/dist"],
+			"@pluv/io": ["../../../../../../packages/io/dist"],
+			"@pluv/platform-node": ["../../../../../../packages/platform-node/dist"],
+			"@pluv/react": ["../../../../../../packages/react/dist"],
+			"@pluv/types": ["../../../../../../packages/types/dist"],
+			"ws": ["../../../node_modules/@types/ws"]
+		}
+	}
+}

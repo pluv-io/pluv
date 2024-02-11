@@ -1,17 +1,16 @@
-import type { YjsDoc } from "@pluv/crdt-yjs";
-import { doc } from "@pluv/crdt-yjs";
+import type { AbstractCrdtDoc, AbstractCrdtDocFactory } from "@pluv/crdt";
 import type {
     BaseIOAuthorize,
     BaseIOEventRecord,
     EventMessage,
     EventRecord,
+    IOAuthorize,
+    IOLike,
     Id,
     InferEventMessage,
     InferIOAuthorize,
     InferIOAuthorizeUser,
     InferIOInput,
-    IOAuthorize,
-    IOLike,
     JsonObject,
     Maybe,
 } from "@pluv/types";
@@ -64,6 +63,7 @@ export type IORoomConfig<
 > = Partial<IORoomListeners<TPlatform>> & {
     authorize?: TAuthorize;
     context: TContext & InferPlatformRoomContextType<TPlatform>;
+    crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug: boolean;
     events: InferEventConfig<
         TPlatform,
@@ -100,9 +100,10 @@ export class IORoom<
     private readonly _context: TContext &
         InferPlatformRoomContextType<TPlatform>;
     private readonly _debug: boolean;
+    private readonly _docFactory: AbstractCrdtDocFactory<any>;
     private readonly _platform: TPlatform;
 
-    private _doc: YjsDoc<any> = doc();
+    private _doc: AbstractCrdtDoc<any>;
     private _listeners: IORoomListeners<TPlatform>;
     private _sessions = new Map<string, WebSocketSession>();
     private _uninitialize: (() => Promise<void>) | null = null;
@@ -131,11 +132,13 @@ export class IORoom<
             TOutputSync
         >,
     ) {
-        const { authorize, context, debug, events, onDestroy, platform } =
+        const { authorize, context, crdt, debug, events, onDestroy, platform } =
             config;
 
         this._context = context;
         this._debug = debug;
+        this._docFactory = crdt.doc({});
+        this._doc = this._docFactory.getEmpty();
         this._events = events;
         this._platform = platform;
 
@@ -449,10 +452,10 @@ export class IORoom<
         this._uninitialize = async () => {
             this._platform.pubSub.unsubscribe(pubSubId);
 
-            const encodedState = this._doc.encodeStateAsUpdate();
+            const encodedState = this._doc.getEncodedState();
 
             this._doc.destroy();
-            this._doc = doc();
+            this._doc = this._docFactory.getEmpty();
 
             this._listeners.onDestroy({
                 ...this._context,
