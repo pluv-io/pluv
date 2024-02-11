@@ -34,8 +34,8 @@ export const MdxPre = (props: MdxPreProps): ReactElement | null => {
             return hasChildren(_children)
                 ? getChildrenText(_children.props.children)
                 : typeof _children === "string"
-                ? _children
-                : "";
+                  ? _children
+                  : "";
         };
 
         return getChildrenText(children).trimEnd();
