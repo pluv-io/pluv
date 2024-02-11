@@ -50,7 +50,18 @@ export class CrdtYjsDoc<
 
             if (node instanceof CrdtYjsMap || node instanceof CrdtYjsObject) {
                 const yMap = this.value.get(key, YMap) as YMap<any>;
-                Array.from(node.initialValue.entries()).forEach(([k, v]) => {
+                node.initialValue.forEach(([k, v]) => {
+                    yMap.set(k.toString(), v);
+                });
+
+                node.value = yMap;
+
+                return { ...acc, [key]: node };
+            }
+
+            if (node instanceof CrdtYjsObject) {
+                const yMap = this.value.get(key, YMap) as YMap<any>;
+                node.initialValue.forEach(([k, v]) => {
                     yMap.set(k.toString(), v);
                 });
 
