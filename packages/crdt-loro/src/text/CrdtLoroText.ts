@@ -1,10 +1,12 @@
 import { AbstractCrdtType } from "@pluv/crdt";
 import { LoroText } from "loro-crdt";
+import type { CrdtLoroDoc } from "../doc/CrdtLoroDoc";
 import { cloneType } from "../shared";
 
 export class CrdtLoroText extends AbstractCrdtType<LoroText, string> {
     public initalValue: string;
 
+    private _doc: CrdtLoroDoc<any> | null = null;
     private _initialized: boolean = false;
     private _value: LoroText = new LoroText();
 
@@ -13,6 +15,12 @@ export class CrdtLoroText extends AbstractCrdtType<LoroText, string> {
 
         this.initalValue = value;
         this.value = new LoroText();
+    }
+
+    public set doc(doc: CrdtLoroDoc<any>) {
+        if (this._doc) throw new Error("Cannot overwrite array doc");
+
+        this._doc = doc;
     }
 
     public get length(): number {
@@ -36,6 +44,7 @@ export class CrdtLoroText extends AbstractCrdtType<LoroText, string> {
         this._guardInitialized();
 
         this.value.delete(index, length);
+        this._doc?.value.commit();
 
         return this;
     }
@@ -44,6 +53,7 @@ export class CrdtLoroText extends AbstractCrdtType<LoroText, string> {
         this._guardInitialized();
 
         this.value.insert(index, text);
+        this._doc?.value.commit();
 
         return this;
     }

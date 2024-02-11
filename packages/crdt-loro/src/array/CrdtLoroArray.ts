@@ -1,6 +1,7 @@
 import { AbstractCrdtType, type InferCrdtStorageJson } from "@pluv/crdt";
 import { LoroList } from "loro-crdt";
-import { cloneType, getLoroContainerType } from "../shared";
+import type { CrdtLoroDoc } from "../doc/CrdtLoroDoc";
+import { cloneType, getLoroContainerType, isWrapper } from "../shared";
 import type { InferLoroJson } from "../types";
 
 export class CrdtLoroArray<T extends unknown> extends AbstractCrdtType<
@@ -9,6 +10,7 @@ export class CrdtLoroArray<T extends unknown> extends AbstractCrdtType<
 > {
     public readonly initialValue: T[] | readonly T[];
 
+    private _doc: CrdtLoroDoc<any> | null = null;
     private _initialized: boolean = false;
     private _value: LoroList<T[]> = new LoroList();
 
@@ -16,6 +18,12 @@ export class CrdtLoroArray<T extends unknown> extends AbstractCrdtType<
         super();
 
         this.initialValue = value.slice();
+    }
+
+    public set doc(doc: CrdtLoroDoc<any>) {
+        if (this._doc) throw new Error("Cannot overwrite array doc");
+
+        this._doc = doc;
     }
 
     public get length(): number {
@@ -39,6 +47,7 @@ export class CrdtLoroArray<T extends unknown> extends AbstractCrdtType<
         this._guardInitialized();
 
         this.value.delete(index, length);
+        this._doc?.value.commit();
 
         return this;
     }
@@ -49,8 +58,13 @@ export class CrdtLoroArray<T extends unknown> extends AbstractCrdtType<
         items.forEach((item, i) => {
             if (!(item instanceof AbstractCrdtType)) {
                 this.value.insert(index + i, item);
+                this._doc?.value.commit();
 
                 return this;
+            }
+
+            if (!isWrapper(item)) {
+                throw new Error("This type is not yet supported");
             }
 
             const containerType = getLoroContainerType(item);
@@ -59,10 +73,13 @@ export class CrdtLoroArray<T extends unknown> extends AbstractCrdtType<
                 containerType,
             );
 
-            cloneType({ source: item as any, target: container as any });
+            cloneType({ source: item, target: container as any });
+            if (this._doc) item.doc = this._doc;
 
             return this;
         });
+
+        this._doc?.value.commit();
 
         return this;
     }

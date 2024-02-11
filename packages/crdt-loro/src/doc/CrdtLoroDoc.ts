@@ -28,6 +28,7 @@ export class CrdtLoroDoc<
                 const loroList = this.value.getList(key);
 
                 node.value = loroList;
+                node.doc = this;
 
                 return { ...acc, [key]: node };
             }
@@ -36,6 +37,7 @@ export class CrdtLoroDoc<
                 const loroMap = this.value.getMap(key);
 
                 node.value = loroMap;
+                node.doc = this;
 
                 return { ...acc, [key]: node };
             }
@@ -44,6 +46,7 @@ export class CrdtLoroDoc<
                 const loroText = this.value.getText(key);
 
                 node.value = loroText;
+                node.doc = this;
 
                 return { ...acc, [key]: loroText };
             }

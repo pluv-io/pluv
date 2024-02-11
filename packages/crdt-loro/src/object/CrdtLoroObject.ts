@@ -1,6 +1,7 @@
 import { AbstractCrdtType, type InferCrdtStorageJson } from "@pluv/crdt";
 import { LoroMap } from "loro-crdt";
-import { cloneType, getLoroContainerType } from "../shared";
+import type { CrdtLoroDoc } from "../doc/CrdtLoroDoc";
+import { cloneType, getLoroContainerType, isWrapper } from "../shared";
 import type { InferLoroJson } from "../types";
 
 export class CrdtLoroObject<
@@ -8,6 +9,7 @@ export class CrdtLoroObject<
 > extends AbstractCrdtType<LoroMap<T>, InferLoroJson<T>> {
     public readonly initialValue: readonly (readonly [key: string, value: T])[];
 
+    private _doc: CrdtLoroDoc<any> | null = null;
     private _initialized: boolean = false;
     private _value: LoroMap<T> = new LoroMap();
 
@@ -17,6 +19,12 @@ export class CrdtLoroObject<
         this.initialValue = Object.entries(value).map(
             ([k, v]) => [k, v] as [key: string, value: T],
         );
+    }
+
+    public set doc(doc: CrdtLoroDoc<any>) {
+        if (this._doc) throw new Error("Cannot overwrite array doc");
+
+        this._doc = doc;
     }
 
     public get size(): number {
@@ -41,17 +49,22 @@ export class CrdtLoroObject<
 
         if (!(value instanceof AbstractCrdtType)) {
             this.value.set(prop, value);
+            this._doc?.value.commit();
 
             return this;
+        }
+
+        if (!isWrapper(value)) {
+            throw new Error("This type is not yet supported");
         }
 
         const containerType = getLoroContainerType(value);
         const container = this.value.setContainer(prop, containerType);
 
-        cloneType({
-            source: value as any,
-            target: container as any,
-        });
+        cloneType({ source: value, target: container as any });
+        if (this._doc) value.doc = this._doc;
+
+        this._doc?.value.commit();
 
         return this;
     }
