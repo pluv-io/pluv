@@ -1516,6 +1516,9 @@ importers:
       ioredis:
         specifier: ^5.3.2
         version: 5.3.2
+      loro-crdt:
+        specifier: ^0.10.1
+        version: 0.10.1
       ms:
         specifier: ^2.1.3
         version: 2.1.3
@@ -12249,11 +12252,9 @@ packages:
     resolution: {integrity: sha512-1PlaxcaJirQ7Q4SZ9SW0UfaxFezlXNE4Ccqgd7VdA/KFkRu0/AUQu6uKbR74njoWLzwcupBR7OclFMMEjjh5Eg==}
     dependencies:
       loro-wasm: 0.10.1
-    dev: true
 
   /loro-wasm@0.10.1:
     resolution: {integrity: sha512-H8NmkUcGyg0bnhTl87Xma7TBoJUtEuq9kKQA+KimHqVj5xi5r1raog8DN3XYVotUzKEC0owRGvt6orJSdYRCtw==}
-    dev: true
 
   /lower-case@2.0.2:
     resolution: {integrity: sha512-7fm3l3NAF9WfN6W3JOmf5drwpVqX78JtoGJ3A6W0a6ZnldM41w2fV5D490psKFTpMds8TJse/eHLFFsNHHjHgg==}
