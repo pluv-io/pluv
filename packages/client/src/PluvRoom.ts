@@ -968,12 +968,16 @@ export class PluvRoom<
             this._addToStorageStore(event.update);
             this._emitSharedTypes();
 
-            if (origin === ORIGIN_INITIALIZED || !origin) return;
+            if (
+                origin === ORIGIN_INITIALIZED ||
+                origin === ORIGIN_STORAGE_UPDATED
+            ) {
+                return;
+            }
+
             if (!this._state.webSocket) return;
             if (!this._state.connection.id) return;
             if (this._state.webSocket.readyState !== WebSocket.OPEN) return;
-
-            if (origin === ORIGIN_STORAGE_UPDATED) return;
 
             this._sendMessage({
                 type: "$UPDATE_STORAGE",

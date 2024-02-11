@@ -11,7 +11,7 @@ export interface DocSubscribeCallbackParams<
 > {
     doc: AbstractCrdtDoc<T>;
     local: boolean;
-    origin?: string;
+    origin?: string | null;
     update: string;
 }
 

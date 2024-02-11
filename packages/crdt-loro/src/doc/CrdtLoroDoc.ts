@@ -180,7 +180,7 @@ export class CrdtLoroDoc<
             listener({
                 doc: this,
                 local: event.local,
-                origin: event.origin,
+                origin: event.origin ? String(event.origin) : null,
                 update,
             });
         };

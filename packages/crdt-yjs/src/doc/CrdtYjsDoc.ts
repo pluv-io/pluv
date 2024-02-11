@@ -197,7 +197,7 @@ export class CrdtYjsDoc<
             listener({
                 doc: this,
                 local: origin === null || typeof origin === "undefined",
-                origin: String(origin),
+                origin: origin ? String(origin) : null,
                 update: fromUint8Array(update),
             });
         };
