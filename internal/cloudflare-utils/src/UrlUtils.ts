@@ -51,8 +51,8 @@ export class UrlUtils {
         const origin: string = UrlUtils._isLocationLike(req)
             ? req.origin
             : UrlUtils._isRequestLike(req)
-            ? req.url
-            : "";
+              ? req.url
+              : "";
 
         if (!origin) {
             return path;

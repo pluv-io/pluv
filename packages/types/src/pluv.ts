@@ -96,11 +96,8 @@ export type InferEventMessage<
     [P in TEvent]: P extends string ? Id<EventMessage<P, TEvents[P]>> : never;
 }[TEvent];
 
-export type InferIOAuthorize<TIO extends IOLike> = TIO extends IOLike<
-    infer IAuthorize
->
-    ? IAuthorize
-    : never;
+export type InferIOAuthorize<TIO extends IOLike> =
+    TIO extends IOLike<infer IAuthorize> ? IAuthorize : never;
 
 export type InferIOAuthorizeRequired<TAuthorize extends IOAuthorize<any, any>> =
     TAuthorize extends IOAuthorize<any, infer IRequired> ? IRequired : never;
@@ -112,49 +109,28 @@ export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any>> =
             : IUser | null
         : never;
 
-export type InferIOInput<TIO extends IOLike> = TIO extends IOLike<
-    any,
-    infer IInput
->
-    ? IInput
-    : never;
+export type InferIOInput<TIO extends IOLike> =
+    TIO extends IOLike<any, infer IInput> ? IInput : never;
 
-export type InferIOOutput<TIO extends IOLike> = TIO extends IOLike<
-    any,
-    any,
-    infer IOutputBroadcast,
-    infer IOutputSelf,
-    infer IOutputSync
->
-    ? Spread<[IOutputBroadcast, IOutputSelf, IOutputSync]>
-    : never;
+export type InferIOOutput<TIO extends IOLike> =
+    TIO extends IOLike<
+        any,
+        any,
+        infer IOutputBroadcast,
+        infer IOutputSelf,
+        infer IOutputSync
+    >
+        ? Spread<[IOutputBroadcast, IOutputSelf, IOutputSync]>
+        : never;
 
-export type InferIOOutputBroadcast<TIO extends IOLike> = TIO extends IOLike<
-    any,
-    any,
-    infer IOutput
->
-    ? IOutput
-    : never;
+export type InferIOOutputBroadcast<TIO extends IOLike> =
+    TIO extends IOLike<any, any, infer IOutput> ? IOutput : never;
 
-export type InferIOOutputSelf<TIO extends IOLike> = TIO extends IOLike<
-    any,
-    any,
-    any,
-    infer IOutput
->
-    ? IOutput
-    : never;
+export type InferIOOutputSelf<TIO extends IOLike> =
+    TIO extends IOLike<any, any, any, infer IOutput> ? IOutput : never;
 
-export type InferIOOutputSync<TIO extends IOLike> = TIO extends IOLike<
-    any,
-    any,
-    any,
-    any,
-    infer IOutput
->
-    ? IOutput
-    : never;
+export type InferIOOutputSync<TIO extends IOLike> =
+    TIO extends IOLike<any, any, any, any, infer IOutput> ? IOutput : never;
 
 export type InputZodLike<TData extends JsonObject> = {
     _input: TData;

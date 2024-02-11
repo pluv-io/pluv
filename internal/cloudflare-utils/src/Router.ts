@@ -13,13 +13,13 @@ export type PathParams<T extends string> = T extends string
                   [PathParamRecord<IParamName>, PathParams<`/${IRestParam}`>]
               >
             : IFullParam extends `${infer IParamName}${"+" | "*"}`
-            ? PathParamRecord<IParamName, string[]>
-            : PathParamRecord<IFullParam>
+              ? PathParamRecord<IParamName, string[]>
+              : PathParamRecord<IFullParam>
         : T extends `/${infer IFullPath}`
-        ? IFullPath extends `${string}/${infer IRestParam}`
-            ? PathParams<`/${IRestParam}`>
-            : {}
-        : {}
+          ? IFullPath extends `${string}/${infer IRestParam}`
+              ? PathParams<`/${IRestParam}`>
+              : {}
+          : {}
     : `Error: Could not resolve path: ${T}`;
 
 interface RouterPathHandlerHelpers<TContext> {
@@ -186,8 +186,8 @@ export class Router<
                     [key]: Array.isArray(previous)
                         ? [...previous, decoded]
                         : typeof previous !== "undefined"
-                        ? [previous, decoded]
-                        : decoded,
+                          ? [previous, decoded]
+                          : decoded,
                 };
             },
             {} as ParsedUrlQuery,
