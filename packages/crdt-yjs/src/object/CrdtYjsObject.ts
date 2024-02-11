@@ -13,13 +13,10 @@ export class CrdtYjsObject<
     constructor(value: T = {} as T) {
         super();
 
-        this.initialValue = Object.entries(value).map(
-            ([k, v]) =>
-                [k, toYjsValue(v)] as readonly [
-                    key: string,
-                    value: InferYjsType<T[keyof T]>,
-                ],
-        );
+        this.initialValue = Object.entries(value).map(([k, v]) => [
+            k,
+            toYjsValue(v),
+        ]);
         this.value = new YMap(this.initialValue);
     }
 

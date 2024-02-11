@@ -20,7 +20,7 @@ export class CrdtYjsArray<T extends unknown> extends AbstractCrdtType<
 
         this.initialValue = initialValue;
         this.value = new YArray<InferYjsType<T>>();
-        this.push(...initialValue.slice());
+        this.push(...value);
     }
 
     public get length(): number {
