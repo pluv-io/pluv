@@ -1,141 +1,208 @@
-import {
-    Container,
-    LoroList,
-    LoroMap,
-    LoroText,
-    getType,
-    isContainer,
-} from "loro-crdt";
-import { isWrapper } from "./isWrapper";
+import { AbstractCrdtType } from "@pluv/crdt";
+import type { Container } from "loro-crdt";
+import { LoroList, LoroMap, LoroText } from "loro-crdt";
+import { CrdtLoroArray } from "../array";
+import { CrdtLoroMap } from "../map";
+import { CrdtLoroObject } from "../object";
+import { CrdtLoroText } from "../text";
 
 interface CloneArrayParams<T extends unknown> {
-    source: LoroList<T[]>;
+    source: CrdtLoroArray<T>;
     target: LoroList<T[]>;
 }
 
-interface CloneMapParams<T extends Record<string, any>> {
-    source: LoroMap<T>;
+interface CloneMapParams<T extends unknown> {
+    source: CrdtLoroMap<T>;
+    target: LoroMap<Record<string, T>>;
+}
+
+interface CloneObjectParams<T extends Record<string, any>> {
+    source: CrdtLoroObject<T>;
     target: LoroMap<T>;
 }
 
 interface CloneTextParams {
-    source: LoroText;
+    source: CrdtLoroText;
     target: LoroText;
 }
 
+type SourceType<TType extends Container> =
+    TType extends LoroList<(infer I)[]>
+        ? CrdtLoroArray<I>
+        : TType extends LoroMap<infer I>
+          ? CrdtLoroMap<I[keyof I]> | CrdtLoroObject<I>
+          : TType extends LoroText
+            ? CrdtLoroText
+            : never;
+
 export interface CloneTypeParams<TType extends Container> {
-    source: TType;
+    source: SourceType<TType>;
     target: TType;
 }
 
 function cloneArray<T extends unknown>(params: CloneArrayParams<T>): void {
     const { source, target } = params;
 
-    const items = source.toArray();
+    const items = source.initialValue;
 
     items.forEach((item, i) => {
-        const sourceItem =
-            !isContainer(item) && isWrapper(item) ? item.value : item;
+        if (!(item instanceof AbstractCrdtType)) {
+            target.insert(i, item);
 
-        if (isContainer(sourceItem)) {
-            const containerType = getType(sourceItem);
-
-            switch (containerType) {
-                case "List": {
-                    const loroList = target.insertContainer(i, "List");
-
-                    cloneArray({
-                        source: sourceItem as LoroList,
-                        target: loroList,
-                    });
-
-                    return;
-                }
-                case "Map": {
-                    const loroMap = target.insertContainer(i, "Map");
-
-                    cloneMap({
-                        source: sourceItem as LoroMap,
-                        target: loroMap,
-                    });
-
-                    return;
-                }
-                case "Text": {
-                    const loroText = target.insertContainer(i, "Text");
-
-                    cloneText({
-                        source: sourceItem as LoroText,
-                        target: loroText,
-                    });
-
-                    return;
-                }
-                default:
-                    throw new Error("This type is not yet supported");
-            }
+            return;
         }
 
-        target.insert(i, item);
+        if (item instanceof CrdtLoroArray) {
+            const list = target.insertContainer(i, "List");
+
+            item.value = list;
+            cloneArray({ source: item, target: list });
+
+            return;
+        }
+
+        if (item instanceof CrdtLoroMap) {
+            const map = target.insertContainer(i, "Map");
+
+            item.value = map;
+            cloneMap({ source: item, target: map });
+
+            return;
+        }
+
+        if (item instanceof CrdtLoroObject) {
+            const map = target.insertContainer(i, "Map");
+
+            item.value = map;
+            cloneObject({ source: item, target: map });
+
+            return;
+        }
+
+        if (item instanceof CrdtLoroText) {
+            const text = target.insertContainer(i, "Text");
+
+            item.value = text;
+            cloneText({ source: item, target: text });
+
+            return;
+        }
+
+        throw new Error("This type is not yet supported");
     });
 }
 
-function cloneMap<T extends Record<string, any>>(
-    params: CloneMapParams<T>,
+function cloneMap<T extends unknown>(params: CloneMapParams<T>): void {
+    const { source, target } = params;
+
+    const items = source.initialValue;
+
+    items.forEach(([key, item]) => {
+        if (!(item instanceof AbstractCrdtType)) {
+            target.set(key, item);
+
+            return;
+        }
+
+        if (item instanceof CrdtLoroArray) {
+            const list = target.setContainer(key, "List");
+
+            item.value = list;
+            cloneArray({ source: item, target: list });
+
+            return;
+        }
+
+        if (item instanceof CrdtLoroMap) {
+            const map = target.setContainer(key, "Map");
+
+            item.value = map;
+            cloneMap({ source: item, target: map });
+
+            return;
+        }
+
+        if (item instanceof CrdtLoroObject) {
+            const map = target.setContainer(key, "Map");
+
+            item.value = map;
+            cloneObject({ source: item, target: map });
+
+            return;
+        }
+
+        if (item instanceof CrdtLoroText) {
+            const text = target.setContainer(key, "Text");
+
+            item.value = text;
+            cloneText({ source: item, target: text });
+
+            return;
+        }
+
+        throw new Error("This type is not yet supported");
+    });
+}
+
+function cloneObject<T extends Record<string, any>>(
+    params: CloneObjectParams<T>,
 ): void {
     const { source, target } = params;
 
-    source.entries().forEach(([key, item]) => {
-        const sourceItem =
-            !isContainer(item) && isWrapper(item) ? item.value : item;
+    const items = source.initialValue;
 
-        if (isContainer(item)) {
-            const containerType = getType(sourceItem);
+    items.forEach(([key, item]) => {
+        if (!(item instanceof AbstractCrdtType)) {
+            target.set(key, item);
 
-            switch (containerType) {
-                case "List": {
-                    const loroList = target.setContainer(key, "List");
-
-                    cloneArray({
-                        source: sourceItem as LoroList,
-                        target: loroList,
-                    });
-
-                    return;
-                }
-                case "Map": {
-                    const loroMap = target.setContainer(key, "Map");
-
-                    cloneMap({
-                        source: sourceItem as LoroMap,
-                        target: loroMap,
-                    });
-
-                    return;
-                }
-                case "Text": {
-                    const loroText = target.setContainer(key, "Text");
-
-                    cloneText({
-                        source: sourceItem as LoroText,
-                        target: loroText,
-                    });
-
-                    return;
-                }
-                default:
-                    throw new Error("This type is not yet supported");
-            }
+            return;
         }
 
-        target.set(key, item);
+        if (item instanceof CrdtLoroArray) {
+            const list = target.setContainer(key, "List");
+
+            item.value = list;
+            cloneArray({ source: item, target: list });
+
+            return;
+        }
+
+        if (item instanceof CrdtLoroMap) {
+            const map = target.setContainer(key, "Map");
+
+            item.value = map;
+            cloneMap({ source: item, target: map });
+
+            return;
+        }
+
+        if (item instanceof CrdtLoroObject) {
+            const map = target.setContainer(key, "Map");
+
+            item.value = map;
+            cloneObject({ source: item, target: map });
+
+            return;
+        }
+
+        if (item instanceof CrdtLoroText) {
+            const text = target.setContainer(key, "Text");
+
+            item.value = text;
+            cloneText({ source: item, target: text });
+
+            return;
+        }
+
+        throw new Error("This type is not yet supported");
     });
 }
 
 function cloneText(params: CloneTextParams): void {
     const { source, target } = params;
 
-    target.insert(0, source.toString());
+    source.value = target;
+    source.insert(0, source.initalValue);
 }
 
 export const cloneType = <TType extends Container>(
@@ -143,27 +210,29 @@ export const cloneType = <TType extends Container>(
 ) => {
     const { source, target } = params;
 
-    const containerType = getType(target);
+    if (source instanceof CrdtLoroArray) {
+        cloneArray({ source, target: target as LoroList });
 
-    switch (containerType) {
-        case "List":
-            return cloneArray({
-                source: source as LoroList,
-                target: target as LoroList,
-            });
-        case "Map": {
-            return cloneMap({
-                source: source as LoroMap,
-                target: target as LoroMap,
-            });
-        }
-        case "Text": {
-            return cloneText({
-                source: source as LoroText,
-                target: target as LoroText,
-            });
-        }
-        default:
-            throw new Error("This type is not yet supported");
+        return;
     }
+
+    if (source instanceof CrdtLoroMap) {
+        cloneMap({ source, target: target as LoroMap });
+
+        return;
+    }
+
+    if (source instanceof CrdtLoroObject) {
+        cloneObject({ source, target: target as LoroMap });
+
+        return;
+    }
+
+    if (source instanceof CrdtLoroText) {
+        cloneText({ source, target: target as LoroText });
+
+        return;
+    }
+
+    throw new Error("This type is not yet supported");
 };

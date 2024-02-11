@@ -1,38 +1,66 @@
 import { AbstractCrdtType, type InferCrdtStorageJson } from "@pluv/crdt";
 import { LoroMap } from "loro-crdt";
-import { toLoroValue } from "../shared";
-import type { InferLoroJson, InferLoroType } from "../types";
+import { cloneType, getLoroContainerType } from "../shared";
+import type { InferLoroJson } from "../types";
 
 export class CrdtLoroObject<
     T extends Record<string, any>,
 > extends AbstractCrdtType<LoroMap<T>, InferLoroJson<T>> {
-    public readonly initialValue: readonly (readonly [
-        key: string,
-        value: InferLoroType<T>,
-    ])[];
-    public value: LoroMap<T>;
+    public readonly initialValue: readonly (readonly [key: string, value: T])[];
+
+    private _initialized: boolean = false;
+    private _value: LoroMap<T> = new LoroMap();
 
     constructor(value: T) {
         super();
 
-        this.initialValue = Object.entries(value).map(([k, v]) => [
-            k,
-            toLoroValue(v),
-        ]) as readonly (readonly [key: string, value: InferLoroType<T>])[];
-        this.value = new LoroMap();
+        this.initialValue = Object.entries(value).map(
+            ([k, v]) => [k, v] as [key: string, value: T],
+        );
+    }
 
-        this.initialValue.forEach(([k, v]) => {
-            this.value.set(k, v);
-        });
+    public get size(): number {
+        return this.value.size;
+    }
+
+    public get value(): LoroMap<T> {
+        return this._value;
+    }
+
+    public set value(value: LoroMap<T>) {
+        if (this._initialized) throw new Error("Cannot re-assign map");
+
+        this._initialized = true;
+        this._value = value;
+
+        cloneType({ source: this, target: this.value });
     }
 
     public set(prop: string, value: T): this {
-        this.value.set(prop, toLoroValue(value));
+        this._guardInitialized();
+
+        if (!(value instanceof AbstractCrdtType)) {
+            this.value.set(prop, value);
+
+            return this;
+        }
+
+        const containerType = getLoroContainerType(value);
+        const container = this.value.setContainer(prop, containerType);
+
+        cloneType({
+            source: value as any,
+            target: container as any,
+        });
 
         return this;
     }
 
     public toJson(): InferCrdtStorageJson<InferLoroJson<T>> {
         return this.value.toJson() as InferCrdtStorageJson<InferLoroJson<T>>;
+    }
+
+    private _guardInitialized(): void {
+        if (!this._initialized) throw new Error("Array is not yet initialized");
     }
 }

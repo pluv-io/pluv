@@ -6,11 +6,11 @@ import type {
 } from "@pluv/crdt";
 import { AbstractCrdtDoc } from "@pluv/crdt";
 import { fromUint8Array, toUint8Array } from "js-base64";
-import { Loro, LoroEvent } from "loro-crdt";
+import type { Container, LoroEventBatch } from "loro-crdt";
+import { Loro } from "loro-crdt";
 import { CrdtLoroArray } from "../array/CrdtLoroArray";
 import { CrdtLoroMap } from "../map/CrdtLoroMap";
 import { CrdtLoroObject } from "../object/CrdtLoroObject";
-import { cloneType } from "../shared";
 import { CrdtLoroText } from "../text/CrdtLoroText";
 
 export class CrdtLoroDoc<
@@ -26,7 +26,6 @@ export class CrdtLoroDoc<
         this._storage = Object.entries(value).reduce((acc, [key, node]) => {
             if (node instanceof CrdtLoroArray) {
                 const loroList = this.value.getList(key);
-                cloneType({ source: node.value, target: loroList });
 
                 node.value = loroList;
 
@@ -35,7 +34,6 @@ export class CrdtLoroDoc<
 
             if (node instanceof CrdtLoroMap || node instanceof CrdtLoroObject) {
                 const loroMap = this.value.getMap(key);
-                cloneType({ source: node.value, target: loroMap });
 
                 node.value = loroMap;
 
@@ -44,7 +42,6 @@ export class CrdtLoroDoc<
 
             if (node instanceof CrdtLoroText) {
                 const loroText = this.value.getText(key);
-                cloneType({ source: node.value, target: loroText });
 
                 node.value = loroText;
 
@@ -100,6 +97,16 @@ export class CrdtLoroDoc<
 
             return acc;
         }, []);
+
+        if (!_updates.length) return this;
+
+        if (_updates.length === 1) {
+            const update = _updates[0] ?? null;
+
+            update && this.value.import(update);
+
+            return this;
+        }
 
         this.value.importUpdateBatch(_updates);
 
@@ -164,7 +171,7 @@ export class CrdtLoroDoc<
     public subscribe(
         listener: (params: DocSubscribeCallbackParams<TStorage>) => void,
     ): () => void {
-        const fn = (event: LoroEvent) => {
+        const fn = (event: LoroEventBatch) => {
             const update = fromUint8Array(this.value.exportFrom());
 
             listener({
@@ -175,27 +182,48 @@ export class CrdtLoroDoc<
             });
         };
 
-        const subscriptionId = this.value.subscribe(fn);
+        const subscriptionIds = Object.entries(this._storage).reduce(
+            (map, [key, crdtType]) => {
+                const container = crdtType.value as Container;
+                const subscriptionId = container.subscribe(this.value, fn);
+
+                return map.set(key, subscriptionId);
+            },
+            new Map<string, number>(),
+        );
 
         return () => {
-            this.value.unsubscribe(subscriptionId);
+            Array.from(subscriptionIds.entries()).forEach(
+                ([key, subscriptionId]) => {
+                    const container = (this._storage[key]?.value ??
+                        null) as Container | null;
+
+                    if (!container) {
+                        throw new Error("Storage could not be found");
+                    }
+
+                    container.unsubscribe(this.value, subscriptionId);
+                },
+            );
         };
     }
 
     /**
      * TODO
-     * @description This method is not yet supported for loro
+     * @description This method doesn't do anything yet.
      */
     public track(): this {
-        throw new Error("This is not yet supported");
+        return this;
     }
 
     /**
      * TODO
-     * @description This method is not yet supported for loro
+     * @description This method doesn't do anything yet. The callback will still be executed.
      */
     public transact(fn: () => void): this {
-        throw new Error("This is not yet supported");
+        fn();
+
+        return this;
     }
 
     /**
