@@ -140,3 +140,9 @@
     const doc: CrdtYjsDoc<any> = room.getDoc();
     const ydoc: YDoc = doc.value;
     ```
+* `@pluv/client` and `@pluv/react` now may return `null` when retrieving storage while storage is being initialized.
+    ```ts
+    const sharedType = room.getStorage("messages"); // This may be null
+
+    const [data, sharedType] = usePluvStorage("messages"); // data and sharedType may both be null
+    ```
