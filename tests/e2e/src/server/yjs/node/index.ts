@@ -1,6 +1,6 @@
 import { createPluvHandler } from "@pluv/platform-node";
 import bodyParser from "body-parser";
-import { program } from "commander";
+import { Option, program } from "commander";
 import cors from "cors";
 import Crypto from "crypto";
 import express from "express";
@@ -13,7 +13,11 @@ type CommanderOptionValue = string | boolean | string[] | undefined;
 
 const options = program
     .description("Pluv server running on node")
-    .option("--port", "Port to run the server on", "3102")
+    .addOption(
+        new Option("--port <PORT>")
+            .default(3102)
+            .argParser((value: string) => parseInt(value, 10)),
+    )
     .parse(process.argv)
     .opts<{ port: CommanderOptionValue }>();
 

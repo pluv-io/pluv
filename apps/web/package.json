@@ -47,7 +47,7 @@
         "react-dom": "^18.2.0",
         "styled-components": "^6.1.8",
         "twin.macro": "^3.4.1",
-        "yjs": "^13.6.11",
+        "yjs": "^13.6.12",
         "zod": "^3.22.4"
     },
     "devDependencies": {

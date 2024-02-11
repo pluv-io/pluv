@@ -22,19 +22,19 @@
 		"lint": "eslint src/**/*.ts* --fix",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
-    "dependencies": {
-        "@pluv/crdt": "workspace:^",
+	"dependencies": {
+		"@pluv/crdt": "workspace:^",
 		"@pluv/types": "workspace:^",
 		"js-base64": "^3.7.6"
-    },
-    "peerDependencies": {
-        "loro-crdt": "^0.10.1"
-    },
+	},
+	"peerDependencies": {
+		"loro-crdt": "^0.11.0"
+	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^8.56.0",
 		"eslint-config-pluv": "workspace:^",
-		"loro-crdt": "^0.10.1",
+		"loro-crdt": "^0.11.0",
 		"tsup": "^8.0.1",
 		"typescript": "^5.3.3"
 	}
