@@ -14,7 +14,7 @@ export class CrdtYjsXmlFragment extends AbstractCrdtType<YXmlFragment, string> {
 
         this.initialValue = children.map((item) => item.value);
         this.value = new YXmlFragment();
-        this.value.push(this.initialValue.slice());
+        this.push(...children);
     }
 
     public get length(): number {
