@@ -14,6 +14,7 @@ Returns a `PluvIO` instance.
 Creates a server-side `PluvIO` client that will create rooms to register your websockets to. Below will show a available configurations for `createIO`. To learn more about `createIO`, read [Authorization](/docs/io/authorization), [Cloudflare Workers](/docs/io/cloudflare-workers), [Node.js](/docs/io/node.js) and [PubSub](/docs/io/pubsub).
 
 ```ts
+import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
@@ -35,6 +36,8 @@ const io = createIO({
             name: z.string(),
         }),
     },
+    // Specify to use Yjs CRDT for storage
+    crdt: yjs,
     // Optional. Only needed to load persisted storage for rooms.
     // Load storage for a newly created room.
     getInitialStorage: async ({ room }) => {
@@ -90,11 +93,15 @@ Returns `PluvIO`.
 Adds a new type-safe event to be broadcasted from `PluvClient`. See [Define Events](/docs/io/define-events) for more information.
 
 ```ts
+import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO({ platform: platformNode() })
+const io = createIO({
+    crdt: yjs,
+    platform: platformNode(),
+})
     // When event "SEND_MESSAGE" is sent by the frontend and received
     // on the server
     .event("SEND_MESSAGE", {

@@ -14,7 +14,8 @@ pluv.io supports conflict-free replicated data-types (CRDT) storage with [yjs](h
 To get started with yjs for pluv.io, first set an `initialStorage` config on your `createRoomBundle` config.
 
 ```ts
-import { createBundle, createClient, y } from "@pluv/react";
+import { yjs } from "@pluv/crdt-yjs";
+import { createBundle, createClient } from "@pluv/react";
 import { type AppPluvIO } from "backend/io";
 
 const client = createClient<AppPluvIO>({
@@ -23,15 +24,12 @@ const client = createClient<AppPluvIO>({
 
 const { createRoomBundle } = createBundle(client);
 
-export const {
-    PluvRoomProvider,
-    useStorage,
-} = createRoomBundle({
+export const pluvRoom = createRoomBundle({
     // Set the initial storage value, and type here
     // Don't worry, we can set a different default value in the room component
-    initialStorage: () => ({
-        messages: y.array(["hello world!"]),
-    }),
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array(["hello world!"]),
+    })),
 });
 ```
 
@@ -40,20 +38,20 @@ export const {
 Then, setup `PluvRoomProvider` with your new `initialStorage` if it is different than your default set from `createRoomBundle`.
 
 ```tsx
-import { y } from "@pluv/react";
+import { yjs } from "@pluv/crdt-yjs";
 import { FC } from "react";
-import { PluvRoomProvider } from "frontend/io";
+import { pluvRoom } from "frontend/io";
 
 export const MyPage: FC = () => {
     return (
-        <PluvRoomProvider
+        <pluvRoom.PluvRoomProvider
             room="my-room-id"
             initialStorage={() => ({
-                messages: y.array([]),
+                messages: yjs.array(),
             })}
         >
             <MyRoom />
-        </PluvRoomProvider>
+        </pluvRoom.PluvRoomProvider>
     );
 };
 ```
@@ -63,17 +61,17 @@ export const MyPage: FC = () => {
 We can then use [yjs shared-types](https://docs.yjs.dev/getting-started/working-with-shared-types) to leverage shared CRDTs between connected clients using `useStorage`.
 
 ```tsx
-import { useStorage } from "frontend/io";
+import { pluvRoom } from "frontend/io";
 import { useCallback } from "react";
 
 // "messages" is a key from the root properties of `initialStorage`.
-const [messages, sharedType] = useStorage("messages");
+const [messages, sharedType] = pluvRoom.useStorage("messages");
 
 const addMessage = useCallback((message: string) => {
-    sharedType.push([message]);
+    sharedType?.push(message);
 });
 
-messages.map((message, i) => <div key={i}>{message}</div>)
+messages?.map((message, i) => <div key={i}>{message}</div>)
 ```
 
 export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;

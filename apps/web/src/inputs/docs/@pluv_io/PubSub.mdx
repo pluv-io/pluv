@@ -33,6 +33,7 @@ Create your pluv.io instance with your selected PubSub and Persistance:
 ```ts
 // server/io.ts
 
+import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { PubSubRedis } from "@pluv/pubsub-redis";
@@ -45,6 +46,7 @@ const redis = new Redis({
 });
 
 export const io = createIO({
+    crdt: yjs,
     platform: platformNode({
         persistance: new PersistanceRedis({ client: redis }),
         pubSub: new PubSubRedis({

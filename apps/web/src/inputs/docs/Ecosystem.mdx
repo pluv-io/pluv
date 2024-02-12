@@ -31,6 +31,8 @@ import { type io } from "../server/io";
 const client = createClient<typeof io>();
 
 const room = client.createRoom("my-room", {
+    // ... other configs here,
+    // ...
     addons: [addonIndexedDB({ enabled: true })],
     // Alternatively
     addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],
@@ -46,6 +48,8 @@ const client = createClient<typeof io>();
 const { createRoomBundle } = createBundle(client);
 
 const { useRoom } = createRoomBundle({
+    // ... other configs here,
+    // ...
     addons: [addonIndexedDB({ enabled: true })],
         // Alternatively
     addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],

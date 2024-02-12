@@ -14,11 +14,14 @@ Listen to when a room is deleted so that when the same room is re-created, users
 ```ts
 // server/io.ts
 
+import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { db } from "./db";
 
 export const io = createIO({
+    // Specify which CRDT to use here
+    crdt: yjs,
     // Load storage for a newly created room.
     getInitialStorage: async ({ room }) => {
         const existingRoom = await db.room.findUnique({ where: { room } });

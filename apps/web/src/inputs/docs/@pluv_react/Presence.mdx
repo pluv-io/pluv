@@ -14,6 +14,7 @@ Presence is a per-connection state that allows users to track what other users a
 To get started with presence for pluv.io, first set a `presence` config on your `createRoomBundle` config.
 
 ```ts
+import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 import { type AppPluvIO } from "backend/io";
 import { z } from "zod";
@@ -22,16 +23,10 @@ const client = createClient<AppPluvIO>({
     wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
 });
 
-const { createRoomBundle } = createBundle(client);
+const pluv = createBundle(client);
 
-export const {
-    PluvRoomProvider,
-    useMyPresence,
-    useMyself,
-    useOther,
-    useOthers,
-    useStorage,
-} = createRoomBundle({
+export const pluvRoom = pluv.createRoomBundle({
+    initialStorage: yjs.doc(() => ({})),
     // Define the validation schema for presence, using zod
     presence: z.object({
         selectionId: z.nullable(z.string()),
@@ -43,11 +38,11 @@ export const {
 
 ```tsx
 import { FC } from "react";
-import { PluvRoomProvider } from "frontend/io";
+import { pluvRoom } from "frontend/io";
 
 const Room: FC = () => {
     return (
-        <PluvRoomProvider
+        <pluvRoom.PluvRoomProvider
             // Specify the initial presence for each newly connected user
             initialPresence={{
                 selectionId: null,
@@ -55,7 +50,7 @@ const Room: FC = () => {
             room="my-example-room"
         >
             <ChatRoom />
-        </PluvRoomProvider>
+        </pluvRoom.PluvRoomProvider>
     );
 };
 ```
@@ -65,13 +60,13 @@ const Room: FC = () => {
 ### Current user's presence
 
 ```tsx
-import { useMyPresence, useMyself } from "frontend/io";
+import { pluvRoom } from "frontend/io";
 import { useCallback } from "react";
 
-const [myPresence, updateMyPresence] = useMyPresence();
+const [myPresence, updateMyPresence] = pluvRoom.useMyPresence();
 //     ^? const myPresence: { selectionId: string | null } | null
 
-const myself = useMyself();
+const myself = pluvRoom.useMyself();
 //    ^? const myself: {
 //        connectionId: string;
 //        presence: { selectionId: string | null };
@@ -87,9 +82,9 @@ const selectInput = useCallback((selectionId: string) => {
 ### Others' presence
 
 ```tsx
-import { useOther, useOthers } from "frontend/io";
+import { pluvRoom } from "frontend/io";
 
-const others = useOthers();
+const others = pluvRoom.useOthers();
 //    ^? const others: readonly {
 //        connectionId: string;
 //        presence: { selectionId: string | null };
@@ -98,7 +93,7 @@ const others = useOthers();
 
 // const connectionId = others[0]?.connectionId!;
 
-const other = useOther(connectionId);
+const other = pluvRoom.useOther(connectionId);
 //    ^? const other: {
 //        connectionId: string;
 //        presence: { selectionId: string | null };

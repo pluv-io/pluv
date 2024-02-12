@@ -75,7 +75,7 @@ Create a `PluvRoom` that websockets can join and leave. The second argument is a
 
 ```ts
 // frontend/room.ts
-import { y } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
 import { client } from "./io.ts";
 
@@ -95,9 +95,9 @@ const room = client.createRoom("my-example-room", {
     /**
      * @description Define the initial storage for the room
      */
-    initialStorage: () => ({
-        messages: y.array(["hello world!"]),
-    }),
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array(["hello world!"]),
+    })),
     /**
      * @description This is the same `captureTimeout` option from yjs's UndoManager.
      * This specifies a number in ms, during which edits are merged together to be
@@ -288,6 +288,20 @@ This returns state information for the current connection to this room.
 const connection = room.getConnection();
 ```
 
+### PluvRoom.getDoc
+
+Returns `AbstractCrdtDoc` from `@pluv/crdt`
+
+This returns an instance of the `AbstractCrdtDoc` that holds the underlying CRDT doc. For instance, when using `@pluv/crdt-yjs`, this will hold a [yjs](https://yjs.dev/) in its `value` property.
+
+```ts
+import { yjs } from "@pluv/crdt-yjs";
+import { Doc as YDoc } from "yjs";
+
+const doc: yjs.CrdtYjsDoc<any> = room.getDoc();
+const ydoc: YDoc = doc.value;
+```
+
 ### PluvRoom.getMyPresence
 
 Returns `TPresence | null`
@@ -332,11 +346,12 @@ const others = room.getOthers();
 
 ### PluvRoom.getStorage
 
-Returns a [yjs](https://yjs.dev/) shared type defined on the client config.
+Returns a `CrdtAbstractType` from `@pluv/crdt` that holds a CRDT shared type. For instance, if using `@pluv/crdt-yjs`, the `CrdtAbstractType` will hold a [yjs](https://yjs.dev/) shared type in its `value` property.
 
 ```ts
 // frontend/room.ts
-import { y } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
+import { Array as YArray } from "yjs";
 import { z } from "zod";
 import { client } from "./io.ts";
 
@@ -350,12 +365,15 @@ const room = client.createRoom("my-example-room", {
         selectionId: null,
     },
     // Define the initial storage for the room
-    initialStorage: () => ({
-        messages: y.array(["hello world!"]),
-    }),
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array(["hello world!"]),
+    })),
 });
 
-const messages = room.getStorage("messages");
+// Get messages as defined from the `createRoom` config
+const messages: yjs.CrdtYjsArray<string> = room.getStorage("messages");
+// Get the underlying CRDT shared type via the value property
+const sharedType: YArray<string> = messages.value;
 ```
 
 ### PluvRoom.other
@@ -397,11 +415,11 @@ room.redo();
 
 Returns `() => void`
 
-Subscribes to a given root-level value in the [yjs](https://yjs.dev) document storage.
+Subscribes to a given root-level value in the room's document storage. The data in the callback will be a serialized value rather than the CRDT's instance.
 
 ```ts
 // frontend/room.ts
-import { y } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
 import { client } from "./io.ts";
 
@@ -415,13 +433,16 @@ const room = client.createRoom("my-example-room", {
         selectionId: null,
     },
     // Define the initial storage for the room
-    initialStorage: () => ({
-        messages: y.array(["hello world!"]),
-    }),
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array(["hello world!"]),
+    })),
 });
 
-const unsubscribe = room.storage("messages", (messages) => {
+const unsubscribe = room.storage("messages", (messages: string[]) => {
     console.log(messages);
+
+    // If the AbstractCrdtType is needed, you call call getStorage here.
+    const sharedType = room.getStorage("messages");
 });
 
 // ...

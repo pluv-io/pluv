@@ -15,11 +15,13 @@ Learn how to quickly setup and get started with @pluv/io.
 
 | Purpose                                                 | Location | Install command                       |
 |---------------------------------------------------------|----------|---------------------------------------|
-| Register websockets and custom events                   | Server   | npm install @pluv/io yjs              |
-| Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client yjs          |
-| React-bindings for @pluv/client                         | Client   | npm install @pluv/react yjs           |
+| Register websockets and custom events                   | Server   | npm install @pluv/io                  |
+| Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client              |
+| React-bindings for @pluv/client                         | Client   | npm install @pluv/react               |
 | Adapter for Node.js runtime                             | Server   | npm install @pluv/platform-node ws    |
 | Adapter for Cloudflare Workers runtime                  | Server   | npm install @pluv/platform-cloudflare |
+| yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs yjs        |
+| loro CRDT                                               | Both     | npm install @pluv/crdt-loro loro-crdt |
 
 ### Installation Example
 
@@ -29,12 +31,15 @@ Here is an example installation for [npm](https://www.npmjs.com/), assuming you 
 # For the server
 npm install @pluv/io @pluv/platform-node
 # Server peer-dependencies
-npm install yjs ws zod
+npm install ws zod
 
 # For the client
 npm install @pluv/react
 # Client peer-dependencies
-npm install react react-dom yjs zod
+npm install react react-dom zod
+
+# For both
+npm install @pluv/crdt-yjs yjs
 ```
 
 ## Defining a backend PluvIO instance
@@ -67,11 +72,15 @@ Use `io.event` to define type-safe websocket events on the io instance. The two 
 ```ts
 // backend/io.ts
 
+import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-export const io = createIO({ platform: platformNode() })
+export const io = createIO({
+    crdt: yjs,
+    platform: platformNode(),
+})
     // When event "SEND_MESSAGE" is sent by the frontend and received
     // on the server
     .event("SEND_MESSAGE", {
@@ -131,6 +140,7 @@ Now that the io instance is setup on the backend, we can setup the frontend clie
 ```ts
 // frontend/io.ts
 
+import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient, y } from "@pluv/react";
 import type { AppPluvIO } from "server/io";
 
@@ -162,7 +172,9 @@ export const {
     useOthers,
     useRoom,
     useStorage,
-} = createRoomBundle();
+} = createRoomBundle({
+    initialStorage: yjs.doc(() => ({})),
+});
 ```
 
 ### Wrap with your pluv.io providers

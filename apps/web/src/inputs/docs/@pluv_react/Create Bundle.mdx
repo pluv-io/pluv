@@ -16,10 +16,14 @@ First, create a `PluvIO` instance from the `@pluv/io` package in your backend co
 ```ts
 // backend/io.ts
 
+import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 
-export const io = createIO({ platform: platformNode() });
+export const io = createIO({
+    crdt: yjs,
+    platform: platformNode(),
+});
 
 // Export the websocket client io type, instead of the client itself
 export type AppPluvIO = typeof io;
@@ -32,6 +36,7 @@ Then, import your `PluvIO` type to the frontend, and create your type-safe React
 ```ts
 // frontend/io.ts
 
+import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
 // import your PluvIO instance from your backend codebase
@@ -67,7 +72,10 @@ export const {
     useOthers,
     useRoom,
     useStorage,
-} = createRoomBundle();
+} = createRoomBundle({
+    // Required: Specify which CRDT you are using, as well as the initial storage
+    initialStorage: yjs.doc(() => ({})),
+});
 ```
 
 ## Next Steps
