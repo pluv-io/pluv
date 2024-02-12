@@ -35,20 +35,20 @@ export const {
     PluvRoomProvider,
 
     // hooks
-    usePluvBroadcast,
-    usePluvCanRedo,
-    usePluvCanUndo,
-    usePluvConnection,
-    usePluvEvent,
-    usePluvMyPresence,
-    usePluvMyself,
-    usePluvOther,
-    usePluvOthers,
-    usePluvRedo,
-    usePluvRoom,
-    usePluvStorage,
-    usePluvTransact,
-    usePluvUndo,
+    useBroadcast,
+    useCanRedo,
+    useCanUndo,
+    useConnection,
+    useEvent,
+    useMyPresence,
+    useMyself,
+    useOther,
+    useOthers,
+    useRedo,
+    useRoom,
+    useStorage,
+    useTransact,
+    useUndo,
 } = createRoomBundle({
     /**
      * @description Define the initial storage for the room
@@ -90,13 +90,13 @@ export const {
 
 ### PluvProvider
 
-React provider component to allow the `PluvClient` created by `createClient` to be accessible in child components via `usePluvClient`. This is identical to importing the created client, so this is primarily useful for dependency injection when testing.
+React provider component to allow the `PluvClient` created by `createClient` to be accessible in child components via `useClient`. This is identical to importing the created client, so this is primarily useful for dependency injection when testing.
 
 ```tsx
 <PluvProvider>{children}</PluvProvider>
 ```
 
-### usePluvClient
+### useClient
 
 Returns `PluvClient`
 
@@ -182,72 +182,72 @@ import { MockedRoomProvider } from "./io";
 </PluvRoomProvider>
 ```
 
-### usePluvBroadcast
+### useBroadcast
 
 Returns `(event, data) => void`
 
 Returns a broadcast function to emit an event and data to all connected clients. This is type-safe. The first parameter `event` will be the name of the event specified when creating your backend `PluvIO` instance and the second parameter `data` will be the associated response type. See [Define Events](/docs/io/define-events) for more details.
 
 ```tsx
-const broadcast = usePluvBroadcast();
+const broadcast = useBroadcast();
 
 broadcast("EMIT_RECEIVED", { emojiCode: 123 });
 ```
 
-### usePluvCanRedo
+### useCanRedo
 
 Returns `boolean`
 
-Checks whether calling [PluvRoom.redo](/docs/react/api-reference#usePluvRedo) will mutate storage.
+Checks whether calling [PluvRoom.redo](/docs/react/api-reference#useRedo) will mutate storage.
 
 ```ts
-const canRedo: boolean = usePluvCanRedo();
+const canRedo: boolean = useCanRedo();
 ```
 
-### usePluvCanUndo
+### useCanUndo
 
 Returns `boolean`
 
-Checks whether calling [PluvRoom.undo](/docs/react/api-reference#usePluvUndo) will mutate storage.
+Checks whether calling [PluvRoom.undo](/docs/react/api-reference#useUndo) will mutate storage.
 
 ```ts
-const canUndo: boolean = usePluvCanUndo();
+const canUndo: boolean = useCanUndo();
 ```
 
-### usePluvConnection
+### useConnection
 
 Returns `WebSocketConnection`
 
 Returns the websocket connection start of the current user.
 
 ```tsx
-const connection = usePluvConnection();
+const connection = useConnection();
 //    ^? const connection: {
 //        id: string | null;
 //        state: ConnectionState;
 //    }
 ```
 
-### usePluvEvent
+### useEvent
 
 Returns `void`
 
 Defines a listener for events broadcasted by connected clients. This is type-safe. The first parameter `event` is the name of the event to listen to from your backend `PluvIO` instance. The second parameter is a callback containing the data emitted from the broadcasted event.
 
 ```tsx
-usePluvEvent("EMOJI_RECEIVED", ({ emojiCode }) => {
+useEvent("EMOJI_RECEIVED", ({ emojiCode }) => {
     console.log(emojiCode);
 });
 ```
 
-### usePluvMyPresence
+### useMyPresence
 
 Returns `[myPresence: TPresence | null, updatePresence: Function]`
 
 Returns the current user's presence, and a function to update the user's presence. Using this hook rerenders the component based on a deep-equality check on the user's presence value. This hook accepts a selector to return a modified presence to reduce rerenders.
 
 ```tsx
-const { usePluvMyPresence } = createRoomBundle({
+const { useMyPresence } = createRoomBundle({
     presence: z.object({
         selectionId: z.nullable(z.string()),
         selectionColor: z.string(),
@@ -259,7 +259,7 @@ const [
     myPresence,
     // a presence updater function
     updateMyPresence
-] = usePluvMyPresence();
+] = useMyPresence();
 
 // update individual base properties
 updateMyPresence({ selectionId: "name-input" });
@@ -272,74 +272,74 @@ updateMyPresence({
 });
 
 // if you only need a partial presence
-const [myPresence] = usePluvMyPresence(({ selectionId }) => selectionId);
+const [myPresence] = useMyPresence(({ selectionId }) => selectionId);
 
 // if you don't need presence, and just want the updater
-const [, updateMyPresence] = usePluvMyPresence(
+const [, updateMyPresence] = useMyPresence(
     // set selector to return a stable value
     () => true
 );
 ```
 
-### usePluvMyself
+### useMyself
 
 Returns `UserInfo | null`
 
 Returns the user-info object for the current user. This hook accepts a selector to return a modified user-info to reduce rerenders.
 
 ```tsx
-const myself = usePluvMyself();
+const myself = useMyself();
 
 // if you don't need the entire user-info
-const myself = usePluvMyself(({ connectionId }) => connectionId);
+const myself = useMyself(({ connectionId }) => connectionId);
 ```
 
-### usePluvOther
+### useOther
 
 Returns `UserInfo | null`
 
 Returns the user-info object for a connected user by `connectionId` string.
 
 ```tsx
-const other = usePluvOther();
+const other = useOther();
 
 // if you don't need the entire user-info
-const other = usePluvOther(({ connectionId }) => connectionId);
+const other = useOther(({ connectionId }) => connectionId);
 ```
 
-### usePluvOthers
+### useOthers
 
 Returns `readonly UserInfo[]`
 
 Returns all user-info objects for all connected users. This may trigger a lot of re-renders if presence updates frequently.
 
 > **Note**
-> Consider using this hook only for deriving others' `connectionId` values to pass into `usePluvOther`.
+> Consider using this hook only for deriving others' `connectionId` values to pass into `useOther`.
 
 ```tsx
-const others = usePluvOthers();
+const others = useOthers();
 
 // if you want to just pull out connectionId properties
-const connectionIds = usePluvOthers((others) => {
+const connectionIds = useOthers((others) => {
     return others.map(({ connectionId }) => connectionId);
 });
 ```
 
-### usePluvRedo
+### useRedo
 
 Returns `void`
 
-Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/react/api-reference#usePluvUndo).
+Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/react/api-reference#useUndo).
 
 For more information see: [History](/docs/react/history)
 
 ```ts
-const redo = usePluvRedo();
+const redo = useRedo();
 
 redo();
 ```
 
-### usePluvStorage
+### useStorage
 
 Returns `[TData | null, Yjs.SharedType | null]`
 
@@ -348,20 +348,20 @@ Returns a base-level property of our [yjs](https://yjs.dev) storage as a seriali
 ```tsx
 import { y } from "@pluv/react";
 
-const { usePluvStorage } = createRoomBundle({
+const { useStorage } = createRoomBundle({
     initialStorage: () => ({
         messages: y.array(["hello"]),
     }),
 });
 
-const [messages, sharedType] = usePluvStorage("messages");
+const [messages, sharedType] = useStorage("messages");
 
 sharedType.push(["world~!"]);
 
 messages.map((message, key) => <div key={key}>{message}</div>);
 ```
 
-### usePluvTransact
+### useTransact
 
 Returns `void`
 
@@ -372,8 +372,8 @@ You can specify a 2nd parameter to transact with a different transaction origin.
 For more information see: [History](/docs/react/history)
 
 ```ts
-const [messages, sharedType] = usePluvStorage("messages");
-const transact = usePluvTransact();
+const [messages, sharedType] = useStorage("messages");
+const transact = useTransact();
 
 transact((tx) => {
     sharedType.push(["hello world!"]);
@@ -388,17 +388,17 @@ transact(() => {
 }, "user-123");
 ```
 
-### usePluvUndo
+### useUndo
 
 Returns `void`
 
-Undoes the last mutation that was applied via [PluvRoom.transact](/docs/react/api-reference#usePluvTransact).
+Undoes the last mutation that was applied via [PluvRoom.transact](/docs/react/api-reference#useTransact).
 
 For more information see: [History](/docs/react/history)
 
 
 ```ts
-const undo = usePluvUndo();
+const undo = useUndo();
 
 undo();
 ```

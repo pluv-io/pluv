@@ -16,7 +16,7 @@ import {
     useState,
 } from "react";
 import tw, { styled } from "twin.macro";
-import { usePluvStorage } from "../../pluv-io/cloudflare";
+import { useStorage } from "../../pluv-io/cloudflare";
 
 const Root = styled.div`
     ${tw`
@@ -123,7 +123,7 @@ export interface HomeChessDemoProps {
 }
 
 export const HomeChessDemo: FC<HomeChessDemoProps> = ({ className, style }) => {
-    const [demo, sharedType] = usePluvStorage("demo");
+    const [demo, sharedType] = useStorage("demo");
     const [gameOver, setGameOver] = useState<boolean>(false);
     const [winner, setWinner] = useState<string | null>();
     const chessRef = useRef<ChessBoardRef>();

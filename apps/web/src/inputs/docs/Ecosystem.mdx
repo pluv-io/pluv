@@ -45,7 +45,7 @@ const client = createClient<typeof io>();
 
 const { createRoomBundle } = createBundle(client);
 
-const { usePluvRoom } = createRoomBundle({
+const { useRoom } = createRoomBundle({
     addons: [addonIndexedDB({ enabled: true })],
         // Alternatively
     addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],

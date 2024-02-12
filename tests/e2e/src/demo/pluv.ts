@@ -9,7 +9,7 @@ const client = createClient<typeof io>({
 
 export const { createRoomBundle } = createBundle(client);
 
-export const { usePluvBroadcast, usePluvEvent, usePluvMyself } =
+export const { useBroadcast, useEvent, useMyself } =
     createRoomBundle({
         initialStorage: yjs.doc(),
     });

@@ -25,7 +25,7 @@ const { createRoomBundle } = createBundle(client);
 
 export const {
     PluvRoomProvider,
-    usePluvStorage,
+    useStorage,
 } = createRoomBundle({
     // Set the initial storage value, and type here
     // Don't worry, we can set a different default value in the room component
@@ -60,14 +60,14 @@ export const MyPage: FC = () => {
 
 ## Use yjs shared-types
 
-We can then use [yjs shared-types](https://docs.yjs.dev/getting-started/working-with-shared-types) to leverage shared CRDTs between connected clients using `usePluvStorage`.
+We can then use [yjs shared-types](https://docs.yjs.dev/getting-started/working-with-shared-types) to leverage shared CRDTs between connected clients using `useStorage`.
 
 ```tsx
-import { usePluvStorage } from "frontend/io";
+import { useStorage } from "frontend/io";
 import { useCallback } from "react";
 
 // "messages" is a key from the root properties of `initialStorage`.
-const [messages, sharedType] = usePluvStorage("messages");
+const [messages, sharedType] = useStorage("messages");
 
 const addMessage = useCallback((message: string) => {
     sharedType.push([message]);

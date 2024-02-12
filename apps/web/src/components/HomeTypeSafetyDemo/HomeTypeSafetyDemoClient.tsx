@@ -19,7 +19,7 @@ export const HomeTypeSafetyDemoClient = memo<HomeTypeSafetyDemoClientProps>(
             (): string => codeBlock`
                 // client/Room.tsx
 
-                import { usePluvBroadcast, usePluvEvent } from "client/pluv";
+                import { useBroadcast, useEvent } from "client/pluv";
                 import { FC, useCallback, useState } from "react";
 
                 export const Room: FC = () => {
@@ -27,11 +27,11 @@ export const HomeTypeSafetyDemoClient = memo<HomeTypeSafetyDemoClientProps>(
 
                   // Listen to new messages from the server
                   // Get types from the SEND_MESSAGE resolver output
-                  usePluvEvent("MESSAGE_RECEIVED", ({${INPUT_PARAMETER}}) => {
+                  useEvent("MESSAGE_RECEIVED", ({${INPUT_PARAMETER}}) => {
                     setMessages((prev) => [...prev${NEW_MESSAGE}]);
                   });
 
-                  const broadcast = usePluvBroadcast();
+                  const broadcast = useBroadcast();
 
                   const onSubmit = useCallback((message: string) => {
                     // Broadcast to all users

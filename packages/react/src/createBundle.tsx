@@ -26,7 +26,7 @@ export interface CreateBundle<TIO extends IOLike> {
     PluvProvider: FC<PluvProviderProps>;
 
     // hooks
-    usePluvClient: () => PluvClient<TIO>;
+    useClient: () => PluvClient<TIO>;
 }
 
 export const createBundle = <TIO extends IOLike>(
@@ -53,7 +53,7 @@ export const createBundle = <TIO extends IOLike>(
 
     PluvProvider.displayName = "PluvProvider";
 
-    const usePluvClient = (): PluvClient<TIO> => useContext(PluvContext);
+    const useClient = (): PluvClient<TIO> => useContext(PluvContext);
 
     const createRoomBundle = <
         TPresence extends JsonObject = {},
@@ -66,6 +66,6 @@ export const createBundle = <TIO extends IOLike>(
     return {
         createRoomBundle,
         PluvProvider,
-        usePluvClient,
+        useClient,
     };
 };

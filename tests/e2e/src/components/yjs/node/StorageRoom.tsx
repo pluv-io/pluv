@@ -1,25 +1,25 @@
 import { yjs } from "@pluv/crdt-yjs";
 import type { FC } from "react";
 import {
-    usePluvCanRedo,
-    usePluvCanUndo,
-    usePluvRedo,
-    usePluvStorage,
-    usePluvTransact,
-    usePluvUndo,
+    useCanRedo,
+    useCanUndo,
+    useRedo,
+    useStorage,
+    useTransact,
+    useUndo,
 } from "../../../pluv-io/yjs/node";
 
 export type StorageRoomProps = Record<string, never>;
 
 export const StorageRoom: FC<StorageRoomProps> = () => {
-    const [messages, sharedType] = usePluvStorage("messages");
+    const [messages, sharedType] = useStorage("messages");
 
-    const canUndo = usePluvCanUndo();
-    const canRedo = usePluvCanRedo();
-    const transact = usePluvTransact();
+    const canUndo = useCanUndo();
+    const canRedo = useCanRedo();
+    const transact = useTransact();
 
-    const undo = usePluvUndo();
-    const redo = usePluvRedo();
+    const undo = useUndo();
+    const redo = useRedo();
 
     return (
         <div id="storage-room">

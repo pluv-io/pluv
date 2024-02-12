@@ -196,7 +196,7 @@
 
   ## @pluv/react
 
-  `@pluv/react`'s `createRoomBundle` now exposes 5 new react hooks: `usePluvCanRedo`, `usePluvCanUndo`, `usePluvRedo`, `usePluvUndo` and `usePluvTransact`.
+  `@pluv/react`'s `createRoomBundle` now exposes 5 new react hooks: `useCanRedo`, `useCanUndo`, `useRedo`, `useUndo` and `useTransact`.
 
   Refer to the code-example below to better understand how to undo and redo with your `createRoomBundle`.
 
@@ -209,12 +209,12 @@
   const { createRoomBundle } = createBundle(client);
 
   const {
-    usePluvCanRedo,
-    usePluvCanUndo,
-    usePluvRedo,
-    usePluvStorage,
-    usePluvTransact,
-    usePluvUndo,
+    useCanRedo,
+    useCanUndo,
+    useRedo,
+    useStorage,
+    useTransact,
+    useUndo,
   } = createRoomBundle({
     initialStorage: () => ({
       messages: y.array<string>([]),
@@ -242,13 +242,13 @@
   /**
    * @description Check whether calling undo will mutate storage
    */
-  const canUndo: boolean = usePluvCanUndo();
+  const canUndo: boolean = useCanUndo();
   /**
    * @description Check whether calling redo will mutate storage
    */
-  const canRedo: boolean = usePluvCanRedo();
+  const canRedo: boolean = useCanRedo();
 
-  const [messages, sharedType] = usePluvStorage("messages");
+  const [messages, sharedType] = useStorage("messages");
 
   /**
    * @description Calling transact will enable a storage mutation to be undone/redone.
@@ -257,7 +257,7 @@
    *
    * You can specify a 2nd parameter to transact with a different transaction origin.
    */
-  const transact = usePluvTransact();
+  const transact = useTransact();
 
   transact(() => {
     sharedType.push(["hello world!"]);
@@ -271,14 +271,14 @@
   /**
    * @description Undoes the last valid mutation to storage
    */
-  const undo = usePluvUndo();
+  const undo = useUndo();
 
   undo();
 
   /**
    * @description Re-applies the last undone mutation to storage
    */
-  const redo = usePluvRedo();
+  const redo = useRedo();
 
   redo();
   ```

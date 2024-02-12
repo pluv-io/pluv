@@ -144,7 +144,7 @@ export const {
     PluvProvider,
 
     // hooks
-    usePluvClient,
+    useClient,
 } = createBundle(client);
 
 export const {
@@ -153,15 +153,15 @@ export const {
     PluvRoomProvider,
 
     // hooks
-    usePluvBroadcast,
-    usePluvConnection,
-    usePluvEvent,
-    usePluvMyPresence,
-    usePluvMyself,
-    usePluvOther,
-    usePluvOthers,
-    usePluvRoom,
-    usePluvStorage,
+    useBroadcast,
+    useConnection,
+    useEvent,
+    useMyPresence,
+    useMyself,
+    useOther,
+    useOthers,
+    useRoom,
+    useStorage,
 } = createRoomBundle();
 ```
 
@@ -187,26 +187,26 @@ export const Room: FC = () => {
 
 ### Send and receive events
 
-Use `usePluvBroadcast` and `usePluvEvent` to send and receive type-safe events in your React component.
+Use `useBroadcast` and `useEvent` to send and receive type-safe events in your React component.
 
 ```tsx
 // frontend/ChatRoom.tsx
 
 import { FC, useCallback, useState } from "react";
 import { emojiMap } from "./emojiMap";
-import { usePluvBroadcast, usePluvEvent } from "./io";
+import { useBroadcast, useEvent } from "./io";
 
 export const ChatRoom: FC = () => {
-    const broadcast = usePluvBroadcast();
+    const broadcast = useBroadcast();
 
     const [messages. setMessages] = useState<string[]>([]);
 
-    usePluvEvent("MESSAGE_RECEIVED", ({ data }) => {
+    useEvent("MESSAGE_RECEIVED", ({ data }) => {
         //                              ^? (property) data: { message: string }
         setMessages((prev) => [...prev, data.message]);
     });
 
-    usePluvEvent("EMOJI_RECEIVED", ({ data }) => {
+    useEvent("EMOJI_RECEIVED", ({ data }) => {
         //                            ^? (property) data: { emojiCode: number }
         const emoji = emojiMap[data.emojiCode];
 

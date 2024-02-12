@@ -26,11 +26,11 @@ const { createRoomBundle } = createBundle(client);
 
 export const {
     PluvRoomProvider,
-    usePluvMyPresence,
-    usePluvMyself,
-    usePluvOther,
-    usePluvOthers,
-    usePluvStorage,
+    useMyPresence,
+    useMyself,
+    useOther,
+    useOthers,
+    useStorage,
 } = createRoomBundle({
     // Define the validation schema for presence, using zod
     presence: z.object({
@@ -65,13 +65,13 @@ const Room: FC = () => {
 ### Current user's presence
 
 ```tsx
-import { usePluvMyPresence, usePluvMyself } from "frontend/io";
+import { useMyPresence, useMyself } from "frontend/io";
 import { useCallback } from "react";
 
-const [myPresence, updateMyPresence] = usePluvMyPresence();
+const [myPresence, updateMyPresence] = useMyPresence();
 //     ^? const myPresence: { selectionId: string | null } | null
 
-const myself = usePluvMyself();
+const myself = useMyself();
 //    ^? const myself: {
 //        connectionId: string;
 //        presence: { selectionId: string | null };
@@ -87,9 +87,9 @@ const selectInput = useCallback((selectionId: string) => {
 ### Others' presence
 
 ```tsx
-import { usePluvOther, usePluvOthers } from "frontend/io";
+import { useOther, useOthers } from "frontend/io";
 
-const others = usePluvOthers();
+const others = useOthers();
 //    ^? const others: readonly {
 //        connectionId: string;
 //        presence: { selectionId: string | null };
@@ -98,7 +98,7 @@ const others = usePluvOthers();
 
 // const connectionId = others[0]?.connectionId!;
 
-const other = usePluvOther(connectionId);
+const other = useOther(connectionId);
 //    ^? const other: {
 //        connectionId: string;
 //        presence: { selectionId: string | null };

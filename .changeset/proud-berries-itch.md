@@ -30,7 +30,7 @@
     // After:
     import { yjs } from "@pluv/crdt-yjs";
     ```
-* `@pluv/crdt-yjs` functions no-longer return Yjs shared-types directly, but instead return an `AbstractCrdtType` from `@pluv/crdt` (new package). This also affects methods that return storage shared types in both `@pluv/client` and `@pluv/react` from functions like `PluvRoom.getStorage` and `PluvRoom.usePluvStorage`.
+* `@pluv/crdt-yjs` functions no-longer return Yjs shared-types directly, but instead return an `AbstractCrdtType` from `@pluv/crdt` (new package). This also affects methods that return storage shared types in both `@pluv/client` and `@pluv/react` from functions like `PluvRoom.getStorage` and `PluvRoom.useStorage`.
     ```ts
     // Before:
     import { y } from "@pluv/crdt-yjs";
@@ -144,5 +144,5 @@
     ```ts
     const sharedType = room.getStorage("messages"); // This may be null
 
-    const [data, sharedType] = usePluvStorage("messages"); // data and sharedType may both be null
+    const [data, sharedType] = useStorage("messages"); // data and sharedType may both be null
     ```
