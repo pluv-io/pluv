@@ -56,9 +56,7 @@ type BaseRoomProviderProps<
     TStorage extends Record<string, AbstractCrdtType<any, any>>,
 > = {
     children?: ReactNode;
-    initialStorage?: keyof TStorage extends never
-        ? never
-        : AbstractCrdtDocFactory<TStorage>;
+    initialStorage?: keyof TStorage extends never ? never : () => TStorage;
     room: string;
 } & (keyof TPresence extends never
     ? { initialPresence?: never }
@@ -151,6 +149,13 @@ export interface CreateRoomBundle<
     useUndo: () => () => void;
 }
 
+export type InferRoomStorage<
+    TRoomBundle extends CreateRoomBundle<any, any, any>,
+> =
+    TRoomBundle extends CreateRoomBundle<any, any, infer IStorage>
+        ? IStorage
+        : never;
+
 export const createRoomBundle = <
     TIO extends IOLike,
     TPresence extends JsonObject = {},
@@ -189,7 +194,10 @@ export const createRoomBundle = <
             return new MockedRoom<TIO, TPresence, TStorage>(_room, {
                 events,
                 initialPresence,
-                initialStorage: initialStorage ?? options.initialStorage,
+                initialStorage:
+                    typeof initialStorage === "function"
+                        ? options.initialStorage.getFactory(initialStorage)
+                        : options.initialStorage,
                 presence: options.presence,
             });
         });
@@ -227,7 +235,7 @@ export const createRoomBundle = <
                 initialPresence,
                 initialStorage:
                     typeof initialStorage === "function"
-                        ? initialStorage
+                        ? options.initialStorage.getFactory(initialStorage)
                         : options.initialStorage,
                 presence: options.presence,
                 onAuthorizationFail,

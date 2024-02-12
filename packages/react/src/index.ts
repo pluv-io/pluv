@@ -11,6 +11,7 @@ export type { CreateBundle, PluvProviderProps } from "./createBundle";
 export type {
     CreateRoomBundle,
     CreateRoomBundleOptions,
+    InferRoomStorage,
     PluvRoomProviderProps,
     SubscriptionHookOptions,
 } from "./createRoomBundle";
