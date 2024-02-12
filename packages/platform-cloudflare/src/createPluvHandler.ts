@@ -49,9 +49,7 @@ export interface CreatePluvHandlerResult<
     handler: ExportedHandler<TEnv>;
 }
 
-type InferCloudflarePluvHandlerEnv<
-    TPluv extends PluvIO<CloudflarePlatform, any, any, any, any, any, any>,
-> =
+type InferCloudflarePluvHandlerEnv<TPluv extends PluvIO<CloudflarePlatform>> =
     TPluv extends PluvIO<
         CloudflarePlatform<infer IEnv>,
         any,
@@ -64,9 +62,7 @@ type InferCloudflarePluvHandlerEnv<
         ? IEnv
         : {};
 
-export const createPluvHandler = <
-    TPluv extends PluvIO<CloudflarePlatform, any, any, any, any, any, any>,
->(
+export const createPluvHandler = <TPluv extends PluvIO<CloudflarePlatform>>(
     config: CreatePluvHandlerConfig<
         TPluv,
         Id<InferCloudflarePluvHandlerEnv<TPluv>>

@@ -48,15 +48,6 @@ export interface EventConfig<
 
 export type EventConfigType = "broadcast" | "self" | "sync";
 
-export type SyncEventResolver<
-    TContext extends Record<string, any> = {},
-    TData extends JsonObject = {},
-    TResultBroadcast extends EventRecord<string, any> = {},
-> = (
-    data: TData,
-    context: EventResolverContext<TContext>,
-) => MaybePromise<TResultBroadcast | void>;
-
 export type EventResolver<
     TContext extends Record<string, any> = {},
     TData extends JsonObject = {},
@@ -110,7 +101,7 @@ export type EventResolverObject<
         TData,
         TResultSelf
     >;
-    sync?: SyncEventResolver<TContext, TData, TResultSync>;
+    sync?: EventResolver<TContext, TData, TResultSync>;
 };
 
 export type InferEventConfig<

@@ -26,17 +26,13 @@ import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
 import type { EventConfig, InferEventConfig } from "./types";
 
-type InferIOContext<TIO extends PluvIO<any, any, any, any, any, any, any>> =
-    TIO extends PluvIO<any, any, infer IContext, any, any, any, any>
-        ? IContext
-        : never;
+type InferIOContext<TIO extends PluvIO> =
+    TIO extends PluvIO<any, any, infer IContext> ? IContext : never;
 
-type InferIOPlatform<TIO extends PluvIO<any, any, any, any, any, any, any>> =
-    TIO extends PluvIO<infer IPlatform, any, any, any, any, any, any>
-        ? IPlatform
-        : never;
+type InferIOPlatform<TIO extends PluvIO> =
+    TIO extends PluvIO<infer IPlatform> ? IPlatform : never;
 
-export type InferIORoom<TIO extends PluvIO<any, any, any, any, any, any, any>> =
+export type InferIORoom<TIO extends PluvIO> =
     TIO extends PluvIO<
         infer IPlatform,
         infer IAuthorize,
