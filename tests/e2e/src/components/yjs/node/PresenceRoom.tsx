@@ -1,16 +1,16 @@
 import type { FC } from "react";
 import {
-    usePluvMyPresence,
-    usePluvMyself,
-    usePluvOthers,
+    useMyPresence,
+    useMyself,
+    useOthers,
 } from "../../../pluv-io/yjs/node";
 
 export type PresenceRoomProps = Record<string, never>;
 
 export const PresenceRoom: FC<PresenceRoomProps> = () => {
-    const myself = usePluvMyself();
-    const [myPresence, updateMyPresence] = usePluvMyPresence();
-    const others = usePluvOthers();
+    const myself = useMyself();
+    const [myPresence, updateMyPresence] = useMyPresence();
+    const others = useOthers();
 
     if (!myself) return null;
 

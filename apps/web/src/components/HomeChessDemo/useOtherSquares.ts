@@ -1,8 +1,8 @@
-import { usePluvOthers } from "pluv-io";
+import { useOthers } from "pluv-io";
 import { useMemo } from "react";
 
 export const useOtherSquares = (): Record<string, number> => {
-    const otherSquares = usePluvOthers((others) =>
+    const otherSquares = useOthers((others) =>
         others.map((other) => other.presence.demoChessSquare),
     );
 

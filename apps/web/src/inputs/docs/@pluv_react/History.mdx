@@ -13,11 +13,11 @@ This will allow users to apply undos and redos to Pluv storage mutations.
 
 ## Relevant Hooks
 
-* [usePluvCanRedo](/docs/react/api-reference#usePluvCanRedo)
-* [usePluvCanUndo](/docs/react/api-reference#usePluvCanUndo)
-* [usePluvRedo](/docs/react/api-reference#usePluvRedo)
-* [usePluvTransact](/docs/react/api-reference#usePluvTransact)
-* [usePluvUndo](/docs/react/api-reference#usePluvUndo)
+* [useCanRedo](/docs/react/api-reference#useCanRedo)
+* [useCanUndo](/docs/react/api-reference#useCanUndo)
+* [useRedo](/docs/react/api-reference#useRedo)
+* [useTransact](/docs/react/api-reference#useTransact)
+* [useUndo](/docs/react/api-reference#useUndo)
 
 ## Undoing a storage mutation
 
@@ -32,12 +32,12 @@ const client = createClient<typeof io>({ /* ... */ });
 export const { createRoomBundle } = createBundle(client);
 
 export const {
-    usePluvCanRedo,
-    usePluvCanUndo,
-    usePluvRedo,
-    usePluvStorage,
-    usePluvTransact,
-    usePluvUndo,
+    useCanRedo,
+    useCanUndo,
+    useRedo,
+    useStorage,
+    useTransact,
+    useUndo,
 } = createRoomBundle({
     initialStorage: () => ({
         messages: y.array([
@@ -53,8 +53,8 @@ export const {
 To undo a storage mutation, you will need to wrap your mutation with a transaction.
 
 ```ts
-const transact = usePluvTransact();
-const [messages, sharedType] = usePluvStorage();
+const transact = useTransact();
+const [messages, sharedType] = useStorage();
 
 // We can undo this
 transact(() => {
@@ -73,8 +73,8 @@ sharedType.push(["world!"]);
 Then from anywhere within the `PluvRoomProvider`, you can undo your last transacted operation.
 
 ```ts
-const undo = usePluvUndo();
-const redo = usePluvRedo();
+const undo = useUndo();
+const redo = useRedo();
 
 undo();
 redo();
@@ -98,7 +98,7 @@ export const { /* ... */ } = createRoomBundle({
     trackedOrigins: ["my-custom-origin"],
 });
 
-const transact = usePluvTransact();
+const transact = useTransact();
 
 // We can undo this transaction, because "my-custom-origin" is tracked
 transact((tx) => {

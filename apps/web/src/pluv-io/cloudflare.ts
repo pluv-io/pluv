@@ -15,7 +15,7 @@ export const {
     PluvProvider,
 
     // hooks
-    usePluvClient,
+    useClient,
 } = createBundle(client);
 
 export const {
@@ -24,15 +24,15 @@ export const {
     PluvRoomProvider,
 
     // hooks
-    usePluvBroadcast,
-    usePluvConnection,
-    usePluvEvent,
-    usePluvMyPresence,
-    usePluvMyself,
-    usePluvOther,
-    usePluvOthers,
-    usePluvRoom,
-    usePluvStorage,
+    useBroadcast,
+    useConnection,
+    useEvent,
+    useMyPresence,
+    useMyself,
+    useOther,
+    useOthers,
+    useRoom,
+    useStorage,
 } = createRoomBundle({
     presence: z.object({
         demoChessSquare: z.nullable(z.string()),

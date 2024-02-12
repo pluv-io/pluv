@@ -54,9 +54,9 @@ Pluv.IO allows you to build real-time collaborative features with a fully end-to
 So you can do this:
 
 ```tsx
-const broadcast = usePluvBroadcast();
+const broadcast = useBroadcast();
 
-usePluvEvent("RECEIVE_MESSAGE", ({ data }) => {
+useEvent("RECEIVE_MESSAGE", ({ data }) => {
   setMessages([...messages, data.message]);
 });
 

@@ -1,11 +1,11 @@
 import { FC, useCallback, useState } from "react";
-import { usePluvBroadcast, usePluvEvent } from "./pluv";
+import { useBroadcast, useEvent } from "./pluv";
 
 export const ChatRoom: FC<Record<string, never>> = () => {
     const [messages, setMessages] = useState<readonly string[]>([]);
-    const broadcast = usePluvBroadcast();
+    const broadcast = useBroadcast();
 
-    usePluvEvent("RECEIVE_MESSAGE", ({ data }) => {
+    useEvent("RECEIVE_MESSAGE", ({ data }) => {
         setMessages((oldMessages) => [...oldMessages, data.message]);
     });
 

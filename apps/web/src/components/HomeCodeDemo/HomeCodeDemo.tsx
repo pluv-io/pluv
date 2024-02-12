@@ -76,24 +76,24 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
             {
                 code: codeBlock`
                     import {
-                      usePluvMyPresence,
-                      usePluvOthers,
-                      usePluvStorage,
+                      useMyPresence,
+                      useOthers,
+                      useStorage,
                     } from "client/pluv";
                     import type { FC } from "react";
 
                     export const Room: FC = () => {
                       // Get data and yjs shared type for mutations
-                      const [boxes, sharedType] = usePluvStorage("boxes");
+                      const [boxes, sharedType] = useStorage("boxes");
                       // { first: { x: ${codePositions.first.x}, y: ${codePositions.first.y} },
                       //   second: { x: ${codePositions.second.x}, y: ${codePositions.second.y} } }
 
                       // Observe and update your selection
-                      const [selection, setPresence] = usePluvMyPresence((me) => me.selection);
+                      const [selection, setPresence] = useMyPresence((me) => me.selection);
                       setPresence({ selection: "first" });
 
                       // Get selections of other users
-                      const selections = usePluvOthers((others) => {
+                      const selections = useOthers((others) => {
                         return others.map((other) => other.presence.selection);
                       });
 
@@ -154,7 +154,7 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                       PluvProvider,
 
                       // hooks
-                      usePluvClient,
+                      useClient,
                     } = createBundle(client);
 
                     export const {
@@ -163,15 +163,15 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                       PluvRoomProvider,
                     
                       // hooks
-                      usePluvBroadcast,
-                      usePluvConnection,
-                      usePluvEvent,
-                      usePluvMyPresence,
-                      usePluvMyself,
-                      usePluvOther,
-                      usePluvOthers,
-                      usePluvRoom,
-                      usePluvStorage,
+                      useBroadcast,
+                      useConnection,
+                      useEvent,
+                      useMyPresence,
+                      useMyself,
+                      useOther,
+                      useOthers,
+                      useRoom,
+                      useStorage,
                     } = createRoomBundle({
                       presence: z.object({
                         selection: z.nullable(z.string()),

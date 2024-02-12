@@ -21,7 +21,7 @@ export const {
     PluvProvider,
 
     // hooks
-    usePluvClient,
+    useClient,
 } = createBundle(client);
 
 export const {
@@ -29,20 +29,20 @@ export const {
     PluvRoomProvider,
 
     // hooks
-    usePluvBroadcast,
-    usePluvCanRedo,
-    usePluvCanUndo,
-    usePluvConnection,
-    usePluvEvent,
-    usePluvMyPresence,
-    usePluvMyself,
-    usePluvOther,
-    usePluvOthers,
-    usePluvRedo,
-    usePluvRoom,
-    usePluvStorage,
-    usePluvTransact,
-    usePluvUndo,
+    useBroadcast,
+    useCanRedo,
+    useCanUndo,
+    useConnection,
+    useEvent,
+    useMyPresence,
+    useMyself,
+    useOther,
+    useOthers,
+    useRedo,
+    useRoom,
+    useStorage,
+    useTransact,
+    useUndo,
 } = createRoomBundle({
     addons: [
         addonIndexedDB({

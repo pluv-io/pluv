@@ -15,20 +15,20 @@ To get started, define custom events in your backend `@pluv/io` instance (see [D
 
 ## Use custom events
 
-Then, assuming you've already setup your React.js bundle and providers, listen and broadcast your custom events using `usePluvBroadcast` and `usePluvEvent` from your react bundle.
+Then, assuming you've already setup your React.js bundle and providers, listen and broadcast your custom events using `useBroadcast` and `useEvent` from your react bundle.
 
 ```ts
-import { usePluvBroadcast, usePluvEvent } from "frontend/io";
+import { useBroadcast, useEvent } from "frontend/io";
 import { useCallback } from "react";
 import { emojiMap } from "./emojiMap";
 
-usePluvEvent("EMOJI_RECEIVED", ({ data }) => {
+useEvent("EMOJI_RECEIVED", ({ data }) => {
     const emoji = emojiMap[data.emojiCode];
 
     console.log(emoji);
 });
 
-const broadcast = usePluvBroadcast();
+const broadcast = useBroadcast();
 
 const onEmoji = useCallback((emojiCode: number): void => {
     broadcast("EMIT_EMOJI", { emojiCode });

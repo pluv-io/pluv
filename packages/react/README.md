@@ -76,7 +76,7 @@ export const {
     PluvProvider,
 
     // hooks
-    usePluvClient,
+    useClient,
 } = createBundle(client);
 
 export const {
@@ -84,15 +84,15 @@ export const {
     PluvRoomProvider,
 
     // hooks
-    usePluvBroadcast,
-    usePluvConnection,
-    usePluvEvent,
-    usePluvMyPresence,
-    usePluvMyself,
-    usePluvOther,
-    usePluvOthers,
-    usePluvRoom,
-    usePluvStorage,
+    useBroadcast,
+    useConnection,
+    useEvent,
+    useMyPresence,
+    useMyself,
+    useOther,
+    useOthers,
+    useRoom,
+    useStorage,
 } = createRoomBundle({
     initialStorage: () => ({
         messages: y.array([
@@ -123,9 +123,9 @@ export const MyPage: FC<Record<string, never>> = () => {
 };
 
 export const MyRoom: FC<Record<string, never>> = () => {
-    const broadcast = usePluvBroadcast();
+    const broadcast = useBroadcast();
 
-    usePluvEvent("RECEIVE_MESSAGE", ({ data }) => {
+    useEvent("RECEIVE_MESSAGE", ({ data }) => {
         // data is typed as { message: string }
         console.log(data.message);
     });
