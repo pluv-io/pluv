@@ -24,6 +24,14 @@ export class CrdtYjsDocFactory<
         return new CrdtYjsDoc<TStorage>();
     }
 
+    public getFactory(
+        initialStorage?: (() => TStorage) | undefined,
+    ): CrdtYjsDocFactory<TStorage> {
+        return new CrdtYjsDocFactory<TStorage>(
+            initialStorage ?? this._initialStorage,
+        );
+    }
+
     public getFresh(): CrdtYjsDoc<TStorage> {
         const storage = this._initialStorage();
 
@@ -65,7 +73,11 @@ export class CrdtYjsDocFactory<
         );
     }
 
-    public getInitialized(): CrdtYjsDoc<TStorage> {
-        return new CrdtYjsDoc<TStorage>(this._initialStorage());
+    public getInitialized(
+        initialStorage?: () => TStorage,
+    ): CrdtYjsDoc<TStorage> {
+        return new CrdtYjsDoc<TStorage>(
+            initialStorage?.() ?? this._initialStorage(),
+        );
     }
 }
