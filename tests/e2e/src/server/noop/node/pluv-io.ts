@@ -1,4 +1,3 @@
-import { loro } from "@pluv/crdt-loro";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
@@ -14,7 +13,6 @@ export const io = createIO({
             name: z.string(),
         }),
     },
-    crdt: loro,
     debug: true,
     platform: platformNode(),
 }).event("SEND_MESSAGE", {
