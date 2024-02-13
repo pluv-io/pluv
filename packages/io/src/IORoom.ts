@@ -1,4 +1,5 @@
 import type { AbstractCrdtDoc, AbstractCrdtDocFactory } from "@pluv/crdt";
+import { noop } from "@pluv/crdt";
 import type {
     BaseIOAuthorize,
     BaseIOEventRecord,
@@ -63,7 +64,7 @@ export type IORoomConfig<
 > = Partial<IORoomListeners<TPlatform>> & {
     authorize?: TAuthorize;
     context: TContext & InferPlatformRoomContextType<TPlatform>;
-    crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
+    crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug: boolean;
     events: InferEventConfig<
         TPlatform,
@@ -132,12 +133,19 @@ export class IORoom<
             TOutputSync
         >,
     ) {
-        const { authorize, context, crdt, debug, events, onDestroy, platform } =
-            config;
+        const {
+            authorize,
+            context,
+            crdt = noop,
+            debug,
+            events,
+            onDestroy,
+            platform,
+        } = config;
 
         this._context = context;
         this._debug = debug;
-        this._docFactory = crdt.doc({});
+        this._docFactory = crdt.doc(() => ({}));
         this._doc = this._docFactory.getEmpty();
         this._events = events;
         this._platform = platform;

@@ -18,7 +18,7 @@ export type CreateIOParams<
 > = Partial<PluvIOListeners<TPlatform>> & {
     authorize?: IOAuthorize<TAuthorizeUser, TAuthorizeRequired>;
     context?: TContext;
-    crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
+    crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug?: boolean;
     getInitialStorage?: GetInitialStorageFn<TPlatform>;
     platform: TPlatform;

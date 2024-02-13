@@ -67,6 +67,10 @@ const config: PlaywrightTestConfig = {
             port: 3112,
         },
         {
+            command: "pnpm dev:noop:server:node",
+            port: 3122,
+        },
+        {
             command: "pnpm dev:yjs:server:cloudflare",
             port: 3101,
         },

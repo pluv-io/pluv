@@ -11,6 +11,8 @@
 		"types": ["@cloudflare/workers-types"],
 		"paths": {
 			"@pluv-internal/cloudflare-utils": ["../../../../../../internal/cloudflare-utils/dist"],
+			"@pluv/crdt": ["../../../../../../packages/crdt/dist"],
+			"@pluv/crdt-yjs": ["../../../../../../packages/crdt-yjs/dist"],
 			"@pluv/io": ["../../../../../../packages/io/dist"],
 			"@pluv/platform-cloudflare": ["../../../../../../packages/platform-cloudflare/dist"],
 			"@pluv/types": ["../../../../../../packages/types/dist"]
