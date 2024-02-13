@@ -15,6 +15,7 @@ import type {
     AbstractCrdtType,
     InferCrdtStorageJson,
 } from "@pluv/crdt";
+import { noop } from "@pluv/crdt";
 import type {
     IOEventMessage,
     IOLike,
@@ -47,7 +48,7 @@ export type CreateRoomBundleOptions<
     TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > = {
     addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
-    initialStorage: AbstractCrdtDocFactory<TStorage>;
+    initialStorage?: AbstractCrdtDocFactory<TStorage>;
     presence?: InputZodLike<TPresence>;
 };
 
@@ -164,6 +165,9 @@ export const createRoomBundle = <
     client: PluvClient<TIO>,
     options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
 ): CreateRoomBundle<TIO, TPresence, TStorage> => {
+    const _initialStorage = (options.initialStorage ??
+        noop.doc()) as AbstractCrdtDocFactory<TStorage>;
+
     /**
      * !HACK
      * @description We'll let the context error out if the room is not provided,
@@ -196,8 +200,8 @@ export const createRoomBundle = <
                 initialPresence,
                 initialStorage:
                     typeof initialStorage === "function"
-                        ? options.initialStorage.getFactory(initialStorage)
-                        : options.initialStorage,
+                        ? _initialStorage.getFactory(initialStorage)
+                        : _initialStorage,
                 presence: options.presence,
             });
         });
@@ -235,8 +239,8 @@ export const createRoomBundle = <
                 initialPresence,
                 initialStorage:
                     typeof initialStorage === "function"
-                        ? options.initialStorage.getFactory(initialStorage)
-                        : options.initialStorage,
+                        ? _initialStorage.getFactory(initialStorage)
+                        : _initialStorage,
                 presence: options.presence,
                 onAuthorizationFail,
             });

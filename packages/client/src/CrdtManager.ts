@@ -3,12 +3,13 @@ import type {
     AbstractCrdtDocFactory,
     AbstractCrdtType,
 } from "@pluv/crdt";
+import { noop } from "@pluv/crdt";
 
 export type CrdtManagerOptions<
     TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
 > = {
     encodedState?: string | Uint8Array | null;
-    initialStorage: AbstractCrdtDocFactory<TStorage>;
+    initialStorage?: AbstractCrdtDocFactory<TStorage>;
 };
 
 type CrdtManagerInitializeParams = {
@@ -26,7 +27,10 @@ export class CrdtManager<
     private readonly _docFactory: AbstractCrdtDocFactory<TStorage>;
 
     constructor(options: CrdtManagerOptions<TStorage>) {
-        const { encodedState, initialStorage } = options;
+        const {
+            encodedState,
+            initialStorage = noop.doc({}) as AbstractCrdtDocFactory<TStorage>,
+        } = options;
 
         this._docFactory = initialStorage;
 
