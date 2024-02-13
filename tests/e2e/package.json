@@ -6,7 +6,7 @@
 		"dev": "concurrently \"pnpm:dev:client\" \"pnpm:dev:noop:server:node\" \"pnpm:dev:yjs:server:cloudflare\" \"pnpm:dev:yjs:server:node\" \"pnpm:dev:yjs:server:node-redis\"",
 		"dev:client": "next dev --port 3100",
 		"dev:loro:server:node": "ts-node --project ./src/server/loro/node/tsconfig.json ./src/server/loro/node --port 3112",
-		"dev:noop:server:node": "ts-node --project ./src/server/noop/node/tsconfig.json ./src/server/loro/node --port 3122",
+		"dev:noop:server:node": "ts-node --project ./src/server/noop/node/tsconfig.json ./src/server/noop/node --port 3122",
 		"dev:yjs:server:cloudflare": "wrangler dev --port 3101",
 		"dev:yjs:server:node": "ts-node --project ./src/server/yjs/node/tsconfig.json ./src/server/yjs/node -- --port 3102",
 		"dev:yjs:server:node-redis": "ts-node --project ./src/server/yjs/node-redis/tsconfig.json ./src/server/yjs/node-redis -- --port 3103",
