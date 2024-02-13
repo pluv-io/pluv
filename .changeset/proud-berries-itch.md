@@ -58,19 +58,6 @@
     // use .value to get the underlying yjs type
     const yarray: YArray<YMap<{ message: string }>> = array.value;
     ```
-* `initialStorage` in `@pluv/client` is now no longer optional. This also affects `@pluv/react`.
-    ```ts
-    // Before
-    import { createClient } from "@pluv/client";
-
-    const client = createClient({ /* ... */ });
-
-    client.createRoom({
-        // ...
-        // This was previously optional. But this will now yield an error.
-        initialStorage: undefined,
-    });
-    ```
 * `initialStorage` must now use the `doc` function from `@pluv/crdt-yjs` to be defined. This also affects `@pluv/react`.
     ```ts
     // Before:
@@ -80,7 +67,6 @@
 
     client.createRoom({
         // ...
-        // This was previously optional. But this will now yield an error.
         initialStorage: () => ({
             messages: y.array([
                 y.object({ message: "Hello world!" }),
@@ -90,13 +76,13 @@
 
     // After:
     import { createClient } from "@pluv/client";
+    // This is now imported separately
     import { yjs } from "@pluv/crdt-yjs";
 
     const client = createClient({ /* ... */ });
 
     client.createRoom({
         // ...
-        // This was previously optional. But this will now yield an error.
         initialStorage: yjs.doc(() => ({
             messages: yjs.array([
                 yjs.object({ message: "Hello world!" }),
@@ -106,9 +92,9 @@
     ```
 * `@pluv/client` can now instead use [loro](https://github.com/loro-dev/loro) instead of [yjs](https://github.com/yjs/yjs).
     ```bash
-    npm install @pluv/client @pluv/crdt-loro
+    npm install @pluv/client @pluv/crdt-loro loro-crdt
     ```
-* `@pluv/io` must now specify which crdt library (i.e. `@pluv/crdt-yjs` or `@pluv/crdt-loro` it is meant to use)
+* If you are using storage features with pluv, `@pluv/io` must now specify which crdt library (i.e. `@pluv/crdt-yjs` or `@pluv/crdt-loro`) it is meant to use.
     ```ts
     import { loro } from "@pluv/crdt-loro";
     import { yjs } from "@pluv/crdt-yjs";

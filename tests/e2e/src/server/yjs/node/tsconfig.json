@@ -7,11 +7,10 @@
 		"declarationMap": false,
 		"types": ["@types/node"],
 		"paths": {
-			"@pluv/client": ["../../../../../../packages/client/dist"],
+			"@pluv/crdt": ["../../../../../../packages/crdt/dist"],
 			"@pluv/crdt-yjs": ["../../../../../../packages/crdt-yjs/dist"],
 			"@pluv/io": ["../../../../../../packages/io/dist"],
 			"@pluv/platform-node": ["../../../../../../packages/platform-node/dist"],
-			"@pluv/react": ["../../../../../../packages/react/dist"],
 			"@pluv/types": ["../../../../../../packages/types/dist"],
 			"ws": ["../../../node_modules/@types/ws"]
 		}
