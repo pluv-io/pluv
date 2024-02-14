@@ -16,7 +16,7 @@ To get started with yjs for pluv.io, first set an `initialStorage` config on you
 ```ts
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
-import { type AppPluvIO } from "backend/io";
+import type { AppPluvIO } from "backend/io";
 
 const client = createClient<AppPluvIO>({
     wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
@@ -39,7 +39,7 @@ Then, setup `PluvRoomProvider` with your new `initialStorage` if it is different
 
 ```tsx
 import { yjs } from "@pluv/crdt-yjs";
-import { FC } from "react";
+import type { FC } from "react";
 import { pluvRoom } from "frontend/io";
 
 export const MyPage: FC = () => {

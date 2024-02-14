@@ -19,7 +19,7 @@ Let's step through how we'd put together a real-time API for Cloudflare Workers.
 # For the server
 npm install @pluv/io @pluv/platform-cloudflare
 # Server peer-dependencies
-npm install yjs zod
+npm install zod
 ```
 
 ### Create PluvIO instance
@@ -29,7 +29,6 @@ Define an io (websocket client) instance on the server codebase:
 ```ts
 // backend/io.ts
 
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { eq } from "drizzle-orm";
@@ -41,7 +40,6 @@ type Env = {
 };
 
 export const io = createIO({
-    crdt: yjs,
     platform: platformCloudflare<Env>(),
     // Example of using Cloudflare's D1 database with drizzle-orm
     getInitialStorage: async ({ env, room }) => {
@@ -140,12 +138,10 @@ export default handler;
 If you don't need to modify your DurableObject or Cloudflare Worker handler too specifically, [@pluv/platform-cloudflare](https://www.npmjs.com/package/@pluv/platform-cloudflare) also provides a function `createPluvHandler` to create a DurableObject and handler for you automatically.
 
 ```ts
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { createPluvHandler, platformCloudflare } from "@pluv/platform-cloudflare";
 
 const io = createIO({
-    crdt: yjs,
     platform: platformCloudflare(),
 });
 

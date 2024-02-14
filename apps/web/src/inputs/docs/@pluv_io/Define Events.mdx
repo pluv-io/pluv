@@ -12,13 +12,11 @@ In pluv.io, you can define custom events with an input validation schema and res
 ## Usage example
 
 ```ts
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
 export const io = createIO({
-    crdt: yjs,
     platform: platformNode(),
 })
     // When event "SEND_MESSAGE" is sent by the frontend and received

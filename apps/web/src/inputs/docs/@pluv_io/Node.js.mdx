@@ -20,8 +20,6 @@ Let's step through how we'd put together a real-time API for Node.js.
 npm install @pluv/io @pluv/platform-node
 # Server peer-dependencies
 npm install ws zod
-# CRDT dependencies
-npm install @pluv/crdt-yjs yjs
 ```
 
 ### Create PluvIO instance
@@ -31,12 +29,10 @@ Define an io (websocket client) instance on the server codebase:
 ```ts
 // backend/io.ts
 
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 
 export const io = createIO({
-    crdt: yjs,
     platform: platformNode(),
 });
 
@@ -83,7 +79,6 @@ server.listen(PORT, () => {
 If you don't need to modify your websocket server or handler too specifically, [@pluv/platform-node](https://www.npmjs.com/package/@pluv/platform-node) also provides a function `createPluvHandler` to create a websocket server and handler for your automatically.
 
 ```ts
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { createPluvHandler, platformNode } from "@pluv/platform-node";
 import bodyParser from "body-parser";

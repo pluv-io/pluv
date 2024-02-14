@@ -14,9 +14,8 @@ Presence is a per-connection state that allows users to track what other users a
 To get started with presence for pluv.io, first set a `presence` config on your `createRoomBundle` config.
 
 ```ts
-import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
-import { type AppPluvIO } from "backend/io";
+import type { AppPluvIO } from "backend/io";
 import { z } from "zod";
 
 const client = createClient<AppPluvIO>({
@@ -26,7 +25,6 @@ const client = createClient<AppPluvIO>({
 const pluv = createBundle(client);
 
 export const pluvRoom = pluv.createRoomBundle({
-    initialStorage: yjs.doc(() => ({})),
     // Define the validation schema for presence, using zod
     presence: z.object({
         selectionId: z.nullable(z.string()),

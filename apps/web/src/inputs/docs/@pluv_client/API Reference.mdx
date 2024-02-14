@@ -98,24 +98,6 @@ const room = client.createRoom("my-example-room", {
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
-    /**
-     * @description This is the same `captureTimeout` option from yjs's UndoManager.
-     * This specifies a number in ms, during which edits are merged together to be
-     * undone together. Set this to 0, to track each transacted change individually.
-     * @see https://docs.yjs.dev/api/undo-manager
-     * @default 500
-     */
-    captureTimeout: 500,
-    /**
-     * @desription This is the same `trackedOrigins` option from yjs's UndoManager.
-     * This specifies transaction origins (strings only) to filter which transactions
-     * can be undone.
-     * When omitted, the user's connection id will be tracked. When provided,
-     * specifies additional tracked origins besides the user's connection id.
-     * @see https://docs.yjs.dev/api/undo-manager
-     * @default undefined
-     */
-    trackedOrigins: ["user-123"],
 });
 ```
 

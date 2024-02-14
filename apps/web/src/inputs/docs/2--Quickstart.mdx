@@ -173,7 +173,9 @@ export const {
     useRoom,
     useStorage,
 } = createRoomBundle({
-    initialStorage: yjs.doc(() => ({})),
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array(["hello world!"]),
+    })),
 });
 ```
 

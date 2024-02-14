@@ -55,7 +55,7 @@ export const {
     useUndo,
 } = createRoomBundle({
     /**
-     * @required
+     * @optional
      * @description Define the initial storage for the room, as well as the CRDT to use
      */
     initialStorage: yjs.doc(() => ({
@@ -67,6 +67,7 @@ export const {
         ]),
     })),
     /**
+     * @optional
      * @description Define your presence schema
      */
     presence: z.object({
@@ -114,19 +115,21 @@ const MyComponent: FC = () => {
                 }),
             }}
             /**
+             * @optional
              * @description Define your initial presence
              */
             initialPresence={{
                 selectionId: null,
             }}
             /**
-             * @required
+             * @optional
              * @description Define the initial storage for the room, as well as the CRDT to use
              */
-            initialStorage={yjs.doc(() => ({
+            initialStorage={() => ({
                 messages: yjs.array(),
-            }))}
+            })}
             /**
+             * @required
              * @description Set the room id
              */
             room="my-mock-room"
@@ -149,18 +152,21 @@ const MyComponent: FC = () => {
     return (
         <PluvRoomProvider
             /**
+             * @optional
              * @description Define the user's initial presence
              */
             initialPresence={{
                 selectionId: null,
             }}
             /**
+             * @optional
              * @description Define the initial storage for the room
              */
-            initialStorage={yjs.doc(() => ({
+            initialStorage={() => ({
                 messages: yjs.array(),
-            }))}
+            })}
             /**
+             * @optional
              * @description Emits an error whenever authorization fails, for
              * monitoring or debugging purposes
              */
@@ -168,6 +174,7 @@ const MyComponent: FC = () => {
                 console.error(error);
             }}
             /**
+             * @required
              * @description Set the room id
              */
             room="my-room-id"
