@@ -10,7 +10,7 @@
 </h1>
 
 <h3 align="center">Multi-platform, E2E type-safe realtime packages</h3>
-<h4 align="center">💕 Inspired by <a href="https://trpc.io">trpc</a> 💕 <a href="https://docs.yjs.dev/">yjs</a> 💕 and <a href="https://developers.cloudflare.com/">Cloudflare</a></h4>
+<h4 align="center">💕 Inspired by <a href="https://trpc.io">trpc</a> 💕 <a href="https://docs.yjs.dev/">yjs</a> 💕 and <a href="https://developers.cloudflare.com/">Cloudflare</a> 💕 </h4>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@pluv/io">
@@ -95,7 +95,8 @@ Documentation is available at [pluv.io](https://pluv.io/docs/introduction).
 ## Related
 
 - [@pluv/client](https://www.npmjs.com/package/@pluv/client) - Framework agnostic client
-- [@pluv/crdt-yjs](https://www.npmjs.com/package/@pluv/crdt-yjs) - Yjs for Pluv.IO
+- [@pluv/crdt-loro](https://www.npmjs.com/package/@pluv/crdt-loro) - Loro CRDT for Pluv.IO
+- [@pluv/crdt-yjs](https://www.npmjs.com/package/@pluv/crdt-yjs) - Yjs CRDT for Pluv.IO
 - [@pluv/persistance-redis](https://www.npmjs.com/package/@pluv/persistance-redis) - Persistance for storage on distributed systems (Node.js only)
 - [@pluv/platform-cloudflare](https://www.npmjs.com/package/@pluv/platform-cloudflare) - Adapter to run @pluv/io on Cloudflare Workers
 - [@pluv/platform-node](https://www.npmjs.com/package/@pluv/platform-node) - Adapter to run @pluv/io on Node.js
@@ -106,6 +107,7 @@ Documentation is available at [pluv.io](https://pluv.io/docs/introduction).
 
 This software uses the following open source tooling and libraries:
 
+- [Loro](https://loro.dev/)
 - [Yjs](https://yjs.dev/)
 - [Node.js](https://nodejs.org/)
 - [Cloudflare Workers](https://workers.cloudflare.com/)

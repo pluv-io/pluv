@@ -10,7 +10,7 @@
 </h1>
 
 <h3 align="center">Multi-platform, E2E type-safe realtime packages</h3>
-<h4 align="center">💕 Inspired by <a href="https://trpc.io">trpc</a> 💕 <a href="https://docs.yjs.dev/">yjs</a> 💕 and <a href="https://developers.cloudflare.com/">Cloudflare</a></h4>
+<h4 align="center">💕 Inspired by <a href="https://trpc.io">trpc</a> 💕 <a href="https://docs.yjs.dev/">yjs</a> 💕 and <a href="https://developers.cloudflare.com/">Cloudflare</a> 💕 </h4>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@pluv/client">
