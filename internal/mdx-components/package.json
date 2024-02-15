@@ -11,7 +11,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@mdx-js/react": "^3.0.0",
+		"@mdx-js/react": "^3.0.1",
 		"@pluv-internal/react-code": "workspace:^",
 		"@pluv-internal/react-components": "workspace:^",
 		"@pluv-internal/react-hooks": "workspace:^",
