@@ -39,9 +39,11 @@ Multi-platform, E2E type-safe realtime packages
 
 Existing open-source tools for building real-time APIs come with several trade-offs. With [socket.io](https://socket.io) or [y-websocket](https://github.com/yjs/y-websocket), you get built-in support for things like heartbeats, rooms and awareness without any automatic type-safety server-to-client. Meanwhile, with [GraphQL](https://graphql.org/) you get type-safety in subscriptions but lose those same features. pluv.io unifies these experiences by providing **common websocket API capabilities** and **end-to-end type-safety** server-to-client.
 
-## Built for multiple runtimes and frameworks
+## Bring your own runtime, framework and CRDT
 
-pluv.io supports hosting on either [Node.js](https://nodejs.org/) or [Cloudflare Workers](https://workers.cloudflare.com/). Support for multiple frameworks is also planned, with [React](https://beta.es.reactjs.org/) already available with [@pluv/react](https://www.npmjs.com/package/@pluv/react). If you're building for other frameworks, [@pluv/client](https://www.npmjs.com/package/@pluv/client) is framework agnostic and can meet your needs.
+Today, pluv.io supports hosting on either [Node.js](https://nodejs.org/) or [Cloudflare Workers](https://workers.cloudflare.com/). Support for multiple frameworks is also planned, with [React](https://beta.es.reactjs.org/) already available with [@pluv/react](https://www.npmjs.com/package/@pluv/react). If you're building for other frameworks, [@pluv/client](https://www.npmjs.com/package/@pluv/client) is framework agnostic and can meet your needs.
+
+pluv.io also supports [Yjs](https://docs.yjs.dev/) and experimentally supports the [Loro](https://loro.dev/) CRDT library.
 
 ## Features and roadmap
 
@@ -84,6 +86,7 @@ pluv.io supports hosting on either [Node.js](https://nodejs.org/) or [Cloudflare
 ### Frontends
 
 - [x] [React.js](https://beta.reactjs.org/)
+- [ ] [Solid.js](https://www.solidjs.com/)
 - [ ] [Vue.js](https://vuejs.org/)
 - [ ] [Svelte](https://svelte.dev/)
 
