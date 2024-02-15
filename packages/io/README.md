@@ -86,9 +86,6 @@ pluv.io allows you to more easily build real-time collaborative experiences with
 
 Before diving into documentation, check out usage instructions for your selected platform:
 
-> **Note:**
-> `@pluv/io`, `@pluv/client`, `@pluv/crdt-yjs` and `@pluv/react` all require [yjs](https://docs.yjs.dev/) as a peer dependency.
-
 ### Documentation
 
 Documentation is available at [pluv.io](https://pluv.io/docs/introduction).
