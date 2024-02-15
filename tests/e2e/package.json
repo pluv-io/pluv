@@ -69,10 +69,10 @@
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^8.2.2",
 		"eslint-config-pluv": "workspace:^",
-		"miniflare": "^3.20240129.1",
+		"miniflare": "^3.20240129.2",
 		"prisma": "^5.9.1",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.3.3",
-		"wrangler": "^3.28.1"
+		"wrangler": "^3.28.2"
 	}
 }

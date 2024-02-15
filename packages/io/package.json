@@ -26,7 +26,7 @@
 		"@panva/hkdf": "^1.1.1",
 		"@pluv/crdt": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"jose": "^5.2.1",
+		"jose": "^5.2.2",
 		"kleur": "^4.1.5",
 		"wonka": "^6.3.4"
 	},

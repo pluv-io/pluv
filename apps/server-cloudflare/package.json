@@ -28,10 +28,10 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
-    "rollup": "^4.10.0",
+    "rollup": "^4.11.0",
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-polyfills": "^0.2.1",
     "typescript": "^5.3.3",
-    "wrangler": "^3.28.1"
+    "wrangler": "^3.28.2"
   }
 }
