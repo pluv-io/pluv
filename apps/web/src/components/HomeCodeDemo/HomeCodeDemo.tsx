@@ -104,7 +104,7 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
             },
             {
                 code: codeBlock`
-                    import { y } from "@pluv/react";
+                    import { yjs } from "@pluv/crdt-yjs";
                     import { PluvRoomProvider } from "client/pluv";
                     import type { FC, ReactNode } from "react";
 
@@ -115,9 +115,9 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                     const initialPresence = { selection: null };
 
                     const initialStorage = () => ({
-                      boxes: y.object({
-                        first: y.object({ x: -48, y: 0 }),
-                        second: y.object({ x: 48, y: 0 }),
+                      boxes: yjs.object({
+                        first: yjs.object({ x: -48, y: 0 }),
+                        second: yjs.object({ x: 48, y: 0 }),
                       }),
                     });
 
