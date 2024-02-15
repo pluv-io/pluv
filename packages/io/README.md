@@ -77,7 +77,8 @@ pluv.io allows you to more easily build real-time collaborative experiences with
 
 ### Frontends
 
-- ✅ [React.js](https://beta.reactjs.org/)
+- ✅ [React.js](https://react.dev/)
+- ✅ [Solid.js](https://www.solidjs.com/)
 - ⬜ [Vue.js](https://vuejs.org/)
 - ⬜ [Svelte](https://svelte.dev/)
 
