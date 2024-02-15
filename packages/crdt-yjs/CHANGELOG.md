@@ -1,5 +1,12 @@
 # @pluv/crdt-yjs
 
+## 0.16.0
+
+### Patch Changes
+
+- @pluv/crdt@0.16.0
+- @pluv/types@0.16.0
+
 ## 0.15.0
 
 ### Patch Changes
@@ -208,36 +215,30 @@
 
   const { createRoomBundle } = createBundle(client);
 
-  const {
-    useCanRedo,
-    useCanUndo,
-    useRedo,
-    useStorage,
-    useTransact,
-    useUndo,
-  } = createRoomBundle({
-    initialStorage: () => ({
-      messages: y.array<string>([]),
-    }),
-    /**
-     * @description This is the same `captureTimeout` option from yjs's UndoManager.
-     * This specifies a number in ms, during which edits are merged together to be
-     * undone together. Set this to 0, to track each transacted change individually.
-     * @see (@link https://docs.yjs.dev/api/undo-manager)
-     * @default 500
-     */
-    captureTimeout: 500,
-    /**
-     * @desription This is the same `trackedOrigins` option from yjs's UndoManager.
-     * This specifies transaction origins (strings only) to filter which transactions
-     * can be undone.
-     * When omitted, the user's connection id will be tracked. When provided,
-     * specifies additional tracked origins besides the user's connection id.
-     * @see (@link https://docs.yjs.dev/api/undo-manager)
-     * @default undefined
-     */
-    trackedOrigins: ["user-123"],
-  });
+  const { useCanRedo, useCanUndo, useRedo, useStorage, useTransact, useUndo } =
+    createRoomBundle({
+      initialStorage: () => ({
+        messages: y.array<string>([]),
+      }),
+      /**
+       * @description This is the same `captureTimeout` option from yjs's UndoManager.
+       * This specifies a number in ms, during which edits are merged together to be
+       * undone together. Set this to 0, to track each transacted change individually.
+       * @see (@link https://docs.yjs.dev/api/undo-manager)
+       * @default 500
+       */
+      captureTimeout: 500,
+      /**
+       * @desription This is the same `trackedOrigins` option from yjs's UndoManager.
+       * This specifies transaction origins (strings only) to filter which transactions
+       * can be undone.
+       * When omitted, the user's connection id will be tracked. When provided,
+       * specifies additional tracked origins besides the user's connection id.
+       * @see (@link https://docs.yjs.dev/api/undo-manager)
+       * @default undefined
+       */
+      trackedOrigins: ["user-123"],
+    });
 
   /**
    * @description Check whether calling undo will mutate storage
