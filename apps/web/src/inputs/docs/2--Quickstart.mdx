@@ -38,7 +38,7 @@ npm install @pluv/react
 # Client peer-dependencies
 npm install react react-dom zod
 
-# For both
+# If you want to use storage features, install your preferred CRDT
 npm install @pluv/crdt-yjs yjs
 ```
 
@@ -53,10 +53,15 @@ Define an io (websocket client) instance on the server codebase:
 ```ts
 // backend/io.ts
 
+import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 
-export const io = createIO({ platform: platformNode() });
+export const io = createIO({
+    // Optional: Only if you require CRDT features
+    crdt: yjs,
+    platform: platformNode(),
+});
 
 // Export the websocket client io type, instead of the client itself
 export type AppPluvIO = typeof io;
@@ -78,6 +83,7 @@ import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
 export const io = createIO({
+    // Optional: Only if you require CRDT features
     crdt: yjs,
     platform: platformNode(),
 })

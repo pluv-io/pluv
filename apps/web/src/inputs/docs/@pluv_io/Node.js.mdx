@@ -18,6 +18,7 @@ Let's step through how we'd put together a real-time API for Node.js.
 ```bash
 # For the server
 npm install @pluv/io @pluv/platform-node
+
 # Server peer-dependencies
 npm install ws zod
 ```
@@ -88,7 +89,6 @@ import Http from "http";
 import WS from "ws";
 
 const io = createIO({
-    crdt: yjs,
     platform: platformNode(),
 });
 

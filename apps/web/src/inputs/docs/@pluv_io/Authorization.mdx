@@ -82,7 +82,7 @@ server.listen(PORT, () => {
 
 ## Connect to your authorization endpoint
 
-Now that we have our endpoint defined, connect our frontend client to our authorization endpoint.
+Now that we have your endpoint defined, connect your frontend client to your authorization endpoint.
 
 ```ts
 // frontend/io.ts
@@ -95,7 +95,7 @@ const client = createClient<AppPluvIO>({
     // Set to `true` if you have authorization on your io instance, and you
     // want to use the default of (room) => `/api/pluv/authorize?room=${room}`
     // This is the default from `createPluvHandler`
-    authEndpoint: (room) => `http://localhost:3000/api/authorize?room=${room}`,
+    authEndpoint: (room) => `/api/authorize?room=${room}`,
     // ...
 });
 ```
@@ -110,7 +110,7 @@ import type { AppPluvIO } from "server/io";
 
 const client = createClient<AppPluvIO>({
     authEndpoint: (room) => ({
-        url: "http://localhost:3000/api/authorize",
+        url: "/api/authorize",
         // You can use fetch options as well like so
         options: {
             method: "POST",
