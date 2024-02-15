@@ -18,8 +18,9 @@ Let's step through how we'd put together a real-time API for Cloudflare Workers.
 ```bash
 # For the server
 npm install @pluv/io @pluv/platform-cloudflare
+
 # Server peer-dependencies
-npm install yjs zod
+npm install zod
 ```
 
 ### Create PluvIO instance
@@ -141,7 +142,9 @@ If you don't need to modify your DurableObject or Cloudflare Worker handler too 
 import { createIO } from "@pluv/io";
 import { createPluvHandler, platformCloudflare } from "@pluv/platform-cloudflare";
 
-const io = createIO({ platform: platformCloudflare() });
+const io = createIO({
+    platform: platformCloudflare(),
+});
 
 const Pluv = createPluvHandler({
     // Your PluvIO instance

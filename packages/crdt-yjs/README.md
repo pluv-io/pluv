@@ -5,12 +5,12 @@
   <br />
   <img src="https://github.com/pluv-io/pluv/blob/master/assets/pluv-icon-192x192.png?raw=true" alt="Pluv.IO" width="180" style="border-radius:16px" />
   <br />
-  Pluv.IO (preview)
+  <a href="https://pluv.io/docs/introduction">Pluv.IO (preview)</a>
   <br />
 </h1>
 
 <h3 align="center">Multi-platform, E2E type-safe realtime packages</h3>
-<h4 align="center">💕 Inspired by <a href="https://trpc.io">trpc</a> 💕 Built with <a href="https://docs.yjs.dev/">yjs</a> 💕</h4>
+<h4 align="center">💕 Inspired by <a href="https://trpc.io">trpc</a> 💕 <a href="https://docs.yjs.dev/">yjs</a> 💕 and <a href="https://developers.cloudflare.com/">Cloudflare</a> 💕 </h4>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@pluv/crdt-yjs">
@@ -19,14 +19,10 @@
   <a href="https://github.com/pluv-io/pluv/blob/master/LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/pluv-io/pluv" alt="License MIT" />
   </a>
-  <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript" />
   <a href="https://commitizen.github.io/cz-cli/">
     <img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly" />
   </a>
-</p>
-
-<p align="center">
-  <img src="https://github.com/pluv-io/pluv/blob/master/assets/demo-events.gif?raw=true" alt="Demo" />
+  <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript" />
 </p>
 
 ## `@pluv/crdt-yjs`
@@ -54,43 +50,31 @@ pnpm add @pluv/crdt-yjs yjs
 ## Basic Example
 
 ```ts
-import { createClient, y } from "@pluv/client";
-import type {
-    Array as YArray,
-    Map as YMap,
-    XmlFragment as YXmlFragment,
-} from "yjs";
+import { createClient } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
 // Import the PluvIO instance as a type from your server file
 import { type io } from "./server";
 
 const client = createClient<typeof io>({ /* client config here */ });
 
-type Presence = {};
-
-interface Storage {
-    editor: YXmlFragment;
-    groceryList: YMap<string, number>;
-    messages: YArray<{ name: string; message: string }>;
-}
-
 // Create a room to join
-const room = client.createRoom<Presence, Storage>("my-room", {
-    initialStorage: () => ({
-        editor: y.xmlFragment({
+const room = client.createRoom("my-room", {
+    initialStorage: yjs.doc(() => ({
+        editor: yjs.xmlFragment({
             children: [
-                y.xmlElement("paragraph", {
-                  children: [y.xmlText("Hello World!")],
+                yjs.xmlElement("paragraph", {
+                  children: [yjs.xmlText("Hello World!")],
                 }),
             ]
         }),
-        groceryList: y.map([
+        groceryList: yjs.map([
             ["apricots", 2],
             ["bread", 3],
             ["cheese", 5],
         ]),
-        messages: y.array([]),
-    }),
+        messages: yjs.array([]),
+    })),
     presence: z.object({}),
 });
 ```

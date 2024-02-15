@@ -16,7 +16,7 @@ To create a `PluvRoom`, you must first have a `PluvClient` defined. Refer to the
 ```ts
 // frontend/room.ts
 
-import { y } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
 import { client } from "./io";
 
@@ -32,9 +32,9 @@ export const room = client.createRoom(ROOM_NAME, {
         selectionId: null,
     },
     // Define the initial storage for the room
-    initialStorage: () => ({
-        messages: y.array(["hello world!"]),
-    }),
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array(["hello world!"]),
+    })),
 });
 ```
 

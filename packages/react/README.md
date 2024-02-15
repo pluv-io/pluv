@@ -5,12 +5,12 @@
   <br />
   <img src="https://github.com/pluv-io/pluv/blob/master/assets/pluv-icon-192x192.png?raw=true" alt="Pluv.IO" width="180" style="border-radius:16px" />
   <br />
-  Pluv.IO (preview)
+  <a href="https://pluv.io/docs/introduction">Pluv.IO (preview)</a>
   <br />
 </h1>
 
 <h3 align="center">Multi-platform, E2E type-safe realtime packages</h3>
-<h4 align="center">💕 Inspired by <a href="https://trpc.io">trpc</a> 💕 Built with <a href="https://docs.yjs.dev/">yjs</a> 💕</h4>
+<h4 align="center">💕 Inspired by <a href="https://trpc.io">trpc</a> 💕 <a href="https://docs.yjs.dev/">yjs</a> 💕 and <a href="https://developers.cloudflare.com/">Cloudflare</a> 💕 </h4>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@pluv/react">
@@ -19,14 +19,10 @@
   <a href="https://github.com/pluv-io/pluv/blob/master/LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/pluv-io/pluv" alt="License MIT" />
   </a>
-  <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript" />
   <a href="https://commitizen.github.io/cz-cli/">
     <img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly" />
   </a>
-</p>
-
-<p align="center">
-  <img src="https://github.com/pluv-io/pluv/blob/master/assets/demo-events.gif?raw=true" alt="Demo" />
+  <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript" />
 </p>
 
 ## `@pluv/react`
@@ -39,21 +35,20 @@
 
 ```bash
 # npm
-npm install @pluv/react yjs
+npm install @pluv/react @pluv/crdt-yjs yjs zod
 
 # yarn
-yarn add @pluv/react yjs
+yarn add @pluv/react @pluv/crdt-yjs yjs zod
 
 # pnpm
-pnpm add @pluv/react yjs
+pnpm add @pluv/react @pluv/crdt-yjs yjs zod
 ```
-
-If you plan on using presence and/or storage, make sure to also install `zod`.
 
 ## Basic Example
 
 ```tsx
-import { createBundle, createClient, y } from "@pluv/react";
+import { yjs } from "@pluv/crdt-yjs";
+import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
 // Import the PluvIO instance as a type from your server file
 import { type io } from "./server";
@@ -94,14 +89,14 @@ export const {
     useRoom,
     useStorage,
 } = createRoomBundle({
-    initialStorage: () => ({
-        messages: y.array([
-            y.object({
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array([
+            yjs.object({
                 message: "Hello World!",
                 name: "johnathan_doe",
             }),
         ]),
-    }),
+    })),
     presence: z.object({
         cursor: z.nullable(
             z.object({

@@ -14,6 +14,7 @@ Returns a `PluvIO` instance.
 Creates a server-side `PluvIO` client that will create rooms to register your websockets to. Below will show a available configurations for `createIO`. To learn more about `createIO`, read [Authorization](/docs/io/authorization), [Cloudflare Workers](/docs/io/cloudflare-workers), [Node.js](/docs/io/node.js) and [PubSub](/docs/io/pubsub).
 
 ```ts
+import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
@@ -35,6 +36,9 @@ const io = createIO({
             name: z.string(),
         }),
     },
+    // Optional. Specify to use Yjs CRDT for storage.
+    // This is required only if/when you wish to use storage features.
+    crdt: yjs,
     // Optional. Only needed to load persisted storage for rooms.
     // Load storage for a newly created room.
     getInitialStorage: async ({ room }) => {
@@ -45,8 +49,8 @@ const io = createIO({
     // Enable @pluv/io for Node.js
     platform: platformNode(),
     // Optional. Only needed for persisting storage for rooms.
-    // Before the room is destroyed, persist the state to a database
-    // to load when the room is re-created.
+    // Before the room is destroyed, persist the state to a database to load
+    // when the room is re-created.
     onRoomDeleted: async ({ encodedState, room }) => {
         await db.room.upsert({
             where: { room },
@@ -54,9 +58,9 @@ const io = createIO({
             update: { encodedState },
         });
     },
-    // It is unnecessary to save the storage state in this listener.
-    // If a room already exists, users will load the currently active
-    // storage before the storage from initialStorage.
+    // Optional. It is unnecessary to save the storage state in this listener.
+    // If a room already exists, users will load the currently active storage
+    // before the storage from initialStorage.
     onStorageUpdated: ({ encodedState, room }) => {
         console.log(room, encodedState);
     },
@@ -94,7 +98,9 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO({ platform: platformNode() })
+const io = createIO({
+    platform: platformNode(),
+})
     // When event "SEND_MESSAGE" is sent by the frontend and received
     // on the server
     .event("SEND_MESSAGE", {

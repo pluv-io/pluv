@@ -5,12 +5,12 @@
   <br />
   <img src="https://github.com/pluv-io/pluv/blob/master/assets/pluv-icon-192x192.png?raw=true" alt="Pluv.IO" width="180" style="border-radius:16px" />
   <br />
-  Pluv.IO (preview)
+  <a href="https://pluv.io/docs/introduction">Pluv.IO (preview)</a>
   <br />
 </h1>
 
 <h3 align="center">Multi-platform, E2E type-safe realtime packages</h3>
-<h4 align="center">💕 Inspired by <a href="https://trpc.io">trpc</a> 💕 Built with <a href="https://docs.yjs.dev/">yjs</a> 💕</h4>
+<h4 align="center">💕 Inspired by <a href="https://trpc.io">trpc</a> 💕 <a href="https://docs.yjs.dev/">yjs</a> 💕 and <a href="https://developers.cloudflare.com/">Cloudflare</a> 💕 </h4>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@pluv/client">
@@ -19,14 +19,10 @@
   <a href="https://github.com/pluv-io/pluv/blob/master/LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/pluv-io/pluv" alt="License MIT" />
   </a>
-  <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript" />
   <a href="https://commitizen.github.io/cz-cli/">
     <img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly" />
   </a>
-</p>
-
-<p align="center">
-  <img src="https://github.com/pluv-io/pluv/blob/master/assets/demo-events.gif?raw=true" alt="Demo" />
+  <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript" />
 </p>
 
 ## `@pluv/client`
@@ -39,13 +35,13 @@
 
 ```bash
 # npm
-npm install @pluv/client yjs
+npm install @pluv/client @pluv/crdt-yjs yjs
 
 # yarn
-yarn add @pluv/client yjs
+yarn add @pluv/client @pluv/crdt-yjs yjs
 
 # pnpm
-pnpm add @pluv/client yjs
+pnpm add @pluv/client @pluv/crdt-yjs yjs
 ```
 
 If you plan on using presence and/or storage, make sure to also install `zod`.
@@ -53,7 +49,8 @@ If you plan on using presence and/or storage, make sure to also install `zod`.
 ## Basic Example
 
 ```ts
-import { createClient, y } from "@pluv/client";
+import { createClient } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
 // Import the PluvIO instance as a type from your server file
 import { type io } from "./server";
@@ -79,7 +76,7 @@ interface Storage {
 // Create a room to join
 const room = client.createRoom<Presence, Storage>("my-room", {
     initialPresence: { cursor: null },
-    initialStorage: () => ({ messages: y.array([]) }),
+    initialStorage: yjs.doc(() => ({ messages: yjs.array([]) })),
     onAuthorizationFail: (error) => {
         console.log(error.message);
     },

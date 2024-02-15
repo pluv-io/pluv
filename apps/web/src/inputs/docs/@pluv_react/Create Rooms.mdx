@@ -18,13 +18,13 @@ Create and connect to a `PluvRoom` by mounting a `PluvRoomProvider` from your `@
 
 ```tsx
 import { FC } from "react";
-import { PluvRoomProvider } from "frontend/io";
+import { pluvRoom } from "frontend/io";
 
 export const MyPage: FC = () => {
     return (
-        <PluvRoomProvider room="my-room-id">
+        <pluvRoom.PluvRoomProvider room="my-room-id">
             <MyRoom />
-        </PluvRoomProvider>
+        </pluvRoom.PluvRoomProvider>
     );
 };
 ```

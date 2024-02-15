@@ -104,7 +104,7 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
             },
             {
                 code: codeBlock`
-                    import { y } from "@pluv/react";
+                    import { yjs } from "@pluv/crdt-yjs";
                     import { PluvRoomProvider } from "client/pluv";
                     import type { FC, ReactNode } from "react";
 
@@ -115,9 +115,9 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                     const initialPresence = { selection: null };
 
                     const initialStorage = () => ({
-                      boxes: y.object({
-                        first: y.object({ x: -48, y: 0 }),
-                        second: y.object({ x: 48, y: 0 }),
+                      boxes: yjs.object({
+                        first: yjs.object({ x: -48, y: 0 }),
+                        second: yjs.object({ x: 48, y: 0 }),
                       }),
                     });
 
@@ -138,7 +138,8 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
             },
             {
                 code: codeBlock`
-                    import { createBundle, createClient, y } from "@pluv/react";
+                    import { yjs } from "@pluv/crdt-yjs";
+                    import { createBundle, createClient } from "@pluv/react";
                     import type { io } from "server/pluv";
                     import { z } from "zod";
 
@@ -177,24 +178,28 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                         selection: z.nullable(z.string()),
                       }),
                       // This can be overwritten at the provider level
-                      initialStorage: () => ({
-                        boxes: y.object({
-                          first: y.object({ x: 0, y: 0 }),
-                          second: y.object({ x: 0, y: 0 }),
+                      initialStorage: yjs.doc(() => ({
+                        boxes: yjs.object({
+                          first: yjs.object({ x: 0, y: 0 }),
+                          second: yjs.object({ x: 0, y: 0 }),
                         }),
-                      }),
+                      })),
                     });
                 `,
                 name: "client/pluv.ts",
             },
             {
                 code: codeBlock`
+                    import { yjs } from "@pluv/crdt-yjs";
                     import { createIO } from "@pluv/io";
                     import { platformNode } from "@pluv/platform-node";
                     import { z } from "zod";
 
                     // Create @pluv/io websocket manager for Node.js
-                    export const io = createIO({ platform: platformNode() });
+                    export const io = createIO({
+                      crdt: yjs,
+                      platform: platformNode(),
+                    });
                 `,
                 name: "server/pluv.ts",
             },

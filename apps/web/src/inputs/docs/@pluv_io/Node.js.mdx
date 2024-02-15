@@ -18,8 +18,9 @@ Let's step through how we'd put together a real-time API for Node.js.
 ```bash
 # For the server
 npm install @pluv/io @pluv/platform-node
+
 # Server peer-dependencies
-npm install ws yjs zod
+npm install ws zod
 ```
 
 ### Create PluvIO instance
@@ -32,7 +33,9 @@ Define an io (websocket client) instance on the server codebase:
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 
-export const io = createIO({ platform: platformNode() });
+export const io = createIO({
+    platform: platformNode(),
+});
 
 // Export the websocket client io type, instead of the client itself
 export type AppPluvIO = typeof io;
@@ -85,7 +88,9 @@ import express from "express";
 import Http from "http";
 import WS from "ws";
 
-const io = createIO({ platform: platformNode() });
+const io = createIO({
+    platform: platformNode(),
+});
 
 const app = express();
 const server = Http.createServer(app);

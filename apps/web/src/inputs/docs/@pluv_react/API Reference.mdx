@@ -30,6 +30,9 @@ Returns a `CreateRoomBundle` instance
 Creates a bundle to be able to access `PluvRoom` capabilities from various react hooks.
 
 ```ts
+import { yjs } from "@pluv/crdt-yjs";
+
+// Destructured room bundle
 export const {
     // components
     PluvRoomProvider,
@@ -39,6 +42,7 @@ export const {
     useCanRedo,
     useCanUndo,
     useConnection,
+    useDoc,
     useEvent,
     useMyPresence,
     useMyself,
@@ -51,40 +55,24 @@ export const {
     useUndo,
 } = createRoomBundle({
     /**
-     * @description Define the initial storage for the room
+     * @optional
+     * @description Define the initial storage for the room, as well as the CRDT to use
      */
-    initialStorage: () => ({
-        messages: y.array([
-            y.object({
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array([
+            yjs.object({
                 message: "hello",
                 name: "leedavidcs",
             }),
         ]),
-    }),
+    })),
     /**
+     * @optional
      * @description Define your presence schema
      */
     presence: z.object({
         count: z.number(),
     }),
-    /**
-     * @description This is the same `captureTimeout` option from yjs's UndoManager.
-     * This specifies a number in ms, during which edits are merged together to be
-     * undone together. Set this to 0, to track each transacted change individually.
-     * @see https://docs.yjs.dev/api/undo-manager
-     * @default 500
-     */
-    captureTimeout: 500,
-    /**
-     * @desription This is the same `trackedOrigins` option from yjs's UndoManager.
-     * This specifies transaction origins (strings only) to filter which transactions
-     * can be undone.
-     * When omitted, the user's connection id will be tracked. When provided,
-     * specifies additional tracked origins besides the user's connection id.
-     * @see https://docs.yjs.dev/api/undo-manager
-     * @default undefined
-     */
-    trackedOrigins: ["user-123"],
 });
 ```
 
@@ -108,41 +96,48 @@ This is the bundle returned from `createRoomBundle`.
 
 ### MockedRoomProvider
 
-React provider component to mock `PluvRoomProvider`. Enables hooks from `CreateRoomBundle` while completely offline. This can be useful in [Storybook](https://storybook.js.org/) within a decorator when mocking `PluvRoomProvider`.
+React provider component to mock `PluvRoomProvider`. Enables hooks from `CreateRoomBundle` while completely offline. This can be useful in [Storybook](https://storybook.js.org/) within a storybook decorator when mocking `PluvRoomProvider`.
 
 ```tsx
-import { y } from "@pluv/react";
+import { yjs } from "@pluv/crdt-yjs";
 import { MockedRoomProvider } from "./io";
 
-<MockedRoomProvider
-    /**
-     * @description Mock events sent and received for hooks in child components.
-     */
-    // 
-    events={{
-        EMIT_EMOJI: ({ emojiCode }) => ({
-            EMOJI_RECEIVED: { emojiCode },
-        }),
-    }}
-    /**
-     * @description Define your initial presence
-     */
-    initialPresence={{
-        selectionId: null,
-    }}
-    /**
-     * @description Define the initial initial storage for the room
-     */
-    initialStorage={() => ({
-        messages: y.array([]),
-    })}
-    /**
-     * @description Set the room id
-     */
-    room="my-mock-room"
->
-    {children}
-</MockedRoomProvider>
+const MyComponent: FC = () => {
+    return (
+        <MockedRoomProvider
+            /**
+             * @description Mock events sent and received for hooks in child components.
+             */
+            // 
+            events={{
+                EMIT_EMOJI: ({ emojiCode }) => ({
+                    EMOJI_RECEIVED: { emojiCode },
+                }),
+            }}
+            /**
+             * @optional
+             * @description Define your initial presence
+             */
+            initialPresence={{
+                selectionId: null,
+            }}
+            /**
+             * @optional
+             * @description Define the initial storage for the room, as well as the CRDT to use
+             */
+            initialStorage={() => ({
+                messages: yjs.array(),
+            })}
+            /**
+             * @required
+             * @description Set the room id
+             */
+            room="my-mock-room"
+        >
+            {children}
+        </MockedRoomProvider>
+    );
+};
 ```
 
 ### PluvRoomProvider
@@ -150,36 +145,44 @@ import { MockedRoomProvider } from "./io";
 React provider component to enable `CreateRoomBundle` hooks within child components. Mounting this component connects to a real-time room with other connected users. Unmounting this component will disconnect the room. See [Create Rooms](/docs/react/api-reference) for more details.
 
 ```tsx
-import { y } from "@pluv/react";
+import { yjs } from "@pluv/crdt-yjs";
 import { MockedRoomProvider } from "./io";
 
-<PluvRoomProvider
-    /**
-     * @description Define the user's initial presence
-     */
-    initialPresence={{
-        selectionId: null,
-    }}
-    /**
-     * @description Define the initial storage for the room
-     */
-    initialStorage={() => ({
-        messages: y.array([]),
-    })}
-    /**
-     * @description Emits an error whenever authorization fails, for
-     * monitoring or debugging purposes
-     */
-    onAuthorizationFail={(error: Error) => {
-        console.error(error);
-    }}
-    /**
-     * @description Set the room id
-     */
-    room="my-room-id"
->
-    {children}
-</PluvRoomProvider>
+const MyComponent: FC = () => {
+    return (
+        <PluvRoomProvider
+            /**
+             * @optional
+             * @description Define the user's initial presence
+             */
+            initialPresence={{
+                selectionId: null,
+            }}
+            /**
+             * @optional
+             * @description Define the initial storage for the room
+             */
+            initialStorage={() => ({
+                messages: yjs.array(),
+            })}
+            /**
+             * @optional
+             * @description Emits an error whenever authorization fails, for
+             * monitoring or debugging purposes
+             */
+            onAuthorizationFail={(error: Error) => {
+                console.error(error);
+            }}
+            /**
+             * @required
+             * @description Set the room id
+             */
+            room="my-room-id"
+        >
+            {children}
+        </PluvRoomProvider>
+    );
+};
 ```
 
 ### useBroadcast
@@ -248,6 +251,7 @@ Returns the current user's presence, and a function to update the user's presenc
 
 ```tsx
 const { useMyPresence } = createRoomBundle({
+    // ...
     presence: z.object({
         selectionId: z.nullable(z.string()),
         selectionColor: z.string(),
@@ -341,22 +345,23 @@ redo();
 
 ### useStorage
 
-Returns `[TData | null, Yjs.SharedType | null]`
+Returns `[TData | null, AbstractCrdtType | null]`
 
-Returns a base-level property of our [yjs](https://yjs.dev) storage as a serialized value and a [Yjs SharedType](https://docs.yjs.dev/getting-started/working-with-shared-types). The component is re-rendered whenever the Yjs SharedType is updated.
+Returns a base-level property of our CRDT storage as a serialized value and a `@pluv/crdt` `AbstractCrdtType` that holds a shared type of our specified CRDT. The component is re-rendered whenever the `AbstractCrdtType` is updated. The returned values are null while the room is still connecting or
+initializing its storage.
 
 ```tsx
-import { y } from "@pluv/react";
+import { yjs } from "@pluv/crdt-yjs";
 
 const { useStorage } = createRoomBundle({
-    initialStorage: () => ({
-        messages: y.array(["hello"]),
-    }),
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array(["hello"]),
+    })),
 });
 
 const [messages, sharedType] = useStorage("messages");
 
-sharedType.push(["world~!"]);
+sharedType.push("world~!");
 
 messages.map((message, key) => <div key={key}>{message}</div>);
 ```
