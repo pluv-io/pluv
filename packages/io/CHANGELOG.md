@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.16.1
+
+### Patch Changes
+
+- cd05d96: Updated outdated README
+  - @pluv/crdt@0.16.1
+  - @pluv/types@0.16.1
+
 ## 0.16.0
 
 ### Minor Changes
