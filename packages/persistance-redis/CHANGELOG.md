@@ -1,5 +1,13 @@
 # @pluv/persistance-redis
 
+## 0.16.1
+
+### Patch Changes
+
+- Updated dependencies [cd05d96]
+  - @pluv/io@0.16.1
+  - @pluv/types@0.16.1
+
 ## 0.16.0
 
 ### Patch Changes
