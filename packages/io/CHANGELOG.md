@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.16.3
+
+### Patch Changes
+
+- 0bf0934: Moved exposed `@pluv/io` version on the `PluvIO` instance as a property.
+  - @pluv/crdt@0.16.3
+  - @pluv/types@0.16.3
+
 ## 0.16.2
 
 ### Patch Changes
