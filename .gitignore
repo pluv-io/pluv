@@ -46,4 +46,5 @@ tsconfig.tsbuildinfo
 
 **/public/tailwind.css
 **/generated/**
+**/*.generated.*
 apps/web/src/pages/docs/**/*.mdx
