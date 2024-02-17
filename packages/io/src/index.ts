@@ -37,4 +37,3 @@ export type {
 } from "./authorize";
 export { createIO } from "./createIO";
 export type { CreateIOParams } from "./createIO";
-export { __PLUV_VERSION } from "./version";

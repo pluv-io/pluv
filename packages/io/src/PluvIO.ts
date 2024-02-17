@@ -26,6 +26,7 @@ import { IORoom } from "./IORoom";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
 import type { EventConfig, InferEventConfig } from "./types";
+import { __PLUV_VERSION } from "./version";
 
 type InferIOContext<TIO extends PluvIO<any, any, any, any, any, any, any>> =
     TIO extends PluvIO<any, any, infer IContext, any, any, any, any>
@@ -281,6 +282,7 @@ export class PluvIO<
     readonly _getInitialStorage: GetInitialStorageFn<TPlatform> | null = null;
     readonly _listeners: PluvIOListeners<TPlatform>;
     readonly _platform: TPlatform;
+    readonly _version: string = __PLUV_VERSION as any;
 
     constructor(
         options: PluvIOConfig<
