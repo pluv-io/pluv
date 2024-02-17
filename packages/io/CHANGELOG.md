@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.16.2
+
+### Patch Changes
+
+- 06f572d: Export the downloaded version of `@pluv/io`.
+  - @pluv/crdt@0.16.2
+  - @pluv/types@0.16.2
+
 ## 0.16.1
 
 ### Patch Changes
