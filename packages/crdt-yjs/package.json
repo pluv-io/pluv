@@ -25,17 +25,17 @@
 	"dependencies": {
 		"@pluv/crdt": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"js-base64": "^3.7.6"
+		"js-base64": "^3.7.7"
 	},
 	"peerDependencies": {
 		"yjs": "^13.0.0"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^8.56.0",
+		"eslint": "^8.57.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.0.2",
 		"typescript": "^5.3.3",
-		"yjs": "^13.6.12"
+		"yjs": "^13.6.14"
 	}
 }
