@@ -19,7 +19,7 @@
 		"path-to-regexp": "^6.2.1"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20240208.0",
+		"@cloudflare/workers-types": "^4.20240222.0",
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.0.2",
