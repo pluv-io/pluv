@@ -28,7 +28,7 @@ npm install zod
 Define an io (websocket client) instance on the server codebase:
 
 ```ts
-// backend/io.ts
+// server/io.ts
 
 import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
@@ -36,7 +36,7 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { schema } from "./schema";
 
-type Env = {
+export type Env = {
     DB: D1Database;
 };
 
@@ -83,13 +83,13 @@ Next, create a `RoomDurableObject` and attach our new pluv.io instance to the ro
 // server/RoomDurableObject.ts
 
 import { type InferIORoom } from "@pluv/io";
-import { AppPluvIO, io } from "./io";
+import { AppPluvIO, Env, io } from "./io";
 
 export class RoomDurableObject implements DurableObject {
     private _io: InferIORoom<AppPluvIO>;
 
-    constructor(state: DurableObjectState) {
-        this._io = io.getRoom(state.id.toString());
+    constructor(state: DurableObjectState, env: Env) {
+        this._io = io.getRoom(state.id.toString(), { env });
     }
 
     async fetch(request: Request) {
