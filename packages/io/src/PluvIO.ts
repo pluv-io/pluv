@@ -19,6 +19,7 @@ import type {
 import colors from "kleur";
 import type {
     AbstractPlatform,
+    InferPlatformEventContextType,
     InferPlatformRoomContextType,
 } from "./AbstractPlatform";
 import type { IORoomListenerEvent } from "./IORoom";
@@ -74,7 +75,11 @@ export interface PluvIOListeners<TPlatform extends AbstractPlatform> {
 
 export type PluvIOConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any> | null = null,
+    TAuthorize extends IOAuthorize<
+        any,
+        any,
+        InferPlatformRoomContextType<TPlatform>
+    > | null = null,
     TContext extends JsonObject = {},
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
@@ -103,7 +108,11 @@ export type GetRoomOptions<TPlatform extends AbstractPlatform> = {
 
 export class PluvIO<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<
+        any,
+        any,
+        InferPlatformRoomContextType<TPlatform>
+    > = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
@@ -323,7 +332,10 @@ export class PluvIO<
     }
 
     public async createToken(
-        params: JWTEncodeParams<InferIOAuthorizeUser<InferIOAuthorize<this>>>,
+        params: JWTEncodeParams<
+            InferIOAuthorizeUser<InferIOAuthorize<this>>,
+            TPlatform
+        >,
     ): Promise<string> {
         if (!this._authorize) {
             throw new Error(
@@ -331,9 +343,16 @@ export class PluvIO<
             );
         }
 
+        const ioAuthorize =
+            typeof this._authorize === "function"
+                ? this._authorize(params)
+                : (this._authorize as { secret: string });
+
+        const secret = ioAuthorize.secret;
+
         return await authorize({
             platform: this._platform,
-            secret: this._authorize.secret,
+            secret,
         }).encode(params);
     }
 

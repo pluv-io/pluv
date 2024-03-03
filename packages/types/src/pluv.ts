@@ -29,7 +29,7 @@ export interface BaseIOAuthorize {
 }
 
 export interface BaseIOAuthorizeEventRecord<
-    TAuthorize extends IOAuthorize<any, any>,
+    TAuthorize extends IOAuthorize<any, any, any>,
 > {
     $OTHERS_RECEIVED: {
         others: {
@@ -48,7 +48,7 @@ export interface BaseIOAuthorizeEventRecord<
     };
 }
 
-export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> =
+export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any, any>> =
     BaseIOAuthorizeEventRecord<TAuthorize> & {
         $ERROR: {
             message: string;
@@ -99,10 +99,13 @@ export type InferEventMessage<
 export type InferIOAuthorize<TIO extends IOLike> =
     TIO extends IOLike<infer IAuthorize> ? IAuthorize : never;
 
-export type InferIOAuthorizeRequired<TAuthorize extends IOAuthorize<any, any>> =
-    TAuthorize extends IOAuthorize<any, infer IRequired> ? IRequired : never;
+export type InferIOAuthorizeRequired<
+    TAuthorize extends IOAuthorize<any, any, any>,
+> = TAuthorize extends IOAuthorize<any, infer IRequired> ? IRequired : never;
 
-export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any>> =
+export type InferIOAuthorizeUser<
+    TAuthorize extends IOAuthorize<any, any, any>,
+> =
     TAuthorize extends IOAuthorize<infer IUser, infer IRequired>
         ? IRequired extends true
             ? IUser
@@ -137,14 +140,21 @@ export type InputZodLike<TData extends JsonObject> = {
     parse: (data: unknown) => TData;
 };
 
-export interface IOAuthorize<
+export type IOAuthorize<
     TUser extends BaseUser = any,
     TRequired extends boolean = false,
-> {
-    required: TRequired;
-    secret: string;
-    user: InputZodLike<TUser>;
-}
+    TContext extends Record<string, unknown> = {},
+> =
+    | {
+          required: TRequired;
+          secret: string;
+          user: InputZodLike<TUser>;
+      }
+    | ((context: TContext) => {
+          required: TRequired;
+          secret: string;
+          user: InputZodLike<TUser>;
+      });
 
 export type IOAuthorizeEventMessage<TIO extends IOLike> =
     InferIOAuthorizeRequired<InferIOAuthorize<TIO>> extends false
@@ -172,7 +182,7 @@ export type IOEventMessage<
 >;
 
 export interface IOLike<
-    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
+    TAuthorize extends IOAuthorize<any, any, any> = IOAuthorize<any, any, any>,
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
     TOutputSelf extends EventRecord<string, any> = {},

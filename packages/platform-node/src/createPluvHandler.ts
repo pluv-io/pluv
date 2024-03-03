@@ -155,7 +155,11 @@ export const createPluvHandler = <
 
             if (!user) throw new Error();
 
-            const token = await io.createToken({ room: roomId, user });
+            const token = await io.createToken({
+                req,
+                room: roomId,
+                user,
+            });
 
             res.writeHead(200, { "Content-Type": "text/plain" });
             return res.end(token);
