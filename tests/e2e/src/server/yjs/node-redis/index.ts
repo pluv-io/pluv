@@ -77,6 +77,7 @@ app.get("/api/authorize", async (req, res) => {
 
     const id = Crypto.randomUUID();
     const token = await io1st.createToken({
+        req,
         room: roomId,
         user: { id, name: `user:${id}` },
     });

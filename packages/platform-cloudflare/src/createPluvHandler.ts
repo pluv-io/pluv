@@ -166,7 +166,7 @@ export const createPluvHandler = <
             const durableObjectId = namespace.idFromName(roomId);
 
             const token = await io.createToken({
-                context: { env },
+                env,
                 room: durableObjectId.toString(),
                 user,
             });

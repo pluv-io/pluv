@@ -345,7 +345,7 @@ export class PluvIO<
 
         const ioAuthorize =
             typeof this._authorize === "function"
-                ? this._authorize(params.context)
+                ? this._authorize(params)
                 : (this._authorize as { secret: string });
 
         const secret = ioAuthorize.secret;

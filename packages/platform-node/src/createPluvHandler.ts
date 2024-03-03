@@ -156,7 +156,7 @@ export const createPluvHandler = <
             if (!user) throw new Error();
 
             const token = await io.createToken({
-                context: { req },
+                req,
                 room: roomId,
                 user,
             });

@@ -24,15 +24,14 @@ export interface JWT<TUser extends BaseUser> {
     user: TUser;
 }
 
-export interface JWTEncodeParams<
+export type JWTEncodeParams<
     TUser extends BaseUser,
     TPlatform extends AbstractPlatform,
-> {
-    context: InferPlatformRoomContextType<TPlatform>;
+> = {
     maxAge?: number;
     room: string;
     user: TUser;
-}
+} & InferPlatformRoomContextType<TPlatform>;
 
 export interface AuthorizeParams {
     platform: AbstractPlatform;

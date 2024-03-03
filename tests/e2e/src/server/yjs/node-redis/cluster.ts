@@ -11,7 +11,7 @@ const natMap = ports.reduce<NatMap>(
         ...acc,
         [`${host}:${port}`]: { host, port },
     }),
-    {}
+    {},
 );
 
 export const cluster = new Cluster(nodes, { natMap });
