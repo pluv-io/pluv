@@ -12,6 +12,7 @@ import type {
     InferIOAuthorize,
     InferIOAuthorizeUser,
     InferIOInput,
+    InputZodLike,
     JsonObject,
     Maybe,
 } from "@pluv/types";
@@ -55,7 +56,11 @@ interface IORoomListeners<TPlatform extends AbstractPlatform> {
 
 export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<
+        any,
+        any,
+        InferPlatformRoomContextType<TPlatform>
+    > = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
@@ -89,7 +94,11 @@ export type WebsocketRegisterOptions<TPlatform extends AbstractPlatform> = {
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<
+        any,
+        any,
+        InferPlatformRoomContextType<TPlatform>
+    > = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
@@ -197,7 +206,7 @@ export class IORoom<
 
         if (!this._uninitialize) await this._initialize();
 
-        const user = await this._getAuthorizedUser(token);
+        const user = await this._getAuthorizedUser(token, options);
 
         const sessionId = this._platform.randomUUID();
         const pluvWs = this._platform.convertWebSocket(webSocket, {
@@ -213,8 +222,9 @@ export class IORoom<
         );
 
         const uninitializeWs = await pluvWs.initialize();
+        const ioAuthorize = this._getIOAuthorize(options);
 
-        const isUnauthorized = !!this._authorize?.required && !user;
+        const isUnauthorized = !!ioAuthorize?.required && !user;
         // There is an attempt for multiple of the same identities. Probably malicious.
         const isTokenInUse =
             !!user &&
@@ -326,15 +336,30 @@ export class IORoom<
         );
     }
 
+    private _getIOAuthorize(context: InferPlatformRoomContextType<TPlatform>) {
+        if (typeof this._authorize === "function") {
+            return this._authorize(context);
+        }
+
+        return this._authorize as {
+            required: any;
+            secret: string;
+            user: InputZodLike<any>;
+        } | null;
+    }
+
     private async _getAuthorizedUser(
         token: Maybe<string>,
+        context: InferPlatformRoomContextType<TPlatform>,
     ): Promise<InferIOAuthorizeUser<InferIOAuthorize<this>> | null> {
-        if (!this._authorize) return null;
+        const ioAuthorize = this._getIOAuthorize(context);
+
+        if (!ioAuthorize) return null;
         if (!token) return null;
 
         const payload = await authorize({
             platform: this._platform,
-            secret: this._authorize.secret,
+            secret: ioAuthorize.secret,
         }).decode(token);
 
         if (!payload) {
@@ -355,7 +380,7 @@ export class IORoom<
         }
 
         try {
-            return this._authorize.user.parse(payload.user) ?? null;
+            return ioAuthorize.user.parse(payload.user) ?? null;
         } catch {
             this._logDebug(
                 `${colors.blue("Token fails validation:")} ${token}`,

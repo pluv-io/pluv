@@ -6,7 +6,10 @@ import type {
     IOAuthorize,
     JsonObject,
 } from "@pluv/types";
-import type { AbstractPlatform } from "./AbstractPlatform";
+import type {
+    AbstractPlatform,
+    InferPlatformRoomContextType,
+} from "./AbstractPlatform";
 import type { GetInitialStorageFn, PluvIOListeners } from "./PluvIO";
 import { PluvIO } from "./PluvIO";
 
@@ -16,7 +19,11 @@ export type CreateIOParams<
     TAuthorizeUser extends BaseUser = BaseUser,
     TAuthorizeRequired extends boolean = false,
 > = Partial<PluvIOListeners<TPlatform>> & {
-    authorize?: IOAuthorize<TAuthorizeUser, TAuthorizeRequired>;
+    authorize?: IOAuthorize<
+        TAuthorizeUser,
+        TAuthorizeRequired,
+        InferPlatformRoomContextType<TPlatform>
+    >;
     context?: TContext;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug?: boolean;
@@ -38,7 +45,11 @@ export const createIO = <
     >,
 ): PluvIO<
     TPlatform,
-    IOAuthorize<TAuthorizeUser, TAuthorizeRequired>,
+    IOAuthorize<
+        TAuthorizeUser,
+        TAuthorizeRequired,
+        InferPlatformRoomContextType<TPlatform>
+    >,
     TContext,
     BaseClientEventRecord,
     BaseIOEventRecord<IOAuthorize<TAuthorizeUser, TAuthorizeRequired>>
@@ -56,7 +67,11 @@ export const createIO = <
 
     return new PluvIO<
         TPlatform,
-        IOAuthorize<TAuthorizeUser, TAuthorizeRequired>,
+        IOAuthorize<
+            TAuthorizeUser,
+            TAuthorizeRequired,
+            InferPlatformRoomContextType<TPlatform>
+        >,
         TContext,
         BaseClientEventRecord,
         BaseIOEventRecord<IOAuthorize<TAuthorizeUser, TAuthorizeRequired>>
