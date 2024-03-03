@@ -86,9 +86,11 @@ import { type InferIORoom } from "@pluv/io";
 import { AppPluvIO, Env, io } from "./io";
 
 export class RoomDurableObject implements DurableObject {
+    private _env: Env;
     private _io: InferIORoom<AppPluvIO>;
 
     constructor(state: DurableObjectState, env: Env) {
+        this._env = env;
         this._io = io.getRoom(state.id.toString(), { env });
     }
 
@@ -99,7 +101,10 @@ export class RoomDurableObject implements DurableObject {
 
         const { 0: client, 1: server } = new WebSocketPair();
 
-        await this._io.register(server);
+        await this._io.register(server, {
+            env: this._env,
+            request,
+        });
 
         return new Response(null, { status: 101, webSocket: client });
     }
