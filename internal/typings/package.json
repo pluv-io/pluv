@@ -8,18 +8,18 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@types/react": "^18.2.61",
+		"@types/react": "^18.2.69",
 		"react": "^18.2.0",
 		"styled-components": "^6.1.8",
 		"twin.macro": "^3.4.1"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"autoprefixer": "^10.4.18",
+		"autoprefixer": "^10.4.19",
 		"eslint-config-pluv": "workspace:^",
-		"postcss": "^8.4.35",
+		"postcss": "^8.4.38",
 		"react-is": "^18.2.0",
 		"tailwindcss": "^3.4.1",
-		"typescript": "^5.3.3"
+		"typescript": "^5.4.3"
 	}
 }
