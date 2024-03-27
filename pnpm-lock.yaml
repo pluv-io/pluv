@@ -1126,8 +1126,8 @@ importers:
         specifier: workspace:^
         version: link:../eslint-config-pluv
       loro-crdt:
-        specifier: ^0.11.1
-        version: 0.11.1
+        specifier: ^0.12.0
+        version: 0.12.0
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(typescript@5.4.3)
@@ -12475,9 +12475,21 @@ packages:
     resolution: {integrity: sha512-C4+lryPZUDqUiLqX0mVp9wRb6+MPvhNngJNQhQxwIDqzn3oP/7Qra8XgY37M4d4Yvx2ZgG+1nYnR+43/xRwq7g==}
     dependencies:
       loro-wasm: 0.11.1
+    dev: false
+
+  /loro-crdt@0.12.0:
+    resolution: {integrity: sha512-oRCp4EHSrnN4YTllCTY92nYrBOdj0n3kRa+R/heIHtYUqgWddCQjXzFsTR8FvdqMDrhmKnitXFZZkernM4GWrQ==}
+    dependencies:
+      loro-wasm: 0.12.0
+    dev: true
 
   /loro-wasm@0.11.1:
     resolution: {integrity: sha512-/AkU2uXDRrKf6iu2WeaFIXjWzcwLgn3aWZFDW5yrIZGxc/0lB60b8F5cjyU+HqGzeXqGy0KnMrio+mTRDy1W0w==}
+    dev: false
+
+  /loro-wasm@0.12.0:
+    resolution: {integrity: sha512-AQ8R0GDzm/qtAiZ7+ejl3or0bJ8/2m++D87OZpJR7fcrP3zCzGkjl1Vmdltnz+RdGm4C8HYDTlAXu+s4NzJ4NA==}
+    dev: true
 
   /lower-case@2.0.2:
     resolution: {integrity: sha512-7fm3l3NAF9WfN6W3JOmf5drwpVqX78JtoGJ3A6W0a6ZnldM41w2fV5D490psKFTpMds8TJse/eHLFFsNHHjHgg==}
