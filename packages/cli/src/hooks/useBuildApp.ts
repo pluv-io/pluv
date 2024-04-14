@@ -1,6 +1,7 @@
 import { useApp } from "ink";
 import { useState } from "react";
-import { BuildAppOptions, buildApp } from "../utils/buildApp.js";
+import type { BuildAppOptions } from "../utils/index.js";
+import { buildApp } from "../utils/index.js";
 import { useMountEffect } from "./useMountEffect.js";
 
 export const useBuildApp = (options: BuildAppOptions) => {

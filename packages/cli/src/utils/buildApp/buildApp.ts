@@ -7,9 +7,10 @@ import terser from "@rollup/plugin-terser";
 import typescript from "@rollup/plugin-typescript";
 import dotenv from "dotenv";
 import fs from "fs-extra";
-import path from "path";
+import path from "node:path";
 import { OutputAsset, OutputChunk, Plugin, rollup } from "rollup";
 import nodePolyfills from "rollup-plugin-node-polyfills";
+import { resolveDependenciesTransformer } from "./resolveDependenciesTransformer.js";
 
 const isOutputValid = (chunks: (OutputChunk | OutputAsset)[]): boolean => {
     return chunks.some((chunk) => {
@@ -52,6 +53,9 @@ export interface BuildAppOptions {
 export const buildApp = async (options: BuildAppOptions) => {
     const { env, input, outDir: _outDir } = options;
 
+    const outDir = path.resolve(process.cwd(), options.outDir);
+    const outFile = path.resolve(outDir, "./index.js");
+
     const replaceEnv = Object.entries(getEnv(env)).reduce<
         Record<string, string>
     >(
@@ -64,13 +68,16 @@ export const buildApp = async (options: BuildAppOptions) => {
 
     const bundle = await rollup({
         input,
-        output: { format: "esm" },
+        output: { format: "esm", file: outFile },
         onLog: (level, log) => {
             const { frame, loc, message } = log;
 
             if (loc) {
                 console.warn(
-                    `${loc.file} (${loc.line}:${loc.column}) ${message}`,
+                    `${message}`
+                        .replace(/\s*\[plugin\s+\w+\]\s*/gi, "")
+                        .replace(/\s*@rollup\/plugin\S+\s*/gi, "")
+                        .replace(/\s*rollup\S+\s*/gi, ""),
                 );
                 if (frame) console.warn(frame);
             } else {
@@ -103,6 +110,8 @@ export const buildApp = async (options: BuildAppOptions) => {
                 skipLibCheck: true,
                 strict: true,
                 target: "es2021",
+                transformers: { before: [resolveDependenciesTransformer] },
+                include: input,
             }),
             // Converts CommonJS modules to ES6.
             (commonjs as unknown as typeof commonjs.default)({
@@ -128,10 +137,8 @@ export const buildApp = async (options: BuildAppOptions) => {
         ],
     });
 
-    const outDir = path.resolve(process.cwd(), options.outDir);
-
     const { output } = await bundle.generate({
-        file: path.resolve(outDir, "./index.js"),
+        file: outFile,
         format: "esm",
     });
 
