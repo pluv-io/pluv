@@ -65,7 +65,7 @@ importers:
         version: 0.4.4(rollup@4.14.2)
       '@rollup/plugin-typescript':
         specifier: ^11.1.6
-        version: 11.1.6(rollup@4.14.2)(typescript@5.4.5)
+        version: 11.1.6(rollup@4.14.2)(tslib@2.6.2)(typescript@5.4.5)
       eslint-config-pluv:
         specifier: workspace:^
         version: link:../../packages/eslint-config-pluv
@@ -1000,7 +1000,7 @@ importers:
         version: 0.4.4(rollup@4.14.2)
       '@rollup/plugin-typescript':
         specifier: ^11.1.6
-        version: 11.1.6(rollup@4.14.2)(typescript@5.4.5)
+        version: 11.1.6(rollup@4.14.2)(tslib@2.6.2)(typescript@5.4.5)
       '@types/fs-extra':
         specifier: ^11.0.4
         version: 11.0.4
@@ -1037,6 +1037,12 @@ importers:
       rollup-plugin-node-polyfills:
         specifier: ^0.2.1
         version: 0.2.1
+      tslib:
+        specifier: ^2.6.2
+        version: 2.6.2
+      typescript:
+        specifier: ^5.4.5
+        version: 5.4.5
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -1050,9 +1056,6 @@ importers:
       eslint-config-pluv:
         specifier: workspace:^
         version: link:../eslint-config-pluv
-      typescript:
-        specifier: ^5.4.5
-        version: 5.4.5
 
   packages/client:
     dependencies:
@@ -5496,7 +5499,7 @@ packages:
       smob: 1.4.1
       terser: 5.21.0
 
-  /@rollup/plugin-typescript@11.1.6(rollup@4.14.2)(typescript@5.4.5):
+  /@rollup/plugin-typescript@11.1.6(rollup@4.14.2)(tslib@2.6.2)(typescript@5.4.5):
     resolution: {integrity: sha512-R92yOmIACgYdJ7dJ97p4K69I8gg6IEHt8M7dUBxN3W6nrO8uUxX5ixl0yU/N3aZTi8WhPuICvOHXQvF6FaykAA==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
@@ -5512,6 +5515,7 @@ packages:
       '@rollup/pluginutils': 5.1.0(rollup@4.14.2)
       resolve: 1.22.8
       rollup: 4.14.2
+      tslib: 2.6.2
       typescript: 5.4.5
 
   /@rollup/pluginutils@5.0.5(rollup@4.14.2):
