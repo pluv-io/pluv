@@ -25,16 +25,16 @@
 	"dependencies": {
 		"@pluv/io": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^20.11.30",
+		"@types/node": "^20.12.7",
 		"@types/ws": "^8.5.10",
-		"path-to-regexp": "^6.2.1"
+		"path-to-regexp": "^6.2.2"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^8.57.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.0.2",
-		"typescript": "^5.4.3",
+		"typescript": "^5.4.5",
 		"ws": "^8.16.0"
 	},
 	"peerDependencies": {

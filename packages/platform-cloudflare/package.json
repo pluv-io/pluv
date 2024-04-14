@@ -25,14 +25,14 @@
 	"dependencies": {
 		"@pluv/io": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"path-to-regexp": "^6.2.1"
+		"path-to-regexp": "^6.2.2"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20240320.1",
+		"@cloudflare/workers-types": "^4.20240405.0",
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^8.57.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.0.2",
-		"typescript": "^5.4.3"
+		"typescript": "^5.4.5"
 	}
 }
