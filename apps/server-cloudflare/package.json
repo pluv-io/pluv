@@ -20,7 +20,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240320.1",
+    "@cloudflare/workers-types": "^4.20240405.0",
     "@pluv/tsconfig": "workspace:^",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-dynamic-import-vars": "^2.1.2",
@@ -29,10 +29,10 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
     "eslint-config-pluv": "workspace:^",
-    "rollup": "^4.13.0",
+    "rollup": "^4.14.2",
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-polyfills": "^0.2.1",
-    "typescript": "^5.4.3",
-    "wrangler": "^3.37.0"
+    "typescript": "^5.4.5",
+    "wrangler": "^3.50.0"
   }
 }
