@@ -1,5 +1,11 @@
 # pluv
 
+## 0.17.1
+
+### Patch Changes
+
+- 42707d2: Updated the pluv cli's `build` command so that only the pluv entry file and all necessary dependencies are type-checked, instead of all TypeScript files in the project workspace.
+
 ## 0.17.0
 
 ## 0.16.3
