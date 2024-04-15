@@ -1,5 +1,11 @@
 # pluv
 
+## 0.17.2
+
+### Patch Changes
+
+- 1a134ae: Fix the build command incorrectly outputting build artifacts it shouldn't have.
+
 ## 0.17.1
 
 ### Patch Changes
