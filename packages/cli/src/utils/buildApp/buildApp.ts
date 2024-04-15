@@ -8,9 +8,10 @@ import typescript from "@rollup/plugin-typescript";
 import dotenv from "dotenv";
 import fs from "fs-extra";
 import path from "node:path";
-import { OutputAsset, OutputChunk, Plugin, rollup } from "rollup";
+import type { OutputAsset, OutputChunk, Plugin } from "rollup";
+import { rollup } from "rollup";
 import nodePolyfills from "rollup-plugin-node-polyfills";
-import { resolveDependenciesTransformer } from "./resolveDependenciesTransformer.js";
+import { resolveDependencies } from "./resolveDependencies.js";
 
 const isOutputValid = (chunks: (OutputChunk | OutputAsset)[]): boolean => {
     return chunks.some((chunk) => {
@@ -110,8 +111,8 @@ export const buildApp = async (options: BuildAppOptions) => {
                 skipLibCheck: true,
                 strict: true,
                 target: "es2021",
-                transformers: { before: [resolveDependenciesTransformer] },
-                include: input,
+                include: resolveDependencies({ input }),
+                compilerOptions: { sourceMap: false },
             }),
             // Converts CommonJS modules to ES6.
             (commonjs as unknown as typeof commonjs.default)({
