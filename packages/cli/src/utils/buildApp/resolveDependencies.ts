@@ -37,15 +37,14 @@ const crawlDependencies = (program: Program): readonly string[] => {
                 .getText()
                 .replace(/(^("|'|`))|(("|'|`)$)/g, "");
 
-            const resolvedModule = ts.resolveModuleName(
+            const { resolvedModule } = ts.resolveModuleName(
                 moduleName,
                 sourceFile.fileName,
                 program.getCompilerOptions(),
                 ts.sys,
             );
 
-            const resolvedFile =
-                resolvedModule.resolvedModule?.resolvedFileName;
+            const resolvedFile = resolvedModule?.resolvedFileName;
 
             if (!resolvedFile) return;
 
