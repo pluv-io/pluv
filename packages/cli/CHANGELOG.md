@@ -1,5 +1,11 @@
 # pluv
 
+## 0.17.3
+
+### Patch Changes
+
+- 04c45f3: Fixed TypeScript config issues causing certain build discepencies.
+
 ## 0.17.2
 
 ### Patch Changes
