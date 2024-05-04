@@ -27,10 +27,7 @@ export class CrdtYjsXmlFragment extends AbstractCrdtType<YXmlFragment, string> {
         return this;
     }
 
-    public insert(
-        index: number,
-        ...children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]
-    ): this {
+    public insert(index: number, ...children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]): this {
         const converted = children.map((child) => toYjsValue(child));
 
         this.value.insert(index, converted);
@@ -38,15 +35,11 @@ export class CrdtYjsXmlFragment extends AbstractCrdtType<YXmlFragment, string> {
         return this;
     }
 
-    public push(
-        ...children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]
-    ): this {
+    public push(...children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]): this {
         return this.insert(this.length, ...children);
     }
 
-    public unshift(
-        ...children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]
-    ): this {
+    public unshift(...children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]): this {
         return this.insert(0, ...children);
     }
 

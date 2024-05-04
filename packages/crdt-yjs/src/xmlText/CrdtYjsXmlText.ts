@@ -22,11 +22,7 @@ export class CrdtYjsXmlText extends AbstractCrdtType<YXmlText, string> {
         return this;
     }
 
-    public insert(
-        index: number,
-        text: string,
-        attributes?: Record<string, string>,
-    ): this {
+    public insert(index: number, text: string, attributes?: Record<string, string>): this {
         this.value.insert(index, text, attributes);
 
         return this;

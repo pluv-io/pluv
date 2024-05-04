@@ -18,9 +18,7 @@ export class CrdtLoroMap<T extends unknown> extends AbstractCrdtType<
     constructor(value: readonly (readonly [key: string, value: T])[] = []) {
         super();
 
-        this.initialValue = value.map(
-            ([k, v]) => [k, v] as [key: string, value: T],
-        );
+        this.initialValue = value.map(([k, v]) => [k, v] as [key: string, value: T]);
     }
 
     public set doc(doc: CrdtLoroDoc<any>) {

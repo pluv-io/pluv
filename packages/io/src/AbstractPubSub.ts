@@ -9,10 +9,7 @@ export type IOPubSubEventMessage<
 };
 
 export abstract class AbstractPubSub {
-    public abstract publish(
-        roomName: string,
-        payload: IOPubSubEventMessage<any>,
-    ): Promise<void>;
+    public abstract publish(roomName: string, payload: IOPubSubEventMessage<any>): Promise<void>;
 
     public abstract subscribe(
         roomName: string,

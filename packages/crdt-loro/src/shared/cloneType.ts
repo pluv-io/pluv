@@ -144,9 +144,7 @@ function cloneMap<T extends unknown>(params: CloneMapParams<T>): void {
     });
 }
 
-function cloneObject<T extends Record<string, any>>(
-    params: CloneObjectParams<T>,
-): void {
+function cloneObject<T extends Record<string, any>>(params: CloneObjectParams<T>): void {
     const { source, target } = params;
 
     const items = source.initialValue;
@@ -205,9 +203,7 @@ function cloneText(params: CloneTextParams): void {
     source.insert(0, source.initalValue);
 }
 
-export const cloneType = <TType extends Container>(
-    params: CloneTypeParams<TType>,
-) => {
+export const cloneType = <TType extends Container>(params: CloneTypeParams<TType>) => {
     const { source, target } = params;
 
     if (source instanceof CrdtLoroArray) {

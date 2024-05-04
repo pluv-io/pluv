@@ -4,13 +4,8 @@ import { Array as YArray } from "yjs";
 import { toYjsValue } from "../shared";
 import type { InferYjsJson, InferYjsType } from "../types";
 
-export class CrdtYjsArray<T extends unknown> extends AbstractCrdtType<
-    YArray<InferYjsType<T>>,
-    InferYjsJson<T>[]
-> {
-    public readonly initialValue:
-        | InferYjsType<T>[]
-        | readonly InferYjsType<T>[];
+export class CrdtYjsArray<T extends unknown> extends AbstractCrdtType<YArray<InferYjsType<T>>, InferYjsJson<T>[]> {
+    public readonly initialValue: InferYjsType<T>[] | readonly InferYjsType<T>[];
     public value: YArray<InferYjsType<T>>;
 
     constructor(value: T[] | readonly T[] = []) {

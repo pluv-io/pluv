@@ -28,9 +28,7 @@ export interface BaseIOAuthorize {
     user: InputZodLike<BaseUser>;
 }
 
-export interface BaseIOAuthorizeEventRecord<
-    TAuthorize extends IOAuthorize<any, any, any>,
-> {
+export interface BaseIOAuthorizeEventRecord<TAuthorize extends IOAuthorize<any, any, any>> {
     $OTHERS_RECEIVED: {
         others: {
             [connectionId: string]: {
@@ -72,10 +70,7 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any, any>> =
         };
     };
 
-export interface EventMessage<
-    TEvent extends string,
-    TData extends JsonObject = {},
-> {
+export interface EventMessage<TEvent extends string, TData extends JsonObject = {}> {
     data: TData;
     type: TEvent;
 }
@@ -84,10 +79,9 @@ export type EventRecord<TEvent extends string, TData extends JsonObject> = {
     [key in `${TEvent}`]: TData;
 };
 
-export type GetEventMessage<
-    T extends EventRecord<string, any>,
-    TEvent extends keyof T,
-> = TEvent extends string ? EventMessage<TEvent, T[TEvent]> : never;
+export type GetEventMessage<T extends EventRecord<string, any>, TEvent extends keyof T> = TEvent extends string
+    ? EventMessage<TEvent, T[TEvent]>
+    : never;
 
 export type InferEventMessage<
     TEvents extends EventRecord<string, any> = EventRecord<string, any>,
@@ -96,41 +90,28 @@ export type InferEventMessage<
     [P in TEvent]: P extends string ? Id<EventMessage<P, TEvents[P]>> : never;
 }[TEvent];
 
-export type InferIOAuthorize<TIO extends IOLike> =
-    TIO extends IOLike<infer IAuthorize> ? IAuthorize : never;
+export type InferIOAuthorize<TIO extends IOLike> = TIO extends IOLike<infer IAuthorize> ? IAuthorize : never;
 
-export type InferIOAuthorizeRequired<
-    TAuthorize extends IOAuthorize<any, any, any>,
-> = TAuthorize extends IOAuthorize<any, infer IRequired> ? IRequired : never;
+export type InferIOAuthorizeRequired<TAuthorize extends IOAuthorize<any, any, any>> =
+    TAuthorize extends IOAuthorize<any, infer IRequired> ? IRequired : never;
 
-export type InferIOAuthorizeUser<
-    TAuthorize extends IOAuthorize<any, any, any>,
-> =
+export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any, any>> =
     TAuthorize extends IOAuthorize<infer IUser, infer IRequired>
         ? IRequired extends true
             ? IUser
             : IUser | null
         : never;
 
-export type InferIOInput<TIO extends IOLike> =
-    TIO extends IOLike<any, infer IInput> ? IInput : never;
+export type InferIOInput<TIO extends IOLike> = TIO extends IOLike<any, infer IInput> ? IInput : never;
 
 export type InferIOOutput<TIO extends IOLike> =
-    TIO extends IOLike<
-        any,
-        any,
-        infer IOutputBroadcast,
-        infer IOutputSelf,
-        infer IOutputSync
-    >
+    TIO extends IOLike<any, any, infer IOutputBroadcast, infer IOutputSelf, infer IOutputSync>
         ? Spread<[IOutputBroadcast, IOutputSelf, IOutputSync]>
         : never;
 
-export type InferIOOutputBroadcast<TIO extends IOLike> =
-    TIO extends IOLike<any, any, infer IOutput> ? IOutput : never;
+export type InferIOOutputBroadcast<TIO extends IOLike> = TIO extends IOLike<any, any, infer IOutput> ? IOutput : never;
 
-export type InferIOOutputSelf<TIO extends IOLike> =
-    TIO extends IOLike<any, any, any, infer IOutput> ? IOutput : never;
+export type InferIOOutputSelf<TIO extends IOLike> = TIO extends IOLike<any, any, any, infer IOutput> ? IOutput : never;
 
 export type InferIOOutputSync<TIO extends IOLike> =
     TIO extends IOLike<any, any, any, any, infer IOutput> ? IOutput : never;
@@ -171,10 +152,7 @@ export type IOAuthorizeRequiredEventMessage<TIO extends IOLike> = NonNilProps<
     "connectionId" | "user"
 >;
 
-export type IOEventMessage<
-    TIO extends IOLike,
-    TEvent extends keyof InferIOOutput<TIO> = keyof InferIOOutput<TIO>,
-> = Id<
+export type IOEventMessage<TIO extends IOLike, TEvent extends keyof InferIOOutput<TIO> = keyof InferIOOutput<TIO>> = Id<
     { room: string } & InferEventMessage<InferIOOutput<TIO>, TEvent> &
         (InferEventMessage<InferIOOutput<TIO>, TEvent>["type"] extends "$ERROR"
             ? IOAuthorizeOptionalEventMessage<TIO>
@@ -193,23 +171,11 @@ export interface IOLike<
         [P in keyof TInput]: P extends string
             ? {
                   resolver:
-                      | ((
-                            data: TInput[P],
-                            ...args: any[]
-                        ) => MaybePromise<TOutputBroadcast | void>)
+                      | ((data: TInput[P], ...args: any[]) => MaybePromise<TOutputBroadcast | void>)
                       | {
-                            broadcast?: (
-                                data: TInput[P],
-                                ...args: any[]
-                            ) => MaybePromise<TOutputBroadcast | void>;
-                            self?: (
-                                data: TInput[P],
-                                ...args: any[]
-                            ) => MaybePromise<TOutputSelf | void>;
-                            sync?: (
-                                data: TInput[P],
-                                ...args: any[]
-                            ) => MaybePromise<TOutputSync | void>;
+                            broadcast?: (data: TInput[P], ...args: any[]) => MaybePromise<TOutputBroadcast | void>;
+                            self?: (data: TInput[P], ...args: any[]) => MaybePromise<TOutputSelf | void>;
+                            sync?: (data: TInput[P], ...args: any[]) => MaybePromise<TOutputSync | void>;
                         };
               }
             : never;

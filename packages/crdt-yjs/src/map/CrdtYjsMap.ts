@@ -8,10 +8,7 @@ export class CrdtYjsMap<T extends unknown> extends AbstractCrdtType<
     YMap<InferYjsType<T>>,
     Record<string, InferYjsJson<T>>
 > {
-    public initialValue: readonly (readonly [
-        key: string,
-        value: InferYjsType<T>,
-    ])[];
+    public initialValue: readonly (readonly [key: string, value: InferYjsType<T>])[];
     public value: YMap<InferYjsType<T>>;
 
     constructor(value: readonly (readonly [key: string, value: T])[] = []) {

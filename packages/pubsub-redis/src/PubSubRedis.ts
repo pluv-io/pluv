@@ -16,10 +16,7 @@ export class PubSubRedis extends AbstractPubSub {
     private _subscriptionsRefs = new Map<string, readonly number[]>();
     private _subscriptions = new Map<
         number,
-        [
-            roomName: string,
-            onMessage: (message: IOPubSubEventMessage<any>) => void,
-        ]
+        [roomName: string, onMessage: (message: IOPubSubEventMessage<any>) => void]
     >();
 
     constructor(options: PubSubRedisOptions) {
@@ -45,17 +42,11 @@ export class PubSubRedis extends AbstractPubSub {
         return this._subscriber;
     }
 
-    public async publish(
-        roomName: string,
-        payload: IOPubSubEventMessage<any>,
-    ): Promise<void> {
+    public async publish(roomName: string, payload: IOPubSubEventMessage<any>): Promise<void> {
         await this._publisher.publish(roomName, JSON.stringify(payload));
     }
 
-    public subscribe(
-        roomName: string,
-        onMessage: (message: IOPubSubEventMessage<any>) => void,
-    ): Promise<number> {
+    public subscribe(roomName: string, onMessage: (message: IOPubSubEventMessage<any>) => void): Promise<number> {
         const id = this._currentSubscriptionId++;
         const refs = this._subscriptionsRefs.get(roomName) ?? [];
 
@@ -87,9 +78,7 @@ export class PubSubRedis extends AbstractPubSub {
 
         this._subscriptionsRefs.set(
             roomName,
-            index === -1
-                ? refs
-                : [...refs.slice(0, index), ...refs.slice(index + 1)],
+            index === -1 ? refs : [...refs.slice(0, index), ...refs.slice(index + 1)],
         );
 
         this._subscriptions.delete(subscriptionId);
@@ -100,8 +89,7 @@ export class PubSubRedis extends AbstractPubSub {
 
         if (!subscribers?.length) return;
 
-        const parsed: IOPubSubEventMessage<any> =
-            typeof message === "string" ? JSON.parse(message) : message;
+        const parsed: IOPubSubEventMessage<any> = typeof message === "string" ? JSON.parse(message) : message;
 
         subscribers.forEach((id) => {
             const subscription = this._subscriptions.get(id);

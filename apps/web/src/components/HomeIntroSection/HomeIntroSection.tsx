@@ -48,16 +48,12 @@ export interface HomeIntroSectionProps {
     style?: CSSProperties;
 }
 
-export const HomeIntroSection: FC<HomeIntroSectionProps> = ({
-    className,
-    style,
-}) => {
+export const HomeIntroSection: FC<HomeIntroSectionProps> = ({ className, style }) => {
     return (
         <Root className={className} style={style}>
             <Title as="h2">Multiplayer made easy</Title>
             <Info as="h3">
-                Pluv provides powerful utilities to make building complex
-                multiplayer experiences easier.
+                Pluv provides powerful utilities to make building complex multiplayer experiences easier.
             </Info>
             <ChessDemoContainer>
                 <StyledHomeChessDemo />

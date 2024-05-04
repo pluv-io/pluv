@@ -28,10 +28,7 @@ export interface HomeCodeDemoUserDemoProps {
     style?: CSSProperties;
 }
 
-export const HomeCodeDemoUserDemo: FC<HomeCodeDemoUserDemoProps> = ({
-    className,
-    style,
-}) => {
+export const HomeCodeDemoUserDemo: FC<HomeCodeDemoUserDemoProps> = ({ className, style }) => {
     return (
         <Root className={className} style={style}>
             <UserDemo id="user1" user="jane" />

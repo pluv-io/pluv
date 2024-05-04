@@ -9,10 +9,7 @@ export class CrdtYjsXmlElement extends AbstractCrdtType<YXmlElement, string> {
     public readonly name: string;
     public value: YXmlElement;
 
-    constructor(
-        name: string,
-        children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[],
-    ) {
+    constructor(name: string, children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]) {
         super();
 
         this.initialValue = children.map((item) => item.value);
@@ -31,10 +28,7 @@ export class CrdtYjsXmlElement extends AbstractCrdtType<YXmlElement, string> {
         return this;
     }
 
-    public insert(
-        index: number,
-        ...children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]
-    ): this {
+    public insert(index: number, ...children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]): this {
         const converted = children.map((child) => toYjsValue(child));
 
         this.value.insert(index, converted);
@@ -42,15 +36,11 @@ export class CrdtYjsXmlElement extends AbstractCrdtType<YXmlElement, string> {
         return this;
     }
 
-    public push(
-        ...children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]
-    ): this {
+    public push(...children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]): this {
         return this.insert(this.length, ...children);
     }
 
-    public unshift(
-        ...children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]
-    ): this {
+    public unshift(...children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]): this {
         return this.insert(0, ...children);
     }
 

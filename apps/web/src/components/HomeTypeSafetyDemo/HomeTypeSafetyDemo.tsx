@@ -48,10 +48,7 @@ export interface HomeTypeSafetyDemoProps {
     style?: CSSProperties;
 }
 
-export const HomeTypeSafetyDemo: FC<HomeTypeSafetyDemoProps> = ({
-    className,
-    style,
-}) => {
+export const HomeTypeSafetyDemo: FC<HomeTypeSafetyDemoProps> = ({ className, style }) => {
     const contentRef = useRef<HTMLDivElement>(null);
 
     const [typistStates] = useOrchestratedTypist(contentRef, {

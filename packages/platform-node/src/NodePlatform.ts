@@ -13,20 +13,14 @@ export type NodePlatformOptions =
           pubSub: AbstractPubSub;
       };
 
-export class NodePlatform extends AbstractPlatform<
-    WebSocket,
-    { req: IncomingMessage }
-> {
+export class NodePlatform extends AbstractPlatform<WebSocket, { req: IncomingMessage }> {
     constructor(options: NodePlatformOptions = {}) {
         const { persistance, pubSub } = options;
 
         super(persistance && pubSub ? { persistance, pubSub } : {});
     }
 
-    public convertWebSocket(
-        webSocket: WebSocket,
-        config: ConvertWebSocketConfig,
-    ): NodeWebSocket {
+    public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): NodeWebSocket {
         return new NodeWebSocket(webSocket, config);
     }
 

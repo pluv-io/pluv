@@ -1,13 +1,6 @@
 import { Language, PrismCode } from "@pluv-internal/react-code";
 import { InferComponentProps } from "@pluv-internal/typings";
-import {
-    PropsWithChildren,
-    ReactElement,
-    ReactNode,
-    isValidElement,
-    useCallback,
-    useMemo,
-} from "react";
+import { PropsWithChildren, ReactElement, ReactNode, isValidElement, useCallback, useMemo } from "react";
 import tw from "twin.macro";
 
 const Root = tw(PrismCode)`
@@ -22,12 +15,9 @@ export type MdxPreProps = Omit<InferComponentProps<"code">, "ref">;
 export const MdxPre = (props: MdxPreProps): ReactElement | null => {
     const { children, className, style } = props;
 
-    const hasChildren = useCallback(
-        (element: ReactNode): element is ReactElement<PropsWithChildren> => {
-            return isValidElement(element) && !!element.props.children;
-        },
-        [],
-    );
+    const hasChildren = useCallback((element: ReactNode): element is ReactElement<PropsWithChildren> => {
+        return isValidElement(element) && !!element.props.children;
+    }, []);
 
     const contents = useMemo(() => {
         const getChildrenText = (_children: ReactNode): string => {

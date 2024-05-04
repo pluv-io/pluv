@@ -1,9 +1,4 @@
-import {
-    Button,
-    Footer,
-    LogoIcon,
-    NextLink,
-} from "@pluv-internal/react-components";
+import { Button, Footer, LogoIcon, NextLink } from "@pluv-internal/react-components";
 import { GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
 import { CSSProperties, memo } from "react";
 import tw, { styled } from "twin.macro";

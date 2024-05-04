@@ -1,9 +1,6 @@
 import { AbstractPersistance } from "./AbstractPersistance";
 import type { AbstractPubSub } from "./AbstractPubSub";
-import type {
-    AbstractWebSocket,
-    AbstractWebSocketConfig,
-} from "./AbstractWebSocket";
+import type { AbstractWebSocket, AbstractWebSocketConfig } from "./AbstractWebSocket";
 import { Persistance } from "./Persistance";
 import { PubSub } from "./PubSub";
 
@@ -11,14 +8,10 @@ export type InferPlatformWebSocketType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<infer IWebSocket> ? IWebSocket : never;
 
 export type InferPlatformRoomContextType<TPlatform extends AbstractPlatform> =
-    TPlatform extends AbstractPlatform<any, infer IIOContext>
-        ? IIOContext
-        : never;
+    TPlatform extends AbstractPlatform<any, infer IIOContext> ? IIOContext : never;
 
 export type InferPlatformEventContextType<TPlatform extends AbstractPlatform> =
-    TPlatform extends AbstractPlatform<any, any, infer IRoomContext>
-        ? IRoomContext
-        : never;
+    TPlatform extends AbstractPlatform<any, any, infer IRoomContext> ? IRoomContext : never;
 
 export type AbstractPlatformConfig =
     | { persistance?: undefined; pubSub?: undefined }
@@ -47,10 +40,7 @@ export abstract class AbstractPlatform<
         this.pubSub = pubSub ?? new PubSub();
     }
 
-    public abstract convertWebSocket(
-        webSocket: TWebSocket,
-        config: ConvertWebSocketConfig,
-    ): AbstractWebSocket;
+    public abstract convertWebSocket(webSocket: TWebSocket, config: ConvertWebSocketConfig): AbstractWebSocket;
 
     public abstract parseData(data: string | ArrayBuffer): Record<string, any>;
 

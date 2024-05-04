@@ -39,8 +39,7 @@ const Command: FC<Props> = ({ args }) => {
                     <Spinner type="dots" />{" "}
                 </Text>
             )}
-            Building <Filename>{input}</Filename> →{" "}
-            <Filename>{outDir}</Filename>
+            Building <Filename>{input}</Filename> → <Filename>{outDir}</Filename>
             {!!error && (
                 <Text>
                     <Newline count={2} />

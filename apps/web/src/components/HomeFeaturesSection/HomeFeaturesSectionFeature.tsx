@@ -35,9 +35,12 @@ export interface HomeFeaturesSectionFeatureProps {
     title: string;
 }
 
-export const HomeFeaturesSectionFeature: FC<
-    HomeFeaturesSectionFeatureProps
-> = ({ className, description, style, title }) => {
+export const HomeFeaturesSectionFeature: FC<HomeFeaturesSectionFeatureProps> = ({
+    className,
+    description,
+    style,
+    title,
+}) => {
     return (
         <Root className={className} style={style}>
             <Title>{title}</Title>

@@ -7,10 +7,7 @@ export type CodeTooltipIconProps = InferComponentProps<"svg"> & {
     type?: CodeTooltipIconType;
 };
 
-export const CodeTooltipIcon: FC<CodeTooltipIconProps> = ({
-    type = "field",
-    ...svgProps
-}) => {
+export const CodeTooltipIcon: FC<CodeTooltipIconProps> = ({ type = "field", ...svgProps }) => {
     switch (type) {
         case "field":
             return (

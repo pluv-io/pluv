@@ -73,15 +73,9 @@ export abstract class AbstractWebSocket {
      * @author leedavidcs
      * @date August 28, 2022
      */
-    public abstract addEventListener<TType extends EventType>(
-        type: TType,
-        handler: AbstractListener<TType>,
-    ): void;
+    public abstract addEventListener<TType extends EventType>(type: TType, handler: AbstractListener<TType>): void;
 
-    public abstract close(
-        code?: number | undefined,
-        reason?: string | undefined,
-    ): void;
+    public abstract close(code?: number | undefined, reason?: string | undefined): void;
 
     public abstract initialize(): Promise<() => void>;
 
@@ -90,16 +84,9 @@ export abstract class AbstractWebSocket {
     public abstract terminate(): void;
 
     public handleError(params: AbstractWebSocketHandleErrorParams): void {
-        const {
-            error,
-            message = error instanceof Error
-                ? error.message
-                : "Unexpected error",
-            session,
-        } = params;
+        const { error, message = error instanceof Error ? error.message : "Unexpected error", session } = params;
 
-        const stack: string | null =
-            error instanceof Error ? error.stack ?? null : null;
+        const stack: string | null = error instanceof Error ? error.stack ?? null : null;
 
         return this.sendMessage({
             connectionId: session?.id ?? null,
@@ -110,9 +97,7 @@ export abstract class AbstractWebSocket {
         });
     }
 
-    public sendMessage<
-        TMessage extends IOEventMessage<any> = IOEventMessage<any>,
-    >(data: TMessage): void {
+    public sendMessage<TMessage extends IOEventMessage<any> = IOEventMessage<any>>(data: TMessage): void {
         return this.send(JSON.stringify(data));
     }
 }

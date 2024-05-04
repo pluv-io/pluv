@@ -7,11 +7,5 @@ export interface DocsSeoProps {
 }
 
 export const DocsSeo: FC<DocsSeoProps> = ({ description, title }) => {
-    return (
-        <Seo
-            description={description}
-            postfix={!!title}
-            title={title ?? "pluv.io"}
-        />
-    );
+    return <Seo description={description} postfix={!!title} title={title ?? "pluv.io"} />;
 };

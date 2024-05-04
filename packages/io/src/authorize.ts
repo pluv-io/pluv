@@ -1,21 +1,12 @@
 import hkdf from "@panva/hkdf";
 import type { BaseUser } from "@pluv/types";
 import { EncryptJWT, jwtDecrypt } from "jose";
-import type {
-    AbstractPlatform,
-    InferPlatformRoomContextType,
-} from "./AbstractPlatform";
+import type { AbstractPlatform, InferPlatformRoomContextType } from "./AbstractPlatform";
 
 const DEFAULT_MAX_AGE_MS = 60_000;
 
 export const getEncryptionKey = async (secret: string): Promise<Uint8Array> => {
-    return await hkdf(
-        "sha256",
-        secret,
-        "",
-        "Pluv.io Generated Encryption Key",
-        32,
-    );
+    return await hkdf("sha256", secret, "", "Pluv.io Generated Encryption Key", 32);
 };
 
 export interface JWT<TUser extends BaseUser> {
@@ -24,10 +15,7 @@ export interface JWT<TUser extends BaseUser> {
     user: TUser;
 }
 
-export type JWTEncodeParams<
-    TUser extends BaseUser,
-    TPlatform extends AbstractPlatform,
-> = {
+export type JWTEncodeParams<TUser extends BaseUser, TPlatform extends AbstractPlatform> = {
     maxAge?: number;
     room: string;
     user: TUser;
@@ -50,10 +38,7 @@ const now = () => (Date.now() / 1_000) | 0;
 export const authorize = (params: AuthorizeParams) => {
     const { platform, secret } = params;
 
-    const encode = async <
-        TUser extends BaseUser,
-        TPlatform extends AbstractPlatform,
-    >(
+    const encode = async <TUser extends BaseUser, TPlatform extends AbstractPlatform>(
         encodeParams: JWTEncodeParams<TUser, TPlatform>,
     ): Promise<string> => {
         const { maxAge = DEFAULT_MAX_AGE_MS, room, user } = encodeParams;
@@ -74,9 +59,7 @@ export const authorize = (params: AuthorizeParams) => {
         return token.toString();
     };
 
-    const decode = async <TUser extends BaseUser>(
-        jwt: string,
-    ): Promise<JWT<TUser> | null> => {
+    const decode = async <TUser extends BaseUser>(jwt: string): Promise<JWT<TUser> | null> => {
         const encryptionSecret = await getEncryptionKey(secret);
 
         const { payload } = await jwtDecrypt(jwt, encryptionSecret, {

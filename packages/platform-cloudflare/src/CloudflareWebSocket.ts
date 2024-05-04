@@ -1,9 +1,4 @@
-import {
-    AbstractEventMap,
-    AbstractListener,
-    AbstractWebSocket,
-    AbstractWebSocketConfig,
-} from "@pluv/io";
+import { AbstractEventMap, AbstractListener, AbstractWebSocket, AbstractWebSocketConfig } from "@pluv/io";
 
 export interface CloudflareWebSocketEventMap {
     close: CloseEvent;
@@ -29,17 +24,12 @@ export class CloudflareWebSocket extends AbstractWebSocket {
         this.webSocket = webSocket;
     }
 
-    public addEventListener<TType extends keyof AbstractEventMap>(
-        type: TType,
-        handler: AbstractListener<TType>,
-    ) {
+    public addEventListener<TType extends keyof AbstractEventMap>(type: TType, handler: AbstractListener<TType>) {
         this.webSocket.addEventListener(type, handler as any);
     }
 
     public close(code?: number | undefined, reason?: string | undefined): void {
-        const canClose = [this.CONNECTING, this.OPEN].some(
-            (readyState) => readyState === this.readyState,
-        );
+        const canClose = [this.CONNECTING, this.OPEN].some((readyState) => readyState === this.readyState);
 
         if (!canClose) return;
 

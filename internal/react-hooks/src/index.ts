@@ -5,17 +5,9 @@ export { useMeasure } from "./useMeasure";
 export { useMediaQuery } from "./useMediaQuery";
 export type { NoSsrFunction } from "./useNoSsr";
 export { useNoSsr } from "./useNoSsr";
-export type {
-    OrchestratedTypistState,
-    UseOrchestratedTypistParams,
-} from "./useOrchestratedTypist";
+export type { OrchestratedTypistState, UseOrchestratedTypistParams } from "./useOrchestratedTypist";
 export { useOrchestratedTypist } from "./useOrchestratedTypist";
-export type {
-    TypistMode,
-    TypistState,
-    UseTypistActions,
-    UseTypistParams,
-} from "./useTypist";
+export type { TypistMode, TypistState, UseTypistActions, UseTypistParams } from "./useTypist";
 export { useTypist } from "./useTypist";
 export { useUpdateEffect } from "./useUpdateEffect";
 export { useWindowFocus } from "./useWindowFocus";

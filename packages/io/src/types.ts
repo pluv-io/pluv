@@ -1,16 +1,6 @@
 import type { AbstractCrdtDoc } from "@pluv/crdt";
-import type {
-    EventRecord,
-    Id,
-    InputZodLike,
-    JsonObject,
-    MaybePromise,
-} from "@pluv/types";
-import {
-    AbstractPlatform,
-    InferPlatformEventContextType,
-    InferPlatformRoomContextType,
-} from "./AbstractPlatform";
+import type { EventRecord, Id, InputZodLike, JsonObject, MaybePromise } from "@pluv/types";
+import { AbstractPlatform, InferPlatformEventContextType, InferPlatformRoomContextType } from "./AbstractPlatform";
 import type { AbstractWebSocket } from "./AbstractWebSocket";
 
 declare global {
@@ -30,20 +20,11 @@ export interface EventConfig<
     input?: InputZodLike<TData>;
     resolver:
         | EventResolver<
-              TContext &
-                  InferPlatformRoomContextType<TPlatform> &
-                  InferPlatformEventContextType<TPlatform>,
+              TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
               TData,
               TResultBroadcast
           >
-        | EventResolverObject<
-              TPlatform,
-              TContext,
-              TData,
-              TResultBroadcast,
-              TResultSelf,
-              TResultSync
-          >;
+        | EventResolverObject<TPlatform, TContext, TData, TResultBroadcast, TResultSelf, TResultSync>;
 }
 
 export type EventConfigType = "broadcast" | "self" | "sync";
@@ -52,23 +33,15 @@ export type SyncEventResolver<
     TContext extends Record<string, any> = {},
     TData extends JsonObject = {},
     TResultBroadcast extends EventRecord<string, any> = {},
-> = (
-    data: TData,
-    context: EventResolverContext<TContext>,
-) => MaybePromise<TResultBroadcast | void>;
+> = (data: TData, context: EventResolverContext<TContext>) => MaybePromise<TResultBroadcast | void>;
 
 export type EventResolver<
     TContext extends Record<string, any> = {},
     TData extends JsonObject = {},
     TResultBroadcast extends EventRecord<string, any> = {},
-> = (
-    data: TData,
-    context: EventResolverContext<TContext>,
-) => MaybePromise<TResultBroadcast | void>;
+> = (data: TData, context: EventResolverContext<TContext>) => MaybePromise<TResultBroadcast | void>;
 
-export interface EventResolverContext<
-    TContext extends Record<string, any> = {},
-> {
+export interface EventResolverContext<TContext extends Record<string, any> = {}> {
     context: TContext;
     doc: AbstractCrdtDoc<any>;
     room: string;
@@ -97,16 +70,12 @@ export type EventResolverObject<
     TResultSync extends EventRecord<string, any> = {},
 > = {
     broadcast?: EventResolver<
-        TContext &
-            InferPlatformRoomContextType<TPlatform> &
-            InferPlatformEventContextType<TPlatform>,
+        TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
         TData,
         TResultBroadcast
     >;
     self?: EventResolver<
-        TContext &
-            InferPlatformRoomContextType<TPlatform> &
-            InferPlatformEventContextType<TPlatform>,
+        TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
         TData,
         TResultSelf
     >;
@@ -122,16 +91,7 @@ export type InferEventConfig<
     TOutputSync extends EventRecord<string, any> = {},
 > = {
     [P in keyof TInput]: P extends string
-        ? Id<
-              EventConfig<
-                  TPlatform,
-                  TContext,
-                  TInput[P],
-                  TOutputBroadcast,
-                  TOutputSelf,
-                  TOutputSync
-              >
-          >
+        ? Id<EventConfig<TPlatform, TContext, TInput[P], TOutputBroadcast, TOutputSelf, TOutputSync>>
         : never;
 };
 

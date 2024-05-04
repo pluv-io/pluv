@@ -28,10 +28,7 @@ export interface HomeFeaturesSectionProps {
     style?: CSSProperties;
 }
 
-export const HomeFeaturesSection: FC<HomeFeaturesSectionProps> = ({
-    className,
-    style,
-}) => {
+export const HomeFeaturesSection: FC<HomeFeaturesSectionProps> = ({ className, style }) => {
     return (
         <Root className={className} style={style}>
             <Features>
@@ -39,22 +36,10 @@ export const HomeFeaturesSection: FC<HomeFeaturesSectionProps> = ({
                     description="Get auto-completion and in-code errors with end-to-end type-safety."
                     title="Type-safety"
                 />
-                <Feature
-                    description="Build for either Cloudflare Workers or Node.js runtimes."
-                    title="Multi-runtime"
-                />
-                <Feature
-                    description="Edit shared data and documents with the Yjs ecosystem."
-                    title="Yjs CRDT"
-                />
-                <Feature
-                    description="Display user selections with per-user presence states."
-                    title="Presence"
-                />
-                <Feature
-                    description="Add your own custom authentication rules to rooms."
-                    title="Authentication"
-                />
+                <Feature description="Build for either Cloudflare Workers or Node.js runtimes." title="Multi-runtime" />
+                <Feature description="Edit shared data and documents with the Yjs ecosystem." title="Yjs CRDT" />
+                <Feature description="Display user selections with per-user presence states." title="Presence" />
+                <Feature description="Add your own custom authentication rules to rooms." title="Authentication" />
                 <Feature
                     description="Broadcast custom events to connected clients in the same room."
                     title="Broadcast"

@@ -4,19 +4,17 @@ import { Map as YMap } from "yjs";
 import { toYjsValue } from "../shared";
 import type { InferYjsJson, InferYjsType } from "../types";
 
-export class CrdtYjsObject<
-    T extends Record<string, any>,
-> extends AbstractCrdtType<YMap<InferYjsType<T[keyof T]>>, InferYjsJson<T>> {
+export class CrdtYjsObject<T extends Record<string, any>> extends AbstractCrdtType<
+    YMap<InferYjsType<T[keyof T]>>,
+    InferYjsJson<T>
+> {
     public initialValue: readonly (readonly [key: string, value: T[keyof T]])[];
     public value: YMap<InferYjsType<T[keyof T]>>;
 
     constructor(value: T = {} as T) {
         super();
 
-        this.initialValue = Object.entries(value).map(([k, v]) => [
-            k,
-            toYjsValue(v),
-        ]);
+        this.initialValue = Object.entries(value).map(([k, v]) => [k, toYjsValue(v)]);
         this.value = new YMap(this.initialValue);
     }
 

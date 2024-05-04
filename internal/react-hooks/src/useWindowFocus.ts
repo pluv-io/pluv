@@ -7,9 +7,7 @@ const hasFocus = (): boolean => {
      * @author David Lee
      * @date March 26, 2022
      */
-    return typeof document !== "undefined"
-        ? document.hasFocus() || document.visibilityState === "visible"
-        : true;
+    return typeof document !== "undefined" ? document.hasFocus() || document.visibilityState === "visible" : true;
 };
 
 export const useWindowFocus = () => {
@@ -47,10 +45,7 @@ export const useWindowFocus = () => {
         return () => {
             window.removeEventListener("focus", onFocus);
             window.removeEventListener("blur", onBlur);
-            document.removeEventListener(
-                "visibilitychange",
-                onVisibilityChange,
-            );
+            document.removeEventListener("visibilitychange", onVisibilityChange);
         };
     }, [isBrowser]);
 

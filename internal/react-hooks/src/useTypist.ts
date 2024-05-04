@@ -4,12 +4,7 @@ import { RefObject, useRef } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useWindowFocus } from "./useWindowFocus";
 
-export type TypistMode =
-    | "starting"
-    | "typing"
-    | "deleting"
-    | "paused"
-    | "halted";
+export type TypistMode = "starting" | "typing" | "deleting" | "paused" | "halted";
 
 export interface TypistState {
     completed: boolean;
@@ -65,16 +60,12 @@ export const useTypist = <TElement extends HTMLElement>(
     const hasDisplayedSentence: boolean = !!displayedSentence;
     const sentencesCount: number = sentences.length;
 
-    const timeoutsRef = useRef<
-        [
-            timeout1: number | null,
-            timeout2: number | null,
-            timeout3: number | null,
-        ]
-    >([null, null, null]);
-    const intervalsRef = useRef<
-        [interval1: number | null, interval2: number | null]
-    >([null, null]);
+    const timeoutsRef = useRef<[timeout1: number | null, timeout2: number | null, timeout3: number | null]>([
+        null,
+        null,
+        null,
+    ]);
+    const intervalsRef = useRef<[interval1: number | null, interval2: number | null]>([null, null]);
 
     const isViewed = focused && isIntersecting;
 
@@ -207,9 +198,7 @@ export const useTypist = <TElement extends HTMLElement>(
         if (mode !== "deleting") return;
         if (hasDisplayedSentence) return;
 
-        setIndex((oldIndex) =>
-            oldIndex >= sentencesCount - 1 ? 0 : oldIndex + 1,
-        );
+        setIndex((oldIndex) => (oldIndex >= sentencesCount - 1 ? 0 : oldIndex + 1));
 
         setMode("starting");
     }, [hasDisplayedSentence, index, mode, paused, sentencesCount]);
@@ -231,18 +220,9 @@ export const useTypist = <TElement extends HTMLElement>(
         return () => {
             clearTimeout(timeout);
         };
-    }, [
-        hasDisplayedSentence,
-        index,
-        mode,
-        paused,
-        repeat,
-        repeatDelay,
-        sentencesCount,
-    ]);
+    }, [hasDisplayedSentence, index, mode, paused, repeat, repeatDelay, sentencesCount]);
 
-    const completed =
-        isCompleted && index === sentencesCount - 1 && mode === "paused";
+    const completed = isCompleted && index === sentencesCount - 1 && mode === "paused";
 
     const typistState = useMemo(
         () => ({ completed, mode, text: displayedSentence }),

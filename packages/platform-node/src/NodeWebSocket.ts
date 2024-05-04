@@ -32,10 +32,7 @@ export class NodeWebSocket extends AbstractWebSocket {
         this.webSocket = webSocket;
     }
 
-    public addEventListener<TType extends keyof AbstractEventMap>(
-        type: TType,
-        handler: AbstractListener<TType>,
-    ): void {
+    public addEventListener<TType extends keyof AbstractEventMap>(type: TType, handler: AbstractListener<TType>): void {
         switch (type) {
             case "close":
                 this.webSocket.on("close", async (code, reason) => {
@@ -74,9 +71,7 @@ export class NodeWebSocket extends AbstractWebSocket {
     }
 
     public close(code?: number | undefined, reason?: string | undefined): void {
-        const canClose = [this.CONNECTING, this.OPEN].some(
-            (readyState) => readyState === this.readyState,
-        );
+        const canClose = [this.CONNECTING, this.OPEN].some((readyState) => readyState === this.readyState);
 
         if (!canClose) return;
 

@@ -48,17 +48,11 @@ export interface HomeTypeSafetyDemoSectionProps {
     style?: CSSProperties;
 }
 
-export const HomeTypeSafetyDemoSection: FC<HomeTypeSafetyDemoSectionProps> = ({
-    className,
-    style,
-}) => {
+export const HomeTypeSafetyDemoSection: FC<HomeTypeSafetyDemoSectionProps> = ({ className, style }) => {
     return (
         <Root className={className} style={style}>
             <Title as="h2">End-to-end Type-Safety</Title>
-            <Info as="h3">
-                Get intellisense and autocomplete, so you can move fast and
-                catch errors in development
-            </Info>
+            <Info as="h3">Get intellisense and autocomplete, so you can move fast and catch errors in development</Info>
             <TypeSafetyDemoContainer>
                 <StyledTypeSafetyDemo />
             </TypeSafetyDemoContainer>

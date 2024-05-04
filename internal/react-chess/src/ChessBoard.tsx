@@ -30,131 +30,109 @@ export interface ChessBoardProps {
     style?: CSSProperties;
 }
 
-export const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
-    (props, ref) => {
-        const {
-            className,
-            customPiece,
-            history = [],
-            id,
-            onGameOver,
-            onMove,
-            onSquareSelect,
-            style,
-        } = props;
+export const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>((props, ref) => {
+    const { className, customPiece, history = [], id, onGameOver, onMove, onSquareSelect, style } = props;
 
-        const sounds = useChessSounds();
+    const sounds = useChessSounds();
 
-        const clone = useCallback((game: Chess) => {
-            return game
-                .history()
-                .reduce(
-                    (board, notation) => (board.move(notation), board),
-                    new Chess(),
-                );
-        }, []);
+    const clone = useCallback((game: Chess) => {
+        return game.history().reduce((board, notation) => (board.move(notation), board), new Chess());
+    }, []);
 
-        const game = useMemo((): Chess => {
-            return history.reduce(
-                (board, notation) => (board.move(notation), board),
-                new Chess(),
-            );
-        }, [history]);
+    const game = useMemo((): Chess => {
+        return history.reduce((board, notation) => (board.move(notation), board), new Chess());
+    }, [history]);
 
-        const move = useCallback(
-            (newMove: ChessMove | string): boolean => {
-                if (!onMove) return false;
+    const move = useCallback(
+        (newMove: ChessMove | string): boolean => {
+            if (!onMove) return false;
 
-                const copy = clone(game);
+            const copy = clone(game);
 
-                let move: Move | null = null;
+            let move: Move | null = null;
 
-                try {
-                    move = copy.move(newMove);
-                } catch {
-                    return false;
-                }
+            try {
+                move = copy.move(newMove);
+            } catch {
+                return false;
+            }
 
-                if (!move) return false;
+            if (!move) return false;
 
-                const lastMove = copy
-                    .history({ verbose: true })
-                    .slice(-1)
-                    .pop();
+            const lastMove = copy.history({ verbose: true }).slice(-1).pop();
 
-                if (!lastMove) throw new Error("Error while making move");
+            if (!lastMove) throw new Error("Error while making move");
 
-                onMove({ game: copy, move: lastMove.san });
+            onMove({ game: copy, move: lastMove.san });
 
-                if (copy.isGameOver()) sounds.gameEnd.play();
-                else if (copy.isCheck()) sounds.check.play();
-                else if (lastMove.captured) sounds.capture.play();
-                else if (lastMove.promotion) sounds.promote.play();
-                else if (lastMove.san.startsWith("0-0")) sounds.castle.play();
-                else sounds.move.play();
+            if (copy.isGameOver()) sounds.gameEnd.play();
+            else if (copy.isCheck()) sounds.check.play();
+            else if (lastMove.captured) sounds.capture.play();
+            else if (lastMove.promotion) sounds.promote.play();
+            else if (lastMove.san.startsWith("0-0")) sounds.castle.play();
+            else sounds.move.play();
 
-                if (lastMove.promotion) sounds.promote.play();
+            if (lastMove.promotion) sounds.promote.play();
 
-                return true;
-            },
-            [clone, game, onMove, sounds],
-        );
+            return true;
+        },
+        [clone, game, onMove, sounds],
+    );
 
-        const clear = useCallback(() => game.clear(), [game]);
+    const clear = useCallback(() => game.clear(), [game]);
 
-        useImperativeHandle(ref, () => ({ clear, move }), [clear, move]);
+    useImperativeHandle(ref, () => ({ clear, move }), [clear, move]);
 
-        const onDrop = useCallback(
-            (from: Square, to: Square): boolean => {
-                onSquareSelect?.(to);
+    const onDrop = useCallback(
+        (from: Square, to: Square): boolean => {
+            onSquareSelect?.(to);
 
-                // Always promote to queen for simplicity
-                return move({ from, to, promotion: "q" });
-            },
-            [move, onSquareSelect],
-        );
+            // Always promote to queen for simplicity
+            return move({ from, to, promotion: "q" });
+        },
+        [move, onSquareSelect],
+    );
 
-        const isGameOver = game.isGameOver();
-        const winner = isGameOver ? game.turn() : null;
+    const isGameOver = game.isGameOver();
+    const winner = isGameOver ? game.turn() : null;
 
-        useEffect(() => {
-            isGameOver && onGameOver?.(winner);
-        }, [isGameOver, onGameOver, winner]);
+    useEffect(() => {
+        isGameOver && onGameOver?.(winner);
+    }, [isGameOver, onGameOver, winner]);
 
-        return (
-            <div id={id} className={className} style={style}>
-                <ChessBoardContext.Provider value={{ customPiece }}>
-                    <Chessboard
-                        customBoardStyle={{ width: "100%" }}
-                        customDarkSquareStyle={{
-                            backgroundColor: theme`colors.slate.600`,
-                        }}
-                        customLightSquareStyle={{
-                            backgroundColor: theme`colors.slate.400`,
-                        }}
-                        customPieces={customPieces}
-                        id={`${id}_board`}
-                        isDraggablePiece={() => !!onMove}
-                        onPieceDragBegin={(_, square) => {
-                            onSquareSelect?.(square);
-                        }}
-                        onSquareClick={onSquareSelect}
-                        onSquareRightClick={onSquareSelect}
-                        onPieceDrop={onDrop}
-                        position={game.fen()}
-                    />
-                </ChessBoardContext.Provider>
-                <div style={{ display: "none" }}>
-                    {sounds.capture.element}
-                    {sounds.castle.element}
-                    {sounds.check.element}
-                    {sounds.gameEnd.element}
-                    {sounds.move.element}
-                    {sounds.promote.element}
-                </div>
+    return (
+        <div id={id} className={className} style={style}>
+            <ChessBoardContext.Provider value={{ customPiece }}>
+                <Chessboard
+                    customBoardStyle={{ width: "100%" }}
+                    customDarkSquareStyle={{
+                        backgroundColor: theme`colors.slate.600`,
+                    }}
+                    customLightSquareStyle={{
+                        backgroundColor: theme`colors.slate.400`,
+                    }}
+                    customPieces={customPieces}
+                    id={`${id}_board`}
+                    isDraggablePiece={() => !!onMove}
+                    onPieceDragBegin={(_, square) => {
+                        onSquareSelect?.(square);
+                    }}
+                    onSquareClick={onSquareSelect}
+                    onSquareRightClick={onSquareSelect}
+                    onPieceDrop={onDrop}
+                    position={game.fen()}
+                />
+            </ChessBoardContext.Provider>
+            <div style={{ display: "none" }}>
+                {sounds.capture.element}
+                {sounds.castle.element}
+                {sounds.check.element}
+                {sounds.gameEnd.element}
+                {sounds.move.element}
+                {sounds.promote.element}
             </div>
-        );
-    },
-);
+        </div>
+    );
+});
 
 ChessBoard.displayName = "ChessBoard";

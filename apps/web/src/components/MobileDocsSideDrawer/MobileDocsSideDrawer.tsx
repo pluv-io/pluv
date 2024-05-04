@@ -1,9 +1,4 @@
-import {
-    Button,
-    LogoIcon,
-    NextLink,
-    SideDrawer,
-} from "@pluv-internal/react-components";
+import { Button, LogoIcon, NextLink, SideDrawer } from "@pluv-internal/react-components";
 import { XIcon } from "@pluv-internal/react-icons";
 import { CSSProperties, FC, MouseEvent } from "react";
 import tw from "twin.macro";
@@ -52,11 +47,7 @@ export interface MobileDocsSideDrawerProps {
     style?: CSSProperties;
 }
 
-export const MobileDocsSideDrawer: FC<MobileDocsSideDrawerProps> = ({
-    className,
-    onClickLink,
-    style,
-}) => {
+export const MobileDocsSideDrawer: FC<MobileDocsSideDrawerProps> = ({ className, onClickLink, style }) => {
     return (
         <Root className={className} style={style}>
             <TopContainer>

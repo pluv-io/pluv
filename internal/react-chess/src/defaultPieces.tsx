@@ -8,12 +8,7 @@ import type { ReactNode } from "react";
 
 export const defaultPieces: Record<string, ReactNode> = {
     wP: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            version="1.1"
-            width="45"
-            height="45"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
             <path
                 d="m 22.5,9 c -2.21,0 -4,1.79 -4,4 0,0.89 0.29,1.71 0.78,2.38 C 17.33,16.5 16,18.59 16,21 c 0,2.03 0.94,3.84 2.41,5.03 C 15.41,27.09 11,31.58 11,39.5 H 34 C 34,31.58 29.59,27.09 26.59,26.03 28.06,24.84 29,23.03 29,21 29,18.59 27.67,16.5 25.72,15.38 26.21,14.71 26.5,13.89 26.5,13 c 0,-2.21 -1.79,-4 -4,-4 z"
                 style={{
@@ -33,12 +28,7 @@ export const defaultPieces: Record<string, ReactNode> = {
         </svg>
     ),
     wR: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            version="1.1"
-            width="45"
-            height="45"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
             <g
                 style={{
                     opacity: "1",
@@ -54,14 +44,8 @@ export const defaultPieces: Record<string, ReactNode> = {
                     strokeOpacity: "1",
                 }}
             >
-                <path
-                    d="M 9,39 L 36,39 L 36,36 L 9,36 L 9,39 z "
-                    style={{ strokeLinecap: "butt" }}
-                />
-                <path
-                    d="M 12,36 L 12,32 L 33,32 L 33,36 L 12,36 z "
-                    style={{ strokeLinecap: "butt" }}
-                />
+                <path d="M 9,39 L 36,39 L 36,36 L 9,36 L 9,39 z " style={{ strokeLinecap: "butt" }} />
+                <path d="M 12,36 L 12,32 L 33,32 L 33,36 L 12,36 z " style={{ strokeLinecap: "butt" }} />
                 <path
                     d="M 11,14 L 11,9 L 15,9 L 15,11 L 20,11 L 20,9 L 25,9 L 25,11 L 30,11 L 30,9 L 34,9 L 34,14"
                     style={{ strokeLinecap: "butt" }}
@@ -84,12 +68,7 @@ export const defaultPieces: Record<string, ReactNode> = {
         </svg>
     ),
     wN: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            version="1.1"
-            width="45"
-            height="45"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
             <g
                 style={{
                     opacity: "1",
@@ -126,12 +105,7 @@ export const defaultPieces: Record<string, ReactNode> = {
         </svg>
     ),
     wB: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            version="1.1"
-            width="45"
-            height="45"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
             <g
                 style={{
                     opacity: "1",
@@ -170,12 +144,7 @@ export const defaultPieces: Record<string, ReactNode> = {
         </svg>
     ),
     wQ: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            version="1.1"
-            width="45"
-            height="45"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
             <g
                 style={{
                     fill: "#ffffff",
@@ -186,14 +155,8 @@ export const defaultPieces: Record<string, ReactNode> = {
             >
                 <path d="M 9,26 C 17.5,24.5 30,24.5 36,26 L 38.5,13.5 L 31,25 L 30.7,10.9 L 25.5,24.5 L 22.5,10 L 19.5,24.5 L 14.3,10.9 L 14,25 L 6.5,13.5 L 9,26 z" />
                 <path d="M 9,26 C 9,28 10.5,28 11.5,30 C 12.5,31.5 12.5,31 12,33.5 C 10.5,34.5 11,36 11,36 C 9.5,37.5 11,38.5 11,38.5 C 17.5,39.5 27.5,39.5 34,38.5 C 34,38.5 35.5,37.5 34,36 C 34,36 34.5,34.5 33,33.5 C 32.5,31 32.5,31.5 33.5,30 C 34.5,28 36,28 36,26 C 27.5,24.5 17.5,24.5 9,26 z" />
-                <path
-                    d="M 11.5,30 C 15,29 30,29 33.5,30"
-                    style={{ fill: "none" }}
-                />
-                <path
-                    d="M 12,33.5 C 18,32.5 27,32.5 33,33.5"
-                    style={{ fill: "none" }}
-                />
+                <path d="M 11.5,30 C 15,29 30,29 33.5,30" style={{ fill: "none" }} />
+                <path d="M 12,33.5 C 18,32.5 27,32.5 33,33.5" style={{ fill: "none" }} />
                 <circle cx="6" cy="12" r="2" />
                 <circle cx="14" cy="9" r="2" />
                 <circle cx="22.5" cy="8" r="2" />
@@ -203,12 +166,7 @@ export const defaultPieces: Record<string, ReactNode> = {
         </svg>
     ),
     wK: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            version="1.1"
-            width="45"
-            height="45"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
             <g
                 style={{
                     fill: "none",
@@ -252,28 +210,14 @@ export const defaultPieces: Record<string, ReactNode> = {
                     d="M 12.5,37 C 18,40.5 27,40.5 32.5,37 L 32.5,30 C 32.5,30 41.5,25.5 38.5,19.5 C 34.5,13 25,16 22.5,23.5 L 22.5,27 L 22.5,23.5 C 20,16 10.5,13 6.5,19.5 C 3.5,25.5 12.5,30 12.5,30 L 12.5,37"
                     style={{ fill: "#ffffff", stroke: "#000000" }}
                 />
-                <path
-                    d="M 12.5,30 C 18,27 27,27 32.5,30"
-                    style={{ fill: "none", stroke: "#000000" }}
-                />
-                <path
-                    d="M 12.5,33.5 C 18,30.5 27,30.5 32.5,33.5"
-                    style={{ fill: "none", stroke: "#000000" }}
-                />
-                <path
-                    d="M 12.5,37 C 18,34 27,34 32.5,37"
-                    style={{ fill: "none", stroke: "#000000" }}
-                />
+                <path d="M 12.5,30 C 18,27 27,27 32.5,30" style={{ fill: "none", stroke: "#000000" }} />
+                <path d="M 12.5,33.5 C 18,30.5 27,30.5 32.5,33.5" style={{ fill: "none", stroke: "#000000" }} />
+                <path d="M 12.5,37 C 18,34 27,34 32.5,37" style={{ fill: "none", stroke: "#000000" }} />
             </g>
         </svg>
     ),
     bP: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            version="1.1"
-            width="45"
-            height="45"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
             <path
                 d="m 22.5,9 c -2.21,0 -4,1.79 -4,4 0,0.89 0.29,1.71 0.78,2.38 C 17.33,16.5 16,18.59 16,21 c 0,2.03 0.94,3.84 2.41,5.03 C 15.41,27.09 11,31.58 11,39.5 H 34 C 34,31.58 29.59,27.09 26.59,26.03 28.06,24.84 29,23.03 29,21 29,18.59 27.67,16.5 25.72,15.38 26.21,14.71 26.5,13.89 26.5,13 c 0,-2.21 -1.79,-4 -4,-4 z"
                 style={{
@@ -293,12 +237,7 @@ export const defaultPieces: Record<string, ReactNode> = {
         </svg>
     ),
     bR: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            version="1.1"
-            width="45"
-            height="45"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
             <g
                 style={{
                     opacity: "1",
@@ -314,26 +253,14 @@ export const defaultPieces: Record<string, ReactNode> = {
                     strokeOpacity: "1",
                 }}
             >
-                <path
-                    d="M 9,39 L 36,39 L 36,36 L 9,36 L 9,39 z "
-                    style={{ strokeLinecap: "butt" }}
-                />
-                <path
-                    d="M 12.5,32 L 14,29.5 L 31,29.5 L 32.5,32 L 12.5,32 z "
-                    style={{ strokeLinecap: "butt" }}
-                />
-                <path
-                    d="M 12,36 L 12,32 L 33,32 L 33,36 L 12,36 z "
-                    style={{ strokeLinecap: "butt" }}
-                />
+                <path d="M 9,39 L 36,39 L 36,36 L 9,36 L 9,39 z " style={{ strokeLinecap: "butt" }} />
+                <path d="M 12.5,32 L 14,29.5 L 31,29.5 L 32.5,32 L 12.5,32 z " style={{ strokeLinecap: "butt" }} />
+                <path d="M 12,36 L 12,32 L 33,32 L 33,36 L 12,36 z " style={{ strokeLinecap: "butt" }} />
                 <path
                     d="M 14,29.5 L 14,16.5 L 31,16.5 L 31,29.5 L 14,29.5 z "
                     style={{ strokeLinecap: "butt", strokeLinejoin: "miter" }}
                 />
-                <path
-                    d="M 14,16.5 L 11,14 L 34,14 L 31,16.5 L 14,16.5 z "
-                    style={{ strokeLinecap: "butt" }}
-                />
+                <path d="M 14,16.5 L 11,14 L 34,14 L 31,16.5 L 14,16.5 z " style={{ strokeLinecap: "butt" }} />
                 <path
                     d="M 11,14 L 11,9 L 15,9 L 15,11 L 20,11 L 20,9 L 25,9 L 25,11 L 30,11 L 30,9 L 34,9 L 34,14 L 11,14 z "
                     style={{ strokeLinecap: "butt" }}
@@ -387,12 +314,7 @@ export const defaultPieces: Record<string, ReactNode> = {
         </svg>
     ),
     bN: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            version="1.1"
-            width="45"
-            height="45"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
             <g
                 style={{
                     opacity: "1",
@@ -433,12 +355,7 @@ export const defaultPieces: Record<string, ReactNode> = {
         </svg>
     ),
     bB: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            version="1.1"
-            width="45"
-            height="45"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
             <g
                 style={{
                     opacity: "1",
@@ -477,12 +394,7 @@ export const defaultPieces: Record<string, ReactNode> = {
         </svg>
     ),
     bQ: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            version="1.1"
-            width="45"
-            height="45"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
             <g
                 style={{
                     fill: "#000000",
@@ -522,12 +434,7 @@ export const defaultPieces: Record<string, ReactNode> = {
         </svg>
     ),
     bK: (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            version="1.1"
-            width="45"
-            height="45"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
             <g
                 style={{
                     fill: "none",

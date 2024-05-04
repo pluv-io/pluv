@@ -13,11 +13,7 @@ export interface MdxH6Props {
     style?: CSSProperties;
 }
 
-export const MdxH6 = ({
-    children,
-    className,
-    style,
-}: MdxH6Props): ReactElement | null => {
+export const MdxH6 = ({ children, className, style }: MdxH6Props): ReactElement | null => {
     return (
         <Root className={className} style={style} type="h6">
             {children}
