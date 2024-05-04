@@ -1,4 +1,4 @@
-import { Button, Footer, LogoIcon, NextLink } from "@pluv-internal/react-components";
+import { AnchorButton, Footer, LogoIcon, NextLink } from "@pluv-internal/react-components";
 import { GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
 import { CSSProperties, memo } from "react";
 import tw, { styled } from "twin.macro";
@@ -87,7 +87,7 @@ export const SiteWideFooter = memo<SiteWideFooterProps>((props) => {
                     <PluvName>pluv.io</PluvName>
                 </Logo>
                 <LinksContainer>
-                    <Button
+                    <AnchorButton
                         as={ExternalLink}
                         href="https://github.com/pluv-io/pluv"
                         outlined
@@ -99,8 +99,8 @@ export const SiteWideFooter = memo<SiteWideFooterProps>((props) => {
                     >
                         <GitHubIcon height={16} width={16} />
                         <span>GitHub</span>
-                    </Button>
-                    <Button
+                    </AnchorButton>
+                    <AnchorButton
                         as={ExternalLink}
                         href="https://www.npmjs.com/package/@pluv/io"
                         outlined
@@ -112,7 +112,7 @@ export const SiteWideFooter = memo<SiteWideFooterProps>((props) => {
                     >
                         <NpmIcon height={16} width={16} />
                         <span>npm</span>
-                    </Button>
+                    </AnchorButton>
                 </LinksContainer>
             </Content>
         </Root>
