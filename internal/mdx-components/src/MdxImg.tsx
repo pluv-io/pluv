@@ -8,21 +8,8 @@ export interface MdxImgProps {
     style?: CSSProperties;
 }
 
-export const MdxImg = ({
-    alt,
-    className,
-    src,
-    style,
-}: MdxImgProps): ReactElement | null => {
+export const MdxImg = ({ alt, className, src, style }: MdxImgProps): ReactElement | null => {
     if (!src) return null;
 
-    return (
-        <NextImage
-            className={className}
-            alt={alt}
-            layout="responsive"
-            src={src}
-            style={style}
-        />
-    );
+    return <NextImage className={className} alt={alt} layout="responsive" src={src} style={style} />;
 };

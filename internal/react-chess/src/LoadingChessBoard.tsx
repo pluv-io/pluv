@@ -78,10 +78,7 @@ export interface LoadingChessBoardProps {
 export const LoadingChessBoard = memo<LoadingChessBoardProps>((props) => {
     const { children = () => <SpinnerKing />, className, style } = props;
 
-    const [position, setPosition] = useState<[row: number, col: number]>([
-        BOARD_SIZE / 2 - 1,
-        BOARD_SIZE / 2 - 1,
-    ]);
+    const [position, setPosition] = useState<[row: number, col: number]>([BOARD_SIZE / 2 - 1, BOARD_SIZE / 2 - 1]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -107,11 +104,7 @@ export const LoadingChessBoard = memo<LoadingChessBoardProps>((props) => {
                     {Array.from({ length: BOARD_SIZE }, (_, j) => (
                         <Cell key={j}>
                             {!j && <RowNo>{BOARD_SIZE - i}</RowNo>}
-                            {i === BOARD_SIZE - 1 && (
-                                <ColNo>
-                                    {String.fromCharCode(65 + j).toLowerCase()}
-                                </ColNo>
-                            )}
+                            {i === BOARD_SIZE - 1 && <ColNo>{String.fromCharCode(65 + j).toLowerCase()}</ColNo>}
                             {row === i && col === j && children({ position })}
                         </Cell>
                     ))}

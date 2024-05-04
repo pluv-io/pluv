@@ -21,12 +21,8 @@ export class CrdtLoroDocFactory<
         return new CrdtLoroDoc<TStorage>();
     }
 
-    public getFactory(
-        initialStorage?: (() => TStorage) | undefined,
-    ): CrdtLoroDocFactory<TStorage> {
-        return new CrdtLoroDocFactory<TStorage>(
-            initialStorage ?? this._initialStorage,
-        );
+    public getFactory(initialStorage?: (() => TStorage) | undefined): CrdtLoroDocFactory<TStorage> {
+        return new CrdtLoroDocFactory<TStorage>(initialStorage ?? this._initialStorage);
     }
 
     public getFresh(): CrdtLoroDoc<TStorage> {
@@ -55,11 +51,7 @@ export class CrdtLoroDocFactory<
         );
     }
 
-    public getInitialized(
-        initialStorage?: () => TStorage,
-    ): CrdtLoroDoc<TStorage> {
-        return new CrdtLoroDoc<TStorage>(
-            initialStorage?.() ?? this._initialStorage(),
-        );
+    public getInitialized(initialStorage?: () => TStorage): CrdtLoroDoc<TStorage> {
+        return new CrdtLoroDoc<TStorage>(initialStorage?.() ?? this._initialStorage());
     }
 }

@@ -1,17 +1,14 @@
 import type { Id, MaybePromise, Spread } from "@pluv/types";
 import { match } from "path-to-regexp";
 
-type PathParamRecord<
-    TParamName extends string,
-    TParamValue extends string | string[] = string,
-> = { [key in `${TParamName}`]: TParamValue };
+type PathParamRecord<TParamName extends string, TParamValue extends string | string[] = string> = {
+    [key in `${TParamName}`]: TParamValue;
+};
 
 export type PathParams<T extends string> = T extends string
     ? T extends `/:${infer IFullParam}`
         ? IFullParam extends `${infer IParamName}/${infer IRestParam}`
-            ? Spread<
-                  [PathParamRecord<IParamName>, PathParams<`/${IRestParam}`>]
-              >
+            ? Spread<[PathParamRecord<IParamName>, PathParams<`/${IRestParam}`>]>
             : IFullParam extends `${infer IParamName}${"+" | "*"}`
               ? PathParamRecord<IParamName, string[]>
               : PathParamRecord<IFullParam>
@@ -53,11 +50,7 @@ type RouterPathTuple<
     TMethod extends RouterMethod,
     TPathName extends string,
     TPathParams extends PathParams<TPathName>,
-> = readonly [
-    method: TMethod,
-    path: TPathName,
-    handler: RouterPathHandler<TContext, Id<TPathParams>>,
-];
+> = readonly [method: TMethod, path: TPathName, handler: RouterPathHandler<TContext, Id<TPathParams>>];
 
 type RouterPaths<
     TContext,
@@ -70,17 +63,11 @@ export interface RouterConfigOptions<TContext> {
     context: TContext;
 }
 
-export interface RouterOptions<
-    TContext,
-    TPaths extends RouterPaths<TContext, any, string, any>,
-> {
+export interface RouterOptions<TContext, TPaths extends RouterPaths<TContext, any, string, any>> {
     paths?: TPaths;
 }
 
-export class Router<
-    TContext,
-    TPaths extends RouterPaths<TContext, any, string, any> = [],
-> {
+export class Router<TContext, TPaths extends RouterPaths<TContext, any, string, any> = []> {
     private _config: RouterConfigOptions<TContext> | null = null;
 
     public paths: TPaths;
@@ -91,17 +78,13 @@ export class Router<
 
     public async match(request: Request): Promise<Response> {
         if (!this._config) {
-            throw new Error(
-                'Must call "setConfig" before matching a new request.',
-            );
+            throw new Error('Must call "setConfig" before matching a new request.');
         }
 
         const url = new URL(request.url);
 
         const matchedPath = this.paths.find(([method, pattern]) => {
-            const isMethodMatch =
-                this._compareMethods(request.method, method) ||
-                method === "all";
+            const isMethodMatch = this._compareMethods(request.method, method) || method === "all";
 
             return isMethodMatch && !!match(pattern)(url.pathname);
         });
@@ -145,23 +128,13 @@ export class Router<
         method: TMethod,
         pattern: TPath,
         handler: RouterPathHandler<TContext, Id<PathParams<TPath>>>,
-    ): Router<
-        TContext,
-        [...TPaths, ...RouterPaths<TContext, TMethod, TPath, PathParams<TPath>>]
-    > {
-        const newPath = [[method, pattern, handler]] as RouterPaths<
-            TContext,
-            TMethod,
-            TPath,
-            PathParams<TPath>
-        >;
+    ): Router<TContext, [...TPaths, ...RouterPaths<TContext, TMethod, TPath, PathParams<TPath>>]> {
+        const newPath = [[method, pattern, handler]] as RouterPaths<TContext, TMethod, TPath, PathParams<TPath>>;
 
         return Router.merge(this, new Router({ paths: newPath }));
     }
 
-    public setConfig(
-        options: RouterConfigOptions<TContext>,
-    ): Router<TContext, TPaths> {
+    public setConfig(options: RouterConfigOptions<TContext>): Router<TContext, TPaths> {
         this._config = options;
 
         return this;
@@ -174,23 +147,20 @@ export class Router<
     private _getQuery(request: Request): ParsedUrlQuery {
         const url = new URL(request.url);
 
-        return Array.from(url.searchParams.entries()).reduce(
-            (acc, [key, value]) => {
-                if (typeof value === "undefined") return acc;
+        return Array.from(url.searchParams.entries()).reduce((acc, [key, value]) => {
+            if (typeof value === "undefined") return acc;
 
-                const previous = acc[key];
-                const decoded = decodeURIComponent(value);
+            const previous = acc[key];
+            const decoded = decodeURIComponent(value);
 
-                return {
-                    ...acc,
-                    [key]: Array.isArray(previous)
-                        ? [...previous, decoded]
-                        : typeof previous !== "undefined"
-                          ? [previous, decoded]
-                          : decoded,
-                };
-            },
-            {} as ParsedUrlQuery,
-        );
+            return {
+                ...acc,
+                [key]: Array.isArray(previous)
+                    ? [...previous, decoded]
+                    : typeof previous !== "undefined"
+                      ? [previous, decoded]
+                      : decoded,
+            };
+        }, {} as ParsedUrlQuery);
     }
 }

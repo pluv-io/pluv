@@ -119,29 +119,15 @@ export const PrismCode = memo(
             className: _className,
             language = "tsx",
             style: _style,
-            tokenRenderer: Token = ({ tokenProps }) => <span {...tokenProps} />,
+            tokenRenderer: Token = ({ tokenProps }) => <span {...tokenProps} key={tokenProps.key as string | number} />,
         } = props;
 
         return (
-            <Highlight
-                code={children}
-                language={language}
-                theme={{ plain: {}, styles: [] }}
-            >
-                {({
-                    className,
-                    style,
-                    tokens,
-                    getLineProps,
-                    getTokenProps,
-                }) => (
-                    <Pre
-                        ref={ref}
-                        className={clsx(_className, className)}
-                        style={{ ..._style, ...style }}
-                    >
+            <Highlight code={children} language={language} theme={{ plain: {}, styles: [] }}>
+                {({ className, style, tokens, getLineProps, getTokenProps }) => (
+                    <Pre ref={ref} className={clsx(_className, className)} style={{ ..._style, ...style }}>
                         {tokens.map((line, i) => (
-                            <Line key={i} {...getLineProps({ line, key: i })}>
+                            <Line {...getLineProps({ line })} key={i}>
                                 <LineNo>{i + 1}</LineNo>
                                 <LineContent>
                                     {line.map((token, key) => (

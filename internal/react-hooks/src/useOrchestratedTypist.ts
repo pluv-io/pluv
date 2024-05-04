@@ -8,14 +8,7 @@ export interface OrchestratedTypistState {
 
 export type UseOrchestratedTypistParams = Pick<
     UseTypistParams,
-    | "deleteDelay"
-    | "deleteSpeed"
-    | "paused"
-    | "repeat"
-    | "repeatDelay"
-    | "sentences"
-    | "typingDelay"
-    | "typingSpeed"
+    "deleteDelay" | "deleteSpeed" | "paused" | "repeat" | "repeatDelay" | "sentences" | "typingDelay" | "typingSpeed"
 > & {
     onChange?: (state: OrchestratedTypistState) => void;
 };
@@ -48,8 +41,7 @@ export const useOrchestratedTypist = <TElement extends HTMLElement>(
         return sentences.reduce<number[]>((acc, _, i) => {
             const prevSentence = sentences[i - 1] ?? "";
             const prevDelay = acc[i - 1] ?? 0;
-            const delay =
-                prevSentence.length * typingSpeed + prevDelay + typingDelay;
+            const delay = prevSentence.length * typingSpeed + prevDelay + typingDelay;
 
             return [...acc, delay];
         }, []);

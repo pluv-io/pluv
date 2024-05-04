@@ -1,21 +1,38 @@
-import { InferComponentProps } from "@pluv-internal/typings";
-import tw from "twin.macro";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
+import { forwardRef } from "react";
 
-export type PillProps = InferComponentProps<typeof Pill>;
+export type PillProps = InferComponentProps<"div">;
 
-export const Pill = tw.div`
-    inline-flex
-    flex-row
-    items-center
-    px-3
-    h-7
-    rounded-full
-    bg-zinc-700/60
-    text-sm
-    transition-colors
-    duration-150
-    ease-in
-    [&[href]]:cursor-pointer
-    [&[href]]:hover:bg-zinc-700
-    [&[data-selected="true"]]:bg-zinc-700
-`;
+export const Pill = forwardRef<HTMLDivElement, PillProps>((props, ref) => {
+    const { className, ...restProps } = props;
+
+    return (
+        <div
+            {...restProps}
+            ref={ref}
+            className={cn(
+                oneLine`
+                    inline-flex
+                    h-7
+                    flex-row
+                    items-center
+                    rounded-full
+                    bg-zinc-700/60
+                    px-3
+                    text-sm
+                    transition-colors
+                    duration-150
+                    ease-in
+                    [&[data-selected="true"]]:bg-zinc-700
+                    [&[href]]:cursor-pointer
+                    [&[href]]:hover:bg-zinc-700
+                `,
+                className,
+            )}
+        />
+    );
+});
+
+Pill.displayName = "Pill";

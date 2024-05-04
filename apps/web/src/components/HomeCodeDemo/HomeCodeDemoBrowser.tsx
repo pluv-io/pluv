@@ -63,10 +63,7 @@ const SecondBox = tw(HomeCodeDemoBox)`
     text-violet-500
 `;
 
-const didClickIn = (
-    element: HTMLDivElement | null,
-    event: MouseEvent<HTMLDivElement>,
-): boolean => {
+const didClickIn = (element: HTMLDivElement | null, event: MouseEvent<HTMLDivElement>): boolean => {
     return !element || element.contains(event.target as Node | null);
 };
 
@@ -77,34 +74,16 @@ export interface HomeCodeDemoBrowserProps {
     user: keyof HomeCodeDemoSelections;
 }
 
-export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({
-    className,
-    id,
-    style,
-    user,
-}) => {
-    const {
-        boxSize,
-        codePositions,
-        initPositions,
-        selections,
-        setCodePositions,
-        setInitPositions,
-        setSelections,
-    } = useContext(HomeCodeDemoContext);
+export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({ className, id, style, user }) => {
+    const { boxSize, codePositions, initPositions, selections, setCodePositions, setInitPositions, setSelections } =
+        useContext(HomeCodeDemoContext);
 
     const { [user]: myself, ...others } = selections;
 
     const [box1, box1Ref] = useState<HTMLDivElement | null>(null);
     const [box2, box2Ref] = useState<HTMLDivElement | null>(null);
 
-    const otherUser = useMemo(
-        () =>
-            (Object.keys(others)[0] ?? null) as
-                | keyof HomeCodeDemoSelections
-                | null,
-        [others],
-    );
+    const otherUser = useMemo(() => (Object.keys(others)[0] ?? null) as keyof HomeCodeDemoSelections | null, [others]);
 
     const other = useMemo(() => {
         if (!otherUser) return null;
@@ -125,14 +104,8 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({
             const minHeight = rootRect.height / -2 + boxSize / 2;
             const maxHeight = rootRect.height / 2 - boxSize / 2;
 
-            const newXPosition = Math.min(
-                Math.max(position.x, minWidth),
-                maxWidth,
-            );
-            const newYPosition = Math.min(
-                Math.max(position.y, minHeight),
-                maxHeight,
-            );
+            const newXPosition = Math.min(Math.max(position.x, minWidth), maxWidth);
+            const newYPosition = Math.min(Math.max(position.y, minHeight), maxHeight);
 
             return { x: newXPosition, y: newYPosition };
         },

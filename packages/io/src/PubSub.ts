@@ -10,15 +10,9 @@ export class PubSub extends AbstractPubSub {
     // Map of roomName to subscription ids
     private _subscriptionsRefs = new Map<string, readonly number[]>();
     // Map of
-    private _unsubscriptions = new Map<
-        number,
-        [roomName: string, unsubscribe: () => void]
-    >();
+    private _unsubscriptions = new Map<number, [roomName: string, unsubscribe: () => void]>();
 
-    public async publish(
-        roomName: string,
-        payload: IOPubSubEventMessage<any>,
-    ): Promise<void> {
+    public async publish(roomName: string, payload: IOPubSubEventMessage<any>): Promise<void> {
         const subject = this._subjects.get(roomName);
 
         if (!subject) return;
@@ -26,10 +20,7 @@ export class PubSub extends AbstractPubSub {
         Promise.resolve(subject.next(payload));
     }
 
-    public subscribe(
-        roomName: string,
-        onMessage: (message: IOPubSubEventMessage<any>) => void,
-    ): Promise<number> {
+    public subscribe(roomName: string, onMessage: (message: IOPubSubEventMessage<any>) => void): Promise<number> {
         const id = this._currentSubscriptionId++;
         const refs = this._subscriptionsRefs.get(roomName) ?? [];
 
@@ -46,8 +37,7 @@ export class PubSub extends AbstractPubSub {
     }
 
     public unsubscribe(subscriptionId: number): void {
-        const [roomName, unsubscribe] =
-            this._unsubscriptions.get(subscriptionId) ?? [];
+        const [roomName, unsubscribe] = this._unsubscriptions.get(subscriptionId) ?? [];
 
         if (!roomName || !unsubscribe) return;
 
@@ -67,9 +57,7 @@ export class PubSub extends AbstractPubSub {
 
         this._subscriptionsRefs.set(
             roomName,
-            index === -1
-                ? refs
-                : [...refs.slice(0, index), ...refs.slice(index + 1)],
+            index === -1 ? refs : [...refs.slice(0, index), ...refs.slice(index + 1)],
         );
 
         unsubscribe();

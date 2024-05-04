@@ -12,22 +12,20 @@ export interface DocsTreeViewNavigationProps {
     style?: CSSProperties;
 }
 
-export const DocsTreeViewNavigation = memo<DocsTreeViewNavigationProps>(
-    (props) => {
-        const { className, onClickLink, style } = props;
+export const DocsTreeViewNavigation = memo<DocsTreeViewNavigationProps>((props) => {
+    const { className, onClickLink, style } = props;
 
-        return (
-            <TreeView className={className} style={style}>
-                <DocsTreeViewNavigationRoutes
-                    baseRoute="/docs"
-                    level={1}
-                    onClickLink={onClickLink}
-                    routes={routes}
-                    selected={true}
-                />
-            </TreeView>
-        );
-    },
-);
+    return (
+        <TreeView className={className} style={style}>
+            <DocsTreeViewNavigationRoutes
+                baseRoute="/docs"
+                level={1}
+                onClickLink={onClickLink}
+                routes={routes}
+                selected={true}
+            />
+        </TreeView>
+    );
+});
 
 DocsTreeViewNavigation.displayName = "DocsTreeViewNavigation";

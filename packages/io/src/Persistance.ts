@@ -5,13 +5,8 @@ export class Persistance extends AbstractPersistance {
     private _storages = new Map<string, string>();
     private _users = new Map<string, Map<string, JsonObject | null>>();
 
-    public addUser(
-        room: string,
-        connectionId: string,
-        user: JsonObject | null,
-    ): Promise<void> {
-        const users =
-            this._users.get(room) ?? new Map<string, JsonObject | null>();
+    public addUser(room: string, connectionId: string, user: JsonObject | null): Promise<void> {
+        const users = this._users.get(room) ?? new Map<string, JsonObject | null>();
 
         this._users.set(room, users);
         users.set(connectionId, user);
@@ -56,10 +51,7 @@ export class Persistance extends AbstractPersistance {
         return Promise.resolve(storage);
     }
 
-    public getUser(
-        room: string,
-        connectionId: string,
-    ): Promise<JsonObject | null> {
+    public getUser(room: string, connectionId: string): Promise<JsonObject | null> {
         const user = this._users.get(room)?.get(connectionId);
 
         return Promise.resolve(user ?? null);

@@ -36,23 +36,15 @@ export class UrlUtils {
     }
 
     public static preferHttps(url: string): string {
-        return /^(https?|wss?):\/\/localhost/.test(url)
-            ? UrlUtils.ensureHttp(url)
-            : UrlUtils.ensureHttps(url);
+        return /^(https?|wss?):\/\/localhost/.test(url) ? UrlUtils.ensureHttp(url) : UrlUtils.ensureHttps(url);
     }
 
     public static preferWss(url: string): string {
-        return /^(https?|wss?):\/\/localhost/.test(url)
-            ? UrlUtils.ensureWs(url)
-            : UrlUtils.ensureWss(url);
+        return /^(https?|wss?):\/\/localhost/.test(url) ? UrlUtils.ensureWs(url) : UrlUtils.ensureWss(url);
     }
 
     public static relative(req: RelativeRequestLike, path: string): string {
-        const origin: string = UrlUtils._isLocationLike(req)
-            ? req.origin
-            : UrlUtils._isRequestLike(req)
-              ? req.url
-              : "";
+        const origin: string = UrlUtils._isLocationLike(req) ? req.origin : UrlUtils._isRequestLike(req) ? req.url : "";
 
         if (!origin) {
             return path;

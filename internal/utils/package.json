@@ -16,6 +16,8 @@
 		"typescript": "^5.4.5"
 	},
 	"dependencies": {
-		"@types/react": "^18.3.1"
+		"@types/react": "^18.3.1",
+		"clsx": "^2.1.1",
+		"tailwind-merge": "^2.3.0"
 	}
 }

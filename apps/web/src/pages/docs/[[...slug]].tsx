@@ -1,11 +1,6 @@
 import fs from "fs-extra";
 import matter from "gray-matter";
-import type {
-    GetStaticPaths,
-    GetStaticProps,
-    InferGetStaticPropsType,
-    NextPage,
-} from "next";
+import type { GetStaticPaths, GetStaticProps, InferGetStaticPropsType, NextPage } from "next";
 import path from "path";
 import tw from "twin.macro";
 import { DocsCard, DocsLayout } from "../../components";
@@ -35,10 +30,7 @@ export interface DocsIndexChild {
 
 const routes: DocRoutes = docRoutes;
 
-const Page: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
-    children,
-    meta,
-}) => {
+const Page: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({ children, meta }) => {
     return (
         <DocsLayout meta={meta}>
             <Heading>{meta?.title}</Heading>
@@ -57,23 +49,15 @@ const Page: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
 };
 
 const getFolderRoutes = (candidates: DocRoutes): readonly string[] => {
-    return Object.entries(candidates).reduce<readonly string[]>(
-        (acc, [slug, node]) => {
-            const isFolder = !!Object.keys(node.children).length;
-            const children = getFolderRoutes(node.children).map(
-                (nested) => `${slug}/${nested}`,
-            );
+    return Object.entries(candidates).reduce<readonly string[]>((acc, [slug, node]) => {
+        const isFolder = !!Object.keys(node.children).length;
+        const children = getFolderRoutes(node.children).map((nested) => `${slug}/${nested}`);
 
-            return isFolder ? [...acc, slug, ...children] : acc;
-        },
-        [],
-    );
+        return isFolder ? [...acc, slug, ...children] : acc;
+    }, []);
 };
 
-const getSourcePath = (
-    slugs: readonly string[],
-    candidates: DocRoutes,
-): string => {
+const getSourcePath = (slugs: readonly string[], candidates: DocRoutes): string => {
     const [slug, ...rest] = slugs;
 
     if (!slug) return "";
@@ -133,10 +117,7 @@ export const getStaticProps: GetStaticProps<
         .map((filePath) => {
             const contents = fs.readFileSync(filePath, { encoding: "utf-8" });
             const data = (matter(contents).data ?? null) as MetaJson | null;
-            const name = filePath
-                .replace(path.extname(filePath), "")
-                .replace(source, "")
-                .replace(/^\//, "");
+            const name = filePath.replace(path.extname(filePath), "").replace(source, "").replace(/^\//, "");
             const slug = name
                 .replace(/\s+/g, "-")
                 .replace(/[^a-zA-Z0-9-\.]/g, "")

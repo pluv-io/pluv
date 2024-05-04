@@ -1,10 +1,7 @@
 import { InferComponentProps } from "@pluv-internal/typings";
 import tw from "twin.macro";
 
-export type MdxBlockQuoteProps = Omit<
-    InferComponentProps<typeof MdxBlockQuote>,
-    "ref"
->;
+export type MdxBlockQuoteProps = Omit<InferComponentProps<typeof MdxBlockQuote>, "ref">;
 
 export const MdxBlockQuote = tw.blockquote`
     mb-[1.2em]

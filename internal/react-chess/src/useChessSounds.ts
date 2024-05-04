@@ -2,8 +2,7 @@ import { useAudio } from "@pluv-internal/react-hooks";
 import type { ReactElement } from "react";
 import { useMemo } from "react";
 
-const ASSET_BASE_PREFIX =
-    "https://raw.githubusercontent.com/pluv-io/pluv/master/assets/";
+const ASSET_BASE_PREFIX = "https://raw.githubusercontent.com/pluv-io/pluv/master/assets/";
 
 export interface SoundControls {
     element: ReactElement;

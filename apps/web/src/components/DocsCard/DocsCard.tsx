@@ -8,7 +8,7 @@ const Root = tw(Paper)`
     items-stretch
     gap-3
     p-4
-    rounded-xl
+    rounded-lg
 `;
 
 const Title = tw.h2`
@@ -29,17 +29,13 @@ export interface DocsCardProps {
     title: string;
 }
 
-export const DocsCard: FC<DocsCardProps> = ({
-    className,
-    description,
-    href,
-    style,
-    title,
-}) => {
+export const DocsCard: FC<DocsCardProps> = ({ className, description, href, style, title }) => {
     return (
-        <Root as={NextLink} className={className} href={href} style={style}>
-            <Title>📄️ {title}</Title>
-            {!!description && <Description>{description}</Description>}
-        </Root>
+        <NextLink className={className} href={href} style={style}>
+            <Root>
+                <Title>📄️ {title}</Title>
+                {!!description && <Description>{description}</Description>}
+            </Root>
+        </NextLink>
     );
 };

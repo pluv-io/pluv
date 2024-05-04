@@ -55,19 +55,13 @@ export interface ChessMoveHistoryProps {
     style?: CSSProperties;
 }
 
-export const ChessMoveHistory: FC<ChessMoveHistoryProps> = ({
-    className,
-    history,
-    style,
-}) => {
+export const ChessMoveHistory: FC<ChessMoveHistoryProps> = ({ className, history, style }) => {
     const turns: readonly MoveTurn[] = useMemo(() => {
         return history.reduce<MoveTurn[]>((acc, move, i) => {
             const lastWhite = acc.slice(-1)?.[0]?.[0] ?? null;
             const isWhiteTurn = !(i % 2);
 
-            return isWhiteTurn
-                ? [...acc, [move, null]]
-                : [...acc.slice(0, -1), [lastWhite, move]];
+            return isWhiteTurn ? [...acc, [move, null]] : [...acc.slice(0, -1), [lastWhite, move]];
         }, []);
     }, [history]);
 

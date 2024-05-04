@@ -4,9 +4,7 @@ import type { CrdtLoroDoc } from "../doc/CrdtLoroDoc";
 import { cloneType, getLoroContainerType, isWrapper } from "../shared";
 import type { InferLoroJson } from "../types";
 
-export class CrdtLoroObject<
-    T extends Record<string, any>,
-> extends AbstractCrdtType<LoroMap<T>, InferLoroJson<T>> {
+export class CrdtLoroObject<T extends Record<string, any>> extends AbstractCrdtType<LoroMap<T>, InferLoroJson<T>> {
     public readonly initialValue: readonly (readonly [key: string, value: T])[];
 
     private _doc: CrdtLoroDoc<any> | null = null;
@@ -16,9 +14,7 @@ export class CrdtLoroObject<
     constructor(value: T) {
         super();
 
-        this.initialValue = Object.entries(value).map(
-            ([k, v]) => [k, v] as [key: string, value: T],
-        );
+        this.initialValue = Object.entries(value).map(([k, v]) => [k, v] as [key: string, value: T]);
     }
 
     public set doc(doc: CrdtLoroDoc<any>) {

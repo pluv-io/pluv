@@ -8,11 +8,7 @@ import { CrdtYjsXmlText } from "../xmlText";
 
 export const isWrapper = (
     item: any,
-): item is
-    | CrdtYjsArray<any>
-    | CrdtYjsMap<any>
-    | CrdtYjsObject<any>
-    | CrdtYjsText => {
+): item is CrdtYjsArray<any> | CrdtYjsMap<any> | CrdtYjsObject<any> | CrdtYjsText => {
     return (
         item instanceof CrdtYjsArray ||
         item instanceof CrdtYjsMap ||

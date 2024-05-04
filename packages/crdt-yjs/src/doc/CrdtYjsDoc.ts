@@ -27,9 +27,7 @@ import { CrdtYjsXmlElement } from "../xmlElement/CrdtYjsXmlElement";
 import { CrdtYjsXmlFragment } from "../xmlFragment/CrdtYjsXmlFragment";
 import { CrdtYjsXmlText } from "../xmlText/CrdtYjsXmlText";
 
-export class CrdtYjsDoc<
-    TStorage extends Record<string, AbstractCrdtType<any, any>>,
-> extends AbstractCrdtDoc<TStorage> {
+export class CrdtYjsDoc<TStorage extends Record<string, AbstractCrdtType<any, any>>> extends AbstractCrdtDoc<TStorage> {
     public value: YDoc = new YDoc();
 
     private _storage: TStorage;
@@ -80,10 +78,7 @@ export class CrdtYjsDoc<
             }
 
             if (node instanceof CrdtYjsXmlElement) {
-                const yXmlElement = this.value.get(
-                    key,
-                    YXmlElement,
-                ) as YXmlElement;
+                const yXmlElement = this.value.get(key, YXmlElement) as YXmlElement;
                 yXmlElement.insert(0, node.initialValue.slice(0));
 
                 node.value = yXmlElement;
@@ -92,10 +87,7 @@ export class CrdtYjsDoc<
             }
 
             if (node instanceof CrdtYjsXmlFragment) {
-                const yXmlFragment = this.value.get(
-                    key,
-                    YXmlFragment,
-                ) as YXmlFragment;
+                const yXmlFragment = this.value.get(key, YXmlFragment) as YXmlFragment;
                 yXmlFragment.insert(0, node.initialValue.slice(0));
 
                 node.value = yXmlFragment;
@@ -121,47 +113,33 @@ export class CrdtYjsDoc<
 
         if (update === null || typeof update === "undefined") return this;
 
-        const uint8Update =
-            typeof update === "string" ? toUint8Array(update) : update;
+        const uint8Update = typeof update === "string" ? toUint8Array(update) : update;
 
         applyUpdate(this.value, uint8Update, origin);
 
         return this;
     }
 
-    public batchApplyEncodedState(
-        updates: readonly (
-            | DocApplyEncodedStateParams
-            | string
-            | null
-            | undefined
-        )[],
-    ): this {
-        const params = updates.reduce<DocApplyEncodedStateParams[]>(
-            (acc, update) => {
-                if (!update) return acc;
+    public batchApplyEncodedState(updates: readonly (DocApplyEncodedStateParams | string | null | undefined)[]): this {
+        const params = updates.reduce<DocApplyEncodedStateParams[]>((acc, update) => {
+            if (!update) return acc;
 
-                if (typeof update === "string") {
-                    acc.push({ update });
-
-                    return acc;
-                }
-
-                if (!!update && typeof update === "object") {
-                    acc.push(update);
-
-                    return acc;
-                }
+            if (typeof update === "string") {
+                acc.push({ update });
 
                 return acc;
-            },
-            [],
-        );
+            }
 
-        return params.reduce(
-            (doc, update) => doc.applyEncodedState(update),
-            this,
-        );
+            if (!!update && typeof update === "object") {
+                acc.push(update);
+
+                return acc;
+            }
+
+            return acc;
+        }, []);
+
+        return params.reduce((doc, update) => doc.applyEncodedState(update), this);
     }
 
     public canRedo(): boolean {
@@ -179,9 +157,7 @@ export class CrdtYjsDoc<
 
     public get(key?: undefined): TStorage;
     public get<TKey extends keyof TStorage>(key: TKey): TStorage[TKey];
-    public get<TKey extends keyof TStorage>(
-        key?: TKey,
-    ): TStorage | TStorage[TKey] {
+    public get<TKey extends keyof TStorage>(key?: TKey): TStorage | TStorage[TKey] {
         if (typeof key === "undefined") return this._storage;
 
         return this._storage[key as TKey];
@@ -201,9 +177,7 @@ export class CrdtYjsDoc<
         return this;
     }
 
-    public subscribe(
-        listener: (params: DocSubscribeCallbackParams<TStorage>) => void,
-    ): () => void {
+    public subscribe(listener: (params: DocSubscribeCallbackParams<TStorage>) => void): () => void {
         const fn = (update: Uint8Array, origin: any, doc: YDoc) => {
             listener({
                 doc: this,
@@ -223,9 +197,7 @@ export class CrdtYjsDoc<
     public track(): this {
         if (this._undoManager) this._undoManager.destroy();
 
-        const sharedTypes = Object.values(this._storage).reduce<
-            YAbstractType<any>[]
-        >((acc, type) => {
+        const sharedTypes = Object.values(this._storage).reduce<YAbstractType<any>[]>((acc, type) => {
             if (
                 type instanceof CrdtYjsArray ||
                 type instanceof CrdtYjsMap ||

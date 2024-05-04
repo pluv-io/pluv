@@ -131,9 +131,7 @@ export const HomeHero = memo<HomeHeroProps>(({ className, style }) => {
                         priority
                         src="/static/jpg/rainfall-background.jpg"
                     />
-                    {showRainfall && (
-                        <HomeHeroRainfall className="absolute inset-0" />
-                    )}
+                    {showRainfall && <HomeHeroRainfall className="absolute inset-0" />}
                 </RainfallContainer>
             </RainfallAbsoluteContainer>
             <RadialBackground />
@@ -149,8 +147,7 @@ export const HomeHero = memo<HomeHeroProps>(({ className, style }) => {
                     </Line>
                 </TagLine>
                 <Info as="h2">
-                    Multiplayer APIs <PoweredBy>powered-by</PoweredBy>{" "}
-                    TypeScript inference end-to-end
+                    Multiplayer APIs <PoweredBy>powered-by</PoweredBy> TypeScript inference end-to-end
                 </Info>
             </Contents>
         </Root>

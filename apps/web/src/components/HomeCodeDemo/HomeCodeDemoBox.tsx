@@ -71,48 +71,46 @@ export interface HomeCodeDemoBoxProps {
     user?: string | null;
 }
 
-export const HomeCodeDemoBox = forwardRef<HTMLDivElement, HomeCodeDemoBoxProps>(
-    (props, ref) => {
-        const {
-            className,
-            id,
-            onSelect,
-            position: { x, y },
-            selected,
-            style,
-            user,
-        } = props;
+export const HomeCodeDemoBox = forwardRef<HTMLDivElement, HomeCodeDemoBoxProps>((props, ref) => {
+    const {
+        className,
+        id,
+        onSelect,
+        position: { x, y },
+        selected,
+        style,
+        user,
+    } = props;
 
-        const { attributes, isDragging, listeners, setNodeRef } = useDraggable({
-            id,
-        });
+    const { attributes, isDragging, listeners, setNodeRef } = useDraggable({
+        id,
+    });
 
-        return (
-            <Root className={className} style={style}>
-                <Box
-                    ref={composeRefs<HTMLDivElement>(ref, setNodeRef)}
-                    {...attributes}
-                    {...listeners}
-                    onMouseDown={() => {
-                        onSelect?.();
-                    }}
-                    role="none"
-                    style={{
-                        transform: `translate3d(${x}px, ${y}px, 0)`,
-                    }}
-                    data-selected={isDragging}
-                >
-                    {!!user && (
-                        <User>
-                            <UserName>{user}</UserName>
-                            <UserBackground />
-                        </User>
-                    )}
-                    {selected && <Selection />}
-                </Box>
-            </Root>
-        );
-    },
-);
+    return (
+        <Root className={className} style={style}>
+            <Box
+                ref={composeRefs<HTMLDivElement>(ref, setNodeRef)}
+                {...attributes}
+                {...listeners}
+                onMouseDown={() => {
+                    onSelect?.();
+                }}
+                role="none"
+                style={{
+                    transform: `translate3d(${x}px, ${y}px, 0)`,
+                }}
+                data-selected={isDragging}
+            >
+                {!!user && (
+                    <User>
+                        <UserName>{user}</UserName>
+                        <UserBackground />
+                    </User>
+                )}
+                {selected && <Selection />}
+            </Box>
+        </Root>
+    );
+});
 
 HomeCodeDemoBox.displayName = "HomeCodeDemoBox";

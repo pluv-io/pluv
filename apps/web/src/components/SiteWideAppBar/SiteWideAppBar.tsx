@@ -1,11 +1,4 @@
-import {
-    Anchor,
-    AppBar,
-    Button,
-    LogoIcon,
-    NextLink,
-    SideDrawer,
-} from "@pluv-internal/react-components";
+import { Anchor, AnchorButton, AppBar, Button, LogoIcon, NextLink, SideDrawer } from "@pluv-internal/react-components";
 import { BarsIcon, GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
 import { useRouter } from "next/router";
 import { CSSProperties, memo, useState } from "react";
@@ -122,27 +115,16 @@ export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
                         <PluvName>pluv.io</PluvName>
                     </Logo>
                     <LinksContainer>
-                        <Link
-                            href="/docs/introduction"
-                            data-selected={
-                                router.pathname === "/docs/introduction"
-                            }
-                        >
+                        <Link href="/docs/introduction" data-selected={router.pathname === "/docs/introduction"}>
                             Docs
                         </Link>
-                        <Link
-                            href="/docs/quickstart"
-                            data-selected={
-                                router.pathname === "/docs/quickstart"
-                            }
-                        >
+                        <Link href="/docs/quickstart" data-selected={router.pathname === "/docs/quickstart"}>
                             Quickstart
                         </Link>
                     </LinksContainer>
                 </LeftContainer>
                 <RightContainer>
-                    <Button
-                        as={NextLink}
+                    <AnchorButton
                         href="https://github.com/pluv-io/pluv"
                         outlined
                         rel="noreferrer noopener"
@@ -152,9 +134,8 @@ export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
                         aria-label="GitHub"
                     >
                         <GitHubIcon height={24} width={24} />
-                    </Button>
-                    <Button
-                        as={NextLink}
+                    </AnchorButton>
+                    <AnchorButton
                         href="https://www.npmjs.com/package/@pluv/io"
                         outlined
                         rel="noreferrer noopener"
@@ -164,7 +145,7 @@ export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
                         aria-label="npm"
                     >
                         <NpmIcon height={24} width={24} />
-                    </Button>
+                    </AnchorButton>
                 </RightContainer>
             </Content>
         </Root>

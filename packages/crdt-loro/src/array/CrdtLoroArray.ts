@@ -4,10 +4,7 @@ import type { CrdtLoroDoc } from "../doc/CrdtLoroDoc";
 import { cloneType, getLoroContainerType, isWrapper } from "../shared";
 import type { InferLoroJson } from "../types";
 
-export class CrdtLoroArray<T extends unknown> extends AbstractCrdtType<
-    LoroList<T[]>,
-    InferLoroJson<T>[]
-> {
+export class CrdtLoroArray<T extends unknown> extends AbstractCrdtType<LoroList<T[]>, InferLoroJson<T>[]> {
     public readonly initialValue: T[] | readonly T[];
 
     private _doc: CrdtLoroDoc<any> | null = null;
@@ -68,10 +65,7 @@ export class CrdtLoroArray<T extends unknown> extends AbstractCrdtType<
             }
 
             const containerType = getLoroContainerType(item);
-            const container = this.value.insertContainer(
-                index + i,
-                containerType,
-            );
+            const container = this.value.insertContainer(index + i, containerType);
 
             cloneType({ source: item, target: container as any });
             if (this._doc) item.doc = this._doc;

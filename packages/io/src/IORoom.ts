@@ -56,11 +56,7 @@ interface IORoomListeners<TPlatform extends AbstractPlatform> {
 
 export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<
-        any,
-        any,
-        InferPlatformRoomContextType<TPlatform>
-    > = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
@@ -71,14 +67,7 @@ export type IORoomConfig<
     context: TContext & InferPlatformRoomContextType<TPlatform>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug: boolean;
-    events: InferEventConfig<
-        TPlatform,
-        TContext,
-        TInput,
-        TOutputBroadcast,
-        TOutputSelf,
-        TOutputSync
-    >;
+    events: InferEventConfig<TPlatform, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>;
     platform: TPlatform;
 };
 
@@ -94,21 +83,15 @@ export type WebsocketRegisterOptions<TPlatform extends AbstractPlatform> = {
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<
-        any,
-        any,
-        InferPlatformRoomContextType<TPlatform>
-    > = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
     TOutputSelf extends EventRecord<string, any> = {},
     TOutputSync extends EventRecord<string, any> = {},
-> implements
-        IOLike<TAuthorize, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>
+> implements IOLike<TAuthorize, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>
 {
-    private readonly _context: TContext &
-        InferPlatformRoomContextType<TPlatform>;
+    private readonly _context: TContext & InferPlatformRoomContextType<TPlatform>;
     private readonly _debug: boolean;
     private readonly _docFactory: AbstractCrdtDocFactory<any>;
     private readonly _platform: TPlatform;
@@ -119,38 +102,15 @@ export class IORoom<
     private _uninitialize: (() => Promise<void>) | null = null;
 
     readonly _authorize: TAuthorize | null = null;
-    readonly _events: InferEventConfig<
-        TPlatform,
-        TContext,
-        TInput,
-        TOutputBroadcast,
-        TOutputSelf,
-        TOutputSync
-    >;
+    readonly _events: InferEventConfig<TPlatform, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>;
 
     readonly id: string;
 
     constructor(
         id: string,
-        config: IORoomConfig<
-            TPlatform,
-            TAuthorize,
-            TContext,
-            TInput,
-            TOutputBroadcast,
-            TOutputSelf,
-            TOutputSync
-        >,
+        config: IORoomConfig<TPlatform, TAuthorize, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>,
     ) {
-        const {
-            authorize,
-            context,
-            crdt = noop,
-            debug,
-            events,
-            onDestroy,
-            platform,
-        } = config;
+        const { authorize, context, crdt = noop, debug, events, onDestroy, platform } = config;
 
         this._context = context;
         this._debug = debug;
@@ -189,9 +149,7 @@ export class IORoom<
         return Array.from(this._sessions.values()).reduce((count, session) => {
             if (session.quit) return count;
 
-            return currentTime - session.timers.ping > PING_TIMEOUT_MS
-                ? count
-                : count + 1;
+            return currentTime - session.timers.ping > PING_TIMEOUT_MS ? count : count + 1;
         }, 0);
     }
 
@@ -200,9 +158,8 @@ export class IORoom<
         options: WebsocketRegisterOptions<TPlatform>,
     ): Promise<void> {
         const { token, ..._platformEventContext } = options;
-        const platformEventContext =
-            _platformEventContext as InferPlatformRoomContextType<TPlatform> &
-                InferPlatformEventContextType<TPlatform>;
+        const platformEventContext = _platformEventContext as InferPlatformRoomContextType<TPlatform> &
+            InferPlatformEventContextType<TPlatform>;
 
         if (!this._uninitialize) await this._initialize();
 
@@ -215,11 +172,7 @@ export class IORoom<
             userId: user?.id ?? null,
         });
 
-        this._logDebug(
-            `${colors.blue(
-                `Registering connection for room ${this.id}:`,
-            )} ${sessionId}`,
-        );
+        this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)} ${sessionId}`);
 
         const uninitializeWs = await pluvWs.initialize();
         const ioAuthorize = this._getIOAuthorize(options);
@@ -227,17 +180,10 @@ export class IORoom<
         const isUnauthorized = !!ioAuthorize?.required && !user;
         // There is an attempt for multiple of the same identities. Probably malicious.
         const isTokenInUse =
-            !!user &&
-            Array.from(this._sessions.values()).some(
-                (session) => session.user?.id === user.id,
-            );
+            !!user && Array.from(this._sessions.values()).some((session) => session.user?.id === user.id);
 
         if (isUnauthorized || isTokenInUse) {
-            this._logDebug(
-                `${colors.blue(
-                    "Authorization failed for connection:",
-                )} ${sessionId}`,
-            );
+            this._logDebug(`${colors.blue("Authorization failed for connection:")} ${sessionId}`);
 
             pluvWs.handleError({ error: new Error("Not authorized") });
             pluvWs.close(3000, "WebSocket unauthorized.");
@@ -260,16 +206,10 @@ export class IORoom<
 
         this._sessions.set(session.id, session);
 
-        await this._platform.persistance.addUser(
-            this.id,
-            sessionId,
-            user ?? {},
-        );
+        await this._platform.persistance.addUser(this.id, sessionId, user ?? {});
 
         const onClose = this._onClose(session, uninitializeWs).bind(this);
-        const onMessage = this._onMessage(session, platformEventContext).bind(
-            this,
-        );
+        const onMessage = this._onMessage(session, platformEventContext).bind(this);
 
         pluvWs.addEventListener("close", onClose);
         pluvWs.addEventListener("error", onClose);
@@ -277,11 +217,7 @@ export class IORoom<
 
         this._emitRegistered(session);
 
-        this._logDebug(
-            `${colors.blue(
-                `Registered connection for room ${this.id}:`,
-            )} ${sessionId}`,
-        );
+        this._logDebug(`${colors.blue(`Registered connection for room ${this.id}:`)} ${sessionId}`);
 
         const size = this.getSize();
 
@@ -295,9 +231,7 @@ export class IORoom<
         const sender = senderId ? this._sessions.get(senderId) : null;
 
         const quitters = Array.from(this._sessions.values()).filter(
-            (session) =>
-                session.quit ||
-                currentTime - session.timers.ping > PING_TIMEOUT_MS,
+            (session) => session.quit || currentTime - session.timers.ping > PING_TIMEOUT_MS,
         );
 
         quitters.forEach((session) => {
@@ -370,9 +304,7 @@ export class IORoom<
         }
 
         if (payload.room !== this.id) {
-            this._logDebug(
-                colors.blue(`Token is not authorized for room ${this.id}:`),
-            );
+            this._logDebug(colors.blue(`Token is not authorized for room ${this.id}:`));
             this._logDebug(colors.blue("Received:"), payload.room);
             this._logDebug(token);
 
@@ -382,9 +314,7 @@ export class IORoom<
         try {
             return ioAuthorize.user.parse(payload.user) ?? null;
         } catch {
-            this._logDebug(
-                `${colors.blue("Token fails validation:")} ${token}`,
-            );
+            this._logDebug(`${colors.blue("Token fails validation:")} ${token}`);
 
             return null;
         }
@@ -392,22 +322,11 @@ export class IORoom<
 
     private _getEventConfig(
         message: EventMessage<string, any>,
-    ):
-        | InferEventConfig<
-              TPlatform,
-              TContext,
-              TInput,
-              TOutputBroadcast,
-              TOutputSelf,
-              TOutputSync
-          >[keyof TInput]
-        | null {
+    ): InferEventConfig<TPlatform, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>[keyof TInput] | null {
         return this._events[message.type as keyof TInput] ?? null;
     }
 
-    private _getEventInputs(
-        message: EventMessage<string, any>,
-    ): TInput[string] {
+    private _getEventInputs(message: EventMessage<string, any>): TInput[string] {
         const eventConfig = this._getEventConfig(message);
 
         if (!eventConfig) return message.data;
@@ -420,45 +339,26 @@ export class IORoom<
          * @author leedavidcs
          * @date September 25, 2022
          */
-        return eventConfig.input
-            ? (eventConfig.input.parse(message.data) as TInput[string])
-            : message.data;
+        return eventConfig.input ? (eventConfig.input.parse(message.data) as TInput[string]) : message.data;
     }
 
     private _getEventResolverObject(
         message: EventMessage<string, any>,
-    ): EventResolverObject<
-        TPlatform,
-        TContext,
-        TInput[string],
-        TOutputBroadcast,
-        TOutputSelf,
-        TOutputSync
-    > {
+    ): EventResolverObject<TPlatform, TContext, TInput[string], TOutputBroadcast, TOutputSelf, TOutputSync> {
         const eventConfig = this._getEventConfig(message);
 
         if (!eventConfig) return {};
 
         const resolver:
             | EventResolver<
-                  TContext &
-                      InferPlatformRoomContextType<TPlatform> &
-                      InferPlatformEventContextType<TPlatform>,
+                  TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
                   TInput[string],
                   TOutputBroadcast
               >
-            | EventResolverObject<
-                  TPlatform,
-                  TContext,
-                  TInput[string],
-                  TOutputBroadcast,
-                  TOutputSelf,
-                  TOutputSync
-              > = eventConfig.resolver;
+            | EventResolverObject<TPlatform, TContext, TInput[string], TOutputBroadcast, TOutputSelf, TOutputSync> =
+            eventConfig.resolver;
 
-        return typeof resolver === "function"
-            ? { broadcast: resolver }
-            : { ...resolver };
+        return typeof resolver === "function" ? { broadcast: resolver } : { ...resolver };
     }
 
     private async _initialize(): Promise<void> {
@@ -470,17 +370,14 @@ export class IORoom<
             this._uninitialize = null;
         }
 
-        const pubSubId = await this._platform.pubSub.subscribe(
-            this.id,
-            ({ options = {}, ...message }) => {
-                const session = {
-                    id: message.connectionId,
-                    user: message.user,
-                };
+        const pubSubId = await this._platform.pubSub.subscribe(this.id, ({ options = {}, ...message }) => {
+            const session = {
+                id: message.connectionId,
+                user: message.user,
+            };
 
-                this._sendMessage(message, session, options);
-            },
-        );
+            this._sendMessage(message, session, options);
+        });
 
         this._uninitialize = async () => {
             this._platform.pubSub.unsubscribe(pubSubId);
@@ -504,50 +401,35 @@ export class IORoom<
         this._debug && console.log(...data);
     }
 
-    private _onClose(
-        session: WebSocketSession,
-        callback?: () => void,
-    ): () => void {
+    private _onClose(session: WebSocketSession, callback?: () => void): () => void {
         return (): void => {
             if (!this._uninitialize) return;
 
             session.quit = true;
 
-            this._logDebug(
-                `${colors.blue(
-                    `(Unregistering connection for room ${this.id}:`,
-                )} ${session.id}`,
-            );
+            this._logDebug(`${colors.blue(`(Unregistering connection for room ${this.id}:`)} ${session.id}`);
             this._sessions.delete(session.id);
 
-            this._platform.persistance
-                .deleteUser(this.id, session.id)
-                .finally(() => {
-                    this._broadcast({
-                        message: {
-                            type: "$EXIT",
-                            data: { sessionId: session.id },
-                        },
-                        senderId: session.id,
-                    });
-
-                    callback?.();
-
-                    const size = this.getSize();
-
-                    this._logDebug(
-                        `${colors.blue(
-                            `Unregistered connection for room ${this.id}:`,
-                        )} ${session.id}`,
-                    );
-                    this._logDebug(
-                        `${colors.blue(`Room ${this.id} size:`)} ${size}`,
-                    );
-
-                    if (size) return;
-
-                    this._uninitialize?.();
+            this._platform.persistance.deleteUser(this.id, session.id).finally(() => {
+                this._broadcast({
+                    message: {
+                        type: "$EXIT",
+                        data: { sessionId: session.id },
+                    },
+                    senderId: session.id,
                 });
+
+                callback?.();
+
+                const size = this.getSize();
+
+                this._logDebug(`${colors.blue(`Unregistered connection for room ${this.id}:`)} ${session.id}`);
+                this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
+
+                if (size) return;
+
+                this._uninitialize?.();
+            });
         };
     }
 
@@ -593,9 +475,7 @@ export class IORoom<
             }
 
             const extendedContext: EventResolverContext<
-                TContext &
-                    InferPlatformRoomContextType<TPlatform> &
-                    InferPlatformEventContextType<TPlatform>
+                TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>
             > = {
                 ...baseContext,
                 context: { ...this._context, ...platformEventContext },
@@ -638,9 +518,7 @@ export class IORoom<
         };
     }
 
-    private _parseMessage(message: {
-        data: string | ArrayBuffer;
-    }): EventMessage<string, any> | null {
+    private _parseMessage(message: { data: string | ArrayBuffer }): EventMessage<string, any> | null {
         try {
             const parsed = this._platform.parseData(message.data);
 
@@ -703,10 +581,7 @@ export class IORoom<
         });
     }
 
-    private _sendSelfMessage(
-        message: EventMessage<string, any>,
-        sender: SendMessageSender | null,
-    ): void {
+    private _sendSelfMessage(message: EventMessage<string, any>, sender: SendMessageSender | null): void {
         const senderId = sender?.id;
 
         if (!senderId) return;
@@ -723,10 +598,7 @@ export class IORoom<
         });
     }
 
-    private _sendSyncMessage(
-        message: EventMessage<string, any>,
-        sender: SendMessageSender | null,
-    ): void {
+    private _sendSyncMessage(message: EventMessage<string, any>, sender: SendMessageSender | null): void {
         const senderId = sender?.id;
 
         if (!senderId) return;

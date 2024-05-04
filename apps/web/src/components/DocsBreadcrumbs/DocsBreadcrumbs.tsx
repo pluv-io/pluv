@@ -27,9 +27,7 @@ export const DocsBreadcrumbs = memo<DocsBreadcrumbsProps>((props) => {
     const getName = useCallback((slugs: string[]): string | null => {
         const [head, ...tail] = slugs;
 
-        const path = [head, ...tail.map((part) => `[${part}]`)].join(
-            "[children]",
-        );
+        const path = [head, ...tail.map((part) => `[${part}]`)].join("[children]");
 
         return get(routes, `${path}[name]`) ?? null;
     }, []);
@@ -43,11 +41,7 @@ export const DocsBreadcrumbs = memo<DocsBreadcrumbsProps>((props) => {
                 const parts = slugs.slice(0, i + 1);
 
                 return (
-                    <Breadcrumbs.Item
-                        key={slug}
-                        href={`/docs/${parts.join("/")}`}
-                        selected={i === slugs.length - 1}
-                    >
+                    <Breadcrumbs.Item key={slug} href={`/docs/${parts.join("/")}`} selected={i === slugs.length - 1}>
                         {getName(parts)}
                     </Breadcrumbs.Item>
                 );

@@ -1,16 +1,34 @@
 import type { InferComponentProps } from "@pluv-internal/typings";
-import tw from "twin.macro";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
+import { forwardRef } from "react";
 
-export type FooterProps = InferComponentProps<typeof Footer>;
+export type FooterProps = InferComponentProps<"footer">;
 
-export const Footer = tw.footer`
-	w-full
-	h-24
-    px-4
-    shadow-lg
-    shadow-indigo-800
-    border-t
-    border-solid
-    border-indigo-700/60
-    bg-zinc-800
-`;
+export const Footer = forwardRef<HTMLElement, FooterProps>((props, ref) => {
+    const { className, ...restProps } = props;
+
+    return (
+        <footer
+            {...restProps}
+            ref={ref}
+            className={cn(
+                oneLine`
+                    mt-auto
+                    h-24
+                    w-full
+                    border-t
+                    border-solid
+                    border-indigo-700/60
+                    bg-zinc-800
+                    px-4
+                    shadow-lg
+                    shadow-indigo-800
+                `,
+                className,
+            )}
+        />
+    );
+});
+
+Footer.displayName = "Footer";

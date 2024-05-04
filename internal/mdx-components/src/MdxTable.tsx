@@ -54,11 +54,7 @@ export interface MdxTableProps {
     style?: CSSProperties;
 }
 
-export const MdxTable = ({
-    children,
-    className,
-    style,
-}: MdxTableProps): ReactElement | null => {
+export const MdxTable = ({ children, className, style }: MdxTableProps): ReactElement | null => {
     return (
         <Root className={className} style={style}>
             <Table>{children}</Table>

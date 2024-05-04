@@ -1,9 +1,6 @@
 import type { FC, ReactNode } from "react";
 import { useContext } from "react";
-import type {
-    CustomPieceFn,
-    CustomPieceFnArgs,
-} from "react-chessboard/dist/chessboard/types";
+import type { CustomPieceFn, CustomPieceFnArgs } from "react-chessboard/dist/chessboard/types";
 import { ChessBoardContext } from "./context";
 
 export const getCustomPiece = (piece: ReactNode): CustomPieceFn => {

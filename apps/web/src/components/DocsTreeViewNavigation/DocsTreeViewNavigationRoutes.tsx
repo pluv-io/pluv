@@ -11,9 +11,13 @@ export interface DocsTreeViewNavigationRoutesProps {
     selected?: boolean;
 }
 
-export const DocsTreeViewNavigationRoutes: FC<
-    DocsTreeViewNavigationRoutesProps
-> = ({ baseRoute = "", level, onClickLink, routes, selected }) => {
+export const DocsTreeViewNavigationRoutes: FC<DocsTreeViewNavigationRoutesProps> = ({
+    baseRoute = "",
+    level,
+    onClickLink,
+    routes,
+    selected,
+}) => {
     const router = useRouter();
 
     const sorted = useMemo(() => {
@@ -37,10 +41,7 @@ export const DocsTreeViewNavigationRoutes: FC<
             .split("/");
     }, [baseRoute, router.asPath]);
 
-    const routeSlug = useMemo(
-        () => router.asPath.split("/")[level + 1],
-        [level, router.asPath],
-    );
+    const routeSlug = useMemo(() => router.asPath.split("/")[level + 1], [level, router.asPath]);
 
     const finalSlug = slugs.at(-1);
 

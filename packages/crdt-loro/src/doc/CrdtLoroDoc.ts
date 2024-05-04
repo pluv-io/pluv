@@ -56,10 +56,7 @@ export class CrdtLoroDoc<
     }
 
     public applyEncodedState(params: DocApplyEncodedStateParams): this {
-        const update =
-            typeof params.update === "string"
-                ? toUint8Array(params.update)
-                : params.update;
+        const update = typeof params.update === "string" ? toUint8Array(params.update) : params.update;
 
         if (!update) return this;
 
@@ -68,14 +65,7 @@ export class CrdtLoroDoc<
         return this;
     }
 
-    public batchApplyEncodedState(
-        updates: readonly (
-            | DocApplyEncodedStateParams
-            | string
-            | null
-            | undefined
-        )[],
-    ): this {
+    public batchApplyEncodedState(updates: readonly (DocApplyEncodedStateParams | string | null | undefined)[]): this {
         const _updates = updates.reduce<Uint8Array[]>((acc, item) => {
             if (!item) return acc;
 
@@ -86,10 +76,7 @@ export class CrdtLoroDoc<
             }
 
             if (typeof item === "object") {
-                const update =
-                    typeof item.update === "string"
-                        ? toUint8Array(item.update)
-                        : item.update;
+                const update = typeof item.update === "string" ? toUint8Array(item.update) : item.update;
 
                 if (!update) return acc;
 
@@ -138,9 +125,7 @@ export class CrdtLoroDoc<
 
     public get(key?: undefined): TStorage;
     public get<TKey extends keyof TStorage>(key: TKey): TStorage[TKey];
-    public get<TKey extends keyof TStorage>(
-        key?: TKey,
-    ): TStorage | TStorage[TKey] {
+    public get<TKey extends keyof TStorage>(key?: TKey): TStorage | TStorage[TKey] {
         if (typeof key === "undefined") return this._storage;
 
         return this._storage[key as TKey];
@@ -171,9 +156,7 @@ export class CrdtLoroDoc<
         throw new Error("This is not yet supported");
     }
 
-    public subscribe(
-        listener: (params: DocSubscribeCallbackParams<TStorage>) => void,
-    ): () => void {
+    public subscribe(listener: (params: DocSubscribeCallbackParams<TStorage>) => void): () => void {
         const fn = (event: LoroEventBatch) => {
             const update = fromUint8Array(this.value.exportFrom());
 
@@ -185,29 +168,23 @@ export class CrdtLoroDoc<
             });
         };
 
-        const subscriptionIds = Object.entries(this._storage).reduce(
-            (map, [key, crdtType]) => {
-                const container = crdtType.value as Container;
-                const subscriptionId = container.subscribe(this.value, fn);
+        const subscriptionIds = Object.entries(this._storage).reduce((map, [key, crdtType]) => {
+            const container = crdtType.value as Container;
+            const subscriptionId = container.subscribe(this.value, fn);
 
-                return map.set(key, subscriptionId);
-            },
-            new Map<string, number>(),
-        );
+            return map.set(key, subscriptionId);
+        }, new Map<string, number>());
 
         return () => {
-            Array.from(subscriptionIds.entries()).forEach(
-                ([key, subscriptionId]) => {
-                    const container = (this._storage[key]?.value ??
-                        null) as Container | null;
+            Array.from(subscriptionIds.entries()).forEach(([key, subscriptionId]) => {
+                const container = (this._storage[key]?.value ?? null) as Container | null;
 
-                    if (!container) {
-                        throw new Error("Storage could not be found");
-                    }
+                if (!container) {
+                    throw new Error("Storage could not be found");
+                }
 
-                    container.unsubscribe(this.value, subscriptionId);
-                },
-            );
+                container.unsubscribe(this.value, subscriptionId);
+            });
         };
     }
 

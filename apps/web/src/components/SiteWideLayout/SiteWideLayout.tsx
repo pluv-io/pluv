@@ -13,6 +13,7 @@ const PluvIOLink = tw(Anchor)`
 const Root = tw.div`
     flex
     flex-col
+    min-h-screen
 `;
 
 const StyledBanner = tw(Banner)`
@@ -43,11 +44,8 @@ export const SiteWideLayout = memo<SiteWideLayoutProps>((props) => {
             {!!SHOW_BANNER && (
                 <StyledBanner>
                     <div>
-                        <PluvIOLink href="https://www.npmjs.com/package/@pluv/io">
-                            pluv.io
-                        </PluvIOLink>{" "}
-                        is in preview! Please wait for a v1.0.0 stable release
-                        before using this in production.
+                        <PluvIOLink href="https://www.npmjs.com/package/@pluv/io">pluv.io</PluvIOLink> is in preview!
+                        Please wait for a v1.0.0 stable release before using this in production.
                     </div>
                 </StyledBanner>
             )}

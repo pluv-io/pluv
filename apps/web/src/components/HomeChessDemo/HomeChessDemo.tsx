@@ -1,20 +1,7 @@
-import {
-    ChessBoard,
-    ChessBoardRef,
-    ChessMoveHistory,
-    LoadingChessBoard,
-} from "@pluv-internal/react-chess";
+import { ChessBoard, ChessBoardRef, ChessMoveHistory, LoadingChessBoard } from "@pluv-internal/react-chess";
 import { yjs } from "@pluv/crdt-yjs";
 import ms from "ms";
-import {
-    CSSProperties,
-    FC,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
+import { CSSProperties, FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import tw, { styled } from "twin.macro";
 import { useStorage } from "../../pluv-io/cloudflare";
 
@@ -128,20 +115,11 @@ export const HomeChessDemo: FC<HomeChessDemoProps> = ({ className, style }) => {
     const [winner, setWinner] = useState<string | null>();
     const chessRef = useRef<ChessBoardRef>();
 
-    const moveHistory = useMemo(
-        () => demo?.chessHistory?.slice() ?? null,
-        [demo],
-    );
+    const moveHistory = useMemo(() => demo?.chessHistory?.slice() ?? null, [demo]);
 
     const onGameOver = useCallback((winner: "b" | "w" | null) => {
         setGameOver(true);
-        setWinner(
-            winner === "b"
-                ? "Black wins!"
-                : winner === "w"
-                  ? "White wins!"
-                  : "Draw",
-        );
+        setWinner(winner === "b" ? "Black wins!" : winner === "w" ? "White wins!" : "Draw");
     }, []);
 
     useEffect(() => {
@@ -169,10 +147,7 @@ export const HomeChessDemo: FC<HomeChessDemoProps> = ({ className, style }) => {
                         id="home-chess"
                         onGameOver={onGameOver}
                         onMove={({ game }) => {
-                            sharedType?.set(
-                                "chessHistory",
-                                yjs.array(game.history()),
-                            );
+                            sharedType?.set("chessHistory", yjs.array(game.history()));
                         }}
                     />
                 ) : (

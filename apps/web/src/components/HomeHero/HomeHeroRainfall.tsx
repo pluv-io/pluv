@@ -6,31 +6,24 @@ export interface HomeHeroRainfallProps {
     style?: CSSProperties;
 }
 
-export const HomeHeroRainfall = memo<HomeHeroRainfallProps>(
-    ({ className, style }) => {
-        const [rainfallElem, rainfallRef] = useState<HTMLDivElement | null>(
-            null,
-        );
-        const [ready, setReady] = useState<boolean>(false);
-        const rainfall = useMemo(
-            () => new Rainfall({ onReady: () => setReady(true) }),
-            [],
-        );
+export const HomeHeroRainfall = memo<HomeHeroRainfallProps>(({ className, style }) => {
+    const [rainfallElem, rainfallRef] = useState<HTMLDivElement | null>(null);
+    const [ready, setReady] = useState<boolean>(false);
+    const rainfall = useMemo(() => new Rainfall({ onReady: () => setReady(true) }), []);
 
-        useEffect(() => {
-            if (!ready) return;
-            if (!rainfallElem) return;
+    useEffect(() => {
+        if (!ready) return;
+        if (!rainfallElem) return;
 
-            rainfall.initialize(rainfallElem);
+        rainfall.initialize(rainfallElem);
 
-            return () => {
-                rainfall.uninitialize();
-            };
-        }, [rainfall, ready, rainfallElem]);
+        return () => {
+            rainfall.uninitialize();
+        };
+    }, [rainfall, ready, rainfallElem]);
 
-        return <div ref={rainfallRef} className={className} style={style} />;
-    },
-);
+    return <div ref={rainfallRef} className={className} style={style} />;
+});
 
 HomeHeroRainfall.displayName = "HomeHeroRainfall";
 

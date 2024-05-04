@@ -6,26 +6,17 @@ export interface DocApplyEncodedStateParams {
     update?: string | Uint8Array;
 }
 
-export interface DocSubscribeCallbackParams<
-    T extends Record<string, AbstractCrdtType<any, any>>,
-> {
+export interface DocSubscribeCallbackParams<T extends Record<string, AbstractCrdtType<any, any>>> {
     doc: AbstractCrdtDoc<T>;
     local: boolean;
     origin?: string | null;
     update: string;
 }
 
-export abstract class AbstractCrdtDoc<
-    T extends Record<string, AbstractCrdtType<any, any>>,
-> {
+export abstract class AbstractCrdtDoc<T extends Record<string, AbstractCrdtType<any, any>>> {
     public abstract applyEncodedState(params: DocApplyEncodedStateParams): this;
     public abstract batchApplyEncodedState(
-        updates: readonly (
-            | DocApplyEncodedStateParams
-            | string
-            | null
-            | undefined
-        )[],
+        updates: readonly (DocApplyEncodedStateParams | string | null | undefined)[],
     ): this;
     public abstract canRedo(): boolean;
     public abstract canUndo(): boolean;
@@ -35,9 +26,7 @@ export abstract class AbstractCrdtDoc<
     public abstract getEncodedState(): string;
     public abstract isEmpty(): boolean;
     public abstract redo(): this;
-    public abstract subscribe(
-        listener: (params: DocSubscribeCallbackParams<T>) => void,
-    ): () => void;
+    public abstract subscribe(listener: (params: DocSubscribeCallbackParams<T>) => void): () => void;
     public abstract toJson(): InferCrdtStorageJson<T>;
     public abstract track(): this;
     public abstract transact(fn: () => void, origin?: string): this;

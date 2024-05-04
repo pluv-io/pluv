@@ -48,16 +48,13 @@ export interface HomeBoxesDemoSectionProps {
     style?: CSSProperties;
 }
 
-export const HomeBoxesDemoSection: FC<HomeBoxesDemoSectionProps> = ({
-    className,
-    style,
-}) => {
+export const HomeBoxesDemoSection: FC<HomeBoxesDemoSectionProps> = ({ className, style }) => {
     return (
         <Root className={className} style={style}>
             <Title as="h2">Simple-to-use APIs</Title>
             <Info as="h3">
-                Configure your server and client to unlock intuitive APIs that
-                allow you to focus on your end-user experience.
+                Configure your server and client to unlock intuitive APIs that allow you to focus on your end-user
+                experience.
             </Info>
             <CodeDemoContainer>
                 <StyledCodeDemo />

@@ -9,11 +9,7 @@ export const useNoSsr = (): NoSsrFunction => {
 
     const noSsr = useCallback(
         <T>(value: T | (() => T), fallback?: T): T | null => {
-            return didMount
-                ? typeof value !== "function"
-                    ? value
-                    : (value as () => T)()
-                : fallback ?? null;
+            return didMount ? (typeof value !== "function" ? value : (value as () => T)()) : fallback ?? null;
         },
         [didMount],
     );

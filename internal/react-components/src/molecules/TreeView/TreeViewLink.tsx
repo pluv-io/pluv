@@ -1,36 +1,8 @@
+import { cn } from "@pluv-internal/utils";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
-import { CSSProperties, FC, MouseEvent, ReactNode } from "react";
-import tw from "twin.macro";
+import { oneLine } from "common-tags";
+import type { CSSProperties, FC, MouseEvent, ReactNode } from "react";
 import { NextLink } from "../../atoms";
-
-const Root = tw(NavigationMenu.Item)`
-    flex
-    flex-col
-    items-stretch
-`;
-
-const Item = tw(NextLink)`
-    flex
-    flex-row
-    items-center
-    h-8
-    px-3
-    rounded
-    text-sm
-    transition-colors
-    duration-150
-    ease-in
-    cursor-pointer
-    text-slate-400
-    hover:bg-slate-300/10
-    hover:text-white
-    focus:bg-slate-300/20
-    focus:text-white
-    active:bg-slate-300/40
-    active:text-white
-    [&[data-selected="true"]]:text-sky-500
-    [&[data-selected="true"]]:bg-slate-300/20
-`;
 
 export interface TreeViewLinkProps {
     children?: ReactNode;
@@ -54,9 +26,31 @@ export const TreeViewLink: FC<TreeViewLinkProps> = ({
     target,
 }) => {
     return (
-        <Root className={className} style={style}>
+        <NavigationMenu.Item className={cn("flex flex-col items-stretch", className)} style={style}>
             <NavigationMenu.Link asChild>
-                <Item
+                <NextLink
+                    className={oneLine`
+                        flex
+                        h-8
+                        cursor-pointer
+                        flex-row
+                        items-center
+                        rounded
+                        px-3
+                        text-sm
+                        text-slate-400
+                        transition-colors
+                        duration-150
+                        ease-in
+                        hover:bg-slate-300/10
+                        hover:text-white
+                        focus:bg-slate-300/20
+                        focus:text-white
+                        active:bg-slate-300/40
+                        active:text-white
+                        [&[data-selected="true"]]:bg-slate-300/20
+                        [&[data-selected="true"]]:text-sky-500
+                    `}
                     href={href}
                     onClick={onClick}
                     rel={rel}
@@ -64,8 +58,8 @@ export const TreeViewLink: FC<TreeViewLinkProps> = ({
                     data-selected={selected}
                 >
                     {children}
-                </Item>
+                </NextLink>
             </NavigationMenu.Link>
-        </Root>
+        </NavigationMenu.Item>
     );
 };
