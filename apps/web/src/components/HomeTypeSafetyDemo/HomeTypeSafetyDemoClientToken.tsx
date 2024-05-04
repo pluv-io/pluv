@@ -3,8 +3,8 @@ import { memo, useCallback, useState } from "react";
 
 export type HomeTypeSafetyDemoClientTokenProps = PrismCodeTokenProps;
 
-export const HomeTypeSafetyDemoClientToken =
-    memo<HomeTypeSafetyDemoClientTokenProps>(({ lineNo, tokenProps }) => {
+export const HomeTypeSafetyDemoClientToken = memo<HomeTypeSafetyDemoClientTokenProps>(
+    ({ lineNo, tokenProps: { key, ...tokenProps } }) => {
         const text = tokenProps.children;
 
         const [open, setOpen] = useState<boolean>(false);
@@ -22,7 +22,7 @@ export const HomeTypeSafetyDemoClientToken =
 
         const padded = text.startsWith(" ");
 
-        if (tokenProps.key === 8 && lineNo === 11) {
+        if (key === 8 && lineNo === 11) {
             return (
                 <CodeTooltip
                     helperText="(property) data: { message: string }"
@@ -46,7 +46,7 @@ export const HomeTypeSafetyDemoClientToken =
             );
         }
 
-        if (tokenProps.key === 13 && lineNo === 12) {
+        if (key === 13 && lineNo === 12) {
             return (
                 <CodeTooltip
                     helperText="(property) data: { message: string }"
@@ -69,7 +69,7 @@ export const HomeTypeSafetyDemoClientToken =
             );
         }
 
-        if (tokenProps.key === 15 && lineNo === 12) {
+        if (key === 15 && lineNo === 12) {
             return (
                 <CodeTooltip
                     helperText="(property) message: string"
@@ -93,7 +93,7 @@ export const HomeTypeSafetyDemoClientToken =
             );
         }
 
-        if (tokenProps.key === 7 && lineNo === 20) {
+        if (key === 7 && lineNo === 20) {
             return (
                 <CodeTooltip
                     helperText="(property) message: string"
@@ -118,6 +118,7 @@ export const HomeTypeSafetyDemoClientToken =
         }
 
         return <span {...tokenProps} />;
-    });
+    },
+);
 
 HomeTypeSafetyDemoClientToken.displayName = "HomeTypeSafetyDemoClientToken";

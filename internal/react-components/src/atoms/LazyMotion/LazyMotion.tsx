@@ -1,5 +1,5 @@
 import { LazyMotion as LazyMotionProvider } from "framer-motion";
-import { FC, ReactNode } from "react";
+import type { FC, ReactNode } from "react";
 
 const loadFeatures = () => import("./features").then((res) => res.default);
 

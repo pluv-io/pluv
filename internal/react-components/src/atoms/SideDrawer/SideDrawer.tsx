@@ -1,8 +1,7 @@
+import { cn } from "@pluv-internal/utils";
 import * as Dialog from "@radix-ui/react-dialog";
-import { CSSProperties, FC, ReactNode } from "react";
-import { keyframes } from "styled-components";
-import tw, { styled } from "twin.macro";
-import { getZIndex } from "../../z-indices";
+import { oneLine } from "common-tags";
+import type { CSSProperties, FC, ReactNode } from "react";
 import { VisuallyHidden } from "../VisuallyHidden";
 import { SideDrawerClose } from "./SideDrawerClose";
 import { SideDrawerRoot } from "./SideDrawerRoot";
@@ -10,70 +9,6 @@ import { SideDrawerTrigger } from "./SideDrawerTrigger";
 
 export type { SideDrawerRootProps } from "./SideDrawerRoot";
 export type { SideDrawerTriggerProps } from "./SideDrawerTrigger";
-
-const backdropShow = keyframes`
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-`;
-
-const Backdrop = styled(Dialog.Overlay)`
-    ${tw`
-        fixed
-        inset-0
-        bg-black
-        backdrop-blur-lg
-    `}
-    animation: ${backdropShow} 0.15s ease-in;
-    z-index: ${getZIndex("backdrop")};
-`;
-
-const rootShow = keyframes`
-    from {
-        transform: translateX(-100%);
-    }
-    to {
-        transform: translateX(0);
-    }
-`;
-
-const rootHide = keyframes`
-    from {
-        transform: translateX(0);
-    }
-    to {
-        transform: translateX(-100%);
-    }
-`;
-
-const Root = styled(Dialog.Content)`
-    ${tw`
-        fixed
-        inset-y-0
-        left-0
-        w-80
-        max-w-[90vw]
-        border-r
-        border-solid
-        border-indigo-700/60
-        shadow-2xl
-        shadow-indigo-800
-        outline-0
-        bg-zinc-800
-    `}
-    z-index: ${getZIndex("side-drawer")};
-
-    &[data-state="open"] {
-        animation: ${rootShow} 0.15s ease-in;
-    }
-
-    &[data-state="closed"] {
-        animation: ${rootHide} 0.15s ease-in;
-    }
-`;
 
 export interface SideDrawerProps {
     children?: ReactNode;
@@ -83,25 +18,48 @@ export interface SideDrawerProps {
     title?: string;
 }
 
-const _SideDrawer: FC<SideDrawerProps> = ({
-    children,
-    className,
-    description,
-    style,
-    title,
-}) => {
+const _SideDrawer: FC<SideDrawerProps> = ({ children, className, description, style, title }) => {
     return (
         <Dialog.Portal>
-            <Backdrop />
-            <Root className={className} style={style}>
+            <Dialog.Overlay
+                className={oneLine`
+                    z-backdrop
+                    fixed
+                    inset-0
+                    animate-[backdropShow_0.15s_ease-in]
+                    bg-black
+                    backdrop-blur-lg
+                `}
+            />
+            <Dialog.Content
+                className={cn(
+                    oneLine`
+                        z-side-drawer
+                        fixed
+                        inset-y-0
+                        left-0
+                        w-80
+                        max-w-[90vw]
+                        border-r
+                        border-solid
+                        border-indigo-700/60
+                        bg-zinc-800
+                        shadow-2xl
+                        shadow-indigo-800
+                        outline-0
+                        data-[state="closed"]:animate-[rootHide_0.15s_ease-in]
+                        data-[state="open"]:animate-[rootShow_0.15s_ease-in]
+                    `,
+                    className,
+                )}
+                style={style}
+            >
                 <VisuallyHidden>
                     {!!title && <Dialog.Title>{title}</Dialog.Title>}
-                    {!!description && (
-                        <Dialog.Description>{description}</Dialog.Description>
-                    )}
+                    {!!description && <Dialog.Description>{description}</Dialog.Description>}
                 </VisuallyHidden>
                 {children}
-            </Root>
+            </Dialog.Content>
         </Dialog.Portal>
     );
 };

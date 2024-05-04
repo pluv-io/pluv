@@ -13,10 +13,9 @@ export interface HomeTypeSafetyDemoClientProps {
     style?: CSSProperties;
 }
 
-export const HomeTypeSafetyDemoClient = memo<HomeTypeSafetyDemoClientProps>(
-    ({ className, style }) => {
-        const template = useMemo(
-            (): string => codeBlock`
+export const HomeTypeSafetyDemoClient = memo<HomeTypeSafetyDemoClientProps>(({ className, style }) => {
+    const template = useMemo(
+        (): string => codeBlock`
                 // client/Room.tsx
 
                 import { useBroadcast, useEvent } from "client/pluv";
@@ -42,36 +41,24 @@ export const HomeTypeSafetyDemoClient = memo<HomeTypeSafetyDemoClientProps>(
                   // return ...
                 };
             `,
-            [],
-        );
+        [],
+    );
 
-        const [
-            ,
-            ,
-            ,
-            { text: inputParam },
-            { text: newMessage },
-            { text: sendMessageInput },
-        ] = useContext(HomeTypeSafetyDemoContext);
+    const [, , , { text: inputParam }, { text: newMessage }, { text: sendMessageInput }] =
+        useContext(HomeTypeSafetyDemoContext);
 
-        const code = useMemo(() => {
-            return template
-                .replace(INPUT_PARAMETER, inputParam)
-                .replace(NEW_MESSAGE, newMessage)
-                .replace(SEND_MESSAGE_INPUT, sendMessageInput);
-        }, [inputParam, newMessage, sendMessageInput, template]);
+    const code = useMemo(() => {
+        return template
+            .replace(INPUT_PARAMETER, inputParam)
+            .replace(NEW_MESSAGE, newMessage)
+            .replace(SEND_MESSAGE_INPUT, sendMessageInput);
+    }, [inputParam, newMessage, sendMessageInput, template]);
 
-        return (
-            <PrismCode
-                className={className}
-                style={style}
-                language="tsx"
-                tokenRenderer={HomeTypeSafetyDemoClientToken}
-            >
-                {code}
-            </PrismCode>
-        );
-    },
-);
+    return (
+        <PrismCode className={className} style={style} language="tsx" tokenRenderer={HomeTypeSafetyDemoClientToken}>
+            {code}
+        </PrismCode>
+    );
+});
 
 HomeTypeSafetyDemoClient.displayName = "HomeTypeSafetyDemoClient";

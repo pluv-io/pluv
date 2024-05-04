@@ -1,10 +1,13 @@
-import { InferComponentProps } from "@pluv-internal/typings";
-import tw from "twin.macro";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import { forwardRef } from "react";
 
-export type PageContainerProps = InferComponentProps<typeof PageContainer>;
+export type PageContainerProps = InferComponentProps<"div">;
 
-export const PageContainer = tw.div`
-	w-full
-	px-2
-	sm:px-4
-`;
+export const PageContainer = forwardRef<HTMLDivElement, PageContainerProps>((props, ref) => {
+    const { className, ...restProps } = props;
+
+    return <div {...restProps} ref={ref} className={cn("w-full px-2 sm:px-4", className)} />;
+});
+
+PageContainer.displayName = "PageContainer";

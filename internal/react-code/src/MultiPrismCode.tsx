@@ -91,9 +91,7 @@ export interface MultiPrismCodeProps<TTab extends string> {
     tabs?: readonly MultiPrismCodeTab<TTab>[];
 }
 
-export const MultiPrismCode = <TTab extends string>(
-    props: MultiPrismCodeProps<TTab>,
-): ReactElement => {
+export const MultiPrismCode = <TTab extends string>(props: MultiPrismCodeProps<TTab>): ReactElement => {
     const { className, style, tabs = [] } = props;
 
     const defaultTab = useMemo((): TTab | undefined => tabs[0]?.name, [tabs]);
@@ -109,9 +107,7 @@ export const MultiPrismCode = <TTab extends string>(
             </TabsList>
             {tabs.map((tab) => (
                 <TabsContent key={tab.name} value={tab.name}>
-                    <StyledPrismCode language={tab.language ?? "tsx"}>
-                        {tab.code}
-                    </StyledPrismCode>
+                    <StyledPrismCode language={tab.language ?? "tsx"}>{tab.code}</StyledPrismCode>
                 </TabsContent>
             ))}
         </Root>

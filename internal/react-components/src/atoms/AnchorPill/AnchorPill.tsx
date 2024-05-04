@@ -2,14 +2,15 @@ import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import { forwardRef } from "react";
+import { NextLink } from "../NextLink";
 
-export type PillProps = InferComponentProps<"div">;
+export type AnchorPillProps = InferComponentProps<typeof NextLink>;
 
-export const Pill = forwardRef<HTMLDivElement, PillProps>((props, ref) => {
+export const AnchorPill = forwardRef<HTMLAnchorElement, AnchorPillProps>((props, ref) => {
     const { className, ...restProps } = props;
 
     return (
-        <div
+        <NextLink
             {...restProps}
             ref={ref}
             className={cn(
@@ -35,4 +36,4 @@ export const Pill = forwardRef<HTMLDivElement, PillProps>((props, ref) => {
     );
 });
 
-Pill.displayName = "Pill";
+AnchorPill.displayName = "AnchorPill";

@@ -1,16 +1,33 @@
-import { InferComponentProps } from "@pluv-internal/typings";
-import tw from "twin.macro";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
+import { forwardRef } from "react";
 
-export type SideBarProps = InferComponentProps<typeof SideBar>;
+export type SideBarProps = InferComponentProps<"aside">;
 
-export const SideBar = tw.aside`
-    sticky
-    inset-y-0
-    left-0
-    w-72
-    max-w-[90vw]
-    max-h-screen
-    border-r
-    border-solid
-    border-indigo-700/60
-`;
+export const SideBar = forwardRef<HTMLElement, SideBarProps>((props, ref) => {
+    const { className, ...restProps } = props;
+
+    return (
+        <aside
+            {...restProps}
+            ref={ref}
+            className={cn(
+                oneLine`
+                    sticky
+                    inset-y-0
+                    left-0
+                    max-h-screen
+                    w-72
+                    max-w-[90vw]
+                    border-r
+                    border-solid
+                    border-indigo-700/60
+                `,
+                className,
+            )}
+        />
+    );
+});
+
+SideBar.displayName = "SideBar";

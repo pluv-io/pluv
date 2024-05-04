@@ -1,5 +1,5 @@
 import { Close } from "@radix-ui/react-dialog";
-import { FC, ReactElement } from "react";
+import type { FC, ReactElement } from "react";
 
 export interface SideDrawerCloseProps {
     children: ReactElement;

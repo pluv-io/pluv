@@ -3,8 +3,7 @@ import tw, { globalStyles } from "twin.macro";
 
 const baseStyles = Object.fromEntries(
     Object.entries(globalStyles).filter(
-        ([prop]) =>
-            prop !== "button, [type='button'], [type='reset'], [type='submit']",
+        ([prop]) => prop !== "button, [type='button'], [type='reset'], [type='submit']",
     ),
 ) as any;
 

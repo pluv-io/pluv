@@ -6,10 +6,7 @@ export interface SeoTitleProps {
     title: string;
 }
 
-export const SeoTitle: FC<SeoTitleProps> = ({
-    postfix = true,
-    title: _title,
-}) => {
+export const SeoTitle: FC<SeoTitleProps> = ({ postfix = true, title: _title }) => {
     const title = postfix ? `${_title} – pluv.io` : _title;
 
     return (

@@ -1,11 +1,4 @@
-const zIndices = [
-    "default",
-    "extra",
-    "footer",
-    "app-bar",
-    "backdrop",
-    "side-drawer",
-] as const;
+const zIndices = ["default", "extra", "footer", "app-bar", "backdrop", "side-drawer"] as const;
 
 export type ZIndexElement = (typeof zIndices)[number];
 

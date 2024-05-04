@@ -13,11 +13,7 @@ export type { SeoTitleProps } from "./SeoTitle";
 
 const OG_TTL = 345600;
 
-export interface SeoProps
-    extends Partial<SeoDescriptionProps>,
-        Partial<SeoImageProps>,
-        SeoMiscProps,
-        SeoTitleProps {}
+export interface SeoProps extends Partial<SeoDescriptionProps>, Partial<SeoImageProps>, SeoMiscProps, SeoTitleProps {}
 
 const _Seo: FC<SeoProps> = ({
     canonical: _canonical,
@@ -38,21 +34,9 @@ const _Seo: FC<SeoProps> = ({
             {!!imageSrc && <SeoImage imageSrc={imageSrc} />}
             <SeoMisc canonical={canonical} ogType={ogType} robots={robots} />
             <NextHead>
-                <meta
-                    key="og:site_name"
-                    content="pluv.io"
-                    property="og:site_name"
-                />
-                <meta
-                    key="og:ttl"
-                    content={OG_TTL.toString()}
-                    property="og:ttl"
-                />
-                <meta
-                    key="twitter:card"
-                    content="summary_large_image"
-                    name="twitter:card"
-                />
+                <meta key="og:site_name" content="pluv.io" property="og:site_name" />
+                <meta key="og:ttl" content={OG_TTL.toString()} property="og:ttl" />
+                <meta key="twitter:card" content="summary_large_image" name="twitter:card" />
             </NextHead>
         </>
     );

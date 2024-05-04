@@ -1,99 +1,10 @@
 import { ChevronDownIcon } from "@pluv-internal/react-icons";
+import { cn } from "@pluv-internal/utils";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
+import { oneLine } from "common-tags";
 import { m } from "framer-motion";
 import { CSSProperties, FC, ReactNode, useState } from "react";
-import tw, { styled } from "twin.macro";
 import { NextLink } from "../../atoms";
-
-const Root = tw(NavigationMenu.Item)`
-    flex
-    flex-col
-    items-stretch
-`;
-
-const ItemContent = styled.button`
-    ${tw`
-        grow
-        flex
-        flex-row
-        items-center
-        px-3
-        font-semibold
-        cursor-pointer
-    `}
-
-    &::before {
-        ${tw`
-            content-[""]
-            absolute
-            inset-0
-            rounded
-            transition-colors
-            duration-150
-            ease-in
-            cursor-pointer
-            bg-slate-300/0
-            pointer-events-none
-        `}
-    }
-
-    ${tw`
-        hover:before:bg-slate-300/10
-        focus:before:bg-slate-300/20
-        active:before:bg-slate-300/40
-    `}
-`;
-
-const Item = styled.div`
-    ${tw`
-        relative
-        flex
-        flex-row
-        items-stretch
-        h-8
-        [&[data-selected="true"]]:text-sky-500
-    `}
-
-    &[data-selected="true"] ${ItemContent} {
-        ${tw`before:bg-slate-300/20`}
-    }
-`;
-
-const StyledIcon = tw(ChevronDownIcon)`
-    -rotate-90
-    transition
-    duration-150
-    ease-linear
-`;
-
-const ChevronButton = styled.button`
-    ${tw`
-        flex
-        items-center
-        justify-center
-        w-8
-        rounded
-        hover:bg-slate-300/10
-        focus:bg-slate-300/20
-        active:bg-slate-300/40
-    `}
-
-    &[aria-expanded="true"] > ${StyledIcon} {
-        ${tw`
-            rotate-0
-        `}
-    }
-`;
-
-const Content = tw(m.ul)`
-    flex
-    flex-col
-    items-stretch
-    gap-0.5
-    mt-0.5
-    pl-3
-    overflow-y-clip
-`;
 
 export interface TreeViewListProps {
     children?: ReactNode;
@@ -116,36 +27,101 @@ export const TreeViewList: FC<TreeViewListProps> = ({
 }) => {
     const [open, setOpen] = useState<boolean>(defaultOpen);
 
+    const childStyle = oneLine`
+        flex
+        grow
+        cursor-pointer
+        flex-row
+        items-center
+        px-3
+        font-semibold
+        before:pointer-events-none
+        before:absolute
+        before:inset-0
+        before:cursor-pointer
+        before:rounded
+        before:bg-slate-300/0
+        before:transition-colors
+        before:duration-150
+        before:ease-in
+        before:content-[""]
+        hover:before:bg-slate-300/10
+        focus:before:bg-slate-300/20
+        active:before:bg-slate-300/40
+    `;
+
     const child = href ? (
         <NavigationMenu.Link asChild>
-            <ItemContent
-                as={NextLink}
+            <NextLink
+                className={childStyle}
                 href={href}
                 onClick={(e) => {
                     e.stopPropagation();
                 }}
             >
                 {children}
-            </ItemContent>
+            </NextLink>
         </NavigationMenu.Link>
     ) : (
-        <ItemContent>{children}</ItemContent>
+        <button className={childStyle} type="button">
+            {children}
+        </button>
     );
 
     return (
-        <Root className={className} style={style}>
-            <Item
+        <NavigationMenu.Item className={cn("flex flex-col items-stretch", className)} style={style}>
+            <div
+                className={oneLine`
+                    relative
+                    flex
+                    h-8
+                    flex-row
+                    items-stretch
+                    [&[data-selected="true"]>:first-child]:before:bg-slate-300/20
+                    [&[data-selected="true"]]:text-sky-500
+                `}
                 onClick={() => {
                     setOpen((oldOpen) => !oldOpen);
                 }}
                 data-selected={selected}
             >
                 {child}
-                <ChevronButton aria-expanded={open || selected}>
-                    <StyledIcon height={24} width={24} />
-                </ChevronButton>
-            </Item>
-            <Content
+                <button
+                    className={oneLine`
+                        flex
+                        w-8
+                        items-center
+                        justify-center
+                        rounded
+                        hover:bg-slate-300/10
+                        focus:bg-slate-300/20
+                        active:bg-slate-300/40
+                        [&[aria-expanded="true"]>:first-child]:rotate-0
+                    `}
+                    aria-expanded={open || selected}
+                >
+                    <ChevronDownIcon
+                        className={oneLine`
+                            -rotate-90
+                            transition
+                            duration-150
+                            ease-linear
+                        `}
+                        height={24}
+                        width={24}
+                    />
+                </button>
+            </div>
+            <m.ul
+                className={oneLine`
+                    mt-0.5
+                    flex
+                    flex-col
+                    items-stretch
+                    gap-0.5
+                    overflow-y-clip
+                    pl-3
+                `}
                 animate={open ? "open" : "default"}
                 initial={false}
                 variants={{
@@ -154,7 +130,7 @@ export const TreeViewList: FC<TreeViewListProps> = ({
                 }}
             >
                 {content}
-            </Content>
-        </Root>
+            </m.ul>
+        </NavigationMenu.Item>
     );
 };

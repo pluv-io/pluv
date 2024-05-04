@@ -1,17 +1,9 @@
+import { cn } from "@pluv-internal/utils";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
-import { CSSProperties, FC, ReactNode } from "react";
-import tw from "twin.macro";
+import type { CSSProperties, FC, ReactNode } from "react";
 import { BreadcrumbsItem } from "./BreadcrumbsItem";
 
 export type { BreadcrumbsItemProps } from "./BreadcrumbsItem";
-
-const Root = tw(NavigationMenu.List)`
-    flex
-    flex-row
-    items-center
-    gap-2
-    text-sm
-`;
 
 export interface BreadcrumbsProps {
     children?: ReactNode;
@@ -22,9 +14,9 @@ export interface BreadcrumbsProps {
 const _Breadcrumbs: FC<BreadcrumbsProps> = ({ children, className, style }) => {
     return (
         <NavigationMenu.Root asChild>
-            <Root className={className} style={style}>
+            <NavigationMenu.List className={cn("flex flex-row items-center gap-2 text-sm", className)} style={style}>
                 {children}
-            </Root>
+            </NavigationMenu.List>
         </NavigationMenu.Root>
     );
 };

@@ -1,27 +1,30 @@
-import { keyframes } from "styled-components";
-import tw, { styled } from "twin.macro";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
+import { forwardRef } from "react";
 
-const blink = keyframes`
-	0% {
-        opacity: 1
-    }
-    50% {
-        opacity: 0
-    }
-    to {
-        opacity: 1
-    }
-`;
+export type TypistCursorProps = InferComponentProps<"span">;
 
-export const TypistCursor = styled.span`
-    ${tw`
-		font-medium
-	`}
-    font-size: 0.84em;
-    opacity: 1;
-    animation: ${blink} 1s linear infinite;
-`;
+export const TypistCursor = forwardRef<HTMLSpanElement, TypistCursorProps>((props, ref) => {
+    const { className, ...restProps } = props;
 
-TypistCursor.defaultProps = {
-    children: "|",
-};
+    return (
+        <span
+            {...restProps}
+            ref={ref}
+            className={cn(
+                oneLine`
+                    animate-[blink_1s_linear_infinite]
+                    text-[0.84em]
+                    font-medium
+                    opacity-100
+                `,
+                className,
+            )}
+        >
+            {"|"}
+        </span>
+    );
+});
+
+TypistCursor.displayName = "TypistCursor";

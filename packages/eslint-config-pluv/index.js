@@ -1,12 +1,8 @@
+const path = require("path");
+
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
-    extends: [
-        "next",
-        "turbo",
-        "plugin:prettier/recommended",
-        "plugin:tailwindcss/recommended",
-        "prettier",
-    ],
+    extends: ["next", "turbo", "plugin:prettier/recommended", "plugin:tailwindcss/recommended", "prettier"],
     parserOptions: {
         babelOptions: {
             presets: [require.resolve("next/babel")],
@@ -15,12 +11,7 @@ module.exports = {
     plugins: ["prettier", "tailwindcss"],
     rules: {
         "@next/next/no-html-link-for-pages": "off",
-        "prettier/prettier": [
-            "warn",
-            {
-                tabWidth: 4,
-            },
-        ],
+        "prettier/prettier": ["warn", { printWidth: 120, tabWidth: 4 }],
         "react/jsx-key": "off",
         "react/self-closing-comp": [
             "warn",
@@ -29,10 +20,18 @@ module.exports = {
                 html: true,
             },
         ],
+        "tailwindcss/classnames-order": [
+            "warn",
+            {
+                callees: ["classnames", "clsx", "cva", "cn"],
+                tags: ["oneLine"],
+            },
+        ],
     },
     settings: {
         tailwindcss: {
-            config: "./tailwindcss.config.js",
+            callees: ["cn"],
+            config: path.join(__dirname, "./tailwind.config.js"),
         },
     },
 };

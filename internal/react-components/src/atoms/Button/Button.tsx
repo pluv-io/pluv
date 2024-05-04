@@ -1,153 +1,102 @@
-import isPropValid from "@emotion/is-prop-valid";
 import type { InferComponentProps } from "@pluv-internal/typings";
-import tw, { styled } from "twin.macro";
+import { cn } from "@pluv-internal/utils";
+import type { VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
+import { oneLine } from "common-tags";
+import { forwardRef } from "react";
 
-export type ButtonVariant =
-    | "alert"
-    | "error"
-    | "primary"
-    | "secondary"
-    | "success";
+export type ButtonVariant = "alert" | "error" | "primary" | "secondary" | "success";
 
-export type ButtonProps = InferComponentProps<typeof Button>;
+export type ButtonProps = InferComponentProps<"button"> & VariantProps<typeof buttonVariants>;
 
-export const Button = styled.button.withConfig({
-    shouldForwardProp(prop) {
-        return isPropValid(prop);
-    },
-})<{
-    bounce?: boolean;
-    outlined?: boolean;
-    size?: "small" | "medium" | "large";
-    square?: boolean;
-    variant?: ButtonVariant;
-}>`
-    ${tw`
-		relative
-		flex
-		items-center
-		justify-center
-		border
-		border-solid
-		border-transparent
-		rounded-md
-		font-semibold
-		cursor-pointer
-		transition
-		duration-150
-		ease-in-out
-		shadow-sm
-		transform
-		disabled:shadow-none
-		disabled:opacity-60
-		disabled:cursor-not-allowed
-		not-disabled:active:shadow-none
-		not-disabled:hover:shadow-md
-		not-disabled:hover:opacity-80
-		disabled:after:absolute
-		disabled:after:inset-0
-		disabled:after:pointer-events-auto
-		disabled:after:cursor-not-allowed
-	`}
-
-    ${({ bounce = true }) => bounce && tw`not-disabled:hover:-translate-y-0.5`}
-
-	${({ outlined, variant = "primary" }) => {
-        switch (variant) {
-            case "alert":
-                return outlined
-                    ? tw`border-pink-600`
-                    : tw`
-                        bg-pink-600
-                        text-white
-                    `;
-            case "error":
-                return outlined
-                    ? tw`border-rose-600`
-                    : tw`
-                        bg-rose-600
-                        text-white
-                    `;
-            case "primary":
-                return outlined
-                    ? tw`border-sky-500`
-                    : tw`
-                        bg-sky-500
-                        text-black
-                    `;
-            case "secondary":
-                return outlined
-                    ? tw`border-amber-400`
-                    : tw`
-                        bg-amber-400
-                        text-black
-                    `;
-            case "success":
-                return outlined
-                    ? tw`border-emerald-500`
-                    : tw`
-                        bg-emerald-500
-                        text-black
-                    `;
-            default:
-                return null;
-        }
-    }}
-
-    ${tw`
-        border-opacity-40
+export const buttonVariants = cva(
+    oneLine`
+        not-disabled:active:shadow-none
+        not-disabled:hover:shadow-md
+        not-disabled:hover:opacity-80
         not-disabled:hover:border-opacity-100
-    `}
+        relative
+        flex
+        transform
+        cursor-pointer
+        items-center
+        justify-center
+        border
+        border-solid
+        border-transparent
+        border-opacity-40
+        font-semibold
+        leading-snug
+        shadow-sm
+        transition
+        duration-150
+        ease-in-out
+        disabled:cursor-not-allowed
+        disabled:opacity-60
+        disabled:shadow-none
+        disabled:after:pointer-events-auto
+        disabled:after:absolute
+        disabled:after:inset-0
+        disabled:after:cursor-not-allowed
+    `,
+    {
+        variants: {
+            bounce: { true: "not-disabled:hover:-translate-y-0.5", false: "" },
+            outlined: { true: "", false: "" },
+            size: {
+                small: "rounded text-base",
+                medium: "rounded-md text-lg",
+                large: "rounded-md text-lg font-bold",
+            },
+            square: { true: "", false: "" },
+            variant: { alert: "", error: "", primary: "", secondary: "", success: "" },
+        },
+        defaultVariants: {
+            bounce: true,
+        },
+        compoundVariants: [
+            { outlined: true, variant: "alert", className: "border-pink-600" },
+            { outlined: false, variant: "alert", className: "bg-pink-600 text-white" },
+            { outlined: true, variant: "error", className: "border-rose-600" },
+            { outlined: false, variant: "error", className: "bg-rose-600 text-white" },
+            { outlined: true, variant: "primary", className: "border-sky-500" },
+            { outlined: false, variant: "primary", className: "bg-sky-500 text-black" },
+            { outlined: true, variant: "secondary", className: "border-amber-400" },
+            { outlined: false, variant: "secondary", className: "bg-amber-400 text-black" },
+            { outlined: true, variant: "success", className: "border-emerald-500" },
+            { outlined: false, variant: "success", className: "bg-emerald-500 text-black" },
+            { size: "small", square: true, className: "p-1" },
+            { size: "small", square: false, className: "px-1.5 py-1" },
+            { size: "medium", square: true, className: "p-2" },
+            { size: "medium", square: false, className: "px-2.5 py-2" },
+            { size: "large", square: true, className: "p-3.5" },
+            { size: "large", square: false, className: "px-4 py-3.5" },
+        ],
+    },
+);
 
-	${({ size = "medium" }) => {
-        switch (size) {
-            case "large":
-                return tw`
-					text-lg
-					font-bold
-				`;
-            case "small":
-                return tw`
-					text-base
-					rounded
-				`;
-            case "medium":
-            default:
-                return tw`text-lg`;
-        }
-    }}
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
+    const {
+        bounce,
+        className,
+        outlined,
+        role = "button",
+        size,
+        square,
+        type = "button",
+        variant,
+        ...restProps
+    } = props;
 
-${({ size = "medium", square }) => {
-        switch (size) {
-            case "large":
-                return square
-                    ? tw`p-3.5`
-                    : tw`
-                        px-4
-                        py-3.5
-                    `;
-            case "small":
-                return square
-                    ? tw`p-1`
-                    : tw`
-                        px-1.5
-                        py-1
-                    `;
-            case "medium":
-            default:
-                return square
-                    ? tw`p-2`
-                    : tw`
-                        px-2.5
-                        py-2
-                    `;
-        }
-    }}
+    return (
+        <button
+            {...restProps}
+            ref={ref}
+            className={cn(buttonVariants({ bounce, outlined, size, square, variant }), className)}
+            role={role}
+            type={type}
+        />
+    );
+});
 
-	${tw`leading-snug`}
-`;
-
-Button.defaultProps = {
-    role: "button",
-    type: "button",
-};
+Button.displayName = "Button";

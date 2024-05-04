@@ -1,0 +1,35 @@
+{
+	"eslint.codeActionsOnSave.mode": "problems",
+	"eslint.workingDirectories": [
+		{ "pattern": "./packages/*/" },
+		{ "pattern": "./apps/*/" }
+	],
+	"[graphql]": {
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": "explicit"
+		},
+	},
+	"[typescript]": {
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": "explicit"
+		},
+	},
+	"[typescriptreact]": {
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": "explicit"
+		},
+	},
+	"eslint.validate": [
+		"graphql",
+		"javascript",
+		"javascriptreact",
+		"typescript",
+		"typescriptreact"
+	],
+	"[graphql][typescript][typescriptreact]": {
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": "explicit"
+		}
+	},
+	"typescript.tsdk": "node_modules/typescript/lib"
+}
