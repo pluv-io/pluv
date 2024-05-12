@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
 import type { MultiPrismCodeProps } from "@pluv-internal/react-code";
 import { MultiPrismCode } from "@pluv-internal/react-code";
+import type { Meta, StoryObj } from "@storybook/react";
 import { codeBlock } from "common-tags";
 
 const DEFAULT_CODE = codeBlock`
@@ -33,10 +33,12 @@ const TAB2 = `
 ${DEFAULT_CODE}
 `.trim();
 
-export default {
+const meta: Meta<typeof MultiPrismCode> = {
     title: "react-code/MultiPrismCode",
     component: MultiPrismCode,
-} as Meta;
+};
+
+export default meta;
 
 type Story = StoryObj<MultiPrismCodeProps<"File1" | "File2">>;
 

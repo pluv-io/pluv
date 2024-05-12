@@ -1,15 +1,5 @@
 module.exports = {
-	"presets": [
-		["next/babel", {
-			"preset-react": {
-				"runtime": "automatic"
-			}
-		}]
-	],
-	"plugins": [
-		"macros",
-		["styled-components", {
-			"ssr": true
-		}]
-	]
+    sourceType: "unambiguous",
+    presets: [["@babel/preset-env", { targets: { chrome: 100 } }], "@babel/preset-react"],
+    plugins: ["macros", ["styled-components", { ssr: true }]],
 };

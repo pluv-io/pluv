@@ -6,7 +6,6 @@
 		"baseUrl": ".",
 		"paths": {
 			"@pluv-apps/server-cloudflare": ["../server-cloudflare/src"],
-			"@pluv-apps/web": ["../web/src"],
 			"@pluv-apps/web/components": ["../web/components"],
 			"@pluv-apps/web/pluv-io": ["../web/pluv-io"],
 			"@pluv-internal/cloudflare-utils": ["../../internal/cloudflare-utils/dist"],
@@ -16,14 +15,12 @@
 			"@pluv-internal/react-components": ["../../internal/react-components/src"],
 			"@pluv-internal/react-hooks": ["../../internal/react-hooks/src"],
 			"@pluv-internal/utils": ["../../internal/utils/src"],
-			"@pluv/authorize": ["../../packages/authorize/dist"],
 			"@pluv/client": ["../../packages/client/dist"],
 			"@pluv/crdt-yjs": ["../../packages/crdt-yjs/dist"],
 			"@pluv/io": ["../../packages/io/dist"],
 			"@pluv/platform-node": ["../../packages/platform-node/dist"],
 			"@pluv/react": ["../../packages/react/dist"],
 			"@pluv/types": ["../../packages/types/dist"],
-			"@storybook/types": ["./node_modules/@storybook/types"],
 			"ws": ["./node_modules/@types/ws"]
 		}
 	}
