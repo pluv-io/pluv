@@ -2,10 +2,12 @@ import type { ChessBoardProps } from "@pluv-internal/react-chess";
 import { ChessBoard } from "@pluv-internal/react-chess";
 import type { Meta, StoryObj } from "@storybook/react";
 
-export default {
+const meta: Meta<typeof ChessBoard> = {
     title: "react-chess/ChessBoard",
     component: ChessBoard,
-} as Meta;
+};
+
+export default meta;
 
 type Story = StoryObj<ChessBoardProps>;
 

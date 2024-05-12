@@ -21,10 +21,12 @@ export const Button: FC<ButtonProps> = ({ children, className, style }) => {
 };
 `;
 
-export default {
+const meta: Meta<typeof PrismCode> = {
     title: "react-code/PrismCode",
     component: PrismCode,
-} as Meta;
+};
+
+export default meta;
 
 type Story = StoryObj<PrismCodeProps>;
 
