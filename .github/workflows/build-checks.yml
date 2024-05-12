@@ -20,7 +20,7 @@ jobs:
           node-version: 18.x
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v3.0.0
+        uses: pnpm/action-setup@v4.0.0
 
       - name: Install Dependencies
         run: pnpm install
