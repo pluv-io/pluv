@@ -67,7 +67,7 @@ export type IORoomConfig<
     context: TContext & InferPlatformRoomContextType<TPlatform>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug: boolean;
-    events: InferEventConfig<TPlatform, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>;
+    events: InferEventConfig<TPlatform, TAuthorize, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>;
     platform: TPlatform;
 };
 
@@ -98,11 +98,19 @@ export class IORoom<
 
     private _doc: AbstractCrdtDoc<any>;
     private _listeners: IORoomListeners<TPlatform>;
-    private _sessions = new Map<string, WebSocketSession>();
+    private _sessions = new Map<string, WebSocketSession<TAuthorize>>();
     private _uninitialize: (() => Promise<void>) | null = null;
 
     readonly _authorize: TAuthorize | null = null;
-    readonly _events: InferEventConfig<TPlatform, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>;
+    readonly _events: InferEventConfig<
+        TPlatform,
+        TAuthorize,
+        TContext,
+        TInput,
+        TOutputBroadcast,
+        TOutputSelf,
+        TOutputSync
+    >;
 
     readonly id: string;
 
@@ -192,7 +200,7 @@ export class IORoom<
         }
 
         const currentTime = new Date().getTime();
-        const session: WebSocketSession = {
+        const session: WebSocketSession<TAuthorize> = {
             id: sessionId,
             presence: null,
             quit: false,
@@ -248,7 +256,7 @@ export class IORoom<
         });
     }
 
-    private _emitQuitters(quitters: readonly WebSocketSession[]): void {
+    private _emitQuitters(quitters: readonly WebSocketSession<TAuthorize>[]): void {
         quitters.forEach((quitter) => {
             this._broadcast({
                 message: {
@@ -260,7 +268,7 @@ export class IORoom<
         });
     }
 
-    private _emitRegistered(session: WebSocketSession): void {
+    private _emitRegistered(session: WebSocketSession<TAuthorize>): void {
         this._sendSelfMessage(
             {
                 type: "$REGISTERED",
@@ -285,11 +293,11 @@ export class IORoom<
     private async _getAuthorizedUser(
         token: Maybe<string>,
         context: InferPlatformRoomContextType<TPlatform>,
-    ): Promise<InferIOAuthorizeUser<InferIOAuthorize<this>> | null> {
+    ): Promise<InferIOAuthorizeUser<InferIOAuthorize<this>>> {
         const ioAuthorize = this._getIOAuthorize(context);
 
-        if (!ioAuthorize) return null;
-        if (!token) return null;
+        if (!ioAuthorize) return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
+        if (!token) return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
 
         const payload = await authorize({
             platform: this._platform,
@@ -300,7 +308,7 @@ export class IORoom<
             this._logDebug(colors.blue("Could not decode token:"));
             this._logDebug(token);
 
-            return null;
+            return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
         }
 
         if (payload.room !== this.id) {
@@ -308,7 +316,7 @@ export class IORoom<
             this._logDebug(colors.blue("Received:"), payload.room);
             this._logDebug(token);
 
-            return null;
+            return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
         }
 
         try {
@@ -316,13 +324,23 @@ export class IORoom<
         } catch {
             this._logDebug(`${colors.blue("Token fails validation:")} ${token}`);
 
-            return null;
+            return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
         }
     }
 
     private _getEventConfig(
         message: EventMessage<string, any>,
-    ): InferEventConfig<TPlatform, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>[keyof TInput] | null {
+    ):
+        | InferEventConfig<
+              TPlatform,
+              TAuthorize,
+              TContext,
+              TInput,
+              TOutputBroadcast,
+              TOutputSelf,
+              TOutputSync
+          >[keyof TInput]
+        | null {
         return this._events[message.type as keyof TInput] ?? null;
     }
 
@@ -344,19 +362,36 @@ export class IORoom<
 
     private _getEventResolverObject(
         message: EventMessage<string, any>,
-    ): EventResolverObject<TPlatform, TContext, TInput[string], TOutputBroadcast, TOutputSelf, TOutputSync> {
+    ): EventResolverObject<
+        TPlatform,
+        TAuthorize,
+        TContext,
+        TInput[string],
+        TOutputBroadcast,
+        TOutputSelf,
+        TOutputSync
+    > {
         const eventConfig = this._getEventConfig(message);
 
         if (!eventConfig) return {};
 
         const resolver:
             | EventResolver<
+                  TPlatform,
+                  TAuthorize,
                   TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
                   TInput[string],
                   TOutputBroadcast
               >
-            | EventResolverObject<TPlatform, TContext, TInput[string], TOutputBroadcast, TOutputSelf, TOutputSync> =
-            eventConfig.resolver;
+            | EventResolverObject<
+                  TPlatform,
+                  TAuthorize,
+                  TContext,
+                  TInput[string],
+                  TOutputBroadcast,
+                  TOutputSelf,
+                  TOutputSync
+              > = eventConfig.resolver;
 
         return typeof resolver === "function" ? { broadcast: resolver } : { ...resolver };
     }
@@ -401,7 +436,7 @@ export class IORoom<
         this._debug && console.log(...data);
     }
 
-    private _onClose(session: WebSocketSession, callback?: () => void): () => void {
+    private _onClose(session: WebSocketSession<TAuthorize>, callback?: () => void): () => void {
         return (): void => {
             if (!this._uninitialize) return;
 
@@ -434,11 +469,11 @@ export class IORoom<
     }
 
     private _onMessage(
-        session: WebSocketSession,
+        session: WebSocketSession<TAuthorize>,
         platformEventContext: InferPlatformEventContextType<TPlatform>,
     ): (event: AbstractMessageEvent) => void {
         return (event: AbstractMessageEvent): void => {
-            const baseContext: EventResolverContext<TContext> = {
+            const baseContext: EventResolverContext<TPlatform, TAuthorize, TContext> = {
                 context: this._context,
                 doc: this._doc,
                 room: this.id,
@@ -475,6 +510,8 @@ export class IORoom<
             }
 
             const extendedContext: EventResolverContext<
+                TPlatform,
+                TAuthorize,
                 TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>
             > = {
                 ...baseContext,
@@ -569,7 +606,7 @@ export class IORoom<
                 const _session = this._sessions.get(id);
 
                 return _session ? dict.set(id, _session) : dict;
-            }, new Map<string, WebSocketSession>()) ?? this._sessions;
+            }, new Map<string, WebSocketSession<TAuthorize>>()) ?? this._sessions;
 
         Array.from(sessions.values()).forEach((_session) => {
             _session.webSocket.sendMessage({
@@ -603,7 +640,7 @@ export class IORoom<
 
         if (!senderId) return;
 
-        const context: EventResolverContext<TContext> = {
+        const context: EventResolverContext<TPlatform, TAuthorize, TContext> = {
             context: this._context,
             doc: this._doc,
             room: this.id,
