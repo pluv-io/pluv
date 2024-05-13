@@ -20,6 +20,8 @@ import colors from "kleur";
 import type { AbstractPlatform, InferPlatformRoomContextType } from "./AbstractPlatform";
 import type { IORoomListenerEvent } from "./IORoom";
 import { IORoom } from "./IORoom";
+import { PluvProcedure } from "./PluvProcedure";
+import { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
 import type { EventConfig, InferEventConfig } from "./types";
@@ -229,6 +231,10 @@ export class PluvIO<
     readonly _platform: TPlatform;
     readonly _version: string = __PLUV_VERSION as any;
 
+    public get procedure(): PluvProcedure<TPlatform, TAuthorize, TContext, {}, {}> {
+        return new PluvProcedure();
+    }
+
     constructor(
         options: PluvIOConfig<TPlatform, TAuthorize, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>,
     ) {
@@ -437,6 +443,16 @@ export class PluvIO<
             onStorageUpdated,
             platform,
         });
+    }
+
+    public mergeRouters<TRouters extends PluvRouter<TPlatform, TAuthorize, TContext, any>[]>(...routers: TRouters) {
+        return PluvRouter.merge(...routers);
+    }
+
+    public router<TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>>(
+        events: TEvents,
+    ): PluvRouter<TPlatform, TAuthorize, TContext, TEvents> {
+        return new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>(events);
     }
 
     private _logDebug(...data: any[]): void {
