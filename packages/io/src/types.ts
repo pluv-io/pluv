@@ -1,5 +1,14 @@
 import type { AbstractCrdtDoc } from "@pluv/crdt";
-import type { EventRecord, Id, InputZodLike, JsonObject, MaybePromise } from "@pluv/types";
+import type {
+    BaseIOAuthorize,
+    EventRecord,
+    IOAuthorize,
+    Id,
+    InferIOAuthorizeUser,
+    InputZodLike,
+    JsonObject,
+    MaybePromise,
+} from "@pluv/types";
 import { AbstractPlatform, InferPlatformEventContextType, InferPlatformRoomContextType } from "./AbstractPlatform";
 import type { AbstractWebSocket } from "./AbstractWebSocket";
 
@@ -11,6 +20,7 @@ declare global {
 
 export interface EventConfig<
     TPlatform extends AbstractPlatform = AbstractPlatform,
+    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
     TData extends JsonObject = {},
     TResultBroadcast extends EventRecord<string, any> = {},
@@ -20,28 +30,44 @@ export interface EventConfig<
     input?: InputZodLike<TData>;
     resolver:
         | EventResolver<
+              TPlatform,
+              TAuthorize,
               TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
               TData,
               TResultBroadcast
           >
-        | EventResolverObject<TPlatform, TContext, TData, TResultBroadcast, TResultSelf, TResultSync>;
+        | EventResolverObject<TPlatform, TAuthorize, TContext, TData, TResultBroadcast, TResultSelf, TResultSync>;
 }
 
 export type EventConfigType = "broadcast" | "self" | "sync";
 
 export type SyncEventResolver<
+    TPlatform extends AbstractPlatform = AbstractPlatform,
+    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
     TData extends JsonObject = {},
     TResultBroadcast extends EventRecord<string, any> = {},
-> = (data: TData, context: EventResolverContext<TContext>) => MaybePromise<TResultBroadcast | void>;
+> = (
+    data: TData,
+    context: EventResolverContext<TPlatform, TAuthorize, TContext>,
+) => MaybePromise<TResultBroadcast | void>;
 
 export type EventResolver<
+    TPlatform extends AbstractPlatform = AbstractPlatform,
+    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
     TData extends JsonObject = {},
     TResultBroadcast extends EventRecord<string, any> = {},
-> = (data: TData, context: EventResolverContext<TContext>) => MaybePromise<TResultBroadcast | void>;
+> = (
+    data: TData,
+    context: EventResolverContext<TPlatform, TAuthorize, TContext>,
+) => MaybePromise<TResultBroadcast | void>;
 
-export interface EventResolverContext<TContext extends Record<string, any> = {}> {
+export interface EventResolverContext<
+    TPlatform extends AbstractPlatform = AbstractPlatform,
+    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
+    TContext extends Record<string, any> = {},
+> {
     context: TContext;
     doc: AbstractCrdtDoc<any>;
     room: string;
@@ -57,12 +83,13 @@ export interface EventResolverContext<TContext extends Record<string, any> = {}>
      * @author leedavidcs
      * @date December 25, 2022
      */
-    session: WebSocketSession | null;
-    sessions: Map<string, WebSocketSession>;
+    session: WebSocketSession<TAuthorize> | null;
+    sessions: Map<string, WebSocketSession<TAuthorize>>;
 }
 
 export type EventResolverObject<
     TPlatform extends AbstractPlatform = AbstractPlatform,
+    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
     TData extends JsonObject = {},
     TResultBroadcast extends EventRecord<string, any> = {},
@@ -70,20 +97,25 @@ export type EventResolverObject<
     TResultSync extends EventRecord<string, any> = {},
 > = {
     broadcast?: EventResolver<
+        TPlatform,
+        TAuthorize,
         TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
         TData,
         TResultBroadcast
     >;
     self?: EventResolver<
+        TPlatform,
+        TAuthorize,
         TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
         TData,
         TResultSelf
     >;
-    sync?: SyncEventResolver<TContext, TData, TResultSync>;
+    sync?: SyncEventResolver<TPlatform, TAuthorize, TContext, TData, TResultSync>;
 };
 
 export type InferEventConfig<
     TPlatform extends AbstractPlatform = AbstractPlatform,
+    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
@@ -91,7 +123,7 @@ export type InferEventConfig<
     TOutputSync extends EventRecord<string, any> = {},
 > = {
     [P in keyof TInput]: P extends string
-        ? Id<EventConfig<TPlatform, TContext, TInput[P], TOutputBroadcast, TOutputSelf, TOutputSync>>
+        ? Id<EventConfig<TPlatform, TAuthorize, TContext, TInput[P], TOutputBroadcast, TOutputSelf, TOutputSync>>
         : never;
 };
 
@@ -104,12 +136,12 @@ export interface WebSocketSessionTimers {
     ping: number;
 }
 
-export interface WebSocketSession {
+export interface WebSocketSession<TAuthorize extends IOAuthorize<any, any, any> = BaseIOAuthorize> {
     id: string;
     presence: JsonObject | null;
     quit: boolean;
     room: string;
     timers: WebSocketSessionTimers;
     webSocket: AbstractWebSocket;
-    user: JsonObject | null;
+    user: InferIOAuthorizeUser<TAuthorize>;
 }

@@ -17,7 +17,7 @@ import type {
     Spread,
 } from "@pluv/types";
 import colors from "kleur";
-import type { AbstractPlatform, InferPlatformEventContextType, InferPlatformRoomContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferPlatformRoomContextType } from "./AbstractPlatform";
 import type { IORoomListenerEvent } from "./IORoom";
 import { IORoom } from "./IORoom";
 import type { JWTEncodeParams } from "./authorize";
@@ -59,7 +59,7 @@ export interface PluvIOListeners<TPlatform extends AbstractPlatform> {
 
 export type PluvIOConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> | null = null,
+    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TInput extends EventRecord<string, any> = {},
     TOutputBroadcast extends EventRecord<string, any> = {},
@@ -70,7 +70,7 @@ export type PluvIOConfig<
     context?: TContext;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug?: boolean;
-    events?: InferEventConfig<TPlatform, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>;
+    events?: InferEventConfig<TPlatform, TAuthorize, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>;
     getInitialStorage?: GetInitialStorageFn<TPlatform>;
     platform: TPlatform;
 };
@@ -98,7 +98,15 @@ export class PluvIO<
     readonly _context: TContext = {} as TContext;
     readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     readonly _debug: boolean;
-    readonly _events: InferEventConfig<TPlatform, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync> = {
+    readonly _events: InferEventConfig<
+        TPlatform,
+        TAuthorize,
+        TContext,
+        TInput,
+        TOutputBroadcast,
+        TOutputSelf,
+        TOutputSync
+    > = {
         $GET_OTHERS: {
             resolver: {
                 sync: (data, { room, session, sessions }) => {
@@ -215,7 +223,7 @@ export class PluvIO<
                 return { $STORAGE_UPDATED: { state: encodedState } };
             },
         },
-    } as InferEventConfig<TPlatform, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>;
+    } as InferEventConfig<TPlatform, TAuthorize, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>;
     readonly _getInitialStorage: GetInitialStorageFn<TPlatform> | null = null;
     readonly _listeners: PluvIOListeners<TPlatform>;
     readonly _platform: TPlatform;
@@ -277,7 +285,7 @@ export class PluvIO<
         TResultSync extends EventRecord<string, any> = {},
     >(
         event: TEvent,
-        config: EventConfig<TPlatform, TContext, TData, TResultBroadcast, TResultSelf, TResultSync>,
+        config: EventConfig<TPlatform, TAuthorize, TContext, TData, TResultBroadcast, TResultSelf, TResultSync>,
     ): PluvIO<
         TPlatform,
         TAuthorize,
@@ -295,6 +303,7 @@ export class PluvIO<
             [event]: config,
         } as InferEventConfig<
             TPlatform,
+            TAuthorize,
             TContext,
             EventRecord<TEvent, TData>,
             TResultBroadcast extends EventRecord<string, any> ? TResultBroadcast : {},

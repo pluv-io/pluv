@@ -28,7 +28,7 @@ export type EventType = keyof AbstractEventMap;
 export interface AbstractWebSocketHandleErrorParams {
     error: unknown;
     message?: string;
-    session?: WebSocketSession;
+    session?: WebSocketSession<any>;
 }
 
 export type AbstractListener<TType extends keyof AbstractEventMap> = (
