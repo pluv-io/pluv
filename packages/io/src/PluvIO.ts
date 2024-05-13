@@ -285,7 +285,7 @@ export class PluvIO<
         TResultSync extends EventRecord<string, any> = {},
     >(
         event: TEvent,
-        config: EventConfig<TPlatform, TContext, TData, TResultBroadcast, TResultSelf, TResultSync>,
+        config: EventConfig<TPlatform, TAuthorize, TContext, TData, TResultBroadcast, TResultSelf, TResultSync>,
     ): PluvIO<
         TPlatform,
         TAuthorize,
