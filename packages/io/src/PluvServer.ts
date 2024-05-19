@@ -1,11 +1,20 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type { BaseIOAuthorize, IOAuthorize, IORouterLike, JsonObject } from "@pluv/types";
+import type {
+    BaseIOAuthorize,
+    IOAuthorize,
+    IORouterLike,
+    InferIOAuthorize,
+    InferIOAuthorizeUser,
+    JsonObject,
+} from "@pluv/types";
 import colors from "kleur";
 import type { AbstractPlatform, InferPlatformRoomContextType } from "./AbstractPlatform";
 import { IORoom } from "./IORoom";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
+import type { JWTEncodeParams } from "./authorize";
+import { authorize } from "./authorize";
 import type { GetInitialStorageFn, IORoomListenerEvent, PluvIOListeners } from "./types";
 import { __PLUV_VERSION } from "./version";
 
@@ -82,6 +91,24 @@ export class PluvServer<
             onRoomDeleted: (event) => onRoomDeleted?.(event),
             onStorageUpdated: (event) => onStorageUpdated?.(event),
         };
+    }
+
+    public async createToken(
+        params: JWTEncodeParams<InferIOAuthorizeUser<InferIOAuthorize<this>>, TPlatform>,
+    ): Promise<string> {
+        if (!this._authorize) {
+            throw new Error("IO does not specify authorize during initialization.");
+        }
+
+        const ioAuthorize =
+            typeof this._authorize === "function" ? this._authorize(params) : (this._authorize as { secret: string });
+
+        const secret = ioAuthorize.secret;
+
+        return await authorize({
+            platform: this._platform,
+            secret,
+        }).encode(params);
     }
 
     public getRoom(room: string, options: GetRoomOptions<TPlatform>): IORoom<TPlatform, TAuthorize, TContext, TEvents> {

@@ -1,5 +1,12 @@
-import { IORoom, PluvIO } from "@pluv/io";
-import { Id, InferIOAuthorize, InferIOAuthorizeRequired, InferIOAuthorizeUser, Maybe, MaybePromise } from "@pluv/types";
+import type { IORoom, PluvServer } from "@pluv/io";
+import type {
+    Id,
+    InferIOAuthorize,
+    InferIOAuthorizeRequired,
+    InferIOAuthorizeUser,
+    Maybe,
+    MaybePromise,
+} from "@pluv/types";
 import { match } from "path-to-regexp";
 import { CloudflarePlatform } from "./CloudflarePlatform";
 
@@ -7,17 +14,20 @@ export interface AuthorizeFunctionContext {
     request: Request<any, CfProperties<any>>;
     roomId: string;
 }
-export type AuthorizeFunction<TPluv extends PluvIO<CloudflarePlatform>> = (
+export type AuthorizeFunction<TPluvServer extends PluvServer<CloudflarePlatform, any, any, any>> = (
     ctx: AuthorizeFunctionContext,
-) => MaybePromise<Maybe<InferIOAuthorizeUser<InferIOAuthorize<TPluv>>>>;
+) => MaybePromise<Maybe<InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>>>>;
 
-export type CreatePluvHandlerConfig<TPluv extends PluvIO<CloudflarePlatform>, TEnv extends Record<string, any>> = {
+export type CreatePluvHandlerConfig<
+    TPluvServer extends PluvServer<CloudflarePlatform, any, any, any>,
+    TEnv extends Record<string, any>,
+> = {
     binding: string;
     endpoint?: string;
     modify?: (request: Request, response: Response, env: TEnv) => MaybePromise<Response>;
-    io: TPluv;
-} & (InferIOAuthorizeRequired<InferIOAuthorize<TPluv>> extends true
-    ? { authorize: AuthorizeFunction<TPluv> }
+    io: TPluvServer;
+} & (InferIOAuthorizeRequired<InferIOAuthorize<TPluvServer>> extends true
+    ? { authorize: AuthorizeFunction<TPluvServer> }
     : { authorize?: undefined });
 
 export type PluvHandlerFetch<TEnv extends Record<string, any> = {}> = (
@@ -33,19 +43,19 @@ export interface CreatePluvHandlerResult<TEnv extends Record<string, any> = {}> 
     handler: ExportedHandler<TEnv>;
 }
 
-type InferCloudflarePluvHandlerEnv<TPluv extends PluvIO<CloudflarePlatform, any, any, any, any, any, any>> =
-    TPluv extends PluvIO<CloudflarePlatform<infer IEnv>, any, any, any, any, any, any> ? IEnv : {};
+type InferCloudflarePluvHandlerEnv<TPluvServer extends PluvServer<CloudflarePlatform, any, any, any>> =
+    TPluvServer extends PluvServer<CloudflarePlatform<infer IEnv>, any, any, any> ? IEnv : {};
 
-export const createPluvHandler = <TPluv extends PluvIO<CloudflarePlatform, any, any, any, any, any, any>>(
-    config: CreatePluvHandlerConfig<TPluv, Id<InferCloudflarePluvHandlerEnv<TPluv>>>,
-): CreatePluvHandlerResult<Id<InferCloudflarePluvHandlerEnv<TPluv>>> => {
+export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatform, any, any, any>>(
+    config: CreatePluvHandlerConfig<TPluvServer, Id<InferCloudflarePluvHandlerEnv<TPluvServer>>>,
+): CreatePluvHandlerResult<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> => {
     const { authorize, binding, endpoint = "/api/pluv", modify, io } = config;
 
     const DurableObject = class implements DurableObject {
-        private _env: Id<InferCloudflarePluvHandlerEnv<TPluv>>;
+        private _env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>;
         private _io: IORoom<CloudflarePlatform>;
 
-        constructor(state: DurableObjectState, env: Id<InferCloudflarePluvHandlerEnv<TPluv>>) {
+        constructor(state: DurableObjectState, env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>) {
             this._env = env;
             this._io = io.getRoom(state.id.toString(), { env });
         }
@@ -77,7 +87,7 @@ export const createPluvHandler = <TPluv extends PluvIO<CloudflarePlatform, any, 
         }
     };
 
-    const getDurableObjectNamespace = (env: Id<InferCloudflarePluvHandlerEnv<TPluv>>): DurableObjectNamespace => {
+    const getDurableObjectNamespace = (env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>): DurableObjectNamespace => {
         const namespace = env[binding as keyof typeof env] as DurableObjectNamespace;
 
         if (!namespace) {
@@ -87,7 +97,7 @@ export const createPluvHandler = <TPluv extends PluvIO<CloudflarePlatform, any, 
         return namespace;
     };
 
-    const authHandler: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluv>>> = async (request, env) => {
+    const authHandler: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = async (request, env) => {
         if (!authorize) return null;
 
         const { pathname, searchParams } = new URL(request.url);
@@ -131,7 +141,7 @@ export const createPluvHandler = <TPluv extends PluvIO<CloudflarePlatform, any, 
         }
     };
 
-    const roomHandler: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluv>>> = async (request, env) => {
+    const roomHandler: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = async (request, env) => {
         const { pathname } = new URL(request.url);
         const matcher = match<{ roomId: string }>(`${endpoint}/room/:roomId`);
         const matched = matcher(pathname);
@@ -154,13 +164,13 @@ export const createPluvHandler = <TPluv extends PluvIO<CloudflarePlatform, any, 
         return room.fetch(request);
     };
 
-    const fetch: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluv>>> = async (request, env) => {
+    const fetch: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = async (request, env) => {
         return [authHandler, roomHandler].reduce((promise, current) => {
             return promise.then((value) => value ?? current(request, env));
         }, Promise.resolve<Response | null>(null));
     };
 
-    const handler: ExportedHandler<Id<InferCloudflarePluvHandlerEnv<TPluv>>> = {
+    const handler: ExportedHandler<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = {
         fetch: async (request, env) => {
             const response =
                 (await fetch(request, env)) ??
