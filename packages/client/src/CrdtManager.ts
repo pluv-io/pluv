@@ -1,13 +1,7 @@
-import type {
-    AbstractCrdtDoc,
-    AbstractCrdtDocFactory,
-    AbstractCrdtType,
-} from "@pluv/crdt";
+import type { AbstractCrdtDoc, AbstractCrdtDocFactory, AbstractCrdtType } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 
-export type CrdtManagerOptions<
-    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
-> = {
+export type CrdtManagerOptions<TStorage extends Record<string, AbstractCrdtType<any, any>> = {}> = {
     encodedState?: string | Uint8Array | null;
     initialStorage?: AbstractCrdtDocFactory<TStorage>;
 };
@@ -18,26 +12,19 @@ type CrdtManagerInitializeParams = {
     update: string | readonly string[];
 };
 
-export class CrdtManager<
-    TStorage extends Record<string, AbstractCrdtType<any, any>>,
-> {
+export class CrdtManager<TStorage extends Record<string, AbstractCrdtType<any, any>>> {
     public doc: AbstractCrdtDoc<TStorage>;
     public initialized: boolean = false;
 
     private readonly _docFactory: AbstractCrdtDocFactory<TStorage>;
 
     constructor(options: CrdtManagerOptions<TStorage>) {
-        const {
-            encodedState,
-            initialStorage = noop.doc({}) as AbstractCrdtDocFactory<TStorage>,
-        } = options;
+        const { encodedState, initialStorage = noop.doc({}) as AbstractCrdtDocFactory<TStorage> } = options;
 
         this._docFactory = initialStorage;
 
         this.doc = encodedState
-            ? initialStorage
-                  .getFresh()
-                  .applyEncodedState({ update: encodedState })
+            ? initialStorage.getFresh().applyEncodedState({ update: encodedState })
             : initialStorage.getFresh();
     }
 
@@ -50,8 +37,7 @@ export class CrdtManager<
     public applyUpdate(update: string | readonly string[], origin?: any): this {
         if (!this.initialized) return this;
 
-        const updates: readonly string[] =
-            typeof update === "string" ? [update] : update;
+        const updates: readonly string[] = typeof update === "string" ? [update] : update;
 
         this._applyDocUpdates(this.doc, updates, origin);
 
@@ -79,20 +65,12 @@ export class CrdtManager<
             return this;
         }
 
-        const onEmpty = this._applyDocUpdates(
-            this._docFactory.getEmpty(),
-            updates,
-            origin,
-        );
+        const onEmpty = this._applyDocUpdates(this._docFactory.getEmpty(), updates, origin);
 
         if (!onEmpty.isEmpty()) {
             onEmpty.destroy();
 
-            this.doc = this._applyDocUpdates(
-                this._docFactory.getFresh(),
-                updates,
-                origin,
-            ).track();
+            this.doc = this._applyDocUpdates(this._docFactory.getFresh(), updates, origin).track();
             this.initialized = true;
 
             onInitialized?.(this.doc.getEncodedState());
@@ -115,9 +93,7 @@ export class CrdtManager<
         origin?: string,
     ): AbstractCrdtDoc<TStorage> {
         doc.transact(() => {
-            doc.batchApplyEncodedState(
-                updates.map((update) => ({ origin, update })),
-            );
+            doc.batchApplyEncodedState(updates.map((update) => ({ origin, update })));
         }, origin);
 
         return doc;

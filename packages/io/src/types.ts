@@ -5,11 +5,11 @@ import type {
     IOAuthorize,
     Id,
     InferIOAuthorizeUser,
-    InputZodLike,
     JsonObject,
+    Maybe,
     MaybePromise,
 } from "@pluv/types";
-import { AbstractPlatform, InferPlatformEventContextType, InferPlatformRoomContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferPlatformRoomContextType } from "./AbstractPlatform";
 import type { AbstractWebSocket } from "./AbstractWebSocket";
 
 declare global {
@@ -17,29 +17,6 @@ declare global {
         log: (...data: any[]) => void;
     };
 }
-
-export interface EventConfig<
-    TPlatform extends AbstractPlatform = AbstractPlatform,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
-    TContext extends Record<string, any> = {},
-    TData extends JsonObject = {},
-    TResultBroadcast extends EventRecord<string, any> = {},
-    TResultSelf extends EventRecord<string, any> = {},
-    TResultSync extends EventRecord<string, any> = {},
-> {
-    input?: InputZodLike<TData>;
-    resolver:
-        | EventResolver<
-              TPlatform,
-              TAuthorize,
-              TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
-              TData,
-              TResultBroadcast
-          >
-        | EventResolverObject<TPlatform, TAuthorize, TContext, TData, TResultBroadcast, TResultSelf, TResultSync>;
-}
-
-export type EventConfigType = "broadcast" | "self" | "sync";
 
 export type SyncEventResolver<
     TPlatform extends AbstractPlatform = AbstractPlatform,
@@ -87,46 +64,6 @@ export interface EventResolverContext<
     sessions: Map<string, WebSocketSession<TAuthorize>>;
 }
 
-export type EventResolverObject<
-    TPlatform extends AbstractPlatform = AbstractPlatform,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
-    TContext extends Record<string, any> = {},
-    TData extends JsonObject = {},
-    TResultBroadcast extends EventRecord<string, any> = {},
-    TResultSelf extends EventRecord<string, any> = {},
-    TResultSync extends EventRecord<string, any> = {},
-> = {
-    broadcast?: EventResolver<
-        TPlatform,
-        TAuthorize,
-        TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
-        TData,
-        TResultBroadcast
-    >;
-    self?: EventResolver<
-        TPlatform,
-        TAuthorize,
-        TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
-        TData,
-        TResultSelf
-    >;
-    sync?: SyncEventResolver<TPlatform, TAuthorize, TContext, TData, TResultSync>;
-};
-
-export type InferEventConfig<
-    TPlatform extends AbstractPlatform = AbstractPlatform,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
-    TContext extends Record<string, any> = {},
-    TInput extends EventRecord<string, any> = {},
-    TOutputBroadcast extends EventRecord<string, any> = {},
-    TOutputSelf extends EventRecord<string, any> = {},
-    TOutputSync extends EventRecord<string, any> = {},
-> = {
-    [P in keyof TInput]: P extends string
-        ? Id<EventConfig<TPlatform, TAuthorize, TContext, TInput[P], TOutputBroadcast, TOutputSelf, TOutputSync>>
-        : never;
-};
-
 export type SendMessageOptions =
     | { type?: "broadcast"; sessionIds?: readonly string[] }
     | { type: "self" }
@@ -145,3 +82,36 @@ export interface WebSocketSession<TAuthorize extends IOAuthorize<any, any, any> 
     webSocket: AbstractWebSocket;
     user: InferIOAuthorizeUser<TAuthorize>;
 }
+
+export type MergeEventRecords<
+    TEventRecords extends EventRecord<string, any>[],
+    TRoot extends EventRecord<string, any> = {},
+> = TEventRecords extends [
+    infer IHead extends EventRecord<string, any>,
+    ...infer ITail extends EventRecord<string, any>[],
+]
+    ? MergeEventRecords<
+          ITail,
+          Omit<TRoot, keyof IHead> & {
+              [P in keyof IHead]: TRoot extends Record<P, any> ? TRoot[P] | IHead[P] : IHead[P];
+          }
+      >
+    : Id<TRoot>;
+
+type GetInitialStorageEvent<TPlatform extends AbstractPlatform> = {
+    room: string;
+} & InferPlatformRoomContextType<TPlatform>;
+
+export type GetInitialStorageFn<TPlatform extends AbstractPlatform> = (
+    event: GetInitialStorageEvent<TPlatform>,
+) => MaybePromise<Maybe<string>>;
+
+export interface PluvIOListeners<TPlatform extends AbstractPlatform> {
+    onRoomDeleted: (event: IORoomListenerEvent<TPlatform>) => void;
+    onStorageUpdated: (event: IORoomListenerEvent<TPlatform>) => void;
+}
+
+export type IORoomListenerEvent<TPlatform extends AbstractPlatform> = {
+    room: string;
+    encodedState: string;
+} & InferPlatformRoomContextType<TPlatform>;

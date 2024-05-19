@@ -23,7 +23,13 @@ export type {
 } from "./AbstractWebSocket";
 export type { IORoom } from "./IORoom";
 export { PluvIO } from "./PluvIO";
-export type { GetRoomOptions, InferIORoom, PluvIOConfig } from "./PluvIO";
+export type { PluvIOConfig, ServerConfig } from "./PluvIO";
+export { PluvProcedure } from "./PluvProcedure";
+export type { PluvProcedureConfig } from "./PluvProcedure";
+export { PluvRouter } from "./PluvRouter";
+export type { PluvRouterEventConfig } from "./PluvRouter";
+export { PluvServer } from "./PluvServer";
+export type { GetRoomOptions, InferIORoom, PluvServerConfig } from "./PluvServer";
 export type { AuthorizeModule, AuthorizeParams, JWT, JWTEncodeParams } from "./authorize";
 export { createIO } from "./createIO";
 export type { CreateIOParams } from "./createIO";

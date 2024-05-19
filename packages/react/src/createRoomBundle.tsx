@@ -9,38 +9,13 @@ import type {
     WebSocketConnection,
 } from "@pluv/client";
 import { MockedRoom } from "@pluv/client";
-import type {
-    AbstractCrdtDoc,
-    AbstractCrdtDocFactory,
-    AbstractCrdtType,
-    InferCrdtStorageJson,
-} from "@pluv/crdt";
+import type { AbstractCrdtDoc, AbstractCrdtDocFactory, AbstractCrdtType, InferCrdtStorageJson } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type {
-    IOEventMessage,
-    IOLike,
-    Id,
-    InferIOInput,
-    InferIOOutput,
-    InputZodLike,
-    JsonObject,
-} from "@pluv/types";
+import type { IOEventMessage, IOLike, Id, InferIOInput, InferIOOutput, InputZodLike, JsonObject } from "@pluv/types";
 import fastDeepEqual from "fast-deep-equal";
 import type { Dispatch, FC, ReactNode } from "react";
-import {
-    createContext,
-    memo,
-    useCallback,
-    useContext,
-    useEffect,
-    useState,
-} from "react";
-import {
-    identity,
-    shallowArrayEqual,
-    useRerender,
-    useSyncExternalStoreWithSelector,
-} from "./internal";
+import { createContext, memo, useCallback, useContext, useEffect, useState } from "react";
+import { identity, shallowArrayEqual, useRerender, useSyncExternalStoreWithSelector } from "./internal";
 
 export type CreateRoomBundleOptions<
     TIO extends IOLike,
@@ -59,9 +34,7 @@ type BaseRoomProviderProps<
     children?: ReactNode;
     initialStorage?: keyof TStorage extends never ? never : () => TStorage;
     room: string;
-} & (keyof TPresence extends never
-    ? { initialPresence?: never }
-    : { initialPresence: TPresence });
+} & (keyof TPresence extends never ? { initialPresence?: never } : { initialPresence: TPresence });
 
 export type MockedRoomProviderProps<
     TIO extends IOLike,
@@ -116,10 +89,7 @@ export interface CreateRoomBundle<
     useMyPresence: <T extends unknown = TPresence>(
         selector?: (myPresence: TPresence) => T,
         options?: SubscriptionHookOptions<Id<T> | null>,
-    ) => [
-        myPresence: Id<T>,
-        updateMyPresence: Dispatch<UpdateMyPresenceAction<TPresence>>,
-    ];
+    ) => [myPresence: Id<T>, updateMyPresence: Dispatch<UpdateMyPresenceAction<TPresence>>];
     useMyself: <T extends unknown = UserInfo<TIO, TPresence>>(
         selector?: (myself: Id<UserInfo<TIO, TPresence>>) => T,
         options?: SubscriptionHookOptions<Id<T> | null>,
@@ -135,27 +105,17 @@ export interface CreateRoomBundle<
     ) => readonly Id<T>[];
     useRedo: () => () => void;
     useRoom: () => AbstractRoom<TIO, TPresence, TStorage>;
-    useStorage: <
-        TKey extends keyof TStorage,
-        TData extends unknown = InferCrdtStorageJson<TStorage[TKey]>,
-    >(
+    useStorage: <TKey extends keyof TStorage, TData extends unknown = InferCrdtStorageJson<TStorage[TKey]>>(
         key: TKey,
         selector?: (data: InferCrdtStorageJson<TStorage[TKey]>) => TData,
         options?: SubscriptionHookOptions<TData | null>,
     ) => [data: TData | null, sharedType: TStorage[TKey] | null];
-    useTransact: () => (
-        fn: (storage: TStorage) => void,
-        origin?: string,
-    ) => void;
+    useTransact: () => (fn: (storage: TStorage) => void, origin?: string) => void;
     useUndo: () => () => void;
 }
 
-export type InferRoomStorage<
-    TRoomBundle extends CreateRoomBundle<any, any, any>,
-> =
-    TRoomBundle extends CreateRoomBundle<any, any, infer IStorage>
-        ? IStorage
-        : never;
+export type InferRoomStorage<TRoomBundle extends CreateRoomBundle<any, any, any>> =
+    TRoomBundle extends CreateRoomBundle<any, any, infer IStorage> ? IStorage : never;
 
 export const createRoomBundle = <
     TIO extends IOLike,
@@ -165,8 +125,7 @@ export const createRoomBundle = <
     client: PluvClient<TIO>,
     options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
 ): CreateRoomBundle<TIO, TPresence, TStorage> => {
-    const _initialStorage = (options.initialStorage ??
-        noop.doc()) as AbstractCrdtDocFactory<TStorage>;
+    const _initialStorage = (options.initialStorage ?? noop.doc()) as AbstractCrdtDocFactory<TStorage>;
 
     /**
      * !HACK
@@ -175,59 +134,36 @@ export const createRoomBundle = <
      * @author leedavidcs
      * @date November 11, 2022
      */
-    const PluvRoomContext = createContext<
-        AbstractRoom<TIO, TPresence, TStorage>
-    >(null as any);
+    const PluvRoomContext = createContext<AbstractRoom<TIO, TPresence, TStorage>>(null as any);
 
     const MockedRoomContext = createContext<{
         room: AbstractRoom<TIO, TPresence, TStorage> | null;
     }>({ room: null });
 
-    const MockedRoomProvider = memo<
-        MockedRoomProviderProps<TIO, TPresence, TStorage>
-    >((props) => {
-        const {
-            children,
-            events,
-            initialPresence,
-            initialStorage,
-            room: _room,
-        } = props;
+    const MockedRoomProvider = memo<MockedRoomProviderProps<TIO, TPresence, TStorage>>((props) => {
+        const { children, events, initialPresence, initialStorage, room: _room } = props;
 
         const [room] = useState<MockedRoom<TIO, TPresence, TStorage>>(() => {
             return new MockedRoom<TIO, TPresence, TStorage>(_room, {
                 events,
                 initialPresence,
                 initialStorage:
-                    typeof initialStorage === "function"
-                        ? _initialStorage.getFactory(initialStorage)
-                        : _initialStorage,
+                    typeof initialStorage === "function" ? _initialStorage.getFactory(initialStorage) : _initialStorage,
                 presence: options.presence,
             });
         });
 
         return (
             <MockedRoomContext.Provider value={{ room }}>
-                <PluvRoomContext.Provider value={room}>
-                    {children}
-                </PluvRoomContext.Provider>
+                <PluvRoomContext.Provider value={room}>{children}</PluvRoomContext.Provider>
             </MockedRoomContext.Provider>
         );
     });
 
     MockedRoomProvider.displayName = "MockedRoomProvider";
 
-    const PluvRoomProvider = memo<
-        PluvRoomProviderProps<TIO, TPresence, TStorage>
-    >((props) => {
-        const {
-            children,
-            debug,
-            initialPresence,
-            initialStorage,
-            onAuthorizationFail,
-            room: _room,
-        } = props;
+    const PluvRoomProvider = memo<PluvRoomProviderProps<TIO, TPresence, TStorage>>((props) => {
+        const { children, debug, initialPresence, initialStorage, onAuthorizationFail, room: _room } = props;
 
         const rerender = useRerender();
         const { room: mockedRoom } = useContext(MockedRoomContext);
@@ -238,9 +174,7 @@ export const createRoomBundle = <
                 debug,
                 initialPresence,
                 initialStorage:
-                    typeof initialStorage === "function"
-                        ? _initialStorage.getFactory(initialStorage)
-                        : _initialStorage,
+                    typeof initialStorage === "function" ? _initialStorage.getFactory(initialStorage) : _initialStorage,
                 presence: options.presence,
                 onAuthorizationFail,
             });
@@ -264,11 +198,7 @@ export const createRoomBundle = <
             };
         }, [room]);
 
-        return (
-            <PluvRoomContext.Provider value={mockedRoom ?? room}>
-                {children}
-            </PluvRoomContext.Provider>
-        );
+        return <PluvRoomContext.Provider value={mockedRoom ?? room}>{children}</PluvRoomContext.Provider>;
     });
 
     PluvRoomProvider.displayName = "PluvRoomProvider";
@@ -282,10 +212,7 @@ export const createRoomBundle = <
         const room = useRoom();
 
         return useCallback(
-            <TEvent extends keyof InferIOInput<TIO>>(
-                event: TEvent,
-                data: Id<InferIOInput<TIO>[TEvent]>,
-            ) => {
+            <TEvent extends keyof InferIOInput<TIO>>(event: TEvent, data: Id<InferIOInput<TIO>[TEvent]>) => {
                 room.broadcast(event, data);
             },
             [room],
@@ -295,19 +222,11 @@ export const createRoomBundle = <
     const useCanRedo = (): boolean => {
         const room = useRoom();
 
-        const subscribe = useCallback(
-            (onStoreChange: () => void) => room.storageRoot(onStoreChange),
-            [room],
-        );
+        const subscribe = useCallback((onStoreChange: () => void) => room.storageRoot(onStoreChange), [room]);
 
         const getSnapshot = useCallback((): boolean => room.canRedo(), [room]);
 
-        const canRedo = useSyncExternalStoreWithSelector(
-            subscribe,
-            getSnapshot,
-            getSnapshot,
-            identity,
-        );
+        const canRedo = useSyncExternalStoreWithSelector(subscribe, getSnapshot, getSnapshot, identity);
 
         return canRedo;
     };
@@ -315,19 +234,11 @@ export const createRoomBundle = <
     const useCanUndo = (): boolean => {
         const room = useRoom();
 
-        const subscribe = useCallback(
-            (onStoreChange: () => void) => room.storageRoot(onStoreChange),
-            [room],
-        );
+        const subscribe = useCallback((onStoreChange: () => void) => room.storageRoot(onStoreChange), [room]);
 
         const getSnapshot = useCallback((): boolean => room.canUndo(), [room]);
 
-        const canRedo = useSyncExternalStoreWithSelector(
-            subscribe,
-            getSnapshot,
-            getSnapshot,
-            identity,
-        );
+        const canRedo = useSyncExternalStoreWithSelector(subscribe, getSnapshot, getSnapshot, identity);
 
         return canRedo;
     };
@@ -347,10 +258,7 @@ export const createRoomBundle = <
 
         const getSnapshot = room.getConnection;
 
-        const _selector = useCallback(
-            (snapshot: WebSocketConnection) => selector(snapshot) as Id<T>,
-            [selector],
-        );
+        const _selector = useCallback((snapshot: WebSocketConnection) => selector(snapshot) as Id<T>, [selector]);
 
         return useSyncExternalStoreWithSelector(
             subscribe,
@@ -397,10 +305,7 @@ export const createRoomBundle = <
 
         const getSnapshot = room.getMyPresence;
 
-        const _selector = useCallback(
-            (snapshot: TPresence) => selector(snapshot) as Id<T>,
-            [selector],
-        );
+        const _selector = useCallback((snapshot: TPresence) => selector(snapshot) as Id<T>, [selector]);
 
         const myPresence = useSyncExternalStoreWithSelector(
             subscribe,
@@ -410,18 +315,14 @@ export const createRoomBundle = <
             options?.isEqual ?? fastDeepEqual,
         );
 
-        const updateMyPresence: Dispatch<UpdateMyPresenceAction<TPresence>> =
-            useCallback(
-                (value: UpdateMyPresenceAction<TPresence>): void => {
-                    const presence =
-                        typeof value === "function"
-                            ? value(room.getMyPresence())
-                            : value;
+        const updateMyPresence: Dispatch<UpdateMyPresenceAction<TPresence>> = useCallback(
+            (value: UpdateMyPresenceAction<TPresence>): void => {
+                const presence = typeof value === "function" ? value(room.getMyPresence()) : value;
 
-                    room.updateMyPresence(presence);
-                },
-                [room],
-            );
+                room.updateMyPresence(presence);
+            },
+            [room],
+        );
 
         return [myPresence, updateMyPresence];
     };
@@ -471,10 +372,7 @@ export const createRoomBundle = <
             [room, connectionId],
         );
 
-        const getSnapshot = useCallback(
-            () => room.getOther(connectionId),
-            [room, connectionId],
-        );
+        const getSnapshot = useCallback(() => room.getOther(connectionId), [room, connectionId]);
 
         const _selector = useCallback(
             (snapshot: Id<UserInfo<TIO, TPresence>> | null) => {
@@ -493,9 +391,7 @@ export const createRoomBundle = <
     };
 
     const useOthers = <T extends unknown = UserInfo<TIO, TPresence>>(
-        selector = identity as (
-            other: readonly Id<UserInfo<TIO, TPresence>>[],
-        ) => T[],
+        selector = identity as (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T[],
         options?: SubscriptionHookOptions<readonly Id<T>[]>,
     ): readonly Id<T>[] => {
         const room = useRoom();
@@ -513,9 +409,7 @@ export const createRoomBundle = <
             subscribe,
             getSnapshot,
             getSnapshot,
-            selector as (
-                other: readonly Id<UserInfo<TIO, TPresence>>[],
-            ) => Id<T>[],
+            selector as (other: readonly Id<UserInfo<TIO, TPresence>>[]) => Id<T>[],
             options?.isEqual ?? shallowArrayEqual,
         );
     };
@@ -526,14 +420,9 @@ export const createRoomBundle = <
         return room.redo;
     };
 
-    const useStorage = <
-        TKey extends keyof TStorage,
-        TData extends unknown = InferCrdtStorageJson<TStorage[TKey]>,
-    >(
+    const useStorage = <TKey extends keyof TStorage, TData extends unknown = InferCrdtStorageJson<TStorage[TKey]>>(
         key: TKey,
-        selector = identity as (
-            data: InferCrdtStorageJson<TStorage[TKey]>,
-        ) => TData,
+        selector = identity as (data: InferCrdtStorageJson<TStorage[TKey]>) => TData,
         options?: SubscriptionHookOptions<TData | null>,
     ): [data: TData | null, sharedType: TStorage[TKey] | null] => {
         const room = useRoom();
@@ -543,14 +432,9 @@ export const createRoomBundle = <
             rerender();
         });
 
-        const subscribe = useCallback(
-            (onStoreChange: () => void) => room.storage(key, onStoreChange),
-            [key, room],
-        );
+        const subscribe = useCallback((onStoreChange: () => void) => room.storage(key, onStoreChange), [key, room]);
 
-        const getSnapshot = useCallback((): InferCrdtStorageJson<
-            TStorage[TKey]
-        > | null => {
+        const getSnapshot = useCallback((): InferCrdtStorageJson<TStorage[TKey]> | null => {
             return room.getStorage(key)?.toJson();
         }, [key, room]);
 

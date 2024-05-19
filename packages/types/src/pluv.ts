@@ -1,4 +1,4 @@
-import { Id, JsonObject, MaybePromise, NonNilProps, Spread } from "./general";
+import type { Id, JsonObject, MaybePromise, NonNilProps } from "./general";
 
 export type BaseUser = {
     id: string;
@@ -83,13 +83,6 @@ export type GetEventMessage<T extends EventRecord<string, any>, TEvent extends k
     ? EventMessage<TEvent, T[TEvent]>
     : never;
 
-export type InferEventMessage<
-    TEvents extends EventRecord<string, any> = EventRecord<string, any>,
-    TEvent extends keyof TEvents = keyof TEvents,
-> = {
-    [P in TEvent]: P extends string ? Id<EventMessage<P, TEvents[P]>> : never;
-}[TEvent];
-
 export type InferIOAuthorize<TIO extends IOLike> = TIO extends IOLike<infer IAuthorize> ? IAuthorize : never;
 
 export type InferIOAuthorizeRequired<TAuthorize extends IOAuthorize<any, any, any>> =
@@ -101,20 +94,6 @@ export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any, any>> 
             ? IUser
             : IUser | null
         : never;
-
-export type InferIOInput<TIO extends IOLike> = TIO extends IOLike<any, infer IInput> ? IInput : never;
-
-export type InferIOOutput<TIO extends IOLike> =
-    TIO extends IOLike<any, any, infer IOutputBroadcast, infer IOutputSelf, infer IOutputSync>
-        ? Spread<[IOutputBroadcast, IOutputSelf, IOutputSync]>
-        : never;
-
-export type InferIOOutputBroadcast<TIO extends IOLike> = TIO extends IOLike<any, any, infer IOutput> ? IOutput : never;
-
-export type InferIOOutputSelf<TIO extends IOLike> = TIO extends IOLike<any, any, any, infer IOutput> ? IOutput : never;
-
-export type InferIOOutputSync<TIO extends IOLike> =
-    TIO extends IOLike<any, any, any, any, infer IOutput> ? IOutput : never;
 
 export type InputZodLike<TData extends JsonObject> = {
     _input: TData;
@@ -152,32 +131,49 @@ export type IOAuthorizeRequiredEventMessage<TIO extends IOLike> = NonNilProps<
     "connectionId" | "user"
 >;
 
-export type IOEventMessage<TIO extends IOLike, TEvent extends keyof InferIOOutput<TIO> = keyof InferIOOutput<TIO>> = Id<
+export type ProcedureLike<TInput extends JsonObject = {}, TOutput extends EventRecord<string, any> = {}> = {
+    config: {
+        broadcast?: ((data: TInput, ...args: any[]) => MaybePromise<TOutput | void>) | null;
+        input?: InputZodLike<TInput> | null;
+        self?: ((data: TInput, ...args: any[]) => MaybePromise<TOutput | void>) | null;
+        sync?: ((data: TInput, ...args: any[]) => MaybePromise<TOutput | void>) | null;
+    };
+};
+
+export interface IORouterLike<TEvents extends Record<string, ProcedureLike<any, any>> = {}> {
+    _events: TEvents;
+}
+
+export interface IOLike<
+    TAuthorize extends IOAuthorize<any, any, any> = IOAuthorize<any, any, any>,
+    TEvents extends Record<string, ProcedureLike<any, any>> = {},
+> extends IORouterLike<TEvents> {
+    _authorize: TAuthorize | null;
+}
+
+export type InferIOInput<TRouter extends IORouterLike<any>> =
+    TRouter extends IORouterLike<infer IEvents>
+        ? { [P in keyof IEvents]: IEvents[P] extends ProcedureLike<infer IInput, any> ? IInput : never }
+        : never;
+
+export type InferIOOutput<TRouter extends IORouterLike<any>> =
+    TRouter extends IORouterLike<infer IEvents>
+        ? { [P in keyof IEvents]: IEvents[P] extends ProcedureLike<any, infer IOutput> ? IOutput : never }
+        : never;
+
+export type InferEventMessage<
+    TEvents extends EventRecord<string, any> = EventRecord<string, any>,
+    TEvent extends keyof TEvents = keyof TEvents,
+> = {
+    [P in TEvent]: P extends string ? Id<EventMessage<P, TEvents[P]>> : never;
+}[TEvent];
+
+export type IOEventMessage<
+    TIO extends IOLike<any>,
+    TEvent extends keyof InferIOOutput<TIO> = keyof InferIOOutput<TIO>,
+> = Id<
     { room: string } & InferEventMessage<InferIOOutput<TIO>, TEvent> &
         (InferEventMessage<InferIOOutput<TIO>, TEvent>["type"] extends "$ERROR"
             ? IOAuthorizeOptionalEventMessage<TIO>
             : IOAuthorizeEventMessage<TIO>)
 >;
-
-export interface IOLike<
-    TAuthorize extends IOAuthorize<any, any, any> = IOAuthorize<any, any, any>,
-    TInput extends EventRecord<string, any> = {},
-    TOutputBroadcast extends EventRecord<string, any> = {},
-    TOutputSelf extends EventRecord<string, any> = {},
-    TOutputSync extends EventRecord<string, any> = {},
-> {
-    _authorize: TAuthorize | null;
-    _events: {
-        [P in keyof TInput]: P extends string
-            ? {
-                  resolver:
-                      | ((data: TInput[P], ...args: any[]) => MaybePromise<TOutputBroadcast | void>)
-                      | {
-                            broadcast?: (data: TInput[P], ...args: any[]) => MaybePromise<TOutputBroadcast | void>;
-                            self?: (data: TInput[P], ...args: any[]) => MaybePromise<TOutputSelf | void>;
-                            sync?: (data: TInput[P], ...args: any[]) => MaybePromise<TOutputSync | void>;
-                        };
-              }
-            : never;
-    };
-}

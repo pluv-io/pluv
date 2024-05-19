@@ -1,4 +1,4 @@
-import type { BaseIOAuthorize, IOAuthorize, JsonObject } from "@pluv/types";
+import type { BaseIOAuthorize, IOAuthorize, IORouterLike, JsonObject } from "@pluv/types";
 import type { AbstractPlatform, InferPlatformRoomContextType } from "./AbstractPlatform";
 import type { PluvProcedure } from "./PluvProcedure";
 
@@ -7,7 +7,7 @@ export type PluvRouterEventConfig<
     TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
 > = {
-    [P: string]: PluvProcedure<TPlatform, TAuthorize, TContext, any, any>;
+    [P: string]: Pick<PluvProcedure<TPlatform, TAuthorize, TContext, any, any>, "config">;
 };
 
 type MergedRouter<
@@ -28,7 +28,8 @@ export class PluvRouter<
     TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> {
+> implements IORouterLike<TEvents>
+{
     readonly _events: TEvents = {} as TEvents;
 
     constructor(events: TEvents) {

@@ -4,7 +4,6 @@ import type {
     BaseIOAuthorize,
     BaseIOEventRecord,
     EventMessage,
-    EventRecord,
     IOAuthorize,
     IOLike,
     Id,
@@ -24,31 +23,20 @@ import type {
     InferPlatformWebSocketType,
 } from "./AbstractPlatform";
 import { AbstractMessageEvent } from "./AbstractWebSocket";
+import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { authorize } from "./authorize";
-import type {
-    EventResolver,
-    EventResolverContext,
-    EventResolverObject,
-    InferEventConfig,
-    SendMessageOptions,
-    WebSocketSession,
-} from "./types";
+import type { EventResolverContext, IORoomListenerEvent, SendMessageOptions, WebSocketSession } from "./types";
 
 const PING_TIMEOUT_MS = 30_000;
 
-type BroadcastMessage<TIO extends IORoom<any, any, any, any, any>> =
+type BroadcastMessage<TIO extends IORoom<any, any, any, any>> =
     | InferEventMessage<InferIOInput<TIO>>
     | InferEventMessage<BaseIOEventRecord<InferIOAuthorize<TIO>>>;
 
-interface BroadcastParams<TIO extends IORoom<any, any, any, any, any>> {
+interface BroadcastParams<TIO extends IORoom<any, any, any, any>> {
     message: BroadcastMessage<TIO>;
     senderId?: string;
 }
-
-export type IORoomListenerEvent<TPlatform extends AbstractPlatform> = {
-    room: string;
-    encodedState: string;
-} & InferPlatformRoomContextType<TPlatform>;
 
 interface IORoomListeners<TPlatform extends AbstractPlatform> {
     onDestroy: (event: IORoomListenerEvent<TPlatform>) => void;
@@ -58,17 +46,14 @@ export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
-    TInput extends EventRecord<string, any> = {},
-    TOutputBroadcast extends EventRecord<string, any> = {},
-    TOutputSelf extends EventRecord<string, any> = {},
-    TOutputSync extends EventRecord<string, any> = {},
+    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<IORoomListeners<TPlatform>> & {
     authorize?: TAuthorize;
     context: TContext & InferPlatformRoomContextType<TPlatform>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug: boolean;
-    events: InferEventConfig<TPlatform, TAuthorize, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>;
     platform: TPlatform;
+    router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 };
 
 interface SendMessageSender {
@@ -85,11 +70,8 @@ export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
-    TInput extends EventRecord<string, any> = {},
-    TOutputBroadcast extends EventRecord<string, any> = {},
-    TOutputSelf extends EventRecord<string, any> = {},
-    TOutputSync extends EventRecord<string, any> = {},
-> implements IOLike<TAuthorize, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>
+    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
+> implements IOLike<TAuthorize, TEvents>
 {
     private readonly _context: TContext & InferPlatformRoomContextType<TPlatform>;
     private readonly _debug: boolean;
@@ -102,29 +84,22 @@ export class IORoom<
     private _uninitialize: (() => Promise<void>) | null = null;
 
     readonly _authorize: TAuthorize | null = null;
-    readonly _events: InferEventConfig<
-        TPlatform,
-        TAuthorize,
-        TContext,
-        TInput,
-        TOutputBroadcast,
-        TOutputSelf,
-        TOutputSync
-    >;
+    readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
     readonly id: string;
 
-    constructor(
-        id: string,
-        config: IORoomConfig<TPlatform, TAuthorize, TContext, TInput, TOutputBroadcast, TOutputSelf, TOutputSync>,
-    ) {
-        const { authorize, context, crdt = noop, debug, events, onDestroy, platform } = config;
+    public get _events() {
+        return this._router._events;
+    }
+
+    constructor(id: string, config: IORoomConfig<TPlatform, TAuthorize, TContext, TEvents>) {
+        const { authorize, context, crdt = noop, debug, onDestroy, platform, router } = config;
 
         this._context = context;
         this._debug = debug;
         this._docFactory = crdt.doc(() => ({}));
         this._doc = this._docFactory.getEmpty();
-        this._events = events;
+        this._router = router;
         this._platform = platform;
 
         this.id = id;
@@ -328,72 +303,18 @@ export class IORoom<
         }
     }
 
-    private _getEventConfig(
+    private _getProcedure(
         message: EventMessage<string, any>,
-    ):
-        | InferEventConfig<
-              TPlatform,
-              TAuthorize,
-              TContext,
-              TInput,
-              TOutputBroadcast,
-              TOutputSelf,
-              TOutputSync
-          >[keyof TInput]
-        | null {
-        return this._events[message.type as keyof TInput] ?? null;
+    ): (typeof this._router)["_events"][keyof (typeof this._router)["_events"]] | null {
+        return this._router._events[message.type as keyof (typeof this._router)["_events"]] ?? null;
     }
 
-    private _getEventInputs(message: EventMessage<string, any>): TInput[string] {
-        const eventConfig = this._getEventConfig(message);
+    private _getProcedureInputs(message: EventMessage<string, any>): InferIOInput<this>[keyof TEvents] {
+        const procedure = this._getProcedure(message);
 
-        if (!eventConfig) return message.data;
+        if (!procedure) return message.data;
 
-        /**
-         * !HACK
-         * @description If the config doesn't specify validation, we
-         * assume no input is to be expected, but pass through all values
-         * regardless. Leave this up to the implementer of the event.
-         * @author leedavidcs
-         * @date September 25, 2022
-         */
-        return eventConfig.input ? (eventConfig.input.parse(message.data) as TInput[string]) : message.data;
-    }
-
-    private _getEventResolverObject(
-        message: EventMessage<string, any>,
-    ): EventResolverObject<
-        TPlatform,
-        TAuthorize,
-        TContext,
-        TInput[string],
-        TOutputBroadcast,
-        TOutputSelf,
-        TOutputSync
-    > {
-        const eventConfig = this._getEventConfig(message);
-
-        if (!eventConfig) return {};
-
-        const resolver:
-            | EventResolver<
-                  TPlatform,
-                  TAuthorize,
-                  TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
-                  TInput[string],
-                  TOutputBroadcast
-              >
-            | EventResolverObject<
-                  TPlatform,
-                  TAuthorize,
-                  TContext,
-                  TInput[string],
-                  TOutputBroadcast,
-                  TOutputSelf,
-                  TOutputSync
-              > = eventConfig.resolver;
-
-        return typeof resolver === "function" ? { broadcast: resolver } : { ...resolver };
+        return procedure.config.input ? procedure.config.input.parse(message.data) : message.data;
     }
 
     private async _initialize(): Promise<void> {
@@ -493,12 +414,14 @@ export class IORoom<
 
             if (!message) return;
 
-            const resolver = this._getEventResolverObject(message);
+            const procedure = this._getProcedure(message);
 
-            let inputs: TInput[string];
+            if (!procedure) return;
+
+            let inputs: InferIOInput<this>[keyof TEvents];
 
             try {
-                inputs = this._getEventInputs(message);
+                inputs = this._getProcedureInputs(message);
             } catch (error) {
                 session?.webSocket.handleError({
                     error,
@@ -519,9 +442,9 @@ export class IORoom<
             };
 
             Promise.all([
-                resolver.broadcast?.(inputs, extendedContext),
-                resolver.self?.(inputs, extendedContext),
-                resolver.sync?.(inputs, baseContext),
+                procedure.config.broadcast?.(inputs, extendedContext),
+                procedure.config.self?.(inputs, extendedContext),
+                procedure.config.sync?.(inputs, baseContext),
             ]).then(([broadcast, self, sync]) => {
                 if (broadcast) {
                     Object.entries(broadcast).forEach(([type, data]: any) => {
@@ -648,14 +571,14 @@ export class IORoom<
             sessions: this._sessions,
         };
 
-        const resolver = this._getEventResolverObject(message).sync;
+        const resolver = this._getProcedure(message)?.config.sync;
 
         if (!resolver) return;
 
-        let inputs: TInput[string];
+        let inputs: InferIOInput<this>[keyof TEvents];
 
         try {
-            inputs = this._getEventInputs(message);
+            inputs = this._getProcedureInputs(message);
         } catch {
             return;
         }

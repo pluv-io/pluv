@@ -1,6 +1,6 @@
 import type { EventRecord, IOAuthorize, InputZodLike, JsonObject } from "@pluv/types";
 import type { AbstractPlatform, InferPlatformEventContextType, InferPlatformRoomContextType } from "./AbstractPlatform";
-import type { EventConfig, EventResolver } from "./types";
+import type { EventResolver, MergeEventRecords, SyncEventResolver } from "./types";
 
 export interface PluvProcedureConfig<
     TPlatform extends AbstractPlatform<any>,
@@ -9,15 +9,22 @@ export interface PluvProcedureConfig<
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
 > {
-    input?: InputZodLike<TInput>;
-    resolver?: EventResolver<
+    broadcast?: EventResolver<
         TPlatform,
         TAuthorize,
         TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
         TInput,
-        TOutput
-    >;
-    type?: "broadcast" | "self" | "sync";
+        Partial<TOutput>
+    > | null;
+    input?: InputZodLike<TInput>;
+    self?: EventResolver<
+        TPlatform,
+        TAuthorize,
+        TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
+        TInput,
+        Partial<TOutput>
+    > | null;
+    sync?: SyncEventResolver<TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null;
 }
 
 export class PluvProcedure<
@@ -28,31 +35,39 @@ export class PluvProcedure<
     TOutput extends EventRecord<string, any> = {},
     TFilled extends "input" | "broadcast" | "self" | "sync" | "" = "",
 > {
-    private _input: InputZodLike<TInput> | null = null;
-    private _resolver: EventResolver<
+    private _broadcast: EventResolver<
         TPlatform,
         TAuthorize,
         TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
         TInput,
-        TOutput
+        Partial<TOutput>
     > | null = null;
-    private _type: "broadcast" | "self" | "sync" | null = null;
+    private _input: InputZodLike<TInput> | null = null;
+    private _self: EventResolver<
+        TPlatform,
+        TAuthorize,
+        TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
+        TInput,
+        Partial<TOutput>
+    > | null = null;
+    private _sync: SyncEventResolver<TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null = null;
 
-    public get config(): EventConfig<TPlatform, TAuthorize, TContext, TInput, TOutput, {}, {}> | null {
-        if (!this._input || !this._resolver) return null;
-
+    public get config() {
         return {
-            input: this._input,
-            resolver: this._resolver,
+            broadcast: this._broadcast?.bind(this) ?? null,
+            input: this._input ?? null,
+            self: this._self?.bind(this) ?? null,
+            sync: this._sync?.bind(this) ?? null,
         };
     }
 
     constructor(config: PluvProcedureConfig<TPlatform, TAuthorize, TContext, TInput, TOutput> = {}) {
-        const { input, resolver, type } = config;
+        const { broadcast, input, self, sync } = config;
 
+        this._broadcast = broadcast ?? null;
         this._input = input ?? null;
-        this._resolver = resolver ?? null;
-        this._type = type ?? null;
+        this._self = self ?? null;
+        this._sync = sync ?? null;
     }
 
     public broadcast<TResult extends EventRecord<string, any> = {}>(
@@ -64,13 +79,30 @@ export class PluvProcedure<
             TResult
         >,
     ): Omit<
-        PluvProcedure<TPlatform, TAuthorize, TContext, TInput, TResult, TFilled | "input" | "broadcast">,
+        PluvProcedure<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TInput,
+            MergeEventRecords<[TOutput, TResult]>,
+            TFilled | "input" | "broadcast"
+        >,
         TFilled | "input" | "broadcast"
     > {
-        return new PluvProcedure<TPlatform, TAuthorize, TContext, TInput, TResult, TFilled | "input" | "broadcast">({
-            input: this._input ?? undefined,
-            resolver,
-            type: "broadcast",
+        const { broadcast } = this.config;
+
+        if (!!broadcast) throw new Error("Broadcast was already defined for this procedure");
+
+        return new PluvProcedure<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TInput,
+            MergeEventRecords<[TOutput, TResult]>,
+            TFilled | "input" | "broadcast"
+        >({
+            ...(this.config as any),
+            broadcast: resolver as any,
         });
     }
 
@@ -89,13 +121,30 @@ export class PluvProcedure<
             TResult
         >,
     ): Omit<
-        PluvProcedure<TPlatform, TAuthorize, TContext, TInput, TResult, TFilled | "input" | "self">,
+        PluvProcedure<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TInput,
+            MergeEventRecords<[TOutput, TResult]>,
+            TFilled | "input" | "self"
+        >,
         TFilled | "input" | "self"
     > {
-        return new PluvProcedure<TPlatform, TAuthorize, TContext, TInput, TResult, TFilled | "input" | "self">({
-            input: this._input ?? undefined,
-            resolver,
-            type: "self",
+        const { self } = this.config;
+
+        if (!!self) throw new Error("Self was already defined for this procedure");
+
+        return new PluvProcedure<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TInput,
+            MergeEventRecords<[TOutput, TResult]>,
+            TFilled | "input" | "self"
+        >({
+            ...(this.config as any),
+            self: resolver as any,
         });
     }
 
@@ -108,13 +157,30 @@ export class PluvProcedure<
             TResult
         >,
     ): Omit<
-        PluvProcedure<TPlatform, TAuthorize, TContext, TInput, TResult, TFilled | "input" | "sync">,
+        PluvProcedure<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TInput,
+            MergeEventRecords<[TOutput, TResult]>,
+            TFilled | "input" | "sync"
+        >,
         TFilled | "input" | "sync"
     > {
-        return new PluvProcedure<TPlatform, TAuthorize, TContext, TInput, TResult, TFilled | "input" | "sync">({
-            input: this._input ?? undefined,
-            resolver,
-            type: "sync",
+        const { sync } = this.config;
+
+        if (!!sync) throw new Error("Sync was already defined for this procedure");
+
+        return new PluvProcedure<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TInput,
+            MergeEventRecords<[TOutput, TResult]>,
+            TFilled | "input" | "sync"
+        >({
+            ...(this.config as any),
+            sync: resolver as any,
         });
     }
 }

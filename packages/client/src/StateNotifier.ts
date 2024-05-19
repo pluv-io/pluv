@@ -3,10 +3,7 @@ import type { Subject } from "wonka";
 import { makeSubject, subscribe } from "wonka";
 import type { UserInfo, WebSocketState } from "./types";
 
-export interface StateNotifierSubjects<
-    TIO extends IOLike,
-    TPresence extends JsonObject,
-> {
+export interface StateNotifierSubjects<TIO extends IOLike, TPresence extends JsonObject> {
     connection: Subject<Id<WebSocketState<TIO>>>;
     "my-presence": Subject<TPresence | null>;
     myself: Subject<Readonly<Id<UserInfo<TIO>>> | null>;
@@ -18,12 +15,7 @@ type InferSubjectValue<
     TIO extends IOLike,
     TPresence extends JsonObject,
     TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
-> =
-    StateNotifierSubjects<TIO, TPresence>[TSubject] extends Subject<
-        infer IValue
-    >
-        ? Id<IValue>
-        : never;
+> = StateNotifierSubjects<TIO, TPresence>[TSubject] extends Subject<infer IValue> ? Id<IValue> : never;
 
 export type SubscriptionCallback<
     TIO extends IOLike,
@@ -31,10 +23,7 @@ export type SubscriptionCallback<
     TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
 > = (value: InferSubjectValue<TIO, TPresence, TSubject>) => void;
 
-export class StateNotifier<
-    TIO extends IOLike,
-    TPresence extends JsonObject = {},
-> {
+export class StateNotifier<TIO extends IOLike, TPresence extends JsonObject = {}> {
     public subjects: StateNotifierSubjects<TIO, TPresence> = {
         connection: makeSubject<Id<WebSocketState<TIO>>>(),
         "my-presence": makeSubject<TPresence>(),
@@ -43,9 +32,7 @@ export class StateNotifier<
         "storage-loaded": makeSubject<true>(),
     };
 
-    public subscribe<
-        TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
-    >(
+    public subscribe<TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
         name: TSubject,
         callback: SubscriptionCallback<TIO, TPresence, TSubject>,
     ): () => void {

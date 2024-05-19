@@ -1,8 +1,4 @@
-import type {
-    AbstractCrdtDoc,
-    AbstractCrdtType,
-    InferCrdtStorageJson,
-} from "@pluv/crdt";
+import type { AbstractCrdtDoc, AbstractCrdtType, InferCrdtStorageJson } from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
     EventMessage,
@@ -17,7 +13,7 @@ import type {
     JsonObject,
 } from "@pluv/types";
 import { AbstractRoom } from "./AbstractRoom";
-import { AbstractStorageStore } from "./AbstractStorageStore";
+import type { AbstractStorageStore } from "./AbstractStorageStore";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
@@ -25,21 +21,12 @@ import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import { EventNotifier } from "./EventNotifier";
 import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
 import { OtherNotifier } from "./OtherNotifier";
-import type {
-    StateNotifierSubjects,
-    SubscriptionCallback,
-} from "./StateNotifier";
+import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import { StorageStore } from "./StorageStore";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
-import type {
-    AuthorizationState,
-    InternalSubscriptions,
-    UserInfo,
-    WebSocketConnection,
-    WebSocketState,
-} from "./types";
+import type { AuthorizationState, InternalSubscriptions, UserInfo, WebSocketConnection, WebSocketState } from "./types";
 import { ConnectionState } from "./types";
 import { debounce } from "./utils";
 
@@ -89,10 +76,7 @@ interface TimeoutIds {
     reconnect: number | null;
 }
 
-export type AuthEndpoint =
-    | string
-    | ((room: string) => string | FetchOptions)
-    | true;
+export type AuthEndpoint = string | ((room: string) => string | FetchOptions) | true;
 export type WsEndpoint = string | ((room: string) => string);
 
 type FetchOptions = { url: string; options?: RequestInit };
@@ -111,9 +95,7 @@ export type PluvRoomAddon<
     TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
-> = (
-    input: PluvRoomAddonInput<TIO, TPresence, TStorage>,
-) => Partial<PluvRoomAddonResult>;
+> = (input: PluvRoomAddonInput<TIO, TPresence, TStorage>) => Partial<PluvRoomAddonResult>;
 
 export interface PluvRoomAddonInput<
     TIO extends IOLike = IOLike,
@@ -220,10 +202,7 @@ export class PluvRoom<
         this._listeners = {
             onAuthorizationFail: (error) => {
                 this._clearTimeout(this._timeouts.reconnect);
-                this._timeouts.reconnect = setTimeout(
-                    this._reconnect.bind(this),
-                    RECONNECT_TIMEOUT_MS,
-                );
+                this._timeouts.reconnect = setTimeout(this._reconnect.bind(this), RECONNECT_TIMEOUT_MS);
 
                 onAuthorizationFail?.(error);
             },
@@ -247,10 +226,7 @@ export class PluvRoom<
         return this._state.webSocket;
     }
 
-    public broadcast<TEvent extends keyof InferIOInput<TIO>>(
-        event: TEvent,
-        data: Id<InferIOInput<TIO>[TEvent]>,
-    ): void {
+    public broadcast<TEvent extends keyof InferIOInput<TIO>>(event: TEvent, data: Id<InferIOInput<TIO>[TEvent]>): void {
         if (!this._state.webSocket) return;
         if (this._state.connection.state !== ConnectionState.Open) return;
 
@@ -272,10 +248,9 @@ export class PluvRoom<
             throw new Error("Must provide an wsEndpoint.");
         }
 
-        const canConnect = [
-            ConnectionState.Closed,
-            ConnectionState.Untouched,
-        ].some((state) => this._state.connection.state === state);
+        const canConnect = [ConnectionState.Closed, ConnectionState.Untouched].some(
+            (state) => this._state.connection.state === state,
+        );
 
         if (!canConnect) return;
 
@@ -298,8 +273,7 @@ export class PluvRoom<
         try {
             authToken = await this._getAuthorization(this.id);
 
-            authToken &&
-                url.searchParams.set("token", encodeURIComponent(authToken));
+            authToken && url.searchParams.set("token", encodeURIComponent(authToken));
 
             webSocket = new WebSocket(url.toString());
         } catch (err) {
@@ -328,10 +302,9 @@ export class PluvRoom<
 
         if (!this._state.webSocket) return;
 
-        const canDisconnect = [
-            ConnectionState.Connecting,
-            ConnectionState.Open,
-        ].some((state) => this._state.connection.state === state);
+        const canDisconnect = [ConnectionState.Connecting, ConnectionState.Open].some(
+            (state) => this._state.connection.state === state,
+        );
 
         if (!canDisconnect) return;
 
@@ -355,9 +328,7 @@ export class PluvRoom<
 
     public getConnection(): WebSocketConnection {
         // Create a read-only clone of the connection state
-        return Object.freeze(
-            JSON.parse(JSON.stringify(this._state.connection)),
-        );
+        return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     }
 
     public getDoc(): AbstractCrdtDoc<TStorage> {
@@ -372,9 +343,7 @@ export class PluvRoom<
         return this._usersManager.myself;
     };
 
-    public getOther = (
-        connectionId: string,
-    ): Id<UserInfo<TIO, TPresence>> | null => {
+    public getOther = (connectionId: string): Id<UserInfo<TIO, TPresence>> | null => {
         return this._usersManager.getOther(connectionId);
     };
 
@@ -382,9 +351,7 @@ export class PluvRoom<
         return this._usersManager.getOthers();
     };
 
-    public getStorage = <TKey extends keyof TStorage>(
-        key: TKey,
-    ): TStorage[TKey] | null => {
+    public getStorage = <TKey extends keyof TStorage>(key: TKey): TStorage[TKey] | null => {
         const sharedType = this._crdtManager.get(key);
 
         if (typeof sharedType === "undefined") return null;
@@ -392,10 +359,7 @@ export class PluvRoom<
         return sharedType;
     };
 
-    public other = (
-        connectionId: string,
-        callback: OtherNotifierSubscriptionCallback<TIO>,
-    ): (() => void) => {
+    public other = (connectionId: string, callback: OtherNotifierSubscriptionCallback<TIO>): (() => void) => {
         return this._otherNotifier.subscribe(connectionId, callback);
     };
 
@@ -418,19 +382,14 @@ export class PluvRoom<
         return this._crdtNotifier.subcribeRoot(fn);
     };
 
-    public subscribe = <
-        TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
-    >(
+    public subscribe = <TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
         name: TSubject,
         callback: SubscriptionCallback<TIO, TPresence, TSubject>,
     ): (() => void) => {
         return this._stateNotifier.subscribe(name, callback);
     };
 
-    public transact = (
-        fn: (storage: TStorage) => void,
-        origin?: string,
-    ): void => {
+    public transact = (fn: (storage: TStorage) => void, origin?: string): void => {
         const _origin = origin ?? this._state.connection.id;
 
         /**
@@ -462,10 +421,7 @@ export class PluvRoom<
         this._stateNotifier.subjects["my-presence"].next(myPresence);
         !!myself && this._stateNotifier.subjects["myself"].next(myself);
 
-        this.broadcast(
-            "$UPDATE_PRESENCE" as keyof InferIOInput<TIO>,
-            { presence } as any,
-        );
+        this.broadcast("$UPDATE_PRESENCE" as keyof InferIOInput<TIO>, { presence } as any);
     };
 
     private async _addToStorageStore(update: string): Promise<void> {
@@ -499,14 +455,8 @@ export class PluvRoom<
             onVisibilityChange: this._onVisibilityChange.bind(this),
         };
 
-        window.addEventListener(
-            "online",
-            this._windowListeners.onNavigatorOnline,
-        );
-        document.addEventListener(
-            "visibilitychange",
-            this._windowListeners.onVisibilityChange,
-        );
+        window.addEventListener("online", this._windowListeners.onNavigatorOnline);
+        document.addEventListener("visibilitychange", this._windowListeners.onVisibilityChange);
     }
 
     private _attachWsListeners(): void {
@@ -519,22 +469,10 @@ export class PluvRoom<
             onOpen: this._onOpen.bind(this),
         };
 
-        this._state.webSocket.addEventListener(
-            "close",
-            this._wsListeners.onClose,
-        );
-        this._state.webSocket.addEventListener(
-            "error",
-            this._wsListeners.onError,
-        );
-        this._state.webSocket.addEventListener(
-            "message",
-            this._wsListeners.onMessage,
-        );
-        this._state.webSocket.addEventListener(
-            "open",
-            this._wsListeners.onOpen,
-        );
+        this._state.webSocket.addEventListener("close", this._wsListeners.onClose);
+        this._state.webSocket.addEventListener("error", this._wsListeners.onError);
+        this._state.webSocket.addEventListener("message", this._wsListeners.onMessage);
+        this._state.webSocket.addEventListener("open", this._wsListeners.onOpen);
     }
 
     private _clearInterval(interval: number | null) {
@@ -574,14 +512,8 @@ export class PluvRoom<
         if (typeof window === "undefined") return;
         if (typeof document === "undefined") return;
 
-        window.removeEventListener(
-            "online",
-            this._windowListeners.onNavigatorOnline,
-        );
-        document.removeEventListener(
-            "visibilitychange",
-            this._windowListeners.onVisibilityChange,
-        );
+        window.removeEventListener("online", this._windowListeners.onNavigatorOnline);
+        document.removeEventListener("visibilitychange", this._windowListeners.onVisibilityChange);
 
         this._windowListeners = null;
     }
@@ -589,22 +521,10 @@ export class PluvRoom<
     private _detachWsListeners(): void {
         if (!this._state.webSocket || !this._wsListeners) return;
 
-        this._state.webSocket.removeEventListener(
-            "close",
-            this._wsListeners.onClose,
-        );
-        this._state.webSocket.removeEventListener(
-            "error",
-            this._wsListeners.onError,
-        );
-        this._state.webSocket.removeEventListener(
-            "message",
-            this._wsListeners.onMessage,
-        );
-        this._state.webSocket.removeEventListener(
-            "open",
-            this._wsListeners.onOpen,
-        );
+        this._state.webSocket.removeEventListener("close", this._wsListeners.onClose);
+        this._state.webSocket.removeEventListener("error", this._wsListeners.onError);
+        this._state.webSocket.removeEventListener("message", this._wsListeners.onMessage);
+        this._state.webSocket.removeEventListener("open", this._wsListeners.onOpen);
 
         this._wsListeners = null;
     }
@@ -676,9 +596,7 @@ export class PluvRoom<
 
         const result = this._endpoints.authEndpoint(room);
 
-        return typeof result === "string"
-            ? { url: result, options: {} }
-            : result;
+        return typeof result === "string" ? { url: result, options: {} } : result;
     }
 
     private async _getAuthorization(room: string): Promise<string | null> {
@@ -697,9 +615,7 @@ export class PluvRoom<
         try {
             return await res.text().then((text) => text.trim());
         } catch (err) {
-            throw new Error(
-                err instanceof Error ? err.message : "Room is unauthorized",
-            );
+            throw new Error(err instanceof Error ? err.message : "Room is unauthorized");
         }
     }
 
@@ -737,14 +653,9 @@ export class PluvRoom<
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
-        const data = message.data as BaseIOEventRecord<
-            InferIOAuthorize<TIO>
-        >["$PRESENCE_UPDATED"];
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$PRESENCE_UPDATED"];
 
-        this._usersManager.patchPresence(
-            connectionId,
-            data.presence as TPresence,
-        );
+        this._usersManager.patchPresence(connectionId, data.presence as TPresence);
 
         const myPresence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
@@ -768,9 +679,7 @@ export class PluvRoom<
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
-        const data = message.data as BaseIOEventRecord<
-            InferIOAuthorize<TIO>
-        >["$OTHERS_RECEIVED"];
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$OTHERS_RECEIVED"];
 
         Object.keys(data.others).forEach((connectionId) => {
             const { presence, user } = data.others[connectionId];
@@ -781,11 +690,7 @@ export class PluvRoom<
 
             const other = this._usersManager.getOther(connectionId);
 
-            !!presence &&
-                this._usersManager.patchPresence(
-                    connectionId,
-                    presence as TPresence,
-                );
+            !!presence && this._usersManager.patchPresence(connectionId, presence as TPresence);
 
             this._otherNotifier.subject(connectionId).next(other);
         });
@@ -810,10 +715,7 @@ export class PluvRoom<
             return oldState;
         });
 
-        this._usersManager.setMyself(
-            connectionId,
-            user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>,
-        );
+        this._usersManager.setMyself(connectionId, user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>);
 
         const presence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
@@ -821,10 +723,7 @@ export class PluvRoom<
         this._stateNotifier.subjects["my-presence"].next(presence);
         this._stateNotifier.subjects["myself"].next(myself);
 
-        const update =
-            this._state.connection.count > 1
-                ? this._crdtManager.doc.getEncodedState() ?? null
-                : null;
+        const update = this._state.connection.count > 1 ? this._crdtManager.doc.getEncodedState() ?? null : null;
 
         this._sendMessage({
             type: "$INITIALIZE_SESSION",
@@ -832,18 +731,14 @@ export class PluvRoom<
         });
     }
 
-    private async _handleStorageReceivedMessage(
-        message: IOEventMessage<TIO>,
-    ): Promise<void> {
+    private async _handleStorageReceivedMessage(message: IOEventMessage<TIO>): Promise<void> {
         const { connectionId } = message;
 
         if (!connectionId) return;
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
-        const data = message.data as BaseIOEventRecord<
-            InferIOAuthorize<TIO>
-        >["$STORAGE_RECEIVED"];
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$STORAGE_RECEIVED"];
 
         this._crdtManager.initialize({
             onInitialized: async (update) => {
@@ -878,9 +773,7 @@ export class PluvRoom<
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
-        const data = message.data as BaseIOEventRecord<
-            InferIOAuthorize<TIO>
-        >[typeof ORIGIN_STORAGE_UPDATED];
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>[typeof ORIGIN_STORAGE_UPDATED];
 
         if (!this._crdtManager) return;
 
@@ -917,9 +810,7 @@ export class PluvRoom<
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
         if (!this._usersManager.myself) return;
 
-        const data = message.data as BaseIOEventRecord<
-            InferIOAuthorize<TIO>
-        >["$USER_JOINED"];
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$USER_JOINED"];
 
         const myself = this._usersManager.myself;
 
@@ -927,11 +818,7 @@ export class PluvRoom<
             this._sendMessage({ type: "$GET_OTHERS", data: {} });
         }
 
-        this._usersManager.setUser(
-            connectionId,
-            data.user,
-            data.presence as TPresence,
-        );
+        this._usersManager.setUser(connectionId, data.user, data.presence as TPresence);
 
         const other = this._usersManager.getOther(connectionId);
         const others = this._usersManager.getOthers();
@@ -942,10 +829,7 @@ export class PluvRoom<
 
     private _heartbeat(): void {
         this._clearTimeout(this._timeouts.pong);
-        this._timeouts.pong = setTimeout(
-            this._reconnect.bind(this),
-            PONG_TIMEOUT_MS,
-        );
+        this._timeouts.pong = setTimeout(this._reconnect.bind(this), PONG_TIMEOUT_MS);
 
         this._sendMessage({ type: "$PING", data: {} });
     }
@@ -968,10 +852,7 @@ export class PluvRoom<
             this._addToStorageStore(event.update);
             this._emitSharedTypes();
 
-            if (
-                origin === ORIGIN_INITIALIZED ||
-                origin === ORIGIN_STORAGE_UPDATED
-            ) {
+            if (origin === ORIGIN_INITIALIZED || origin === ORIGIN_STORAGE_UPDATED) {
                 return;
             }
 
@@ -989,8 +870,7 @@ export class PluvRoom<
     }
 
     private _onAuthorizationFail(error: unknown): void {
-        const authError =
-            error instanceof Error ? error : new Error("Authorization failed");
+        const authError = error instanceof Error ? error : new Error("Authorization failed");
 
         this._listeners.onAuthorizationFail(authError);
 
@@ -1040,17 +920,13 @@ export class PluvRoom<
         if (!message) return;
 
         const shouldLog =
-            typeof this._debug === "boolean"
-                ? this._debug
-                : this._debug.output.find((value) => value === message.type);
+            typeof this._debug === "boolean" ? this._debug : this._debug.output.find((value) => value === message.type);
 
         if (shouldLog) {
             this._logDebug("WebSocket event received: ", message.type, message);
         }
 
-        this._eventNotifier
-            .subject(message.type as keyof InferIOOutput<TIO>)
-            .next(message as any);
+        this._eventNotifier.subject(message.type as keyof InferIOOutput<TIO>).next(message as any);
 
         const { connectionId } = message;
 
@@ -1105,10 +981,7 @@ export class PluvRoom<
         });
 
         this._clearInterval(this._intervals.heartbeat);
-        this._intervals.heartbeat = setInterval(
-            this._heartbeat.bind(this),
-            HEARTBEAT_INTERVAL_MS,
-        );
+        this._intervals.heartbeat = setInterval(this._heartbeat.bind(this), HEARTBEAT_INTERVAL_MS);
     }
 
     private async _onNavigatorOnline(): Promise<void> {
@@ -1137,9 +1010,7 @@ export class PluvRoom<
         }
     }
 
-    private _parseMessage(message: {
-        data: string | ArrayBuffer;
-    }): IOEventMessage<TIO> | null {
+    private _parseMessage(message: { data: string | ArrayBuffer }): IOEventMessage<TIO> | null {
         /**
          * !HACK
          * @description We'll only handle stringified JSONs for now
@@ -1181,17 +1052,13 @@ export class PluvRoom<
         await this.connect();
     }
 
-    private _sendMessage<
-        TMessage extends EventMessage<string, any> = EventMessage<string, any>,
-    >(data: TMessage): void {
+    private _sendMessage<TMessage extends EventMessage<string, any> = EventMessage<string, any>>(data: TMessage): void {
         const webSocket = this._state.webSocket;
 
         if (webSocket?.readyState !== WebSocket.OPEN) return;
 
         const shouldLog =
-            typeof this._debug === "boolean"
-                ? this._debug
-                : this._debug.input.find((value) => value === data.type);
+            typeof this._debug === "boolean" ? this._debug : this._debug.input.find((value) => value === data.type);
 
         if (shouldLog) {
             this._logDebug("WebSocket event sent: ", data.type, data);
@@ -1200,15 +1067,11 @@ export class PluvRoom<
         webSocket.send(JSON.stringify(data));
     }
 
-    private _updateState(
-        updater: (oldState: WebSocketState<TIO>) => WebSocketState<TIO>,
-    ): WebSocketState<TIO> {
+    private _updateState(updater: (oldState: WebSocketState<TIO>) => WebSocketState<TIO>): WebSocketState<TIO> {
         let authorization: AuthorizationState<TIO>;
 
         try {
-            authorization = JSON.parse(
-                JSON.stringify(this._state.authorization),
-            );
+            authorization = JSON.parse(JSON.stringify(this._state.authorization));
         } catch {
             throw new Error("User is not JSON serializable");
         }
