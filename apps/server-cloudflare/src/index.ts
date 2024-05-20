@@ -1,14 +1,14 @@
 import { createPluvHandler } from "@pluv/platform-cloudflare";
-import { io } from "./pluv-io";
+import { ioServer } from "./pluv-io";
 
-export { io } from "./pluv-io";
+export { ioServer } from "./pluv-io";
 
 const CORS_VALID_DOMAINS = ["pluv.io", "pluv.vercel.app"];
 const CORS_MAX_AGE = 86_400;
 
 const Pluv = createPluvHandler({
     binding: "rooms",
-    io,
+    io: ioServer,
     modify: (request, response) => {
         if (request.headers.get("Upgrade") === "websocket") return response;
 
@@ -21,12 +21,7 @@ const Pluv = createPluvHandler({
         const { origin } = new URL(request.url);
         const headers = {
             "access-control-allow-origin": origin,
-            "access-control-allow-methods": [
-                "GET",
-                "HEAD",
-                "POST",
-                "OPTIONS",
-            ].join(","),
+            "access-control-allow-methods": ["GET", "HEAD", "POST", "OPTIONS"].join(","),
             "access-control-max-age": `${CORS_MAX_AGE}`,
         };
 

@@ -38,7 +38,7 @@ export interface ServerConfig<
     TContext extends JsonObject = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > {
-    router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
+    router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 }
 
 export class PluvIO<
@@ -231,7 +231,7 @@ export class PluvIO<
     }
 
     public server<TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>>(
-        config: ServerConfig<TPlatform, TAuthorize, TContext, TEvents>,
+        config: ServerConfig<TPlatform, TAuthorize, TContext, TEvents> = {},
     ): PluvServer<TPlatform, TAuthorize, TContext, TEvents> {
         const { router } = config;
 

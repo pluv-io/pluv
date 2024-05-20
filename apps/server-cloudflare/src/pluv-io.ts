@@ -6,3 +6,5 @@ export const io = createIO({
     crdt: yjs,
     platform: platformCloudflare(),
 });
+
+export const ioServer = io.server();
