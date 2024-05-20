@@ -15,7 +15,7 @@ import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
-import type { GetInitialStorageFn, IORoomListenerEvent, PluvIOListeners } from "./types";
+import type { IORoomListenerEvent, PluvIOListeners } from "./types";
 import { __PLUV_VERSION } from "./version";
 
 export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
@@ -33,7 +33,6 @@ export type PluvServerConfig<
     context?: TContext;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug?: boolean;
-    getInitialStorage?: GetInitialStorageFn<TPlatform>;
     platform: TPlatform;
     router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 };
@@ -55,7 +54,6 @@ export class PluvServer<
     readonly _context: TContext = {} as TContext;
     readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     readonly _debug: boolean;
-    readonly _getInitialStorage: GetInitialStorageFn<TPlatform> | null = null;
     readonly _listeners: PluvIOListeners<TPlatform>;
     readonly _platform: TPlatform;
     readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
@@ -71,7 +69,6 @@ export class PluvServer<
             context,
             crdt = noop,
             debug = false,
-            getInitialStorage,
             onRoomDeleted,
             onStorageUpdated,
             platform,
@@ -85,7 +82,6 @@ export class PluvServer<
 
         if (authorize) this._authorize = authorize;
         if (context) this._context = context;
-        if (getInitialStorage) this._getInitialStorage = getInitialStorage;
 
         this._listeners = {
             onRoomDeleted: (event) => onRoomDeleted?.(event),

@@ -107,11 +107,7 @@ export class PluvIO<
 
                     await this._platform.persistance.setStorageState(room, encodedState);
 
-                    this._listeners.onStorageUpdated({
-                        ...context,
-                        encodedState,
-                        room,
-                    });
+                    this._listeners.onStorageUpdated({ ...context, encodedState, room });
                 }
 
                 const state = (await this._platform.persistance.getStorageState(room)) ?? doc.getEncodedState();
@@ -247,7 +243,6 @@ export class PluvIO<
             context: this._context,
             crdt: this._crdt,
             debug: this._debug,
-            getInitialStorage: this._getInitialStorage ?? undefined,
             platform: this._platform,
             router,
         });
