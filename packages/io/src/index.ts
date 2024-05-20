@@ -27,7 +27,7 @@ export type { PluvIOConfig, ServerConfig } from "./PluvIO";
 export { PluvProcedure } from "./PluvProcedure";
 export type { PluvProcedureConfig } from "./PluvProcedure";
 export { PluvRouter } from "./PluvRouter";
-export type { PluvRouterEventConfig } from "./PluvRouter";
+export type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 export { PluvServer } from "./PluvServer";
 export type { GetRoomOptions, InferIORoom, PluvServerConfig } from "./PluvServer";
 export type { AuthorizeModule, AuthorizeParams, JWT, JWTEncodeParams } from "./authorize";

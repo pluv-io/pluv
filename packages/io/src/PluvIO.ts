@@ -11,7 +11,7 @@ import type {
 } from "@pluv/types";
 import type { AbstractPlatform, InferPlatformRoomContextType } from "./AbstractPlatform";
 import { PluvProcedure } from "./PluvProcedure";
-import type { PluvRouterEventConfig } from "./PluvRouter";
+import type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import { PluvServer } from "./PluvServer";
 import type { JWTEncodeParams } from "./authorize";
@@ -220,7 +220,9 @@ export class PluvIO<
         }).encode(params);
     }
 
-    public mergeRouters<TRouters extends PluvRouter<TPlatform, TAuthorize, TContext, any>[]>(...routers: TRouters) {
+    public mergeRouters<TRouters extends PluvRouter<TPlatform, TAuthorize, TContext, any>[]>(
+        ...routers: TRouters
+    ): MergedRouter<TRouters> {
         return PluvRouter.merge(...routers);
     }
 
@@ -233,7 +235,12 @@ export class PluvIO<
     public server<TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>>(
         config: ServerConfig<TPlatform, TAuthorize, TContext, TEvents> = {},
     ): PluvServer<TPlatform, TAuthorize, TContext, TEvents> {
-        const { router } = config;
+        const router = (config.router ? this.mergeRouters(this._router, config.router) : this._router) as PluvRouter<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TEvents
+        >;
 
         return new PluvServer<TPlatform, TAuthorize, TContext, TEvents>({
             authorize: this._authorize ?? undefined,
