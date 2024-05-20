@@ -1,3 +1,4 @@
+import { useNoSsr } from "@pluv-internal/react-hooks";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -5,6 +6,7 @@ import { PresenceRoom } from "../../../../components/yjs/node-redis";
 import { PluvRoomProvider } from "../../../../pluv-io/yjs/node-redis";
 
 export const Page: NextPage = () => {
+    const noSsr = useNoSsr();
     const router = useRouter();
 
     const [enabled, setEnabled] = useState<boolean>(true);
@@ -13,7 +15,7 @@ export const Page: NextPage = () => {
 
     const roomId = (router.query.room as string) ?? "e2e-node-redis-presence";
 
-    return (
+    return noSsr(
         <div>
             <button
                 id="connect-room"
@@ -39,7 +41,7 @@ export const Page: NextPage = () => {
                     <PresenceRoom />
                 </PluvRoomProvider>
             )}
-        </div>
+        </div>,
     );
 };
 

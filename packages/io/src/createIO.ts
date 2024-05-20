@@ -1,8 +1,8 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
-import type { BaseClientEventRecord, BaseIOEventRecord, BaseUser, IOAuthorize, JsonObject } from "@pluv/types";
+import type { BaseUser, IOAuthorize, JsonObject } from "@pluv/types";
 import type { AbstractPlatform, InferPlatformRoomContextType } from "./AbstractPlatform";
-import type { GetInitialStorageFn, PluvIOListeners } from "./PluvIO";
 import { PluvIO } from "./PluvIO";
+import type { GetInitialStorageFn, PluvIOListeners } from "./types";
 
 export type CreateIOParams<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -28,18 +28,14 @@ export const createIO = <
 ): PluvIO<
     TPlatform,
     IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferPlatformRoomContextType<TPlatform>>,
-    TContext,
-    BaseClientEventRecord,
-    BaseIOEventRecord<IOAuthorize<TAuthorizeUser, TAuthorizeRequired>>
+    TContext
 > => {
     const { authorize, context, crdt, debug, getInitialStorage, onRoomDeleted, onStorageUpdated, platform } = params;
 
     return new PluvIO<
         TPlatform,
         IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferPlatformRoomContextType<TPlatform>>,
-        TContext,
-        BaseClientEventRecord,
-        BaseIOEventRecord<IOAuthorize<TAuthorizeUser, TAuthorizeRequired>>
+        TContext
     >({
         authorize,
         context,

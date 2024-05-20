@@ -1,13 +1,6 @@
 import type { AbstractCrdtType } from "@pluv/crdt";
 import type { IOLike, JsonObject } from "@pluv/types";
-import {
-    AuthEndpoint,
-    PluvRoom,
-    PluvRoomOptions,
-    RoomConfig,
-    RoomEndpoints,
-    WsEndpoint,
-} from "./PluvRoom";
+import { AuthEndpoint, PluvRoom, PluvRoomOptions, RoomConfig, RoomEndpoints, WsEndpoint } from "./PluvRoom";
 
 export type PluvClientOptions<TIO extends IOLike> = RoomEndpoints<TIO> & {
     debug?: boolean;
@@ -56,9 +49,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
         return newRoom;
     };
 
-    public enter = async (
-        room: string | PluvRoom<TIO, any, any>,
-    ): Promise<PluvRoom<TIO, JsonObject, any>> => {
+    public enter = async (room: string | PluvRoom<TIO, any, any>): Promise<PluvRoom<TIO, JsonObject, any>> => {
         const toEnter = typeof room === "string" ? this.getRoom(room) : room;
 
         if (!toEnter) {
@@ -80,9 +71,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
     >(
         room: string,
     ): PluvRoom<TIO, TPresence, TStorage> | null => {
-        const found = this._rooms.get(room) as
-            | PluvRoom<TIO, TPresence, TStorage>
-            | undefined;
+        const found = this._rooms.get(room) as PluvRoom<TIO, TPresence, TStorage> | undefined;
 
         return found ?? null;
     };
@@ -91,9 +80,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
         return Array.from(this._rooms.values());
     };
 
-    public leave = async (
-        room: string | PluvRoom<TIO, any, any>,
-    ): Promise<void> => {
+    public leave = async (room: string | PluvRoom<TIO, any, any>): Promise<void> => {
         const toLeave = typeof room === "string" ? this.getRoom(room) : room;
 
         if (!toLeave) return;

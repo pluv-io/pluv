@@ -1,9 +1,9 @@
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
-import type { io } from "../../server/yjs/node-redis";
+import type { ioServer } from "../../server/yjs/node-redis";
 
-const client = createClient<typeof io>({
+const client = createClient<typeof ioServer>({
     authEndpoint: (roomName) => {
         const [room] = roomName.split("_");
 

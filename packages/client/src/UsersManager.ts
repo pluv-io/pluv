@@ -1,11 +1,4 @@
-import type {
-    Id,
-    InferIOAuthorize,
-    InferIOAuthorizeUser,
-    InputZodLike,
-    IOLike,
-    JsonObject,
-} from "@pluv/types";
+import type { Id, InferIOAuthorize, InferIOAuthorizeUser, InputZodLike, IOLike, JsonObject } from "@pluv/types";
 import type { UserInfo } from "./types";
 
 export type Presence = Record<string, unknown>;
@@ -15,10 +8,7 @@ export type UsersManagerConfig<TPresence extends JsonObject = {}> = {
     presence?: InputZodLike<TPresence>;
 };
 
-export class UsersManager<
-    TIO extends IOLike,
-    TPresence extends JsonObject = {},
-> {
+export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}> {
     private _initialPresence: TPresence;
     /**
      * @description This presence can be updated while the user is not
@@ -60,10 +50,7 @@ export class UsersManager<
         return Array.from(this._others.values());
     }
 
-    public patchPresence(
-        connectionId: string,
-        patch: Partial<TPresence>,
-    ): void {
+    public patchPresence(connectionId: string, patch: Partial<TPresence>): void {
         if (this._myself?.connectionId === connectionId) {
             const presence = {
                 ...this._myPresence,
@@ -98,10 +85,7 @@ export class UsersManager<
         this._others.delete(connectionId);
     }
 
-    public setMyself(
-        connectionId: string,
-        user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>,
-    ): void {
+    public setMyself(connectionId: string, user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>): void {
         this._myself = {
             connectionId,
             presence: this._initialPresence,

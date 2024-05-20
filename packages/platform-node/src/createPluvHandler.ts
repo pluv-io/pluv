@@ -1,29 +1,36 @@
-import type { PluvIO } from "@pluv/io";
-import { InferIOAuthorize, InferIOAuthorizeRequired, InferIOAuthorizeUser, Maybe, MaybePromise } from "@pluv/types";
-import Http from "http";
+import type { PluvServer } from "@pluv/io";
+import type {
+    InferIOAuthorize,
+    InferIOAuthorizeRequired,
+    InferIOAuthorizeUser,
+    Maybe,
+    MaybePromise,
+} from "@pluv/types";
+import type { Server as HttpServer, IncomingMessage, ServerResponse } from "node:http";
+import Url from "node:url";
 import { match } from "path-to-regexp";
-import Url from "url";
-import WS from "ws";
+import type { WebSocket } from "ws";
+import { Server as WsServer } from "ws";
 import { NodePlatform } from "./NodePlatform";
 
 export interface AuthorizeFunctionContext {
-    req: Http.IncomingMessage;
-    res: Http.ServerResponse;
+    req: IncomingMessage;
+    res: ServerResponse;
     roomId: string;
 }
-export type AuthorizeFunction<TPluv extends PluvIO<NodePlatform>> = (
+export type AuthorizeFunction<TPluvServer extends PluvServer<NodePlatform, any, any, any>> = (
     ctx: AuthorizeFunctionContext,
-) => MaybePromise<Maybe<InferIOAuthorizeUser<InferIOAuthorize<TPluv>>>>;
+) => MaybePromise<Maybe<InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>>>>;
 
-export type CreatePluvHandlerConfig<TPluv extends PluvIO<NodePlatform>> = {
+export type CreatePluvHandlerConfig<TPluvServer extends PluvServer<NodePlatform, any, any, any>> = {
     endpoint?: string;
-    io: TPluv;
-    server: Http.Server;
-} & (InferIOAuthorizeRequired<InferIOAuthorize<TPluv>> extends true
-    ? { authorize: AuthorizeFunction<TPluv> }
+    io: TPluvServer;
+    server: HttpServer;
+} & (InferIOAuthorizeRequired<InferIOAuthorize<TPluvServer>> extends true
+    ? { authorize: AuthorizeFunction<TPluvServer> }
     : { authorize?: undefined });
 
-const handle = (ws: WS.WebSocket) => ({
+const handle = (ws: WebSocket) => ({
     invalidEndpoint: () => {
         ws.close(1011, "Invalid WebSocket endpoint");
 
@@ -41,28 +48,28 @@ const handle = (ws: WS.WebSocket) => ({
     },
 });
 
-export type RequestHandler = (req: Http.IncomingMessage, res: Http.ServerResponse, next?: () => void) => void;
+export type RequestHandler = (req: IncomingMessage, res: ServerResponse, next?: () => void) => void;
 
 export interface WebSocketHandlerResult {
     matched: boolean;
 }
 
-export type WebSocketHandler = (ws: WS.WebSocket, req: Http.IncomingMessage) => Promise<WebSocketHandlerResult>;
+export type WebSocketHandler = (ws: WebSocket, req: IncomingMessage) => Promise<WebSocketHandlerResult>;
 
 export interface CreatePluvHandlerResult {
-    createWsServer: () => WS.Server;
+    createWsServer: () => WsServer;
     handler: RequestHandler;
     wsHandler: WebSocketHandler;
 }
 
-export const createPluvHandler = <TPluv extends PluvIO<NodePlatform, any, any, any, any, any, any>>(
-    config: CreatePluvHandlerConfig<TPluv>,
+export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform, any, any, any>>(
+    config: CreatePluvHandlerConfig<TPluvServer>,
 ): CreatePluvHandlerResult => {
     const { authorize, endpoint = "/api/pluv", io, server } = config;
 
-    const wsServer = new WS.Server({ server });
+    const wsServer = new WsServer({ server });
 
-    const wsHandler = async (ws: WS.WebSocket, req: Http.IncomingMessage): Promise<WebSocketHandlerResult> => {
+    const wsHandler = async (ws: WebSocket, req: IncomingMessage): Promise<WebSocketHandlerResult> => {
         const url = req.url;
         const onError = handle(ws);
 
@@ -104,10 +111,10 @@ export const createPluvHandler = <TPluv extends PluvIO<NodePlatform, any, any, a
     };
 
     const handler = async (
-        req: Http.IncomingMessage,
-        res: Http.ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         next?: () => void,
-    ): Promise<Http.ServerResponse | null> => {
+    ): Promise<ServerResponse | null> => {
         if (!authorize) return next?.() ?? null;
         if (req.method !== "GET") return next?.() ?? null;
 

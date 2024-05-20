@@ -1,21 +1,15 @@
 import type { AbstractCrdtType, InferCrdtStorageJson } from "@pluv/crdt";
-import { makeSubject, Subject, subscribe } from "wonka";
+import type { Subject } from "wonka";
+import { makeSubject, subscribe } from "wonka";
 
-export class CrdtNotifier<
-    TStorage extends Record<string, AbstractCrdtType<any, any>>,
-> {
+export class CrdtNotifier<TStorage extends Record<string, AbstractCrdtType<any, any>>> {
     public rootSubject = makeSubject<{
         [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;
     }>();
 
-    public subjects = new Map<
-        keyof TStorage,
-        Subject<InferCrdtStorageJson<TStorage[keyof TStorage]>> | null
-    >();
+    public subjects = new Map<keyof TStorage, Subject<InferCrdtStorageJson<TStorage[keyof TStorage]>> | null>();
 
-    public subject<TKey extends keyof TStorage>(
-        key: TKey,
-    ): Subject<InferCrdtStorageJson<TStorage[TKey]>> {
+    public subject<TKey extends keyof TStorage>(key: TKey): Subject<InferCrdtStorageJson<TStorage[TKey]>> {
         const subject = this.subjects.get(key);
 
         if (subject) {

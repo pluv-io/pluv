@@ -1,15 +1,5 @@
-import type {
-    AbstractCrdtDoc,
-    AbstractCrdtType,
-    InferCrdtStorageJson,
-} from "@pluv/crdt";
-import type {
-    IOLike,
-    Id,
-    InferIOInput,
-    InferIOOutput,
-    JsonObject,
-} from "@pluv/types";
+import type { AbstractCrdtDoc, AbstractCrdtType, InferCrdtStorageJson } from "@pluv/crdt";
+import type { IOLike, Id, InferIOInput, InferIOOutput, JsonObject } from "@pluv/types";
 import { AbstractRoom } from "./AbstractRoom";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
@@ -18,35 +8,22 @@ import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import { EventNotifier } from "./EventNotifier";
 import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
 import { OtherNotifier } from "./OtherNotifier";
-import type {
-    StateNotifierSubjects,
-    SubscriptionCallback,
-} from "./StateNotifier";
+import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
-import type {
-    InternalSubscriptions,
-    UserInfo,
-    WebSocketConnection,
-    WebSocketState,
-} from "./types";
+import type { InternalSubscriptions, UserInfo, WebSocketConnection, WebSocketState } from "./types";
 import { ConnectionState } from "./types";
 
 export type MockedRoomEvents<TIO extends IOLike> = Partial<{
-    [P in keyof InferIOInput<TIO>]: (
-        data: Id<InferIOInput<TIO>[P]>,
-    ) => Partial<InferIOOutput<TIO>>;
+    [P in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[P]>) => Partial<InferIOOutput<TIO>>;
 }>;
 
 export type MockedRoomConfig<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
-> = { events?: MockedRoomEvents<TIO> } & Omit<
-    CrdtManagerOptions<TStorage>,
-    "encodedState"
-> &
+> = { events?: MockedRoomEvents<TIO> } & Omit<CrdtManagerOptions<TStorage>, "encodedState"> &
     UsersManagerConfig<TPresence>;
 
 export class MockedRoom<
@@ -77,10 +54,7 @@ export class MockedRoom<
     };
     private _usersManager: UsersManager<TIO, TPresence>;
 
-    constructor(
-        room: string,
-        options: MockedRoomConfig<TIO, TPresence, TStorage>,
-    ) {
+    constructor(room: string, options: MockedRoomConfig<TIO, TPresence, TStorage>) {
         const { events, initialPresence, initialStorage, presence } = options;
 
         super(room);
@@ -103,10 +77,7 @@ export class MockedRoom<
         return true;
     }
 
-    public broadcast<TEvent extends keyof InferIOInput<TIO>>(
-        event: TEvent,
-        data: Id<InferIOInput<TIO>[TEvent]>,
-    ): void {
+    public broadcast<TEvent extends keyof InferIOInput<TIO>>(event: TEvent, data: Id<InferIOInput<TIO>[TEvent]>): void {
         if (!this._events) return;
 
         const resolver = this._events[event];
@@ -142,9 +113,7 @@ export class MockedRoom<
 
     public getConnection(): WebSocketConnection {
         // Create a read-only clone of the connection state
-        return Object.freeze(
-            JSON.parse(JSON.stringify(this._state.connection)),
-        );
+        return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     }
 
     public getDoc(): AbstractCrdtDoc<TStorage> {
@@ -159,9 +128,7 @@ export class MockedRoom<
         return this._usersManager.myself;
     };
 
-    public getOther = (
-        connectionId: string,
-    ): Id<UserInfo<TIO, TPresence>> | null => {
+    public getOther = (connectionId: string): Id<UserInfo<TIO, TPresence>> | null => {
         return this._usersManager.getOther(connectionId);
     };
 
@@ -169,9 +136,7 @@ export class MockedRoom<
         return this._usersManager.getOthers();
     };
 
-    public getStorage = <TKey extends keyof TStorage>(
-        key: TKey,
-    ): TStorage[TKey] | null => {
+    public getStorage = <TKey extends keyof TStorage>(key: TKey): TStorage[TKey] | null => {
         const sharedType = this._crdtManager.get(key);
 
         if (typeof sharedType === "undefined") return null;
@@ -179,10 +144,7 @@ export class MockedRoom<
         return sharedType.value;
     };
 
-    public other = (
-        connectionId: string,
-        callback: OtherNotifierSubscriptionCallback<TIO>,
-    ): (() => void) => {
+    public other = (connectionId: string, callback: OtherNotifierSubscriptionCallback<TIO>): (() => void) => {
         return this._otherNotifier.subscribe(connectionId, callback);
     };
 
@@ -205,19 +167,14 @@ export class MockedRoom<
         return this._crdtNotifier.subcribeRoot(fn);
     };
 
-    public subscribe = <
-        TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
-    >(
+    public subscribe = <TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
         name: TSubject,
         callback: SubscriptionCallback<TIO, TPresence, TSubject>,
     ): (() => void) => {
         return this._stateNotifier.subscribe(name, callback);
     };
 
-    public transact = (
-        fn: (storage: TStorage) => void,
-        origin?: string,
-    ): void => {
+    public transact = (fn: (storage: TStorage) => void, origin?: string): void => {
         const _origin = origin ?? this._state.connection.id;
         const crdtManager = this._crdtManager;
 

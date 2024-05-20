@@ -14,7 +14,15 @@ export const io = createIO({
     },
     crdt: yjs,
     platform: platformNode(),
-}).event("SEND_MESSAGE", {
-    input: z.object({ message: z.string() }),
-    resolver: ({ message }) => ({ RECEIVE_MESSAGE: { message } }),
 });
+
+const router = io.router({
+    SEND_MESSAGE: io.procedure
+        .input(z.object({ message: z.string() }))
+        .broadcast(({ message }) => ({ RECEIVE_MESSAGE: { message } })),
+    DOUBLE_NUMBER: io.procedure
+        .input(z.object({ value: z.number() }))
+        .self(({ value }) => ({ DOUBLED_VALUE: { value: value * 2 } })),
+});
+
+export const ioServer = io.server({ router });

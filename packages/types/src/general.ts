@@ -49,3 +49,7 @@ export type Json = JsonPrimitive | Json[] | readonly Json[] | { [key: string]: J
 export type JsonObject = Record<string, Json>;
 
 export type StringLiteral<T> = T extends string ? (string extends T ? never : T) : never;
+
+export type UnionToIntersection<U> = (U extends any ? (arg: U) => any : never) extends (arg: infer I) => void
+    ? I
+    : never;

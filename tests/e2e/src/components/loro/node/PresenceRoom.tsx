@@ -1,9 +1,5 @@
 import type { FC } from "react";
-import {
-    useMyPresence,
-    useMyself,
-    useOthers,
-} from "../../../pluv-io/loro/node";
+import { useMyPresence, useMyself, useOthers } from "../../../pluv-io/loro/node";
 
 export type PresenceRoomProps = Record<string, never>;
 

@@ -2,9 +2,9 @@ import { addonIndexedDB } from "@pluv/addon-indexeddb";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
-import type { io } from "../../server/yjs/node";
+import type { ioServer } from "../../server/yjs/node";
 
-const client = createClient<typeof io>({
+const client = createClient<typeof ioServer>({
     authEndpoint: (room) => {
         return `http://localhost:3102/api/pluv/authorize?room=${room}`;
     },

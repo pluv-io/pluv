@@ -1,9 +1,9 @@
-import type { io } from "@pluv-apps/server-cloudflare/src/pluv-io";
+import type { ioServer } from "@pluv-apps/server-cloudflare/src/pluv-io";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
 
-const client = createClient<typeof io>({
+const client = createClient<typeof ioServer>({
     wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/pluv/room/${room}`,
 });
 

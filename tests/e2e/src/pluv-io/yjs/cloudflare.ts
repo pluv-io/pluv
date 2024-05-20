@@ -1,9 +1,9 @@
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
-import type { io } from "../../server/yjs/cloudflare";
+import type { ioServer } from "../../server/yjs/cloudflare";
 
-const client = createClient<typeof io>({
+const client = createClient<typeof ioServer>({
     authEndpoint: (room) => {
         return `http://localhost:3101/api/pluv/authorize?room=${room}`;
     },

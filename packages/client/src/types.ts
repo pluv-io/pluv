@@ -1,10 +1,4 @@
-import type {
-    Id,
-    InferIOAuthorize,
-    InferIOAuthorizeUser,
-    IOLike,
-    JsonObject,
-} from "@pluv/types";
+import type { Id, InferIOAuthorize, InferIOAuthorizeUser, IOLike, JsonObject } from "@pluv/types";
 
 export interface AuthorizationState<TIO extends IOLike> {
     token: string | null;
@@ -35,10 +29,7 @@ export interface WebSocketState<TIO extends IOLike> {
     webSocket: WebSocket | null;
 }
 
-export interface UserInfo<
-    TIO extends IOLike,
-    TPresence extends JsonObject = {},
-> {
+export interface UserInfo<TIO extends IOLike, TPresence extends JsonObject = {}> {
     connectionId: string;
     presence: TPresence;
     user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>;
