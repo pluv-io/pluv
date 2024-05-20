@@ -1,6 +1,6 @@
 import type { EventRecord, IOAuthorize, InputZodLike, JsonObject } from "@pluv/types";
 import type { AbstractPlatform, InferPlatformEventContextType, InferPlatformRoomContextType } from "./AbstractPlatform";
-import type { EventResolver, MergeEventRecords, SyncEventResolver } from "./types";
+import type { EventResolver, MergeEventRecords } from "./types";
 
 export interface PluvProcedureConfig<
     TPlatform extends AbstractPlatform<any>,
@@ -24,7 +24,7 @@ export interface PluvProcedureConfig<
         TInput,
         Partial<TOutput>
     > | null;
-    sync?: SyncEventResolver<TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null;
+    sync?: EventResolver<TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null;
 }
 
 export class PluvProcedure<
@@ -50,12 +50,13 @@ export class PluvProcedure<
         TInput,
         Partial<TOutput>
     > | null = null;
-    private _sync: SyncEventResolver<TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null = null;
+    private _sync: EventResolver<TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null = null;
 
     public get config() {
         return {
             broadcast: this._broadcast?.bind(this) ?? null,
             input: this._input ?? null,
+            resolver: this._resolver,
             self: this._self?.bind(this) ?? null,
             sync: this._sync?.bind(this) ?? null,
         };
@@ -182,5 +183,21 @@ export class PluvProcedure<
             ...(this.config as any),
             sync: resolver as any,
         });
+    }
+
+    private _resolver(): EventResolver<
+        TPlatform,
+        TAuthorize,
+        TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
+        TInput,
+        TOutput
+    > {
+        return (data, context) => {
+            return {
+                ...this._broadcast?.(data, context),
+                ...this._self?.(data, context),
+                ...this._sync?.(data, context),
+            } as TOutput;
+        };
     }
 }

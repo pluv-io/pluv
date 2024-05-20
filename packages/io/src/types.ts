@@ -18,27 +18,13 @@ declare global {
     };
 }
 
-export type SyncEventResolver<
-    TPlatform extends AbstractPlatform = AbstractPlatform,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
-    TContext extends Record<string, any> = {},
-    TData extends JsonObject = {},
-    TResultBroadcast extends EventRecord<string, any> = {},
-> = (
-    data: TData,
-    context: EventResolverContext<TPlatform, TAuthorize, TContext>,
-) => MaybePromise<TResultBroadcast | void>;
-
 export type EventResolver<
     TPlatform extends AbstractPlatform = AbstractPlatform,
     TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
-    TData extends JsonObject = {},
-    TResultBroadcast extends EventRecord<string, any> = {},
-> = (
-    data: TData,
-    context: EventResolverContext<TPlatform, TAuthorize, TContext>,
-) => MaybePromise<TResultBroadcast | void>;
+    TInput extends JsonObject = {},
+    TOutput extends EventRecord<string, any> = {},
+> = (data: TInput, context: EventResolverContext<TPlatform, TAuthorize, TContext>) => MaybePromise<TOutput | void>;
 
 export interface EventResolverContext<
     TPlatform extends AbstractPlatform = AbstractPlatform,

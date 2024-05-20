@@ -1,4 +1,4 @@
-import type { Id, JsonObject, MaybePromise, NonNilProps } from "./general";
+import type { Id, JsonObject, MaybePromise, NonNilProps, UnionToIntersection } from "./general";
 
 export type BaseUser = {
     id: string;
@@ -133,10 +133,11 @@ export type IOAuthorizeRequiredEventMessage<TIO extends IOLike> = NonNilProps<
 
 export type ProcedureLike<TInput extends JsonObject = {}, TOutput extends EventRecord<string, any> = {}> = {
     config: {
-        broadcast?: ((data: TInput, ...args: any[]) => MaybePromise<TOutput | void>) | null;
+        broadcast?: ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>) | null;
         input?: InputZodLike<TInput> | null;
-        self?: ((data: TInput, ...args: any[]) => MaybePromise<TOutput | void>) | null;
-        sync?: ((data: TInput, ...args: any[]) => MaybePromise<TOutput | void>) | null;
+        resolver: (data: TInput, ...args: any[]) => MaybePromise<TOutput>;
+        self?: ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>) | null;
+        sync?: ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>) | null;
     };
 };
 
@@ -158,7 +159,11 @@ export type InferIOInput<TRouter extends IORouterLike<any>> =
 
 export type InferIOOutput<TRouter extends IORouterLike<any>> =
     TRouter extends IORouterLike<infer IEvents>
-        ? { [P in keyof IEvents]: IEvents[P] extends ProcedureLike<any, infer IOutput> ? IOutput : never }
+        ? UnionToIntersection<
+              {
+                  [P in keyof IEvents]: IEvents[P] extends ProcedureLike<any, infer IOutput> ? IOutput : never;
+              }[keyof IEvents]
+          >
         : never;
 
 export type InferEventMessage<
