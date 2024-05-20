@@ -8,19 +8,15 @@ import { match } from "path-to-regexp";
 import Url from "url";
 import WebSocket from "ws";
 import { cluster } from "./cluster";
-import { io1st, io2nd } from "./pluv-io";
+import { io1st, ioServer1st, ioServer2nd } from "./pluv-io";
 
-export type { io1st as io } from "./pluv-io";
+export type { ioServer1st as ioServer } from "./pluv-io";
 
 type CommanderOptionValue = string | boolean | string[] | undefined;
 
 const options = program
     .description("Pluv server running on node")
-    .addOption(
-        new Option("--port <PORT>")
-            .default(3103)
-            .argParser((value: string) => parseInt(value, 10)),
-    )
+    .addOption(new Option("--port <PORT>").default(3103).argParser((value: string) => parseInt(value, 10)))
     .parse(process.argv)
     .opts<{ port: CommanderOptionValue }>();
 
@@ -52,9 +48,7 @@ wsServer.on("connection", async (ws, req) => {
 
     const token = parsed.query?.token as string | undefined;
     const io = parsed.query?.io as string | undefined;
-    const room = !io
-        ? io1st.getRoom(roomId, { req })
-        : io2nd.getRoom(roomId, { req });
+    const room = !io ? ioServer1st.getRoom(roomId, { req }) : ioServer2nd.getRoom(roomId, { req });
 
     await room.register(ws, { req, token });
 });
@@ -70,9 +64,7 @@ app.get("/api/authorize", async (req, res) => {
     const roomId = req.query.roomName as string;
 
     if (!roomId) {
-        return res
-            .json({ error: `Room does not exist: ${roomId}` })
-            .status(404);
+        return res.json({ error: `Room does not exist: ${roomId}` }).status(404);
     }
 
     const id = Crypto.randomUUID();

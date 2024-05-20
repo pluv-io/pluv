@@ -5,19 +5,15 @@ import cors from "cors";
 import Crypto from "crypto";
 import express from "express";
 import Http from "http";
-import { io } from "./pluv-io";
+import { ioServer } from "./pluv-io";
 
-export type { io } from "./pluv-io";
+export type { ioServer } from "./pluv-io";
 
 type CommanderOptionValue = string | boolean | string[] | undefined;
 
 const options = program
     .description("Pluv server running on node")
-    .addOption(
-        new Option("--port <PORT>")
-            .default(3122)
-            .argParser((value: string) => parseInt(value, 10)),
-    )
+    .addOption(new Option("--port <PORT>").default(3122).argParser((value: string) => parseInt(value, 10)))
     .parse(process.argv)
     .opts<{ port: CommanderOptionValue }>();
 
@@ -36,7 +32,7 @@ const Pluv = createPluvHandler({
 
         return { id, name: `user:${id}` };
     },
-    io,
+    io: ioServer,
     server,
 });
 

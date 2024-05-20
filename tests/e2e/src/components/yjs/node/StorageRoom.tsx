@@ -1,13 +1,6 @@
 import { yjs } from "@pluv/crdt-yjs";
 import type { FC } from "react";
-import {
-    useCanRedo,
-    useCanUndo,
-    useRedo,
-    useStorage,
-    useTransact,
-    useUndo,
-} from "../../../pluv-io/yjs/node";
+import { useCanRedo, useCanUndo, useRedo, useStorage, useTransact, useUndo } from "../../../pluv-io/yjs/node";
 
 export type StorageRoomProps = Record<string, never>;
 

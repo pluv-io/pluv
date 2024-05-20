@@ -1,7 +1,7 @@
 import { createPluvHandler } from "@pluv/platform-cloudflare";
-import { io } from "./pluv-io";
+import { ioServer } from "./pluv-io";
 
-export type { io } from "./pluv-io";
+export type { ioServer } from "./pluv-io";
 
 const Pluv = createPluvHandler({
     authorize: () => {
@@ -10,7 +10,7 @@ const Pluv = createPluvHandler({
         return { id, name: `user:${id}` };
     },
     binding: "rooms",
-    io,
+    io: ioServer,
     modify(request, response) {
         if (request.headers.get("Upgrade") !== "websocket") {
             response.headers.append("access-control-allow-origin", "*");

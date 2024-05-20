@@ -15,7 +15,12 @@ export const io = createIO({
     },
     debug: true,
     platform: platformNode(),
-}).event("SEND_MESSAGE", {
-    input: z.object({ message: z.string() }),
-    resolver: ({ message }) => ({ RECEIVE_MESSAGE: { message } }),
 });
+
+const router = io.router({
+    SEND_MESSAGE: io.procedure
+        .input(z.object({ message: z.string() }))
+        .broadcast(({ message }) => ({ RECEIVE_MESSAGE: { message } })),
+});
+
+export const ioServer = io.server({ router });

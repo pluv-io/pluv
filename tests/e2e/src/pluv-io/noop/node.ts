@@ -1,9 +1,9 @@
 import { addonIndexedDB } from "@pluv/addon-indexeddb";
 import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
-import type { io } from "../../server/noop/node";
+import type { ioServer } from "../../server/noop/node";
 
-const client = createClient<typeof io>({
+const client = createClient<typeof ioServer>({
     authEndpoint: (room) => {
         return `http://localhost:3122/api/pluv/authorize?room=${room}`;
     },

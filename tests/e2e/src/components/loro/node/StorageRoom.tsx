@@ -1,13 +1,6 @@
 import { loro } from "@pluv/crdt-loro";
 import type { FC } from "react";
-import {
-    useCanRedo,
-    useCanUndo,
-    useRedo,
-    useStorage,
-    useTransact,
-    useUndo,
-} from "../../../pluv-io/loro/node";
+import { useCanRedo, useCanUndo, useRedo, useStorage, useTransact, useUndo } from "../../../pluv-io/loro/node";
 
 export type StorageRoomProps = Record<string, never>;
 
