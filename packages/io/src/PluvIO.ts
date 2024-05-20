@@ -239,6 +239,7 @@ export class PluvIO<
         >;
 
         return new PluvServer<TPlatform, TAuthorize, TContext, TEvents>({
+            ...this._listeners,
             authorize: this._authorize ?? undefined,
             context: this._context,
             crdt: this._crdt,
