@@ -3,7 +3,6 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 import { prisma } from "../../../prisma";
-import { InferIOOutput } from "@pluv/types";
 
 const PLUV_AUTH_SECRET = "secret123";
 

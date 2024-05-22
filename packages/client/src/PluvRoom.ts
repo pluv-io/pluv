@@ -319,11 +319,25 @@ export class PluvRoom<
         this._stateNotifier.subjects["my-presence"].next(null);
     }
 
-    public event = <TEvent extends keyof InferIOOutput<TIO>>(
+    public event = new Proxy(
+        <TEvent extends keyof InferIOOutput<TIO>>(
+            event: TEvent,
+            callback: EventNotifierSubscriptionCallback<TIO, TEvent>,
+        ): (() => void) => {
+            return this._eventNotifier.subscribe(event, callback);
+        },
+        {
+            get(fn, prop) {
+                return (callback: EventNotifierSubscriptionCallback<TIO, any>): (() => void) => {
+                    return fn(prop, callback);
+                };
+            },
+        },
+    ) as (<TEvent extends keyof InferIOOutput<TIO>>(
         event: TEvent,
         callback: EventNotifierSubscriptionCallback<TIO, TEvent>,
-    ): (() => void) => {
-        return this._eventNotifier.subscribe(event, callback);
+    ) => () => void) & {
+        [event in keyof InferIOOutput<TIO>]: (callback: EventNotifierSubscriptionCallback<TIO, event>) => () => void;
     };
 
     public getConnection(): WebSocketConnection {
