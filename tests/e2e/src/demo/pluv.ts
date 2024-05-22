@@ -9,6 +9,6 @@ const client = createClient<typeof ioServer>({
 
 export const { createRoomBundle } = createBundle(client);
 
-export const { useBroadcast, useEvent, useMyself } = createRoomBundle({
+export const pluv = createRoomBundle({
     initialStorage: yjs.doc(),
 });

@@ -61,6 +61,12 @@ export type UpdateMyPresenceAction<TPresence extends JsonObject> =
     | Partial<TPresence>
     | ((oldPresence: TPresence | null) => Partial<TPresence>);
 
+export type EventProxy<TIO extends IOLike> = {
+    [event in keyof InferIOOutput<TIO>]: {
+        useEvent: (callback: (data: Id<IOEventMessage<TIO, event>>) => void) => void;
+    };
+};
+
 export interface CreateRoomBundle<
     TIO extends IOLike,
     TPresence extends JsonObject,
@@ -69,6 +75,9 @@ export interface CreateRoomBundle<
     // components
     MockedRoomProvider: FC<MockedRoomProviderProps<TIO, TPresence, TStorage>>;
     PluvRoomProvider: FC<PluvRoomProviderProps<TIO, TPresence, TStorage>>;
+
+    // proxies
+    event: EventProxy<TIO>;
 
     // hooks
     useBroadcast: () => <TEvent extends keyof InferIOInput<TIO>>(
@@ -290,6 +299,21 @@ export const createRoomBundle = <
         }, [callback, room, type]);
     };
 
+    const event = new Proxy(
+        {},
+        {
+            get(fn, prop) {
+                const useProxyEvent = (
+                    callback: (data: Id<IOEventMessage<TIO, keyof InferIOOutput<TIO>>>) => void,
+                ): void => {
+                    return useEvent(prop as keyof InferIOOutput<TIO>, callback);
+                };
+
+                return { useEvent: useProxyEvent };
+            },
+        },
+    ) as EventProxy<TIO>;
+
     const useMyPresence = <T extends unknown = TPresence>(
         selector = identity as (myPresence: TPresence) => T,
         options?: SubscriptionHookOptions<Id<T> | null>,
@@ -474,6 +498,9 @@ export const createRoomBundle = <
         // components
         MockedRoomProvider,
         PluvRoomProvider,
+
+        // proxies
+        event,
 
         // hooks
         useBroadcast,
