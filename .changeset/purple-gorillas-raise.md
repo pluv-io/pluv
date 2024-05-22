@@ -1,10 +1,10 @@
 ---
-"@pluv/client": patch
+"@pluv/react": patch
 ---
 
 Added event proxy as a new way to listen to events.
 
-```ts
+```tsx
 // backend
 
 const router = io.router({
@@ -14,17 +14,17 @@ const router = io.router({
 });
 
 // frontend
-const client = createClient(/* ... */);
+const pluv = createRoomBundle(/* ... */);
 
 // Both of the examples below are equivalent.
 
-client.event("RECEIVE_MESSAGE", ({ data }) => {
+pluv.useEvent("RECEIVE_MESSAGE", ({ data }) => {
     const { message } = data;
 
     console.log(message);
 });
 
-client.event.RECEIVE_MESSAGE(({ data }) => {
+pluv.event.RECEIVE_MESSAGE.useEvent(({ data }) => {
     const { message } = data;
 
     console.log(message);
