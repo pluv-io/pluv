@@ -63,7 +63,7 @@ export type UpdateMyPresenceAction<TPresence extends JsonObject> =
 
 export type EventProxy<TIO extends IOLike> = {
     [event in keyof InferIOOutput<TIO>]: {
-        useEvent: (callback: (data: Id<IOEventMessage<TIO, keyof InferIOOutput<TIO>>>) => void) => void;
+        useEvent: (callback: (data: Id<IOEventMessage<TIO, event>>) => void) => void;
     };
 };
 
