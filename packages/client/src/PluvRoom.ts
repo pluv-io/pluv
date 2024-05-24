@@ -226,14 +226,25 @@ export class PluvRoom<
         return this._state.webSocket;
     }
 
-    public broadcast<TEvent extends keyof InferIOInput<TIO>>(event: TEvent, data: Id<InferIOInput<TIO>[TEvent]>): void {
-        if (!this._state.webSocket) return;
-        if (this._state.connection.state !== ConnectionState.Open) return;
+    public broadcast = new Proxy(
+        <TEvent extends keyof InferIOInput<TIO>>(event: TEvent, data: Id<InferIOInput<TIO>[TEvent]>): void => {
+            if (!this._state.webSocket) return;
+            if (this._state.connection.state !== ConnectionState.Open) return;
 
-        const type = event.toString();
+            const type = event.toString();
 
-        this._sendMessage({ data, type });
-    }
+            this._sendMessage({ data, type });
+        },
+        {
+            get(fn, prop) {
+                return (data: Id<InferIOInput<TIO>[any]>): void => {
+                    return fn(prop, data);
+                };
+            },
+        },
+    ) as (<TEvent extends keyof InferIOInput<TIO>>(event: TEvent, data: Id<InferIOInput<TIO>[TEvent]>) => void) & {
+        [event in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[event]>) => void;
+    };
 
     public canRedo = (): boolean => {
         return !!this._crdtManager.doc.canRedo();
