@@ -11,7 +11,7 @@ export const ChatRoom: FC<Record<string, never>> = () => {
 
     const onMessage = useCallback(
         (message: string) => {
-            broadcast("SEND_MESSAGE", { message });
+            broadcast.SEND_MESSAGE({ message });
         },
         [broadcast],
     );
