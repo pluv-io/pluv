@@ -14,7 +14,7 @@ import { noop } from "@pluv/crdt";
 import type { IOEventMessage, IOLike, Id, InferIOInput, InferIOOutput, InputZodLike, JsonObject } from "@pluv/types";
 import fastDeepEqual from "fast-deep-equal";
 import type { Dispatch, FC, ReactNode } from "react";
-import { createContext, memo, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { identity, shallowArrayEqual, useRerender, useSyncExternalStoreWithSelector } from "./internal";
 
 export type CreateRoomBundleOptions<
@@ -61,6 +61,13 @@ export type UpdateMyPresenceAction<TPresence extends JsonObject> =
     | Partial<TPresence>
     | ((oldPresence: TPresence | null) => Partial<TPresence>);
 
+export type BroadcastProxy<TIO extends IOLike> = (<TEvent extends keyof InferIOInput<TIO>>(
+    event: TEvent,
+    data: Id<InferIOInput<TIO>[TEvent]>,
+) => void) & {
+    [event in keyof InferIOInput<TIO>]: (callback: Id<InferIOInput<TIO>[event]>) => void;
+};
+
 export type EventProxy<TIO extends IOLike> = {
     [event in keyof InferIOOutput<TIO>]: {
         useEvent: (callback: (data: Id<IOEventMessage<TIO, event>>) => void) => void;
@@ -80,10 +87,7 @@ export interface CreateRoomBundle<
     event: EventProxy<TIO>;
 
     // hooks
-    useBroadcast: () => <TEvent extends keyof InferIOInput<TIO>>(
-        event: TEvent,
-        data: Id<InferIOInput<TIO>[TEvent]>,
-    ) => void;
+    useBroadcast: () => BroadcastProxy<TIO>;
     useCanRedo: () => boolean;
     useCanUndo: () => boolean;
     useConnection: <T extends unknown = WebSocketConnection>(
@@ -214,18 +218,25 @@ export const createRoomBundle = <
 
     const useRoom = () => useContext(PluvRoomContext);
 
-    const useBroadcast = (): (<TEvent extends keyof InferIOInput<TIO>>(
-        event: TEvent,
-        data: Id<InferIOInput<TIO>[TEvent]>,
-    ) => void) => {
+    const useBroadcast = (): BroadcastProxy<TIO> => {
         const room = useRoom();
 
-        return useCallback(
+        const broadcast = useCallback(
             <TEvent extends keyof InferIOInput<TIO>>(event: TEvent, data: Id<InferIOInput<TIO>[TEvent]>) => {
                 room.broadcast(event, data);
             },
             [room],
         );
+
+        return useMemo((): BroadcastProxy<TIO> => {
+            return new Proxy(broadcast, {
+                get(fn, prop) {
+                    return (data: Id<InferIOInput<TIO>[keyof InferIOInput<TIO>]>): void => {
+                        return fn(prop as keyof InferIOInput<TIO>, data);
+                    };
+                },
+            }) as BroadcastProxy<TIO>;
+        }, [broadcast]);
     };
 
     const useCanRedo = (): boolean => {
@@ -302,7 +313,7 @@ export const createRoomBundle = <
     const event = new Proxy(
         {},
         {
-            get(fn, prop) {
+            get(_, prop) {
                 const useProxyEvent = (
                     callback: (data: Id<IOEventMessage<TIO, keyof InferIOOutput<TIO>>>) => void,
                 ): void => {
