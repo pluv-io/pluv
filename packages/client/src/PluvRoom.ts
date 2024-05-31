@@ -334,14 +334,10 @@ export class PluvRoom<
         <TEvent extends keyof InferIOOutput<TIO>>(
             event: TEvent,
             callback: EventNotifierSubscriptionCallback<TIO, TEvent>,
-        ): (() => void) => {
-            return this._eventNotifier.subscribe(event, callback);
-        },
+        ): (() => void) => this._eventNotifier.subscribe(event, callback),
         {
             get(fn, prop) {
-                return (callback: EventNotifierSubscriptionCallback<TIO, any>): (() => void) => {
-                    return fn(prop, callback);
-                };
+                return (callback: EventNotifierSubscriptionCallback<TIO, any>): (() => void) => fn(prop, callback);
             },
         },
     ) as (<TEvent extends keyof InferIOOutput<TIO>>(
