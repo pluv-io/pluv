@@ -42,6 +42,13 @@ interface IORoomListeners<TPlatform extends AbstractPlatform> {
     onDestroy: (event: IORoomListenerEvent<TPlatform>) => void;
 }
 
+export type BroadcastProxy<TIO extends IORoom<any, any, any, any>> = (<TEvent extends keyof InferIOInput<TIO>>(
+    event: TEvent,
+    data: Id<InferIOInput<TIO>[TEvent]>,
+) => Promise<void>) & {
+    [event in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>>[event]) => Promise<void>;
+};
+
 export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
@@ -92,6 +99,23 @@ export class IORoom<
         return this._router._events;
     }
 
+    public get broadcast(): BroadcastProxy<this> {
+        const _broadcast = <TEvent extends keyof InferIOInput<this>>(
+            event: TEvent,
+            data: Id<InferIOInput<this>[TEvent]>,
+        ): Promise<void> => {
+            const message = { type: event, data } as BroadcastMessage<this>;
+
+            return Promise.resolve(this._broadcast({ message }));
+        };
+
+        return new Proxy(_broadcast, {
+            get(fn, prop) {
+                return (data: any) => fn(prop as any, data);
+            },
+        }) as BroadcastProxy<this>;
+    }
+
     constructor(id: string, config: IORoomConfig<TPlatform, TAuthorize, TContext, TEvents>) {
         const { authorize, context, crdt = noop, debug, onDestroy, platform, router } = config;
 
@@ -109,15 +133,6 @@ export class IORoom<
         };
 
         if (authorize) this._authorize = authorize;
-    }
-
-    public broadcast<TEvent extends keyof InferIOInput<this>>(
-        event: TEvent,
-        data: Id<InferIOInput<this>[TEvent]>,
-    ): Promise<void> {
-        const message = { type: event, data } as BroadcastMessage<this>;
-
-        return Promise.resolve(this._broadcast({ message }));
     }
 
     public getSize(): number {
