@@ -33,12 +33,12 @@ Define an io (websocket client) instance on the server codebase:
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 
-export const io = createIO({
-    platform: platformNode(),
-});
+export const io = createIO({ platform: platformNode() });
 
-// Export the websocket client io type, instead of the client itself
-export type AppPluvIO = typeof io;
+export const ioServer = io.server();
+
+// Export the ioServer type, so that this can be type-imported on the frontend
+export type AppPluvIO = typeof ioServer;
 ```
 
 ### Integrate PluvIO with ws
@@ -51,7 +51,7 @@ Integrate with [ws](https://www.npmjs.com/package/ws) on your Node.js server.
 import express from "express";
 import Http from "http";
 import WebSocket from "ws";
-import { io } from "./io";
+import { ioServer } from "./io";
 
 const PORT = 3000;
 
@@ -65,7 +65,7 @@ const parseRoomId = (url: string): string => {
 
 wsServer.on("connection", async (ws, req) => {
     const roomId = parseRoomId(req.url);
-    const room = io.getRoom(roomId);
+    const room = ioServer.getRoom(roomId);
 
     await room.register(ws);
 });
@@ -88,16 +88,15 @@ import express from "express";
 import Http from "http";
 import WS from "ws";
 
-const io = createIO({
-    platform: platformNode(),
-});
+const io = createIO({ platform: platformNode() });
+const ioServer = io.server();
 
 const app = express();
 const server = Http.createServer(app);
 
 const Pluv = createPluvHandler({
-    // Your PluvIO instance
-    io,
+    // Your PluvServer instance
+    io: ioServer,
     // Optional: Specify the base path from which endpoints are defined
     endpoint: "/api/pluv", // defaults to "/api/pluv"
     // Your Http.Server instance

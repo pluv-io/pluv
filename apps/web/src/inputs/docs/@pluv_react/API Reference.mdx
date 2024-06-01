@@ -35,7 +35,11 @@ import { yjs } from "@pluv/crdt-yjs";
 // Destructured room bundle
 export const {
     // components
+    MockedRoomProvider,
     PluvRoomProvider,
+
+    // utils
+    event,
 
     // hooks
     useBroadcast,
@@ -185,16 +189,36 @@ const MyComponent: FC = () => {
 };
 ```
 
+### event
+
+Returns `EventProxy`
+
+Defines an event listener client for events broadcasted by connected clients. See [useEvent](/docs/react/api-reference#useEvent) for more details.
+
+```tsx
+// The below 2 statements are equivalent
+useEvent("receiveMessage", ({ data }) => {
+    console.log(data.message);
+});
+
+event.receiveMessage.useEvent(({ data }) => {
+    console.log(data.message);
+});
+```
+
 ### useBroadcast
 
-Returns `(event, data) => void`
+Returns `BroadcastProxy`
 
-Returns a broadcast function to emit an event and data to all connected clients. This is type-safe. The first parameter `event` will be the name of the event specified when creating your backend `PluvIO` instance and the second parameter `data` will be the associated response type. See [Define Events](/docs/io/define-events) for more details.
+Returns a broadcast function to emit an event and data to all connected clients. This is type-safe. The first parameter `event` will be the name of the event procedure specified when creating your `PluvProcedure` instance, and the second parameter `data` will be the associated input type. See [Define Events](/docs/io/define-events) for more details.
 
 ```tsx
 const broadcast = useBroadcast();
 
-broadcast("EMIT_RECEIVED", { emojiCode: 123 });
+// The below 2 statements are equivalent
+broadcast("sendMessage", { message:  "Hello world~!" });
+
+broadcast.sendMessage({ message: "Hello world~!" });
 ```
 
 ### useCanRedo

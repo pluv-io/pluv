@@ -71,27 +71,29 @@ export const io = createIO({
     },
 });
 
-// Export the websocket client io type, instead of the client itself
-export type AppPluvIO = typeof io;
+export const ioServer = io.server();
+
+// Export the ioServer type, so that this can be type-imported on the frontend
+export type AppPluvIO = typeof ioServer
 ```
 
 ### Attach to a RoomDurableObject
 
-Next, create a `RoomDurableObject` and attach our new pluv.io instance to the room:
+Next, create a `RoomDurableObject` and attach our new `PluvServer` to the `RoomDurableObject`:
 
 ```ts
 // server/RoomDurableObject.ts
 
 import { type InferIORoom } from "@pluv/io";
-import { AppPluvIO, Env, io } from "./io";
+import { AppPluvIO, Env, ioServer } from "./io";
 
 export class RoomDurableObject implements DurableObject {
     private _env: Env;
-    private _io: InferIORoom<AppPluvIO>;
+    private _room: InferIORoom<AppPluvIO>;
 
     constructor(state: DurableObjectState, env: Env) {
         this._env = env;
-        this._io = io.getRoom(state.id.toString(), { env });
+        this._room = ioServer.getRoom(state.id.toString(), { env });
     }
 
     async fetch(request: Request) {
@@ -101,7 +103,7 @@ export class RoomDurableObject implements DurableObject {
 
         const { 0: client, 1: server } = new WebSocketPair();
 
-        await this._io.register(server, {
+        await this._room.register(server, {
             env: this._env,
             request,
         });
@@ -147,13 +149,12 @@ If you don't need to modify your DurableObject or Cloudflare Worker handler too 
 import { createIO } from "@pluv/io";
 import { createPluvHandler, platformCloudflare } from "@pluv/platform-cloudflare";
 
-const io = createIO({
-    platform: platformCloudflare(),
-});
+const io = createIO({ platform: platformCloudflare() });
+const ioServer = io.server();
 
 const Pluv = createPluvHandler({
-    // Your PluvIO instance
-    io,
+    // Your PluvServer instance
+    io: ioServer,
     // Your durable object binding, defined in wrangler.toml
     binding: "rooms",
     // Optional: Specify the base path from which endpoints are defined

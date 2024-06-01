@@ -7,11 +7,24 @@ import { DocsLayout } from "../../../components";
 
 # Yjs Storage
 
-pluv.io supports conflict-free replicated data-types (CRDT) storage with [yjs](https://yjs.dev). This allows modifying shared data between multiple users, and also leveraging the yjs ecosystem such as [rich-text-editor bindings](https://docs.yjs.dev/ecosystem/editor-bindings).
+pluv.io supports conflict-free replicated data-types (CRDT) storage with [yjs](https://yjs.dev). This allows modifying shared data between multiple users, and also leveraging some libraries within the yjs ecosystem such as [rich-text-editor bindings](https://docs.yjs.dev/ecosystem/editor-bindings).
+
+## Specify Yjs CRDT on PluvIO
+
+To get started with yjs for pluv.io, first specify which CRDT you intend to use on your `PluvIO` instance.
+
+```ts
+import { yjs } from "@pluv/crdt-yjs";
+
+const io = createIO({
+    // ...
+    crdt: yjs,
+});
+```
 
 ## Set initialStorage
 
-To get started with yjs for pluv.io, first set an `initialStorage` config on your `createRoomBundle` config.
+Then set an `initialStorage` config on your `createRoomBundle` config.
 
 ```ts
 import { yjs } from "@pluv/crdt-yjs";

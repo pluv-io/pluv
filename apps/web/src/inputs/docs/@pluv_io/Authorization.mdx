@@ -40,7 +40,9 @@ export const io = createIO({
     platform: platformNode(),
 });
 
-export type AppPluvIO = typeof io;
+export const ioServer = io.server();
+
+export type AppPluvIO = typeof ioServer;
 ```
 
 ## Setup an authorization endpoint
@@ -130,7 +132,7 @@ When the frontend receives a JWT from your authorization endpoint, it will add t
 import express from "express";
 import Http from "http";
 import WebSocket from "ws";
-import { io } from "./io";
+import { io, ioServer } from "./io";
 
 const PORT = 3000;
 
@@ -149,6 +151,7 @@ const parseToken = (url: string): string => {
 wsServer.on("connection", async (ws, req) => {
     const roomId = parseRoomId(req.url);
     const token = parseToken(req.url);
+    const room = ioServer.getRoom(roomId);
 
     // Pass in the token from query params
     await room.register(ws, { token });

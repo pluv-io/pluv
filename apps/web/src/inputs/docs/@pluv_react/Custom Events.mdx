@@ -1,13 +1,13 @@
 ---
 title: Custom Events
-description: Learn how to use custom type-safe events with the @pluv/react
+description: Learn how to use custom type-safe events with @pluv/react.
 ---
 
 import { DocsLayout } from "../../../components";
 
 # Custom Events
 
-Define custom events on your backend `@pluv/io` instance. Then send and receive custom websocket events in a type-safe way with `@pluv/react`.
+Define custom events on your backend `PluvServer` instance. Then send and receive custom websocket events in a type-safe way with `@pluv/react`.
 
 ## Define custom events
 
@@ -20,18 +20,23 @@ Then, assuming you've already setup your React.js bundle and providers, listen a
 ```ts
 import { pluvRoom } from "frontend/io";
 import { useCallback } from "react";
-import { emojiMap } from "./emojiMap";
 
-pluvRoom.useEvent("EMOJI_RECEIVED", ({ data }) => {
-    const emoji = emojiMap[data.emojiCode];
+pluvRoom.event.receiveMessage.useEvent(({ data }) => {
+    console.log(data.message);
+});
 
-    console.log(emoji);
+pluvRoom.event.receiveValue.useEvent(({ data }) => {
+    console.log(data.value);
 });
 
 const broadcast = pluvRoom.useBroadcast();
 
-const onEmoji = useCallback((emojiCode: number): void => {
-    broadcast("EMIT_EMOJI", { emojiCode });
+const sendMessage = useCallback((message: string): void => {
+    broadcast.sendMessage({ message });
+}, [broadcast]);
+
+const doubleValue = useCallback((value: number): void => {
+    broadcast.doubleValue({ value });
 }, [broadcast]);
 ```
 
