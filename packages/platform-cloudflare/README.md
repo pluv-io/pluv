@@ -50,14 +50,15 @@ pnpm add @pluv/platform-cloudflare
 import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 
-export const io = createIO({
-    platform: platformCloudflare(),
-});
+export const io = createIO({ platform: platformCloudflare() });
+export const ioServer = io.server();
 
 /* Somewhere in a Cloudflare worker durable object */
 const { 0: client, 1: server } = new WebSocketPair();
 
-await io.register(server);
+const room = ioServer.getRoom(state.id.toString(), { env });
+
+await room.register(server);
 
 return new Response(null, { status: 101, webSocket: client });
 ```

@@ -76,18 +76,28 @@ export const {
 
 export const {
     // components
+    MockedRoomProvider,
     PluvRoomProvider,
+
+    // utils
+    event,
 
     // hooks
     useBroadcast,
+    useCanRedo,
+    useCanUndo,
     useConnection,
+    useDoc,
     useEvent,
     useMyPresence,
     useMyself,
     useOther,
     useOthers,
+    useRedo,
     useRoom,
     useStorage,
+    useTransact,
+    useUndo,
 } = createRoomBundle({
     initialStorage: yjs.doc(() => ({
         messages: yjs.array([
@@ -120,7 +130,7 @@ export const MyPage: FC<Record<string, never>> = () => {
 export const MyRoom: FC<Record<string, never>> = () => {
     const broadcast = useBroadcast();
 
-    useEvent("RECEIVE_MESSAGE", ({ data }) => {
+    event.RECEIVE_MESSAGE.useEvent(({ data }) => {
         // data is typed as { message: string }
         console.log(data.message);
     });
@@ -128,7 +138,7 @@ export const MyRoom: FC<Record<string, never>> = () => {
     return (
         <button
             onClick={() => {
-                broadcast("SEND_MESSAGE", {
+                broadcast.SEND_MESSAGE({
                     // TypeScript will require that message is typed as string
                     message: "Hello world!",
                 });

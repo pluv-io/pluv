@@ -93,14 +93,11 @@ const room = client.createRoom<Presence, Storage>("my-room", {
 const main = async () => {
     await client.enter(room);
 
-    const unsubscribe = client.event("RECEIVE_MESSAGE", ({ data }) => {
+    const unsubscribe = client.event.RECEIVE_MESSAGE(({ data }) => {
         console.log(data.message);
     });
 
-    client.broadcast({
-        type: "SEND_MESSAGE",
-        data: { message: "Hello world!" },
-    });
+    client.broadcast.SEND_MESSAGE({ message: "Hello world!" });
 
     unsubscribe();
 
