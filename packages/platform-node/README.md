@@ -52,9 +52,8 @@ import { platformNode } from "@pluv/platform-node";
 import Http from "http";
 import WebSocket from "ws";
 
-export const io = createIO({
-    platform: platformNode(),
-});
+export const io = createIO({ platform: platformNode() });
+export const ioServer = io.server();
 
 const server = Http.createServer();
 const wsServer = new WebSocket.Server({ server });
@@ -65,7 +64,7 @@ const parseRoomId = (url: string): string => {
 
 wsServer.on("connection", async (ws, req) => {
   const roomId = parseRoomId(req.url);
-  const room = io.getRoom(roomId);
+  const room = ioServer.getRoom(roomId);
 
   await room.register(ws);
 });
