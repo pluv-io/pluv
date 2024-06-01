@@ -11,7 +11,7 @@ import { DocsLayout } from "../../../components";
 
 Returns a `PluvIO` instance.
 
-Creates a server-side `PluvIO` client that will create rooms to register your websockets to. Below will show a available configurations for `createIO`. To learn more about `createIO`, read [Authorization](/docs/io/authorization), [Cloudflare Workers](/docs/io/cloudflare-workers), [Node.js](/docs/io/node.js) and [PubSub](/docs/io/pubsub).
+Creates a server-side `PluvIO` client that can be used to create event procedures, routers and servers. Below will show an example configuration for `createIO`. To learn more about `createIO`, read [Authorization](/docs/io/authorization), [Cloudflare Workers](/docs/io/cloudflare-workers), [Node.js](/docs/io/node.js) and [PubSub](/docs/io/pubsub).
 
 ```ts
 import { yjs } from "@pluv/crdt-yjs";
@@ -93,37 +93,77 @@ const token = await io.createToken({
 });
 ```
 
-### event
+### procedure
 
-Returns `PluvIO`.
-
-Adds a new type-safe event to be broadcasted from `PluvClient`. See [Define Events](/docs/io/define-events) for more information.
+Creates a new type-safe event procedure to be broadcasted from `PluvClient`. See [Define Events](/docs/io/define-events) for more information.
 
 ```ts
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO({
-    platform: platformNode(),
-})
-    // When event "SEND_MESSAGE" is sent by the frontend and received
-    // on the server
-    .event("SEND_MESSAGE", {
-        // Define a zod validation schema for the input
-        input: z.object({
-            message: z.string(),
-        }),
-        // Emit a "MESSAGE_RECEIVED" from the server to the client
-        resolver: ({ message }) => ({ MESSAGE_RECEIVED: { message } }),
-    })
-    .event("EMIT_EMOJI", {
-        input: z.object({
-            emojiCode: z.number(),
-        }),
-        resolver: ({ emojiCode }) => ({ EMOJI_RECEIVED: { emojiCode } }),
-    });
+const io = createIO({ platform: platformNode() });
+
+const sendMessage = io.procedure
+    .input(z.object({ message: z.string() }))
+    .broadcast(({ message }) => ({ receiveMessage: { message } }));
+
+const doubleValue = io.procedure
+    .input(z.object({ value: z.number() }))
+    .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
+
+const wave = io.procedure
+    .broadcast(() => ({ receiveMessage: { message: "Hello world!" } }));
 ```
+
+### router
+
+Creates a new type-safe event procedure router to attach events and connect to a `PluvServer`.
+
+```ts
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { z } from "zod";
+
+const io = createIO({ platform: platformNode() });
+
+const sendMessage = io.procedure
+    .input(z.object({ message: z.string() }))
+    .broadcast(({ message }) => ({ receiveMessage: { message } }));
+
+const doubleValue = io.procedure
+    .input(z.object({ value: z.number() }))
+    .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
+
+const wave = io.procedure
+    .broadcast(() => ({ receiveMessage: { message: "Hello world!" } }));
+
+const router = io.router({
+    sendMessage,
+    doubleValue,
+    wave,
+});
+```
+
+### server
+
+Creates a `PluvServer` that will create rooms to register your websockets to.
+
+```ts
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { z } from "zod";
+
+const io = createIO({ platform: platformNode() });
+const router = io.router({ /* ... */ });
+
+const server = io.server({ router });
+
+// Can also be created without a router, if events are unneeded
+const server = io.server();
+```
+
+## PluvServer
 
 ### getRoom
 
@@ -132,12 +172,12 @@ Returns `IORoom`.
 Retrieves a room by room name if it already exists. If the room doesn't already exist, the room is created and returned.
 
 ```ts
-const room = io.getRoom("my-example-room");
+const room = server.getRoom("my-example-room");
 ```
 
 ## IORoom
 
-This is the room returned by `PluvIO.getRoom`. This is what websockets are registered to.
+This is the room returned by `PluvServer.getRoom`. This is what websockets are registered to.
 
 ### broadcast
 
@@ -146,9 +186,10 @@ Returns `void`.
 Broadcasts an event to all connected websockets to the room.
 
 ```ts
-room.broadcast("EMIT_EMOJI", {
-    emojiCode: 123,
-});
+// The below 2 statements are equivalent
+room.broadcast("sendMessage", { message: "Hello world~!" });
+
+room.broadcast.sendMessage({ message: "Hello world~!" });
 ```
 
 ### id

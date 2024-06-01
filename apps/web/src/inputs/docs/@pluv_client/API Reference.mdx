@@ -195,7 +195,11 @@ Broadcasts an event to all websockets connected to the room.
 ```ts
 // frontend/room.ts
 
-room.broadcast("EMIT_EMOJI", { emojiCode: 123 });
+// The below 2 statements are equivalent
+
+room.broadcast("sendMessage", { message: "Hello world~!" });
+
+room.broadcast.sendMessage({ message: "Hello world~!" });
 ```
 
 ### PluvRoom.canRedo
@@ -246,11 +250,17 @@ Disconnects from the room if already connected.
 
 Returns `() => void`
 
-Subscribes to an event. These events are defined by `PluvIO.event` and are emitted when other websockets emit events via `PluvRoom.broadcast`.
+Subscribes to an event. These events are defined by `PluvIO.procedure` and are emitted when other websockets emit events via `PluvRoom.broadcast`.
 
 ```ts
-// Subscribe to EMOJI_RECEIVED messages
-const unsubscribe = room.event("EMOJI_RECEIVED", ({ data }) => {
+// Subscribe to receiveMessage messages
+
+// The below 2 statements are equivalent
+const unsubscribe = room.event("receiveMessage", ({ data }) => {
+    console.log(data);
+});
+
+const unsubscribe = room.event.receiveMessage(({ data }) => {
     console.log(data);
 });
 
