@@ -130,7 +130,7 @@ export const MyPage: FC<Record<string, never>> = () => {
 export const MyRoom: FC<Record<string, never>> = () => {
     const broadcast = useBroadcast();
 
-    evnet.RECEIVE_MESSAGE.useEvent(({ data }) => {
+    event.RECEIVE_MESSAGE.useEvent(({ data }) => {
         // data is typed as { message: string }
         console.log(data.message);
     });
