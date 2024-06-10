@@ -1,18 +1,18 @@
-import { InferComponentProps } from "@pluv-internal/typings";
-import { ReactElement } from "react";
-import tw from "twin.macro";
-
-const Root = tw.code`
-    p-0.5
-    border
-    border-indigo-500/40
-    rounded-md
-    font-mono
-    bg-zinc-800
-`;
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import { forwardRef } from "react";
 
 export type MdxCodeProps = Omit<InferComponentProps<"code">, "ref">;
 
-export const MdxCode = (props: MdxCodeProps): ReactElement | null => {
-    return <Root {...props} />;
-};
+export const MdxCode = forwardRef<HTMLElement, MdxCodeProps>((props, ref) => {
+    const { className, ...restProps } = props;
+
+    return (
+        <code
+            className={cn("rounded-md border border-indigo-500/40 bg-zinc-800 p-0.5 font-mono", className)}
+            ref={ref}
+        />
+    );
+});
+
+MdxCode.displayName = "MdxCode";

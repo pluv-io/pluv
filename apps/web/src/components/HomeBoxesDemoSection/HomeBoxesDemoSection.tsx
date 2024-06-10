@@ -1,4 +1,4 @@
-import { PageContainer } from "@pluv-internal/react-components";
+import { PageContainer } from "@pluv-internal/react-components/either";
 import { CSSProperties, FC } from "react";
 import tw from "twin.macro";
 import { HomeCodeDemo } from "../HomeCodeDemo";

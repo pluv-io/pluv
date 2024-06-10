@@ -1,19 +1,14 @@
-import { Language, PrismCode } from "@pluv-internal/react-code";
-import { InferComponentProps } from "@pluv-internal/typings";
-import { PropsWithChildren, ReactElement, ReactNode, isValidElement, useCallback, useMemo } from "react";
-import tw from "twin.macro";
+import type { Language } from "@pluv-internal/react-code";
+import { PrismCode } from "@pluv-internal/react-code";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import type { PropsWithChildren, ReactElement, ReactNode } from "react";
+import { forwardRef, isValidElement, useCallback, useMemo } from "react";
 
-const Root = tw(PrismCode)`
-    w-full
-    border
-    border-indigo-500/40
-    rounded-md
-`;
+export type MdxPreProps = InferComponentProps<"pre">;
 
-export type MdxPreProps = Omit<InferComponentProps<"code">, "ref">;
-
-export const MdxPre = (props: MdxPreProps): ReactElement | null => {
-    const { children, className, style } = props;
+export const MdxPre = forwardRef<HTMLPreElement, MdxPreProps>((props, ref) => {
+    const { children, className, style, ...restProps } = props;
 
     const hasChildren = useCallback((element: ReactNode): element is ReactElement<PropsWithChildren> => {
         return isValidElement(element) && !!element.props.children;
@@ -51,8 +46,16 @@ export const MdxPre = (props: MdxPreProps): ReactElement | null => {
     }, [children, className, hasChildren]) as Language;
 
     return (
-        <Root className={className} language={language} style={style}>
+        <PrismCode
+            {...restProps}
+            className={cn("w-full rounded-md border border-indigo-500/40", className)}
+            language={language}
+            ref={ref}
+            style={style}
+        >
             {contents}
-        </Root>
+        </PrismCode>
     );
-};
+});
+
+MdxPre.displayName = "MdxPre";

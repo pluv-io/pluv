@@ -1,8 +1,9 @@
-import { clsx } from "clsx";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
 import { Highlight } from "prism-react-renderer";
-import { CSSProperties, FC } from "react";
+import type { CSSProperties, FC } from "react";
 import { forwardRef, memo } from "react";
-import tw, { styled } from "twin.macro";
 
 export type Language =
     | "markup"
@@ -38,52 +39,6 @@ export type Language =
     | "wasm"
     | "yaml";
 
-const Pre = styled.pre`
-    ${tw`
-        text-left
-        overflow-auto
-        p-[0.5em]
-        font-mono
-        hover:[::-webkit-scrollbar-thumb]:block
-    `}
-
-    &::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-
-    &::-webkit-scrollbar-track,
-    &::-webkit-scrollbar-corner {
-        ${tw`
-            bg-transparent
-        `}
-    }
-
-    &::-webkit-scrollbar-thumb {
-        ${tw`
-            hidden
-            bg-gray-700/40
-            rounded-full
-        `}
-    }
-`;
-
-const Line = tw.div`
-    table-row
-`;
-
-const LineNo = tw.span`
-    table-cell
-    text-left
-    pr-[1em]
-    select-none
-    opacity-50
-`;
-
-const LineContent = tw.span`
-    table-cell
-`;
-
 export interface TokenInputProps {
     types: string[];
     content: string;
@@ -104,13 +59,11 @@ export interface PrismCodeTokenProps {
     tokenProps: TokenOutputProps;
 }
 
-export interface PrismCodeProps {
+export type PrismCodeProps = Omit<InferComponentProps<"pre">, "children"> & {
     children?: string;
-    className?: string;
     language?: Language;
-    style?: CSSProperties;
     tokenRenderer?: FC<PrismCodeTokenProps>;
-}
+};
 
 export const PrismCode = memo(
     forwardRef<HTMLPreElement, PrismCodeProps>((props, ref) => {
@@ -120,16 +73,39 @@ export const PrismCode = memo(
             language = "tsx",
             style: _style,
             tokenRenderer: Token = ({ tokenProps }) => <span {...tokenProps} key={tokenProps.key as string | number} />,
+            ...restProps
         } = props;
 
         return (
             <Highlight code={children} language={language} theme={{ plain: {}, styles: [] }}>
                 {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                    <Pre ref={ref} className={clsx(_className, className)} style={{ ..._style, ...style }}>
+                    <pre
+                        {...restProps}
+                        ref={ref}
+                        className={cn(
+                            oneLine`
+                                hover:[::-webkit-scrollbar-thumb]:block
+                                overflow-auto
+                                p-[0.5em]
+                                text-left
+                                font-mono
+                                [&::-webkit-scrollbar-corner]:bg-transparent
+                                [&::-webkit-scrollbar-thumb]:hidden
+                                [&::-webkit-scrollbar-thumb]:rounded-full
+                                [&::-webkit-scrollbar-thumb]:bg-gray-700/40
+                                [&::-webkit-scrollbar-track]:bg-transparent
+                                [&::-webkit-scrollbar]:h-[8px]
+                                [&::-webkit-scrollbar]:w-[8px]
+                            `,
+                            _className,
+                            className,
+                        )}
+                        style={{ ..._style, ...style }}
+                    >
                         {tokens.map((line, i) => (
-                            <Line {...getLineProps({ line })} key={i}>
-                                <LineNo>{i + 1}</LineNo>
-                                <LineContent>
+                            <div {...getLineProps({ className: "table-row", line })} key={i}>
+                                <span className="table-cell select-none pr-[1em] text-left opacity-50">{i + 1}</span>
+                                <span className="table-cell">
                                     {line.map((token, key) => (
                                         <Token
                                             key={key}
@@ -142,10 +118,10 @@ export const PrismCode = memo(
                                             })}
                                         />
                                     ))}
-                                </LineContent>
-                            </Line>
+                                </span>
+                            </div>
                         ))}
-                    </Pre>
+                    </pre>
                 )}
             </Highlight>
         );

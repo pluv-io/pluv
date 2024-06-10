@@ -1,17 +1,13 @@
-import { NextLink } from "@pluv-internal/react-components";
+import { NextLink } from "@pluv-internal/react-components/either";
 import { useNoSsr } from "@pluv-internal/react-hooks";
-import { InferComponentProps } from "@pluv-internal/typings";
-import { ReactElement } from "react";
-import tw from "twin.macro";
-
-const Root = tw(NextLink)`
-    text-sky-500
-`;
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import { forwardRef } from "react";
 
 export type MdxAProps = Omit<InferComponentProps<"a">, "ref">;
 
-export const MdxA = (props: MdxAProps): ReactElement | null => {
-    const { href } = props;
+export const MdxA = forwardRef<HTMLAnchorElement, MdxAProps>((props) => {
+    const { className, href } = props;
 
     const noSsr = useNoSsr();
 
@@ -20,12 +16,14 @@ export const MdxA = (props: MdxAProps): ReactElement | null => {
         if (/^http(s)?:\/\//.test(href)) return !href.startsWith(window.origin);
 
         return false;
-    });
+    }, false);
 
     const rel = props.rel ?? isExternal ? "noopener noreferrer" : undefined;
     const target = props.target ?? isExternal ? "_blank" : undefined;
 
     if (!href) return null;
 
-    return <Root {...props} href={href} rel={rel} target={target} />;
-};
+    return <NextLink {...props} className={cn("text-sky-500", className)} href={href} rel={rel} target={target} />;
+});
+
+MdxA.displayName = "MdxA";

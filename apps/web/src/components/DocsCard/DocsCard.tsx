@@ -1,8 +1,8 @@
-import { NextLink, Paper } from "@pluv-internal/react-components";
+import { Card, NextLink } from "@pluv-internal/react-components/either";
 import { CSSProperties, FC } from "react";
 import tw from "twin.macro";
 
-const Root = tw(Paper)`
+const Root = tw(Card)`
     flex
     flex-col
     items-stretch

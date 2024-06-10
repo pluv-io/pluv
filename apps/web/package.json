@@ -22,7 +22,6 @@
         "@mdx-js/react": "^3.0.1",
         "@pluv-apps/server-cloudflare": "workspace:^",
         "@pluv-internal/mdx-components": "workspace:^",
-        "@pluv-internal/rainfall": "workspace:^",
         "@pluv-internal/react-chess": "workspace:^",
         "@pluv-internal/react-code": "workspace:^",
         "@pluv-internal/react-components": "workspace:^",

@@ -1,4 +1,4 @@
-import { Anchor, Banner, getZIndex } from "@pluv-internal/react-components";
+import { Anchor, Banner } from "@pluv-internal/react-components/either";
 import { CSSProperties, memo, ReactNode } from "react";
 import tw, { styled } from "twin.macro";
 import { SiteWideAppBar } from "../SiteWideAppBar";
@@ -24,10 +24,9 @@ const StyledSiteWideAppBar = tw(SiteWideAppBar)`
     shrink-0
 `;
 
-const StyledSiteWideFooter = styled(SiteWideFooter)`
-    ${tw`shrink-0`}
-
-    z-index: ${getZIndex("footer")};
+const StyledSiteWideFooter = tw(SiteWideFooter)`
+    shrink-0
+    z-footer
 `;
 
 export interface SiteWideLayoutProps {

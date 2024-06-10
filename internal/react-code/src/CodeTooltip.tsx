@@ -1,48 +1,11 @@
-import {
-    CSSProperties,
-    FC,
-    ReactElement,
-    ReactNode,
-    RefCallback,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
+import type { CSSProperties, FC, ReactElement, ReactNode, RefCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePopper } from "react-popper";
-import tw from "twin.macro";
-import { CodeTooltipIcon, CodeTooltipIconType } from "./CodeTooltipIcon";
-
-const Content = tw.div`
-    md:translate-x-full
-    md:flex
-    hidden
-    flex-row
-    items-center
-    gap-1
-    px-1.5
-    py-0.5
-    border
-    border-solid
-    border-indigo-700/60
-    rounded-sm
-    shadow-md
-    shadow-indigo-800
-    bg-zinc-800
-    text-sm
-    whitespace-nowrap
-    z-[1]
-`;
-
-const Label = tw.span`
-    font-medium
-`;
-
-const HelperText = tw.span`
-    ml-9
-    text-gray-400
-`;
+import type { CodeTooltipIconType } from "./CodeTooltipIcon";
+import { CodeTooltipIcon } from "./CodeTooltipIcon";
 
 export interface CodeTooltipChildProps {
     children: ReactNode;
@@ -111,19 +74,38 @@ export const CodeTooltip: FC<CodeTooltipProps> = ({
             !!open &&
             typeof window !== "undefined" &&
             createPortal(
-                <Content
+                <div
                     ref={popperRef}
-                    className={className}
-                    style={{
-                        ...styles.popper,
-                        ...style,
-                    }}
+                    className={cn(
+                        oneLine`
+                            z-[1]
+                            hidden
+                            flex-row
+                            items-center
+                            gap-1
+                            whitespace-nowrap
+                            rounded-sm
+                            border
+                            border-solid
+                            border-indigo-700/60
+                            bg-zinc-800
+                            px-1.5
+                            py-0.5
+                            text-sm
+                            shadow-md
+                            shadow-indigo-800
+                            md:flex
+                            md:translate-x-full
+                    `,
+                        className,
+                    )}
+                    style={{ ...styles.popper, ...style }}
                     {...attributes.popper}
                 >
                     <CodeTooltipIcon height={16} type={type} width={16} />
-                    <Label>{label}</Label>
-                    {!!helperText && <HelperText>{helperText}</HelperText>}
-                </Content>,
+                    <span className="font-medium">{label}</span>
+                    {!!helperText && <span className="ml-9 text-gray-400">{helperText}</span>}
+                </div>,
                 document.body,
             ),
         handlers: { onMouseOut, onMouseOver },

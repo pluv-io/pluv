@@ -1,83 +1,10 @@
+import { cn } from "@pluv-internal/utils";
 import * as Tabs from "@radix-ui/react-tabs";
-import { CSSProperties, FC, ReactElement, useMemo } from "react";
-import tw, { styled } from "twin.macro";
-import { Language, PrismCode } from "./PrismCode";
-
-export const Root = tw(Tabs.Root)`
-    flex
-    flex-col
-    items-stretch
-    p-2
-    overflow-x-auto
-`;
-
-const TabsList = tw(Tabs.List)`
-    shrink-0
-    flex
-    flex-row
-    items-stretch
-    gap-0.5
-    overflow-hidden
-`;
-
-const TabsTrigger = styled(Tabs.Trigger)`
-    ${tw`
-        rounded-md
-        py-1.5
-        px-3
-        border
-        border-solid
-        border-transparent
-        font-medium
-        text-sm
-        whitespace-nowrap
-        hover:bg-gray-500/40
-        transition-all
-        ease-in
-        duration-150
-    `}
-
-    &[data-state='active'] {
-        ${tw`
-            bg-indigo-500/20
-            text-violet-400
-            hover:bg-indigo-500/40
-            active:bg-indigo-400/40
-        `}
-    }
-`;
-
-const TabsContent = styled(Tabs.Content)`
-    ${tw`
-        grow
-        overflow-y-auto
-        hover:[::-webkit-scrollbar-thumb]:block
-    `}
-
-    &::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-
-    &::-webkit-scrollbar-track,
-    &::-webkit-scrollbar-corner {
-        ${tw`
-            bg-transparent
-        `}
-    }
-
-    &::-webkit-scrollbar-thumb {
-        ${tw`
-            hidden
-            bg-gray-700/40
-            rounded-full
-        `}
-    }
-`;
-
-const StyledPrismCode = tw(PrismCode)`
-    w-fit
-`;
+import { oneLine } from "common-tags";
+import type { CSSProperties } from "react";
+import { useMemo } from "react";
+import type { Language } from "./PrismCode";
+import { PrismCode } from "./PrismCode";
 
 export interface MultiPrismCodeTab<TTab extends string> {
     code?: string;
@@ -91,25 +18,72 @@ export interface MultiPrismCodeProps<TTab extends string> {
     tabs?: readonly MultiPrismCodeTab<TTab>[];
 }
 
-export const MultiPrismCode = <TTab extends string>(props: MultiPrismCodeProps<TTab>): ReactElement => {
+export const MultiPrismCode = <TTab extends string>(props: MultiPrismCodeProps<TTab>) => {
     const { className, style, tabs = [] } = props;
 
     const defaultTab = useMemo((): TTab | undefined => tabs[0]?.name, [tabs]);
 
     return (
-        <Root className={className} defaultValue={defaultTab} style={style}>
-            <TabsList>
+        <Tabs.Root
+            className={cn("flex flex-col items-stretch overflow-x-auto p-2", className)}
+            defaultValue={defaultTab}
+            style={style}
+        >
+            <Tabs.List className="flex shrink-0 flex-row items-stretch gap-0.5 overflow-hidden">
                 {tabs.map((tab) => (
-                    <TabsTrigger key={tab.name} value={tab.name}>
+                    <Tabs.Trigger
+                        key={tab.name}
+                        className={oneLine`
+                            [&[data-state='active']]bg-indigo-500/20
+                            [&[data-state='active']]text-violet-400
+                            [&[data-state='active']]hover:bg-indigo-500/40
+                            [&[data-state='active']]active:bg-indigo-400/40
+                            whitespace-nowrap
+                            rounded-md
+                            border
+                            border-solid
+                            border-transparent
+                            px-3
+                            py-1.5
+                            text-sm
+                            font-medium
+                            transition-all
+                            duration-150
+                            ease-in
+                            hover:bg-gray-500/40
+                        `}
+                        value={tab.name}
+                    >
                         {tab.name}
-                    </TabsTrigger>
+                    </Tabs.Trigger>
                 ))}
-            </TabsList>
+            </Tabs.List>
             {tabs.map((tab) => (
-                <TabsContent key={tab.name} value={tab.name}>
-                    <StyledPrismCode language={tab.language ?? "tsx"}>{tab.code}</StyledPrismCode>
+                <TabsContent
+                    key={tab.name}
+                    className={oneLine`
+                        hover:[::-webkit-scrollbar-thumb]:block
+                        grow
+                        overflow-auto
+                        overflow-y-auto
+                        p-[0.5em]
+                        text-left
+                        font-mono
+                        [&::-webkit-scrollbar-corner]:bg-transparent
+                        [&::-webkit-scrollbar-thumb]:hidden
+                        [&::-webkit-scrollbar-thumb]:rounded-full
+                        [&::-webkit-scrollbar-thumb]:bg-gray-700/40
+                        [&::-webkit-scrollbar-track]:bg-transparent
+                        [&::-webkit-scrollbar]:h-[8px]
+                        [&::-webkit-scrollbar]:w-[8px]
+                    `}
+                    value={tab.name}
+                >
+                    <PrismCode className="w-fit" language={tab.language ?? "tsx"}>
+                        {tab.code}
+                    </PrismCode>
                 </TabsContent>
             ))}
-        </Root>
+        </Tabs.Root>
     );
 };

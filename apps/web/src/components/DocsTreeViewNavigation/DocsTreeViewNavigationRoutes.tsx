@@ -1,4 +1,4 @@
-import { TreeView } from "@pluv-internal/react-components";
+import { TreeView } from "@pluv-internal/react-components/client";
 import { useRouter } from "next/router";
 import { FC, MouseEvent, useMemo } from "react";
 import { DocRouteNode } from "../../types";

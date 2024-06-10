@@ -1,4 +1,4 @@
-import { Seo } from "@pluv-internal/react-components";
+import { Seo } from "@pluv-internal/react-components/client";
 import type { FC } from "react";
 
 export interface DocsSeoProps {

@@ -1,4 +1,4 @@
-import { AnchorButton, Footer, LogoIcon, NextLink } from "@pluv-internal/react-components";
+import { AnchorButton, Footer, LogoIcon, NextLink } from "@pluv-internal/react-components/either";
 import { GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
 import { CSSProperties, memo } from "react";
 import tw, { styled } from "twin.macro";
@@ -62,13 +62,7 @@ const LinksContainer = tw.div`
     sm:flex-row
 `;
 
-const ExternalLink = tw(NextLink)`
-    flex
-    flex-row
-    items-center
-    justify-center
-    gap-2
-    w-28
+const ExternalLink = tw(NextLink)` flex flex-row items-center justify-center gap-2 w-28
 `;
 
 export interface SiteWideFooterProps {
@@ -88,26 +82,26 @@ export const SiteWideFooter = memo<SiteWideFooterProps>((props) => {
                 </Logo>
                 <LinksContainer>
                     <AnchorButton
-                        as={ExternalLink}
+                        className="flex w-28 flex-row items-center justify-center gap-2"
                         href="https://github.com/pluv-io/pluv"
-                        outlined
                         rel="noreferrer noopener"
-                        size="small"
+                        size="sm"
                         target="_blank"
                         title="GitHub"
+                        variant="outline"
                         aria-label="GitHub"
                     >
                         <GitHubIcon height={16} width={16} />
                         <span>GitHub</span>
                     </AnchorButton>
                     <AnchorButton
-                        as={ExternalLink}
+                        className="flex w-28 flex-row items-center justify-center gap-2"
                         href="https://www.npmjs.com/package/@pluv/io"
-                        outlined
                         rel="noreferrer noopener"
-                        size="small"
+                        size="sm"
                         target="_blank"
                         title="npm"
+                        variant="outline"
                         aria-label="npm"
                     >
                         <NpmIcon height={16} width={16} />

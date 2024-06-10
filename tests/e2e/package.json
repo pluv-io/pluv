@@ -24,7 +24,6 @@
 	},
 	"private": true,
 	"dependencies": {
-		"@pluv-internal/cloudflare-utils": "workspace:^",
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@pluv/addon-indexeddb": "workspace:^",
 		"@pluv/client": "workspace:^",

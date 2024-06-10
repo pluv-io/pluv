@@ -1,5 +1,5 @@
 import { LaserWaveTheme } from "@pluv-internal/react-code";
-import { LazyMotion } from "@pluv-internal/react-components";
+import { LazyMotion } from "@pluv-internal/react-components/client";
 import { withThemeByClassName } from "@storybook/addon-themes";
 import type { Preview } from "@storybook/react";
 import React, { type ComponentType } from "react";

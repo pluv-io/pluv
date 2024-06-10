@@ -1,4 +1,5 @@
-import { Anchor, AnchorButton, AppBar, Button, LogoIcon, NextLink, SideDrawer } from "@pluv-internal/react-components";
+import { AppBar, SideDrawer } from "@pluv-internal/react-components/client";
+import { Anchor, AnchorButton, Button, LogoIcon, NextLink } from "@pluv-internal/react-components/either";
 import { BarsIcon, GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
 import { useRouter } from "next/router";
 import { CSSProperties, memo, useState } from "react";
@@ -98,7 +99,7 @@ export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
                         }}
                     >
                         <SideDrawer.Trigger>
-                            <MobileDrawerButton outlined square type="button">
+                            <MobileDrawerButton size="icon" type="button" variant="outline">
                                 <BarsIcon height={24} width={24} />
                             </MobileDrawerButton>
                         </SideDrawer.Trigger>
@@ -126,22 +127,22 @@ export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
                 <RightContainer>
                     <AnchorButton
                         href="https://github.com/pluv-io/pluv"
-                        outlined
                         rel="noreferrer noopener"
-                        square
+                        size="icon"
                         target="_blank"
                         title="GitHub"
+                        variant="outline"
                         aria-label="GitHub"
                     >
                         <GitHubIcon height={24} width={24} />
                     </AnchorButton>
                     <AnchorButton
                         href="https://www.npmjs.com/package/@pluv/io"
-                        outlined
                         rel="noreferrer noopener"
-                        square
+                        size="icon"
                         target="_blank"
                         title="npm"
+                        variant="outline"
                         aria-label="npm"
                     >
                         <NpmIcon height={24} width={24} />

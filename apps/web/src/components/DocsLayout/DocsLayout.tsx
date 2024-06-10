@@ -1,5 +1,6 @@
 import { MdxProvider } from "@pluv-internal/mdx-components";
-import { SideBar, TableOfContents } from "@pluv-internal/react-components";
+import { SideBar } from "@pluv-internal/react-components/either";
+import { TableOfContents } from "@pluv-internal/react-components/client";
 import { useRouter } from "next/router";
 import { CSSProperties, ReactNode, memo } from "react";
 import tw from "twin.macro";

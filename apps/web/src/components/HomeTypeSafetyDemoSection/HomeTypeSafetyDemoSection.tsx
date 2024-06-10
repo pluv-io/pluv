@@ -1,5 +1,5 @@
-import { PageContainer } from "@pluv-internal/react-components";
-import { CSSProperties, FC } from "react";
+import { PageContainer } from "@pluv-internal/react-components/either";
+import type { CSSProperties, FC } from "react";
 import tw from "twin.macro";
 import { HomeTypeSafetyDemo } from "../HomeTypeSafetyDemo";
 

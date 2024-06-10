@@ -1,4 +1,5 @@
-import { Button, LogoIcon, NextLink, SideDrawer } from "@pluv-internal/react-components";
+import { SideDrawer } from "@pluv-internal/react-components/client";
+import { Button, LogoIcon, NextLink } from "@pluv-internal/react-components/either";
 import { XIcon } from "@pluv-internal/react-icons";
 import { CSSProperties, FC, MouseEvent } from "react";
 import tw from "twin.macro";
@@ -56,7 +57,7 @@ export const MobileDocsSideDrawer: FC<MobileDocsSideDrawerProps> = ({ className,
                     <PluvName>pluv.io</PluvName>
                 </Logo>
                 <SideDrawer.Close>
-                    <Button outlined size="small" square type="button">
+                    <Button size="icon" type="button" variant="outline">
                         <XIcon height={24} width={24} />
                     </Button>
                 </SideDrawer.Close>

@@ -1,5 +1,5 @@
-import { InferComponentProps } from "@pluv-internal/typings";
-import { FC } from "react";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import type { FC } from "react";
 
 export type CodeTooltipIconType = "field";
 

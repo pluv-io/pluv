@@ -1,4 +1,4 @@
-import { Breadcrumbs } from "@pluv-internal/react-components";
+import { Breadcrumbs } from "@pluv-internal/react-components/client";
 import { HomeIcon } from "@pluv-internal/react-icons";
 import { get } from "@pluv-internal/utils";
 import { useRouter } from "next/router";
