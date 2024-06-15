@@ -3,7 +3,7 @@ import { cn } from "@pluv-internal/utils";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { oneLine } from "common-tags";
 import type { CSSProperties, FC, ReactNode } from "react";
-import { AnchorPill } from "../../../src/atoms";
+import { NextLink, Pill } from "../../../either";
 
 export interface BreadcrumbsItemProps {
     "aria-label"?: string;
@@ -39,19 +39,18 @@ export const BreadcrumbsItem: FC<BreadcrumbsItemProps> = ({
             style={style}
         >
             <NavigationMenu.Link asChild>
-                <AnchorPill
+                <Pill
                     className={oneLine`
                         text-inherit
                         hover:text-sky-500
                         [&[data-selected="true"]]:text-sky-500
                     `}
-                    href={href}
                     title={title}
                     aria-label={ariaLabel}
                     data-selected={selected}
                 >
-                    {children}
-                </AnchorPill>
+                    <NextLink href={href}>{children}</NextLink>
+                </Pill>
             </NavigationMenu.Link>
             <ChevronDownIcon className="-rotate-90" height={16} width={16} />
         </NavigationMenu.Item>

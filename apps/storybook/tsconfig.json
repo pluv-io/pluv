@@ -10,7 +10,6 @@
 			"@pluv-apps/server-cloudflare": ["../server-cloudflare/src"],
 			"@pluv-apps/web/components": ["../web/components"],
 			"@pluv-apps/web/pluv-io": ["../web/pluv-io"],
-			"@pluv-internal/react-chess": ["../../internal/react-chess/src"],
 			"@pluv-internal/react-code": ["../../internal/react-code/src"],
 			"@pluv-internal/react-components": ["../../internal/react-components/src"],
 			"@pluv-internal/react-hooks": ["../../internal/react-hooks/src"],

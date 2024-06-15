@@ -1,54 +1,14 @@
 import type { MultiPrismCodeTab } from "@pluv-internal/react-code";
 import { MultiPrismCode } from "@pluv-internal/react-code";
 import { useMediaQuery } from "@pluv-internal/react-hooks";
-import { codeBlock } from "common-tags";
-import { CSSProperties, useEffect } from "react";
-import { memo, useMemo, useState } from "react";
-import tw, { theme } from "twin.macro";
+import { cn } from "@pluv-internal/utils";
+import { codeBlock, oneLine } from "common-tags";
+import type { CSSProperties } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
+import { HomeCodeDemoUserDemo } from "./HomeCodeDemoUserDemo";
 import { BOX_SIZE, MOBILE_BOX_SIZE } from "./constants";
 import type { HomeCodeDemoPositions, HomeCodeDemoSelections } from "./context";
 import { HomeCodeDemoContext } from "./context";
-import { HomeCodeDemoUserDemo } from "./HomeCodeDemoUserDemo";
-
-const Root = tw.div`
-    flex
-    flex-col
-    items-center
-`;
-
-const ContentContainer = tw.div`
-    flex
-    flex-col
-    items-stretch
-    justify-center
-    gap-[16px]
-    max-w-[1080px]
-    w-full
-    h-[980px]
-    md:flex-row
-    md:h-[640px]
-    md:gap-[32px]
-`;
-
-const BoxesDemo = tw(HomeCodeDemoUserDemo)`
-    basis-0
-    min-w-0
-    min-h-[240px]
-    sm:min-h-[280px]
-    md:min-h-0
-    md:grow
-`;
-
-const CodeDemo = tw(MultiPrismCode)`
-    grow
-    basis-0
-    min-w-0
-    min-h-0
-    border
-    border-solid
-    border-indigo-500/40
-    rounded-md
-`;
 
 export interface HomeCodeDemoProps {
     className?: string;
@@ -207,7 +167,7 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
         [codePositions],
     );
 
-    const isDesktop = useMediaQuery(`(min-width: ${theme`screens.md`})`);
+    const isDesktop = useMediaQuery(`(min-width: 768px)`);
 
     const boxSize = isDesktop ? BOX_SIZE : MOBILE_BOX_SIZE;
 
@@ -235,12 +195,47 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                 setSelections,
             }}
         >
-            <Root className={className} style={style}>
-                <ContentContainer>
-                    <BoxesDemo />
-                    <CodeDemo tabs={tabs} />
-                </ContentContainer>
-            </Root>
+            <div className={cn("flex flex-col items-center", className)} style={style}>
+                <div
+                    className={oneLine`
+                        flex
+                        h-[980px]
+                        w-full
+                        max-w-[1080px]
+                        flex-col
+                        items-stretch
+                        justify-center
+                        gap-[16px]
+                        md:h-[640px]
+                        md:flex-row
+                        md:gap-[32px]
+                    `}
+                >
+                    <HomeCodeDemoUserDemo
+                        className={oneLine`
+                            min-h-[240px]
+                            min-w-0
+                            basis-0
+                            sm:min-h-[280px]
+                            md:min-h-0
+                            md:grow
+                      `}
+                    />
+                    <MultiPrismCode
+                        className={oneLine`
+                            min-h-0
+                            min-w-0
+                            grow
+                            basis-0
+                            rounded-md
+                            border
+                            border-solid
+                            border-indigo-500/40
+                        `}
+                        tabs={tabs}
+                    />
+                </div>
+            </div>
         </HomeCodeDemoContext.Provider>
     );
 });

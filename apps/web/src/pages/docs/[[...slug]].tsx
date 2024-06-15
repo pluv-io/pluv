@@ -1,26 +1,11 @@
+import { oneLine } from "common-tags";
 import fs from "fs-extra";
 import matter from "gray-matter";
 import type { GetStaticPaths, GetStaticProps, InferGetStaticPropsType, NextPage } from "next";
 import path from "path";
-import tw from "twin.macro";
 import { DocsCard, DocsLayout } from "../../components";
 import docRoutes from "../../generated/doc-routes.json";
-import { DocRoutes, MetaJson } from "../../types";
-
-const Heading = tw.h1`
-    mb-6
-`;
-
-const Contents = tw.div`
-    grid
-    [grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr))]
-    gap-8
-    w-full
-`;
-
-const Card = tw(DocsCard)`
-    min-w-0
-`;
+import type { DocRoutes, MetaJson } from "../../types";
 
 export interface DocsIndexChild {
     data: MetaJson;
@@ -33,17 +18,25 @@ const routes: DocRoutes = docRoutes;
 const Page: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({ children, meta }) => {
     return (
         <DocsLayout meta={meta}>
-            <Heading>{meta?.title}</Heading>
-            <Contents>
+            <h1 className="mb-6">{meta?.title}</h1>
+            <div
+                className={oneLine`
+                    grid
+                    w-full
+                    grid-cols-[repeat(auto-fill,minmax(20rem,1fr))]
+                    gap-8
+                `}
+            >
                 {children?.map((child) => (
-                    <Card
+                    <DocsCard
                         key={child.route}
+                        className="min-w-0"
                         description={child.data.description}
                         href={child.route}
                         title={child.data.title}
                     />
                 ))}
-            </Contents>
+            </div>
         </DocsLayout>
     );
 };

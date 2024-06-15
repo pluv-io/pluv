@@ -3,8 +3,9 @@ import { cn } from "@pluv-internal/utils";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { oneLine } from "common-tags";
 import { m } from "framer-motion";
-import { CSSProperties, FC, ReactNode, useState } from "react";
-import { NextLink } from "../../../src/atoms";
+import type { CSSProperties, FC, ReactNode } from "react";
+import { useState } from "react";
+import { NextLink } from "../../../either";
 
 export interface TreeViewListProps {
     children?: ReactNode;

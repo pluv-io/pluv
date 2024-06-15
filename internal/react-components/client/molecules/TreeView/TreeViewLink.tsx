@@ -2,7 +2,7 @@ import { cn } from "@pluv-internal/utils";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { oneLine } from "common-tags";
 import type { CSSProperties, FC, MouseEvent, ReactNode } from "react";
-import { NextLink } from "../../../src/atoms";
+import { NextLink } from "../../../either";
 
 export interface TreeViewLinkProps {
     children?: ReactNode;

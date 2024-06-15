@@ -21,8 +21,6 @@ packages:
 
   - "internal/cloudflare-utils"
   - "internal/mdx-components"
-  - "internal/rainfall"
-  - "internal/react-chess"
   - "internal/react-code"
   - "internal/react-components"
   - "internal/react-hooks"

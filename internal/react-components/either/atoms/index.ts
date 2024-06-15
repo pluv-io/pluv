@@ -1,6 +1,5 @@
 export * from "./Anchor";
 export * from "./AnchorButton";
-export * from "./AnchorPill";
 export * from "./Backdrop";
 export * from "./Banner";
 export * from "./Button";
@@ -14,6 +13,7 @@ export * from "./Input";
 export * from "./LogoIcon";
 export * from "./NextLink";
 export * from "./PageContainer";
+export * from "./Pill";
 export * from "./SideBar";
 export * from "./Skeleton";
 export * from "./Spinner";

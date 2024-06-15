@@ -1,47 +1,7 @@
 import { PageContainer } from "@pluv-internal/react-components/either";
-import { CSSProperties, FC } from "react";
-import tw from "twin.macro";
-import { HomeCodeDemo } from "../HomeCodeDemo";
-
-const Root = tw.section`
-    flex
-    flex-col
-    items-center
-    py-24
-`;
-
-const Title = tw(PageContainer)`
-    flex
-    flex-col
-    items-center
-    text-3xl
-    leading-tight
-    font-bold
-    md:text-5xl
-    text-center
-`;
-
-const Info = tw(PageContainer)`
-	flex
-	flex-col
-	items-center
-    mt-4
-    max-w-[32rem]
-	text-lg
-	text-center
-    text-slate-300
-`;
-
-const CodeDemoContainer = tw(PageContainer)`
-    flex
-    items-center
-    justify-center
-    mt-12
-`;
-
-const StyledCodeDemo = tw(HomeCodeDemo)`
-    w-full
-`;
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
+import type { CSSProperties, FC } from "react";
 
 export interface HomeBoxesDemoSectionProps {
     className?: string;
@@ -50,15 +10,41 @@ export interface HomeBoxesDemoSectionProps {
 
 export const HomeBoxesDemoSection: FC<HomeBoxesDemoSectionProps> = ({ className, style }) => {
     return (
-        <Root className={className} style={style}>
-            <Title as="h2">Simple-to-use APIs</Title>
-            <Info as="h3">
-                Configure your server and client to unlock intuitive APIs that allow you to focus on your end-user
-                experience.
-            </Info>
-            <CodeDemoContainer>
-                <StyledCodeDemo />
-            </CodeDemoContainer>
-        </Root>
+        <section className={cn("flex flex-col items-center py-24", className)} style={style}>
+            <PageContainer
+                asChild
+                className={oneLine`
+                    flex
+                    flex-col
+                    items-center
+                    text-center
+                    text-3xl
+                    font-bold
+                    leading-tight
+                    md:text-5xl
+                `}
+            >
+                <h2>Simple-to-use APIs</h2>
+            </PageContainer>
+            <PageContainer
+                asChild
+                className={oneLine`
+                	mt-4
+                    flex
+                    max-w-[32rem]
+                    flex-col
+                    items-center
+                    text-center
+                    text-lg
+                    text-slate-300
+                `}
+            >
+                <h3>
+                    Configure your server and client to unlock intuitive APIs that allow you to focus on your end-user
+                    experience.
+                </h3>
+            </PageContainer>
+            <PageContainer className="mt-12 flex items-center justify-center" />
+        </section>
     );
 };

@@ -7,7 +7,6 @@ module.exports = {
         files: [
             "./apps/storybook/src/**/*.tsx",
             "./apps/www/src/**/*.tsx",
-            "./internal/react-chess/**/*.tsx",
             "./internal/react-components/**/*.tsx",
             "./internal/react-code/**/*.tsx",
         ],

@@ -1,19 +1,21 @@
 import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
+import { Slot } from "@radix-ui/react-slot";
 import { oneLine } from "common-tags";
 import { forwardRef } from "react";
-import { NextLink } from "../NextLink";
 
-export type AnchorPillProps = InferComponentProps<typeof NextLink>;
+export type PillProps = InferComponentProps<"div"> & {
+    asChild?: boolean;
+};
 
-export const AnchorPill = forwardRef<HTMLAnchorElement, AnchorPillProps>((props, ref) => {
-    const { as: _as, className, href, ...restProps } = props;
+export const Pill = forwardRef<HTMLDivElement, PillProps>((props, ref) => {
+    const { asChild, className, ...restProps } = props;
+
+    const Component = asChild ? Slot : "div";
 
     return (
-        <NextLink
+        <Component
             {...restProps}
-            as={_as as string}
-            href={href as string}
             ref={ref}
             className={cn(
                 oneLine`
@@ -38,4 +40,4 @@ export const AnchorPill = forwardRef<HTMLAnchorElement, AnchorPillProps>((props,
     );
 });
 
-AnchorPill.displayName = "AnchorPill";
+Pill.displayName = "Pill";

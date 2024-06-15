@@ -59,7 +59,7 @@ export const MultiPrismCode = <TTab extends string>(props: MultiPrismCodeProps<T
                 ))}
             </Tabs.List>
             {tabs.map((tab) => (
-                <TabsContent
+                <Tabs.Content
                     key={tab.name}
                     className={oneLine`
                         hover:[::-webkit-scrollbar-thumb]:block
@@ -82,7 +82,7 @@ export const MultiPrismCode = <TTab extends string>(props: MultiPrismCodeProps<T
                     <PrismCode className="w-fit" language={tab.language ?? "tsx"}>
                         {tab.code}
                     </PrismCode>
-                </TabsContent>
+                </Tabs.Content>
             ))}
         </Tabs.Root>
     );

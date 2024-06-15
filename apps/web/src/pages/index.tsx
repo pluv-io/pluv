@@ -1,14 +1,6 @@
 import type { NextPage } from "next";
-import tw from "twin.macro";
 import { PluvRoomProvider } from "../../pluv-io";
-import {
-    HomeBoxesDemoSection,
-    HomeFeaturesSection,
-    HomeHero,
-    HomeIntroSection,
-    HomeTypeSafetyDemoSection,
-    SiteWideLayout,
-} from "../components";
+import { HomeBoxesDemoSection, HomeFeaturesSection, HomeHero, HomeIntroSection } from "../components";
 
 export const Page: NextPage = () => {
     return (
@@ -21,7 +13,6 @@ export const Page: NextPage = () => {
             <HomeIntroSection />
             <HomeFeaturesSection />
             <HomeBoxesDemoSection />
-            <HomeTypeSafetyDemoSection />
         </PluvRoomProvider>
     );
 };

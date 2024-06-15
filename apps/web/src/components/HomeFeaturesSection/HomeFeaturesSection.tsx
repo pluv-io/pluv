@@ -1,26 +1,8 @@
 import { PageContainer } from "@pluv-internal/react-components/either";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
 import type { CSSProperties, FC } from "react";
-import tw from "twin.macro";
 import { HomeFeaturesSectionFeature } from "./HomeFeaturesSectionFeature";
-
-const Root = tw.section`
-    flex
-    flex-col
-    items-center
-    py-24
-`;
-
-const Features = tw(PageContainer)`
-    grid
-    grid-cols-1
-    auto-rows-fr
-    gap-6
-    max-w-[1200px]
-    md:grid-cols-2
-    lg:grid-cols-3
-`;
-
-const Feature = tw(HomeFeaturesSectionFeature)``;
 
 export interface HomeFeaturesSectionProps {
     className?: string;
@@ -29,21 +11,54 @@ export interface HomeFeaturesSectionProps {
 
 export const HomeFeaturesSection: FC<HomeFeaturesSectionProps> = ({ className, style }) => {
     return (
-        <Root className={className} style={style}>
-            <Features>
-                <Feature
+        <section
+            className={cn(
+                oneLine`
+                    flex
+                    flex-col
+                    items-center
+                    py-24
+                `,
+                className,
+            )}
+            style={style}
+        >
+            <PageContainer
+                className={oneLine`
+                    grid
+                    max-w-screen-xl
+                    auto-rows-fr
+                    grid-cols-1
+                    gap-6
+                    md:grid-cols-2
+                    lg:grid-cols-3
+                `}
+            >
+                <HomeFeaturesSectionFeature
                     description="Get auto-completion and in-code errors with end-to-end type-safety."
                     title="Type-safety"
                 />
-                <Feature description="Build for either Cloudflare Workers or Node.js runtimes." title="Multi-runtime" />
-                <Feature description="Edit shared data and documents with the Yjs ecosystem." title="Yjs CRDT" />
-                <Feature description="Display user selections with per-user presence states." title="Presence" />
-                <Feature description="Add your own custom authentication rules to rooms." title="Authentication" />
-                <Feature
+                <HomeFeaturesSectionFeature
+                    description="Build for either Cloudflare Workers or Node.js runtimes."
+                    title="Multi-runtime"
+                />
+                <HomeFeaturesSectionFeature
+                    description="Edit shared data and documents with the Yjs ecosystem."
+                    title="Yjs CRDT"
+                />
+                <HomeFeaturesSectionFeature
+                    description="Display user selections with per-user presence states."
+                    title="Presence"
+                />
+                <HomeFeaturesSectionFeature
+                    description="Add your own custom authentication rules to rooms."
+                    title="Authentication"
+                />
+                <HomeFeaturesSectionFeature
                     description="Broadcast custom events to connected clients in the same room."
                     title="Broadcast"
                 />
-            </Features>
-        </Root>
+            </PageContainer>
+        </section>
     );
 };

@@ -1,107 +1,9 @@
-import { PageContainer } from "@pluv-internal/react-components/either";
 import { Typist } from "@pluv-internal/react-components/client";
-import NextImage from "next/image";
-import { rgba } from "polished";
+import { PageContainer } from "@pluv-internal/react-components/either";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
 import type { CSSProperties } from "react";
 import { memo } from "react";
-import tw, { styled, theme } from "twin.macro";
-
-const Root = tw.div`
-    relative
-    flex
-    flex-col
-    items-center
-    justify-center
-    w-full
-    h-[80vh]
-    overflow-hidden
-`;
-
-const RainfallAbsoluteContainer = tw.div`
-    absolute
-    top-1/2
-    left-1/2
-    -translate-x-1/2
-    -translate-y-1/2
-    flex
-    items-center
-    justify-center
-    min-w-[100vw]
-    w-[1920px]
-    overflow-hidden
-`;
-
-const RainfallContainer = tw.div`
-    relative
-    w-full
-    aspect-[3/2]
-`;
-
-const RadialBackground = styled.div`
-    ${tw`
-        absolute
-	    inset-0
-    `}
-    background-image: radial-gradient(
-        80% 112% at center,
-        ${theme`colors.slate.900`} 35%,
-        ${rgba(theme`colors.slate.900`, 0)} 85%
-    );
-
-    @media (max-width: 992px) {
-        background-image: radial-gradient(
-            112% 90% at center center,
-            ${theme`colors.slate.900`} 35%,
-            ${rgba(theme`colors.slate.900`, 0)} 85%
-        );
-    }
-`;
-
-const Contents = tw.div`
-    absolute
-    inset-0
-    w-full
-    flex
-    flex-col
-    items-center
-    justify-center
-    py-24
-    z-[1]
-`;
-
-const TagLine = tw.h1`
-	flex
-	flex-col
-	items-center
-	font-bold
-    leading-tight
-    text-white
-    [font-size: 2.25rem]
-	sm:[font-size: 3.125rem]
-	md:[font-size: 5.75rem]
-`;
-
-const Line = tw.span`
-	flex
-	items-center
-    whitespace-pre
-`;
-
-const Info = tw(PageContainer)`
-    inline-block
-    mt-5
-    md:mt-10
-	[max-width: 26rem]
-	text-lg
-	font-semibold
-	text-blue-300
-	text-center
-	md:text-2xl
-`;
-
-const PoweredBy = tw.span`
-	whitespace-nowrap
-`;
 
 export interface HomeHeroProps {
     className?: string;
@@ -110,35 +12,78 @@ export interface HomeHeroProps {
 
 export const HomeHero = memo<HomeHeroProps>(({ className, style }) => {
     return (
-        <Root className={className} style={style}>
-            <RainfallAbsoluteContainer>
-                <RainfallContainer>
-                    <NextImage
-                        alt="rainfall hero"
-                        className="absolute inset-0 object-cover"
-                        fill
-                        priority
-                        src="/static/jpg/rainfall-background.jpg"
-                    />
-                </RainfallContainer>
-            </RainfallAbsoluteContainer>
-            <RadialBackground />
-            <Contents>
-                <TagLine>
-                    <Line>Typesafe</Line>
-                    <Line>Real-Time APIs</Line>
-                    <Line>
+        <div
+            className={cn(
+                oneLine`
+                    relative
+                    flex
+                    h-[80vh]
+                    w-full
+                    flex-col
+                    items-center
+                    justify-center
+                    overflow-hidden
+                `,
+                className,
+            )}
+            style={style}
+        >
+            <div
+                className={oneLine`
+                    absolute
+                    inset-0
+                    z-[1]
+                    flex
+                    w-full
+                    flex-col
+                    items-center
+                    justify-center
+                    py-24
+                `}
+            >
+                <h1
+                    className={oneLine`
+                    	flex
+                        flex-col
+                        items-center
+                        text-[2.25rem]
+                        font-bold
+                        leading-tight
+                        text-white
+                        sm:text-[3.125rem]
+                        md:text-[5.75rem]
+                    `}
+                >
+                    <span className="flex items-center whitespace-pre">Typesafe</span>
+                    <span className="flex items-center whitespace-pre">Real-Time APIs</span>
+                    <span className="flex items-center whitespace-pre">
                         for{" "}
                         <Typist sentences={["Cloudflare", "Node.js", "React"]}>
                             <Typist.Cursor />
                         </Typist>
-                    </Line>
-                </TagLine>
-                <Info as="h2">
-                    Multiplayer APIs <PoweredBy>powered-by</PoweredBy> TypeScript inference end-to-end
-                </Info>
-            </Contents>
-        </Root>
+                    </span>
+                </h1>
+                <PageContainer
+                    asChild
+                    className={oneLine`
+                        mt-5
+                        inline-block
+                        max-w-[26rem]
+                        text-center
+                        text-lg
+                        font-semibold
+                        text-blue-300
+                        md:mt-10
+                        md:text-2xl
+                    `}
+                >
+                    <h2>
+                        Multiplayer APIs <span className="whitespace-nowrap">powered-by</span> TypeScript inference
+                        end-to-end
+                    </h2>
+                </PageContainer>
+            </div>
+        </div>
     );
 });
 

@@ -1,47 +1,7 @@
 import { PageContainer } from "@pluv-internal/react-components/either";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
 import type { CSSProperties, FC } from "react";
-import tw from "twin.macro";
-import { HomeChessDemo } from "../HomeChessDemo";
-
-const Root = tw.section`
-    flex
-    flex-col
-    items-center
-    py-24
-`;
-
-const Title = tw(PageContainer)`
-    flex
-    flex-col
-    items-center
-    text-3xl
-    leading-tight
-    font-bold
-    md:text-5xl
-    text-center
-`;
-
-const Info = tw(PageContainer)`
-	flex
-	flex-col
-	items-center
-	[max-width: 32rem]
-    mt-4
-	text-lg
-	text-center
-    text-slate-300
-`;
-
-const ChessDemoContainer = tw(PageContainer)`
-    flex
-    items-center
-    justify-center
-    mt-12
-`;
-
-const StyledHomeChessDemo = tw(HomeChessDemo)`
-    w-full
-`;
 
 export interface HomeIntroSectionProps {
     className?: string;
@@ -50,14 +10,49 @@ export interface HomeIntroSectionProps {
 
 export const HomeIntroSection: FC<HomeIntroSectionProps> = ({ className, style }) => {
     return (
-        <Root className={className} style={style}>
-            <Title as="h2">Multiplayer made easy</Title>
-            <Info as="h3">
-                Pluv provides powerful utilities to make building complex multiplayer experiences easier.
-            </Info>
-            <ChessDemoContainer>
-                <StyledHomeChessDemo />
-            </ChessDemoContainer>
-        </Root>
+        <section
+            className={cn(
+                oneLine`
+                    flex
+                    flex-col
+                    items-center
+                    py-24
+                `,
+                className,
+            )}
+            style={style}
+        >
+            <PageContainer
+                asChild
+                className={oneLine`
+                    flex
+                    flex-col
+                    items-center
+                    text-center
+                    text-3xl
+                    font-bold
+                    leading-tight
+                    md:text-5xl
+                `}
+            >
+                <h2>Multiplayer made easy</h2>
+            </PageContainer>
+            <PageContainer
+                asChild
+                className={oneLine`
+                	mt-4
+                    flex
+                    max-w-[32rem]
+                    flex-col
+                    items-center
+                    text-center
+                    text-lg
+                    text-slate-300
+                `}
+            >
+                <h3>Pluv provides powerful utilities to make building complex multiplayer experiences easier.</h3>
+            </PageContainer>
+            <PageContainer className="mt-12 flex items-center justify-center" />
+        </section>
     );
 };
