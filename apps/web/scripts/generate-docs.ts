@@ -54,7 +54,7 @@ const generateDocPages = (): void => {
     });
 
     filePaths.forEach((filePath) => {
-        const route = toRoute(filePath);
+        const route = toRoute(filePath).replace(/\.mdx$/, "");
 
         const outputPath = `${outputDocs}/${route}/page.mdx`;
 
