@@ -1,32 +1,27 @@
-import { MdxProvider } from "@pluv-internal/mdx-components";
+"use client";
+
 import { TableOfContents } from "@pluv-internal/react-components/client";
 import { SideBar } from "@pluv-internal/react-components/either";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
-import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 import { CSSProperties, ReactNode, memo } from "react";
 import { DocsBreadcrumbs } from "../DocsBreadcrumbs";
-import { DocsSeo } from "../DocsSeo";
 import { DocsTreeViewNavigation } from "../DocsTreeViewNavigation";
 
 export interface DocsLayoutProps {
     children?: ReactNode;
     className?: string;
-    meta?: {
-        description?: string;
-        title?: string;
-    } | null;
     style?: CSSProperties;
 }
 
 export const DocsLayout = memo<DocsLayoutProps>((props) => {
-    const { children, className, meta, style } = props;
+    const { children, className, style } = props;
 
-    const router = useRouter();
+    const pathName = usePathname();
 
     return (
         <div className={cn("inset-0 flex flex-row", className)} style={style}>
-            <DocsSeo description={meta?.description} title={meta?.title} />
             <SideBar
                 className={oneLine`
                     top-16
@@ -73,12 +68,10 @@ export const DocsLayout = memo<DocsLayoutProps>((props) => {
                     `}
                 >
                     <DocsBreadcrumbs className="mb-8" />
-                    <div className="flex w-full flex-col items-start">
-                        <MdxProvider>{children}</MdxProvider>
-                    </div>
+                    <div className="flex w-full flex-col items-start">{children}</div>
                 </main>
                 <TableOfContents
-                    key={router.asPath}
+                    key={pathName}
                     className={oneLine`
                         sticky
                         top-28

@@ -1,3 +1,5 @@
+"use client";
+
 import type { MultiPrismCodeTab } from "@pluv-internal/react-code";
 import { MultiPrismCode } from "@pluv-internal/react-code";
 import { useMediaQuery } from "@pluv-internal/react-hooks";

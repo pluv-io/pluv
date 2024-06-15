@@ -3,8 +3,6 @@ title: Authorization
 description: Learn how to add custom authorization to rooms in @pluv/io
 ---
 
-import { DocsLayout } from "../../../components";
-
 # Authorization
 
 pluv.io uses JWTs to authorize access to rooms on a new connection. To generate a JWT, you will need to setup an authentication endpoint to determine if the user should have access to the room.
@@ -177,5 +175,3 @@ server.listen(PORT, () => {
     console.log(`Server is listening on port: ${port}`);
 });
 ```
-
-export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;

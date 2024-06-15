@@ -3,6 +3,7 @@ import { LinkIcon } from "@pluv-internal/react-icons";
 import type { InferComponentProps } from "@pluv-internal/typings";
 import { forwardRef, useMemo } from "react";
 import { cn } from "../../utils/src";
+import { oneLine } from "common-tags";
 
 export type MdxHeaderProps = InferComponentProps<"h1"> & {
     type?: "header" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
@@ -24,7 +25,16 @@ export const MdxHeader = forwardRef<HTMLHeadingElement, MdxHeaderProps>((props, 
     return (
         <Anchor
             className={cn(
-                "not-first:mt-[1em] mb-[0.6em] flex flex-row flex-nowrap items-center [&+p]:mt-0 [&:hover_svg]:opacity-100",
+                oneLine`
+                    mb-[0.6em]
+                    flex
+                    flex-row
+                    flex-nowrap
+                    items-center
+                    [&+p]:mt-0
+                    [&:hover_svg]:opacity-100
+                    [&:not(:first-child)]:mt-[1em]
+                `,
                 className,
             )}
             href={`#${hash}`}

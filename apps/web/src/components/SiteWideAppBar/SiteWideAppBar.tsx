@@ -1,12 +1,12 @@
-import { AppBar, SideDrawer } from "@pluv-internal/react-components/client";
-import { Anchor, AnchorButton, Button, LogoIcon, NextLink } from "@pluv-internal/react-components/either";
-import { BarsIcon, GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
+import { AppBar } from "@pluv-internal/react-components/client";
+import { AnchorButton, LogoIcon, NextLink } from "@pluv-internal/react-components/either";
+import { GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
-import { useRouter } from "next/router";
 import type { CSSProperties } from "react";
-import { memo, useState } from "react";
-import { MobileDocsSideDrawer } from "../MobileDocsSideDrawer";
+import { memo } from "react";
+import { SiteWideAppBarPathLinks } from "./SiteWideAppBarPathLinks";
+import { SiteWideAppBarSideDrawer } from "./SiteWideAppBarSideDrawer";
 
 export interface SiteWideAppBarProps {
     className?: string;
@@ -15,10 +15,6 @@ export interface SiteWideAppBarProps {
 
 export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
     const { className, style } = props;
-
-    const router = useRouter();
-
-    const [open, setOpen] = useState<boolean>(false);
 
     return (
         <AppBar
@@ -43,54 +39,12 @@ export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
                 `}
             >
                 <div className="flex items-center">
-                    <SideDrawer.Root
-                        open={open}
-                        onOpenChange={(newOpen) => {
-                            setOpen(newOpen);
-                        }}
-                    >
-                        <SideDrawer.Trigger>
-                            <Button className="mr-3 xl:hidden" size="icon" type="button" variant="outline">
-                                <BarsIcon height={24} width={24} />
-                            </Button>
-                        </SideDrawer.Trigger>
-                        <MobileDocsSideDrawer
-                            className="xl:hidden"
-                            onClickLink={(e) => {
-                                e.stopPropagation();
-
-                                setOpen(false);
-                            }}
-                        />
-                    </SideDrawer.Root>
+                    <SiteWideAppBarSideDrawer className="mr-3" />
                     <NextLink className="flex items-center gap-1.5" href="/">
                         <LogoIcon className="rounded-md" height={36} width={36} />
                         <span className="text-lg font-bold">pluv.io</span>
                     </NextLink>
-                    <div
-                        className={oneLine`
-                            ml-10
-                            hidden
-                            items-center
-                            gap-6
-                            md:flex
-                        `}
-                    >
-                        <Anchor
-                            className="font-semibold text-inherit hover:no-underline"
-                            href="/docs/introduction"
-                            data-selected={router.pathname === "/docs/introduction"}
-                        >
-                            Docs
-                        </Anchor>
-                        <Anchor
-                            className="font-semibold text-inherit hover:no-underline"
-                            href="/docs/quickstart"
-                            data-selected={router.pathname === "/docs/quickstart"}
-                        >
-                            Quickstart
-                        </Anchor>
-                    </div>
+                    <SiteWideAppBarPathLinks className="ml-10" />
                 </div>
                 <div
                     className={oneLine`

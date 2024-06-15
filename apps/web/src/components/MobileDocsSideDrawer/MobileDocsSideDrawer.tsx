@@ -1,3 +1,5 @@
+"use client";
+
 import { SideDrawer } from "@pluv-internal/react-components/client";
 import { Button, LogoIcon, NextLink } from "@pluv-internal/react-components/either";
 import { XIcon } from "@pluv-internal/react-icons";

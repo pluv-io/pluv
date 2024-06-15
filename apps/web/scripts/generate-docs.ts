@@ -47,8 +47,9 @@ const generateDocPages = (): void => {
     contents.forEach((fileOrDirPath) => {
         const stat = fs.statSync(fileOrDirPath);
         const isMdx = path.extname(fileOrDirPath) === ".mdx";
+        const isRoutesPage = fileOrDirPath.includes("[");
 
-        if (stat.isFile() && !isMdx) return;
+        if ((stat.isFile() && !isMdx) || isRoutesPage) return;
 
         fs.rmSync(fileOrDirPath, { recursive: true });
     });

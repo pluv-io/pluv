@@ -17,8 +17,10 @@
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@pluv-internal/react-icons": "workspace:^",
 		"@pluv-internal/utils": "workspace:^",
+		"@types/common-tags": "^1.8.4",
 		"@types/react": "^18.3.3",
 		"@types/react-dom": "^18.3.0",
+		"common-tags": "^1.8.2",
 		"next": "^14.2.3",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1"

@@ -1,7 +1,9 @@
+"use client";
+
 import { Breadcrumbs } from "@pluv-internal/react-components/client";
 import { HomeIcon } from "@pluv-internal/react-icons";
 import { get } from "@pluv-internal/utils";
-import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 import { CSSProperties, memo, useCallback } from "react";
 import docRoutes from "../../generated/doc-routes.json";
 import { DocRoutes } from "../../types";
@@ -16,9 +18,9 @@ export interface DocsBreadcrumbsProps {
 export const DocsBreadcrumbs = memo<DocsBreadcrumbsProps>((props) => {
     const { className, style } = props;
 
-    const router = useRouter();
+    const pathName = usePathname();
 
-    const slugs = router.asPath
+    const slugs = pathName
         .replace(/#.+$/g, "")
         .replace(/^(\/)?docs(\/)?/, "")
         .split("/")

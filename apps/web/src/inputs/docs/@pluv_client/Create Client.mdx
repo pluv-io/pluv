@@ -3,8 +3,6 @@ title: Create Client
 description: Create a framework-agnostic type-safe pluv.io client to add real-time to any app.
 ---
 
-import { DocsLayout } from "../../../components";
-
 # Create Client
 
 Generally, it is recommended to use framework-specific bindings for your particular UI framework such as [@pluv/react](https://www.npmjs.com/package/@pluv/react). However, if your selected framework isn't yet supported, you can create a framework-agnostic pluv.io client to add automatic type-safe real-time to any app.
@@ -43,5 +41,3 @@ const client = createClient<AppPluvIO>({
 
 * [Enable authorization](/docs/io/authorization)
 * [Create rooms](/docs/client/create-rooms)
-
-export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;

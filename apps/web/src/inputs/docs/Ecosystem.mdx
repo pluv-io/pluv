@@ -3,8 +3,6 @@ title: Ecosystem
 description: Packages to use alongside pluv
 ---
 
-import { DocsLayout } from "../../components";
-
 # Ecosystem
 
 Below are some optional packages that work alongside pluv.
@@ -55,5 +53,3 @@ const { useRoom } = createRoomBundle({
     addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],
 });
 ```
-
-export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;

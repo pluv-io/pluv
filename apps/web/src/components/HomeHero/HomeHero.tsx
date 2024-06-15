@@ -1,4 +1,4 @@
-import { Typist } from "@pluv-internal/react-components/client";
+import { Typist, TypistCursor } from "@pluv-internal/react-components/client";
 import { PageContainer } from "@pluv-internal/react-components/either";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
@@ -59,7 +59,7 @@ export const HomeHero = memo<HomeHeroProps>(({ className, style }) => {
                     <span className="flex items-center whitespace-pre">
                         for{" "}
                         <Typist sentences={["Cloudflare", "Node.js", "React"]}>
-                            <Typist.Cursor />
+                            <TypistCursor />
                         </Typist>
                     </span>
                 </h1>

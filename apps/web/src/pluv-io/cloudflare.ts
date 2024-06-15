@@ -1,3 +1,5 @@
+"use client";
+
 import type { ioServer } from "@pluv-apps/server-cloudflare/src/pluv-io";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";

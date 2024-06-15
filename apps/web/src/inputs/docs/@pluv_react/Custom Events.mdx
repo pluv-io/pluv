@@ -3,8 +3,6 @@ title: Custom Events
 description: Learn how to use custom type-safe events with @pluv/react.
 ---
 
-import { DocsLayout } from "../../../components";
-
 # Custom Events
 
 Define custom events on your backend `PluvServer` instance. Then send and receive custom websocket events in a type-safe way with `@pluv/react`.
@@ -39,5 +37,3 @@ const doubleValue = useCallback((value: number): void => {
     broadcast.doubleValue({ value });
 }, [broadcast]);
 ```
-
-export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>

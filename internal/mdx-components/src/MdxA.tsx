@@ -6,8 +6,8 @@ import { forwardRef } from "react";
 
 export type MdxAProps = Omit<InferComponentProps<"a">, "ref">;
 
-export const MdxA = forwardRef<HTMLAnchorElement, MdxAProps>((props) => {
-    const { className, href } = props;
+export const MdxA = forwardRef<HTMLAnchorElement, MdxAProps>((props, ref) => {
+    const { className, href, ...restProps } = props;
 
     const noSsr = useNoSsr();
 
@@ -23,7 +23,16 @@ export const MdxA = forwardRef<HTMLAnchorElement, MdxAProps>((props) => {
 
     if (!href) return null;
 
-    return <NextLink {...props} className={cn("text-sky-500", className)} href={href} rel={rel} target={target} />;
+    return (
+        <NextLink
+            {...restProps}
+            ref={ref}
+            className={cn("text-sky-500", className)}
+            href={href}
+            rel={rel}
+            target={target}
+        />
+    );
 });
 
 MdxA.displayName = "MdxA";

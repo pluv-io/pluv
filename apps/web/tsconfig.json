@@ -1,28 +1,73 @@
 {
   "extends": "@pluv/tsconfig/nextjs.json",
-  "include": ["next-env.d.ts", "./types.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"],
-	"compilerOptions": {
-		"baseUrl": ".",
-		"declaration": false,
-		"declarationMap": false,
-		"paths": {
-			"@pluv-apps/server-cloudflare": ["../server-cloudflare/src"],
-			"@pluv-internal/react-code": ["../../internal/react-code/src"],
-			"@pluv-internal/react-components": ["../../internal/react-components/src"],
-			"@pluv-internal/react-hooks": ["../../internal/react-hooks/src"],
-			"@pluv-internal/react-icons": ["../../internal/react-icons/src"],
-			"@pluv-internal/remark-plugins": ["../../internal/remark-plugins/dist"],
-			"@pluv-internal/utils": ["../../internal/utils/src"],
-			"@pluv-internal/typings": ["../../internal/typings"],
-			"@pluv/authorize": ["../../packages/authorize/dist"],
-			"@pluv/client": ["../../packages/client/dist"],
-			"@pluv/crdt-yjs": ["../../packages/crdt-yjs/dist"],
-			"@pluv/io": ["../../packages/io/dist"],
-			"@pluv/platform-node": ["../../packages/platform-node/dist"],
-			"@pluv/react": ["../../packages/react/dist"],
-			"@pluv/types": ["../../packages/types/dist"],
-			"ws": ["./node_modules/@types/ws"]
-		}
-	}
+  "include": [
+    "next-env.d.ts",
+    "./types.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "declaration": false,
+    "declarationMap": false,
+    "paths": {
+      "@pluv-apps/server-cloudflare": [
+        "../server-cloudflare/src"
+      ],
+      "@pluv-internal/react-code": [
+        "../../internal/react-code/src"
+      ],
+      "@pluv-internal/react-components": [
+        "../../internal/react-components/src"
+      ],
+      "@pluv-internal/react-hooks": [
+        "../../internal/react-hooks/src"
+      ],
+      "@pluv-internal/react-icons": [
+        "../../internal/react-icons/src"
+      ],
+      "@pluv-internal/remark-plugins": [
+        "../../internal/remark-plugins/dist"
+      ],
+      "@pluv-internal/utils": [
+        "../../internal/utils/src"
+      ],
+      "@pluv-internal/typings": [
+        "../../internal/typings"
+      ],
+      "@pluv/authorize": [
+        "../../packages/authorize/dist"
+      ],
+      "@pluv/client": [
+        "../../packages/client/dist"
+      ],
+      "@pluv/crdt-yjs": [
+        "../../packages/crdt-yjs/dist"
+      ],
+      "@pluv/io": [
+        "../../packages/io/dist"
+      ],
+      "@pluv/platform-node": [
+        "../../packages/platform-node/dist"
+      ],
+      "@pluv/react": [
+        "../../packages/react/dist"
+      ],
+      "@pluv/types": [
+        "../../packages/types/dist"
+      ],
+      "ws": [
+        "./node_modules/@types/ws"
+      ]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  }
 }
