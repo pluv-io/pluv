@@ -135,10 +135,10 @@ export const TableOfContents = memo<TableOfContentsProps>((props) => {
                             text-sm
                             text-slate-400
                             hover:border-indigo-400/40
+                            [&[data-active="true"]>*]:text-white
                             [&[data-active="true"]]:border-indigo-500/60
                             [&[data-active="true"]]:bg-indigo-600/20
                             [&[data-active="true"]]:font-semibold
-                            [&[data-active="true"]]:text-white
                             [&[data-nested="true"]]:pl-6
                         `}
                         data-active={item.id === activeId}
@@ -152,6 +152,8 @@ export const TableOfContents = memo<TableOfContentsProps>((props) => {
                                 flex-row
                                 items-center
                                 py-1
+                                font-normal
+                                text-muted-foreground
                             `}
                             href={`#${item.id}`}
                         >

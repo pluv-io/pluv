@@ -17,8 +17,8 @@ export const Anchor = forwardRef<HTMLAnchorElement, AnchorProps>((props, ref) =>
                     cursor-pointer
                     whitespace-pre
                     font-sans
-                    text-sky-600
-                    no-underline
+                    font-medium
+                    text-foreground
                     hover:text-sky-600
                     hover:underline
                 `,

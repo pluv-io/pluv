@@ -24,9 +24,9 @@ export const DocsLayout = memo<DocsLayoutProps>((props) => {
         <div className={cn("inset-0 flex flex-row", className)} style={style}>
             <SideBar
                 className={oneLine`
-                    top-16
+                    top-14
                     hidden
-                    h-[calc(100vh-4rem)]
+                    h-[calc(100vh-3.5rem)]
                     shrink-0
                     flex-col
                     items-stretch
@@ -64,7 +64,7 @@ export const DocsLayout = memo<DocsLayoutProps>((props) => {
                         min-w-0
                         flex-col
                         items-stretch
-                        lg:max-w-[80%]
+                        lg:max-w-screen-md
                     `}
                 >
                     <DocsBreadcrumbs className="mb-8" />

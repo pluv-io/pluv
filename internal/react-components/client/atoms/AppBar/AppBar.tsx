@@ -1,6 +1,7 @@
 import { useWindowFocus } from "@pluv-internal/react-hooks";
 import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
 import { m, useScroll } from "framer-motion";
 import { forwardRef, useEffect, useState } from "react";
 
@@ -39,7 +40,19 @@ export const AppBar = forwardRef<HTMLDivElement, AppBarProps>((props, ref) => {
         <m.div
             {...restProps}
             ref={ref}
-            className={cn("z-app-bar sticky inset-x-0 top-0 h-14 shadow-lg", className)}
+            className={cn(
+                oneLine`
+                    sticky
+                    inset-x-0
+                    top-0
+                    z-app-bar
+                    h-14
+                    border-b
+                    border-b-muted
+                    shadow-lg
+                `,
+                className,
+            )}
             initial={false}
             animate={active ? "open" : isThreshold ? "scrolled" : "default"}
             variants={{
