@@ -42,8 +42,6 @@ const getSourcePath = (slugs: readonly string[], candidates: DocRoutes): string 
 };
 
 const getMetaData = async (params: StaticParams): Promise<MetaJson | null> => {
-    console.log(params);
-
     if (process.env.NEXT_RUNTIME === "nodejs") {
         const fs = await import("fs-extra");
         const { resolve } = await import("path");
@@ -67,13 +65,9 @@ const getMetaData = async (params: StaticParams): Promise<MetaJson | null> => {
 };
 
 const getDocsProps = async (params: StaticParams) => {
-    console.log(params);
-
     if (process.env.NEXT_RUNTIME === "nodejs") {
         const fs = await import("fs-extra");
         const { extname, join, resolve } = await import("path");
-
-        console.log(params);
 
         const slugs = params.slug;
         const dirname = resolve(process.cwd(), "./src/inputs/docs");
@@ -112,16 +106,12 @@ const getDocsProps = async (params: StaticParams) => {
 export const generateStaticParams = () => {
     const folderRoutes = getFolderRoutes(routes);
 
-    console.log("generateStaticParams", folderRoutes);
-
     return folderRoutes.map((route) => ({
         slug: route.split("/"),
     }));
 };
 
 export const generateMetadata = async ({ params }: LayoutProps, parent: ResolvingMetadata): Promise<Metadata> => {
-    console.log("generateMetadata", params);
-
     const meta = await getMetaData(params);
 
     const parentMetaData = await parent;
@@ -157,8 +147,6 @@ export interface LayoutProps {
 }
 
 const Layout: FC<LayoutProps> = async ({ params }) => {
-    console.log(params);
-
     const { docs, meta } = await getDocsProps(params);
 
     return (
