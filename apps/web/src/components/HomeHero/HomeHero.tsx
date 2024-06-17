@@ -1,5 +1,5 @@
 import { Typist, TypistCursor } from "@pluv-internal/react-components/client";
-import { PageContainer } from "@pluv-internal/react-components/either";
+import { Button, NextLink, PageContainer } from "@pluv-internal/react-components/either";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import type { CSSProperties } from "react";
@@ -15,72 +15,74 @@ export const HomeHero = memo<HomeHeroProps>(({ className, style }) => {
         <div
             className={cn(
                 oneLine`
-                    relative
                     flex
-                    h-[80vh]
                     w-full
                     flex-col
                     items-center
                     justify-center
                     overflow-hidden
+                    py-24
                 `,
                 className,
             )}
             style={style}
         >
-            <div
+            <h1
                 className={oneLine`
-                    absolute
-                    inset-0
-                    z-[1]
                     flex
-                    w-full
                     flex-col
                     items-center
-                    justify-center
-                    py-24
+                    text-center
+                    text-5xl
+                    font-bold
+                    leading-tight
+                    tracking-tighter
+                    md:text-7xl
+                    lg:leading-[1.1]
                 `}
             >
-                <h1
-                    className={oneLine`
-                    	flex
-                        flex-col
-                        items-center
-                        text-[2.25rem]
-                        font-bold
-                        leading-tight
-                        sm:text-[3.125rem]
-                        md:text-[5.75rem]
-                    `}
-                >
-                    <span className="flex items-center whitespace-pre">Typesafe</span>
-                    <span className="flex items-center whitespace-pre">Real-Time APIs</span>
-                    <span className="flex items-center whitespace-pre">
-                        for{" "}
-                        <Typist sentences={["Cloudflare", "Node.js", "React"]}>
-                            <TypistCursor />
-                        </Typist>
-                    </span>
-                </h1>
-                <PageContainer
-                    asChild
-                    className={oneLine`
-                        mt-5
-                        inline-block
-                        max-w-[26rem]
-                        text-center
-                        text-lg
-                        font-semibold
-                        text-muted-foreground
-                        md:mt-10
-                        md:text-2xl
-                    `}
-                >
-                    <h2>
-                        Multiplayer APIs <span className="whitespace-nowrap">powered-by</span> TypeScript inference
-                        end-to-end
-                    </h2>
-                </PageContainer>
+                <span className="flex items-center whitespace-pre">TypeSafe Primitives</span>
+                <span className="flex items-center whitespace-pre">for a Realtime Web</span>
+            </h1>
+            <PageContainer
+                asChild
+                className={oneLine`
+                    mt-3
+                    inline-block
+                    max-w-[564px]
+                    text-center
+                    text-lg
+                    font-light
+                    text-foreground
+                    md:mt-5
+                    md:max-w-[750px]
+                `}
+            >
+                <h2>
+                    Open Source, multiplayer APIs <span className="whitespace-nowrap">powered-by</span>{" "}
+                    <span
+                        className={oneLine`
+                            font-medium
+                            underline
+                            decoration-rose-500
+                            decoration-wavy
+                            decoration-from-font
+                            underline-offset-2
+                        `}
+                        style={{ textDecorationSkipInk: "none" }}
+                    >
+                        TypeScript
+                    </span>{" "}
+                    inference end-to-end.
+                </h2>
+            </PageContainer>
+            <div className="mt-6 flex w-full items-center justify-center space-x-4">
+                <Button asChild>
+                    <NextLink href="/docs/introduction">Get Started</NextLink>
+                </Button>
+                <Button asChild variant="outline">
+                    <NextLink href="/docs/quickstart">Quickstart</NextLink>
+                </Button>
             </div>
         </div>
     );

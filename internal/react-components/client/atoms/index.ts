@@ -16,6 +16,7 @@ export * from "./LazyMotion";
 export * from "./PageProgressBar";
 export * from "./Popover";
 export * from "./SearchInput";
+export * from "./Select";
 export * from "./Separator";
 export * from "./SideDrawer";
 export * from "./Slot";

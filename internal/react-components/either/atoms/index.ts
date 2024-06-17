@@ -1,5 +1,6 @@
 export * from "./Anchor";
 export * from "./Backdrop";
+export * from "./Badge";
 export * from "./Banner";
 export * from "./Button";
 export * from "./Card";
@@ -16,4 +17,5 @@ export * from "./Pill";
 export * from "./SideBar";
 export * from "./Skeleton";
 export * from "./Spinner";
+export * from "./Table";
 export * from "./TextArea";
