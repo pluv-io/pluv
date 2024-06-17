@@ -1,4 +1,4 @@
-import { AnchorButton, Footer, LogoIcon, NextLink } from "@pluv-internal/react-components/either";
+import { Button, Footer, LogoIcon, NextLink } from "@pluv-internal/react-components/either";
 import { GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
@@ -52,32 +52,32 @@ export const SiteWideFooter = memo<SiteWideFooterProps>((props) => {
                         sm:flex-row
                     `}
                 >
-                    <AnchorButton
-                        className="flex w-28 flex-row items-center justify-center gap-2"
-                        href="https://github.com/pluv-io/pluv"
-                        rel="noreferrer noopener"
-                        size="sm"
-                        target="_blank"
-                        title="GitHub"
-                        variant="outline"
-                        aria-label="GitHub"
-                    >
-                        <GitHubIcon height={16} width={16} />
-                        <span>GitHub</span>
-                    </AnchorButton>
-                    <AnchorButton
-                        className="flex w-28 flex-row items-center justify-center gap-2"
-                        href="https://www.npmjs.com/package/@pluv/io"
-                        rel="noreferrer noopener"
-                        size="sm"
-                        target="_blank"
-                        title="npm"
-                        variant="outline"
-                        aria-label="npm"
-                    >
-                        <NpmIcon height={16} width={16} />
-                        <span>npm</span>
-                    </AnchorButton>
+                    <Button asChild size="sm" variant="outline">
+                        <NextLink
+                            className="flex w-28 flex-row items-center justify-center gap-2"
+                            href="https://github.com/pluv-io/pluv"
+                            rel="noreferrer noopener"
+                            target="_blank"
+                            title="GitHub"
+                            aria-label="GitHub"
+                        >
+                            <GitHubIcon height={16} width={16} />
+                            <span>GitHub</span>
+                        </NextLink>
+                    </Button>
+                    <Button size="sm" variant="outline">
+                        <NextLink
+                            className="flex w-28 flex-row items-center justify-center gap-2"
+                            href="https://www.npmjs.com/package/@pluv/io"
+                            rel="noreferrer noopener"
+                            target="_blank"
+                            title="npm"
+                            aria-label="npm"
+                        >
+                            <NpmIcon height={16} width={16} />
+                            <span>npm</span>
+                        </NextLink>
+                    </Button>
                 </div>
             </div>
         </Footer>

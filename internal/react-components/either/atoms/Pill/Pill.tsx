@@ -24,15 +24,16 @@ export const Pill = forwardRef<HTMLDivElement, PillProps>((props, ref) => {
                     flex-row
                     items-center
                     rounded-full
-                    bg-zinc-700/60
+                    bg-accent
                     px-3
                     text-sm
+                    font-medium
                     transition-colors
                     duration-150
                     ease-in
-                    [&[data-selected="true"]]:bg-zinc-700
+                    [&[data-selected="true"]]:bg-primary
+                    [&[data-selected="true"]]:text-primary-foreground
                     [&[href]]:cursor-pointer
-                    [&[href]]:hover:bg-zinc-700
                 `,
                 className,
             )}

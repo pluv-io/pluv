@@ -110,13 +110,13 @@ export const TableOfContents = memo<TableOfContentsProps>((props) => {
                     [&::-webkit-scrollbar-thumb]:rounded-full
                     [&::-webkit-scrollbar-thumb]:border
                     [&::-webkit-scrollbar-thumb]:border-solid
-                    [&::-webkit-scrollbar-thumb]:border-indigo-700/50
-                    [&::-webkit-scrollbar-thumb]:bg-indigo-700/30
+                    [&::-webkit-scrollbar-thumb]:border-accent
+                    [&::-webkit-scrollbar-thumb]:bg-accent/90
                     [&::-webkit-scrollbar-thumb]:transition-colors
                     [&::-webkit-scrollbar-thumb]:duration-150
                     [&::-webkit-scrollbar-thumb]:ease-in
                     hover:[&::-webkit-scrollbar-thumb]:rounded-full
-                    hover:[&::-webkit-scrollbar-thumb]:bg-indigo-700/50
+                    hover:[&::-webkit-scrollbar-thumb]:bg-accent
                     [&::-webkit-scrollbar-track]:bg-transparent
                     [&::-webkit-scrollbar]:w-2
                 `,
@@ -130,14 +130,14 @@ export const TableOfContents = memo<TableOfContentsProps>((props) => {
                         key={item.id}
                         className={oneLine`
                             border-l-2
-                            border-indigo-300/20
+                            border-accent/20
                             pl-2
                             text-sm
-                            text-slate-400
+                            text-muted-foreground
                             hover:border-indigo-400/40
-                            [&[data-active="true"]>*]:text-white
-                            [&[data-active="true"]]:border-indigo-500/60
-                            [&[data-active="true"]]:bg-indigo-600/20
+                            [&[data-active="true"]>*]:text-accent-foreground
+                            [&[data-active="true"]]:border-primary
+                            [&[data-active="true"]]:bg-accent
                             [&[data-active="true"]]:font-semibold
                             [&[data-nested="true"]]:pl-6
                         `}

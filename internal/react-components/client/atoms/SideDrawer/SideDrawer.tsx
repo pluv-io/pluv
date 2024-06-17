@@ -6,6 +6,7 @@ import { VisuallyHidden } from "../VisuallyHidden";
 import { SideDrawerClose } from "./SideDrawerClose";
 import { SideDrawerRoot } from "./SideDrawerRoot";
 import { SideDrawerTrigger } from "./SideDrawerTrigger";
+import { Backdrop } from "../../../either";
 
 export type { SideDrawerRootProps } from "./SideDrawerRoot";
 export type { SideDrawerTriggerProps } from "./SideDrawerTrigger";
@@ -21,29 +22,22 @@ export interface SideDrawerProps {
 const _SideDrawer: FC<SideDrawerProps> = ({ children, className, description, style, title }) => {
     return (
         <Dialog.Portal>
-            <Dialog.Overlay
-                className={oneLine`
-                    z-backdrop
-                    fixed
-                    inset-0
-                    animate-[backdropShow_0.15s_ease-in]
-                    bg-black
-                    backdrop-blur-lg
-                `}
-            />
+            <Dialog.Overlay asChild>
+                <Backdrop />
+            </Dialog.Overlay>
             <Dialog.Content
                 className={cn(
                     oneLine`
-                        z-side-drawer
                         fixed
                         inset-y-0
                         left-0
+                        z-side-drawer
                         w-80
                         max-w-[90vw]
                         border-r
                         border-solid
-                        border-indigo-700/60
-                        bg-zinc-800
+                        border-border
+                        bg-card
                         shadow-2xl
                         shadow-indigo-800
                         outline-0

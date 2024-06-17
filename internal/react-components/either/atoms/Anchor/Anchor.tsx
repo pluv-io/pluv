@@ -19,6 +19,7 @@ export const Anchor = forwardRef<HTMLAnchorElement, AnchorProps>((props, ref) =>
                     font-sans
                     font-medium
                     text-foreground
+                    underline-offset-4
                     hover:text-sky-600
                     hover:underline
                 `,

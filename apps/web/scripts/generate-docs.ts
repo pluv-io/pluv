@@ -57,7 +57,7 @@ const generateDocPages = (): void => {
     filePaths.forEach((filePath) => {
         const route = toRoute(filePath).replace(/\.mdx$/, "");
 
-        const outputPath = `${outputDocs}/${route}/page.mdx`;
+        const outputPath = `${outputDocs}/${route.replace(/\./g, "-")}/page.mdx`;
 
         fs.ensureFileSync(outputPath);
         fs.copyFileSync(filePath, outputPath);
@@ -91,7 +91,7 @@ const generateRoutes = (): void => {
         const slug = toRouteSlug(rawName);
 
         return {
-            [slug]: {
+            [slug.replace(/\./g, "-")]: {
                 name,
                 order,
                 children: toRouteNode(parts.join("/")),
@@ -105,7 +105,7 @@ const generateRoutes = (): void => {
             return Object.entries(nodes).reduce(
                 (acc2, [slug, node]) => ({
                     ...acc2,
-                    [slug]: {
+                    [slug.replace(/\./g, "-")]: {
                         ...node,
                         children: {
                             ...acc2[slug]?.children,

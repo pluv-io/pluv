@@ -36,7 +36,7 @@ export const HomeBoxesDemoSection: FC<HomeBoxesDemoSectionProps> = ({ className,
                     items-center
                     text-center
                     text-lg
-                    text-slate-300
+                    text-muted-foreground
                 `}
             >
                 <h3>

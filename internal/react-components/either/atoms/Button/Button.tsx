@@ -1,14 +1,13 @@
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 import { oneLine } from "common-tags";
 import { forwardRef } from "react";
 
 export const buttonVariants = cva(
     oneLine`
-        ring-offset-background
-        focus-visible:ring-ring
         inline-flex
         items-center
         justify-center
@@ -16,9 +15,11 @@ export const buttonVariants = cva(
         rounded-md
         text-sm
         font-medium
+        ring-offset-background
         transition-colors
         focus-visible:outline-none
         focus-visible:ring-2
+        focus-visible:ring-ring
         focus-visible:ring-offset-2
         disabled:cursor-not-allowed
         disabled:opacity-50
@@ -37,11 +38,11 @@ export const buttonVariants = cva(
                     text-destructive-foreground
                 `,
                 outline: oneLine`
+                    border
                     border-input
                     bg-background
                     hover:bg-accent
                     hover:text-accent-foreground
-                    border
                 `,
                 secondary: oneLine`
                     bg-secondary
@@ -70,11 +71,11 @@ export const buttonVariants = cva(
 export type ButtonProps = InferComponentProps<"button"> & VariantProps<typeof buttonVariants> & { asChild?: boolean };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
-    const { className, variant, size, asChild } = props;
+    const { className, variant, size, asChild, ...restProps } = props;
 
     const Comp = asChild ? Slot : "button";
 
-    return <Comp {...props} className={cn(buttonVariants({ variant, size, className }))} ref={ref} />;
+    return <Comp {...restProps} className={cn(buttonVariants({ variant, size, className }))} ref={ref} />;
 });
 
 Button.displayName = "Button";

@@ -14,15 +14,17 @@ export const ThemeSwitcherButton = forwardRef<HTMLButtonElement, ThemeSwitcherBu
     return noSsr(
         <DropdownMenu>
             <DropdownMenu.Trigger asChild>
-                <Button aria-label="Change theme" {...props} ref={ref} size="icon" type="button" variant="outline">
-                    {theme === "light" ? (
-                        <SunIcon height={16} width={16} />
-                    ) : theme === "dark" ? (
-                        <MoonIcon height={16} width={16} />
-                    ) : (
-                        <MonitorIcon height={16} width={16} />
+                <button aria-label="Change theme" {...props} ref={ref} type="button">
+                    {noSsr(
+                        theme === "light" ? (
+                            <SunIcon height={16} width={16} />
+                        ) : theme === "dark" ? (
+                            <MoonIcon height={16} width={16} />
+                        ) : (
+                            <MonitorIcon height={16} width={16} />
+                        ),
                     )}
-                </Button>
+                </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
                 <DropdownMenu.CheckboxItem

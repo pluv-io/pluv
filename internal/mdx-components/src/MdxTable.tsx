@@ -11,7 +11,16 @@ export const MdxTable = forwardRef<HTMLTableElement, MdxTableProps>((props, ref)
     return (
         <div
             className={cn(
-                "flex w-full items-stretch overflow-hidden rounded-md border border-solid border-indigo-500/40",
+                oneLine`
+                    flex
+                    w-full
+                    items-stretch
+                    overflow-hidden
+                    rounded-md
+                    border
+                    border-solid
+                    border-border
+                `,
                 className,
             )}
             style={style}
@@ -21,19 +30,21 @@ export const MdxTable = forwardRef<HTMLTableElement, MdxTableProps>((props, ref)
                 className={oneLine`
                     -m-[1px]
                     grow
-                    [&_tbody]:border-indigo-500/40
+                    bg-card
+                    text-sm
+                    [&_tbody]:border-border
                     [&_td]:border
                     [&_td]:border-inherit
                     [&_td]:p-2
                     [&_th]:border
                     [&_th]:border-inherit
                     [&_th]:p-2
-                    [&_thead]:border-indigo-500/40
-                    [&_thead]:bg-zinc-800
+                    [&_th]:font-medium
+                    [&_th]:text-muted-foreground
+                    [&_thead]:border-border
                     [&_thead_tr]:border-b-2
-                    [&_thead_tr]:border-b-indigo-500
-                    [&_tr:nth-child(2n)]:bg-zinc-800
-                    [&_tr]:border-indigo-500/40        
+                    [&_thead_tr]:border-b-border
+                    [&_tr]:border-border
                 `}
                 ref={ref}
             >

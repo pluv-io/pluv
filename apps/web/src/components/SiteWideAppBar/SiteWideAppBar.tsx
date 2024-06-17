@@ -1,5 +1,5 @@
-import { AppBar } from "@pluv-internal/react-components/client";
-import { AnchorButton, LogoIcon, NextLink } from "@pluv-internal/react-components/either";
+import { AppBar, ThemeSwitcherButton } from "@pluv-internal/react-components/client";
+import { Button, LogoIcon, NextLink } from "@pluv-internal/react-components/either";
 import { GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
@@ -54,28 +54,31 @@ export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
                         gap-2
                     `}
                 >
-                    <AnchorButton
-                        href="https://github.com/pluv-io/pluv"
-                        rel="noreferrer noopener"
-                        size="icon"
-                        target="_blank"
-                        title="GitHub"
-                        variant="outline"
-                        aria-label="GitHub"
-                    >
-                        <GitHubIcon height={24} width={24} />
-                    </AnchorButton>
-                    <AnchorButton
-                        href="https://www.npmjs.com/package/@pluv/io"
-                        rel="noreferrer noopener"
-                        size="icon"
-                        target="_blank"
-                        title="npm"
-                        variant="outline"
-                        aria-label="npm"
-                    >
-                        <NpmIcon height={24} width={24} />
-                    </AnchorButton>
+                    <Button asChild size="icon" variant="outline">
+                        <ThemeSwitcherButton />
+                    </Button>
+                    <Button asChild size="icon" variant="outline">
+                        <NextLink
+                            href="https://github.com/pluv-io/pluv"
+                            rel="noreferrer noopener"
+                            target="_blank"
+                            title="GitHub"
+                            aria-label="GitHub"
+                        >
+                            <GitHubIcon height={24} width={24} />
+                        </NextLink>
+                    </Button>
+                    <Button size="icon" variant="outline">
+                        <NextLink
+                            href="https://www.npmjs.com/package/@pluv/io"
+                            rel="noreferrer noopener"
+                            target="_blank"
+                            title="npm"
+                            aria-label="npm"
+                        >
+                            <NpmIcon height={24} width={24} />
+                        </NextLink>
+                    </Button>
                 </div>
             </div>
         </AppBar>

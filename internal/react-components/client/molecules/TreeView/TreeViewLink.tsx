@@ -38,18 +38,19 @@ export const TreeViewLink: FC<TreeViewLinkProps> = ({
                         rounded
                         px-3
                         text-sm
-                        text-slate-400
+                        font-medium
+                        text-muted-foreground
                         transition-colors
                         duration-150
                         ease-in
-                        hover:bg-slate-300/10
-                        hover:text-white
-                        focus:bg-slate-300/20
-                        focus:text-white
-                        active:bg-slate-300/40
-                        active:text-white
-                        [&[data-selected="true"]]:bg-slate-300/20
-                        [&[data-selected="true"]]:text-sky-500
+                        hover:bg-accent
+                        hover:text-accent-foreground
+                        focus:bg-accent
+                        focus:text-accent-foreground
+                        active:bg-accent
+                        active:text-accent-foreground
+                        [&[data-selected="true"]]:bg-accent/90
+                        [&[data-selected="true"]]:text-sky-600
                     `}
                     href={href}
                     onClick={onClick}

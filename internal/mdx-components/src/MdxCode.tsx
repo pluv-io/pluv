@@ -10,7 +10,7 @@ export const MdxCode = forwardRef<HTMLElement, MdxCodeProps>((props, ref) => {
     return (
         <code
             {...restProps}
-            className={cn("rounded-md border border-indigo-500/40 bg-zinc-800 p-0.5 font-mono", className)}
+            className={cn("rounded-md border border-border bg-accent px-1 py-0.5 font-mono", className)}
             ref={ref}
         />
     );

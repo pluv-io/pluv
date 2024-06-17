@@ -48,7 +48,8 @@ export const AppBar = forwardRef<HTMLDivElement, AppBarProps>((props, ref) => {
                     z-app-bar
                     h-14
                     border-b
-                    border-b-muted
+                    border-b-border
+                    px-4
                     shadow-lg
                 `,
                 className,

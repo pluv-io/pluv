@@ -10,11 +10,11 @@ export const Code = forwardRef<HTMLElement, InferComponentProps<"code">>((props,
             ref={ref}
             className={cn(
                 oneLine`
-                    border-border/80
-                    bg-muted/20
                     rounded-sm
                     border
                     border-solid
+                    border-border/80
+                    bg-muted/20
                     px-1
                     py-0.5
                     font-mono

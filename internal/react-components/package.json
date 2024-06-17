@@ -4,7 +4,10 @@
 	"private": true,
 	"files": [
 		"client/index.ts",
-		"either/index.ts"
+		"either/index.ts",
+		"server/index.ts",
+		"styles.css",
+		"types.ts"
 	],
 	"scripts": {
 		"lint": "eslint src/**/*.ts* --fix",
@@ -48,6 +51,7 @@
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"react-hook-form": "^7.51.5",
+		"shiki": "^1.6.5",
 		"sonner": "^1.4.41"
 	},
 	"devDependencies": {

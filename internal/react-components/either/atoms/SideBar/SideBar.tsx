@@ -22,7 +22,7 @@ export const SideBar = forwardRef<HTMLElement, SideBarProps>((props, ref) => {
                     max-w-[90vw]
                     border-r
                     border-solid
-                    border-indigo-700/60
+                    border-border
                 `,
                 className,
             )}

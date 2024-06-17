@@ -19,8 +19,8 @@ export const Footer = forwardRef<HTMLElement, FooterProps>((props, ref) => {
                     w-full
                     border-t
                     border-solid
-                    border-indigo-700/60
-                    bg-zinc-800
+                    border-border
+                    bg-card
                     px-4
                     shadow-lg
                     shadow-indigo-800

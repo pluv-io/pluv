@@ -36,19 +36,6 @@ export const TreeViewList: FC<TreeViewListProps> = ({
         items-center
         px-3
         font-semibold
-        before:pointer-events-none
-        before:absolute
-        before:inset-0
-        before:cursor-pointer
-        before:rounded
-        before:bg-slate-300/0
-        before:transition-colors
-        before:duration-150
-        before:ease-in
-        before:content-[""]
-        hover:before:bg-slate-300/10
-        focus:before:bg-slate-300/20
-        active:before:bg-slate-300/40
     `;
 
     const child = href ? (
@@ -78,8 +65,19 @@ export const TreeViewList: FC<TreeViewListProps> = ({
                     h-8
                     flex-row
                     items-stretch
-                    [&[data-selected="true"]>:first-child]:before:bg-slate-300/20
-                    [&[data-selected="true"]]:text-sky-500
+                    rounded
+                    bg-accent/0
+                    transition-colors
+                    duration-150
+                    ease-in
+                    hover:bg-accent
+                    hover:text-accent-foreground
+                    focus:bg-accent
+                    focus:text-accent-foreground
+                    active:bg-accent
+                    active:text-accent-foreground
+                    [&[data-selected="true"]>:first-child]:before:bg-accent
+                    [&[data-selected="true"]]:text-sky-600
                 `}
                 onClick={() => {
                     setOpen((oldOpen) => !oldOpen);
@@ -94,9 +92,6 @@ export const TreeViewList: FC<TreeViewListProps> = ({
                         items-center
                         justify-center
                         rounded
-                        hover:bg-slate-300/10
-                        focus:bg-slate-300/20
-                        active:bg-slate-300/40
                         [&[aria-expanded="true"]>:first-child]:rotate-0
                     `}
                     aria-expanded={open || selected}

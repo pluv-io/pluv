@@ -1,5 +1,3 @@
-"use client";
-
 export { MdxA } from "./MdxA";
 export type { MdxAProps } from "./MdxA";
 export { MdxBlockQuote } from "./MdxBlockQuote";

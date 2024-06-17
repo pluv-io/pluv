@@ -1,4 +1,6 @@
-import { NextLink } from "@pluv-internal/react-components/either";
+"use client";
+
+import { Anchor } from "@pluv-internal/react-components/either";
 import { useNoSsr } from "@pluv-internal/react-hooks";
 import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
@@ -24,14 +26,7 @@ export const MdxA = forwardRef<HTMLAnchorElement, MdxAProps>((props, ref) => {
     if (!href) return null;
 
     return (
-        <NextLink
-            {...restProps}
-            ref={ref}
-            className={cn("text-sky-500", className)}
-            href={href}
-            rel={rel}
-            target={target}
-        />
+        <Anchor {...restProps} ref={ref} className={cn("underline", className)} href={href} rel={rel} target={target} />
     );
 });
 

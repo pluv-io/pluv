@@ -1,5 +1,4 @@
 export * from "./Anchor";
-export * from "./AnchorButton";
 export * from "./Backdrop";
 export * from "./Banner";
 export * from "./Button";

@@ -11,5 +11,6 @@ module.exports = {
         "../../internal/react-code/src/**/*.{js,jsx,ts,tsx}",
         "../../internal/react-components/client/**/*.{js,jsx,ts,tsx}",
         "../../internal/react-components/either/**/*.{js,jsx,ts,tsx}",
+        "../../internal/react-components/server/**/*.{js,jsx,ts,tsx}",
     ],
 };

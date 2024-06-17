@@ -42,8 +42,6 @@ export const BreadcrumbsItem: FC<BreadcrumbsItemProps> = ({
                 <Pill
                     className={oneLine`
                         text-inherit
-                        hover:text-sky-500
-                        [&[data-selected="true"]]:text-sky-500
                     `}
                     title={title}
                     aria-label={ariaLabel}

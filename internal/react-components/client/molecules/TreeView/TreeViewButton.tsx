@@ -27,11 +27,11 @@ export const TreeViewButton: FC<TreeViewButtonProps> = ({ children, className, o
                     transition-colors
                     duration-150
                     ease-in
-                    hover:bg-slate-300/10
-                    focus:bg-slate-300/20
-                    active:bg-slate-300/40
-                    [&[data-selected="true"]]:bg-slate-300/20
-                    [&[data-selected="true"]]:text-sky-500
+                    hover:bg-accent-foreground
+                    focus:bg-accent-foreground
+                    active:bg-accent-foreground
+                    [&[data-selected="true"]]:bg-accent
+                    [&[data-selected="true"]]:text-sky-600
                 `}
                 onClick={onClick}
                 data-selected={selected}

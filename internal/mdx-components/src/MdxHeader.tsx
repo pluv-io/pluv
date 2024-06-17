@@ -1,9 +1,9 @@
 import { Anchor } from "@pluv-internal/react-components/either";
 import { LinkIcon } from "@pluv-internal/react-icons";
 import type { InferComponentProps } from "@pluv-internal/typings";
-import { forwardRef, useMemo } from "react";
-import { cn } from "../../utils/src";
 import { oneLine } from "common-tags";
+import { forwardRef } from "react";
+import { cn } from "../../utils/src";
 
 export type MdxHeaderProps = InferComponentProps<"h1"> & {
     type?: "header" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
@@ -14,13 +14,11 @@ export const MdxHeader = forwardRef<HTMLHeadingElement, MdxHeaderProps>((props, 
 
     const content = typeof children === "string" ? children : "";
 
-    const hash = useMemo(() => {
-        return content
-            .replace(/\s+/g, "-")
-            .replace(/"/g, "")
-            .replace(/\((.+)\)/g, ".$1")
-            .replace(/[^a-zA-Z0-9-\.]/g, "");
-    }, [content]);
+    const hash = content
+        .replace(/\s+/g, "-")
+        .replace(/"/g, "")
+        .replace(/\((.+)\)/g, ".$1")
+        .replace(/[^a-zA-Z0-9-\.]/g, "");
 
     return (
         <Anchor

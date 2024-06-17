@@ -47,7 +47,7 @@ export const HomeIntroSection: FC<HomeIntroSectionProps> = ({ className, style }
                     items-center
                     text-center
                     text-lg
-                    text-slate-300
+                    text-muted-foreground
                 `}
             >
                 <h3>Pluv provides powerful utilities to make building complex multiplayer experiences easier.</h3>

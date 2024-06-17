@@ -1,4 +1,4 @@
-import { MDXComponents } from "@mdx-js/react/lib";
+import type { MDXComponents } from "mdx/types";
 import { MdxA } from "./MdxA";
 import { MdxBlockQuote } from "./MdxBlockQuote";
 import { MdxCode } from "./MdxCode";

@@ -1,10 +1,10 @@
-import type { ComponentType, ElementType, ForwardedRef, LegacyRef } from "react";
+import type { ComponentType, ElementType, ForwardedRef, Ref } from "react";
 
 export type InferComponentProps<T extends ElementType> =
     T extends ComponentType<infer U>
         ? U
         : T extends keyof JSX.IntrinsicElements
-          ? JSX.IntrinsicElements[T] extends { ref?: LegacyRef<infer R> }
+          ? JSX.IntrinsicElements[T] extends { ref?: Ref<infer R> }
               ? Omit<JSX.IntrinsicElements[T], "ref"> & { ref?: ForwardedRef<R> }
               : JSX.IntrinsicElements[T]
           : Record<string, never>;

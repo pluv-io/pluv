@@ -20,7 +20,7 @@ export const SiteWideLayout = memo<SiteWideLayoutProps>((props) => {
             {!!SHOW_BANNER && (
                 <Banner className="shrink-0">
                     <div>
-                        <Anchor className="font-semibold" href="https://www.npmjs.com/package/@pluv/io">
+                        <Anchor className="font-semibold text-white" href="https://www.npmjs.com/package/@pluv/io">
                             pluv.io
                         </Anchor>{" "}
                         is in preview! Please wait for a v1.0.0 stable release before using this in production.

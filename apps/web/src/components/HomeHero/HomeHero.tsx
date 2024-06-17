@@ -49,7 +49,6 @@ export const HomeHero = memo<HomeHeroProps>(({ className, style }) => {
                         text-[2.25rem]
                         font-bold
                         leading-tight
-                        text-white
                         sm:text-[3.125rem]
                         md:text-[5.75rem]
                     `}
@@ -72,7 +71,7 @@ export const HomeHero = memo<HomeHeroProps>(({ className, style }) => {
                         text-center
                         text-lg
                         font-semibold
-                        text-blue-300
+                        text-muted-foreground
                         md:mt-10
                         md:text-2xl
                     `}

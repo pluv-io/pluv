@@ -21,13 +21,13 @@ export const Banner = forwardRef<HTMLDivElement, BannerProps>((props, ref) => {
                     justify-center
                     border-b
                     border-solid
-                    border-zinc-800
-                    bg-indigo-700
+                    border-primary
+                    bg-primary
                     px-4
                     py-2
                     text-center
                     text-sm
-                    text-white
+                    text-primary-foreground
                 `,
                 className,
             )}
