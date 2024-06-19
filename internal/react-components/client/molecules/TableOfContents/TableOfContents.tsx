@@ -135,7 +135,8 @@ export const TableOfContents = memo<TableOfContentsProps>((props) => {
                             text-sm
                             text-muted-foreground
                             hover:border-indigo-400/40
-                            [&[data-active="true"]>*]:text-accent-foreground
+                            [&[data-active="true"]>*]:text-foreground
+                            [&[data-active="true"]>*]:underline
                             [&[data-active="true"]]:border-primary
                             [&[data-active="true"]]:bg-accent
                             [&[data-active="true"]]:font-semibold
@@ -151,6 +152,7 @@ export const TableOfContents = memo<TableOfContentsProps>((props) => {
                                 grow
                                 flex-row
                                 items-center
+                                text-wrap
                                 py-1
                                 font-normal
                                 text-muted-foreground
