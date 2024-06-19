@@ -4,6 +4,7 @@
     "private": true,
     "scripts": {
         "build": "pnpm run prepare && dotenv -- next build",
+        "build:demo": "pnpm run script -- scripts/generate-demo-data",
         "build:docs": "pnpm run script -- scripts/generate-docs",
         "watch:dev": "dotenv -- next dev",
         "watch:docs": "nodemon -e mdx -w src/inputs/docs -x \"pnpm run build:docs\"",
@@ -49,6 +50,7 @@
         "zod": "^3.23.8"
     },
     "devDependencies": {
+        "@faker-js/faker": "^8.4.1",
         "@mdx-js/loader": "^3.0.1",
         "@next/bundle-analyzer": "^14.2.3",
         "@next/mdx": "^14.2.3",
