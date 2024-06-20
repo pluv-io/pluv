@@ -1,6 +1,6 @@
 import { CheckIcon, PlusCircleIcon } from "@pluv-internal/react-icons";
 import { cn } from "@pluv-internal/utils";
-import { Column } from "@tanstack/react-table";
+import type { Column } from "@tanstack/react-table";
 import type { ComponentType } from "react";
 import { Badge } from "../../../either/atoms/Badge";
 import { Button } from "../../../either/atoms/Button";
@@ -9,6 +9,7 @@ import { Popover } from "../../atoms/Popover";
 import { Separator } from "../../atoms/Separator";
 
 export interface DataTableFacetedFilterProps<TData extends unknown, TValue extends unknown> {
+    className?: string;
     column?: Column<TData, TValue>;
     title?: string;
     options: {
@@ -18,18 +19,19 @@ export interface DataTableFacetedFilterProps<TData extends unknown, TValue exten
     }[];
 }
 
-export function DataTableFacetedFilter<TData, TValue>({
+export const DataTableFacetedFilter = <TData, TValue>({
+    className,
     column,
     title,
     options,
-}: DataTableFacetedFilterProps<TData, TValue>) {
+}: DataTableFacetedFilterProps<TData, TValue>) => {
     const facets = column?.getFacetedUniqueValues();
     const selectedValues = new Set(column?.getFilterValue() as string[]);
 
     return (
         <Popover>
             <Popover.Trigger asChild>
-                <Button variant="outline" size="sm" className="h-8 border-dashed">
+                <Button className={cn("h-8 border-dashed", className)} variant="outline" size="sm">
                     <PlusCircleIcon className="mr-2 size-4" />
                     {title}
                     {selectedValues?.size > 0 && (
@@ -121,4 +123,4 @@ export function DataTableFacetedFilter<TData, TValue>({
             </Popover.Content>
         </Popover>
     );
-}
+};

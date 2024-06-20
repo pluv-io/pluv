@@ -18,6 +18,7 @@
 	},
 	"dependencies": {
 		"@emotion/is-prop-valid": "^1.2.2",
+		"@hookform/resolvers": "^3.6.0",
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@pluv-internal/react-icons": "workspace:^",
 		"@pluv-internal/utils": "workspace:^",

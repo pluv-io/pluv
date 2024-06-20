@@ -10,8 +10,8 @@ export { DataTablePagination } from "./DataTablePagination";
 export { DataTableViewOptions } from "./DataTableViewOptions";
 
 export const DataTable = Object.assign(BaseDataTable, {
-    TableColumnHeader: DataTableColumnHeader,
-    TableFacetedFilter: DataTableFacetedFilter,
-    TablePagination: DataTablePagination,
-    TableViewOptions: DataTableViewOptions,
+    ColumnHeader: DataTableColumnHeader,
+    FacetedFilter: DataTableFacetedFilter,
+    Pagination: DataTablePagination,
+    ViewOptions: DataTableViewOptions,
 });

@@ -1,6 +1,6 @@
 import { useNoSsr, useTheme } from "@pluv-internal/react-hooks";
 import { MonitorIcon, MoonIcon, SunIcon } from "@pluv-internal/react-icons";
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { InferComponentProps } from "@pluv-internal/typings";
 import { forwardRef } from "react";
 import { Button } from "../../../either/atoms/Button";
 import { DropdownMenu } from "../DropdownMenu";

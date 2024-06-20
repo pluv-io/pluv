@@ -1,8 +1,11 @@
-import { LaserWaveTheme } from "@pluv-internal/react-code";
 import { LazyMotion } from "@pluv-internal/react-components/client";
 import { withThemeByClassName } from "@storybook/addon-themes";
 import type { Preview } from "@storybook/react";
 import React, { type ComponentType } from "react";
+
+import "@pluv-internal/react-code/styles.css";
+import "@pluv-internal/react-components/styles.css";
+import "../src/styles/tailwind.css";
 
 const DEFAULT_VIEWPORT_HEIGHT = "1200px";
 
@@ -72,12 +75,9 @@ const preview: Preview = {
   decorators: [
     (Story: ComponentType) => {
       return (
-        <>
-          <LaserWaveTheme />
-          <LazyMotion>
-            <Story />
-          </LazyMotion>
-        </>
+        <LazyMotion>
+          <Story />
+        </LazyMotion>
       );
     },
     withThemeByClassName({

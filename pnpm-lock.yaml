@@ -96,6 +96,9 @@ importers:
       '@faker-js/faker':
         specifier: ^8.4.1
         version: 8.4.1
+      '@hookform/resolvers':
+        specifier: ^3.6.0
+        version: 3.6.0(react-hook-form@7.51.5)
       '@pluv-apps/web':
         specifier: workspace:^
         version: link:../web
@@ -105,12 +108,21 @@ importers:
       '@pluv-internal/react-components':
         specifier: workspace:^
         version: link:../../internal/react-components
+      '@pluv-internal/react-icons':
+        specifier: workspace:^
+        version: link:../../internal/react-icons
+      '@pluv-internal/typings':
+        specifier: workspace:^
+        version: link:../../internal/typings
       '@pluv/crdt-yjs':
         specifier: workspace:^
         version: link:../../packages/crdt-yjs
       '@pluv/react':
         specifier: workspace:^
         version: link:../../packages/react
+      '@tanstack/react-table':
+        specifier: ^8.17.3
+        version: 8.17.3(react-dom@18.3.1)(react@18.3.1)
       '@types/common-tags':
         specifier: ^1.8.4
         version: 1.8.4
@@ -160,9 +172,6 @@ importers:
       '@pluv-internal/tailwind-config':
         specifier: workspace:^
         version: link:../../internal/tailwind-config
-      '@pluv-internal/typings':
-        specifier: workspace:^
-        version: link:../../internal/typings
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../../packages/tsconfig
@@ -253,6 +262,9 @@ importers:
       '@seznam/compose-react-refs':
         specifier: ^1.0.6
         version: 1.0.6
+      '@tanstack/react-table':
+        specifier: ^8.17.3
+        version: 8.17.3(react-dom@18.3.1)(react@18.3.1)
       '@types/common-tags':
         specifier: ^1.8.4
         version: 1.8.4
@@ -596,6 +608,9 @@ importers:
       '@emotion/is-prop-valid':
         specifier: ^1.2.2
         version: 1.2.2
+      '@hookform/resolvers':
+        specifier: ^3.6.0
+        version: 3.6.0(react-hook-form@7.51.5)
       '@pluv-internal/react-hooks':
         specifier: workspace:^
         version: link:../react-hooks
@@ -4466,6 +4481,14 @@ packages:
 
   /@floating-ui/utils@0.2.2:
     resolution: {integrity: sha512-J4yDIIthosAsRZ5CPYP/jQvUAQtlZTTD/4suA08/FEnlxqW3sKS9iAhgsa9VYLZ6vDHn/ixJgIqRQPotoBjxIw==}
+    dev: false
+
+  /@hookform/resolvers@3.6.0(react-hook-form@7.51.5):
+    resolution: {integrity: sha512-UBcpyOX3+RR+dNnqBd0lchXpoL8p4xC21XP8H6Meb8uve5Br1GCnmg0PcBoKKqPKgGu9GHQ/oygcmPrQhetwqw==}
+    peerDependencies:
+      react-hook-form: ^7.0.0
+    dependencies:
+      react-hook-form: 7.51.5(react@18.3.1)
     dev: false
 
   /@humanwhocodes/config-array@0.11.14:

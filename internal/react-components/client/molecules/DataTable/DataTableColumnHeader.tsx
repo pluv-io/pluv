@@ -1,7 +1,7 @@
 import { ArrowDownIcon, ChevronUpDownIcon, EyeOffIcon } from "@pluv-internal/react-icons";
 import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
-import { Column } from "@tanstack/react-table";
+import type { Column } from "@tanstack/react-table";
 import { Button } from "../../../either/atoms/Button";
 import { DropdownMenu } from "../../atoms/DropdownMenu";
 
@@ -13,7 +13,7 @@ export type DataTableColumnHeaderProps<TData, TValue> = InferComponentProps<"div
 export const DataTableColumnHeader = <TData extends unknown, TValue extends unknown>(
     props: DataTableColumnHeaderProps<TData, TValue>,
 ) => {
-    const { column, title, className } = props;
+    const { className, column, title } = props;
 
     if (!column.getCanSort()) {
         return <div className={cn(className)}>{title}</div>;

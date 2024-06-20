@@ -1,15 +1,20 @@
 import { ChevronRightIcon, ChevronsRightIcon } from "@pluv-internal/react-icons";
-import { Table } from "@tanstack/react-table";
+import type { Maybe } from "@pluv-internal/typings";
+import type { Table } from "@tanstack/react-table";
 import { Button } from "../../../either/atoms/Button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../atoms/Select";
+import { cn } from "@pluv-internal/utils";
 
 export interface DataTablePaginationProps<TData extends unknown> {
-    table: Table<TData>;
+    className?: string;
+    table?: Maybe<Table<TData>>;
 }
 
-export const DataTablePagination = <TData extends unknown>({ table }: DataTablePaginationProps<TData>) => {
+export const DataTablePagination = <TData extends unknown>({ className, table }: DataTablePaginationProps<TData>) => {
+    if (!table) return null;
+
     return (
-        <div className="flex items-center justify-between px-2">
+        <div className={cn("flex items-center justify-between px-2", className)}>
             <div className="flex-1 text-sm text-muted-foreground">
                 {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
                 selected.
