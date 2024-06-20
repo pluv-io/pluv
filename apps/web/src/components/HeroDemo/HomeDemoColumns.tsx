@@ -94,6 +94,6 @@ export const HomeDemoColumns: ColumnDef<Task>[] = [
     },
     {
         id: "actions",
-        cell: ({ row }) => <HomeDemoRowActions row={row} />,
+        cell: ({ row, table }) => <HomeDemoRowActions row={row} table={table} />,
     },
 ];

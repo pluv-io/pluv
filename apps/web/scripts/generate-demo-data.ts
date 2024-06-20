@@ -6,9 +6,9 @@ import { labels, priorities, statuses } from "../src/components/HeroDemo/data";
 faker.seed(1);
 
 const srcPath = path.resolve(__dirname, "../src");
-const outputPath = path.resolve(srcPath, "./components/HeroDemo/generated/tasks.json");
+const outputPath = path.resolve(srcPath, "./generated/tasks.json");
 
-const tasks = Array.from({ length: 100 }, () => ({
+const tasks = Array.from({ length: 50 }, () => ({
     id: `TASK-${faker.number.int({ min: 1000, max: 9999 })}`,
     title: faker.hacker.phrase().replace(/^./, (letter) => letter.toUpperCase()),
     status: faker.helpers.arrayElement(statuses).value,

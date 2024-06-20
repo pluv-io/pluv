@@ -1,4 +1,4 @@
-import { LazyMotion, PageProgressBar, ThemeProvider } from "@pluv-internal/react-components/client";
+import { LazyMotion, PageProgressBar, ThemeProvider, Toaster } from "@pluv-internal/react-components/client";
 import type { ServerRuntime } from "next";
 import { Inter } from "next/font/google";
 import type { FC, ReactNode } from "react";
@@ -35,6 +35,7 @@ const Layout: FC<LayoutProps> = ({ children }) => {
                         <SiteWideLayout className={inter.className}>{children}</SiteWideLayout>
                     </LazyMotion>
                 </ThemeProvider>
+                <Toaster />
             </body>
         </html>
     );

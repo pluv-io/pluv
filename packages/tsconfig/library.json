@@ -5,6 +5,9 @@
 	"compilerOptions": {
 		"lib": ["esnext"],
 		"module": "esnext",
-		"target": "es6"
-	}
+		"target": "es6",
+		"isolatedModules": true
+	},
+	"include": ["src"],
+	"exclude": ["node_modules"]
 }

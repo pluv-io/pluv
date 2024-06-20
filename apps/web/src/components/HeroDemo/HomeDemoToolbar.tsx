@@ -1,12 +1,31 @@
 "use client";
 
-import { DataTable } from "@pluv-internal/react-components/client";
+import { DataTable, toast } from "@pluv-internal/react-components/client";
 import { Button, Input } from "@pluv-internal/react-components/either";
-import { XIcon } from "@pluv-internal/react-icons";
-import type { Maybe } from "@pluv-internal/typings";
-import type { Table } from "@tanstack/react-table";
-import { priorities, statuses } from "./data";
 import { useRerender } from "@pluv-internal/react-hooks";
+import { PlusCircleIcon, XIcon } from "@pluv-internal/react-icons";
+import type { Maybe } from "@pluv-internal/typings";
+import { debounce } from "@pluv-internal/utils";
+import { yjs } from "@pluv/crdt-yjs";
+import type { Table } from "@tanstack/react-table";
+import ms from "ms";
+import { useMemo } from "react";
+import { useRoom, useStorage } from "../../pluv-io/cloudflare";
+import { MAX_TASKS_COUNT } from "./constants";
+import { labels, priorities, statuses } from "./data";
+import type { Task } from "./schema";
+
+const createTask = async (): Promise<Task> => {
+    const faker = await import("@faker-js/faker").then((mod) => mod.faker);
+
+    return {
+        id: `TASK-${faker.number.int({ min: 1000, max: 9999 })}`,
+        title: faker.hacker.phrase().replace(/^./, (letter) => letter.toUpperCase()),
+        status: faker.helpers.arrayElement(statuses).value,
+        label: faker.helpers.arrayElement(labels).value,
+        priority: faker.helpers.arrayElement(priorities).value,
+    };
+};
 
 interface DataTableToolbarProps<TData> {
     table?: Maybe<Table<TData>>;
@@ -14,11 +33,38 @@ interface DataTableToolbarProps<TData> {
 
 export const HomeDemoToolbar = <TData extends unknown>({ table }: DataTableToolbarProps<TData>) => {
     const rerender = useRerender();
+    const room = useRoom();
+
+    const [, sharedType] = useStorage("demoTasks", (tasks) => tasks.length);
+
+    const addTask = useMemo(() => {
+        return debounce(
+            async () => {
+                const tasks = room.getStorage("demoTasks");
+                const count = tasks?.length ?? 0;
+
+                if (count >= MAX_TASKS_COUNT) {
+                    toast.error("Task limit reached");
+
+                    return;
+                }
+
+                const task = await createTask();
+
+                sharedType?.unshift(yjs.object(task));
+
+                toast.success(`${task.id} created`);
+
+                rerender();
+            },
+            { wait: ms("300ms") },
+        );
+    }, [rerender, room, sharedType]);
 
     const isFiltered = (table?.getState().columnFilters.length ?? 0) > 0;
 
     return (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between" aria-hidden="true">
             <div className="flex flex-1 items-center space-x-2">
                 <Input
                     placeholder="Filter tasks..."
@@ -32,6 +78,17 @@ export const HomeDemoToolbar = <TData extends unknown>({ table }: DataTableToolb
                     }}
                     className="h-8 w-[150px] lg:w-[250px]"
                 />
+                <Button
+                    onClick={() => {
+                        addTask();
+                    }}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                >
+                    <PlusCircleIcon className="mr-2 size-4" />
+                    Add new task
+                </Button>
                 {table?.getColumn("status") && (
                     <DataTable.FacetedFilter column={table.getColumn("status")} title="Status" options={statuses} />
                 )}
