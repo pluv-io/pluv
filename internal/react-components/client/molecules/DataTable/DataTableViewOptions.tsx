@@ -1,10 +1,11 @@
+import { useRerender } from "@pluv-internal/react-hooks";
 import { MixerHorizontalIcon } from "@pluv-internal/react-icons";
 import type { Maybe } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import type { Table } from "@tanstack/react-table";
 import { Button } from "../../../either/atoms/Button";
 import { DropdownMenu } from "../../atoms/DropdownMenu";
-import { cn } from "@pluv-internal/utils";
 
 export interface DataTableViewOptionsProps<TData extends unknown> {
     className?: string;
@@ -12,7 +13,7 @@ export interface DataTableViewOptionsProps<TData extends unknown> {
 }
 
 export const DataTableViewOptions = <TData extends unknown>({ className, table }: DataTableViewOptionsProps<TData>) => {
-    if (!table) return null;
+    const rerender = useRerender();
 
     return (
         <DropdownMenu>
@@ -26,7 +27,7 @@ export const DataTableViewOptions = <TData extends unknown>({ className, table }
                 <DropdownMenu.Label>Toggle columns</DropdownMenu.Label>
                 <DropdownMenu.Separator />
                 {table
-                    .getAllColumns()
+                    ?.getAllColumns()
                     .filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide())
                     .map((column) => {
                         return (
@@ -34,7 +35,13 @@ export const DataTableViewOptions = <TData extends unknown>({ className, table }
                                 key={column.id}
                                 className="capitalize"
                                 checked={column.getIsVisible()}
-                                onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                                onCheckedChange={(value) => {
+                                    column.toggleVisibility(!!value);
+
+                                    setTimeout(() => {
+                                        rerender();
+                                    }, 0);
+                                }}
                             >
                                 {column.id}
                             </DropdownMenu.CheckboxItem>

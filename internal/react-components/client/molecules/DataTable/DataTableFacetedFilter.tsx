@@ -1,3 +1,4 @@
+import { useRerender } from "@pluv-internal/react-hooks";
 import { CheckIcon, PlusCircleIcon } from "@pluv-internal/react-icons";
 import { cn } from "@pluv-internal/utils";
 import type { Column } from "@tanstack/react-table";
@@ -25,6 +26,8 @@ export const DataTableFacetedFilter = <TData, TValue>({
     title,
     options,
 }: DataTableFacetedFilterProps<TData, TValue>) => {
+    const rerender = useRerender();
+
     const facets = column?.getFacetedUniqueValues();
     const selectedValues = new Set(column?.getFilterValue() as string[]);
 
@@ -71,6 +74,7 @@ export const DataTableFacetedFilter = <TData, TValue>({
                         <Command.Group>
                             {options.map((option) => {
                                 const isSelected = selectedValues.has(option.value);
+
                                 return (
                                     <Command.Item
                                         key={option.value}
@@ -81,7 +85,12 @@ export const DataTableFacetedFilter = <TData, TValue>({
                                                 selectedValues.add(option.value);
                                             }
                                             const filterValues = Array.from(selectedValues);
+
                                             column?.setFilterValue(filterValues.length ? filterValues : undefined);
+
+                                            setTimeout(() => {
+                                                rerender();
+                                            }, 0);
                                         }}
                                     >
                                         <div
@@ -110,7 +119,13 @@ export const DataTableFacetedFilter = <TData, TValue>({
                                 <Command.Separator />
                                 <Command.Group>
                                     <Command.Item
-                                        onSelect={() => column?.setFilterValue(undefined)}
+                                        onSelect={() => {
+                                            column?.setFilterValue(undefined);
+
+                                            setTimeout(() => {
+                                                rerender();
+                                            }, 0);
+                                        }}
                                         className="justify-center text-center"
                                     >
                                         Clear filters

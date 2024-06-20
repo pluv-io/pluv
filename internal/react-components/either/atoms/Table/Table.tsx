@@ -8,8 +8,8 @@ export const Table = forwardRef<HTMLTableElement, TableProps>((props, ref) => {
     const { className, ...restProps } = props;
 
     return (
-        <div className="relative w-full overflow-auto">
-            <table {...restProps} ref={ref} className={cn("w-full caption-bottom text-sm", className)} />
+        <div className={cn("relative w-full overflow-auto", className)}>
+            <table {...restProps} ref={ref} className={"w-full caption-bottom text-sm"} />
         </div>
     );
 });

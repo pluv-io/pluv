@@ -1,3 +1,4 @@
+import { useRerender } from "@pluv-internal/react-hooks";
 import { ArrowDownIcon, ChevronUpDownIcon, EyeOffIcon } from "@pluv-internal/react-icons";
 import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
@@ -14,6 +15,8 @@ export const DataTableColumnHeader = <TData extends unknown, TValue extends unkn
     props: DataTableColumnHeaderProps<TData, TValue>,
 ) => {
     const { className, column, title } = props;
+
+    const rerender = useRerender();
 
     if (!column.getCanSort()) {
         return <div className={cn(className)}>{title}</div>;
@@ -35,16 +38,40 @@ export const DataTableColumnHeader = <TData extends unknown, TValue extends unkn
                     </Button>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Content align="start">
-                    <DropdownMenu.Item onClick={() => column.toggleSorting(false)}>
+                    <DropdownMenu.Item
+                        onClick={() => {
+                            column.toggleSorting(false);
+
+                            setTimeout(() => {
+                                rerender();
+                            }, 0);
+                        }}
+                    >
                         <ArrowDownIcon className="mr-2 size-3.5 rotate-180 text-muted-foreground/70" />
                         Asc
                     </DropdownMenu.Item>
-                    <DropdownMenu.Item onClick={() => column.toggleSorting(true)}>
+                    <DropdownMenu.Item
+                        onClick={() => {
+                            column.toggleSorting(true);
+
+                            setTimeout(() => {
+                                rerender();
+                            }, 0);
+                        }}
+                    >
                         <ArrowDownIcon className="mr-2 size-3.5 text-muted-foreground/70" />
                         Desc
                     </DropdownMenu.Item>
                     <DropdownMenu.Separator />
-                    <DropdownMenu.Item onClick={() => column.toggleVisibility(false)}>
+                    <DropdownMenu.Item
+                        onClick={() => {
+                            column.toggleVisibility(false);
+
+                            setTimeout(() => {
+                                rerender();
+                            }, 0);
+                        }}
+                    >
                         <EyeOffIcon className="mr-2 size-3.5 text-muted-foreground/70" />
                         Hide
                     </DropdownMenu.Item>

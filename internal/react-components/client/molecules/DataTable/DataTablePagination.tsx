@@ -1,9 +1,10 @@
+import { useRerender } from "@pluv-internal/react-hooks";
 import { ChevronRightIcon, ChevronsRightIcon } from "@pluv-internal/react-icons";
 import type { Maybe } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
 import type { Table } from "@tanstack/react-table";
 import { Button } from "../../../either/atoms/Button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../atoms/Select";
-import { cn } from "@pluv-internal/utils";
 
 export interface DataTablePaginationProps<TData extends unknown> {
     className?: string;
@@ -11,6 +12,8 @@ export interface DataTablePaginationProps<TData extends unknown> {
 }
 
 export const DataTablePagination = <TData extends unknown>({ className, table }: DataTablePaginationProps<TData>) => {
+    const rerender = useRerender();
+
     if (!table) return null;
 
     return (
@@ -26,6 +29,7 @@ export const DataTablePagination = <TData extends unknown>({ className, table }:
                         value={`${table.getState().pagination.pageSize}`}
                         onValueChange={(value) => {
                             table.setPageSize(Number(value));
+                            rerender();
                         }}
                     >
                         <SelectTrigger className="h-8 w-[70px]">
@@ -47,7 +51,10 @@ export const DataTablePagination = <TData extends unknown>({ className, table }:
                     <Button
                         variant="outline"
                         className="hidden size-8 p-0 lg:flex"
-                        onClick={() => table.setPageIndex(0)}
+                        onClick={() => {
+                            table.setPageIndex(0);
+                            rerender();
+                        }}
                         disabled={!table.getCanPreviousPage()}
                     >
                         <span className="sr-only">Go to first page</span>
@@ -56,7 +63,10 @@ export const DataTablePagination = <TData extends unknown>({ className, table }:
                     <Button
                         variant="outline"
                         className="size-8 p-0"
-                        onClick={() => table.previousPage()}
+                        onClick={() => {
+                            table.previousPage();
+                            rerender();
+                        }}
                         disabled={!table.getCanPreviousPage()}
                     >
                         <span className="sr-only">Go to previous page</span>
@@ -65,7 +75,10 @@ export const DataTablePagination = <TData extends unknown>({ className, table }:
                     <Button
                         variant="outline"
                         className="size-8 p-0"
-                        onClick={() => table.nextPage()}
+                        onClick={() => {
+                            table.nextPage();
+                            rerender();
+                        }}
                         disabled={!table.getCanNextPage()}
                     >
                         <span className="sr-only">Go to next page</span>
@@ -74,7 +87,10 @@ export const DataTablePagination = <TData extends unknown>({ className, table }:
                     <Button
                         variant="outline"
                         className="hidden size-8 p-0 lg:flex"
-                        onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                        onClick={() => {
+                            table.setPageIndex(table.getPageCount() - 1);
+                            rerender();
+                        }}
                         disabled={!table.getCanNextPage()}
                     >
                         <span className="sr-only">Go to last page</span>
