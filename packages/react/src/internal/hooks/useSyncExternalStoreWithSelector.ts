@@ -1,5 +1,6 @@
 import { useRef, useSyncExternalStore } from "react";
 import { identity } from "../utils";
+import { useNoSsr } from "./useNoSsr";
 
 export const useSyncExternalStoreWithSelector = <TSnapshot, TSelection>(
     subscribe: (onStoreChange: () => void) => () => void,
@@ -8,6 +9,7 @@ export const useSyncExternalStoreWithSelector = <TSnapshot, TSelection>(
     selector: (snapshot: TSnapshot) => TSelection,
     isEqual?: (a: TSelection, b: TSelection) => boolean,
 ): TSelection => {
+    const noSsr = useNoSsr();
     const cacheRef = useRef<TSelection | null>(null);
 
     const _getServerSnapshot = getServerSnapshot
@@ -36,5 +38,7 @@ export const useSyncExternalStoreWithSelector = <TSnapshot, TSelection>(
         return cacheRef.current;
     };
 
-    return useSyncExternalStore(subscribe, _getClientSnapshot, _getServerSnapshot);
+    const result = useSyncExternalStore(subscribe, _getClientSnapshot, _getServerSnapshot);
+
+    return typeof window !== "undefined" ? noSsr(result, _getServerSnapshot?.()) : result;
 };

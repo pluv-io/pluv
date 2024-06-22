@@ -246,7 +246,7 @@ export const createRoomBundle = <
 
         const getSnapshot = useCallback((): boolean => room.canRedo(), [room]);
 
-        const canRedo = useSyncExternalStoreWithSelector(subscribe, getSnapshot, null, identity);
+        const canRedo = useSyncExternalStoreWithSelector(subscribe, getSnapshot, getSnapshot, identity);
 
         return canRedo;
     };
@@ -258,9 +258,9 @@ export const createRoomBundle = <
 
         const getSnapshot = useCallback((): boolean => room.canUndo(), [room]);
 
-        const canRedo = useSyncExternalStoreWithSelector(subscribe, getSnapshot, null, identity);
+        const canUndo = useSyncExternalStoreWithSelector(subscribe, getSnapshot, getSnapshot, identity);
 
-        return canRedo;
+        return canUndo;
     };
 
     const useConnection = <T extends unknown = WebSocketConnection>(
@@ -283,7 +283,7 @@ export const createRoomBundle = <
         return useSyncExternalStoreWithSelector(
             subscribe,
             getSnapshot,
-            null,
+            getSnapshot,
             _selector,
             options?.isEqual ?? fastDeepEqual,
         );
@@ -345,7 +345,7 @@ export const createRoomBundle = <
         const myPresence = useSyncExternalStoreWithSelector(
             subscribe,
             getSnapshot,
-            null,
+            getSnapshot,
             _selector,
             options?.isEqual ?? fastDeepEqual,
         );
@@ -387,7 +387,7 @@ export const createRoomBundle = <
         return useSyncExternalStoreWithSelector(
             subscribe,
             getSnapshot,
-            null,
+            getSnapshot,
             _selector,
             options?.isEqual ?? fastDeepEqual,
         );
@@ -419,7 +419,7 @@ export const createRoomBundle = <
         return useSyncExternalStoreWithSelector(
             subscribe,
             getSnapshot,
-            null,
+            getSnapshot,
             _selector,
             options?.isEqual ?? fastDeepEqual,
         );
@@ -443,7 +443,7 @@ export const createRoomBundle = <
         return useSyncExternalStoreWithSelector(
             subscribe,
             getSnapshot,
-            null,
+            getSnapshot,
             selector as (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T,
             options?.isEqual ??
                 ((a, b) => {
@@ -498,7 +498,7 @@ export const createRoomBundle = <
         const data = useSyncExternalStoreWithSelector(
             subscribe,
             getSnapshot,
-            null,
+            getSnapshot,
             _selector,
             options?.isEqual ?? fastDeepEqual,
         );
