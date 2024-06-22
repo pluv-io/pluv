@@ -1,3 +1,4 @@
+export { useAsync } from "./useAsync";
 export { useAudio } from "./useAudio";
 export { useClickOutside } from "./useClickOutside";
 export { useIntersectionObserver } from "./useIntersectionObserver";

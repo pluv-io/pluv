@@ -10,6 +10,15 @@ export default meta;
 
 type Story = StoryObj<typeof Avatar>;
 
+export const Animal: Story = {
+    render: (args) => (
+        <Avatar>
+            <Avatar.Animal data="leedavidcs" />
+            <Avatar.Fallback />
+        </Avatar>
+    ),
+};
+
 export const Basic: Story = {
     render: (args) => (
         <Avatar>
