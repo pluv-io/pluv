@@ -1387,9 +1387,6 @@ importers:
       '@pluv/types':
         specifier: workspace:^
         version: link:../types
-      '@types/react':
-        specifier: ^18.3.3
-        version: 18.3.3
       '@types/use-sync-external-store':
         specifier: ^0.0.6
         version: 0.0.6
@@ -1403,6 +1400,9 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      '@types/react':
+        specifier: ^18.3.3
+        version: 18.3.3
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
