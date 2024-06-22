@@ -141,6 +141,46 @@ const COLORS = [
 
 const DEFAULT_SIZE = 128;
 
+const getHash = (data: Json) => {
+    const toStableString = (currentData: Json, currentString: string = ""): string => {
+        if (currentData === null) return `${currentString}:null`;
+        if (typeof currentData === "string" || typeof currentData === "boolean" || typeof currentData === "number") {
+            return `${currentString}:${currentData}`;
+        }
+
+        if (Array.isArray(currentData)) {
+            return `${currentString}:[${currentData.map((item) => toStableString(item)).join(",")}]`;
+        }
+
+        if (typeof currentData === "object") {
+            return `${currentString}:{${Object.entries(currentData)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([key, value]) => `${key}:${toStableString(value)}`)
+                .join(",")}}`;
+        }
+
+        return currentString;
+    };
+
+    const stable: string = toStableString(data);
+
+    return Math.abs(stable.split("").reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0));
+};
+
+const getAnimal = (data: Json): (typeof ANIMALS)[number] => {
+    const hash = getHash(data);
+    const index = hash % ANIMALS.length;
+
+    return ANIMALS[index];
+};
+
+const getColor = (data: Json): (typeof COLORS)[number] => {
+    const hash = getHash(data);
+    const index = hash % COLORS.length;
+
+    return COLORS[index];
+};
+
 export interface AvatarAnimalProps {
     className?: string;
     data?: Json;
@@ -148,40 +188,14 @@ export interface AvatarAnimalProps {
     width?: number;
 }
 
-export const AvatarAnimal = forwardRef<ElementRef<typeof RadixAvatar.Image>, AvatarAnimalProps>(
+const BaseAvatarAnimal = forwardRef<ElementRef<typeof RadixAvatar.Image>, AvatarAnimalProps>(
     ({ className, data, height = DEFAULT_SIZE, width = DEFAULT_SIZE }, ref) => {
         const [randomHash] = useState(() => Math.floor(Math.random() * Math.min(ANIMALS.length, COLORS.length)));
 
         const hash = useMemo(() => {
             if (typeof data === "undefined") return randomHash;
 
-            const toStableString = (currentData: Json, currentString: string = ""): string => {
-                if (currentData === null) return `${currentString}:null`;
-                if (
-                    typeof currentData === "string" ||
-                    typeof currentData === "boolean" ||
-                    typeof currentData === "number"
-                ) {
-                    return `${currentString}:${currentData}`;
-                }
-
-                if (Array.isArray(currentData)) {
-                    return `${currentString}:[${currentData.map((item) => toStableString(item)).join(",")}]`;
-                }
-
-                if (typeof currentData === "object") {
-                    return `${currentString}:{${Object.entries(currentData)
-                        .sort(([a], [b]) => a.localeCompare(b))
-                        .map(([key, value]) => `${key}:${toStableString(value)}`)
-                        .join(",")}}`;
-                }
-
-                return currentString;
-            };
-
-            const stable: string = toStableString(data);
-
-            return Math.abs(stable.split("").reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0));
+            return getHash(data);
         }, [data, randomHash]);
 
         const animalIndex = hash % ANIMALS.length;
@@ -210,4 +224,10 @@ export const AvatarAnimal = forwardRef<ElementRef<typeof RadixAvatar.Image>, Ava
     },
 );
 
-AvatarAnimal.displayName = "AvatarAnimal";
+BaseAvatarAnimal.displayName = "AvatarAnimal";
+
+export const AvatarAnimal = Object.assign(BaseAvatarAnimal, {
+    getAnimal,
+    getColor,
+    getHash,
+});

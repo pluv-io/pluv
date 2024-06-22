@@ -4,7 +4,6 @@ import type { ioServer } from "@pluv-apps/server-cloudflare/src/pluv-io";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
-import type { Task } from "../components/HeroDemo/schema";
 import tasks from "../generated/tasks.json";
 
 const client = createClient<typeof ioServer>({
@@ -38,7 +37,9 @@ export const {
     useRoom,
     useStorage,
 } = createRoomBundle({
-    presence: z.object({}),
+    presence: z.object({
+        selectionId: z.string().nullable(),
+    }),
     initialStorage: yjs.doc(() => ({
         demoTasks: yjs.array(tasks.map((task) => yjs.object(task))),
     })),

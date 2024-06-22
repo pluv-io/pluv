@@ -30,6 +30,7 @@
         "@pluv-internal/remark-plugins": "workspace:^",
         "@pluv/crdt-yjs": "workspace:^",
         "@pluv/react": "workspace:^",
+        "@radix-ui/react-tooltip": "^1.0.7",
         "@seznam/compose-react-refs": "^1.0.6",
         "@tanstack/react-table": "^8.17.3",
         "@types/common-tags": "^1.8.4",
