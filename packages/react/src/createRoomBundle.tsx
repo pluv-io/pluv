@@ -110,12 +110,12 @@ export interface CreateRoomBundle<
     useOther: <T extends unknown = UserInfo<TIO, TPresence>>(
         connectionId: string,
         selector?: (other: UserInfo<TIO, TPresence>) => T,
-        options?: SubscriptionHookOptions<Id<T> | null>,
-    ) => Id<T> | null;
-    useOthers: <T extends unknown = UserInfo<TIO, TPresence>>(
-        selector?: (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T[],
-        options?: SubscriptionHookOptions<readonly Id<T>[]>,
-    ) => readonly Id<T>[];
+        options?: SubscriptionHookOptions<T | null>,
+    ) => T | null;
+    useOthers: <T extends unknown = readonly UserInfo<TIO, TPresence>[]>(
+        selector?: (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T,
+        options?: SubscriptionHookOptions<T>,
+    ) => T;
     useRedo: () => () => void;
     useRoom: () => AbstractRoom<TIO, TPresence, TStorage>;
     useStorage: <TKey extends keyof TStorage, TData extends unknown = InferCrdtStorageJson<TStorage[TKey]>>(
@@ -396,8 +396,8 @@ export const createRoomBundle = <
     const useOther = <T extends unknown = UserInfo<TIO, TPresence>>(
         connectionId: string,
         selector = identity as (other: UserInfo<TIO, TPresence>) => T,
-        options?: SubscriptionHookOptions<Id<T> | null>,
-    ): Id<T> | null => {
+        options?: SubscriptionHookOptions<T | null>,
+    ): T | null => {
         const room = useRoom();
 
         const subscribe = useCallback(
@@ -411,7 +411,7 @@ export const createRoomBundle = <
 
         const _selector = useCallback(
             (snapshot: Id<UserInfo<TIO, TPresence>> | null) => {
-                return !snapshot ? null : (selector(snapshot) as Id<T>);
+                return !snapshot ? null : (selector(snapshot) as T);
             },
             [selector],
         );
@@ -425,10 +425,10 @@ export const createRoomBundle = <
         );
     };
 
-    const useOthers = <T extends unknown = UserInfo<TIO, TPresence>>(
-        selector = identity as (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T[],
-        options?: SubscriptionHookOptions<readonly Id<T>[]>,
-    ): readonly Id<T>[] => {
+    const useOthers = <T extends unknown = readonly UserInfo<TIO, TPresence>[]>(
+        selector = identity as (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T,
+        options?: SubscriptionHookOptions<T>,
+    ): T => {
         const room = useRoom();
 
         const subscribe = useCallback(
@@ -444,8 +444,23 @@ export const createRoomBundle = <
             subscribe,
             getSnapshot,
             getSnapshot,
-            selector as (other: readonly Id<UserInfo<TIO, TPresence>>[]) => Id<T>[],
-            options?.isEqual ?? shallowArrayEqual,
+            selector as (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T,
+            options?.isEqual ??
+                ((a, b) => {
+                    /**
+                     * !HACK
+                     * @description Assume the return type will always be an array when this occurs
+                     * and do a shallow comparison instead like how standard React dependency
+                     * arrays work. This is for performance's sake and may lead to bugs if the
+                     * selector doesn't always return an array
+                     * @date June 22, 2024
+                     */
+                    if (Array.isArray(a) && Array.isArray(b) && a.length === b.length) {
+                        return shallowArrayEqual(a, b);
+                    }
+
+                    return fastDeepEqual(a, b);
+                }),
         );
     };
 
