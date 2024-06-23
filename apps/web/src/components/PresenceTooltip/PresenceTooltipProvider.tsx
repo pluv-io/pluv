@@ -1,7 +1,7 @@
 import * as RadixTooltip from "@radix-ui/react-tooltip";
-import type { FC, ReactNode } from "react";
-import { useOthers } from "../../pluv-io/cloudflare";
-import { PresenceTooltipContext } from "./PresenceTooltipContext";
+import { useMemo, type FC, type ReactNode } from "react";
+import { useMyPresence, useOthers } from "../../pluv-io/cloudflare";
+import { PresenceTooltipProviderContext } from "./PresenceTooltipProviderContext";
 
 export interface PresenceTooltipProviderProps {
     children?: ReactNode;
@@ -12,11 +12,12 @@ export interface PresenceTooltipProviderProps {
 
 export const PresenceTooltipProvider: FC<PresenceTooltipProviderProps> = ({
     children,
-    delayDuration,
+    delayDuration = 150,
     disableHoverableContent,
     skipDelayDuration,
 }) => {
-    const selections = useOthers((others) => {
+    const [userSelectedId] = useMyPresence((presence) => presence.selectionId);
+    const othersSelections = useOthers((others) => {
         return others.reduce<{ [selectionId: string]: number }>((map, other) => {
             const selectionId = other.presence.selectionId;
 
@@ -35,8 +36,21 @@ export const PresenceTooltipProvider: FC<PresenceTooltipProviderProps> = ({
         }, {});
     });
 
+    const selections = useMemo(() => {
+        if (typeof userSelectedId !== "string") return othersSelections;
+
+        const prevCount = othersSelections[userSelectedId] ?? 0;
+
+        return {
+            ...othersSelections,
+            [userSelectedId]: prevCount + 1,
+        };
+    }, [othersSelections, userSelectedId]);
+
+    console.log("selections", selections);
+
     return (
-        <PresenceTooltipContext.Provider value={selections}>
+        <PresenceTooltipProviderContext.Provider value={selections}>
             <RadixTooltip.Provider
                 delayDuration={delayDuration}
                 disableHoverableContent={disableHoverableContent}
@@ -44,6 +58,6 @@ export const PresenceTooltipProvider: FC<PresenceTooltipProviderProps> = ({
             >
                 {children}
             </RadixTooltip.Provider>
-        </PresenceTooltipContext.Provider>
+        </PresenceTooltipProviderContext.Provider>
     );
 };

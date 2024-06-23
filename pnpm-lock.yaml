@@ -259,6 +259,9 @@ importers:
       '@pluv/react':
         specifier: workspace:^
         version: link:../../packages/react
+      '@radix-ui/react-tooltip':
+        specifier: ^1.0.7
+        version: 1.0.7(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.3.1)(react@18.3.1)
       '@seznam/compose-react-refs':
         specifier: ^1.0.6
         version: 1.0.6
@@ -5337,7 +5340,7 @@ packages:
       '@types/react':
         optional: true
     dependencies:
-      '@babel/runtime': 7.22.5
+      '@babel/runtime': 7.24.6
       '@types/react': 18.3.3
       react: 18.3.1
     dev: false
@@ -5964,7 +5967,7 @@ packages:
       '@types/react-dom':
         optional: true
     dependencies:
-      '@babel/runtime': 7.24.5
+      '@babel/runtime': 7.24.6
       '@radix-ui/react-primitive': 1.0.3(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.3.1)(react@18.3.1)
       '@types/react': 18.3.3
       '@types/react-dom': 18.3.0

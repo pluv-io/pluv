@@ -1,10 +1,11 @@
 import { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import * as RadixSeparator from "@radix-ui/react-separator";
-import * as React from "react";
+import type { ElementRef } from "react";
+import { forwardRef } from "react";
 
-export const Separator = React.forwardRef<
-    React.ElementRef<typeof RadixSeparator.Root>,
+export const Separator = forwardRef<
+    ElementRef<typeof RadixSeparator.Root>,
     InferComponentProps<typeof RadixSeparator.Root>
 >((props, ref) => {
     const { className, orientation = "horizontal", decorative = true } = props;
@@ -16,7 +17,7 @@ export const Separator = React.forwardRef<
             decorative={decorative}
             orientation={orientation}
             className={cn(
-                "bg-border shrink-0",
+                "shrink-0 bg-border",
                 orientation === "horizontal" ? "h-px w-full" : "h-full w-px",
                 className,
             )}

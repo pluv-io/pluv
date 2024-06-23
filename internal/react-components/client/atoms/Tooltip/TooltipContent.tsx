@@ -1,17 +1,18 @@
 import { cn } from "@pluv-internal/utils";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
 import { oneLine } from "common-tags";
-import { ElementRef, forwardRef } from "react";
+import type { ElementRef } from "react";
+import { forwardRef } from "react";
 
 export type TooltipContentProps = RadixTooltip.TooltipContentProps;
 
 export const TooltipContent = forwardRef<ElementRef<typeof RadixTooltip.Content>, TooltipContentProps>((props, ref) => {
-    const { className, sideOffset = 4 } = props;
+    const { className, sideOffset = 4, ...restProps } = props;
 
     return (
         <RadixTooltip.Content
             ref={ref}
-            {...props}
+            {...restProps}
             sideOffset={sideOffset}
             className={cn(
                 oneLine`

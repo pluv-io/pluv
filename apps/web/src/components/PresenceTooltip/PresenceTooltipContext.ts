@@ -1,7 +1,13 @@
 import { createContext } from "react";
 
 export interface PresenceTooltipContextState {
-    [selectionId: string]: number;
+    color: string;
+    count: number;
+    selectionId: string;
 }
 
-export const PresenceTooltipContext = createContext<PresenceTooltipContextState>({});
+export const PresenceTooltipContext = createContext<PresenceTooltipContextState>({
+    color: "transparent",
+    count: 0,
+    selectionId: "",
+});

@@ -354,14 +354,14 @@ export class PluvRoom<
         [event in keyof InferIOOutput<TIO>]: (callback: EventNotifierSubscriptionCallback<TIO, event>) => () => void;
     };
 
-    public getConnection(): WebSocketConnection {
+    public getConnection = (): WebSocketConnection => {
         // Create a read-only clone of the connection state
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
-    }
+    };
 
-    public getDoc(): AbstractCrdtDoc<TStorage> {
+    public getDoc = (): AbstractCrdtDoc<TStorage> => {
         return this._crdtManager.doc;
-    }
+    };
 
     public getMyPresence = (): TPresence => {
         return this._usersManager.myPresence;
