@@ -27,3 +27,23 @@ export const Basic: Story = {
         </Avatar>
     ),
 };
+
+export const Group: Story = {
+    render: (args) => (
+        <Avatar.Group>
+            <Avatar>
+                <Avatar.GitHubImage alt="leedavidcs" src="https://avatars.githubusercontent.com/u/15151154?v=4" />
+                <Avatar.Fallback />
+            </Avatar>
+            <Avatar>
+                <Avatar.GitHubImage alt="leedavidcs" src="https://avatars.githubusercontent.com/u/15151154?v=4" />
+                <Avatar.Fallback />
+            </Avatar>
+            <Avatar>
+                <Avatar.GitHubImage alt="leedavidcs" src="https://avatars.githubusercontent.com/u/15151154?v=4" />
+                <Avatar.Fallback />
+            </Avatar>
+            <Avatar.Count count={2} />
+        </Avatar.Group>
+    ),
+};

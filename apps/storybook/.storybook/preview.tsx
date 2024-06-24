@@ -1,6 +1,7 @@
 import { LazyMotion } from "@pluv-internal/react-components/client";
 import { withThemeByClassName } from "@storybook/addon-themes";
 import type { Preview } from "@storybook/react";
+import { Inter } from "next/font/google";
 import React, { type ComponentType } from "react";
 
 import "@pluv-internal/react-code/styles.css";
@@ -8,6 +9,8 @@ import "@pluv-internal/react-components/styles.css";
 import "../src/styles/tailwind.css";
 
 const DEFAULT_VIEWPORT_HEIGHT = "1200px";
+
+const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 const preview: Preview = {
   parameters: {
@@ -76,7 +79,9 @@ const preview: Preview = {
     (Story: ComponentType) => {
       return (
         <LazyMotion>
-          <Story />
+          <div className={inter.className}>
+            <Story />
+          </div>
         </LazyMotion>
       );
     },

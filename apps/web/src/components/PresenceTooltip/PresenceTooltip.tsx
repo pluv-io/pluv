@@ -67,7 +67,7 @@ export const PresenceTooltip: FC<PresenceTooltipProps> = (props) => {
 
     return (
         <PresenceTooltipContext.Provider value={state}>
-            <RadixTooltip.Root {...restProps} open={userSelected} />
+            <RadixTooltip.Root {...restProps} />
         </PresenceTooltipContext.Provider>
     );
 };

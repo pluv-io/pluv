@@ -12,8 +12,6 @@ export const PresenceTooltipContent = memo(
     forwardRef<ElementRef<typeof RadixTooltip.Content>, PresenceTooltipContentProps>((props, ref) => {
         const { count } = useContext(PresenceTooltipContext);
 
-        console.log("count", count);
-
         if (!count) return null;
 
         return <PresenceTooltipContentInner {...props} ref={ref} />;

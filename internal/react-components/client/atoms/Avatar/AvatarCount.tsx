@@ -1,15 +1,18 @@
 import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
-import * as RadixAvatar from "@radix-ui/react-avatar";
 import { oneLine } from "common-tags";
-import type { ElementRef } from "react";
 import { forwardRef } from "react";
 
-export type AvatarProps = InferComponentProps<typeof RadixAvatar.Root>;
+export type AvatarCountProps = InferComponentProps<"div"> & {
+    count: number;
+};
 
-export const Avatar = forwardRef<ElementRef<typeof RadixAvatar.Root>, AvatarProps>(({ className, ...props }, ref) => {
+export const AvatarCount = forwardRef<HTMLDivElement, AvatarCountProps>((props, ref) => {
+    const { className, count, ...restProps } = props;
+
     return (
-        <RadixAvatar.Root
+        <div
+            {...restProps}
             ref={ref}
             className={cn(
                 oneLine`
@@ -17,16 +20,23 @@ export const Avatar = forwardRef<ElementRef<typeof RadixAvatar.Root>, AvatarProp
                     flex
                     size-10
                     shrink-0
+                    items-center
+                    justify-center
                     overflow-hidden
                     rounded-full
                     border
                     border-muted-foreground
+                    bg-black
+                    text-sm
+                    font-semibold
+                    text-white
                 `,
                 className,
             )}
-            {...props}
-        />
+        >
+            +{count.toLocaleString()}
+        </div>
     );
 });
 
-Avatar.displayName = "Avatar";
+AvatarCount.displayName = "AvatarCount";

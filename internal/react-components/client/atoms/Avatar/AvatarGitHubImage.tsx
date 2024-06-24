@@ -28,6 +28,7 @@ export const AvatarGitHubImage = forwardRef<ElementRef<typeof RadixAvatar.Image>
                     }}
                     priority={priority}
                     src={src}
+                    title={alt}
                     width={36}
                     {...(props as any)}
                     ref={ref}

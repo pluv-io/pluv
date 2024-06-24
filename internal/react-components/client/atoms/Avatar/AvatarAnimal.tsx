@@ -217,6 +217,7 @@ const BaseAvatarAnimal = forwardRef<ElementRef<typeof RadixAvatar.Image>, Avatar
                     unoptimized
                     width={width}
                     ref={ref}
+                    title={alt}
                     style={{ backgroundColor: color }}
                 />
             </RadixAvatar.Image>

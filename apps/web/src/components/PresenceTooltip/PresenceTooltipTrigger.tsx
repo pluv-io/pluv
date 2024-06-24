@@ -16,7 +16,7 @@ export const PresenceTooltipTrigger = memo<PresenceTooltipTriggerProps>(({ child
     return (
         <RadixTooltip.Trigger
             asChild
-            className="ring-4 ring-offset-0"
+            className="ring-4 ring-offset-1"
             onBlur={() => {
                 setPresence({ selectionId: null });
             }}
