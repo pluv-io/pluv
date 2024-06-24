@@ -1,8 +1,9 @@
 export type Constructable = { new (...args: any[]): any };
 
-export type Maybe<T> = T | null | undefined;
+export type Maybe<T> = T | Nil;
 export type MaybePromise<T> = Promise<T> | T;
 export type MaybeReadonlyArray<T> = T[] | readonly T[];
+export type Nil = null | undefined;
 
 type OptionalPropertyNames<T> = {
     [K in keyof T]-?: {} extends { [P in K]: T[K] } ? K : never;
@@ -12,7 +13,15 @@ export type SpreadProperties<L, R, K extends keyof L & keyof R> = {
     [P in K]: L[P] | Exclude<R[P], undefined>;
 };
 
-export type Id<T> = T extends infer U ? (U extends Constructable ? U : { [K in keyof U]: U[K] }) : never;
+export type Id<T> = T extends Nil
+    ? T
+    : T extends infer U
+      ? U extends Constructable
+          ? U
+          : { [K in keyof U]: U[K] }
+      : never;
+
+export type Primitive = string | number | boolean | null | undefined;
 
 type SpreadTwo<L, R> = Id<
     Pick<L, Exclude<keyof L, keyof R>> &

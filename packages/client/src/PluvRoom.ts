@@ -705,8 +705,6 @@ export class PluvRoom<
         Object.keys(data.others).forEach((connectionId) => {
             const { presence, user } = data.others[connectionId];
 
-            if (!user) return;
-
             this._usersManager.setUser(connectionId, user);
 
             const other = this._usersManager.getOther(connectionId);
