@@ -186,7 +186,7 @@ importers:
         version: 8.1.5
       '@storybook/nextjs':
         specifier: ^8.1.5
-        version: 8.1.5(babel-plugin-macros@3.1.0)(esbuild@0.20.2)(next@14.2.3)(prettier@3.3.2)(react-dom@18.3.1)(react@18.3.1)(typescript@5.4.5)(webpack@5.91.0)
+        version: 8.1.5(esbuild@0.20.2)(next@14.2.3)(prettier@3.3.2)(react-dom@18.3.1)(react@18.3.1)(typescript@5.4.5)(webpack@5.91.0)
       '@storybook/react':
         specifier: ^8.1.5
         version: 8.1.5(prettier@3.3.2)(react-dom@18.3.1)(react@18.3.1)(typescript@5.4.5)
@@ -303,7 +303,7 @@ importers:
         version: 2.1.3
       next:
         specifier: ^14.2.3
-        version: 14.2.3(@playwright/test@1.44.1)(react-dom@18.3.1)(react@18.3.1)
+        version: 14.2.3(@playwright/test@1.45.0)(react-dom@18.3.1)(react@18.3.1)
       polished:
         specifier: ^4.3.1
         version: 4.3.1
@@ -353,15 +353,6 @@ importers:
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.19(postcss@8.4.38)
-      babel-loader:
-        specifier: ^9.1.3
-        version: 9.1.3(@babel/core@7.24.6)(webpack@5.92.1)
-      babel-plugin-macros:
-        specifier: ^3.1.0
-        version: 3.1.0
-      babel-plugin-styled-components:
-        specifier: ^2.1.4
-        version: 2.1.4(@babel/core@7.24.6)(styled-components@6.1.11)
       concurrently:
         specifier: ^8.2.2
         version: 8.2.2
@@ -465,70 +456,6 @@ importers:
       postcss:
         specifier: ^8.4.38
         version: 8.4.38
-      tailwindcss:
-        specifier: ^3.4.3
-        version: 3.4.3(ts-node@10.9.2)
-      typescript:
-        specifier: ^5.4.5
-        version: 5.4.5
-
-  internal/react-chess:
-    dependencies:
-      '@pluv-internal/react-hooks':
-        specifier: workspace:^
-        version: link:../react-hooks
-      '@types/ms':
-        specifier: ^0.7.34
-        version: 0.7.34
-      '@types/react':
-        specifier: ^18.3.3
-        version: 18.3.3
-      '@types/react-dom':
-        specifier: ^18.3.0
-        version: 18.3.0
-      chess.js:
-        specifier: 1.0.0-beta.8
-        version: 1.0.0-beta.8
-      ms:
-        specifier: ^2.1.3
-        version: 2.1.3
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-chessboard:
-        specifier: ^4.6.0
-        version: 4.6.0(@types/node@20.14.8)(@types/react@18.3.3)(react-dom@18.3.1)(react@18.3.1)
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      styled-components:
-        specifier: ^6.1.11
-        version: 6.1.11(react-dom@18.3.1)(react@18.3.1)
-      twin.macro:
-        specifier: ^3.4.1
-        version: 3.4.1(tailwindcss@3.4.3)
-    devDependencies:
-      '@pluv-internal/tailwind-config':
-        specifier: workspace:^
-        version: link:../tailwind-config
-      '@pluv-internal/typings':
-        specifier: workspace:^
-        version: link:../typings
-      '@pluv/tsconfig':
-        specifier: workspace:^
-        version: link:../../packages/tsconfig
-      autoprefixer:
-        specifier: ^10.4.19
-        version: 10.4.19(postcss@8.4.38)
-      eslint-config-pluv:
-        specifier: workspace:^
-        version: link:../../packages/eslint-config-pluv
-      postcss:
-        specifier: ^8.4.38
-        version: 8.4.38
-      react-is:
-        specifier: ^18.3.1
-        version: 18.3.1
       tailwindcss:
         specifier: ^3.4.3
         version: 3.4.3(ts-node@10.9.2)
@@ -704,6 +631,12 @@ importers:
       next:
         specifier: ^14.2.3
         version: 14.2.3(@playwright/test@1.45.0)(react-dom@18.3.1)(react@18.3.1)
+      next-themes:
+        specifier: ^0.3.0
+        version: 0.3.0(react-dom@18.3.1)(react@18.3.1)
+      nextjs-toploader:
+        specifier: ^1.6.12
+        version: 1.6.12(next@14.2.3)(react-dom@18.3.1)(react@18.3.1)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -3731,7 +3664,7 @@ packages:
       react: '>=16.8.0'
     dependencies:
       react: 18.3.1
-      tslib: 2.6.2
+      tslib: 2.6.3
     dev: false
 
   /@dnd-kit/core@6.1.0(react-dom@18.3.1)(react@18.3.1):
@@ -3753,7 +3686,7 @@ packages:
       react: '>=16.8.0'
     dependencies:
       react: 18.3.1
-      tslib: 2.6.2
+      tslib: 2.6.3
     dev: false
 
   /@emnapi/runtime@1.2.0:
@@ -6888,7 +6821,7 @@ packages:
     resolution: {integrity: sha512-qMYwD1cXW0hJ3pMmdMlbsqktVBlsjsqwMH5PBzAN4FoWiCQ/yHeAnDXRUgFFaLcORS72h9H/cQuJ+p//RdeURg==}
     dev: true
 
-  /@storybook/nextjs@8.1.5(babel-plugin-macros@3.1.0)(esbuild@0.20.2)(next@14.2.3)(prettier@3.3.2)(react-dom@18.3.1)(react@18.3.1)(typescript@5.4.5)(webpack@5.91.0):
+  /@storybook/nextjs@8.1.5(esbuild@0.20.2)(next@14.2.3)(prettier@3.3.2)(react-dom@18.3.1)(react@18.3.1)(typescript@5.4.5)(webpack@5.91.0):
     resolution: {integrity: sha512-iHkRvYQGK+lFbeBx18UvGHbExbySo/6Yugcjvm28WajXOETStpD/Awq6r42hMWT2hLa9tbkTv+b6TDzAoo4eNw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
@@ -7345,7 +7278,7 @@ packages:
     resolution: {integrity: sha512-KGYxvIOXcceOAbEk4bi/dVLEK9z8sZ0uBB3Il5b1rhfClSpcX0yfRO0KmTkqR2cnQDymwLB+25ZyMzICg/cm/A==}
     dependencies:
       '@swc/counter': 0.1.3
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   /@tanstack/react-table@8.17.3(react-dom@18.3.1)(react@18.3.1):
     resolution: {integrity: sha512-5gwg5SvPD3lNAXPuJJz1fOCEZYk9/GeBFH3w/hCgnfyszOIzwkwgp5I7Q4MJtn0WECp84b5STQUDdmvGi8m3nA==}
@@ -7689,6 +7622,8 @@ packages:
     resolution: {integrity: sha512-DO+2/jZinXfROG7j7WKFn/3C6nFwxy2lLpgLjEXJz+0XKphZlTLJ14mo8Vfg8X5BWN6XjyESXq+LcYdT7tR3bA==}
     dependencies:
       undici-types: 5.26.5
+    dev: true
+    optional: true
 
   /@types/normalize-package-data@2.4.4:
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -8263,7 +8198,7 @@ packages:
     resolution: {integrity: sha512-xcLxITLe2HYa1cnYnwCjkOO1PqUHQpozB8x9AR0OgWN2woOBi5kSDVxKfd0b7sb1hw5qFeJhXm9H1nu3xSfLeQ==}
     engines: {node: '>=10'}
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   /aria-query@5.1.3:
     resolution: {integrity: sha512-R5iJ5lkuHybztUfuOAznmboyjWq8O6sqNqtK7CLOqdydi54VNbORp49mb14KbWgG1QD3JFO9hJdZ+y4KutfdOQ==}
@@ -8493,27 +8428,6 @@ packages:
       webpack: 5.91.0(esbuild@0.20.2)
     dev: true
 
-  /babel-loader@9.1.3(@babel/core@7.24.6)(webpack@5.92.1):
-    resolution: {integrity: sha512-xG3ST4DglodGf8qSwv0MdeWLhrDsw/32QMdTO5T1ZIp9gQur0HkCyFs7Awskr10JKXFXwpAhiCuYX5oGXnRGbw==}
-    engines: {node: '>= 14.15.0'}
-    peerDependencies:
-      '@babel/core': ^7.12.0
-      webpack: '>=5'
-    dependencies:
-      '@babel/core': 7.24.6
-      find-cache-dir: 4.0.0
-      schema-utils: 4.2.0
-      webpack: 5.92.1
-    dev: true
-
-  /babel-plugin-macros@3.1.0:
-    resolution: {integrity: sha512-Cg7TFGpIr01vOQNODXOOaGz2NpCU5gl8x1qJFbb6hbZxR7XrcE2vtbAsTAbJ7/xwJtUuJEw8K8Zr/AE0LHlesg==}
-    engines: {node: '>=10', npm: '>=6'}
-    dependencies:
-      '@babel/runtime': 7.21.0
-      cosmiconfig: 7.1.0
-      resolve: 1.22.1
-
   /babel-plugin-polyfill-corejs2@0.4.11(@babel/core@7.24.6):
     resolution: {integrity: sha512-sMEJ27L0gRHShOh5G54uAAPaiCOygY/5ratXuiyb2G46FmlSpc9eFCzYVyDiPxfNbwzA7mYahmjQc5q+CZQ09Q==}
     peerDependencies:
@@ -8737,7 +8651,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001600
+      caniuse-lite: 1.0.30001636
       electron-to-chromium: 1.4.785
       node-releases: 2.0.14
       update-browserslist-db: 1.0.16(browserslist@4.23.0)
@@ -8868,19 +8782,19 @@ packages:
 
   /caniuse-lite@1.0.30001600:
     resolution: {integrity: sha512-+2S9/2JFhYmYaDpZvo0lKkfvuKIglrx68MwOBqMGHhQsNkLjB5xtc/TGoEPs+MxjSyN/72qer2g97nzR641mOQ==}
+    dev: true
 
   /caniuse-lite@1.0.30001615:
     resolution: {integrity: sha512-1IpazM5G3r38meiae0bHRnPhz+CBQ3ZLqbQMtrg+AsTPKAXgW38JNsXkyZ+v8waCsDmPq87lmfun5Q2AGysNEQ==}
 
   /caniuse-lite@1.0.30001636:
     resolution: {integrity: sha512-bMg2vmr8XBsbL6Lr0UHXy/21m84FTxDLWn2FSqMd5PrlbMxwJlQnC2YWYxVgp66PZE+BBNF2jYQUBKCo1FDeZg==}
-    dev: true
 
   /capnp-ts@0.7.0:
     resolution: {integrity: sha512-XKxXAC3HVPv7r674zP0VC3RTXz+/JKhfyw94ljvF80yynK6VkTnqE3jMuN8b3dUVmmc43TjyxjW4KTsmB3c86g==}
     dependencies:
       debug: 4.3.4(supports-color@5.5.0)
-      tslib: 2.6.2
+      tslib: 2.6.3
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -10030,7 +9944,7 @@ packages:
     resolution: {integrity: sha512-Kv5nKlh6yRrdrGvxeJ2e5y2eRUpkUosIW4A2AS38zwSz27zu7ufDwQPi5Jhs3XAlGNetl3bmnGhQsMtkKJnj3w==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.6.3
     dev: true
 
   /dotenv-cli@7.4.2:
@@ -12940,7 +12854,7 @@ packages:
   /lower-case@2.0.2:
     resolution: {integrity: sha512-7fm3l3NAF9WfN6W3JOmf5drwpVqX78JtoGJ3A6W0a6ZnldM41w2fV5D490psKFTpMds8TJse/eHLFFsNHHjHgg==}
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.6.3
     dev: true
 
   /lru-cache@10.2.2:
@@ -13974,7 +13888,7 @@ packages:
       react: '>= 16.0.0'
       react-dom: '>= 16.0.0'
     dependencies:
-      next: 14.2.3(@playwright/test@1.44.1)(react-dom@18.3.1)(react@18.3.1)
+      next: 14.2.3(@playwright/test@1.45.0)(react-dom@18.3.1)(react@18.3.1)
       nprogress: 0.2.0
       prop-types: 15.8.1
       react: 18.3.1
@@ -13985,7 +13899,7 @@ packages:
     resolution: {integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==}
     dependencies:
       lower-case: 2.0.2
-      tslib: 2.6.2
+      tslib: 2.6.3
     dev: true
 
   /node-abort-controller@3.1.1:
@@ -15103,23 +15017,6 @@ packages:
       iconv-lite: 0.4.24
       unpipe: 1.0.0
 
-  /react-chessboard@4.6.0(@types/node@20.14.8)(@types/react@18.3.3)(react-dom@18.3.1)(react@18.3.1):
-    resolution: {integrity: sha512-aSnhZbXJrfDwY2ddlKDpvFSeIDxRLxpNcXpxAL37qf6oolPFQInPg6BJQLFXoeyvkHawEbOp38l/gnV3H//NaA==}
-    peerDependencies:
-      react: '>=16.14.0'
-      react-dom: '>=16.14.0'
-    dependencies:
-      react: 18.3.1
-      react-dnd: 16.0.1(@types/node@20.14.8)(@types/react@18.3.3)(react@18.3.1)
-      react-dnd-html5-backend: 16.0.1
-      react-dnd-touch-backend: 16.0.1
-      react-dom: 18.3.1(react@18.3.1)
-    transitivePeerDependencies:
-      - '@types/hoist-non-react-statics'
-      - '@types/node'
-      - '@types/react'
-    dev: false
-
   /react-colorful@5.6.1(react-dom@18.3.1)(react@18.3.1):
     resolution: {integrity: sha512-1exovf0uGTGyq5mXQT0zgQ80uvj2PCwvF8zY1RN9/vbJVSjSo3fsB/4L3ObbF7u70NduSiK4xu4Y6q1MHoUGEw==}
     peerDependencies:
@@ -15129,44 +15026,6 @@ packages:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
     dev: true
-
-  /react-dnd-html5-backend@16.0.1:
-    resolution: {integrity: sha512-Wu3dw5aDJmOGw8WjH1I1/yTH+vlXEL4vmjk5p+MHxP8HuHJS1lAGeIdG/hze1AvNeXWo/JgULV87LyQOr+r5jw==}
-    dependencies:
-      dnd-core: 16.0.1
-    dev: false
-
-  /react-dnd-touch-backend@16.0.1:
-    resolution: {integrity: sha512-NonoCABzzjyWGZuDxSG77dbgMZ2Wad7eQiCd/ECtsR2/NBLTjGksPUx9UPezZ1nQ/L7iD130Tz3RUshL/ClKLA==}
-    dependencies:
-      '@react-dnd/invariant': 4.0.2
-      dnd-core: 16.0.1
-    dev: false
-
-  /react-dnd@16.0.1(@types/node@20.14.8)(@types/react@18.3.3)(react@18.3.1):
-    resolution: {integrity: sha512-QeoM/i73HHu2XF9aKksIUuamHPDvRglEwdHL4jsp784BgUuWcg6mzfxT0QDdQz8Wj0qyRKx2eMg8iZtWvU4E2Q==}
-    peerDependencies:
-      '@types/hoist-non-react-statics': '>= 3.3.1'
-      '@types/node': '>= 12'
-      '@types/react': '>= 16'
-      react: '>= 16.14'
-    peerDependenciesMeta:
-      '@types/hoist-non-react-statics':
-        optional: true
-      '@types/node':
-        optional: true
-      '@types/react':
-        optional: true
-    dependencies:
-      '@react-dnd/invariant': 4.0.2
-      '@react-dnd/shallowequal': 4.0.2
-      '@types/node': 20.14.8
-      '@types/react': 18.3.3
-      dnd-core: 16.0.1
-      fast-deep-equal: 3.1.3
-      hoist-non-react-statics: 3.3.2
-      react: 18.3.1
-    dev: false
 
   /react-docgen-typescript@2.2.2(typescript@5.4.5):
     resolution: {integrity: sha512-tvg2ZtOpOi6QDwsb3GZhOjDkkX0h8Z2gipvTg6OVMUyoYoURhEiRNePT8NZItTVCDh39JJHnLdfCOkzoLbFnTg==}
@@ -15287,7 +15146,7 @@ packages:
       '@types/react': 18.3.3
       react: 18.3.1
       react-style-singleton: 2.2.1(@types/react@18.3.3)(react@18.3.1)
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   /react-remove-scroll@2.5.5(@types/react@18.3.3)(react@18.3.1):
     resolution: {integrity: sha512-ImKhrzJJsyXJfBZ4bzu8Bwpka14c/fQt0k+cyFp/PBhTfyDnU5hjOtM4AG/0AMyy8oKzOTR0lDgJIM7pYXI0kw==}
@@ -15303,7 +15162,7 @@ packages:
       react: 18.3.1
       react-remove-scroll-bar: 2.3.6(@types/react@18.3.3)(react@18.3.1)
       react-style-singleton: 2.2.1(@types/react@18.3.3)(react@18.3.1)
-      tslib: 2.6.2
+      tslib: 2.6.3
       use-callback-ref: 1.3.2(@types/react@18.3.3)(react@18.3.1)
       use-sidecar: 1.1.2(@types/react@18.3.3)(react@18.3.1)
 
@@ -15321,7 +15180,7 @@ packages:
       get-nonce: 1.0.1
       invariant: 2.2.4
       react: 18.3.1
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   /react-universal-interface@0.6.2(react@18.3.1)(tslib@2.6.2):
     resolution: {integrity: sha512-dg8yXdcQmvgR13RIlZbTRQOoUrDciFVoSBZILwjE2LFISxZZ8loVJKAkuzswl5js8BHda79bIb2b84ehU8IjXw==}
@@ -15828,7 +15687,7 @@ packages:
   /rxjs@7.8.1:
     resolution: {integrity: sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg==}
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.6.3
     dev: true
 
   /safe-array-concat@1.1.2:
@@ -16186,7 +16045,7 @@ packages:
     resolution: {integrity: sha512-LAOh4z89bGQvl9pFfNF8V146i7o7/CqFPbqzYgP+yYzDIDeS9HaNFtXABamRW+AQzEVODcvE79ljJ+8a9YSdMg==}
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.6.3
     dev: true
 
   /sonner@1.4.41(react-dom@18.3.1)(react@18.3.1):
@@ -16621,7 +16480,7 @@ packages:
     engines: {node: ^14.18.0 || >=16.0.0}
     dependencies:
       '@pkgr/core': 0.1.1
-      tslib: 2.6.2
+      tslib: 2.6.3
     dev: false
 
   /tailwind-merge@2.3.0:
@@ -17019,9 +16878,8 @@ packages:
 
   /tslib@2.6.3:
     resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
-    dev: true
 
-  /tsup@8.0.2(typescript@5.4.5):
+  /tsup@8.0.2(postcss@8.4.38)(typescript@5.4.5):
     resolution: {integrity: sha512-NY8xtQXdH7hDUAZwcQdY/Vzlw9johQsaqf7iwZ6g1DOUlFYQ5/AtVAjTvihhEyeRlGo4dLRVHtrRaL35M1daqQ==}
     engines: {node: '>=18'}
     hasBin: true
@@ -17446,7 +17304,7 @@ packages:
     dependencies:
       '@types/react': 18.3.3
       react: 18.3.1
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   /use-sidecar@1.1.2(@types/react@18.3.3)(react@18.3.1):
     resolution: {integrity: sha512-epTbsLuzZ7lPClpz2TyryBfztm7m+28DlEv2ZCQ3MDr5ssiwyOwGH/e5F9CkfWjJ1t4clvI58yF822/GUkjjhw==}
@@ -17461,7 +17319,7 @@ packages:
       '@types/react': 18.3.3
       detect-node-es: 1.1.0
       react: 18.3.1
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   /use-sync-external-store@1.2.2(react@18.3.1):
     resolution: {integrity: sha512-PElTlVMwpblvbNqQ82d2n6RjStvdSoNe9FG28kNfz3WiXilJm4DdNkEzRhCZuIDwY8U08WVihhGR5iRqAwfDiw==}
