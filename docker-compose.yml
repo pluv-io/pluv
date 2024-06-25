@@ -5,7 +5,7 @@ services:
     ports:
       - "6379:6379"
   redis-cluster:
-    image: grokzen/redis-cluster:6.2.11
+    image: grokzen/redis-cluster:6.2.14
     ports:
       - "7006:7000"
       - "7001:7001"
