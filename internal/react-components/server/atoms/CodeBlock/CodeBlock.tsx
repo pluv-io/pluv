@@ -1,7 +1,7 @@
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
-import { Fragment, type FC } from "react";
+import type { FC } from "react";
 import type { ShikiLanguage } from "../../../utils/getShiki";
 import { getShiki } from "../../../utils/getShiki";
 

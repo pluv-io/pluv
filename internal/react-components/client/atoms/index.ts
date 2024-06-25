@@ -21,6 +21,7 @@ export * from "./Separator";
 export * from "./SideDrawer";
 export * from "./Slot";
 export * from "./Switch";
+export * from "./Tabs";
 export * from "./ThemeProvider";
 export * from "./ThemeSwitcherButton";
 export * from "./Toaster";
