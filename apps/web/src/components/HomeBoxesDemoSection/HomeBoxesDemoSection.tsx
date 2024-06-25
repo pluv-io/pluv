@@ -2,6 +2,7 @@ import { PageContainer } from "@pluv-internal/react-components/either";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import type { CSSProperties, FC } from "react";
+import { HomeCodeDemo } from "../HomeCodeDemo";
 
 export interface HomeBoxesDemoSectionProps {
     className?: string;
@@ -44,7 +45,9 @@ export const HomeBoxesDemoSection: FC<HomeBoxesDemoSectionProps> = ({ className,
                     experience.
                 </h3>
             </PageContainer>
-            <PageContainer className="mt-12 flex items-center justify-center" />
+            <PageContainer className="mt-12 flex w-full max-w-screen-xl flex-col items-stretch justify-center">
+                <HomeCodeDemo />
+            </PageContainer>
         </section>
     );
 };

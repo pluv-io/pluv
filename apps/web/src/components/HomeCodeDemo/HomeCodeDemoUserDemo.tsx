@@ -3,6 +3,9 @@ import { oneLine } from "common-tags";
 import type { CSSProperties, FC } from "react";
 import { HomeCodeDemoBrowser } from "./HomeCodeDemoBrowser";
 
+const USER1 = "user 1";
+const USER2 = "user 2";
+
 export interface HomeCodeDemoUserDemoProps {
     className?: string;
     style?: CSSProperties;
@@ -37,7 +40,7 @@ export const HomeCodeDemoUserDemo: FC<HomeCodeDemoUserDemoProps> = ({ className,
                     sm:last:rounded-l-md
                 `}
                 id="user1"
-                user="jane"
+                user="User 1"
             />
             <HomeCodeDemoBrowser
                 className={oneLine`
@@ -51,7 +54,7 @@ export const HomeCodeDemoUserDemo: FC<HomeCodeDemoUserDemoProps> = ({ className,
                     sm:last:rounded-l-md
                 `}
                 id="user2"
-                user="john"
+                user="User 2"
             />
         </div>
     );

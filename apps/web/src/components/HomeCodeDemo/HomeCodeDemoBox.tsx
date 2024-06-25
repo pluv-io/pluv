@@ -76,7 +76,7 @@ export const HomeCodeDemoBox = forwardRef<HTMLDivElement, HomeCodeDemoBoxProps>(
                             px-1.5
                         `}
                     >
-                        <span className="text-sm font-semibold">{user}</span>
+                        <span className="whitespace-nowrap text-sm font-semibold">{user}</span>
                         <div
                             className={oneLine`
                                 absolute

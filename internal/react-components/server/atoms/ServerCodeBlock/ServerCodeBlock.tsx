@@ -5,12 +5,12 @@ import type { FC } from "react";
 import type { ShikiLanguage } from "../../../utils/getShiki";
 import { getShiki } from "../../../utils/getShiki";
 
-export type CodeBlockProps = InferComponentProps<"div"> & {
+export type ServerCodeBlockProps = InferComponentProps<"div"> & {
     code: string;
     lang: ShikiLanguage;
 };
 
-export const CodeBlock: FC<CodeBlockProps> = async ({ className, lang, code, ...restProps }) => {
+export const ServerCodeBlock: FC<ServerCodeBlockProps> = async ({ className, lang, code, ...restProps }) => {
     const highlighter = await getShiki();
     const html = highlighter.codeToHtml(code, {
         lang,
