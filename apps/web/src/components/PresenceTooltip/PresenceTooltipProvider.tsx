@@ -1,10 +1,15 @@
+import { debounce } from "@pluv-internal/utils";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
-import { useMemo, type FC, type ReactNode } from "react";
+import type { Dispatch, FC, ReactNode, SetStateAction } from "react";
+import { useMemo } from "react";
 import { useMyPresence, useOthers } from "../../pluv-io/cloudflare";
 import { PresenceTooltipProviderContext } from "./PresenceTooltipProviderContext";
 
+const DEFAULT_DEBOUNCE_MS = 50;
+
 export interface PresenceTooltipProviderProps {
     children?: ReactNode;
+    debounce?: number;
     delayDuration?: number;
     disableHoverableContent?: boolean;
     skipDelayDuration?: number;
@@ -12,13 +17,13 @@ export interface PresenceTooltipProviderProps {
 
 export const PresenceTooltipProvider: FC<PresenceTooltipProviderProps> = ({
     children,
-    delayDuration = 150,
+    debounce: debounceMs = DEFAULT_DEBOUNCE_MS,
     disableHoverableContent,
     skipDelayDuration,
 }) => {
-    const selections = useOthers((others) => {
-        console.log("others", others);
+    const [selectedId, setPresence] = useMyPresence((presence) => presence.selectionId);
 
+    const selections = useOthers((others) => {
         return others.reduce<{ [selectionId: string]: number }>((map, other) => {
             const selectionId = other.presence.selectionId;
 
@@ -37,10 +42,25 @@ export const PresenceTooltipProvider: FC<PresenceTooltipProviderProps> = ({
         }, {});
     });
 
+    const setSelectedId = useMemo((): Dispatch<SetStateAction<string | null>> => {
+        return debounce(
+            (newSelectedId: SetStateAction<string | null>) => {
+                setPresence((prevPresence) => ({
+                    selectionId:
+                        typeof newSelectedId === "function"
+                            ? newSelectedId(prevPresence?.selectionId ?? null)
+                            : newSelectedId,
+                }));
+            },
+            { wait: debounceMs },
+        );
+    }, [debounceMs, setPresence]);
+
+    const state = useMemo(() => ({ selectedId, selections, setSelectedId }), [selectedId, selections, setSelectedId]);
+
     return (
-        <PresenceTooltipProviderContext.Provider value={selections}>
+        <PresenceTooltipProviderContext.Provider value={state}>
             <RadixTooltip.Provider
-                delayDuration={delayDuration}
                 disableHoverableContent={disableHoverableContent}
                 skipDelayDuration={skipDelayDuration}
             >

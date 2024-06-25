@@ -4,7 +4,7 @@ import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import type { CSSProperties } from "react";
 import { memo } from "react";
-import { HomeDemo } from "../HeroDemo";
+import { HomeDemo } from "../HomeDemo";
 
 export interface HomeHeroProps {
     className?: string;

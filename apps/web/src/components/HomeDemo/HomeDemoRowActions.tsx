@@ -9,11 +9,13 @@ import { debounce } from "@pluv-internal/utils";
 import { yjs } from "@pluv/crdt-yjs";
 import type { Row, Table } from "@tanstack/react-table";
 import ms from "ms";
-import { useCallback, useMemo } from "react";
-import { useRoom, useStorage } from "../../pluv-io/cloudflare";
+import { useCallback, useMemo, useState } from "react";
+import { useMyPresence, useRoom, useStorage } from "../../pluv-io/cloudflare";
 import { MAX_TASKS_COUNT } from "./constants";
 import { labels, priorities, statuses } from "./data";
 import { taskSchema } from "./schema";
+import { PresenceTooltip } from "../PresenceTooltip";
+import { usePresenceTooltip } from "../../react-hooks/usePresenceToolip";
 
 interface DataTableRowActionsProps<TData> {
     row: Row<TData>;
@@ -23,6 +25,12 @@ interface DataTableRowActionsProps<TData> {
 export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTableRowActionsProps<TData>) => {
     const task = taskSchema.parse(row.original);
     const index = row.index;
+    const selectionId = `home-demo-actions-${task.id}`;
+
+    const [selectedId, setSelectedId] = usePresenceTooltip();
+    const selected = selectedId === selectionId;
+
+    const [focused, setFocused] = useState<boolean>(false);
 
     const rerender = useRerender();
     const room = useRoom();
@@ -33,8 +41,6 @@ export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTa
             async () => {
                 const tasks = room.getStorage("demoTasks");
                 const count = tasks?.length ?? 0;
-
-                console.log("activated", count);
 
                 if (count >= MAX_TASKS_COUNT) {
                     toast.error("Task limit reached");
@@ -65,13 +71,36 @@ export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTa
     }, [getSelectedIndices, index, sharedType]);
 
     return (
-        <DropdownMenu>
-            <DropdownMenu.Trigger asChild>
-                <Button variant="ghost" className="flex size-8 p-0 data-[state=open]:bg-muted">
-                    <DotsHorizontalIcon className="size-4" />
-                    <span className="sr-only">Open menu</span>
-                </Button>
-            </DropdownMenu.Trigger>
+        <DropdownMenu
+            onOpenChange={(newOpen) => {
+                if (!newOpen && selectedId !== selectionId) return;
+
+                console.log("test1", selectionId, selectedId);
+
+                setSelectedId(newOpen ? selectionId : null);
+            }}
+            open={selected}
+        >
+            <PresenceTooltip selected={focused || selectedId === selectionId} selectionId={selectionId}>
+                <PresenceTooltip.Trigger>
+                    <DropdownMenu.Trigger asChild>
+                        <Button
+                            onBlur={() => {
+                                setFocused(false);
+                            }}
+                            onFocus={() => {
+                                setFocused(true);
+                            }}
+                            variant="ghost"
+                            className="flex size-8 p-0 data-[state=open]:bg-muted"
+                        >
+                            <DotsHorizontalIcon className="size-4" />
+                            <span className="sr-only">Open menu</span>
+                        </Button>
+                    </DropdownMenu.Trigger>
+                </PresenceTooltip.Trigger>
+                <PresenceTooltip.Content />
+            </PresenceTooltip>
             <DropdownMenu.Content align="end" className="w-[160px]">
                 <DropdownMenu.Item>Edit</DropdownMenu.Item>
                 <DropdownMenu.Item

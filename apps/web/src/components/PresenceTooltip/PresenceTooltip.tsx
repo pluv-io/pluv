@@ -5,7 +5,7 @@ import { getMaxContrast } from "@pluv-internal/utils";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
 import type { FC } from "react";
 import { useContext, useMemo } from "react";
-import { useConnection, useMyPresence, useOthers } from "../../pluv-io/cloudflare";
+import { useConnection, useOthers } from "../../pluv-io/cloudflare";
 import { PresenceTooltipContext } from "./PresenceTooltipContext";
 import { PresenceTooltipProviderContext } from "./PresenceTooltipProviderContext";
 
@@ -25,13 +25,17 @@ const createLinearGradient = (color1: string, color2: string): string => {
 };
 
 export type PresenceTooltipProps = RadixTooltip.TooltipProps & {
+    selected?: boolean;
     selectionId: string;
 };
 
 export const PresenceTooltip: FC<PresenceTooltipProps> = (props) => {
-    const { selectionId, ...restProps } = props;
+    const { selected: _selected, selectionId, ...restProps } = props;
 
-    const [userSelected] = useMyPresence((presence) => presence.selectionId === selectionId);
+    const { selectedId, selections, setSelectedId } = useContext(PresenceTooltipProviderContext);
+    const controlled = typeof _selected === "boolean";
+    const selected = _selected ?? selectedId === selectionId;
+
     const userConnectionId = useConnection((connection) => connection.id);
     const othersConnectionIds = useOthers((others) => {
         return others
@@ -39,12 +43,11 @@ export const PresenceTooltip: FC<PresenceTooltipProps> = (props) => {
             .map(({ connectionId }) => connectionId);
     });
     const connectionIds = useMemo(
-        () => [...othersConnectionIds, ...(userSelected ? [userConnectionId] : [])],
-        [othersConnectionIds, userConnectionId, userSelected],
+        () => [...othersConnectionIds, ...(selected ? [userConnectionId] : [])],
+        [othersConnectionIds, selected, userConnectionId],
     );
     const hasConnections = !!connectionIds.length;
 
-    const selections = useContext(PresenceTooltipProviderContext);
     const count = selections[selectionId] ?? 0;
 
     const colors = useMemo(
@@ -63,7 +66,10 @@ export const PresenceTooltip: FC<PresenceTooltipProps> = (props) => {
         return minColor === maxColor ? minColor : createLinearGradient(minColor, maxColor);
     }, [hasConnections, minColor, maxColor]);
 
-    const state = useMemo(() => ({ color, count, selectionId }), [color, count, selectionId]);
+    const state = useMemo(
+        () => ({ color, controlled, count, selected, selectedId, selectionId, setSelectedId }),
+        [color, controlled, count, selected, selectedId, selectionId, setSelectedId],
+    );
 
     return (
         <PresenceTooltipContext.Provider value={state}>

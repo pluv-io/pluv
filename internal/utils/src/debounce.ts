@@ -7,7 +7,7 @@ export const debounce = <TFunc extends (...args: any[]) => any>(
     let timeout: any = null;
 
     /* eslint-disable func-names */
-    return function (...args: Parameters<TFunc>): void {
+    return (...args: Parameters<TFunc>): void => {
         /* eslint-enable func-names */
 
         if (timeout !== null && typeof timeout !== "undefined") clearTimeout(timeout);
@@ -15,7 +15,7 @@ export const debounce = <TFunc extends (...args: any[]) => any>(
         timeout = setTimeout(() => {
             timeout = null;
 
-            if (!immediate) fn(args);
+            if (!immediate) fn(...args);
         }, wait);
 
         if (immediate && !timeout) fn(args);

@@ -14,7 +14,7 @@ export { PresenceTooltipTrigger } from "./PresenceTooltipTrigger";
 export type { PresenceTooltipTriggerProps } from "./PresenceTooltipTrigger";
 
 export const PresenceTooltip = Object.assign(BasePresenceTooltip, {
-    PresenceTooltipContent,
-    PresenceTooltipProvider,
-    PresenceTooltipTrigger,
+    Content: PresenceTooltipContent,
+    Provider: PresenceTooltipProvider,
+    Trigger: PresenceTooltipTrigger,
 });

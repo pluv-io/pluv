@@ -1,15 +1,17 @@
 "use client";
 
-import { DataTable } from "@pluv-internal/react-components/client";
+import { Avatar, DataTable, Separator } from "@pluv-internal/react-components/client";
 import { Anchor, Card } from "@pluv-internal/react-components/either";
 import { cn } from "@pluv-internal/utils";
 import type { Table as ReactTable } from "@tanstack/react-table";
 import type { FC } from "react";
 import { useState } from "react";
+import { useStorage } from "../../pluv-io/cloudflare";
 import { HomeDemoColumns } from "./HomeDemoColumns";
 import { HomeDemoToolbar } from "./HomeDemoToolbar";
+import { HomeDemoUserNav } from "./HomeDemoUserNav";
 import type { Task } from "./schema";
-import { useStorage } from "../../pluv-io/cloudflare";
+import { HomeDemoOthers } from "./HomeDemoOthers";
 
 export interface HomeDemoProps {
     className?: string;
@@ -21,11 +23,18 @@ export const HomeDemo: FC<HomeDemoProps> = ({ className }) => {
 
     return (
         <Card className={cn("shadow-md", className)}>
-            <Card.Header>
-                <Card.Title className="text-2xl">Welcome back!</Card.Title>
-                <Card.Description className="text-base">
-                    Experiences like these should be collaborative. Click around!
-                </Card.Description>
+            <Card.Header className="flex flex-col items-center justify-between gap-4 space-y-2 md:flex-row">
+                <div className="flex flex-col items-start self-start md:self-center">
+                    <Card.Title className="text-2xl">Welcome back!</Card.Title>
+                    <Card.Description className="text-base">
+                        Experiences like these should be collaborative. Click around!
+                    </Card.Description>
+                </div>
+                <div className="flex items-center space-x-2 self-end md:self-center">
+                    <HomeDemoOthers />
+                    <Separator className="h-7" orientation="vertical" />
+                    <HomeDemoUserNav />
+                </div>
             </Card.Header>
             <Card.Content>
                 <HomeDemoToolbar table={table} />

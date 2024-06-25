@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import fs from "fs-extra";
 import path from "path";
-import { labels, priorities, statuses } from "../src/components/HeroDemo/data";
+import { labels, priorities, statuses } from "../src/components/HomeDemo/data";
 
 faker.seed(1);
 
