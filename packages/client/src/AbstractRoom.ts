@@ -3,7 +3,7 @@ import type { IOLike, Id, InferIOInput, InferIOOutput, JsonObject } from "@pluv/
 import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
 import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
-import type { UserInfo, WebSocketConnection } from "./types";
+import type { UpdateMyPresenceAction, UserInfo, WebSocketConnection } from "./types";
 
 export abstract class AbstractRoom<
     TIO extends IOLike,
@@ -70,5 +70,5 @@ export abstract class AbstractRoom<
 
     public abstract undo(): void;
 
-    public abstract updateMyPresence(presence: Partial<TPresence>): void;
+    public abstract updateMyPresence(presence: UpdateMyPresenceAction<TPresence>): void;
 }
