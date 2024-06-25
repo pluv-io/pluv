@@ -350,16 +350,7 @@ export const createRoomBundle = <
             options?.isEqual ?? fastDeepEqual,
         );
 
-        const updateMyPresence: Dispatch<UpdateMyPresenceAction<TPresence>> = useCallback(
-            (value: UpdateMyPresenceAction<TPresence>): void => {
-                const presence = typeof value === "function" ? value(room.getMyPresence()) : value;
-
-                room.updateMyPresence(presence);
-            },
-            [room],
-        );
-
-        return [myPresence, updateMyPresence];
+        return [myPresence, room.updateMyPresence];
     };
 
     const useMyself = <T extends unknown = UserInfo<TIO, TPresence>>(
