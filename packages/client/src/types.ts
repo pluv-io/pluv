@@ -17,6 +17,16 @@ export interface InternalSubscriptions {
     observeCrdt: (() => void) | null;
 }
 
+export type UpdateMyPresenceAction<TPresence extends JsonObject> =
+    | Partial<TPresence>
+    | ((oldPresence: TPresence | null) => Partial<TPresence>);
+
+export interface UserInfo<TIO extends IOLike, TPresence extends JsonObject = {}> {
+    connectionId: string;
+    presence: TPresence;
+    user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>;
+}
+
 export interface WebSocketConnection {
     count: number;
     id: string | null;
@@ -27,10 +37,4 @@ export interface WebSocketState<TIO extends IOLike> {
     authorization: AuthorizationState<TIO>;
     connection: WebSocketConnection;
     webSocket: WebSocket | null;
-}
-
-export interface UserInfo<TIO extends IOLike, TPresence extends JsonObject = {}> {
-    connectionId: string;
-    presence: TPresence;
-    user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>;
 }

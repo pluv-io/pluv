@@ -12,7 +12,13 @@ import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifie
 import { StateNotifier } from "./StateNotifier";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
-import type { InternalSubscriptions, UserInfo, WebSocketConnection, WebSocketState } from "./types";
+import type {
+    InternalSubscriptions,
+    UpdateMyPresenceAction,
+    UserInfo,
+    WebSocketConnection,
+    WebSocketState,
+} from "./types";
 import { ConnectionState } from "./types";
 
 export type MockedRoomEvents<TIO extends IOLike> = Partial<{
@@ -111,10 +117,10 @@ export class MockedRoom<
         return this._eventNotifier.subscribe(event, callback);
     };
 
-    public getConnection(): WebSocketConnection {
+    public getConnection = (): WebSocketConnection => {
         // Create a read-only clone of the connection state
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
-    }
+    };
 
     public getDoc(): AbstractCrdtDoc<TStorage> {
         return this._crdtManager.doc;
@@ -199,8 +205,10 @@ export class MockedRoom<
         this._crdtManager.doc.undo();
     };
 
-    public updateMyPresence = (presence: Partial<TPresence>): void => {
-        this._usersManager.updateMyPresence(presence);
+    public updateMyPresence = (presence: UpdateMyPresenceAction<TPresence>): void => {
+        const newPresence = typeof presence === "function" ? presence(this.getMyPresence()) : presence;
+
+        this._usersManager.updateMyPresence(newPresence);
 
         const myPresence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
