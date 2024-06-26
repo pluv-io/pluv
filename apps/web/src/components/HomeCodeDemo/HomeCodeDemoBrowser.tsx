@@ -6,6 +6,7 @@ import { useCallback, useContext, useMemo, useState } from "react";
 import { HomeCodeDemoBox } from "./HomeCodeDemoBox";
 import type { HomeCodeDemoPosition, HomeCodeDemoSelections } from "./context";
 import { HomeCodeDemoContext } from "./context";
+import { Card } from "@pluv-internal/react-components/either";
 
 const didClickIn = (element: HTMLDivElement | null, event: MouseEvent<HTMLDivElement>): boolean => {
     return !element || element.contains(event.target as Node | null);
@@ -57,7 +58,7 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({ className, i
     );
 
     return (
-        <div
+        <Card
             ref={rootRef}
             className={cn(
                 oneLine`
@@ -66,9 +67,7 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({ className, i
                     items-center
                     justify-center
                     overflow-hidden
-                    border
-                    border-solid
-                    border-indigo-500/40
+                    shadow-md
                 `,
                 className,
             )}
@@ -185,6 +184,6 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({ className, i
                     user={other === "second" ? otherUser : null}
                 />
             </DndContext>
-        </div>
+        </Card>
     );
 };

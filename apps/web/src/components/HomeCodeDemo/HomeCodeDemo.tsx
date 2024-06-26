@@ -238,50 +238,32 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                         <Tabs.Trigger value="client/pluv.ts">client/pluv.ts</Tabs.Trigger>
                         <Tabs.Trigger value="server/pluv.ts">server/pluv.ts</Tabs.Trigger>
                     </Tabs.List>
-                    <Tabs.Content
-                        asChild
-                        className="flex min-h-0 grow basis-0 flex-col items-stretch overflow-y-auto"
-                        value="Room.tsx"
-                    >
-                        <Card>
-                            <CodeBlock className="flex grow flex-col [&_pre]:grow" code={codeRoomTsx} lang="tsx" />
-                        </Card>
-                    </Tabs.Content>
-                    <Tabs.Content
-                        asChild
-                        className="flex min-h-0 grow basis-0 flex-col items-stretch overflow-y-auto"
-                        value="Provider.tsx"
-                    >
-                        <Card>
-                            <CodeBlock className="flex grow flex-col [&_pre]:grow" code={codeProviderTsx} lang="tsx" />
-                        </Card>
-                    </Tabs.Content>
-                    <Tabs.Content
-                        asChild
-                        className="flex min-h-0 grow basis-0 flex-col items-stretch overflow-y-auto"
-                        value="client/pluv.ts"
-                    >
-                        <Card>
+                    <Card className="flex min-h-0 grow basis-0 flex-col items-stretch overflow-y-auto shadow-md">
+                        <Tabs.Content asChild value="Room.tsx">
+                            <CodeBlock className="mt-0 flex grow flex-col [&_pre]:grow" code={codeRoomTsx} lang="tsx" />
+                        </Tabs.Content>
+                        <Tabs.Content asChild value="Provider.tsx">
                             <CodeBlock
-                                className="flex grow flex-col [&_pre]:grow"
+                                className="mt-0 flex grow flex-col [&_pre]:grow"
+                                code={codeProviderTsx}
+                                lang="tsx"
+                            />
+                        </Tabs.Content>
+                        <Tabs.Content asChild value="client/pluv.ts">
+                            <CodeBlock
+                                className="mt-0 flex grow flex-col [&_pre]:grow"
                                 code={codeClientPluvTs}
                                 lang="typescript"
                             />
-                        </Card>
-                    </Tabs.Content>
-                    <Tabs.Content
-                        asChild
-                        className="flex min-h-0 grow basis-0 flex-col items-stretch overflow-y-auto"
-                        value="server/pluv.ts"
-                    >
-                        <Card>
+                        </Tabs.Content>
+                        <Tabs.Content asChild value="server/pluv.ts">
                             <CodeBlock
-                                className="flex grow flex-col [&_pre]:grow"
+                                className="mt-0 flex grow flex-col [&_pre]:grow"
                                 code={codeServerPluvTs}
                                 lang="typescript"
                             />
-                        </Card>
-                    </Tabs.Content>
+                        </Tabs.Content>
+                    </Card>
                 </Tabs>
                 {/* <MultiPrismCode
                         className={oneLine`
