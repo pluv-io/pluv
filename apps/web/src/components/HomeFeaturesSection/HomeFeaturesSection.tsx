@@ -1,4 +1,4 @@
-import { PageContainer } from "@pluv-internal/react-components/either";
+import { Anchor, PageContainer } from "@pluv-internal/react-components/either";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import type { CSSProperties, FC } from "react";
@@ -36,27 +36,47 @@ export const HomeFeaturesSection: FC<HomeFeaturesSectionProps> = ({ className, s
             >
                 <HomeFeaturesSectionFeature
                     description="Get auto-completion and in-code errors with end-to-end type-safety."
-                    title="Type-safety"
+                    title="Automatic Type-safety"
                 />
                 <HomeFeaturesSectionFeature
                     description="Build for either Cloudflare Workers or Node.js runtimes."
                     title="Multi-runtime"
                 />
                 <HomeFeaturesSectionFeature
-                    description="Edit shared data and documents with the Yjs ecosystem."
-                    title="Yjs CRDT"
+                    description="Edit shared data and documents with the Yjs or Loro ecosystems."
+                    title="Multi-CRDT"
                 />
                 <HomeFeaturesSectionFeature
-                    description="Display user selections with per-user presence states."
+                    description="Have users directly interact with eachother in realtime with per-user states."
                     title="Presence"
                 />
                 <HomeFeaturesSectionFeature
-                    description="Add your own custom authentication rules to rooms."
-                    title="Authentication"
+                    description="Add your own custom authentication rules to rooms and give each user their own identity."
+                    title="Authentication & Identity"
                 />
                 <HomeFeaturesSectionFeature
-                    description="Broadcast custom events to connected clients in the same room."
-                    title="Broadcast"
+                    description={
+                        <span>
+                            Pluv is designed for self-hosting first with documented instructions{" "}
+                            <Anchor
+                                href="/docs/io/node-js"
+                                title="Node.js"
+                                aria-description="Node.js hosting instructions"
+                            >
+                                here
+                            </Anchor>{" "}
+                            and{" "}
+                            <Anchor
+                                href="/docs/io/cloudflare-workers"
+                                title="Cloudflare"
+                                aria-description="Cloudflare hosting instructions"
+                            >
+                                here
+                            </Anchor>
+                            .
+                        </span>
+                    }
+                    title="No Vendor Lock"
                 />
             </PageContainer>
         </section>

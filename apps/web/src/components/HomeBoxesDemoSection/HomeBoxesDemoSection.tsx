@@ -19,13 +19,13 @@ export const HomeBoxesDemoSection: FC<HomeBoxesDemoSectionProps> = ({ className,
                     flex-col
                     items-center
                     text-center
-                    text-3xl
+                    text-2xl
                     font-bold
                     leading-tight
-                    md:text-5xl
+                    md:text-3xl
                 `}
             >
-                <h2>Simple-to-use APIs</h2>
+                <h2>Developer-Focused APIs</h2>
             </PageContainer>
             <PageContainer
                 asChild
@@ -36,14 +36,12 @@ export const HomeBoxesDemoSection: FC<HomeBoxesDemoSectionProps> = ({ className,
                     flex-col
                     items-center
                     text-center
-                    text-lg
+                    text-sm
                     text-muted-foreground
+                    md:text-base
                 `}
             >
-                <h3>
-                    Configure your server and client to unlock intuitive APIs that allow you to focus on your end-user
-                    experience.
-                </h3>
+                <h3>Unlock powerful utilities to make building complex multiplayer experiences easier.</h3>
             </PageContainer>
             <PageContainer className="mt-12 flex w-full max-w-screen-xl flex-col items-stretch justify-center">
                 <HomeCodeDemo />

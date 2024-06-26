@@ -1,11 +1,11 @@
 import { Card } from "@pluv-internal/react-components/either";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
-import type { CSSProperties, FC } from "react";
+import type { CSSProperties, FC, ReactNode } from "react";
 
 export interface HomeFeaturesSectionFeatureProps {
     className?: string;
-    description: string;
+    description: ReactNode;
     style?: CSSProperties;
     title: string;
 }
@@ -36,7 +36,7 @@ export const HomeFeaturesSectionFeature: FC<HomeFeaturesSectionFeatureProps> = (
             style={style}
         >
             <h3 className="text-left text-lg font-bold md:text-xl">{title}</h3>
-            <p className="text-sm text-muted-foreground md:text-base">{description}</p>
+            <p className="text-sm leading-tight text-muted-foreground md:text-base">{description}</p>
         </Card>
     );
 };

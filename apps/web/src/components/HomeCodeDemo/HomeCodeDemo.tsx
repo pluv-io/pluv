@@ -72,21 +72,17 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
           children?: ReactNode;
         }
 
-        const initialPresence = { selection: null };
-
-        const initialStorage = () => ({
-          boxes: yjs.object({
-            first: yjs.object({ x: -48, y: 0 }),
-            second: yjs.object({ x: 48, y: 0 }),
-          }),
-        });
-
         export const Provider: FC<ProviderProps> = ({ children }) => {
           return (
             <PluvRoomProvider
-              initialPresence={initialPresence}
+              initialPresence={{ selection: null }}
               // Optionally override initial storage here
-              initialStorage={initialStorage}
+              initialStorage={() => ({
+                boxes: yjs.object({
+                  first: yjs.object({ x: -48, y: 0 }),
+                  second: yjs.object({ x: 48, y: 0 }),
+                }),
+              })}
               room="demo-room"
             >
               {children}
