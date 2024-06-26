@@ -27,10 +27,7 @@ export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTa
     const index = row.index;
     const selectionId = `home-demo-actions-${task.id}`;
 
-    const [selectedId, setSelectedId] = usePresenceTooltip();
-    const selected = selectedId === selectionId;
-
-    const [focused, setFocused] = useState<boolean>(false);
+    const { attributes } = usePresenceTooltip({ selectionId });
 
     const rerender = useRerender();
     const room = useRoom();
@@ -71,29 +68,11 @@ export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTa
     }, [getSelectedIndices, index, sharedType]);
 
     return (
-        <DropdownMenu
-            onOpenChange={(newOpen) => {
-                if (!newOpen && selectedId !== selectionId) return;
-
-                console.log("test1", selectionId, selectedId);
-
-                setSelectedId(newOpen ? selectionId : null);
-            }}
-            open={selected}
-        >
-            <PresenceTooltip selected={focused || selectedId === selectionId} selectionId={selectionId}>
+        <DropdownMenu>
+            <PresenceTooltip selectionId={selectionId}>
                 <PresenceTooltip.Trigger>
                     <DropdownMenu.Trigger asChild>
-                        <Button
-                            onBlur={() => {
-                                setFocused(false);
-                            }}
-                            onFocus={() => {
-                                setFocused(true);
-                            }}
-                            variant="ghost"
-                            className="flex size-8 p-0 data-[state=open]:bg-muted"
-                        >
+                        <Button variant="ghost" className="flex size-8 p-0 data-[state=open]:bg-muted">
                             <DotsHorizontalIcon className="size-4" />
                             <span className="sr-only">Open menu</span>
                         </Button>
@@ -101,7 +80,7 @@ export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTa
                 </PresenceTooltip.Trigger>
                 <PresenceTooltip.Content />
             </PresenceTooltip>
-            <DropdownMenu.Content align="end" className="w-[160px]">
+            <DropdownMenu.Content {...attributes} align="end" className="w-[160px]">
                 <DropdownMenu.Item>Edit</DropdownMenu.Item>
                 <DropdownMenu.Item
                     disabled={getSelectedIndices().length > 1}

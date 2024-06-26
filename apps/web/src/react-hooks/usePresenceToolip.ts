@@ -1,8 +1,14 @@
-import { useContext } from "react";
-import { PresenceTooltipProviderContext } from "../components/PresenceTooltip/PresenceTooltipProviderContext";
+import { useMemo } from "react";
+import { DATA_ATTR_SELECTION_ID } from "../components/PresenceTooltip/constants";
 
-export const usePresenceTooltip = () => {
-    const { selectedId, setSelectedId } = useContext(PresenceTooltipProviderContext);
+export interface UsePresenceTooltipParams {
+    selectionId: string;
+}
 
-    return [selectedId, setSelectedId] as const;
+export const usePresenceTooltip = (params: UsePresenceTooltipParams) => {
+    const { selectionId } = params;
+
+    const attributes = useMemo(() => ({ [DATA_ATTR_SELECTION_ID]: selectionId }), [selectionId]);
+
+    return { attributes };
 };

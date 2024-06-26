@@ -1,9 +1,10 @@
 import { debounce } from "@pluv-internal/utils";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
-import type { Dispatch, FC, ReactNode, SetStateAction } from "react";
-import { useMemo } from "react";
+import type { FC, ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMyPresence, useOthers } from "../../pluv-io/cloudflare";
 import { PresenceTooltipProviderContext } from "./PresenceTooltipProviderContext";
+import { getSelectionId } from "./getSelectionId";
 
 const DEFAULT_DEBOUNCE_MS = 50;
 
@@ -21,7 +22,14 @@ export const PresenceTooltipProvider: FC<PresenceTooltipProviderProps> = ({
     disableHoverableContent,
     skipDelayDuration,
 }) => {
-    const [selectedId, setPresence] = useMyPresence((presence) => presence.selectionId);
+    /**
+     * !HACK
+     * @description Track selectedId in react state instead of presence so that user's own perceived
+     * presence doesn't get debounced.
+     * @date June 25, 2024
+     */
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [, setPresence] = useMyPresence(() => true);
 
     const selections = useOthers((others) => {
         return others.reduce<{ [selectionId: string]: number }>((map, other) => {
@@ -42,21 +50,42 @@ export const PresenceTooltipProvider: FC<PresenceTooltipProviderProps> = ({
         }, {});
     });
 
-    const setSelectedId = useMemo((): Dispatch<SetStateAction<string | null>> => {
+    const updateSelectionId = useMemo(() => {
         return debounce(
-            (newSelectedId: SetStateAction<string | null>) => {
-                setPresence((prevPresence) => ({
-                    selectionId:
-                        typeof newSelectedId === "function"
-                            ? newSelectedId(prevPresence?.selectionId ?? null)
-                            : newSelectedId,
-                }));
+            (selectionId: string | null) => {
+                setPresence({ selectionId });
             },
             { wait: debounceMs },
         );
     }, [debounceMs, setPresence]);
 
-    const state = useMemo(() => ({ selectedId, selections, setSelectedId }), [selectedId, selections, setSelectedId]);
+    const state = useMemo(() => ({ selectedId, selections }), [selectedId, selections]);
+
+    useEffect(() => {
+        const handleFocusIn = () => {
+            const selectionId = getSelectionId(document.activeElement);
+
+            setSelectedId(selectionId);
+            updateSelectionId(selectionId);
+        };
+
+        const handleFocusOut = () => {
+            setTimeout(() => {
+                const selectionId = getSelectionId(document.activeElement);
+
+                setSelectedId(selectionId);
+                updateSelectionId(selectionId);
+            }, 0);
+        };
+
+        document.addEventListener("focusin", handleFocusIn);
+        document.addEventListener("focusout", handleFocusOut);
+
+        return () => {
+            document.removeEventListener("focusin", handleFocusIn);
+            document.removeEventListener("focusout", handleFocusOut);
+        };
+    }, [updateSelectionId]);
 
     return (
         <PresenceTooltipProviderContext.Provider value={state}>

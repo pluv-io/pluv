@@ -1,20 +1,11 @@
 import { Avatar } from "@pluv-internal/react-components/client";
-import { cn } from "@pluv-internal/utils";
+import { capitalize, cn } from "@pluv-internal/utils";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
 import { oneLine } from "common-tags";
-import type { ElementRef } from "react";
-import { forwardRef, memo, useContext } from "react";
+import type { CSSProperties, ElementRef } from "react";
+import { forwardRef, memo, useContext, useMemo } from "react";
 import { useOthers } from "../../pluv-io/cloudflare";
 import { PresenceTooltipContext } from "./PresenceTooltipContext";
-
-const MAX_AVATARS = 3;
-const OPACITY = 45;
-
-const getHexOpacity = (opacity: number): string => {
-    const clamped = Math.min(Math.max(Math.floor((opacity * 255) / 100), 0), 255);
-
-    return clamped.toString(16);
-};
 
 export type PresenceTooltipContentInnerProps = RadixTooltip.TooltipContentProps & {
     className?: string;
@@ -22,23 +13,29 @@ export type PresenceTooltipContentInnerProps = RadixTooltip.TooltipContentProps 
 
 export const PresenceTooltipContentInner = memo(
     forwardRef<ElementRef<typeof RadixTooltip.Content>, PresenceTooltipContentInnerProps>((props, ref) => {
-        const { children, className, side = "right", sideOffset = 6, style, ...restProps } = props;
+        const { align = "start", children, className, side = "top", sideOffset = 2, style, ...restProps } = props;
 
-        const { color, count, selectionId } = useContext(PresenceTooltipContext);
+        const { color, count, selected, selectionId } = useContext(PresenceTooltipContext);
+
+        const multiSelected = count + Number(selected) > 1;
 
         const connectionIds = useOthers((others) => {
             return others
                 .filter(({ presence }) => presence.selectionId === selectionId)
-                .map(({ connectionId }) => connectionId)
-                .slice(0, MAX_AVATARS);
+                .map(({ connectionId }) => connectionId);
         });
 
-        const plusOthers = Math.max(count - connectionIds.length, 0);
+        const connectionId: string | null = connectionIds[0] ?? null;
+        const firstOther = useMemo(
+            () => (!!count && !!connectionId ? `Anonymous ${capitalize(Avatar.Animal.getAnimal(connectionId))}` : null),
+            [connectionId, count],
+        );
 
         return (
             <RadixTooltip.Content
                 ref={ref}
                 {...restProps}
+                align={align}
                 side={side}
                 sideOffset={sideOffset}
                 className={cn(
@@ -49,13 +46,12 @@ export const PresenceTooltipContentInner = memo(
                         justify-center
                         overflow-hidden
                         rounded-md
-                        border-2
                         bg-card
                         px-2
                         py-0.5
                         text-center
                         text-xs
-                        text-card-foreground
+                        text-white
                         shadow-md
                         animate-in
                         fade-in-0
@@ -68,21 +64,19 @@ export const PresenceTooltipContentInner = memo(
                         data-[side=right]:slide-in-from-left-2
                         data-[side=top]:slide-in-from-bottom-2
                     `,
+                    multiSelected ? "bg-primary" : "bg-[var(--pluv-selection-bg)]",
                     className,
                 )}
                 style={{
-                    borderColor: `${color}${getHexOpacity(OPACITY)}`,
+                    ...(multiSelected || !color ? {} : ({ "--pluv-selection-bg": color } as CSSProperties)),
                     ...style,
                 }}
             >
-                <Avatar.Group>
-                    {connectionIds.map((connectionId) => (
-                        <Avatar key={connectionId} className="size-8">
-                            <Avatar.Animal className="size-8" data={connectionId} height={32} width={32} />
-                        </Avatar>
-                    ))}
-                    {!!plusOthers && <Avatar.Count className="size-8" count={plusOthers} />}
-                </Avatar.Group>
+                {selected && !count && "You"}
+                {selected && count === 1 && `You and ${firstOther}`}
+                {selected && count > 1 && `You and ${count.toLocaleString()} others`}
+                {!selected && count === 1 && `${firstOther}`}
+                {!selected && count > 1 && `${firstOther} and ${(count - 1).toLocaleString()} others`}
             </RadixTooltip.Content>
         );
     }),
