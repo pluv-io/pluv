@@ -36,6 +36,7 @@ export const {
     useOthers,
     useRoom,
     useStorage,
+    useTransact,
 } = createRoomBundle({
     presence: z.object({
         selectionId: z.string().nullable(),

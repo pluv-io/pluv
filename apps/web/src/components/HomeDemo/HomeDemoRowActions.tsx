@@ -9,13 +9,13 @@ import { debounce } from "@pluv-internal/utils";
 import { yjs } from "@pluv/crdt-yjs";
 import type { Row, Table } from "@tanstack/react-table";
 import ms from "ms";
-import { useCallback, useMemo, useState } from "react";
-import { useMyPresence, useRoom, useStorage } from "../../pluv-io/cloudflare";
+import { useCallback, useMemo } from "react";
+import { useRoom, useStorage, useTransact } from "../../pluv-io/cloudflare";
+import { usePresenceTooltip } from "../../react-hooks/usePresenceToolip";
+import { PresenceTooltip } from "../PresenceTooltip";
 import { MAX_TASKS_COUNT } from "./constants";
 import { labels, priorities, statuses } from "./data";
 import { taskSchema } from "./schema";
-import { PresenceTooltip } from "../PresenceTooltip";
-import { usePresenceTooltip } from "../../react-hooks/usePresenceToolip";
 
 interface DataTableRowActionsProps<TData> {
     row: Row<TData>;
@@ -31,6 +31,7 @@ export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTa
 
     const rerender = useRerender();
     const room = useRoom();
+    const transact = useTransact();
     const [, sharedType] = useStorage("demoTasks", (tasks) => tasks[index] ?? null);
 
     const copyTask = useMemo(() => {
@@ -60,12 +61,15 @@ export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTa
 
         return selected?.rows.map((selectedRow) => selectedRow.index) ?? [];
     }, [table]);
-    const getSelectedTaskSharedTypes = useCallback(() => {
-        const indices = getSelectedIndices();
-        return indices.length
-            ? indices.map((i) => sharedType?.value.get(i) ?? null)
-            : [sharedType?.value.get(index) ?? null];
-    }, [getSelectedIndices, index, sharedType]);
+    const getSelectedTaskSharedTypes = useCallback(
+        (crdtType?: typeof sharedType) => {
+            const crdt = crdtType ?? sharedType;
+
+            const indices = getSelectedIndices();
+            return indices.length ? indices.map((i) => crdt?.value.get(i) ?? null) : [crdt?.value.get(index) ?? null];
+        },
+        [getSelectedIndices, index, sharedType],
+    );
 
     return (
         <DropdownMenu>
@@ -100,10 +104,12 @@ export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTa
                     <DropdownMenu.SubContent>
                         <DropdownMenu.RadioGroup
                             onValueChange={(newValue) => {
-                                const taskSharedTypes = getSelectedTaskSharedTypes();
+                                transact((storage) => {
+                                    const taskSharedTypes = getSelectedTaskSharedTypes(storage.demoTasks);
 
-                                taskSharedTypes.forEach((taskSharedType) => {
-                                    taskSharedType?.set("label", newValue);
+                                    taskSharedTypes.forEach((taskSharedType) => {
+                                        taskSharedType?.set("label", newValue);
+                                    });
                                 });
 
                                 setTimeout(() => {
@@ -125,10 +131,12 @@ export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTa
                     <DropdownMenu.SubContent>
                         <DropdownMenu.RadioGroup
                             onValueChange={(newValue) => {
-                                const taskSharedTypes = getSelectedTaskSharedTypes();
+                                transact((storage) => {
+                                    const taskSharedTypes = getSelectedTaskSharedTypes(storage.demoTasks);
 
-                                taskSharedTypes.forEach((taskSharedType) => {
-                                    taskSharedType?.set("status", newValue);
+                                    taskSharedTypes.forEach((taskSharedType) => {
+                                        taskSharedType?.set("status", newValue);
+                                    });
                                 });
 
                                 setTimeout(() => {
@@ -150,10 +158,12 @@ export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTa
                     <DropdownMenu.SubContent>
                         <DropdownMenu.RadioGroup
                             onValueChange={(newValue) => {
-                                const taskSharedTypes = getSelectedTaskSharedTypes();
+                                transact((storage) => {
+                                    const taskSharedTypes = getSelectedTaskSharedTypes(storage.demoTasks);
 
-                                taskSharedTypes.forEach((taskSharedType) => {
-                                    taskSharedType?.set("priority", newValue);
+                                    taskSharedTypes.forEach((taskSharedType) => {
+                                        taskSharedType?.set("priority", newValue);
+                                    });
                                 });
 
                                 setTimeout(() => {
@@ -173,11 +183,13 @@ export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTa
                 <DropdownMenu.Separator />
                 <DropdownMenu.Item
                     onClick={() => {
-                        const indices = getSelectedIndices();
-                        const selectedIndices = indices.length ? indices : [index];
+                        transact((storage) => {
+                            const indices = getSelectedIndices();
+                            const selectedIndices = indices.length ? indices.slice() : [index];
 
-                        selectedIndices.forEach((i) => {
-                            sharedType?.delete(i);
+                            selectedIndices.reverse().forEach((i) => {
+                                storage.demoTasks?.delete(i);
+                            });
                         });
 
                         setTimeout(() => {
