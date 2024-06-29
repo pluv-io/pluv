@@ -47,7 +47,7 @@ export const HomeDemo: FC<HomeDemoProps> = ({ className }) => {
                 <DataTable.Pagination table={table} />
             </Card.Content>
             <Card.Footer className="justify-end whitespace-pre text-right text-xs text-muted-foreground">
-                Table taken from{" "}
+                Table adapted from{" "}
                 <Anchor
                     className="text-inherit"
                     href="https://ui.shadcn.com/examples/tasks"
