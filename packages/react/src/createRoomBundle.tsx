@@ -65,7 +65,7 @@ export type BroadcastProxy<TIO extends IOLike> = (<TEvent extends keyof InferIOI
     event: TEvent,
     data: Id<InferIOInput<TIO>[TEvent]>,
 ) => void) & {
-    [event in keyof InferIOInput<TIO>]: (callback: Id<InferIOInput<TIO>[event]>) => void;
+    [event in keyof InferIOInput<TIO>]: (input: Id<InferIOInput<TIO>[event]>) => void;
 };
 
 export type EventProxy<TIO extends IOLike> = {

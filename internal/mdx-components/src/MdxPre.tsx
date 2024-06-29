@@ -46,7 +46,12 @@ export const MdxPre: FC<MdxPreProps> = (props) => {
             {...(restProps as InferComponentProps<"div">)}
             className={cn(
                 oneLine`
+                    flex
                     w-full
+                    min-w-full
+                    flex-col
+                    items-stretch
+                    overflow-auto
                     rounded
                     border
                     border-border

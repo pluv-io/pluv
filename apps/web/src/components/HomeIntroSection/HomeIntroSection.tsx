@@ -2,6 +2,9 @@ import { PageContainer } from "@pluv-internal/react-components/either";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import type { CSSProperties, FC } from "react";
+import { HomeIntroStep1 } from "../HomeIntroStep1";
+import { HomeIntroStep2 } from "../HomeIntroStep2";
+import { HomeIntroStep3 } from "../HomeIntroStep3";
 
 export interface HomeIntroSectionProps {
     className?: string;
@@ -16,7 +19,7 @@ export const HomeIntroSection: FC<HomeIntroSectionProps> = ({ className, style }
                     flex
                     flex-col
                     items-center
-                    py-24
+                    py-20
                 `,
                 className,
             )}
@@ -29,13 +32,13 @@ export const HomeIntroSection: FC<HomeIntroSectionProps> = ({ className, style }
                     flex-col
                     items-center
                     text-center
-                    text-3xl
+                    text-2xl
                     font-bold
                     leading-tight
-                    md:text-5xl
+                    md:text-3xl
                 `}
             >
-                <h2>Multiplayer made easy</h2>
+                <h2>Developer-Focused APIs</h2>
             </PageContainer>
             <PageContainer
                 asChild
@@ -46,13 +49,18 @@ export const HomeIntroSection: FC<HomeIntroSectionProps> = ({ className, style }
                     flex-col
                     items-center
                     text-center
-                    text-lg
+                    text-sm
                     text-muted-foreground
+                    md:text-base
                 `}
             >
-                <h3>Pluv provides powerful utilities to make building complex multiplayer experiences easier.</h3>
+                <h3>Unlock powerful utilities to make building complex multiplayer experiences easier.</h3>
             </PageContainer>
-            <PageContainer className="mt-12 flex items-center justify-center" />
+            <div className="mt-12 flex w-full min-w-0 flex-col items-stretch gap-12 lg:gap-16">
+                <HomeIntroStep1 />
+                <HomeIntroStep2 />
+                <HomeIntroStep3 />
+            </div>
         </section>
     );
 };

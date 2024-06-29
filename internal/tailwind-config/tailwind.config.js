@@ -98,7 +98,7 @@ module.exports = {
             zIndex: zIndices.reduce(
                 (acc, zIndex, i) => ({
                     ...acc,
-                    [zIndex]: i,
+                    [zIndex]: i * 10,
                 }),
                 {},
             ),

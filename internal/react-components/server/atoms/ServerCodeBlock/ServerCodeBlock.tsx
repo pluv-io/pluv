@@ -26,6 +26,7 @@ export const ServerCodeBlock: FC<ServerCodeBlockProps> = async ({ className, lan
             className={cn(
                 oneLine`
                     [&>pre]:size-full
+                    [&>pre]:min-w-fit
                     [&>pre]:p-3
                 `,
                 className,

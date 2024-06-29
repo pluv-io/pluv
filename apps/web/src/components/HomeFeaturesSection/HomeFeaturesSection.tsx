@@ -17,7 +17,7 @@ export const HomeFeaturesSection: FC<HomeFeaturesSectionProps> = ({ className, s
                     flex
                     flex-col
                     items-center
-                    py-24
+                    py-20
                 `,
                 className,
             )}

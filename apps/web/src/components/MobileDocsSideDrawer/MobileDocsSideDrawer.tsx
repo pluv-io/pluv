@@ -16,7 +16,20 @@ export interface MobileDocsSideDrawerProps {
 
 export const MobileDocsSideDrawer: FC<MobileDocsSideDrawerProps> = ({ className, onClickLink, style }) => {
     return (
-        <SideDrawer className={cn("flex flex-col items-stretch", className)} style={style}>
+        <SideDrawer
+            className={cn(
+                oneLine`
+                    flex
+                    flex-col
+                    items-stretch
+                    [&>:last-child]:min-h-0
+                    [&>:last-child]:grow
+                    [&>:last-child]:overflow-y-auto
+                `,
+                className,
+            )}
+            style={style}
+        >
             <div
                 className={oneLine`
                     flex
@@ -38,7 +51,7 @@ export const MobileDocsSideDrawer: FC<MobileDocsSideDrawerProps> = ({ className,
                     </Button>
                 </SideDrawer.Close>
             </div>
-            <DocsTreeViewNavigation className="min-h-0 grow overflow-y-auto" onClickLink={onClickLink} />
+            <DocsTreeViewNavigation onClickLink={onClickLink} />
         </SideDrawer>
     );
 };

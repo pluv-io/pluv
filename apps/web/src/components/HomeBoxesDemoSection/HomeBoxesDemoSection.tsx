@@ -11,7 +11,7 @@ export interface HomeBoxesDemoSectionProps {
 
 export const HomeBoxesDemoSection: FC<HomeBoxesDemoSectionProps> = ({ className, style }) => {
     return (
-        <section className={cn("flex flex-col items-center py-24", className)} style={style}>
+        <section className={cn("flex flex-col items-center py-20", className)} style={style}>
             <PageContainer
                 asChild
                 className={oneLine`
@@ -25,7 +25,7 @@ export const HomeBoxesDemoSection: FC<HomeBoxesDemoSectionProps> = ({ className,
                     md:text-3xl
                 `}
             >
-                <h2>Developer-Focused APIs</h2>
+                <h2>Native-like Realtime Data</h2>
             </PageContainer>
             <PageContainer
                 asChild
@@ -41,7 +41,10 @@ export const HomeBoxesDemoSection: FC<HomeBoxesDemoSectionProps> = ({ className,
                     md:text-base
                 `}
             >
-                <h3>Unlock powerful utilities to make building complex multiplayer experiences easier.</h3>
+                <h3>
+                    Code as-if you&apos;re directly working with realtime data as any other data, as if it were a native
+                    frontend concept.
+                </h3>
             </PageContainer>
             <PageContainer className="mt-12 flex w-full max-w-screen-xl flex-col items-stretch justify-center">
                 <HomeCodeDemo />

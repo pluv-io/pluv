@@ -18,7 +18,7 @@ export const AppBar = forwardRef<HTMLDivElement, AppBarProps>((props, ref) => {
     const { scrollY, scrollYProgress } = useScroll();
     const focused = useWindowFocus();
 
-    const [isThreshold, setIsThreshold] = useState<boolean>(false);
+    const [isThreshold, setIsThreshold] = useState<boolean>(true);
 
     useEffect(() => {
         const getIsThreshold = (y: number) => {

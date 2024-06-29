@@ -6,6 +6,7 @@ import { SiteWideLayout } from "../components/SiteWideLayout";
 
 import "@pluv-internal/react-code/styles.css";
 import "@pluv-internal/react-components/styles.css";
+import "@shikijs/twoslash/style-rich.css";
 import "../styles/global.css";
 
 export const runtime: ServerRuntime = "edge";

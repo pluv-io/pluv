@@ -20,6 +20,7 @@ const withMdx = createMdx({
 const config = {
     experimental: {
         externalDir: true,
+        serverComponentsExternalPackages: ["@shikijs/twoslash"],
     },
     i18n: {
         locales: ["en-US"],

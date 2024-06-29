@@ -1,5 +1,4 @@
 import { oneLine } from "common-tags";
-import matter from "gray-matter";
 import type { Metadata, ResolvingMetadata, ServerRuntime } from "next";
 import type { FC } from "react";
 import { DocsCard } from "../../../components/DocsCard";
@@ -85,7 +84,21 @@ const getDocsProps = async (params: StaticParams) => {
             })
             .map((filePath) => {
                 const contents = fs.readFileSync(filePath, { encoding: "utf-8" });
-                const data = (matter(contents).data ?? null) as MetaJson | null;
+
+                /**
+                 * !HACK
+                 * @description Very manual hack to parse the metadata export out of the markdown
+                 * file. Because I'm too lazy to fix this more reasonably.
+                 * @date June 29, 2024
+                 */
+                const match =
+                    contents
+                        .match(/^export const metadata = ([\s\S]*?,?\n};)/i)?.[1]
+                        ?.replace(/,\n};/i, "\n}")
+                        .replace("title:", '"title":')
+                        .replace("description:", '"description":') ?? null;
+
+                const data = (match ? JSON.parse(match) : null) as MetaJson | null;
                 const name = filePath.replace(extname(filePath), "").replace(source, "").replace(/^\//, "");
                 const slug = name
                     .replace(/\s+/g, "-")

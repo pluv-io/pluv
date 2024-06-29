@@ -2,7 +2,7 @@ import { useAsync, useMountEffect } from "@pluv-internal/react-hooks";
 import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
-import { useMemo, type FC } from "react";
+import { forwardRef, useMemo } from "react";
 import type { ShikiLanguage } from "../../../utils/getShiki";
 import { getShiki } from "../../../utils/getShiki";
 
@@ -11,7 +11,9 @@ export type CodeBlockProps = InferComponentProps<"div"> & {
     lang: ShikiLanguage;
 };
 
-export const CodeBlock: FC<CodeBlockProps> = ({ className, lang, code, ...restProps }) => {
+export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>((props, ref) => {
+    const { className, lang, code, ...restProps } = props;
+
     const [{ result: highlighter }, { execute }] = useAsync(async () => await getShiki(), null);
 
     const html = useMemo(() => {
@@ -41,6 +43,9 @@ export const CodeBlock: FC<CodeBlockProps> = ({ className, lang, code, ...restPr
                 className,
             )}
             dangerouslySetInnerHTML={html ? { __html: html } : undefined}
+            ref={ref}
         />
     );
-};
+});
+
+CodeBlock.displayName = "CodeBlock";
