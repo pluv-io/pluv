@@ -2,6 +2,9 @@
     "name": "@pluv-apps/web",
     "version": "0.0.0",
     "private": true,
+    "sideEffects": [
+        "*.css"
+    ],
     "scripts": {
         "build": "pnpm run prepare && dotenv -- next build",
         "build:demo": "pnpm run script -- scripts/generate-demo-data",
