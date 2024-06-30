@@ -4,7 +4,7 @@ import { oneLine } from "common-tags";
 import type { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import { isValidElement } from "react";
 import { ShikiLanguage } from "../../utils/getShiki";
-import { CodeBlock } from "../CodeBlock";
+import { ServerCodeBlock } from "../ServerCodeBlock";
 
 export type MdxPreProps = InferComponentProps<"pre">;
 
@@ -46,7 +46,7 @@ export const MdxPre: FC<MdxPreProps> = (props) => {
     const language = (parseLanguage(className) ?? getChildrenLanguage(children) ?? "tsx") as ShikiLanguage;
 
     return (
-        <CodeBlock
+        <ServerCodeBlock
             {...(restProps as InferComponentProps<"div">)}
             className={cn(
                 oneLine`
