@@ -2,7 +2,7 @@ import { Card } from "@pluv-internal/react-components/either";
 import { cn } from "@pluv-internal/utils";
 import { codeBlock } from "common-tags";
 import type { FC } from "react";
-import { ServerCodeBlock } from "../ServerCodeBlock";
+import { TypeScriptServerCodeBlock } from "../TypeScriptServerCodeBlock";
 
 export interface HomeIntroStep5CodeProps {
     className?: string;
@@ -11,7 +11,7 @@ export interface HomeIntroStep5CodeProps {
 export const HomeIntroStep5Code: FC<HomeIntroStep5CodeProps> = ({ className }) => {
     return (
         <Card className={cn("flex flex-col items-stretch overflow-auto shadow-md", className)}>
-            <ServerCodeBlock
+            <TypeScriptServerCodeBlock
                 className="grow"
                 code={codeBlock`
                     import { pluv } from "./client";
@@ -45,7 +45,7 @@ export const HomeIntroStep5Code: FC<HomeIntroStep5CodeProps> = ({ className }) =
 
                             //
                 `}
-                lang="typescript"
+                lang="tsx"
                 twoslashOptions={{
                     extraFiles: {
                         "server.ts": codeBlock`

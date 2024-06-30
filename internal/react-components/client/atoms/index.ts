@@ -3,7 +3,6 @@ export * from "./AlertDialog";
 export * from "./AppBar";
 export * from "./Avatar";
 export * from "./Checkbox";
-export * from "./CodeBlock";
 export * from "./Command";
 export * from "./Dialog";
 export * from "./DropdownMenu";

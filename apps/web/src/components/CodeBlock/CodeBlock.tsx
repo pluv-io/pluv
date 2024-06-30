@@ -1,10 +1,12 @@
+"use client";
+
 import { useAsync, useMountEffect } from "@pluv-internal/react-hooks";
 import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import { forwardRef, useMemo } from "react";
-import type { ShikiLanguage } from "../../../utils/getShiki";
-import { getShiki } from "../../../utils/getShiki";
+import type { ShikiLanguage } from "../../utils/getShiki";
+import { getShiki } from "../../utils/getShiki";
 
 export type CodeBlockProps = InferComponentProps<"div"> & {
     code: string;

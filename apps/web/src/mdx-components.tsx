@@ -12,11 +12,11 @@ import {
     MdxLi,
     MdxOl,
     MdxP,
-    MdxPre,
     MdxTable,
     MdxUl,
 } from "@pluv-internal/mdx-components";
 import type { MDXComponents } from "mdx/types";
+import { MdxPre } from "./components/MdxPre";
 
 export function useMDXComponents(mdxComponents: MDXComponents): MDXComponents {
     return {
