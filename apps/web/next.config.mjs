@@ -21,6 +21,13 @@ const config = {
     experimental: {
         externalDir: true,
         serverComponentsExternalPackages: ["@shikijs/twoslash"],
+        /**
+         * !HACK
+         * @description This is to resolve ERR_REQUIRE_ESM outlined in this github issue comment
+         * @link https://github.com/vercel/next.js/issues/64434#issuecomment-2082964050
+         * @date June 29, 2024
+         */
+        optimizePackageImports: ["shiki"],
     },
     i18n: {
         locales: ["en-US"],

@@ -21,6 +21,8 @@ const withMdx = mdxPlugin({
 const config = {
     experimental: {
         externalDir: true,
+        serverComponentsExternalPackages: ["@shikijs/twoslash"],
+        optimizePackageImports: ["shiki"],
     },
     i18n: {
         locales: ["en-US"],

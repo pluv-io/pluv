@@ -1,5 +1,5 @@
 import { CircleLoaderIcon } from "@pluv-internal/react-icons";
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import { forwardRef } from "react";
 
@@ -17,8 +17,8 @@ export const Spinner = forwardRef<SVGSVGElement, SpinnerProps>((props, ref) => {
             viewBox="0 0 24 24"
             width={width}
             height={height}
-            ref={ref}
             {...props}
+            ref={ref}
         />
     );
 });
