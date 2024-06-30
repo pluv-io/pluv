@@ -1153,8 +1153,8 @@ importers:
         specifier: workspace:^
         version: link:../types
       path-to-regexp:
-        specifier: ^7.0.0
-        version: 7.0.0
+        specifier: ^6.2.2
+        version: 6.2.2
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20240620.0
@@ -1190,8 +1190,8 @@ importers:
         specifier: ^8.5.10
         version: 8.5.10
       path-to-regexp:
-        specifier: ^7.0.0
-        version: 7.0.0
+        specifier: ^6.2.2
+        version: 6.2.2
     devDependencies:
       '@pluv/tsconfig':
         specifier: workspace:^
@@ -1396,8 +1396,8 @@ importers:
         specifier: 14.2.4
         version: 14.2.4(@playwright/test@1.45.0)(react-dom@18.3.1)(react@18.3.1)
       path-to-regexp:
-        specifier: ^7.0.0
-        version: 7.0.0
+        specifier: ^6.2.2
+        version: 6.2.2
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -14284,12 +14284,6 @@ packages:
 
   /path-to-regexp@6.2.2:
     resolution: {integrity: sha512-GQX3SSMokngb36+whdpRXE+3f9V8UzyAorlYvOGx87ufGHehNTn5lCxrKtLyZ4Yl/wEKnNnr98ZzOwwDZV5ogw==}
-    dev: true
-
-  /path-to-regexp@7.0.0:
-    resolution: {integrity: sha512-58Y94bQqF3zBIASFNiufRPH1NfgZth1qwZ35radL87sg8pgbVqr6uikAhqZtFD+w65MGH6SWnY/ly3GbrM4fbg==}
-    engines: {node: '>=16'}
-    dev: false
 
   /path-type@4.0.0:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
