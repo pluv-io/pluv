@@ -338,6 +338,12 @@ importers:
       '@pluv-internal/utils':
         specifier: workspace:^
         version: link:../../internal/utils
+      '@pluv/io':
+        specifier: workspace:^
+        version: link:../../packages/io
+      '@pluv/platform-node':
+        specifier: workspace:^
+        version: link:../../packages/platform-node
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../../packages/tsconfig
