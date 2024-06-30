@@ -1,16 +1,17 @@
 "use client";
 
-import { CodeBlock, Tabs } from "@pluv-internal/react-components/client";
+import { Tabs } from "@pluv-internal/react-components/client";
+import { Card } from "@pluv-internal/react-components/either";
 import { useMediaQuery } from "@pluv-internal/react-hooks";
 import { cn } from "@pluv-internal/utils";
 import { codeBlock, oneLine } from "common-tags";
 import type { CSSProperties } from "react";
 import { memo, useEffect, useMemo, useState } from "react";
+import { CodeBlock } from "../CodeBlock";
 import { HomeCodeDemoUserDemo } from "./HomeCodeDemoUserDemo";
 import { BOX_SIZE, MOBILE_BOX_SIZE } from "./constants";
 import type { HomeCodeDemoPositions, HomeCodeDemoSelections } from "./context";
 import { HomeCodeDemoContext } from "./context";
-import { Card } from "@pluv-internal/react-components/either";
 
 export interface HomeCodeDemoProps {
     className?: string;
@@ -249,31 +250,18 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                             <CodeBlock
                                 className="mt-0 flex grow flex-col [&_pre]:grow"
                                 code={codeClientPluvTs}
-                                lang="typescript"
+                                lang="tsx"
                             />
                         </Tabs.Content>
                         <Tabs.Content asChild value="server/pluv.ts">
                             <CodeBlock
                                 className="mt-0 flex grow flex-col [&_pre]:grow"
                                 code={codeServerPluvTs}
-                                lang="typescript"
+                                lang="tsx"
                             />
                         </Tabs.Content>
                     </Card>
                 </Tabs>
-                {/* <MultiPrismCode
-                        className={oneLine`
-                            min-h-0
-                            min-w-0
-                            grow
-                            basis-0
-                            rounded-md
-                            border
-                            border-solid
-                            border-indigo-500/40
-                        `}
-                        tabs={tabs}
-                    /> */}
             </div>
         </HomeCodeDemoContext.Provider>
     );

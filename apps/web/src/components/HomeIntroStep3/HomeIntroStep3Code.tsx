@@ -39,7 +39,7 @@ export const HomeIntroStep3Code: FC<HomeIntroStep3CodeProps> = ({ className }) =
                       })),
                     });
                 `}
-                lang="typescript"
+                lang="tsx"
                 twoslashOptions={{
                     extraFiles: {
                         "server.ts": codeBlock`

@@ -2,7 +2,7 @@ import type { ServerRuntime } from "next";
 import type { FC, ReactNode } from "react";
 import { DocsLayout } from "../../components/DocsLayout";
 
-export const runtime: ServerRuntime = "edge";
+export const runtime: ServerRuntime = "nodejs";
 
 export interface LayoutProps {
     children?: ReactNode;

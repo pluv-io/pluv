@@ -29,7 +29,7 @@ export const HomeIntroStep2Code: FC<HomeIntroStep2CodeProps> = ({ className }) =
                     app.use(Pluv.handler);
                     server.listen(3000);
                 `}
-                lang="typescript"
+                lang="tsx"
                 twoslashOptions={{
                     extraFiles: {
                         "server.ts": codeBlock`

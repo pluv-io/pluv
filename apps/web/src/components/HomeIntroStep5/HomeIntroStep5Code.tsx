@@ -45,7 +45,7 @@ export const HomeIntroStep5Code: FC<HomeIntroStep5CodeProps> = ({ className }) =
 
                             //
                 `}
-                lang="typescript"
+                lang="tsx"
                 twoslashOptions={{
                     extraFiles: {
                         "server.ts": codeBlock`

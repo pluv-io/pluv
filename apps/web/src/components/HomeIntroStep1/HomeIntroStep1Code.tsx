@@ -36,7 +36,7 @@ export const HomeIntroStep1Code: FC<HomeIntroStep1CodeProps> = ({ className }) =
 
                     export type IOServer = typeof ioServer;
                 `}
-                lang="typescript"
+                lang="tsx"
                 twoslashOptions={{
                     shouldGetHoverInfo: (identifier) => {
                         return identifier === "name";

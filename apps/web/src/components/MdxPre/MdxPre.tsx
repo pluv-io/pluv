@@ -1,10 +1,10 @@
-import { ServerCodeBlock } from "@pluv-internal/react-components/server";
-import type { ShikiLanguage } from "@pluv-internal/react-components/types";
 import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import type { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import { isValidElement } from "react";
+import { ShikiLanguage } from "../../utils/getShiki";
+import { ServerCodeBlock } from "../ServerCodeBlock";
 
 export type MdxPreProps = InferComponentProps<"pre">;
 
@@ -21,7 +21,11 @@ const getChildrenText = (children: ReactNode): string => {
 };
 
 const parseLanguage = (className?: string): string | null => {
-    return className?.replace(/language-/, "") ?? null;
+    const parsed = className?.replace(/language-/, "") ?? null;
+
+    if (parsed === "ts" || parsed === "typescript") return "tsx";
+
+    return parsed;
 };
 
 const getChildrenLanguage = (children: ReactNode): string => {
