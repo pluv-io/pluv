@@ -1,4 +1,4 @@
-import { ServerCodeBlock } from "@pluv-internal/react-components/server";
+import { CodeBlock } from "@pluv-internal/react-components/client";
 import type { ShikiLanguage } from "@pluv-internal/react-components/types";
 import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
@@ -42,7 +42,7 @@ export const MdxPre: FC<MdxPreProps> = (props) => {
     const language = (parseLanguage(className) ?? getChildrenLanguage(children) ?? "tsx") as ShikiLanguage;
 
     return (
-        <ServerCodeBlock
+        <CodeBlock
             {...(restProps as InferComponentProps<"div">)}
             className={cn(
                 oneLine`
