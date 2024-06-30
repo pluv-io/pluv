@@ -6,7 +6,9 @@ export type ShikiTheme = "catppuccin-latte" | "catppuccin-macchiato";
 
 export const getShiki = async () => {
     // @ts-ignore
-    await loadWasm(import("shiki/onig.wasm"));
+    const wasmModule = await import("shiki/dist/onig.wasm?module");
+
+    await WebAssembly.instantiate(wasmModule);
 
     const highlighter = await getHighlighterCore({
         themes: [import("shiki/themes/catppuccin-latte.mjs"), import("shiki/themes/catppuccin-macchiato.mjs")],
