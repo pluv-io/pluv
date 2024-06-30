@@ -29,6 +29,6 @@
   "devDependencies": {
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.4",
-    "typescript": "^5.5.2"
+    "typescript": "^5.4.5"
   }
 }
