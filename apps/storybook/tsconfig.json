@@ -10,7 +10,6 @@
 			"@pluv-apps/server-cloudflare": ["../server-cloudflare/src"],
 			"@pluv-apps/web/components": ["../web/components"],
 			"@pluv-apps/web/pluv-io": ["../web/pluv-io"],
-			"@pluv-internal/react-code": ["../../internal/react-code/src"],
 			"@pluv-internal/react-components/client": ["../../internal/react-components/client"],
 			"@pluv-internal/react-components/either": ["../../internal/react-components/either"],
 			"@pluv-internal/react-components/server": ["../../internal/react-components/server"],

@@ -23,7 +23,6 @@
         "@mdx-js/react": "^3.0.1",
         "@pluv-apps/server-cloudflare": "workspace:^",
         "@pluv-internal/mdx-components": "workspace:^",
-        "@pluv-internal/react-code": "workspace:^",
         "@pluv-internal/react-components": "workspace:^",
         "@pluv-internal/react-hooks": "workspace:^",
         "@pluv-internal/react-icons": "workspace:^",

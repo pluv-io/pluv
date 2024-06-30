@@ -8,7 +8,6 @@ module.exports = {
             "./apps/storybook/src/**/*.tsx",
             "./apps/www/src/**/*.tsx",
             "./internal/react-components/**/*.tsx",
-            "./internal/react-code/**/*.tsx",
         ],
     },
 };

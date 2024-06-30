@@ -4,7 +4,6 @@ import type { Preview } from "@storybook/react";
 import { Inter } from "next/font/google";
 import React, { type ComponentType } from "react";
 
-import "@pluv-internal/react-code/styles.css";
 import "@pluv-internal/react-components/styles.css";
 import "../src/styles/tailwind.css";
 

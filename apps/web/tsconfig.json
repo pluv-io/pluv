@@ -18,9 +18,6 @@
       "@pluv-apps/server-cloudflare": [
         "../server-cloudflare/src"
       ],
-      "@pluv-internal/react-code": [
-        "../../internal/react-code/src"
-      ],
       "@pluv-internal/react-components/client": [
         "../../internal/react-components/client"
       ],

@@ -4,7 +4,6 @@ import { Inter } from "next/font/google";
 import type { FC, ReactNode } from "react";
 import { SiteWideLayout } from "../components/SiteWideLayout";
 
-import "@pluv-internal/react-code/styles.css";
 import "@pluv-internal/react-components/styles.css";
 import "@shikijs/twoslash/style-rich.css";
 import "../styles/global.css";
