@@ -45,6 +45,7 @@
     "NODE_ENV",
     "PLUV_AUTH_SECRET",
     "SEO",
+    "VERCEL_ENV",
     "VERCEL_URL"
   ]
 }

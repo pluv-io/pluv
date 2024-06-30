@@ -33,12 +33,16 @@ export const ServerCodeBlock: FC<ServerCodeBlockProps> = async ({
                 twoslashOptions: {
                     ...twoslashOptions,
                     compilerOptions: {
-                        paths: {
-                            "@pluv/crdt-yjs": ["../../packages/crdt-yjs/dist"],
-                            "@pluv/io": ["../../packages/io/dist"],
-                            "@pluv/platform-node": ["../../packages/platform-node/dist"],
-                            "@pluv/react": ["../../packages/react/dist"],
-                        },
+                        ...(process.env.VERCEL_ENV === "production"
+                            ? {}
+                            : {
+                                  paths: {
+                                      "@pluv/crdt-yjs": ["../../packages/crdt-yjs/dist"],
+                                      "@pluv/io": ["../../packages/io/dist"],
+                                      "@pluv/platform-node": ["../../packages/platform-node/dist"],
+                                      "@pluv/react": ["../../packages/react/dist"],
+                                  },
+                              }),
                         ...twoslashOptions?.compilerOptions,
                     },
                 },
