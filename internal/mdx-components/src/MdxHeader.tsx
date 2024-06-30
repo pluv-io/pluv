@@ -38,7 +38,7 @@ export const MdxHeader = forwardRef<HTMLHeadingElement, MdxHeaderProps>((props, 
             href={`#${hash}`}
             style={style}
         >
-            <HeaderType {...restProps} className="inline" id={hash} ref={ref}>
+            <HeaderType {...restProps} className="inline text-wrap" id={hash} ref={ref}>
                 {children}
                 <LinkIcon
                     className="ml-[0.3em] hidden size-[0.625em] opacity-0 transition-opacity duration-75 ease-in sm:inline"
