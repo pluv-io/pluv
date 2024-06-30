@@ -6,7 +6,7 @@ export type ShikiTheme = "catppuccin-latte" | "catppuccin-macchiato";
 
 export const getShiki = async () => {
     // @ts-ignore
-    const wasmModule = await import("shiki/dist/onig.wasm?module");
+    const wasmModule = await import("./onig.wasm?module");
 
     await WebAssembly.instantiate(wasmModule);
 
