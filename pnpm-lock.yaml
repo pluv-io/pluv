@@ -102,9 +102,6 @@ importers:
       '@pluv-apps/web':
         specifier: workspace:^
         version: link:../web
-      '@pluv-internal/react-code':
-        specifier: workspace:^
-        version: link:../../internal/react-code
       '@pluv-internal/react-components':
         specifier: workspace:^
         version: link:../../internal/react-components
@@ -238,9 +235,6 @@ importers:
       '@pluv-internal/mdx-components':
         specifier: workspace:^
         version: link:../../internal/mdx-components
-      '@pluv-internal/react-code':
-        specifier: workspace:^
-        version: link:../../internal/react-code
       '@pluv-internal/react-components':
         specifier: workspace:^
         version: link:../../internal/react-components
@@ -404,9 +398,6 @@ importers:
       '@mdx-js/react':
         specifier: ^3.0.1
         version: 3.0.1(@types/react@18.3.3)(react@18.3.1)
-      '@pluv-internal/react-code':
-        specifier: workspace:^
-        version: link:../react-code
       '@pluv-internal/react-components':
         specifier: workspace:^
         version: link:../react-components
@@ -443,76 +434,6 @@ importers:
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@pluv-internal/tailwind-config':
-        specifier: workspace:^
-        version: link:../tailwind-config
-      '@pluv-internal/typings':
-        specifier: workspace:^
-        version: link:../typings
-      '@pluv/tsconfig':
-        specifier: workspace:^
-        version: link:../../packages/tsconfig
-      autoprefixer:
-        specifier: ^10.4.19
-        version: 10.4.19(postcss@8.4.38)
-      eslint-config-pluv:
-        specifier: workspace:^
-        version: link:../../packages/eslint-config-pluv
-      postcss:
-        specifier: ^8.4.38
-        version: 8.4.38
-      tailwindcss:
-        specifier: ^3.4.3
-        version: 3.4.3(ts-node@10.9.2)
-      typescript:
-        specifier: ^5.4.5
-        version: 5.4.5
-
-  internal/react-code:
-    dependencies:
-      '@pluv-internal/react-hooks':
-        specifier: workspace:^
-        version: link:../react-hooks
-      '@pluv-internal/utils':
-        specifier: workspace:^
-        version: link:../utils
-      '@popperjs/core':
-        specifier: ^2.11.8
-        version: 2.11.8
-      '@radix-ui/react-tabs':
-        specifier: ^1.0.4
-        version: 1.0.4(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.3.1)(react@18.3.1)
-      '@types/common-tags':
-        specifier: ^1.8.4
-        version: 1.8.4
-      '@types/react':
-        specifier: ^18.3.3
-        version: 18.3.3
-      '@types/react-dom':
-        specifier: ^18.3.0
-        version: 18.3.0
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
-      common-tags:
-        specifier: ^1.8.2
-        version: 1.8.2
-      next:
-        specifier: ^14.2.4
-        version: 14.2.4(@playwright/test@1.45.0)(react-dom@18.3.1)(react@18.3.1)
-      prism-react-renderer:
-        specifier: ^2.3.1
-        version: 2.3.1(react@18.3.1)
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      react-popper:
-        specifier: ^2.3.0
-        version: 2.3.0(@popperjs/core@2.11.8)(react-dom@18.3.1)(react@18.3.1)
     devDependencies:
       '@pluv-internal/tailwind-config':
         specifier: workspace:^
@@ -4987,10 +4908,6 @@ packages:
     resolution: {integrity: sha512-j7P6Rgr3mmtdkeDGTe0E/aYyWEWVtc5yFXtHCRHs28/jptDEWfaVOc5T7cblqy1XKPPfCxJc/8DwQ5YgLOZOVQ==}
     dev: true
 
-  /@popperjs/core@2.11.8:
-    resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
-    dev: false
-
   /@prisma/client@5.14.0(prisma@5.14.0):
     resolution: {integrity: sha512-akMSuyvLKeoU4LeyBAUdThP/uhVP3GuLygFE3MlYzaCb3/J8SfsYBE5PkaFuLuVpLyA6sFoW+16z/aPhNAESqg==}
     engines: {node: '>=16.13'}
@@ -7664,10 +7581,6 @@ packages:
   /@types/pretty-hrtime@1.0.3:
     resolution: {integrity: sha512-nj39q0wAIdhwn7DGUyT9irmsKK1tV0bd5WFEhgpqNTMFZ8cE+jieuTphCW0tfdm47S2zVT5mr09B28b1chmQMA==}
     dev: true
-
-  /@types/prismjs@1.26.3:
-    resolution: {integrity: sha512-A0D0aTXvjlqJ5ZILMz3rNfDBOx9hHxLZYv2by47Sm/pqW35zzjusrZTryatjN/Rf8Us2gZrJD+KeHbUSTux1Cw==}
-    dev: false
 
   /@types/prop-types@15.7.12:
     resolution: {integrity: sha512-5zvhXYtRNRluoE/jAp4GVsSduVUzNWKkOZrCDBWYtE7biZywwdC2AcEzg+cSMLFRfVgeAFqpfNabiPjxFddV1Q==}
@@ -14878,16 +14791,6 @@ packages:
     resolution: {integrity: sha512-dKp+C4iXWK4vVYZmYSd0KBH5F/h1HoZRsbJ82AVKRO3PEo8L4lBS/vLwhVtpwwuYcoIsVY+1JYKR268yn480uQ==}
     dev: true
 
-  /prism-react-renderer@2.3.1(react@18.3.1):
-    resolution: {integrity: sha512-Rdf+HzBLR7KYjzpJ1rSoxT9ioO85nZngQEoFIhL07XhtJHlCU3SOz0GJ6+qvMyQe0Se+BV3qpe6Yd/NmQF5Juw==}
-    peerDependencies:
-      react: '>=16.0.0'
-    dependencies:
-      '@types/prismjs': 1.26.3
-      clsx: 2.1.1
-      react: 18.3.1
-    dev: false
-
   /prisma@5.14.0:
     resolution: {integrity: sha512-gCNZco7y5XtjrnQYeDJTiVZmT/ncqCr5RY1/Cf8X2wgLRmyh9ayPAGBNziI4qEE4S6SxCH5omQLVo9lmURaJ/Q==}
     engines: {node: '>=16.13'}
@@ -15103,10 +15006,6 @@ packages:
       react-is: 18.1.0
     dev: true
 
-  /react-fast-compare@3.2.0:
-    resolution: {integrity: sha512-rtGImPZ0YyLrscKI9xTpV8psd6I8VAtjKCzQDlzyDvqJA8XOW78TXYQwNRNd8g8JZnDu8q9Fu/1v4HPAVwVdHA==}
-    dev: false
-
   /react-hook-form@7.51.5(react@18.3.1):
     resolution: {integrity: sha512-J2ILT5gWx1XUIJRETiA7M19iXHlG74+6O3KApzvqB/w8S5NQR7AbU8HVZrMALdmDgWpRPYiZJl0zx8Z4L2mP6Q==}
     engines: {node: '>=12.22.0'}
@@ -15139,20 +15038,6 @@ packages:
   /react-is@18.3.1:
     resolution: {integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==}
     dev: true
-
-  /react-popper@2.3.0(@popperjs/core@2.11.8)(react-dom@18.3.1)(react@18.3.1):
-    resolution: {integrity: sha512-e1hj8lL3uM+sgSR4Lxzn5h1GxBlpa4CQz0XLF8kx4MDrDRWY0Ena4c97PUeSX9i5W3UAfDP0z0FXCTQkoXUl3Q==}
-    peerDependencies:
-      '@popperjs/core': ^2.0.0
-      react: ^16.8.0 || ^17 || ^18
-      react-dom: ^16.8.0 || ^17 || ^18
-    dependencies:
-      '@popperjs/core': 2.11.8
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      react-fast-compare: 3.2.0
-      warning: 4.0.3
-    dev: false
 
   /react-reconciler@0.29.2(react@18.3.1):
     resolution: {integrity: sha512-zZQqIiYgDCTP/f1N/mAR10nJGrPD2ZR+jDSEsKWJHYC7Cm2wodlwbR3upZRdC3cjIjSlTLNVyO7Iu0Yy7t2AYg==}
@@ -17452,12 +17337,6 @@ packages:
   /vm-browserify@1.1.2:
     resolution: {integrity: sha512-2ham8XPWTONajOR0ohOKOHXkm3+gaBmGut3SRuu75xLd/RRaY6vqgh8NBYYk7+RW3u5AtzPQZG8F10LHkl0lAQ==}
     dev: true
-
-  /warning@4.0.3:
-    resolution: {integrity: sha512-rpJyN222KWIvHJ/F53XSZv0Zl/accqHR8et1kpaMTD/fLCRxtV8iX8czMzY7sVZupTI3zcUTg8eycS2kNF9l6w==}
-    dependencies:
-      loose-envify: 1.4.0
-    dev: false
 
   /watchpack@2.4.1:
     resolution: {integrity: sha512-8wrBCMtVhqcXP2Sup1ctSkga6uc2Bx0IIvKyT7yTFier5AXHooSI+QyQQAtTb7+E0IUCCKyTFmXqdqgum2XWGg==}
