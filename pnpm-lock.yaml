@@ -314,8 +314,8 @@ importers:
         specifier: ^1.10.0
         version: 1.10.0
       yjs:
-        specifier: ^13.6.18
-        version: 13.6.18
+        specifier: ^13.6.15
+        version: 13.6.15
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -1027,8 +1027,8 @@ importers:
         specifier: ^5.4.5
         version: 5.4.5
       yjs:
-        specifier: ^13.6.18
-        version: 13.6.18
+        specifier: ^13.6.15
+        version: 13.6.15
 
   packages/eslint-config-pluv:
     dependencies:
@@ -1408,8 +1408,8 @@ importers:
         specifier: ^8.17.0
         version: 8.17.1
       yjs:
-        specifier: ^13.6.18
-        version: 13.6.18
+        specifier: ^13.6.15
+        version: 13.6.15
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -17727,8 +17727,8 @@ packages:
       yargs-parser: 21.1.1
     dev: true
 
-  /yjs@13.6.18:
-    resolution: {integrity: sha512-GBTjO4QCmv2HFKFkYIJl7U77hIB1o22vSCSQD1Ge8ZxWbIbn8AltI4gyXbtL+g5/GJep67HCMq3Y5AmNwDSyEg==}
+  /yjs@13.6.15:
+    resolution: {integrity: sha512-moFv4uNYhp8BFxIk3AkpoAnnjts7gwdpiG8RtyFiKbMtxKCS0zVZ5wPaaGpwC3V2N/K8TK8MwtSI3+WO9CHWjQ==}
     engines: {node: '>=16.0.0', npm: '>=8.0.0'}
     dependencies:
       lib0: 0.2.94
