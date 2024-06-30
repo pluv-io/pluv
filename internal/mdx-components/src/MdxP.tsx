@@ -1,13 +1,13 @@
-import { InferComponentProps } from "@pluv-internal/typings";
-import { ReactElement } from "react";
-import tw from "twin.macro";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import { forwardRef } from "react";
 
-const Root = tw.p`
-    my-[0.8em]
-`;
+export type MdxPProps = InferComponentProps<"p">;
 
-export type MdxPProps = Omit<InferComponentProps<"p">, "ref">;
+export const MdxP = forwardRef<HTMLParagraphElement, MdxPProps>((props, ref) => {
+    const { className, ...restProps } = props;
 
-export const MdxP = (props: MdxPProps): ReactElement | null => {
-    return <Root {...props} />;
-};
+    return <p {...restProps} className={cn("my-[0.8em]", className)} ref={ref} />;
+});
+
+MdxP.displayName = "MdxP";

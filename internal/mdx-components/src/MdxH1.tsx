@@ -1,22 +1,14 @@
-import { CSSProperties, ReactElement, ReactNode } from "react";
-import tw from "twin.macro";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import { forwardRef } from "react";
 import { MdxHeader } from "./MdxHeader";
 
-const Root = tw(MdxHeader)`
-    text-5xl
-    font-bold
-`;
+export type MdxH1Props = InferComponentProps<"h1">;
 
-export interface MdxH1Props {
-    children?: ReactNode;
-    className?: string;
-    style?: CSSProperties;
-}
+export const MdxH1 = forwardRef<HTMLHeadingElement, MdxH1Props>((props, ref) => {
+    const { className, ...restProps } = props;
 
-export const MdxH1 = ({ children, className, style }: MdxH1Props): ReactElement | null => {
-    return (
-        <Root className={className} style={style} type="h1">
-            {children}
-        </Root>
-    );
-};
+    return <MdxHeader {...restProps} className={cn("text-5xl font-bold", className)} ref={ref} type="h1" />;
+});
+
+MdxH1.displayName = "MdxH1";

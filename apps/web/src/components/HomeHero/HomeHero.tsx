@@ -1,111 +1,10 @@
-import { PageContainer, Typist } from "@pluv-internal/react-components";
-import { useMediaQuery, useNoSsr } from "@pluv-internal/react-hooks";
-import dynamic from "next/dynamic";
-import NextImage from "next/image";
-import { rgba } from "polished";
-import { CSSProperties, memo } from "react";
-import tw, { styled, theme } from "twin.macro";
-
-const HomeHeroRainfall = dynamic(() => import("./HomeHeroRainfall"), {
-    ssr: false,
-});
-
-const Root = tw.div`
-    relative
-    flex
-    flex-col
-    items-center
-    justify-center
-    w-full
-    h-[80vh]
-    overflow-hidden
-`;
-
-const RainfallAbsoluteContainer = tw.div`
-    absolute
-    top-1/2
-    left-1/2
-    -translate-x-1/2
-    -translate-y-1/2
-    flex
-    items-center
-    justify-center
-    min-w-[100vw]
-    w-[1920px]
-    overflow-hidden
-`;
-
-const RainfallContainer = tw.div`
-    relative
-    w-full
-    aspect-[3/2]
-`;
-
-const RadialBackground = styled.div`
-    ${tw`
-        absolute
-	    inset-0
-    `}
-    background-image: radial-gradient(
-        80% 112% at center,
-        ${theme`colors.slate.900`} 35%,
-        ${rgba(theme`colors.slate.900`, 0)} 85%
-    );
-
-    @media (max-width: 992px) {
-        background-image: radial-gradient(
-            112% 90% at center center,
-            ${theme`colors.slate.900`} 35%,
-            ${rgba(theme`colors.slate.900`, 0)} 85%
-        );
-    }
-`;
-
-const Contents = tw.div`
-    absolute
-    inset-0
-    w-full
-    flex
-    flex-col
-    items-center
-    justify-center
-    py-24
-    z-[1]
-`;
-
-const TagLine = tw.h1`
-	flex
-	flex-col
-	items-center
-	font-bold
-    leading-tight
-    text-white
-    [font-size: 2.25rem]
-	sm:[font-size: 3.125rem]
-	md:[font-size: 5.75rem]
-`;
-
-const Line = tw.span`
-	flex
-	items-center
-    whitespace-pre
-`;
-
-const Info = tw(PageContainer)`
-    inline-block
-    mt-5
-    md:mt-10
-	[max-width: 26rem]
-	text-lg
-	font-semibold
-	text-blue-300
-	text-center
-	md:text-2xl
-`;
-
-const PoweredBy = tw.span`
-	whitespace-nowrap
-`;
+import { Typist, TypistCursor } from "@pluv-internal/react-components/client";
+import { Button, NextLink, PageContainer } from "@pluv-internal/react-components/either";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
+import type { CSSProperties } from "react";
+import { memo } from "react";
+import { HomeDemo } from "../HomeDemo";
 
 export interface HomeHeroProps {
     className?: string;
@@ -113,44 +12,80 @@ export interface HomeHeroProps {
 }
 
 export const HomeHero = memo<HomeHeroProps>(({ className, style }) => {
-    const isDesktop = useMediaQuery("(min-width: 992px)", {
-        initializeWithValue: false,
-    });
-
-    const noSsr = useNoSsr();
-    const showRainfall = noSsr(isDesktop, false);
-
     return (
-        <Root className={className} style={style}>
-            <RainfallAbsoluteContainer>
-                <RainfallContainer>
-                    <NextImage
-                        alt="rainfall hero"
-                        className="absolute inset-0 object-cover"
-                        fill
-                        priority
-                        src="/static/jpg/rainfall-background.jpg"
-                    />
-                    {showRainfall && <HomeHeroRainfall className="absolute inset-0" />}
-                </RainfallContainer>
-            </RainfallAbsoluteContainer>
-            <RadialBackground />
-            <Contents>
-                <TagLine>
-                    <Line>Typesafe</Line>
-                    <Line>Real-Time APIs</Line>
-                    <Line>
-                        for{" "}
-                        <Typist sentences={["Cloudflare", "Node.js", "React"]}>
-                            <Typist.Cursor />
-                        </Typist>
-                    </Line>
-                </TagLine>
-                <Info as="h2">
-                    Multiplayer APIs <PoweredBy>powered-by</PoweredBy> TypeScript inference end-to-end
-                </Info>
-            </Contents>
-        </Root>
+        <div
+            className={cn(
+                oneLine`
+                    flex
+                    w-full
+                    flex-col
+                    items-center
+                    justify-center
+                    overflow-hidden
+                    py-24
+                `,
+                className,
+            )}
+            style={style}
+        >
+            <h1
+                className={oneLine`
+                    flex
+                    flex-col
+                    items-center
+                    text-center
+                    text-5xl
+                    font-bold
+                    leading-tight
+                    tracking-tighter
+                    md:text-7xl
+                    lg:leading-[1.1]
+                `}
+            >
+                <span className="flex items-center whitespace-pre">TypeSafe Primitives</span>
+                <span className="flex items-center whitespace-pre">for a Realtime Web</span>
+            </h1>
+            <PageContainer
+                asChild
+                className={oneLine`
+                    mt-3
+                    inline-block
+                    max-w-[564px]
+                    text-center
+                    text-lg
+                    font-light
+                    text-foreground
+                    md:mt-5
+                    md:max-w-[750px]
+                `}
+            >
+                <h2>
+                    Open Source, multiplayer APIs <span className="whitespace-nowrap">powered-by</span>{" "}
+                    <span
+                        className={oneLine`
+                            font-medium
+                            underline
+                            decoration-rose-500
+                            decoration-wavy
+                            decoration-from-font
+                            underline-offset-2
+                        `}
+                        style={{ textDecorationSkipInk: "none" }}
+                    >
+                        TypeScript
+                    </span>{" "}
+                    inference end-to-end.
+                </h2>
+            </PageContainer>
+            <div className="mt-6 flex w-full items-center justify-center space-x-4">
+                <Button asChild>
+                    <NextLink href="/docs/introduction">Get Started</NextLink>
+                </Button>
+                <Button asChild variant="outline">
+                    <NextLink href="/docs/quickstart">Quickstart</NextLink>
+                </Button>
+            </div>
+        </div>
     );
 });
 

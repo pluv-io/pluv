@@ -65,7 +65,7 @@ export type BroadcastProxy<TIO extends IOLike> = (<TEvent extends keyof InferIOI
     event: TEvent,
     data: Id<InferIOInput<TIO>[TEvent]>,
 ) => void) & {
-    [event in keyof InferIOInput<TIO>]: (callback: Id<InferIOInput<TIO>[event]>) => void;
+    [event in keyof InferIOInput<TIO>]: (input: Id<InferIOInput<TIO>[event]>) => void;
 };
 
 export type EventProxy<TIO extends IOLike> = {
@@ -350,16 +350,7 @@ export const createRoomBundle = <
             options?.isEqual ?? fastDeepEqual,
         );
 
-        const updateMyPresence: Dispatch<UpdateMyPresenceAction<TPresence>> = useCallback(
-            (value: UpdateMyPresenceAction<TPresence>): void => {
-                const presence = typeof value === "function" ? value(room.getMyPresence()) : value;
-
-                room.updateMyPresence(presence);
-            },
-            [room],
-        );
-
-        return [myPresence, updateMyPresence];
+        return [myPresence, room.updateMyPresence];
     };
 
     const useMyself = <T extends unknown = UserInfo<TIO, TPresence>>(

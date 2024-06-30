@@ -26,7 +26,14 @@ import { StateNotifier } from "./StateNotifier";
 import { StorageStore } from "./StorageStore";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
-import type { AuthorizationState, InternalSubscriptions, UserInfo, WebSocketConnection, WebSocketState } from "./types";
+import type {
+    AuthorizationState,
+    InternalSubscriptions,
+    UpdateMyPresenceAction,
+    UserInfo,
+    WebSocketConnection,
+    WebSocketState,
+} from "./types";
 import { ConnectionState } from "./types";
 import { debounce } from "./utils";
 
@@ -347,14 +354,14 @@ export class PluvRoom<
         [event in keyof InferIOOutput<TIO>]: (callback: EventNotifierSubscriptionCallback<TIO, event>) => () => void;
     };
 
-    public getConnection(): WebSocketConnection {
+    public getConnection = (): WebSocketConnection => {
         // Create a read-only clone of the connection state
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
-    }
+    };
 
-    public getDoc(): AbstractCrdtDoc<TStorage> {
+    public getDoc = (): AbstractCrdtDoc<TStorage> => {
         return this._crdtManager.doc;
-    }
+    };
 
     public getMyPresence = (): TPresence => {
         return this._usersManager.myPresence;
@@ -433,8 +440,10 @@ export class PluvRoom<
         this._crdtManager.doc.undo();
     };
 
-    public updateMyPresence = (presence: Partial<TPresence>): void => {
-        this._usersManager.updateMyPresence(presence);
+    public updateMyPresence = (presence: UpdateMyPresenceAction<TPresence>): void => {
+        const newPresence = typeof presence === "function" ? presence(this.getMyPresence()) : presence;
+
+        this._usersManager.updateMyPresence(newPresence);
 
         const myPresence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
@@ -442,7 +451,7 @@ export class PluvRoom<
         this._stateNotifier.subjects["my-presence"].next(myPresence);
         !!myself && this._stateNotifier.subjects["myself"].next(myself);
 
-        this.broadcast("$UPDATE_PRESENCE" as keyof InferIOInput<TIO>, { presence } as any);
+        this.broadcast("$UPDATE_PRESENCE" as keyof InferIOInput<TIO>, { presence: newPresence } as any);
     };
 
     private async _addToStorageStore(update: string): Promise<void> {
@@ -704,8 +713,6 @@ export class PluvRoom<
 
         Object.keys(data.others).forEach((connectionId) => {
             const { presence, user } = data.others[connectionId];
-
-            if (!user) return;
 
             this._usersManager.setUser(connectionId, user);
 

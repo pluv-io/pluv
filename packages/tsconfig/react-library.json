@@ -3,9 +3,11 @@
 	"display": "React Library",
 	"extends": "./base.json",
 	"compilerOptions": {
-		"jsx": "react-jsx",
 		"lib": ["es2015"],
 		"module": "esnext",
-		"target": "es6"
+		"target": "es6",
+		"moduleResolution": "Bundler",
+		"jsx": "react-jsx"
+
 	}
 }

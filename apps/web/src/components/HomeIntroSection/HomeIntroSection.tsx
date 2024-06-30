@@ -1,47 +1,12 @@
-import { PageContainer } from "@pluv-internal/react-components";
-import { CSSProperties, FC } from "react";
-import tw from "twin.macro";
-import { HomeChessDemo } from "../HomeChessDemo";
-
-const Root = tw.section`
-    flex
-    flex-col
-    items-center
-    py-24
-`;
-
-const Title = tw(PageContainer)`
-    flex
-    flex-col
-    items-center
-    text-3xl
-    leading-tight
-    font-bold
-    md:text-5xl
-    text-center
-`;
-
-const Info = tw(PageContainer)`
-	flex
-	flex-col
-	items-center
-	[max-width: 32rem]
-    mt-4
-	text-lg
-	text-center
-    text-slate-300
-`;
-
-const ChessDemoContainer = tw(PageContainer)`
-    flex
-    items-center
-    justify-center
-    mt-12
-`;
-
-const StyledHomeChessDemo = tw(HomeChessDemo)`
-    w-full
-`;
+import { PageContainer } from "@pluv-internal/react-components/either";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
+import type { CSSProperties, FC } from "react";
+import { HomeIntroStep1 } from "../HomeIntroStep1";
+import { HomeIntroStep2 } from "../HomeIntroStep2";
+import { HomeIntroStep3 } from "../HomeIntroStep3";
+import { HomeIntroStep4 } from "../HomeIntroStep4";
+import { HomeIntroStep5 } from "../HomeIntroStep5";
 
 export interface HomeIntroSectionProps {
     className?: string;
@@ -50,14 +15,56 @@ export interface HomeIntroSectionProps {
 
 export const HomeIntroSection: FC<HomeIntroSectionProps> = ({ className, style }) => {
     return (
-        <Root className={className} style={style}>
-            <Title as="h2">Multiplayer made easy</Title>
-            <Info as="h3">
-                Pluv provides powerful utilities to make building complex multiplayer experiences easier.
-            </Info>
-            <ChessDemoContainer>
-                <StyledHomeChessDemo />
-            </ChessDemoContainer>
-        </Root>
+        <section
+            className={cn(
+                oneLine`
+                    flex
+                    flex-col
+                    items-center
+                    py-20
+                `,
+                className,
+            )}
+            style={style}
+        >
+            <PageContainer
+                asChild
+                className={oneLine`
+                    flex
+                    flex-col
+                    items-center
+                    text-center
+                    text-2xl
+                    font-bold
+                    leading-tight
+                    md:text-3xl
+                `}
+            >
+                <h2>Developer-Focused APIs</h2>
+            </PageContainer>
+            <PageContainer
+                asChild
+                className={oneLine`
+                	mt-4
+                    flex
+                    max-w-[32rem]
+                    flex-col
+                    items-center
+                    text-center
+                    text-sm
+                    text-muted-foreground
+                    md:text-base
+                `}
+            >
+                <h3>Unlock powerful utilities to make building complex multiplayer experiences easier.</h3>
+            </PageContainer>
+            <div className="mt-12 flex w-full min-w-0 flex-col items-stretch gap-12 lg:gap-16">
+                <HomeIntroStep1 />
+                <HomeIntroStep2 />
+                <HomeIntroStep3 />
+                <HomeIntroStep4 />
+                <HomeIntroStep5 />
+            </div>
+        </section>
     );
 };

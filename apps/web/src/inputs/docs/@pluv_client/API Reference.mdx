@@ -1,9 +1,9 @@
----
-title: API Reference
-description: "@pluv/client API reference"
----
+export const metadata = {
+    title: "Api Reference",
+    description: "@pluv/client API Reference",
+};
 
-import { DocsLayout } from "../../../components";
+export const runtime = "nodejs";
 
 # API Reference
 
@@ -554,5 +554,3 @@ Undoes the last mutation that was applied via [PluvRoom.transact](/docs/client/a
 
 room.undo();
 ```
-
-export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;

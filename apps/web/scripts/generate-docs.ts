@@ -6,7 +6,7 @@ const MAX_ORDER = 9999;
 
 const srcPath = path.resolve(__dirname, "../src");
 const sourcePath = path.resolve(srcPath, "inputs/docs");
-const outputDocs = path.resolve(srcPath, "pages/docs");
+const outputDocs = path.resolve(srcPath, "app/docs");
 const outputRoutes = path.resolve(srcPath, "generated/doc-routes.json");
 
 const getFilePaths = (): readonly string[] => {
@@ -30,10 +30,7 @@ const toRouteSlug = (fileName: string): string => {
 };
 
 const toRoute = (filePath: string): string => {
-    const normalized = normalize(filePath)
-        .split("/")
-        .map(toRouteSlug)
-        .join("/");
+    const normalized = normalize(filePath).split("/").map(toRouteSlug).join("/");
 
     const split = normalized.split("--");
 
@@ -45,24 +42,25 @@ const generateDocPages = (): void => {
 
     fs.ensureDirSync(outputDocs);
 
-    const contents = fs
-        .readdirSync(outputDocs)
-        .map((fileName) => path.join(outputDocs, fileName));
+    const contents = fs.readdirSync(outputDocs).map((fileName) => path.join(outputDocs, fileName));
 
     contents.forEach((fileOrDirPath) => {
         const stat = fs.statSync(fileOrDirPath);
         const isMdx = path.extname(fileOrDirPath) === ".mdx";
+        const isRoutesPage = fileOrDirPath.includes("[");
 
-        if (stat.isFile() && !isMdx) return;
+        if ((stat.isFile() && !isMdx) || isRoutesPage) return;
 
         fs.rmSync(fileOrDirPath, { recursive: true });
     });
 
     filePaths.forEach((filePath) => {
-        const route = toRoute(filePath);
+        const route = toRoute(filePath).replace(/\.mdx$/, "");
 
-        fs.ensureFileSync(`${outputDocs}/${route}`);
-        fs.copyFileSync(filePath, `${outputDocs}/${route}`);
+        const outputPath = `${outputDocs}/${route.replace(/\./g, "-")}/page.mdx`;
+
+        fs.ensureFileSync(outputPath);
+        fs.copyFileSync(filePath, outputPath);
     });
 };
 
@@ -93,7 +91,7 @@ const generateRoutes = (): void => {
         const slug = toRouteSlug(rawName);
 
         return {
-            [slug]: {
+            [slug.replace(/\./g, "-")]: {
                 name,
                 order,
                 children: toRouteNode(parts.join("/")),
@@ -107,7 +105,7 @@ const generateRoutes = (): void => {
             return Object.entries(nodes).reduce(
                 (acc2, [slug, node]) => ({
                     ...acc2,
-                    [slug]: {
+                    [slug.replace(/\./g, "-")]: {
                         ...node,
                         children: {
                             ...acc2[slug]?.children,

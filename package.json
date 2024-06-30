@@ -13,6 +13,7 @@
         "clean": "turbo run clean && rm -rf node_modules",
         "commit": "cz",
         "dev": "turbo run dev --parallel",
+        "dev:web": "turbo run dev --parallel --filter=./apps/*",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",
         "lint": "turbo run lint",
         "release": "turbo run build --filter=./packages/* && changeset publish",
@@ -23,11 +24,13 @@
         "version-packages": "changeset version"
     },
     "devDependencies": {
-        "@changesets/cli": "^2.27.5",
+        "@changesets/cli": "^2.27.6",
+        "@pluv-internal/tailwind-config": "workspace:^",
         "commitizen": "^4.3.0",
         "cz-conventional-changelog": "^3.3.0",
         "eslint-config-pluv": "workspace:^",
-        "prettier": "^3.2.5",
-        "turbo": "^1.13.3"
+        "prettier": "^3.3.2",
+        "tailwindcss": "^3.4.4",
+        "turbo": "^2.0.6"
     }
 }

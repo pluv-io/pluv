@@ -1,5 +1,5 @@
-import { TreeView } from "@pluv-internal/react-components";
-import { useRouter } from "next/router";
+import { TreeView } from "@pluv-internal/react-components/client";
+import { usePathname } from "next/navigation";
 import { FC, MouseEvent, useMemo } from "react";
 import { DocRouteNode } from "../../types";
 
@@ -18,7 +18,7 @@ export const DocsTreeViewNavigationRoutes: FC<DocsTreeViewNavigationRoutesProps>
     routes,
     selected,
 }) => {
-    const router = useRouter();
+    const pathName = usePathname();
 
     const sorted = useMemo(() => {
         const startsWithAZ = (word: string): boolean => /^[a-z]/i.test(word);
@@ -34,14 +34,14 @@ export const DocsTreeViewNavigationRoutes: FC<DocsTreeViewNavigationRoutesProps>
     }, [routes]);
 
     const slugs = useMemo(() => {
-        return router.asPath
+        return pathName
             .replace(/#.+$/g, "")
             .replace(new RegExp(`^${baseRoute}`), "")
             .replace(/^\//, "")
             .split("/");
-    }, [baseRoute, router.asPath]);
+    }, [baseRoute, pathName]);
 
-    const routeSlug = useMemo(() => router.asPath.split("/")[level + 1], [level, router.asPath]);
+    const routeSlug = useMemo(() => pathName.split("/")[level + 1], [level, pathName]);
 
     const finalSlug = slugs.at(-1);
 

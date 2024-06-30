@@ -1,79 +1,12 @@
-import { Anchor, AnchorButton, AppBar, Button, LogoIcon, NextLink, SideDrawer } from "@pluv-internal/react-components";
-import { BarsIcon, GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
-import { useRouter } from "next/router";
-import { CSSProperties, memo, useState } from "react";
-import tw, { styled } from "twin.macro";
-import { MobileDocsSideDrawer } from "../MobileDocsSideDrawer";
-
-const Root = tw(AppBar)`
-    flex
-    flex-row
-    items-stretch
-    justify-center
-`;
-
-const Content = styled.div`
-    ${tw`
-        flex
-        items-center
-        justify-between
-        w-full
-    `}
-
-    @media (min-width: 1536px) {
-        max-width: 1536px;
-    }
-`;
-
-const LeftContainer = tw.div`
-    flex
-    items-center
-`;
-
-const LinksContainer = tw.div`
-    hidden
-    items-center
-    gap-6
-    ml-10
-    md:flex
-`;
-
-const Link = tw(Anchor)`
-    font-semibold
-    [color: inherit]
-    hover:no-underline
-`;
-
-const MobileDrawerButton = tw(Button)`
-    mr-3
-    xl:hidden
-`;
-
-const StyledMobileDocsSideDrawer = tw(MobileDocsSideDrawer)`
-    xl:hidden
-`;
-
-const Logo = tw(NextLink)`
-    flex
-    items-center
-    gap-1.5
-`;
-
-const StyledLogoIcon = tw(LogoIcon)`
-    rounded-md
-`;
-
-const PluvName = tw.span`
-    text-lg
-    font-bold
-`;
-
-const RightContainer = tw.div`
-    flex
-    flex-row
-    items-center
-    gap-2
-`;
+import { AppBar, ThemeSwitcherButton } from "@pluv-internal/react-components/client";
+import { Button, LogoIcon, NextLink } from "@pluv-internal/react-components/either";
+import { GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
+import type { CSSProperties } from "react";
+import { memo } from "react";
+import { SiteWideAppBarPathLinks } from "./SiteWideAppBarPathLinks";
+import { SiteWideAppBarSideDrawer } from "./SiteWideAppBarSideDrawer";
 
 export interface SiteWideAppBarProps {
     className?: string;
@@ -83,72 +16,72 @@ export interface SiteWideAppBarProps {
 export const SiteWideAppBar = memo<SiteWideAppBarProps>((props) => {
     const { className, style } = props;
 
-    const router = useRouter();
-
-    const [open, setOpen] = useState<boolean>(false);
-
     return (
-        <Root className={className} style={style}>
-            <Content>
-                <LeftContainer>
-                    <SideDrawer.Root
-                        open={open}
-                        onOpenChange={(newOpen) => {
-                            setOpen(newOpen);
-                        }}
-                    >
-                        <SideDrawer.Trigger>
-                            <MobileDrawerButton outlined square type="button">
-                                <BarsIcon height={24} width={24} />
-                            </MobileDrawerButton>
-                        </SideDrawer.Trigger>
-                        <StyledMobileDocsSideDrawer
-                            onClickLink={(e) => {
-                                e.stopPropagation();
-
-                                setOpen(false);
-                            }}
-                        />
-                    </SideDrawer.Root>
-                    <Logo href="/">
-                        <StyledLogoIcon height={36} width={36} />
-                        <PluvName>pluv.io</PluvName>
-                    </Logo>
-                    <LinksContainer>
-                        <Link href="/docs/introduction" data-selected={router.pathname === "/docs/introduction"}>
-                            Docs
-                        </Link>
-                        <Link href="/docs/quickstart" data-selected={router.pathname === "/docs/quickstart"}>
-                            Quickstart
-                        </Link>
-                    </LinksContainer>
-                </LeftContainer>
-                <RightContainer>
-                    <AnchorButton
-                        href="https://github.com/pluv-io/pluv"
-                        outlined
-                        rel="noreferrer noopener"
-                        square
-                        target="_blank"
-                        title="GitHub"
-                        aria-label="GitHub"
-                    >
-                        <GitHubIcon height={24} width={24} />
-                    </AnchorButton>
-                    <AnchorButton
-                        href="https://www.npmjs.com/package/@pluv/io"
-                        outlined
-                        rel="noreferrer noopener"
-                        square
-                        target="_blank"
-                        title="npm"
-                        aria-label="npm"
-                    >
-                        <NpmIcon height={24} width={24} />
-                    </AnchorButton>
-                </RightContainer>
-            </Content>
-        </Root>
+        <AppBar
+            className={cn(
+                oneLine`
+                    flex
+                    flex-row
+                    items-stretch
+                    justify-center
+                `,
+                className,
+            )}
+            style={style}
+        >
+            <div
+                className={oneLine`
+                    flex
+                    w-full
+                    items-center
+                    justify-between
+                    2xl:max-w-screen-2xl
+                `}
+            >
+                <div className="flex items-center">
+                    <SiteWideAppBarSideDrawer className="mr-3" />
+                    <NextLink className="flex items-center gap-1.5" href="/">
+                        <LogoIcon className="rounded-md" height={36} width={36} />
+                        <span className="text-lg font-bold">pluv.io</span>
+                    </NextLink>
+                    <SiteWideAppBarPathLinks className="ml-10" />
+                </div>
+                <div
+                    className={oneLine`
+                        flex
+                        flex-row
+                        items-center
+                        gap-2
+                    `}
+                >
+                    <Button asChild size="icon" variant="outline">
+                        <ThemeSwitcherButton />
+                    </Button>
+                    <Button asChild size="icon" variant="outline">
+                        <NextLink
+                            href="https://github.com/pluv-io/pluv"
+                            rel="noreferrer noopener"
+                            target="_blank"
+                            title="GitHub"
+                            aria-label="GitHub"
+                        >
+                            <GitHubIcon height={24} width={24} />
+                        </NextLink>
+                    </Button>
+                    <Button size="icon" variant="outline">
+                        <NextLink
+                            href="https://www.npmjs.com/package/@pluv/io"
+                            rel="noreferrer noopener"
+                            target="_blank"
+                            title="npm"
+                            aria-label="npm"
+                        >
+                            <NpmIcon height={24} width={24} />
+                        </NextLink>
+                    </Button>
+                </div>
+            </div>
+        </AppBar>
     );
 });
 

@@ -1,69 +1,53 @@
-import { Anchor } from "@pluv-internal/react-components";
+import { Anchor } from "@pluv-internal/react-components/either";
 import { LinkIcon } from "@pluv-internal/react-icons";
-import { CSSProperties, ReactElement, ReactNode, useMemo } from "react";
-import tw, { styled } from "twin.macro";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { oneLine } from "common-tags";
+import { forwardRef } from "react";
+import { cn } from "../../utils/src";
 
-const StyledLinkIcon = tw(LinkIcon)`
-    hidden
-    [height: 0.625em]
-    [width: 0.625em]
-    ml-[0.3em]
-    opacity-0
-    transition-opacity
-    duration-75
-    ease-in
-    sm:inline
-`;
-
-const Root = styled(Anchor)`
-    ${tw`
-        flex
-        flex-row
-        flex-nowrap
-        items-center
-        mb-[0.6em]
-        not-first:mt-[1em]
-        [& + p]:mt-0
-    `}
-
-    &:hover ${StyledLinkIcon} {
-        ${tw`opacity-100`}
-    }
-`;
-
-const Header = tw.header`
-    inline
-`;
-
-export interface MdxHeaderProps {
-    children?: ReactNode;
-    className?: string;
-    style?: CSSProperties;
+export type MdxHeaderProps = InferComponentProps<"h1"> & {
     type?: "header" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
-}
+};
 
-export const MdxHeader = ({
-    children,
-    className,
-    style,
-    type: HeaderType = "header",
-}: MdxHeaderProps): ReactElement | null => {
+export const MdxHeader = forwardRef<HTMLHeadingElement, MdxHeaderProps>((props, ref) => {
+    const { children, className, style, type: HeaderType = "header", ...restProps } = props;
+
     const content = typeof children === "string" ? children : "";
 
-    const hash = useMemo(() => {
-        return content
-            .replace(/\s+/g, "-")
-            .replace(/"/g, "")
-            .replace(/\((.+)\)/g, ".$1")
-            .replace(/[^a-zA-Z0-9-\.]/g, "");
-    }, [content]);
+    const hash = content
+        .replace(/\s+/g, "-")
+        .replace(/"/g, "")
+        .replace(/\((.+)\)/g, ".$1")
+        .replace(/[^a-zA-Z0-9-\.]/g, "");
 
     return (
-        <Root className={className} href={`#${hash}`} style={style}>
-            <Header as={HeaderType} id={hash}>
+        <Anchor
+            className={cn(
+                oneLine`
+                    mb-[0.6em]
+                    flex
+                    flex-row
+                    flex-nowrap
+                    items-center
+                    [&+p]:mt-0
+                    [&:hover_svg]:opacity-100
+                    [&:not(:first-child)]:mt-[1em]
+                `,
+                className,
+            )}
+            href={`#${hash}`}
+            style={style}
+        >
+            <HeaderType {...restProps} className="inline text-wrap" id={hash} ref={ref}>
                 {children}
-                <StyledLinkIcon height={24} width={24} />
-            </Header>
-        </Root>
+                <LinkIcon
+                    className="ml-[0.3em] hidden size-[0.625em] opacity-0 transition-opacity duration-75 ease-in sm:inline"
+                    height={24}
+                    width={24}
+                />
+            </HeaderType>
+        </Anchor>
     );
-};
+});
+
+MdxHeader.displayName = "MdxHeader";

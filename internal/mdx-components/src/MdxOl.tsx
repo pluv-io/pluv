@@ -1,16 +1,13 @@
-import { InferComponentProps } from "@pluv-internal/typings";
-import { ReactElement } from "react";
-import tw from "twin.macro";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import { forwardRef } from "react";
 
-const Root = tw.ol`
-    list-decimal
-    list-inside
-    mb-4
-    pl-6
-`;
+export type MdxOlProps = InferComponentProps<"ol">;
 
-export type MdxOlProps = Omit<InferComponentProps<"ul">, "ref">;
+export const MdxOl = forwardRef<HTMLOListElement, MdxOlProps>((props, ref) => {
+    const { className, ...restProps } = props;
 
-export const MdxOl = (props: MdxOlProps): ReactElement | null => {
-    return <Root {...props} />;
-};
+    return <ol {...restProps} className={cn("mb-4 list-inside list-decimal pl-6", className)} ref={ref} />;
+});
+
+MdxOl.displayName = "MdxOl";

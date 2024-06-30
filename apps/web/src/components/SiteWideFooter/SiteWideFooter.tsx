@@ -1,75 +1,9 @@
-import { AnchorButton, Footer, LogoIcon, NextLink } from "@pluv-internal/react-components";
+import { Button, Footer, LogoIcon, NextLink } from "@pluv-internal/react-components/either";
 import { GitHubIcon, NpmIcon } from "@pluv-internal/react-icons";
-import { CSSProperties, memo } from "react";
-import tw, { styled } from "twin.macro";
-
-const Root = tw(Footer)`
-    flex
-    flex-row
-    items-stretch
-    justify-center
-`;
-
-const Content = styled.div`
-    ${tw`
-        flex
-        items-center
-        justify-between
-        w-full
-    `}
-
-    @media (min-width: 640px) {
-        max-width: 640px;
-    }
-
-    @media (min-width: 768px) {
-        max-width: 768px;
-    }
-
-    @media (min-width: 1024px) {
-        max-width: 1024px;
-    }
-
-    @media (min-width: 1280px) {
-        max-width: 1280px;
-    }
-
-    @media (min-width: 1536px) {
-        max-width: 1536px;
-    }
-`;
-
-const Logo = tw(NextLink)`
-    flex
-    items-center
-    gap-1.5
-`;
-
-const StyledLogoIcon = tw(LogoIcon)`
-    rounded-md
-`;
-
-const PluvName = tw.span`
-    text-lg
-    font-bold
-`;
-
-const LinksContainer = tw.div`
-    flex
-    flex-col
-    items-center
-    gap-2
-    sm:flex-row
-`;
-
-const ExternalLink = tw(NextLink)`
-    flex
-    flex-row
-    items-center
-    justify-center
-    gap-2
-    w-28
-`;
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
+import type { CSSProperties } from "react";
+import { memo } from "react";
 
 export interface SiteWideFooterProps {
     className?: string;
@@ -80,42 +14,73 @@ export const SiteWideFooter = memo<SiteWideFooterProps>((props) => {
     const { className, style } = props;
 
     return (
-        <Root className={className} style={style}>
-            <Content>
-                <Logo href="/">
-                    <StyledLogoIcon height={40} width={40} />
-                    <PluvName>pluv.io</PluvName>
-                </Logo>
-                <LinksContainer>
-                    <AnchorButton
-                        as={ExternalLink}
-                        href="https://github.com/pluv-io/pluv"
-                        outlined
-                        rel="noreferrer noopener"
-                        size="small"
-                        target="_blank"
-                        title="GitHub"
-                        aria-label="GitHub"
-                    >
-                        <GitHubIcon height={16} width={16} />
-                        <span>GitHub</span>
-                    </AnchorButton>
-                    <AnchorButton
-                        as={ExternalLink}
-                        href="https://www.npmjs.com/package/@pluv/io"
-                        outlined
-                        rel="noreferrer noopener"
-                        size="small"
-                        target="_blank"
-                        title="npm"
-                        aria-label="npm"
-                    >
-                        <NpmIcon height={16} width={16} />
-                        <span>npm</span>
-                    </AnchorButton>
-                </LinksContainer>
-            </Content>
-        </Root>
+        <Footer
+            className={cn(
+                oneLine`
+                    flex
+                    flex-row
+                    items-stretch
+                    justify-center
+                `,
+                className,
+            )}
+            style={style}
+        >
+            <div
+                className={oneLine`
+                    flex
+                    w-full
+                    items-center
+                    justify-between
+                    sm:max-w-screen-sm
+                    md:max-w-screen-md
+                    lg:max-w-screen-lg
+                    xl:max-w-screen-xl
+                    2xl:max-w-screen-2xl
+                `}
+            >
+                <NextLink className="flex items-center gap-1.5" href="/">
+                    <LogoIcon className="rounded-md" height={40} width={40} />
+                    <span className="text-lg font-bold">pluv.io</span>
+                </NextLink>
+                <div
+                    className={oneLine`
+                        flex
+                        flex-col
+                        items-center
+                        gap-2
+                        sm:flex-row
+                    `}
+                >
+                    <Button asChild size="sm" variant="outline">
+                        <NextLink
+                            className="flex w-28 flex-row items-center justify-center gap-2"
+                            href="https://github.com/pluv-io/pluv"
+                            rel="noreferrer noopener"
+                            target="_blank"
+                            title="GitHub"
+                            aria-label="GitHub"
+                        >
+                            <GitHubIcon height={16} width={16} />
+                            <span>GitHub</span>
+                        </NextLink>
+                    </Button>
+                    <Button size="sm" variant="outline">
+                        <NextLink
+                            className="flex w-28 flex-row items-center justify-center gap-2"
+                            href="https://www.npmjs.com/package/@pluv/io"
+                            rel="noreferrer noopener"
+                            target="_blank"
+                            title="npm"
+                            aria-label="npm"
+                        >
+                            <NpmIcon height={16} width={16} />
+                            <span>npm</span>
+                        </NextLink>
+                    </Button>
+                </div>
+            </div>
+        </Footer>
     );
 });
 

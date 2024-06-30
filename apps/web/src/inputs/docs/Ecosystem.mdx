@@ -1,9 +1,7 @@
----
-title: Ecosystem
-description: Packages to use alongside pluv
----
-
-import { DocsLayout } from "../../components";
+export const metadata = {
+    title: "Ecosystem",
+    description: "Packages to use alongside pluv",
+};
 
 # Ecosystem
 
@@ -55,5 +53,3 @@ const { useRoom } = createRoomBundle({
     addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],
 });
 ```
-
-export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;

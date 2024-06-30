@@ -1,65 +1,9 @@
 import { useDraggable } from "@dnd-kit/core";
+import { cn } from "@pluv-internal/utils";
 import composeRefs from "@seznam/compose-react-refs";
+import { oneLine } from "common-tags";
 import type { CSSProperties } from "react";
 import { forwardRef } from "react";
-import tw, { styled, theme } from "twin.macro";
-import { BOX_SIZE, MOBILE_BOX_SIZE } from "./constants";
-
-const Root = tw.div`
-    relative
-    flex
-    items-center
-    justify-center
-`;
-
-const Box = styled.div`
-    ${tw`
-        absolute
-        rounded-lg
-        cursor-grab
-        [background-color: currentColor]
-        [&[data-selected="true"]]:cursor-grabbing
-    `}
-
-    height: ${MOBILE_BOX_SIZE}px;
-    width: ${MOBILE_BOX_SIZE}px;
-
-    @media (min-width: ${theme`screens.md`}) {
-        height: ${BOX_SIZE}px;
-        width: ${BOX_SIZE}px;
-    }
-`;
-
-const User = tw.div`
-    absolute
-    -top-8
-    left-1/2
-    -translate-x-1/2
-    px-1.5
-    pointer-events-none
-`;
-
-const UserName = tw.span`
-    text-sm
-    font-semibold
-`;
-
-const UserBackground = tw.div`
-    absolute
-    inset-0
-    rounded-md
-    [background-color: currentColor]
-    opacity-20
-`;
-
-const Selection = tw.div`
-    absolute
-    -inset-1
-    border-2
-    border-solid
-    rounded-xl
-    [border-color: currentColor]
-`;
 
 export interface HomeCodeDemoBoxProps {
     className?: string;
@@ -87,11 +31,31 @@ export const HomeCodeDemoBox = forwardRef<HTMLDivElement, HomeCodeDemoBoxProps>(
     });
 
     return (
-        <Root className={className} style={style}>
-            <Box
+        <div
+            className={cn(
+                oneLine`
+                    relative
+                    flex
+                    items-center
+                    justify-center
+                `,
+                className,
+            )}
+            style={style}
+        >
+            <div
                 ref={composeRefs<HTMLDivElement>(ref, setNodeRef)}
                 {...attributes}
                 {...listeners}
+                className={oneLine`
+                    absolute
+                    size-[48px]
+                    cursor-grab
+                    rounded-lg
+                    bg-current
+                    md:size-[84px]
+                    [&[data-selected="true"]]:cursor-grabbing
+                `}
                 onMouseDown={() => {
                     onSelect?.();
                 }}
@@ -102,14 +66,42 @@ export const HomeCodeDemoBox = forwardRef<HTMLDivElement, HomeCodeDemoBoxProps>(
                 data-selected={isDragging}
             >
                 {!!user && (
-                    <User>
-                        <UserName>{user}</UserName>
-                        <UserBackground />
-                    </User>
+                    <div
+                        className={oneLine`
+                            pointer-events-none
+                            absolute
+                            -top-8
+                            left-1/2
+                            -translate-x-1/2
+                            px-1.5
+                        `}
+                    >
+                        <span className="whitespace-nowrap text-sm font-semibold">{user}</span>
+                        <div
+                            className={oneLine`
+                                absolute
+                                inset-0
+                                rounded-md
+                                bg-current
+                                opacity-20
+                            `}
+                        />
+                    </div>
                 )}
-                {selected && <Selection />}
-            </Box>
-        </Root>
+                {selected && (
+                    <div
+                        className={oneLine`
+                            absolute
+                            -inset-1
+                            rounded-xl
+                            border-2
+                            border-solid
+                            border-current
+                        `}
+                    />
+                )}
+            </div>
+        </div>
     );
 });
 

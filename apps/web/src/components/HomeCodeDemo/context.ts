@@ -18,8 +18,8 @@ export interface HomeCodeDemoPositions {
 }
 
 export interface HomeCodeDemoSelections {
-    jane: keyof HomeCodeDemoPositions | null;
-    john: keyof HomeCodeDemoPositions | null;
+    "User 1": keyof HomeCodeDemoPositions | null;
+    "User 2": keyof HomeCodeDemoPositions | null;
 }
 
 export interface HomeCodeDemoContextValue {
@@ -36,7 +36,7 @@ export const HomeCodeDemoContext = createContext<HomeCodeDemoContextValue>({
     boxSize: BOX_SIZE,
     codePositions: INITIAL_POSITIONS,
     initPositions: INITIAL_POSITIONS,
-    selections: { jane: null, john: null },
+    selections: { "User 1": null, "User 2": null },
     setCodePositions: () => undefined,
     setInitPositions: () => undefined,
     setSelections: () => undefined,

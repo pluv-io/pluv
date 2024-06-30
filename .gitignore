@@ -48,3 +48,4 @@ tsconfig.tsbuildinfo
 **/generated/**
 **/*.generated.*
 apps/web/src/pages/docs/**/*.mdx
+apps/web/src/app/docs/**/*.mdx

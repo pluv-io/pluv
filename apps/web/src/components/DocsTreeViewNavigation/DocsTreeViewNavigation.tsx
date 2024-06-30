@@ -1,4 +1,6 @@
-import { TreeView } from "@pluv-internal/react-components";
+"use client";
+
+import { TreeView } from "@pluv-internal/react-components/client";
 import { CSSProperties, MouseEvent, memo } from "react";
 import docRoutes from "../../generated/doc-routes.json";
 import { DocRoutes } from "../../types";

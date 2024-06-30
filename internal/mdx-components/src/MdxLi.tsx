@@ -1,15 +1,13 @@
-import { InferComponentProps } from "@pluv-internal/typings";
-import { ReactElement } from "react";
-import tw from "twin.macro";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import { forwardRef } from "react";
 
-const Root = tw.li`
-    mb-1
-    [& > ul]:mt-1
-    [& > ol]:mt-1
-`;
+export type MdxLiProps = InferComponentProps<"li">;
 
-export type MdxLiProps = Omit<InferComponentProps<"li">, "ref">;
+export const MdxLi = forwardRef<HTMLLIElement, MdxLiProps>((props, ref) => {
+    const { className, ...restProps } = props;
 
-export const MdxLi = (props: MdxLiProps): ReactElement | null => {
-    return <Root {...props} />;
-};
+    return <li {...restProps} className={cn("mb-1 [&>ol]:mt-1 [&>ul]:mt-1", className)} ref={ref} />;
+});
+
+MdxLi.displayName = "MdxLi";

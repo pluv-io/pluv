@@ -1,11 +1,25 @@
 {
   "$schema": "https://turborepo.org/schema.json",
-  "pipeline": {
+  "globalEnv": [
+    "npm_config_user_agent",
+    "BASE_URL",
+    "DEPLOY_URL",
+    "NEXT_RUNTIME",
+    "NODE_ENV",
+    "PLUV_AUTH_SECRET",
+    "SEO",
+    "VERCEL_ENV",
+    "VERCEL_URL"
+  ],
+  "tasks": {
     "build": {
       "dependsOn": [
         "^build"
       ],
-      "env": ["BUNDLE_ANALYZE", "WS_ENDPOINT"],
+      "env": [
+        "BUNDLE_ANALYZE",
+        "WS_ENDPOINT"
+      ],
       "outputs": [
         "dist/**",
         ".next/**",
@@ -36,14 +50,5 @@
         "CI"
       ]
     }
-  },
-  "globalEnv": [
-    "npm_config_user_agent",
-    "BASE_URL",
-    "DEPLOY_URL",
-    "NODE_ENV",
-    "PLUV_AUTH_SECRET",
-    "SEO",
-    "VERCEL_URL"
-  ]
+  }
 }
