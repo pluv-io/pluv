@@ -6,7 +6,7 @@ export type ShikiTheme = "catppuccin-latte" | "catppuccin-macchiato";
 
 export const getShiki = async () => {
     // @ts-ignore
-    if (typeof globalThis.EdgeRuntime === "string") {
+    if (typeof EdgeRuntime === "string") {
         // @ts-ignore
         const wasmModule = await import("./onig.wasm?module");
 
