@@ -4,7 +4,7 @@ import { useAsync, useMountEffect } from "@pluv-internal/react-hooks";
 import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
-import { forwardRef } from "react";
+import { forwardRef, useMemo } from "react";
 import { getShiki, type ShikiLanguage } from "../../utils/getShiki";
 
 export type CodeBlockProps = InferComponentProps<"div"> & {
@@ -15,8 +15,12 @@ export type CodeBlockProps = InferComponentProps<"div"> & {
 export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>((props, ref) => {
     const { className, lang, code, ...restProps } = props;
 
-    const [{ result: html }, { execute }] = useAsync(async () => {
-        const shiki = await getShiki();
+    const [{ result: shiki }, { execute }] = useAsync(async () => {
+        return await getShiki();
+    });
+
+    const html = useMemo(() => {
+        if (!shiki) return null;
 
         return shiki.codeToHtml(code, {
             lang,
@@ -25,7 +29,7 @@ export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>((props, ref)
                 dark: "catppuccin-macchiato",
             },
         });
-    });
+    }, [code, lang, shiki]);
 
     useMountEffect(() => {
         execute();

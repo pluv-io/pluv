@@ -262,19 +262,6 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                         </Tabs.Content>
                     </Card>
                 </Tabs>
-                {/* <MultiPrismCode
-                        className={oneLine`
-                            min-h-0
-                            min-w-0
-                            grow
-                            basis-0
-                            rounded-md
-                            border
-                            border-solid
-                            border-indigo-500/40
-                        `}
-                        tabs={tabs}
-                    /> */}
             </div>
         </HomeCodeDemoContext.Provider>
     );

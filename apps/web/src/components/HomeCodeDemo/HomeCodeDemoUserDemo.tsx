@@ -3,9 +3,6 @@ import { oneLine } from "common-tags";
 import type { CSSProperties, FC } from "react";
 import { HomeCodeDemoBrowser } from "./HomeCodeDemoBrowser";
 
-const USER1 = "user 1";
-const USER2 = "user 2";
-
 export interface HomeCodeDemoUserDemoProps {
     className?: string;
     style?: CSSProperties;
