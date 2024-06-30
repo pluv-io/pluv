@@ -18,6 +18,7 @@ const withMdx = createMdx({
 
 /** @type {import("next").NextConfig} */
 const config = {
+    output: "export",
     experimental: {
         externalDir: true,
         serverComponentsExternalPackages: ["@shikijs/twoslash", "shiki"],
@@ -29,10 +30,6 @@ const config = {
          */
         // optimizePackageImports: ["shiki"],
     },
-    i18n: {
-        locales: ["en-US"],
-        defaultLocale: "en-US",
-    },
     images: {
         deviceSizes: [320, 420, 768, 1024, 1200],
         domains: [],
@@ -40,16 +37,6 @@ const config = {
     },
     pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
     reactStrictMode: true,
-    rewrites: () => {
-        return {
-            beforeFiles: [
-                {
-                    source: "/api/:path*",
-                    destination: "https://app.pluv.io/api/:path*",
-                },
-            ],
-        };
-    },
     env: {
         WS_ENDPOINT: process.env.WS_ENDPOINT,
     },

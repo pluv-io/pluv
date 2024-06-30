@@ -2,8 +2,7 @@ import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import type { FC } from "react";
-import { getEdgeShiki } from "../../utils/getEdgeShiki";
-import type { ShikiLanguage } from "../../utils/getShiki";
+import { getShiki, type ShikiLanguage } from "../../utils/getShiki";
 
 export type ServerCodeBlockProps = InferComponentProps<"div"> & {
     code: string;
@@ -11,7 +10,7 @@ export type ServerCodeBlockProps = InferComponentProps<"div"> & {
 };
 
 export const ServerCodeBlock: FC<ServerCodeBlockProps> = async ({ className, lang, code, ...restProps }) => {
-    const highlighter = await getEdgeShiki();
+    const highlighter = await getShiki();
     const html = highlighter.codeToHtml(code, {
         lang,
         themes: {

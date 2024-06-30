@@ -1,11 +1,11 @@
 "use client";
 
+import { useAsync, useMountEffect } from "@pluv-internal/react-hooks";
 import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
-import { forwardRef, useMemo } from "react";
-import { codeToHtml } from "shiki/bundle/web";
-import type { ShikiLanguage } from "../../utils/getShiki";
+import { forwardRef } from "react";
+import { getShiki, type ShikiLanguage } from "../../utils/getShiki";
 
 export type CodeBlockProps = InferComponentProps<"div"> & {
     code: string;
@@ -15,15 +15,21 @@ export type CodeBlockProps = InferComponentProps<"div"> & {
 export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>((props, ref) => {
     const { className, lang, code, ...restProps } = props;
 
-    const html = useMemo(() => {
-        return codeToHtml(code, {
+    const [{ result: html }, { execute }] = useAsync(async () => {
+        const shiki = await getShiki();
+
+        return shiki.codeToHtml(code, {
             lang,
             themes: {
                 light: "catppuccin-latte",
                 dark: "catppuccin-macchiato",
             },
         });
-    }, [code, lang]);
+    });
+
+    useMountEffect(() => {
+        execute();
+    });
 
     return (
         <div
