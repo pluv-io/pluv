@@ -5,6 +5,8 @@ import type { CSSProperties, FC } from "react";
 import { HomeIntroStep1 } from "../HomeIntroStep1";
 import { HomeIntroStep2 } from "../HomeIntroStep2";
 import { HomeIntroStep3 } from "../HomeIntroStep3";
+import { HomeIntroStep4 } from "../HomeIntroStep4";
+import { HomeIntroStep5 } from "../HomeIntroStep5";
 
 export interface HomeIntroSectionProps {
     className?: string;
@@ -60,6 +62,8 @@ export const HomeIntroSection: FC<HomeIntroSectionProps> = ({ className, style }
                 <HomeIntroStep1 />
                 <HomeIntroStep2 />
                 <HomeIntroStep3 />
+                <HomeIntroStep4 />
+                <HomeIntroStep5 />
             </div>
         </section>
     );

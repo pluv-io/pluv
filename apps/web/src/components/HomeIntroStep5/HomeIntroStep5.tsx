@@ -1,14 +1,14 @@
-import { Anchor, Code, PageContainer } from "@pluv-internal/react-components/either";
+import { Anchor, PageContainer } from "@pluv-internal/react-components/either";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import type { FC } from "react";
-import { HomeIntroStep3Code } from "./HomeIntroStep3Code";
+import { HomeIntroStep5Code } from "./HomeIntroStep5Code";
 
-export interface HomeIntroStep3Props {
+export interface HomeIntroStep5Props {
     className?: string;
 }
 
-export const HomeIntroStep3: FC<HomeIntroStep3Props> = ({ className }) => {
+export const HomeIntroStep5: FC<HomeIntroStep5Props> = ({ className }) => {
     return (
         <PageContainer
             className={cn(
@@ -44,27 +44,23 @@ export const HomeIntroStep3: FC<HomeIntroStep3Props> = ({ className }) => {
                             text-primary-foreground
                         `}
                     >
-                        3
+                        5
                     </span>
-                    <h3 className="text-xl font-semibold md:text-2xl">Prepare your frontend bundle</h3>
+                    <h3 className="text-xl font-semibold md:text-2xl">Start building with realtime primitives!</h3>
                 </div>
                 <p className="mt-3 text-sm md:text-base">
-                    Afterwards, we will prepare our frontend bundle by using a type import of our <Code>IOServer</Code>.
-                    This frontend bundle contains all of pluv.io&apos;s APIs for realtime collaboration.
+                    With our frontend bundle ready to use, you can start using pluv.io realtime primitives with{" "}
+                    <Anchor href="https://www.typescriptlang.org/" target="_blank" rel="noreferrer noopener">
+                        TypeScript
+                    </Anchor>{" "}
+                    autocompletion and intellisense matching your backend events, presence and storage.
                     <br />
                     <br />
-                    You can optionally define a presence for each user with Zod, and CRDT storage with{" "}
-                    <Anchor href="https://yjs.dev/" target="_blank" rel="noreferrer noopener">
-                        Yjs
-                    </Anchor>{" "}
-                    or{" "}
-                    <Anchor href="https://loro.dev/" target="_blank" rel="noreferrer noopener">
-                        Loro
-                    </Anchor>{" "}
-                    to unlock more realtime capabilities for your app.
+                    Type definitions will be as narrow as you&apos;ve configured, all while managing minimal TypeScript
+                    type definitions and without code-generation!
                 </p>
             </div>
-            <HomeIntroStep3Code className="min-w-0 flex-1" />
+            <HomeIntroStep5Code className="min-w-0 flex-1" />
         </PageContainer>
     );
 };

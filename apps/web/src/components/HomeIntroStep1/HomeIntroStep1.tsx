@@ -2,7 +2,7 @@ import { Anchor, Code, PageContainer } from "@pluv-internal/react-components/eit
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import type { FC } from "react";
-import { HomeIntroCodeStep1 } from "../HomeIntroCodeStep1";
+import { HomeIntroStep1Code } from "./HomeIntroStep1Code";
 
 export interface HomeIntroStep1Props {
     className?: string;
@@ -68,7 +68,7 @@ export const HomeIntroStep1: FC<HomeIntroStep1Props> = ({ className }) => {
                     Lastly, define a type export of the <Code>IOServer</Code> for our frontend to use.
                 </p>
             </div>
-            <HomeIntroCodeStep1 className="min-w-0 flex-1" />
+            <HomeIntroStep1Code className="min-w-0 flex-1" />
         </PageContainer>
     );
 };

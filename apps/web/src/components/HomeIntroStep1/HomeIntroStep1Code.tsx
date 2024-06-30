@@ -1,14 +1,14 @@
+import { Card } from "@pluv-internal/react-components/either";
+import { cn } from "@pluv-internal/utils";
 import { codeBlock } from "common-tags";
 import type { FC } from "react";
 import { ServerCodeBlock } from "../ServerCodeBlock";
-import { Card } from "@pluv-internal/react-components/either";
-import { cn } from "@pluv-internal/utils";
 
-export interface HomeIntroCodeStep1Props {
+export interface HomeIntroStep1CodeProps {
     className?: string;
 }
 
-export const HomeIntroCodeStep1: FC<HomeIntroCodeStep1Props> = ({ className }) => {
+export const HomeIntroStep1Code: FC<HomeIntroStep1CodeProps> = ({ className }) => {
     return (
         <Card className={cn("flex flex-col items-stretch overflow-auto shadow-md", className)}>
             <ServerCodeBlock

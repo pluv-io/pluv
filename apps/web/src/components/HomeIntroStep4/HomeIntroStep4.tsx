@@ -1,14 +1,14 @@
-import { Anchor, Code, PageContainer } from "@pluv-internal/react-components/either";
+import { Code, PageContainer } from "@pluv-internal/react-components/either";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import type { FC } from "react";
-import { HomeIntroStep3Code } from "./HomeIntroStep3Code";
+import { HomeIntroStep4Code } from "./HomeIntroStep4Code";
 
-export interface HomeIntroStep3Props {
+export interface HomeIntroStep4Props {
     className?: string;
 }
 
-export const HomeIntroStep3: FC<HomeIntroStep3Props> = ({ className }) => {
+export const HomeIntroStep4: FC<HomeIntroStep4Props> = ({ className }) => {
     return (
         <PageContainer
             className={cn(
@@ -44,27 +44,16 @@ export const HomeIntroStep3: FC<HomeIntroStep3Props> = ({ className }) => {
                             text-primary-foreground
                         `}
                     >
-                        3
+                        4
                     </span>
-                    <h3 className="text-xl font-semibold md:text-2xl">Prepare your frontend bundle</h3>
+                    <h3 className="text-xl font-semibold md:text-2xl">Wrap with PluvRoomProvider</h3>
                 </div>
                 <p className="mt-3 text-sm md:text-base">
-                    Afterwards, we will prepare our frontend bundle by using a type import of our <Code>IOServer</Code>.
-                    This frontend bundle contains all of pluv.io&apos;s APIs for realtime collaboration.
-                    <br />
-                    <br />
-                    You can optionally define a presence for each user with Zod, and CRDT storage with{" "}
-                    <Anchor href="https://yjs.dev/" target="_blank" rel="noreferrer noopener">
-                        Yjs
-                    </Anchor>{" "}
-                    or{" "}
-                    <Anchor href="https://loro.dev/" target="_blank" rel="noreferrer noopener">
-                        Loro
-                    </Anchor>{" "}
-                    to unlock more realtime capabilities for your app.
+                    The room bundle provides a <Code>PluvRoomProvider</Code> to wrap your page with. Once you do, your
+                    app is now multiplayer with pluv.io!
                 </p>
             </div>
-            <HomeIntroStep3Code className="min-w-0 flex-1" />
+            <HomeIntroStep4Code className="min-w-0 flex-1" />
         </PageContainer>
     );
 };

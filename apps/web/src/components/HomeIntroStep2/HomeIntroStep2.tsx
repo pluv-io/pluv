@@ -2,7 +2,7 @@ import { Anchor, Code, PageContainer } from "@pluv-internal/react-components/eit
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import type { FC } from "react";
-import { HomeIntroCodeStep2 } from "../HomeIntroCodeStep2";
+import { HomeIntroStep2Code } from "./HomeIntroStep2Code";
 
 export interface HomeIntroStep2Props {
     className?: string;
@@ -46,26 +46,24 @@ export const HomeIntroStep2: FC<HomeIntroStep2Props> = ({ className }) => {
                     >
                         2
                     </span>
-                    <h3 className="text-xl font-semibold md:text-2xl">Prepare your frontend bundle</h3>
+                    <h3 className="text-xl font-semibold md:text-2xl">Set-up your HTTP and Websocket servers</h3>
                 </div>
                 <p className="mt-3 text-sm md:text-base">
-                    Next, we will prepare our frontend bundle by using a type import of our <Code>IOServer</Code>. The
-                    room bundle will provide a <Code>PluvRoomProvider</Code> to wrap your page with. Once you do, your
-                    app is now multiplayer with pluv.io!
+                    Next, set-up our HTTP and WebSocket servers using our <Code>ioServer</Code>.
                     <br />
                     <br />
-                    You can optionally define a presence for each user with Zod, and CRDT storage with{" "}
-                    <Anchor href="https://yjs.dev/" target="_blank" rel="noreferrer noopener">
-                        Yjs
+                    Set-up may vary between{" "}
+                    <Anchor href="https://nodejs.org" target="_blank" rel="noreferrer noopener">
+                        Node.js
                     </Anchor>{" "}
-                    or{" "}
-                    <Anchor href="https://loro.dev/" target="_blank" rel="noreferrer noopener">
-                        Loro
+                    and{" "}
+                    <Anchor href="https://workers.cloudflare.com/" target="_blank" rel="noreferrer noopener">
+                        Cloudflare Worker
                     </Anchor>{" "}
-                    to unlock more realtime capabilities for your app.
+                    runtimes.
                 </p>
             </div>
-            <HomeIntroCodeStep2 className="min-w-0 flex-1" />
+            <HomeIntroStep2Code className="min-w-0 flex-1" />
         </PageContainer>
     );
 };

@@ -1,51 +1,39 @@
+import { Card } from "@pluv-internal/react-components/either";
+import { cn } from "@pluv-internal/utils";
 import { codeBlock } from "common-tags";
 import type { FC } from "react";
 import { ServerCodeBlock } from "../ServerCodeBlock";
-import { Card } from "@pluv-internal/react-components/either";
-import { cn } from "@pluv-internal/utils";
 
-export interface HomeIntroCodeStep3Props {
+export interface HomeIntroStep4CodeProps {
     className?: string;
 }
 
-export const HomeIntroCodeStep3: FC<HomeIntroCodeStep3Props> = ({ className }) => {
+export const HomeIntroStep4Code: FC<HomeIntroStep4CodeProps> = ({ className }) => {
     return (
         <Card className={cn("flex flex-col items-stretch overflow-auto shadow-md", className)}>
             <ServerCodeBlock
                 className="grow"
                 code={codeBlock`
+                    import { yjs } from "@pluv/crdt-yjs";
+                    import React from "react";
                     import { pluv } from "./client";
+
+                    interface PageProps {
+                      children?: React.ReactNode;
+                      roomId: string;
+                    }
+
                     // ---cut---
-                    const broadcast = pluv.useBroadcast();
-
-                    broadcast.sendGreeting({ name: "leedavidcs" });
-                    //        ^?
-
-
-
-
-                    pluv.event.receiveGreeting.useEvent(({ data }) => {
-                      console.log(data.greeting);
-                      //               ^?
-                    });
-
-                    const [selectionId] = pluv.useMyPresence((presence) => {
-                    //     ^?
-
-                    
-                      return presence.selectionId;
-                    });
-
-                    const [tasks] = pluv.useStorage("tasks");
-                    //     ^?
-
-
-
-                    
-
-                            //
+                    const Page: React.FC<PageProps> = ({ children, roomId }) => (
+                      <pluv.PluvRoomProvider
+                        initialPresence={{ selectionId: null }}
+                        room={roomId}                          
+                      >
+                        {children}
+                      </pluv.PluvRoomProvider>
+                    );
                 `}
-                lang="typescript"
+                lang="tsx"
                 twoslashOptions={{
                     extraFiles: {
                         "server.ts": codeBlock`
@@ -56,11 +44,11 @@ export const HomeIntroCodeStep3: FC<HomeIntroCodeStep3Props> = ({ className }) =
                             const io = createIO({ platform: platformNode() });
 
                             const router = io.router({
-                                sendGreeting: io.procedure
-                                    .input(z.object({ name: z.string() }))
-                                    .broadcast(({ name }) => ({
-                                        receiveGreeting: { greeting: \`Hi! I'm \${name}!\` },
-                                    })),
+                              sendGreeting: io.procedure
+                                .input(z.object({ name: z.string() }))
+                                .broadcast(({ name }) => ({
+                                  receiveGreeting: { greeting: \`Hi! I'm \${name}!\` },
+                                })),
                             });
 
                             const ioServer = io.server({ router });
@@ -94,7 +82,9 @@ export const HomeIntroCodeStep3: FC<HomeIntroCodeStep3Props> = ({ className }) =
                             });
                         `,
                     },
-                    shouldGetHoverInfo: () => false,
+                    shouldGetHoverInfo: (identifier) => {
+                        return identifier === "initialPresence" || identifier === "room" || identifier === "roomId";
+                    },
                 }}
             />
         </Card>
