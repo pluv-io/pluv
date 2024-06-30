@@ -53,6 +53,14 @@ const config = {
     env: {
         WS_ENDPOINT: process.env.WS_ENDPOINT,
     },
+    webpack: (config) => {
+        config.experiments = {
+            layers: true,
+            asyncWebAssembly: true,
+        };
+
+        return config;
+    },
 };
 
 export default withPlugins([withBundleAnalyzer, withMdx], config);
