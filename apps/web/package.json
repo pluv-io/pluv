@@ -59,6 +59,8 @@
         "@pluv-internal/tailwind-config": "workspace:^",
         "@pluv-internal/typings": "workspace:^",
         "@pluv-internal/utils": "workspace:^",
+        "@pluv/io": "workspace:^",
+        "@pluv/platform-node": "workspace:^",
         "@pluv/tsconfig": "workspace:^",
         "@types/express": "^4.17.21",
         "@types/fs-extra": "^11.0.4",
