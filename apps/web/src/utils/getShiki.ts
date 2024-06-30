@@ -1,5 +1,5 @@
 import type { HighlighterGeneric } from "shiki/core";
-import { getHighlighterCore, loadWasm } from "shiki/core";
+import { getHighlighterCore } from "shiki/core";
 
 export type ShikiLanguage = "bash" | "tsx" | "typescript";
 export type ShikiTheme = "catppuccin-latte" | "catppuccin-macchiato";
