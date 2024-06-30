@@ -35,11 +35,11 @@
         "@radix-ui/react-tooltip": "^1.0.7",
         "@seznam/compose-react-refs": "^1.0.6",
         "@shikijs/twoslash": "^1.10.0",
-        "@tanstack/react-table": "^8.17.3",
+        "@tanstack/react-table": "^8.19.2",
         "@types/common-tags": "^1.8.4",
         "@types/mdx": "^2.0.13",
         "@types/ms": "^0.7.34",
-        "@types/node": "^20.12.13",
+        "@types/node": "^20.14.9",
         "@types/react": "^18.3.3",
         "@types/react-dom": "^18.3.0",
         "@types/ws": "^8.5.10",
@@ -51,8 +51,8 @@
         "polished": "^4.3.1",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
-        "shiki": "^1.6.5",
-        "yjs": "^13.6.15",
+        "shiki": "^1.10.0",
+        "yjs": "^13.6.18",
         "zod": "^3.23.8"
     },
     "devDependencies": {
@@ -75,14 +75,14 @@
         "eslint": "^8.57.0",
         "eslint-config-pluv": "workspace:^",
         "fs-extra": "^11.2.0",
-        "glob": "^10.4.1",
+        "glob": "^10.4.2",
         "next-compose-plugins": "^2.2.1",
-        "nodemon": "^3.1.2",
-        "postcss": "^8.4.38",
+        "nodemon": "^3.1.4",
+        "postcss": "^8.4.39",
         "remark-gfm": "^4.0.0",
         "serve": "^14.2.3",
-        "tailwindcss": "^3.4.3",
+        "tailwindcss": "^3.4.4",
         "ts-node": "^10.9.2",
-        "typescript": "^5.4.5"
+        "typescript": "^5.5.2"
     }
 }
