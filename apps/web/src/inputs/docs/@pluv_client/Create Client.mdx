@@ -1,9 +1,7 @@
----
-title: Create Client
-description: Create a framework-agnostic type-safe pluv.io client to add real-time to any app.
----
-
-import { DocsLayout } from "../../../components";
+export const metadata = {
+    title: "Create Client",
+    description: "Create a framework-agnostic type-safe pluv.io client to add real-time to any app",
+};
 
 # Create Client
 
@@ -43,5 +41,3 @@ const client = createClient<AppPluvIO>({
 
 * [Enable authorization](/docs/io/authorization)
 * [Create rooms](/docs/client/create-rooms)
-
-export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;

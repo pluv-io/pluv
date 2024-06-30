@@ -1,121 +1,95 @@
-import { MdxProvider } from "@pluv-internal/mdx-components";
-import { SideBar, TableOfContents } from "@pluv-internal/react-components";
-import { useRouter } from "next/router";
+"use client";
+
+import { TableOfContents } from "@pluv-internal/react-components/client";
+import { SideBar } from "@pluv-internal/react-components/either";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
+import { usePathname } from "next/navigation";
 import { CSSProperties, ReactNode, memo } from "react";
-import tw from "twin.macro";
 import { DocsBreadcrumbs } from "../DocsBreadcrumbs";
-import { DocsSeo } from "../DocsSeo";
 import { DocsTreeViewNavigation } from "../DocsTreeViewNavigation";
-
-const Root = tw.div`
-    flex
-    flex-row
-    inset-0
-`;
-
-const StyledSideBar = tw(SideBar)`
-    top-16
-    shrink-0
-    hidden
-    flex-col
-    items-stretch
-    [height: calc(100vh - 4rem)]
-    px-3
-    pt-8
-    overflow-y-auto
-    xl:flex
-`;
-
-const Navigation = tw(DocsTreeViewNavigation)`
-    pb-6
-`;
-
-const Container = tw.div`
-    grow
-    flex
-    flex-row
-    items-start
-    justify-center
-    gap-2
-    min-w-0
-    px-2
-    py-8
-    lg:gap-6
-    xl:gap-8
-    lg:px-6
-    xl:px-8
-    sm:py-12
-`;
-
-const Content = tw.main`
-    flex
-    flex-col
-    items-stretch
-    w-full
-    min-w-0
-    lg:max-w-[80%]
-`;
-
-const DocContent = tw.div`
-    flex
-    flex-col
-    items-start
-    w-full
-`;
-
-const StyledBreadcrumbs = tw(DocsBreadcrumbs)`
-    mb-8
-`;
-
-const StyledToC = tw(TableOfContents)`
-    shrink-0
-    hidden
-    sticky
-    top-28
-    w-72
-    max-h-[calc(100vh - 12rem)]
-    overflow-auto
-    lg:flex
-`;
 
 export interface DocsLayoutProps {
     children?: ReactNode;
     className?: string;
-    meta?: {
-        description?: string;
-        title?: string;
-    } | null;
     style?: CSSProperties;
 }
 
 export const DocsLayout = memo<DocsLayoutProps>((props) => {
-    const { children, className, meta, style } = props;
+    const { children, className, style } = props;
 
-    const router = useRouter();
+    const pathName = usePathname();
 
     return (
-        <Root as="div" className={className} style={style}>
-            <DocsSeo description={meta?.description} title={meta?.title} />
-            <StyledSideBar>
-                <Navigation />
-            </StyledSideBar>
-            <Container>
-                <Content id="docs-content">
-                    <StyledBreadcrumbs />
-                    <DocContent>
-                        <MdxProvider>{children}</MdxProvider>
-                    </DocContent>
-                </Content>
-                <StyledToC
-                    key={router.asPath}
+        <div className={cn("inset-0 flex flex-row", className)} style={style}>
+            <SideBar
+                className={oneLine`
+                    top-14
+                    hidden
+                    h-[calc(100vh-3.5rem)]
+                    shrink-0
+                    flex-col
+                    items-stretch
+                    overflow-y-auto
+                    px-3
+                    pt-8
+                    xl:flex
+                `}
+            >
+                <DocsTreeViewNavigation className="pb-6" />
+            </SideBar>
+            <div
+                className={oneLine`
+                    flex
+                    min-w-0
+                    grow
+                    flex-row
+                    items-start
+                    justify-center
+                    gap-2
+                    px-2
+                    py-8
+                    sm:py-12
+                    lg:gap-6
+                    lg:px-6
+                    xl:gap-8
+                    xl:px-8
+                `}
+            >
+                <main
+                    id="docs-content"
+                    className={oneLine`
+                        flex
+                        w-full
+                        min-w-0
+                        flex-col
+                        items-stretch
+                        lg:max-w-screen-md
+                    `}
+                >
+                    <DocsBreadcrumbs className="mb-8" />
+                    <div className="flex w-full flex-col items-start">{children}</div>
+                </main>
+                <TableOfContents
+                    key={pathName}
+                    className={oneLine`
+                        sticky
+                        top-28
+                        hidden
+                        max-h-[calc(100vh-12rem)]
+                        w-72
+                        shrink-0
+                        overflow-auto
+                        lg:flex
+                    `}
                     intersection={{
                         rootMargin: "-56px 0% 0%",
                         threshold: 1,
                     }}
                     selector="#docs-content"
                 />
-            </Container>
-        </Root>
+            </div>
+        </div>
     );
 });
 

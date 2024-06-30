@@ -1,9 +1,7 @@
----
-title: Create Rooms
-description: Learn how to create and connect to rooms with @pluv/client.
----
-
-import { DocsLayout } from "../../../components";
+export const metadata = {
+    title: "Create Rooms",
+    description: "Learn how to create and connect to rooms with @pluv/client",
+};
 
 # Creating Rooms
 
@@ -61,5 +59,3 @@ client.leave(ROOM_NAME);
 // or leave by room instance
 client.leave(room);
 ```
-
-export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;

@@ -9,9 +9,7 @@ const sourcePath: string = path.resolve(__dirname, "../svgs");
 const componentPath: string = path.resolve(__dirname, "../src");
 
 const generateComponents = () => {
-    const fileNames = globSync(`${sourcePath}/**.svg`).sort((a, b) =>
-        a.localeCompare(b)
-    );
+    const fileNames = globSync(`${sourcePath}/**.svg`).sort((a, b) => a.localeCompare(b));
 
     console.log("Files:", fileNames);
 
@@ -38,14 +36,14 @@ const generateComponents = () => {
                 // 3. Format the result using Prettier
                 plugins: ["@svgr/plugin-jsx", "@svgr/plugin-prettier"],
                 svgoConfig: {
-                    plugins: [{ removeViewBox: false }],
+                    plugins: [{ removeViewBox: false } as any],
                 },
-                memo: true,
+                memo: false,
                 ref: true,
                 svgo: true,
                 typescript: true,
             },
-            { componentName }
+            { componentName },
         );
 
         if (i === 0) {
@@ -58,7 +56,7 @@ const generateComponents = () => {
 
 					export type SvgIconComponent = typeof ${componentName};
 					export type SvgIconComponentProps = InferComponentProps<SvgIconComponent>;
-				`}\n\n`
+				`}\n\n`,
             );
         }
 

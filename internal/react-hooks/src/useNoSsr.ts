@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 
-export type NoSsrFunction = <T>(value: T | (() => T), fallback?: T) => T | null;
+export type NoSsrFunction = <TValue, TFallback = null>(
+    value: TValue | (() => TValue),
+    fallback?: TFallback,
+) => TValue | TFallback;
 
 export const useNoSsr = (): NoSsrFunction => {
     const [didMount, setDidMount] = useState<boolean>(false);
@@ -8,8 +11,15 @@ export const useNoSsr = (): NoSsrFunction => {
     useEffect(() => setDidMount(typeof window !== "undefined"), []);
 
     const noSsr = useCallback(
-        <T>(value: T | (() => T), fallback?: T): T | null => {
-            return didMount ? (typeof value !== "function" ? value : (value as () => T)()) : fallback ?? null;
+        <TValue, TFallback = null>(
+            value: TValue | (() => TValue),
+            fallback: TFallback = null as TFallback,
+        ): TValue | TFallback => {
+            return didMount
+                ? typeof value !== "function"
+                    ? value
+                    : (value as () => TValue)()
+                : fallback ?? (null as TFallback);
         },
         [didMount],
     );

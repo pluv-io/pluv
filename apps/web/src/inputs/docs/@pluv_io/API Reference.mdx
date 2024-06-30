@@ -1,9 +1,8 @@
----
-title: API Reference
-description: "@pluv/io API reference"
----
+export const metadata = {
+    title: "API Reference",
+    description: "@pluv/io API reference",
+};
 
-import { DocsLayout } from "../../../components";
 
 # API Reference
 
@@ -211,8 +210,6 @@ Registers a websocket to the room. Accepts a secondary options parameter to pass
 ```ts
 // const token: string = ...
 
-room.register(webSocket, { token })
+room.register(webSocket, { token });
 ```
-
-export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;import { IncomingMessage } from "http";
 

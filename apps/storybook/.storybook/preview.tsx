@@ -1,10 +1,15 @@
-import { LaserWaveTheme } from "@pluv-internal/react-code";
-import { LazyMotion } from "@pluv-internal/react-components";
+import { LazyMotion } from "@pluv-internal/react-components/client";
 import { withThemeByClassName } from "@storybook/addon-themes";
 import type { Preview } from "@storybook/react";
+import { Inter } from "next/font/google";
 import React, { type ComponentType } from "react";
 
+import "@pluv-internal/react-components/styles.css";
+import "../src/styles/tailwind.css";
+
 const DEFAULT_VIEWPORT_HEIGHT = "1200px";
+
+const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 const preview: Preview = {
   parameters: {
@@ -72,12 +77,11 @@ const preview: Preview = {
   decorators: [
     (Story: ComponentType) => {
       return (
-        <>
-          <LaserWaveTheme />
-          <LazyMotion>
+        <LazyMotion>
+          <div className={inter.className}>
             <Story />
-          </LazyMotion>
-        </>
+          </div>
+        </LazyMotion>
       );
     },
     withThemeByClassName({

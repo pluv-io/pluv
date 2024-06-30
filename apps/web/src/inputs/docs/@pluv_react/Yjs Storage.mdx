@@ -1,9 +1,7 @@
----
-title: Yjs Storage
-description: Learn how to use Yjs storage with @pluv/react.
----
-
-import { DocsLayout } from "../../../components";
+export const metadata = {
+    title: "Yjs Storage",
+    description: "Learn how to use Yjs storage with @pluv/react",
+};
 
 # Yjs Storage
 
@@ -86,5 +84,3 @@ const addMessage = useCallback((message: string) => {
 
 messages?.map((message, i) => <div key={i}>{message}</div>)
 ```
-
-export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;

@@ -8,7 +8,6 @@
 		"baseUrl": ".",
 		"types": ["@cloudflare/workers-types"],
 		"paths": {
-			"@pluv-internal/cloudflare-utils": ["../../internal/cloudflare-utils/dist"],
 			"@pluv/io": ["../../packages/io/dist"],
 			"@pluv/platform-cloudflare": ["../../packages/platform-cloudflare/dist"],
 			"@pluv/types": ["../../packages/types/dist"]

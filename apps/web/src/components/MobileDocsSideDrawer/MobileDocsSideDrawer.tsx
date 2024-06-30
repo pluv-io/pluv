@@ -1,45 +1,12 @@
-import { Button, LogoIcon, NextLink, SideDrawer } from "@pluv-internal/react-components";
+"use client";
+
+import { SideDrawer } from "@pluv-internal/react-components/client";
+import { Button, LogoIcon, NextLink } from "@pluv-internal/react-components/either";
 import { XIcon } from "@pluv-internal/react-icons";
-import { CSSProperties, FC, MouseEvent } from "react";
-import tw from "twin.macro";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
+import type { CSSProperties, FC, MouseEvent } from "react";
 import { DocsTreeViewNavigation } from "../DocsTreeViewNavigation";
-
-const Root = tw(SideDrawer)`
-    flex
-    flex-col
-    items-stretch
-`;
-
-const TopContainer = tw.div`
-    shrink-0
-    flex
-    flex-row
-    items-center
-    justify-between
-    py-2
-    px-4
-`;
-
-const Logo = tw(NextLink)`
-    flex
-    items-center
-    gap-1.5
-`;
-
-const StyledLogoIcon = tw(LogoIcon)`
-    rounded-md
-`;
-
-const PluvName = tw.span`
-    text-lg
-    font-bold
-`;
-
-const StyledTreeView = tw(DocsTreeViewNavigation)`
-    grow
-    min-h-0
-    overflow-y-auto
-`;
 
 export interface MobileDocsSideDrawerProps {
     className?: string;
@@ -49,19 +16,42 @@ export interface MobileDocsSideDrawerProps {
 
 export const MobileDocsSideDrawer: FC<MobileDocsSideDrawerProps> = ({ className, onClickLink, style }) => {
     return (
-        <Root className={className} style={style}>
-            <TopContainer>
-                <Logo href="/">
-                    <StyledLogoIcon height={36} width={36} />
-                    <PluvName>pluv.io</PluvName>
-                </Logo>
+        <SideDrawer
+            className={cn(
+                oneLine`
+                    flex
+                    flex-col
+                    items-stretch
+                    [&>:last-child]:min-h-0
+                    [&>:last-child]:grow
+                    [&>:last-child]:overflow-y-auto
+                `,
+                className,
+            )}
+            style={style}
+        >
+            <div
+                className={oneLine`
+                    flex
+                    shrink-0
+                    flex-row
+                    items-center
+                    justify-between
+                    px-4
+                    py-2
+                `}
+            >
+                <NextLink className="flex items-center gap-1.5" href="/">
+                    <LogoIcon className="rounded-md" height={36} width={36} />
+                    <span className="text-lg font-bold">pluv.io</span>
+                </NextLink>
                 <SideDrawer.Close>
-                    <Button outlined size="small" square type="button">
+                    <Button size="icon" type="button" variant="outline">
                         <XIcon height={24} width={24} />
                     </Button>
                 </SideDrawer.Close>
-            </TopContainer>
-            <StyledTreeView onClickLink={onClickLink} />
-        </Root>
+            </div>
+            <DocsTreeViewNavigation onClickLink={onClickLink} />
+        </SideDrawer>
     );
 };

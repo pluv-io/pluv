@@ -3,7 +3,7 @@
 	"display": "Next.js",
 	"extends": "./base.json",
 	"compilerOptions": {
-		"target": "es5",
+		"target": "esnext",
 		"lib": ["dom", "dom.iterable", "esnext"],
 		"allowJs": true,
 		"skipLibCheck": true,
@@ -11,6 +11,7 @@
 		"forceConsistentCasingInFileNames": true,
 		"noEmit": true,
 		"incremental": true,
+		"moduleResolution": "bundler",
 		"esModuleInterop": true,
 		"module": "esnext",
 		"resolveJsonModule": true,

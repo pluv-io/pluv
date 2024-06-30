@@ -1,58 +1,66 @@
-import { Language, PrismCode } from "@pluv-internal/react-code";
-import { InferComponentProps } from "@pluv-internal/typings";
-import { PropsWithChildren, ReactElement, ReactNode, isValidElement, useCallback, useMemo } from "react";
-import tw from "twin.macro";
+import { ServerCodeBlock } from "@pluv-internal/react-components/server";
+import type { ShikiLanguage } from "@pluv-internal/react-components/types";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
+import type { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
+import { isValidElement } from "react";
 
-const Root = tw(PrismCode)`
-    w-full
-    border
-    border-indigo-500/40
-    rounded-md
-`;
+export type MdxPreProps = InferComponentProps<"pre">;
 
-export type MdxPreProps = Omit<InferComponentProps<"code">, "ref">;
+const hasChildren = (element: ReactNode): element is ReactElement<PropsWithChildren> => {
+    return isValidElement(element) && !!element.props.children;
+};
 
-export const MdxPre = (props: MdxPreProps): ReactElement | null => {
-    const { children, className, style } = props;
+const getChildrenText = (children: ReactNode): string => {
+    return hasChildren(children)
+        ? getChildrenText(children.props.children)
+        : typeof children === "string"
+          ? children
+          : "";
+};
 
-    const hasChildren = useCallback((element: ReactNode): element is ReactElement<PropsWithChildren> => {
-        return isValidElement(element) && !!element.props.children;
-    }, []);
+const parseLanguage = (className?: string): string | null => {
+    return className?.replace(/language-/, "") ?? null;
+};
 
-    const contents = useMemo(() => {
-        const getChildrenText = (_children: ReactNode): string => {
-            return hasChildren(_children)
-                ? getChildrenText(_children.props.children)
-                : typeof _children === "string"
-                  ? _children
-                  : "";
-        };
+const getChildrenLanguage = (children: ReactNode): string => {
+    if (!isValidElement(children)) return "tsx";
 
-        return getChildrenText(children).trimEnd();
-    }, [children, hasChildren]);
+    const _language = parseLanguage(children.props.className);
 
-    const language = useMemo(() => {
-        const parseLanguage = (_className?: string): string | null => {
-            return _className?.replace(/language-/, "") ?? null;
-        };
+    if (_language) return _language;
+    if (!hasChildren(children)) return "tsx";
 
-        const getChildrenLanguage = (_children: ReactNode): string => {
-            if (!isValidElement(_children)) return "tsx";
+    return getChildrenLanguage(children.props.children);
+};
 
-            const _language = parseLanguage(_children.props.className);
+export const MdxPre: FC<MdxPreProps> = (props) => {
+    const { children, className, style, ...restProps } = props;
 
-            if (_language) return _language;
-            if (!hasChildren(_children)) return "tsx";
-
-            return getChildrenLanguage(_children.props.children);
-        };
-
-        return parseLanguage(className) ?? getChildrenLanguage(children);
-    }, [children, className, hasChildren]) as Language;
+    const contents = getChildrenText(children).trimEnd();
+    const language = (parseLanguage(className) ?? getChildrenLanguage(children) ?? "tsx") as ShikiLanguage;
 
     return (
-        <Root className={className} language={language} style={style}>
-            {contents}
-        </Root>
+        <ServerCodeBlock
+            {...(restProps as InferComponentProps<"div">)}
+            className={cn(
+                oneLine`
+                    flex
+                    w-full
+                    min-w-full
+                    flex-col
+                    items-stretch
+                    overflow-auto
+                    rounded
+                    border
+                    border-border
+                    shadow
+                `,
+                className,
+            )}
+            code={contents}
+            lang={language}
+        />
     );
 };

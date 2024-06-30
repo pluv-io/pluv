@@ -24,7 +24,6 @@
 	},
 	"private": true,
 	"dependencies": {
-		"@pluv-internal/cloudflare-utils": "workspace:^",
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@pluv/addon-indexeddb": "workspace:^",
 		"@pluv/client": "workspace:^",
@@ -55,7 +54,7 @@
 		"ioredis": "^5.4.1",
 		"loro-crdt": "^0.11.1",
 		"ms": "^2.1.3",
-		"next": "14.2.3",
+		"next": "14.2.4",
 		"path-to-regexp": "^6.2.2",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",

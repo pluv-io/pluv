@@ -12,17 +12,18 @@
 	},
 	"dependencies": {
 		"@mdx-js/react": "^3.0.1",
-		"@pluv-internal/react-code": "workspace:^",
 		"@pluv-internal/react-components": "workspace:^",
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@pluv-internal/react-icons": "workspace:^",
+		"@pluv-internal/utils": "workspace:^",
+		"@types/common-tags": "^1.8.4",
+		"@types/mdx": "^2.0.13",
 		"@types/react": "^18.3.3",
 		"@types/react-dom": "^18.3.0",
-		"next": "^14.2.3",
+		"common-tags": "^1.8.2",
+		"next": "^14.2.4",
 		"react": "^18.3.1",
-		"react-dom": "^18.3.1",
-		"styled-components": "^6.1.11",
-		"twin.macro": "^3.4.1"
+		"react-dom": "^18.3.1"
 	},
 	"devDependencies": {
 		"@pluv-internal/tailwind-config": "workspace:^",
@@ -31,13 +32,7 @@
 		"autoprefixer": "^10.4.19",
 		"eslint-config-pluv": "workspace:^",
 		"postcss": "^8.4.38",
-		"react-is": "^18.3.1",
 		"tailwindcss": "^3.4.3",
 		"typescript": "^5.4.5"
-	},
-	"babelMacros": {
-		"twin": {
-			"preset": "styled-components"
-		}
 	}
 }

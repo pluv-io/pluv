@@ -1,9 +1,7 @@
----
-title: Loading Storage
-description: Listen to storage and room changes, and initialize rooms with saved storage.
----
-
-import { DocsLayout } from "../../../components";
+export const metadata = {
+    title: "Loading Storage",
+    description: "Listen to storage and room changes, and initialize rooms with saved storage",
+};
 
 # Loading Storage
 
@@ -46,5 +44,3 @@ export const io = createIO({
     },
 });
 ```
-
-export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>;

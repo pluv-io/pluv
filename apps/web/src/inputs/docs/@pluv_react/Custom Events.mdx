@@ -1,9 +1,7 @@
----
-title: Custom Events
-description: Learn how to use custom type-safe events with @pluv/react.
----
-
-import { DocsLayout } from "../../../components";
+export const metadata = {
+    title: "Custom Events",
+    description: "Learn how to use custom type-safe events with @pluv/react",
+};
 
 # Custom Events
 
@@ -39,5 +37,3 @@ const doubleValue = useCallback((value: number): void => {
     broadcast.doubleValue({ value });
 }, [broadcast]);
 ```
-
-export default ({ children }) => <DocsLayout meta={meta}>{children}</DocsLayout>

@@ -41,6 +41,7 @@
     "npm_config_user_agent",
     "BASE_URL",
     "DEPLOY_URL",
+    "NEXT_RUNTIME",
     "NODE_ENV",
     "PLUV_AUTH_SECRET",
     "SEO",

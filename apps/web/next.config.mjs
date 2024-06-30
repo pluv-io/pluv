@@ -1,5 +1,5 @@
 import bundleAnalyzerPlugin from "@next/bundle-analyzer";
-import mdxPlugin from "@next/mdx";
+import createMdx from "@next/mdx";
 import { frontmatter } from "@pluv-internal/remark-plugins";
 import withPlugins from "next-compose-plugins";
 import remarkGfm from "remark-gfm";
@@ -8,10 +8,9 @@ const withBundleAnalyzer = bundleAnalyzerPlugin({
     enabled: process.env.BUNDLE_ANALYZE === "true",
 });
 
-const withMdx = mdxPlugin({
+const withMdx = createMdx({
     extension: /\.mdx?$/,
     options: {
-        providerImportSource: "@mdx-js/react",
         remarkPlugins: [frontmatter, remarkGfm],
         rehypePlugins: [],
     },
@@ -21,6 +20,14 @@ const withMdx = mdxPlugin({
 const config = {
     experimental: {
         externalDir: true,
+        serverComponentsExternalPackages: ["@shikijs/twoslash"],
+        /**
+         * !HACK
+         * @description This is to resolve ERR_REQUIRE_ESM outlined in this github issue comment
+         * @link https://github.com/vercel/next.js/issues/64434#issuecomment-2082964050
+         * @date June 29, 2024
+         */
+        optimizePackageImports: ["shiki"],
     },
     i18n: {
         locales: ["en-US"],

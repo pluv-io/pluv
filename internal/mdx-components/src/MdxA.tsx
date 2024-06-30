@@ -1,17 +1,15 @@
-import { NextLink } from "@pluv-internal/react-components";
-import { useNoSsr } from "@pluv-internal/react-hooks";
-import { InferComponentProps } from "@pluv-internal/typings";
-import { ReactElement } from "react";
-import tw from "twin.macro";
+"use client";
 
-const Root = tw(NextLink)`
-    text-sky-500
-`;
+import { Anchor } from "@pluv-internal/react-components/either";
+import { useNoSsr } from "@pluv-internal/react-hooks";
+import type { InferComponentProps } from "@pluv-internal/typings";
+import { cn } from "@pluv-internal/utils";
+import { forwardRef } from "react";
 
 export type MdxAProps = Omit<InferComponentProps<"a">, "ref">;
 
-export const MdxA = (props: MdxAProps): ReactElement | null => {
-    const { href } = props;
+export const MdxA = forwardRef<HTMLAnchorElement, MdxAProps>((props, ref) => {
+    const { className, href, ...restProps } = props;
 
     const noSsr = useNoSsr();
 
@@ -20,12 +18,16 @@ export const MdxA = (props: MdxAProps): ReactElement | null => {
         if (/^http(s)?:\/\//.test(href)) return !href.startsWith(window.origin);
 
         return false;
-    });
+    }, false);
 
     const rel = props.rel ?? isExternal ? "noopener noreferrer" : undefined;
     const target = props.target ?? isExternal ? "_blank" : undefined;
 
     if (!href) return null;
 
-    return <Root {...props} href={href} rel={rel} target={target} />;
-};
+    return (
+        <Anchor {...restProps} ref={ref} className={cn("underline", className)} href={href} rel={rel} target={target} />
+    );
+});
+
+MdxA.displayName = "MdxA";

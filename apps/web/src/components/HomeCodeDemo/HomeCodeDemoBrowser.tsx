@@ -1,67 +1,12 @@
 import { DndContext } from "@dnd-kit/core";
+import { cn } from "@pluv-internal/utils";
+import { oneLine } from "common-tags";
 import type { CSSProperties, FC, MouseEvent } from "react";
 import { useCallback, useContext, useMemo, useState } from "react";
-import tw from "twin.macro";
+import { HomeCodeDemoBox } from "./HomeCodeDemoBox";
 import type { HomeCodeDemoPosition, HomeCodeDemoSelections } from "./context";
 import { HomeCodeDemoContext } from "./context";
-import { HomeCodeDemoBox } from "./HomeCodeDemoBox";
-
-const Root = tw.div`
-    relative
-    flex
-    items-center
-    justify-center
-    border
-    border-solid
-    border-indigo-500/40
-    overflow-hidden
-`;
-
-const MockButtons = tw.div`
-    absolute
-    top-5
-    left-5
-    flex
-    flex-row
-    items-center
-    gap-1
-    pointer-events-none
-`;
-
-const MockButton = tw.span`
-    h-2
-    w-2
-    rounded-full
-    bg-gray-500/20
-`;
-
-const UserName = tw.div`
-    absolute
-    top-4
-    right-5
-    text-sm
-    font-semibold
-    text-gray-500
-`;
-
-const Instructions = tw.div`
-    absolute
-    bottom-4
-    left-1/2
-    -translate-x-1/2
-    text-sm
-    font-medium
-    text-gray-500
-    whitespace-nowrap
-`;
-
-const FirstBox = tw(HomeCodeDemoBox)`
-    text-cyan-500
-`;
-
-const SecondBox = tw(HomeCodeDemoBox)`
-    text-violet-500
-`;
+import { Card } from "@pluv-internal/react-components/either";
 
 const didClickIn = (element: HTMLDivElement | null, event: MouseEvent<HTMLDivElement>): boolean => {
     return !element || element.contains(event.target as Node | null);
@@ -113,9 +58,19 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({ className, i
     );
 
     return (
-        <Root
+        <Card
             ref={rootRef}
-            className={className}
+            className={cn(
+                oneLine`
+                    relative
+                    flex
+                    items-center
+                    justify-center
+                    overflow-hidden
+                    shadow-md
+                `,
+                className,
+            )}
             onClick={(e) => {
                 if (didClickIn(box1, e) || didClickIn(box2, e)) return;
 
@@ -126,13 +81,37 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({ className, i
             }}
             style={style}
         >
-            <MockButtons>
-                <MockButton />
-                <MockButton />
-                <MockButton />
-            </MockButtons>
-            <UserName>{user}</UserName>
-            <Instructions>Drag the boxes</Instructions>
+            <div className="pointer-events-none absolute left-5 top-5 flex flex-row items-center gap-1">
+                <span className="size-2 rounded-full bg-gray-500/20" />
+                <span className="size-2 rounded-full bg-gray-500/20" />
+                <span className="size-2 rounded-full bg-gray-500/20" />
+            </div>
+            <span
+                className={oneLine`
+                    absolute
+                    right-5
+                    top-4
+                    text-sm
+                    font-semibold
+                    text-gray-500
+                `}
+            >
+                {user}
+            </span>
+            <div
+                className={oneLine`
+                    absolute
+                    bottom-4
+                    left-1/2
+                    -translate-x-1/2
+                    whitespace-nowrap
+                    text-sm
+                    font-medium
+                    text-gray-500
+                `}
+            >
+                Drag the boxes
+            </div>
             <DndContext
                 id={`${id}_dnd_first`}
                 onDragMove={({ delta }) => {
@@ -154,9 +133,10 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({ className, i
                     }));
                 }}
             >
-                <FirstBox
+                <HomeCodeDemoBox
                     ref={box1Ref}
                     id={`${id}_first`}
+                    className="text-cyan-500"
                     onSelect={() => {
                         setSelections((oldSelections) => ({
                             ...oldSelections,
@@ -189,9 +169,10 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({ className, i
                     }));
                 }}
             >
-                <SecondBox
+                <HomeCodeDemoBox
                     ref={box2Ref}
                     id={`${id}_second`}
+                    className="text-violet-500"
                     onSelect={() => {
                         setSelections((oldSelections) => ({
                             ...oldSelections,
@@ -203,6 +184,6 @@ export const HomeCodeDemoBrowser: FC<HomeCodeDemoBrowserProps> = ({ className, i
                     user={other === "second" ? otherUser : null}
                 />
             </DndContext>
-        </Root>
+        </Card>
     );
 };
