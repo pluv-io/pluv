@@ -1,11 +1,12 @@
 import type { HighlighterGeneric } from "shiki/core";
-import { getHighlighterCore } from "shiki/core";
-import getWasm from "shiki/wasm";
 
 export type ShikiLanguage = "bash" | "javascript" | "jsx" | "tsx" | "typescript";
 export type ShikiTheme = "catppuccin-latte" | "catppuccin-macchiato";
 
 export const getShiki = async () => {
+    const { getHighlighterCore } = await import("shiki/core");
+    const getWasm = await import("shiki/wasm");
+
     const highlighter = await getHighlighterCore({
         themes: [import("shiki/themes/catppuccin-latte.mjs"), import("shiki/themes/catppuccin-macchiato.mjs")],
         langs: [
