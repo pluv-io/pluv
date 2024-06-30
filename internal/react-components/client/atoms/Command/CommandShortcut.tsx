@@ -5,7 +5,7 @@ import { FC } from "react";
 export type CommandShortcutProps = InferComponentProps<"span">;
 
 export const CommandShortcut: FC<CommandShortcutProps> = ({ className, ...props }) => {
-    return <span className={cn("text-muted-foreground ml-auto text-xs tracking-widest", className)} {...props} />;
+    return <span className={cn("ml-auto text-xs tracking-widest text-muted-foreground", className)} {...props} />;
 };
 
 CommandShortcut.displayName = "CommandShortcut";

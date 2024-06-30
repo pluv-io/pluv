@@ -10,10 +10,6 @@ export const Switch = forwardRef<ElementRef<typeof RadixSwitch.Root>, InferCompo
             <RadixSwitch.Root
                 className={cn(
                     oneLine`
-                    focus-visible:ring-ring
-                    focus-visible:ring-offset-background
-                    data-[state=checked]:bg-primary
-                    data-[state=unchecked]:bg-input
                     peer
                     inline-flex
                     h-6
@@ -27,9 +23,13 @@ export const Switch = forwardRef<ElementRef<typeof RadixSwitch.Root>, InferCompo
                     transition-colors
                     focus-visible:outline-none
                     focus-visible:ring-2
+                    focus-visible:ring-ring
                     focus-visible:ring-offset-2
+                    focus-visible:ring-offset-background
                     disabled:cursor-not-allowed
                     disabled:opacity-50
+                    data-[state=checked]:bg-primary
+                    data-[state=unchecked]:bg-input
                 `,
                     props.className,
                 )}
@@ -39,12 +39,12 @@ export const Switch = forwardRef<ElementRef<typeof RadixSwitch.Root>, InferCompo
                 <RadixSwitch.Thumb
                     className={cn(
                         oneLine`
-                        bg-background
                         pointer-events-none
                         block
                         h-5
                         w-5
                         rounded-full
+                        bg-background
                         shadow-lg
                         ring-0
                         transition-transform

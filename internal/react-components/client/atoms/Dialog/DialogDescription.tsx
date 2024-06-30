@@ -6,7 +6,7 @@ export type DialogDescriptionProps = ComponentPropsWithoutRef<typeof RadixDialog
 
 export const DialogDescription = forwardRef<ElementRef<typeof RadixDialog.Description>, DialogDescriptionProps>(
     ({ className, ...props }, ref) => (
-        <RadixDialog.Description ref={ref} className={cn("text-muted-foreground text-sm", className)} {...props} />
+        <RadixDialog.Description ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
     ),
 );
 

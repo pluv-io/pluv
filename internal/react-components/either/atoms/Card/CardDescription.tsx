@@ -6,7 +6,7 @@ export type CardDescriptionProps = InferComponentProps<"p">;
 
 export const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionProps>(
     ({ className, ...props }, ref) => {
-        return <p ref={ref} className={cn("text-muted-foreground text-sm", className)} {...props} />;
+        return <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />;
     },
 );
 

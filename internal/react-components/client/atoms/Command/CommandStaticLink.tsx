@@ -13,8 +13,6 @@ export const CommandStaticLink = forwardRef<HTMLAnchorElement, CommandStaticLink
                 ref={ref}
                 className={cn(
                     oneLine`
-                        hover:bg-accent
-                        hover:text-accent-foreground
                         relative
                         flex
                         cursor-pointer
@@ -25,6 +23,8 @@ export const CommandStaticLink = forwardRef<HTMLAnchorElement, CommandStaticLink
                         py-1.5
                         text-sm
                         outline-none
+                        hover:bg-accent
+                        hover:text-accent-foreground
                         disabled:pointer-events-none
                         disabled:opacity-50
                     `,

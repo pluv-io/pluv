@@ -5,7 +5,7 @@ import { forwardRef } from "react";
 export type SkeletonProps = InferComponentProps<"div">;
 
 export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>((props, ref) => {
-    return <div {...props} className={cn("bg-muted animate-pulse rounded-md", props.className)} ref={ref} />;
+    return <div {...props} className={cn("animate-pulse rounded-md bg-muted", props.className)} ref={ref} />;
 });
 
 Skeleton.displayName = "Skeleton";

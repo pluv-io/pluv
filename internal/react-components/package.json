@@ -11,7 +11,7 @@
 		"types.ts"
 	],
 	"scripts": {
-		"lint": "eslint src/**/*.ts* --fix",
+		"lint": "eslint {client,either,higher-order,server,utils}/**/*.ts* --fix",
 		"tsc:check": "tsc --noEmit"
 	},
 	"publishConfig": {
