@@ -20,7 +20,7 @@ const withMdx = createMdx({
 const config = {
     experimental: {
         externalDir: true,
-        serverComponentsExternalPackages: ["@shikijs/twoslash", "shiki", "vscode-oniguruma"],
+        serverComponentsExternalPackages: ["@shikijs/twoslash", "shiki", "shiki/wasm", "vscode-oniguruma"],
         /**
          * !HACK
          * @description This is to resolve ERR_REQUIRE_ESM outlined in this github issue comment
