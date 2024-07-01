@@ -58,6 +58,8 @@ export const ServerCodeBlock: FC<ServerCodeBlockProps> = async ({
             {...restProps}
             className={cn(
                 oneLine`
+                    text-sm
+                    md:text-base
                     [&>pre]:size-full
                     [&>pre]:p-3
                 `,

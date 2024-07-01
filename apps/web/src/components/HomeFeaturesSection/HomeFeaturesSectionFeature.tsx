@@ -36,7 +36,7 @@ export const HomeFeaturesSectionFeature: FC<HomeFeaturesSectionFeatureProps> = (
             style={style}
         >
             <h3 className="text-left text-lg font-bold md:text-xl">{title}</h3>
-            <p className="text-sm leading-tight text-muted-foreground md:text-base">{description}</p>
+            <p className="text-sm leading-tight text-muted-foreground lg:text-base lg:leading-normal">{description}</p>
         </Card>
     );
 };
