@@ -2,9 +2,9 @@
     "name": "pluv-monorepo",
     "private": true,
     "engines": {
-        "node": ">=14.0.0"
+        "node": ">=18.0.0"
     },
-    "packageManager": "pnpm@8.15.8",
+    "packageManager": "pnpm@9.4.0+sha256.b6fd0bfda555e7e584ad7e56b30c68b01d5a04f9ee93989f4b93ca8473c49c74",
     "scripts": {
         "build": "turbo run build",
         "build:internal": "turbo run build --filter=./internal/*",
