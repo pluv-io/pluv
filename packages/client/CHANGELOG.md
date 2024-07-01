@@ -1,5 +1,29 @@
 # @pluv/client
 
+## 0.19.0
+
+### Patch Changes
+
+- 137444b: Updated PluvRoom.updateMyPresence to allow passing in a callback function that exposes the previous presence value and returns a presence update.
+
+  ```ts
+  type Presence = {
+      selectionId: string | null;
+  };
+
+  const room: PluvRoom = /* ... */;
+  const newSelectionId: string | null = /* ... */;
+
+  room.updateMyPresence({ selectionId: newSelection });
+
+  // You can reference the previous presence and return a new presence based on it
+  room.updateMyPresence((previousPresence) => ({ selectionId: newSelection ?? previousPresence.selectionId }));
+  ```
+
+- f5e4370: Fix others' presence not getting tracked in PluvRoom when the user is unauthorized.
+  - @pluv/crdt@0.19.0
+  - @pluv/types@0.19.0
+
 ## 0.18.0
 
 ### Minor Changes

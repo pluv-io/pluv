@@ -1,5 +1,21 @@
 # @pluv/react
 
+## 0.19.0
+
+### Minor Changes
+
+- 798e32d: **Breaking**: useOthers now allows returning any data besides arrays when using a custom selector.
+- 8450306: **Breaking**: Require minimum react version of ^18.0.0.
+
+### Patch Changes
+
+- 607afe3: Update the `updateMyPresence` function from `useMyPresence` to simply forward the function from the `PluvRoom`. This means all `updateMyPresence` functions should be the same underlying reference across all `useMyPresence` hooks.
+- Updated dependencies [137444b]
+- Updated dependencies [f5e4370]
+  - @pluv/client@0.19.0
+  - @pluv/crdt@0.19.0
+  - @pluv/types@0.19.0
+
 ## 0.18.0
 
 ### Minor Changes
