@@ -258,9 +258,9 @@ export const createRoomBundle = <
 
         const getSnapshot = useCallback((): boolean => room.canUndo(), [room]);
 
-        const canRedo = useSyncExternalStoreWithSelector(subscribe, getSnapshot, getSnapshot, identity);
+        const canUndo = useSyncExternalStoreWithSelector(subscribe, getSnapshot, getSnapshot, identity);
 
-        return canRedo;
+        return canUndo;
     };
 
     const useConnection = <T extends unknown = WebSocketConnection>(
