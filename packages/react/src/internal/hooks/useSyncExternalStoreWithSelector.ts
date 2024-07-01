@@ -1,5 +1,5 @@
 import { useRef, useSyncExternalStore } from "react";
-import { identity } from "../utils";
+import { shallowEqual } from "../utils";
 import { useNoSsr } from "./useNoSsr";
 
 export const useSyncExternalStoreWithSelector = <TSnapshot, TSelection>(
@@ -23,7 +23,7 @@ export const useSyncExternalStoreWithSelector = <TSnapshot, TSelection>(
     const _getClientSnapshot = () => {
         const data = getClientSnapshot();
         const snapshot = selector(data);
-        const compare = isEqual ?? identity;
+        const compare = isEqual ?? shallowEqual;
         const cached = cacheRef.current;
 
         const isUnchanged = cached === null ? snapshot === null : compare(cached, snapshot);
