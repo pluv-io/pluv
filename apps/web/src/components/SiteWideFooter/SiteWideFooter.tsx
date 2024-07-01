@@ -47,14 +47,14 @@ export const SiteWideFooter = memo<SiteWideFooterProps>((props) => {
                     className={oneLine`
                         flex
                         flex-col
-                        items-center
+                        items-stretch
                         gap-2
                         sm:flex-row
                     `}
                 >
                     <Button asChild size="sm" variant="outline">
                         <NextLink
-                            className="flex w-28 flex-row items-center justify-center gap-2"
+                            className="flex min-w-28 flex-1 grow flex-row items-center justify-center gap-2"
                             href="https://github.com/pluv-io/pluv"
                             rel="noreferrer noopener"
                             target="_blank"
@@ -65,9 +65,9 @@ export const SiteWideFooter = memo<SiteWideFooterProps>((props) => {
                             <span>GitHub</span>
                         </NextLink>
                     </Button>
-                    <Button size="sm" variant="outline">
+                    <Button asChild size="sm" variant="outline">
                         <NextLink
-                            className="flex w-28 flex-row items-center justify-center gap-2"
+                            className="flex min-w-28 flex-1 grow flex-row items-center justify-center gap-2"
                             href="https://www.npmjs.com/package/@pluv/io"
                             rel="noreferrer noopener"
                             target="_blank"

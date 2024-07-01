@@ -40,6 +40,8 @@ export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>((props, ref)
             {...restProps}
             className={cn(
                 oneLine`
+                    text-sm
+                    md:text-base
                     [&>pre]:size-full
                     [&>pre]:p-3
                 `,

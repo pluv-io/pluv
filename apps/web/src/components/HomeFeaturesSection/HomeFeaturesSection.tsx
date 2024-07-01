@@ -30,8 +30,8 @@ export const HomeFeaturesSection: FC<HomeFeaturesSectionProps> = ({ className, s
                     auto-rows-fr
                     grid-cols-1
                     gap-6
-                    md:grid-cols-2
-                    lg:grid-cols-3
+                    sm:grid-cols-2
+                    md:grid-cols-3
                 `}
             >
                 <HomeFeaturesSectionFeature
@@ -51,26 +51,18 @@ export const HomeFeaturesSection: FC<HomeFeaturesSectionProps> = ({ className, s
                     title="Presence"
                 />
                 <HomeFeaturesSectionFeature
-                    description="Add your own custom authentication rules to rooms and give each user their own identity."
+                    description="Give each users their own identity with custom authentication rules."
                     title="Authentication & Identity"
                 />
                 <HomeFeaturesSectionFeature
                     description={
                         <span>
                             Pluv is designed for self-hosting first with documented instructions{" "}
-                            <Anchor
-                                href="/docs/io/node-js"
-                                title="Node.js"
-                                aria-description="Node.js hosting instructions"
-                            >
+                            <Anchor href="/docs/io/node-js" title="Node.js">
                                 here
                             </Anchor>{" "}
                             and{" "}
-                            <Anchor
-                                href="/docs/io/cloudflare-workers"
-                                title="Cloudflare"
-                                aria-description="Cloudflare hosting instructions"
-                            >
+                            <Anchor href="/docs/io/cloudflare-workers" title="Cloudflare">
                                 here
                             </Anchor>
                             .

@@ -42,8 +42,8 @@ export const HomeHero = memo<HomeHeroProps>(({ className, style }) => {
                     lg:leading-[1.1]
                 `}
             >
-                <span className="flex items-center whitespace-pre">TypeSafe Primitives</span>
-                <span className="flex items-center whitespace-pre">for a Realtime Web</span>
+                <span className="flex items-center whitespace-pre text-wrap">TypeSafe Primitives</span>
+                <span className="flex items-center whitespace-pre text-wrap">for a Realtime Web</span>
             </h1>
             <PageContainer
                 asChild
