@@ -1,14 +1,8 @@
-import type {
-    AbstractCrdtType,
-    DocApplyEncodedStateParams,
-    DocSubscribeCallbackParams,
-    InferCrdtStorageJson,
-} from "@pluv/crdt";
+import type { DocApplyEncodedStateParams, DocSubscribeCallbackParams, InferCrdtJson } from "@pluv/crdt";
 import { AbstractCrdtDoc } from "@pluv/crdt";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import {
     UndoManager,
-    AbstractType as YAbstractType,
     Array as YArray,
     Doc as YDoc,
     Map as YMap,
@@ -19,15 +13,9 @@ import {
     applyUpdate,
     encodeStateAsUpdate,
 } from "yjs";
-import { CrdtYjsArray } from "../array/CrdtYjsArray";
-import { CrdtYjsMap } from "../map/CrdtYjsMap";
-import { CrdtYjsObject } from "../object/CrdtYjsObject";
-import { CrdtYjsText } from "../text/CrdtYjsText";
-import { CrdtYjsXmlElement } from "../xmlElement/CrdtYjsXmlElement";
-import { CrdtYjsXmlFragment } from "../xmlFragment/CrdtYjsXmlFragment";
-import { CrdtYjsXmlText } from "../xmlText/CrdtYjsXmlText";
+import type { YjsType } from "../types";
 
-export class CrdtYjsDoc<TStorage extends Record<string, AbstractCrdtType<any, any>>> extends AbstractCrdtDoc<TStorage> {
+export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> extends AbstractCrdtDoc<TStorage> {
     public value: YDoc = new YDoc();
 
     private _storage: TStorage;
@@ -37,71 +25,52 @@ export class CrdtYjsDoc<TStorage extends Record<string, AbstractCrdtType<any, an
         super();
 
         this._storage = Object.entries(value).reduce((acc, [key, node]) => {
-            if (node instanceof CrdtYjsArray) {
+            if (node instanceof YArray) {
                 const yArray = this.value.get(key, YArray) as YArray<any>;
-                yArray.insert(0, node.initialValue.slice(0));
 
-                node.value = yArray;
+                yArray.insert(0, node.slice(0));
 
-                return { ...acc, [key]: node };
+                return { ...acc, [key]: yArray };
             }
 
-            if (node instanceof CrdtYjsMap || node instanceof CrdtYjsObject) {
+            if (node instanceof YMap) {
                 const yMap = this.value.get(key, YMap) as YMap<any>;
-                node.initialValue.forEach(([k, v]) => {
+
+                Array.from(node.entries()).forEach(([k, v]) => {
                     yMap.set(k.toString(), v);
                 });
 
-                node.value = yMap;
-
-                return { ...acc, [key]: node };
+                return { ...acc, [key]: yMap };
             }
 
-            if (node instanceof CrdtYjsObject) {
-                const yMap = this.value.get(key, YMap) as YMap<any>;
-                node.initialValue.forEach(([k, v]) => {
-                    yMap.set(k.toString(), v);
-                });
-
-                node.value = yMap;
-
-                return { ...acc, [key]: node };
-            }
-
-            if (node instanceof CrdtYjsText) {
+            if (node instanceof YText) {
                 const yText = this.value.get(key, YText) as YText;
-                yText.insert(0, node.initialValue);
 
-                node.value = yText;
+                yText.insert(0, node.toJSON());
 
-                return { ...acc, [key]: node };
+                return { ...acc, [key]: yText };
             }
 
-            if (node instanceof CrdtYjsXmlElement) {
+            if (node instanceof YXmlElement) {
                 const yXmlElement = this.value.get(key, YXmlElement) as YXmlElement;
-                yXmlElement.insert(0, node.initialValue.slice(0));
 
-                node.value = yXmlElement;
+                yXmlElement.insert(0, node.slice(0));
 
-                return { ...acc, [key]: node };
+                return { ...acc, [key]: yXmlElement };
             }
 
-            if (node instanceof CrdtYjsXmlFragment) {
+            if (node instanceof YXmlFragment) {
                 const yXmlFragment = this.value.get(key, YXmlFragment) as YXmlFragment;
-                yXmlFragment.insert(0, node.initialValue.slice(0));
 
-                node.value = yXmlFragment;
+                yXmlFragment.insert(0, node.slice(0));
 
-                return { ...acc, [key]: node };
+                return { ...acc, [key]: yXmlFragment };
             }
 
-            if (node instanceof CrdtYjsXmlText) {
+            if (node instanceof YXmlText) {
                 const yXmlText = this.value.get(key, YXmlText) as YXmlText;
-                yXmlText.insert(0, node.initialValue);
 
-                node.value = yXmlText;
-
-                return { ...acc, [key]: node };
+                return { ...acc, [key]: yXmlText };
             }
 
             return acc;
@@ -197,17 +166,16 @@ export class CrdtYjsDoc<TStorage extends Record<string, AbstractCrdtType<any, an
     public track(): this {
         if (this._undoManager) this._undoManager.destroy();
 
-        const sharedTypes = Object.values(this._storage).reduce<YAbstractType<any>[]>((acc, type) => {
+        const sharedTypes = Object.values(this._storage).reduce<YjsType<any, any>[]>((acc, type) => {
             if (
-                type instanceof CrdtYjsArray ||
-                type instanceof CrdtYjsMap ||
-                type instanceof CrdtYjsObject ||
-                type instanceof CrdtYjsText ||
-                type instanceof CrdtYjsXmlElement ||
-                type instanceof CrdtYjsXmlFragment ||
-                type instanceof CrdtYjsXmlText
+                type instanceof YArray ||
+                type instanceof YMap ||
+                type instanceof YText ||
+                type instanceof YXmlElement ||
+                type instanceof YXmlFragment ||
+                type instanceof YXmlText
             ) {
-                acc.push(type.value);
+                acc.push(type);
             }
 
             return acc;
@@ -231,10 +199,10 @@ export class CrdtYjsDoc<TStorage extends Record<string, AbstractCrdtType<any, an
         return this;
     }
 
-    public toJson(): InferCrdtStorageJson<TStorage> {
+    public toJson(): InferCrdtJson<TStorage> {
         return Object.entries(this._storage).reduce(
-            (acc, [key, value]) => ({ ...acc, [key]: value.toJson() }),
-            {} as InferCrdtStorageJson<TStorage>,
+            (acc, [key, value]) => ({ ...acc, [key]: value.toJSON() }),
+            {} as InferCrdtJson<TStorage>,
         );
     }
 

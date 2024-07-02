@@ -1,16 +1,17 @@
-import type { AbstractCrdtType } from "@pluv/crdt";
 import { AbstractCrdtDocFactory } from "@pluv/crdt";
-import { CrdtYjsArray } from "../array";
-import { CrdtYjsMap } from "../map";
-import { CrdtYjsObject } from "../object";
-import { CrdtYjsText } from "../text";
-import { CrdtYjsXmlElement } from "../xmlElement";
-import { CrdtYjsXmlFragment } from "../xmlFragment";
-import { CrdtYjsXmlText } from "../xmlText";
+import {
+    Array as YArray,
+    Map as YMap,
+    Text as YText,
+    XmlElement as YXmlElement,
+    XmlFragment as YXmlFragment,
+    XmlText as YXmlText,
+} from "yjs";
+import type { YjsType } from "../types";
 import { CrdtYjsDoc } from "./CrdtYjsDoc";
 
 export class CrdtYjsDocFactory<
-    TStorage extends Record<string, AbstractCrdtType<any, any>>,
+    TStorage extends Record<string, YjsType<any, any>>,
 > extends AbstractCrdtDocFactory<TStorage> {
     private _initialStorage: () => TStorage;
 
@@ -33,35 +34,28 @@ export class CrdtYjsDocFactory<
 
         return new CrdtYjsDoc<TStorage>(
             Object.entries(storage).reduce((acc, [key, node]) => {
-                if (node instanceof CrdtYjsArray) {
-                    return { ...acc, [key]: new CrdtYjsArray([]) };
+                if (node instanceof YArray) {
+                    return { ...acc, [key]: new YArray() };
                 }
 
-                if (node instanceof CrdtYjsMap) {
-                    return { ...acc, [key]: new CrdtYjsMap([]) };
+                if (node instanceof YMap) {
+                    return { ...acc, [key]: new YMap() };
                 }
 
-                if (node instanceof CrdtYjsObject) {
-                    return { ...acc, [key]: new CrdtYjsObject({}) };
+                if (node instanceof YText) {
+                    return { ...acc, [key]: new YText() };
                 }
 
-                if (node instanceof CrdtYjsText) {
-                    return { ...acc, [key]: new CrdtYjsText("") };
+                if (node instanceof YXmlElement) {
+                    return { ...acc, [key]: new YXmlElement() };
                 }
 
-                if (node instanceof CrdtYjsXmlElement) {
-                    return {
-                        ...acc,
-                        [key]: new CrdtYjsXmlElement(node.name, []),
-                    };
+                if (node instanceof YXmlFragment) {
+                    return { ...acc, [key]: new YXmlFragment() };
                 }
 
-                if (node instanceof CrdtYjsXmlFragment) {
-                    return { ...acc, [key]: new CrdtYjsXmlFragment([]) };
-                }
-
-                if (node instanceof CrdtYjsXmlText) {
-                    return { ...acc, [key]: new CrdtYjsXmlText("") };
+                if (node instanceof YXmlText) {
+                    return { ...acc, [key]: new YXmlText() };
                 }
 
                 return acc;
