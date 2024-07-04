@@ -1,4 +1,4 @@
-import type { AbstractCrdtDoc, AbstractCrdtType, InferCrdtStorageJson } from "@pluv/crdt";
+import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
     EventMessage,
@@ -47,7 +47,7 @@ const ORIGIN_STORAGE_UPDATED = "$STORAGE_UPDATED";
 export const DEFAULT_PLUV_CLIENT_ADDON = <
     TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
+    TStorage extends Record<string, CrdtType<any, any>> = {},
 >(
     input: PluvRoomAddonInput<TIO, TPresence, TStorage>,
 ): PluvRoomAddonResult => ({
@@ -101,13 +101,13 @@ interface InternalListeners {
 export type PluvRoomAddon<
     TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
+    TStorage extends Record<string, CrdtType<any, any>> = {},
 > = (input: PluvRoomAddonInput<TIO, TPresence, TStorage>) => Partial<PluvRoomAddonResult>;
 
 export interface PluvRoomAddonInput<
     TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
+    TStorage extends Record<string, CrdtType<any, any>> = {},
 > {
     room: PluvRoom<TIO, TPresence, TStorage>;
 }
@@ -124,7 +124,7 @@ export type PluvRoomDebug<TIO extends IOLike> = Id<{
 export type PluvRoomOptions<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
+    TStorage extends Record<string, CrdtType<any, any>> = {},
 > = {
     addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
     debug?: boolean | PluvRoomDebug<TIO>;
@@ -135,13 +135,13 @@ export type PluvRoomOptions<
 export type RoomConfig<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
+    TStorage extends Record<string, CrdtType<any, any>> = {},
 > = RoomEndpoints<TIO> & PluvRoomOptions<TIO, TPresence, TStorage>;
 
 export class PluvRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
+    TStorage extends Record<string, CrdtType<any, any>> = {},
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     readonly _endpoints: RoomEndpoints<TIO>;
 
@@ -379,13 +379,27 @@ export class PluvRoom<
         return this._usersManager.getOthers();
     };
 
-    public getStorage = <TKey extends keyof TStorage>(key: TKey): TStorage[TKey] | null => {
-        const sharedType = this._crdtManager.get(key);
+    public getStorage = <TKey extends keyof TStorage>(type: TKey): TStorage[TKey] | null => {
+        const sharedType = this._crdtManager.get(type);
 
         if (typeof sharedType === "undefined") return null;
 
         return sharedType;
     };
+
+    public getStorageJson(): InferCrdtJson<TStorage> | null;
+    public getStorageJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]> | null;
+    public getStorageJson<TKey extends keyof TStorage>(type?: TKey) {
+        if (this._state.connection.id === null) return null;
+
+        if (typeof type === "undefined") return this._crdtManager.doc.toJson();
+
+        const sharedType = this._crdtManager.get(type);
+
+        if (typeof sharedType === "undefined") return null;
+
+        return this._crdtManager.doc.toJson(type);
+    }
 
     public other = (connectionId: string, callback: OtherNotifierSubscriptionCallback<TIO>): (() => void) => {
         return this._otherNotifier.subscribe(connectionId, callback);
@@ -397,14 +411,14 @@ export class PluvRoom<
 
     public storage = <TKey extends keyof TStorage>(
         key: TKey,
-        fn: (value: InferCrdtStorageJson<TStorage[TKey]>) => void,
+        fn: (value: InferCrdtJson<TStorage[TKey]>) => void,
     ): (() => void) => {
         return this._crdtNotifier.subscribe(key, fn);
     };
 
     public storageRoot = (
         fn: (value: {
-            [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;
+            [P in keyof TStorage]: InferCrdtJson<TStorage[P]>;
         }) => void,
     ): (() => void) => {
         return this._crdtNotifier.subcribeRoot(fn);
@@ -562,17 +576,15 @@ export class PluvRoom<
     private _emitSharedTypes(): void {
         const sharedTypes = this._crdtManager.doc.get();
 
-        const storageRoot = Object.entries(sharedTypes).reduce(
-            (acc, [prop, sharedType]) => {
-                const serialized = sharedType.toJson();
+        const storageRoot = Object.keys(sharedTypes).reduce(
+            (acc, prop) => {
+                const serialized = this._crdtManager.doc.toJson(prop);
 
                 this._crdtNotifier.subject(prop).next(serialized);
 
                 return { ...acc, [prop]: serialized };
             },
-            {} as {
-                [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;
-            },
+            {} as { [P in keyof TStorage]: InferCrdtJson<TStorage[P]> },
         );
 
         this._crdtNotifier.rootSubject.next(storageRoot);
@@ -812,18 +824,18 @@ export class PluvRoom<
 
         const sharedTypes = this._crdtManager.doc.get();
 
-        const storageRoot = Object.entries(sharedTypes).reduce(
-            (acc, [prop, sharedType]) => {
+        const storageRoot = Object.keys(sharedTypes).reduce(
+            (acc, prop) => {
                 if (!this._crdtManager) return acc;
 
-                const serialized = sharedType.toJson();
+                const serialized = this._crdtManager.doc.toJson(prop);
 
                 this._crdtNotifier.subject(prop).next(serialized);
 
                 return { ...acc, [prop]: serialized };
             },
             {} as {
-                [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;
+                [P in keyof TStorage]: InferCrdtJson<TStorage[P]>;
             },
         );
 

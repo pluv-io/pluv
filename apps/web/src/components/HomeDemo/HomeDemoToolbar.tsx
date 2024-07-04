@@ -51,7 +51,7 @@ export const HomeDemoToolbar = <TData extends unknown>({ table }: DataTableToolb
 
                 const task = await createTask();
 
-                sharedType?.unshift(yjs.object(task));
+                sharedType?.unshift([yjs.object(task)]);
 
                 toast.success(`${task.id} created`);
 

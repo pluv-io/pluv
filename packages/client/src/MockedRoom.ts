@@ -1,4 +1,4 @@
-import type { AbstractCrdtDoc, AbstractCrdtType, InferCrdtStorageJson } from "@pluv/crdt";
+import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
 import type { IOLike, Id, InferIOInput, InferIOOutput, JsonObject } from "@pluv/types";
 import { AbstractRoom } from "./AbstractRoom";
 import type { CrdtManagerOptions } from "./CrdtManager";
@@ -28,14 +28,14 @@ export type MockedRoomEvents<TIO extends IOLike> = Partial<{
 export type MockedRoomConfig<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
+    TStorage extends Record<string, CrdtType<any, any>> = {},
 > = { events?: MockedRoomEvents<TIO> } & Omit<CrdtManagerOptions<TStorage>, "encodedState"> &
     UsersManagerConfig<TPresence>;
 
 export class MockedRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
+    TStorage extends Record<string, CrdtType<any, any>> = {},
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     private _crdtManager: CrdtManager<TStorage>;
     private _crdtNotifier = new CrdtNotifier<TStorage>();
@@ -142,13 +142,23 @@ export class MockedRoom<
         return this._usersManager.getOthers();
     };
 
-    public getStorage = <TKey extends keyof TStorage>(key: TKey): TStorage[TKey] | null => {
-        const sharedType = this._crdtManager.get(key);
+    public getStorage = <TKey extends keyof TStorage>(type: TKey): TStorage[TKey] | null => {
+        const sharedType = this._crdtManager.get(type);
 
         if (typeof sharedType === "undefined") return null;
 
-        return sharedType.value;
+        return sharedType;
     };
+
+    public getStorageJson(): InferCrdtJson<TStorage> | null;
+    public getStorageJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]> | null;
+    public getStorageJson<TKey extends keyof TStorage>(type?: TKey) {
+        if (this._state.connection.id === null) return null;
+
+        if (typeof type === "undefined") return this._crdtManager.doc.toJson();
+
+        return this._crdtManager.doc.toJson(type);
+    }
 
     public other = (connectionId: string, callback: OtherNotifierSubscriptionCallback<TIO>): (() => void) => {
         return this._otherNotifier.subscribe(connectionId, callback);
@@ -160,14 +170,14 @@ export class MockedRoom<
 
     public storage = <TKey extends keyof TStorage>(
         key: TKey,
-        fn: (value: InferCrdtStorageJson<TStorage[TKey]>) => void,
+        fn: (value: InferCrdtJson<TStorage[TKey]>) => void,
     ): (() => void) => {
         return this._crdtNotifier.subscribe(key, fn);
     };
 
     public storageRoot = (
         fn: (value: {
-            [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;
+            [P in keyof TStorage]: InferCrdtJson<TStorage[P]>;
         }) => void,
     ): (() => void) => {
         return this._crdtNotifier.subcribeRoot(fn);
@@ -230,18 +240,18 @@ export class MockedRoom<
 
             const sharedTypes = this._crdtManager.doc.get();
 
-            const storageRoot = Object.entries(sharedTypes).reduce(
-                (acc, [prop, sharedType]) => {
+            const storageRoot = Object.keys(sharedTypes).reduce(
+                (acc, prop) => {
                     if (!this._crdtManager) return acc;
 
-                    const serialized = sharedType.toJson();
+                    const serialized = this._crdtManager.doc.toJson(prop);
 
                     this._crdtNotifier.subject(prop).next(serialized);
 
                     return { ...acc, [prop]: serialized };
                 },
                 {} as {
-                    [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;
+                    [P in keyof TStorage]: InferCrdtJson<TStorage[P]>;
                 },
             );
 

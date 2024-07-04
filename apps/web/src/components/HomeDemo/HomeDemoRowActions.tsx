@@ -46,7 +46,7 @@ export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTa
                     return;
                 }
 
-                sharedType?.unshift(yjs.object(task));
+                sharedType?.unshift([yjs.object(task)]);
 
                 toast.success(`${task.id} created`);
 
@@ -66,7 +66,7 @@ export const HomeDemoRowActions = <TData extends unknown>({ row, table }: DataTa
             const crdt = crdtType ?? sharedType;
 
             const indices = getSelectedIndices();
-            return indices.length ? indices.map((i) => crdt?.value.get(i) ?? null) : [crdt?.value.get(index) ?? null];
+            return indices.length ? indices.map((i) => crdt?.get(i) ?? null) : [crdt?.get(index) ?? null];
         },
         [getSelectedIndices, index, sharedType],
     );

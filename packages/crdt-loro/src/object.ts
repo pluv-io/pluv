@@ -9,5 +9,5 @@ export const object = <T extends Record<string, any>>(value: T): LoroType<LoroMa
         isContainer(item) ? container.setContainer(key, item) : container.set(key, item as Exclude<T, Container>);
     });
 
-    return container as LoroType<LoroMap<T>, T>;
+    return container as unknown as LoroType<LoroMap<T>, T>;
 };

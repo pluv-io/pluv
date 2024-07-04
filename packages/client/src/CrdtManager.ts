@@ -1,7 +1,7 @@
-import type { AbstractCrdtDoc, AbstractCrdtDocFactory, AbstractCrdtType } from "@pluv/crdt";
+import type { AbstractCrdtDoc, AbstractCrdtDocFactory, CrdtType } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 
-export type CrdtManagerOptions<TStorage extends Record<string, AbstractCrdtType<any, any>> = {}> = {
+export type CrdtManagerOptions<TStorage extends Record<string, CrdtType<any, any>> = {}> = {
     encodedState?: string | Uint8Array | null;
     initialStorage?: AbstractCrdtDocFactory<TStorage>;
 };
@@ -12,7 +12,7 @@ type CrdtManagerInitializeParams = {
     update: string | readonly string[];
 };
 
-export class CrdtManager<TStorage extends Record<string, AbstractCrdtType<any, any>>> {
+export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
     public doc: AbstractCrdtDoc<TStorage>;
     public initialized: boolean = false;
 

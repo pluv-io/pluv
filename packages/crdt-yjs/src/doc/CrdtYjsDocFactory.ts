@@ -1,13 +1,19 @@
 import { AbstractCrdtDocFactory } from "@pluv/crdt";
-import {
-    Array as YArray,
-    Map as YMap,
-    Text as YText,
-    XmlElement as YXmlElement,
-    XmlFragment as YXmlFragment,
-    XmlText as YXmlText,
-} from "yjs";
+import { XmlFragment as YXmlFragment } from "yjs";
+import { array } from "../array";
+import { YjsArray } from "../array/YjsArray";
+import { map } from "../map";
+import { YjsMap } from "../map/YjsMap";
+import { object } from "../object";
+import { YjsObject } from "../object/YjsObject";
+import { text } from "../text";
+import { YjsText } from "../text/YjsText";
 import type { YjsType } from "../types";
+import { xmlElement } from "../xmlElement";
+import { YjsXmlElement } from "../xmlElement/YjsXmlElement";
+import { xmlFragment } from "../xmlFragment";
+import { xmlText } from "../xmlText";
+import { YjsXmlText } from "../xmlText/YjsXmlText";
 import { CrdtYjsDoc } from "./CrdtYjsDoc";
 
 export class CrdtYjsDocFactory<
@@ -34,28 +40,32 @@ export class CrdtYjsDocFactory<
 
         return new CrdtYjsDoc<TStorage>(
             Object.entries(storage).reduce((acc, [key, node]) => {
-                if (node instanceof YArray) {
-                    return { ...acc, [key]: new YArray() };
+                if (node instanceof YjsArray) {
+                    return { ...acc, [key]: array() };
                 }
 
-                if (node instanceof YMap) {
-                    return { ...acc, [key]: new YMap() };
+                if (node instanceof YjsMap) {
+                    return { ...acc, [key]: map() };
                 }
 
-                if (node instanceof YText) {
-                    return { ...acc, [key]: new YText() };
+                if (node instanceof YjsObject) {
+                    return { ...acc, [key]: object() };
                 }
 
-                if (node instanceof YXmlElement) {
-                    return { ...acc, [key]: new YXmlElement() };
+                if (node instanceof YjsText) {
+                    return { ...acc, [key]: text() };
+                }
+
+                if (node instanceof YjsXmlElement) {
+                    return { ...acc, [key]: xmlElement(node.nodeName, []) };
                 }
 
                 if (node instanceof YXmlFragment) {
-                    return { ...acc, [key]: new YXmlFragment() };
+                    return { ...acc, [key]: xmlFragment([]) };
                 }
 
-                if (node instanceof YXmlText) {
-                    return { ...acc, [key]: new YXmlText() };
+                if (node instanceof YjsXmlText) {
+                    return { ...acc, [key]: xmlText() };
                 }
 
                 return acc;

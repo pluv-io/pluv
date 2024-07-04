@@ -126,9 +126,20 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
         return fromUint8Array(this.value.exportSnapshot());
     }
 
-    public toJson(): InferCrdtJson<TStorage> {
+    public toJson(): InferCrdtJson<TStorage>;
+    public toJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]>;
+    public toJson<TKey extends keyof TStorage>(type?: TKey) {
+        if (typeof type === "string") {
+            const container = this._storage[type];
+
+            return container instanceof LoroText ? container.toString() : container.toJSON!();
+        }
+
         return Object.entries(this._storage).reduce(
-            (acc, [key, value]) => ({ ...acc, [key]: value.toJSON() }),
+            (acc, [key, value]) => ({
+                ...(acc as any),
+                [key]: value instanceof LoroText ? value.toString() : value.toJSON!(),
+            }),
             {} as InferCrdtJson<TStorage>,
         );
     }

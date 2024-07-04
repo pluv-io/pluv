@@ -9,5 +9,5 @@ export const list = <T extends unknown>(value: T[] | readonly T[] = []): LoroTyp
         isContainer(item) ? container.insertContainer(i, item) : container.insert(i, item as Exclude<T, Container>);
     });
 
-    return container as LoroType<LoroList<T>, T[]>;
+    return container as unknown as LoroType<LoroList<T>, T[]>;
 };

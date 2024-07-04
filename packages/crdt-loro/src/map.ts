@@ -11,5 +11,5 @@ export const map = <T extends Record<string, any>>(
         isContainer(item) ? container.setContainer(key, item) : container.set(key, item as Exclude<T, Container>);
     });
 
-    return container as LoroType<LoroMap<T>, T>;
+    return container as unknown as LoroType<LoroMap<T>, T>;
 };

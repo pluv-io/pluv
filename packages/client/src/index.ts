@@ -1,4 +1,4 @@
-export type { AbstractCrdtType, InferCrdtStorageJson } from "@pluv/crdt";
+export type { CrdtType, InferCrdtJson } from "@pluv/crdt";
 export type { BaseUser, EventMessage, EventRecord, IOEventMessage } from "@pluv/types";
 export { AbstractRoom } from "./AbstractRoom";
 export { AbstractStorageStore } from "./AbstractStorageStore";

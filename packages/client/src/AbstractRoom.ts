@@ -1,4 +1,4 @@
-import type { AbstractCrdtDoc, AbstractCrdtType, InferCrdtStorageJson } from "@pluv/crdt";
+import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
 import type { IOLike, Id, InferIOInput, InferIOOutput, JsonObject } from "@pluv/types";
 import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
@@ -8,7 +8,7 @@ import type { UpdateMyPresenceAction, UserInfo, WebSocketConnection } from "./ty
 export abstract class AbstractRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
+    TStorage extends Record<string, CrdtType<any, any>> = {},
 > {
     public readonly id: string;
 
@@ -44,7 +44,10 @@ export abstract class AbstractRoom<
 
     public abstract getOthers(): readonly Id<UserInfo<TIO, TPresence>>[];
 
-    public abstract getStorage<TKey extends keyof TStorage>(key: TKey): TStorage[TKey] | null;
+    public abstract getStorage<TKey extends keyof TStorage>(type: TKey): TStorage[TKey] | null;
+
+    public abstract getStorageJson(): InferCrdtJson<TStorage> | null;
+    public abstract getStorageJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]> | null;
 
     public abstract other(connectionId: string, callback: OtherNotifierSubscriptionCallback<TIO>): () => void;
 
@@ -52,12 +55,12 @@ export abstract class AbstractRoom<
 
     public abstract storage<TKey extends keyof TStorage>(
         key: TKey,
-        fn: (value: InferCrdtStorageJson<TStorage[TKey]>) => void,
+        fn: (value: InferCrdtJson<TStorage[TKey]>) => void,
     ): () => void;
 
     public abstract storageRoot(
         fn: (value: {
-            [P in keyof TStorage]: InferCrdtStorageJson<TStorage[P]>;
+            [P in keyof TStorage]: InferCrdtJson<TStorage[P]>;
         }) => void,
     ): () => void;
 

@@ -2,6 +2,7 @@ import type { DocApplyEncodedStateParams, DocSubscribeCallbackParams, InferCrdtJ
 import { AbstractCrdtDoc } from "@pluv/crdt";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import {
+    AbstractType,
     UndoManager,
     Array as YArray,
     Doc as YDoc,
@@ -13,7 +14,13 @@ import {
     applyUpdate,
     encodeStateAsUpdate,
 } from "yjs";
+import { YjsArray } from "../array/YjsArray";
+import { YjsMap } from "../map/YjsMap";
+import { YjsObject } from "../object/YjsObject";
+import { YjsText } from "../text/YjsText";
 import type { YjsType } from "../types";
+import { YjsXmlElement } from "../xmlElement/YjsXmlElement";
+import { YjsXmlText } from "../xmlText/YjsXmlText";
 
 export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> extends AbstractCrdtDoc<TStorage> {
     public value: YDoc = new YDoc();
@@ -25,49 +32,59 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
         super();
 
         this._storage = Object.entries(value).reduce((acc, [key, node]) => {
-            if (node instanceof YArray) {
-                const yArray = this.value.get(key, YArray) as YArray<any>;
+            if (node instanceof YjsArray) {
+                const yArray = this.value.getArray(key);
 
-                yArray.insert(0, node.slice(0));
+                !!node.initialValue?.length && yArray.insert(0, node.initialValue?.slice(0));
 
                 return { ...acc, [key]: yArray };
             }
 
-            if (node instanceof YMap) {
-                const yMap = this.value.get(key, YMap) as YMap<any>;
+            if (node instanceof YjsMap) {
+                const yMap = this.value.getMap(key);
 
-                Array.from(node.entries()).forEach(([k, v]) => {
+                (node.initialValue ?? []).forEach(([k, v]) => {
                     yMap.set(k.toString(), v);
                 });
 
                 return { ...acc, [key]: yMap };
             }
 
-            if (node instanceof YText) {
-                const yText = this.value.get(key, YText) as YText;
+            if (node instanceof YjsObject) {
+                const yMap = this.value.getMap(key);
 
-                yText.insert(0, node.toJSON());
+                Object.entries(node.initialValue ?? {}).forEach(([k, v]) => {
+                    yMap.set(k.toString(), v);
+                });
+
+                return { ...acc, [key]: yMap };
+            }
+
+            if (node instanceof YjsText) {
+                const yText = this.value.getText(key);
+
+                typeof node.initialValue === "string" && yText.insert(0, node.initialValue);
 
                 return { ...acc, [key]: yText };
             }
 
-            if (node instanceof YXmlElement) {
-                const yXmlElement = this.value.get(key, YXmlElement) as YXmlElement;
+            if (node instanceof YjsXmlElement) {
+                const yXmlElement = this.value.getXmlElement(key);
 
-                yXmlElement.insert(0, node.slice(0));
+                !!node.initialValue?.length && yXmlElement.insert(0, node.initialValue?.slice(0));
 
                 return { ...acc, [key]: yXmlElement };
             }
 
             if (node instanceof YXmlFragment) {
-                const yXmlFragment = this.value.get(key, YXmlFragment) as YXmlFragment;
+                const yXmlFragment = this.value.getXmlFragment(key);
 
-                yXmlFragment.insert(0, node.slice(0));
+                !!node.initialValue?.length && yXmlFragment.insert(0, node.initialValue?.slice(0));
 
                 return { ...acc, [key]: yXmlFragment };
             }
 
-            if (node instanceof YXmlText) {
+            if (node instanceof YjsXmlText) {
                 const yXmlText = this.value.get(key, YXmlText) as YXmlText;
 
                 return { ...acc, [key]: yXmlText };
@@ -125,11 +142,11 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
     }
 
     public get(key?: undefined): TStorage;
-    public get<TKey extends keyof TStorage>(key: TKey): TStorage[TKey];
-    public get<TKey extends keyof TStorage>(key?: TKey): TStorage | TStorage[TKey] {
-        if (typeof key === "undefined") return this._storage;
+    public get<TKey extends keyof TStorage>(type: TKey): TStorage[TKey];
+    public get<TKey extends keyof TStorage>(type?: TKey): TStorage | TStorage[TKey] {
+        if (typeof type === "undefined") return this._storage;
 
-        return this._storage[key as TKey];
+        return this._storage[type as TKey];
     }
 
     public getEncodedState(): string {
@@ -166,7 +183,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
     public track(): this {
         if (this._undoManager) this._undoManager.destroy();
 
-        const sharedTypes = Object.values(this._storage).reduce<YjsType<any, any>[]>((acc, type) => {
+        const sharedTypes = Object.values(this._storage).reduce<YjsType<AbstractType<any>, any>[]>((acc, type) => {
             if (
                 type instanceof YArray ||
                 type instanceof YMap ||
@@ -199,9 +216,13 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
         return this;
     }
 
-    public toJson(): InferCrdtJson<TStorage> {
+    public toJson(): InferCrdtJson<TStorage>;
+    public toJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]>;
+    public toJson<TKey extends keyof TStorage>(type?: TKey) {
+        if (typeof type === "string") return this._storage[type].toJSON();
+
         return Object.entries(this._storage).reduce(
-            (acc, [key, value]) => ({ ...acc, [key]: value.toJSON() }),
+            (acc, [key, value]) => ({ ...(acc as any), [key]: value.toJSON() }),
             {} as InferCrdtJson<TStorage>,
         );
     }

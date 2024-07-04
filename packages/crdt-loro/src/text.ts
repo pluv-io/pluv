@@ -6,5 +6,5 @@ export const text = (value: string = ""): LoroType<LoroText, string> => {
 
     container.insert(0, value);
 
-    return container as LoroType<LoroText, string>;
+    return container as unknown as LoroType<LoroText, string>;
 };

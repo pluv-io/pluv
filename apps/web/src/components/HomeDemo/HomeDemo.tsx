@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, DataTable, Separator } from "@pluv-internal/react-components/client";
+import { DataTable, Separator } from "@pluv-internal/react-components/client";
 import { Anchor, Card } from "@pluv-internal/react-components/either";
 import { cn } from "@pluv-internal/utils";
 import type { Table as ReactTable } from "@tanstack/react-table";
@@ -8,10 +8,10 @@ import type { FC } from "react";
 import { useState } from "react";
 import { useStorage } from "../../pluv-io/cloudflare";
 import { HomeDemoColumns } from "./HomeDemoColumns";
+import { HomeDemoOthers } from "./HomeDemoOthers";
 import { HomeDemoToolbar } from "./HomeDemoToolbar";
 import { HomeDemoUserNav } from "./HomeDemoUserNav";
 import type { Task } from "./schema";
-import { HomeDemoOthers } from "./HomeDemoOthers";
 
 export interface HomeDemoProps {
     className?: string;
