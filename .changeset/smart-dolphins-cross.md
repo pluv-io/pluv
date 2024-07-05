@@ -54,10 +54,15 @@ container.push(loro.object({ name: "John Doe", age: 35 }));
 ```
 
 ```ts
+// Now
+
 const [data, container] = useStorage("messages");
 
 const doc = useDoc();
 const transact = useTransact();
+
+// Updates need to be committed back to the doc whenever the changes need to be emitted to other users
+// The returned data also will not update until the changes are commited
 
 // The two operations below are functionally equivalent
 transact(() => {
