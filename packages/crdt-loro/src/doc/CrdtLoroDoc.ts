@@ -130,7 +130,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
     public toJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]>;
     public toJson<TKey extends keyof TStorage>(type?: TKey) {
         if (typeof type === "string") {
-            const container = this._storage[type];
+            const container = this._storage[type] as unknown as Container;
 
             return container instanceof LoroText ? container.toString() : container.toJSON!();
         }
@@ -171,7 +171,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
         };
 
         const subscriptionIds = Object.entries(this._storage).reduce((map, [key, crdtType]) => {
-            const container = crdtType.value as Container;
+            const container = crdtType as unknown as Container;
             const subscriptionId = container.subscribe(fn);
 
             return map.set(key, subscriptionId);
@@ -179,7 +179,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
 
         return () => {
             Array.from(subscriptionIds.entries()).forEach(([key, subscriptionId]) => {
-                const container = (this._storage[key]?.value ?? null) as Container | null;
+                const container = (this._storage[key] ?? null) as unknown as Container | null;
 
                 if (!container) {
                     throw new Error("Storage could not be found");

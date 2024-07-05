@@ -23,7 +23,8 @@ export const StorageRoom: FC<StorageRoomProps> = () => {
                     id="button-add-message"
                     onClick={() => {
                         transact((tx) => {
-                            tx.messages.push(
+                            tx.messages.insertContainer(
+                                tx.messages.length,
                                 loro.object({
                                     message: `new message ${messages?.length ?? 0}`,
                                     name: "John Doe",
