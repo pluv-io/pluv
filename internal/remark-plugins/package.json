@@ -16,7 +16,7 @@
 	},
 	"dependencies": {
 		"@types/unist": "^3.0.2",
-		"acorn": "^8.12.0",
+		"acorn": "^8.12.1",
 		"gray-matter": "^4.0.3",
 		"vfile": "^6.0.1"
 	},

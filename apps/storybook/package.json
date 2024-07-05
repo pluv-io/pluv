@@ -15,7 +15,7 @@
     "license": "ISC",
     "dependencies": {
         "@faker-js/faker": "^8.4.1",
-        "@hookform/resolvers": "^3.6.0",
+        "@hookform/resolvers": "^3.7.0",
         "@pluv-apps/web": "workspace:^",
         "@pluv-internal/react-components": "workspace:^",
         "@pluv-internal/react-icons": "workspace:^",

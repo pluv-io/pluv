@@ -58,20 +58,20 @@
 		"path-to-regexp": "^7.0.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"ws": "^8.17.0",
+		"ws": "^8.18.0",
 		"yjs": "^13.6.18",
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20240620.0",
-		"@playwright/test": "^1.45.0",
+		"@playwright/test": "^1.45.1",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^8.2.2",
 		"eslint-config-pluv": "workspace:^",
-		"miniflare": "^3.20240620.0",
+		"miniflare": "^3.20240701.0",
 		"prisma": "^5.16.1",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.4.5",
-		"wrangler": "^3.62.0"
+		"wrangler": "^3.63.1"
 	}
 }
