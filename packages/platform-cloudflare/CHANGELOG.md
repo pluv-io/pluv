@@ -1,5 +1,12 @@
 # @pluv/platform-cloudflare
 
+## 0.20.0
+
+### Patch Changes
+
+- @pluv/io@0.20.0
+- @pluv/types@0.20.0
+
 ## 0.19.0
 
 ### Patch Changes
