@@ -24,7 +24,7 @@
         "version-packages": "changeset version"
     },
     "devDependencies": {
-        "@changesets/cli": "^2.27.6",
+        "@changesets/cli": "^2.27.7",
         "@pluv-internal/tailwind-config": "workspace:^",
         "commitizen": "^4.3.0",
         "cz-conventional-changelog": "^3.3.0",

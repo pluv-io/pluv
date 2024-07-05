@@ -35,7 +35,7 @@
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.1.0",
 		"typescript": "^5.4.5",
-		"ws": "^8.17.0"
+		"ws": "^8.18.0"
 	},
 	"peerDependencies": {
 		"ws": "^8.0.0"
