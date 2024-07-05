@@ -385,7 +385,7 @@ const { useStorage } = createRoomBundle({
 
 const [messages, sharedType] = useStorage("messages");
 
-sharedType.push("world~!");
+sharedType.push(["world~!"]);
 
 messages.map((message, key) => <div key={key}>{message}</div>);
 ```
