@@ -1,2 +1,2 @@
-export { CrdtYjsXmlFragment } from "./CrdtYjsXmlFragment";
 export { xmlFragment } from "./xmlFragment";
+export type { YjsXmlFragment } from "./YjsXmlFragment";

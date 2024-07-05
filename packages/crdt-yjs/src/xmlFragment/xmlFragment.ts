@@ -1,7 +1,8 @@
-import type { CrdtYjsXmlElement } from "../xmlElement";
-import type { CrdtYjsXmlText } from "../xmlText";
-import { CrdtYjsXmlFragment } from "./CrdtYjsXmlFragment";
+import type { XmlElement as YXmlElement, XmlText as YXmlText } from "yjs";
+import { YjsXmlFragment } from "./YjsXmlFragment";
 
-export const xmlFragment = (children: readonly (CrdtYjsXmlElement | CrdtYjsXmlText)[]): CrdtYjsXmlFragment => {
-    return new CrdtYjsXmlFragment(children);
+export const xmlFragment = (
+    children: (YXmlElement | YXmlText)[] | readonly (YXmlElement | YXmlText)[],
+): YjsXmlFragment => {
+    return new YjsXmlFragment(children);
 };

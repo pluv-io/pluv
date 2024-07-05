@@ -1,9 +1,9 @@
-export { CrdtYjsArray, array } from "./array";
-export { CrdtYjsDoc, doc } from "./doc";
-export { CrdtYjsMap, map } from "./map";
-export { CrdtYjsObject, object } from "./object";
-export { CrdtYjsText } from "./text";
-export type { InferYjsJson, InferYjsType } from "./types";
-export { CrdtYjsXmlElement, xmlElement } from "./xmlElement";
-export { CrdtYjsXmlFragment, xmlFragment } from "./xmlFragment";
-export { CrdtYjsXmlText, xmlText } from "./xmlText";
+export { array } from "./array";
+export { doc } from "./doc";
+export { map } from "./map";
+export { object } from "./object";
+export { text } from "./text";
+export type { YjsType } from "./types";
+export { xmlElement } from "./xmlElement";
+export { xmlFragment } from "./xmlFragment";
+export { xmlText } from "./xmlText";

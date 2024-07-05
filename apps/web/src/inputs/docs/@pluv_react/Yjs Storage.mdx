@@ -79,7 +79,7 @@ import { useCallback } from "react";
 const [messages, sharedType] = pluvRoom.useStorage("messages");
 
 const addMessage = useCallback((message: string) => {
-    sharedType?.push(message);
+    sharedType?.push([message]);
 });
 
 messages?.map((message, i) => <div key={i}>{message}</div>)

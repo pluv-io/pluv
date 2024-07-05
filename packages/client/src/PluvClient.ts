@@ -1,6 +1,7 @@
-import type { AbstractCrdtType } from "@pluv/crdt";
+import type { CrdtType } from "@pluv/crdt";
 import type { IOLike, JsonObject } from "@pluv/types";
-import { AuthEndpoint, PluvRoom, PluvRoomOptions, RoomConfig, RoomEndpoints, WsEndpoint } from "./PluvRoom";
+import type { AuthEndpoint, PluvRoomOptions, RoomConfig, RoomEndpoints, WsEndpoint } from "./PluvRoom";
+import { PluvRoom } from "./PluvRoom";
 
 export type PluvClientOptions<TIO extends IOLike> = RoomEndpoints<TIO> & {
     debug?: boolean;
@@ -21,10 +22,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
         this._wsEndpoint = wsEndpoint;
     }
 
-    public createRoom = <
-        TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
-    >(
+    public createRoom = <TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
         room: string,
         options: PluvRoomOptions<TIO, TPresence, TStorage>,
     ): PluvRoom<TIO, TPresence, TStorage> => {
@@ -65,10 +63,7 @@ export class PluvClient<TIO extends IOLike = IOLike> {
         return toEnter;
     };
 
-    public getRoom = <
-        TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
-    >(
+    public getRoom = <TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
         room: string,
     ): PluvRoom<TIO, TPresence, TStorage> | null => {
         const found = this._rooms.get(room) as PluvRoom<TIO, TPresence, TStorage> | undefined;

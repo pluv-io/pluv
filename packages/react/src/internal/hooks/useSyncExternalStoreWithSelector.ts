@@ -15,8 +15,20 @@ export const useSyncExternalStoreWithSelector = <TSnapshot, TSelection>(
     const _getServerSnapshot = getServerSnapshot
         ? () => {
               const data = getServerSnapshot();
+              const snapshot = selector(data);
+              const compare = isEqual ?? shallowEqual;
+              const cached = cacheRef.current;
 
-              return selector(data);
+              const isUnchanged = cached === null ? snapshot === null : compare(cached, snapshot);
+
+              /**
+               * !HACK
+               * @description Memoize only the last snapshot so that we can only rerender on changes
+               * @date June 22, 2024
+               */
+              cacheRef.current = isUnchanged ? cached ?? snapshot : snapshot;
+
+              return cacheRef.current;
           }
         : undefined;
 

@@ -1,5 +1,7 @@
-import { CrdtYjsArray } from "./CrdtYjsArray";
+import { Array as YArray } from "yjs";
+import type { YjsType } from "../types";
+import { YjsArray } from "./YjsArray";
 
-export const array = <T extends unknown>(value: T[] | readonly T[] = []): CrdtYjsArray<T> => {
-    return new CrdtYjsArray<T>(value);
+export const array = <T extends unknown>(value: T[] | readonly T[] = []): YjsType<YArray<T>, T[]> => {
+    return new YjsArray(value);
 };

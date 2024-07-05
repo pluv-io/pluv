@@ -1,19 +1,18 @@
-import { AbstractCrdtType } from "./AbstractCrdtType";
-import type { InferCrdtStorageJson } from "./types";
+import type { CrdtType, InferCrdtJson } from "./types";
 
 export interface DocApplyEncodedStateParams {
     origin?: string;
     update?: string | Uint8Array;
 }
 
-export interface DocSubscribeCallbackParams<T extends Record<string, AbstractCrdtType<any, any>>> {
+export interface DocSubscribeCallbackParams<T extends Record<string, CrdtType<any, any>>> {
     doc: AbstractCrdtDoc<T>;
     local: boolean;
     origin?: string | null;
     update: string;
 }
 
-export abstract class AbstractCrdtDoc<T extends Record<string, AbstractCrdtType<any, any>>> {
+export abstract class AbstractCrdtDoc<T extends Record<string, CrdtType<any, any>>> {
     public abstract applyEncodedState(params: DocApplyEncodedStateParams): this;
     public abstract batchApplyEncodedState(
         updates: readonly (DocApplyEncodedStateParams | string | null | undefined)[],
@@ -27,7 +26,8 @@ export abstract class AbstractCrdtDoc<T extends Record<string, AbstractCrdtType<
     public abstract isEmpty(): boolean;
     public abstract redo(): this;
     public abstract subscribe(listener: (params: DocSubscribeCallbackParams<T>) => void): () => void;
-    public abstract toJson(): InferCrdtStorageJson<T>;
+    public abstract toJson(): InferCrdtJson<T>;
+    public abstract toJson<TKey extends keyof T>(type: TKey): InferCrdtJson<T[TKey]>;
     public abstract track(): this;
     public abstract transact(fn: () => void, origin?: string): this;
     public abstract undo(): this;

@@ -1,5 +1,5 @@
 import type { PluvClient } from "@pluv/client";
-import type { AbstractCrdtType } from "@pluv/crdt";
+import type { CrdtType } from "@pluv/crdt";
 import type { IOLike, JsonObject } from "@pluv/types";
 import type { FC, ReactNode } from "react";
 import { createContext, memo, useContext } from "react";
@@ -12,10 +12,7 @@ export interface PluvProviderProps {
 
 export interface CreateBundle<TIO extends IOLike> {
     // factories
-    createRoomBundle: <
-        TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
-    >(
+    createRoomBundle: <TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
         options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
     ) => CreateRoomBundle<TIO, TPresence, TStorage>;
 
@@ -48,7 +45,7 @@ export const createBundle = <TIO extends IOLike>(client: PluvClient<TIO>): Creat
 
     const createRoomBundle = <
         TPresence extends JsonObject = {},
-        TStorage extends Record<string, AbstractCrdtType<any, any>> = {},
+        TStorage extends Record<string, CrdtType<any, any>> = {},
     >(
         options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
     ): CreateRoomBundle<TIO, TPresence, TStorage> => _createRoomBundle(client, options);

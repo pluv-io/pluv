@@ -363,9 +363,7 @@ const room = client.createRoom("my-example-room", {
 });
 
 // Get messages as defined from the `createRoom` config
-const messages: yjs.CrdtYjsArray<string> = room.getStorage("messages");
-// Get the underlying CRDT shared type via the value property
-const sharedType: YArray<string> = messages.value;
+const messages: YArray = room.getStorage("messages");
 ```
 
 ### PluvRoom.other

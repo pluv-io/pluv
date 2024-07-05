@@ -1,21 +1,11 @@
-import type {
-    AbstractCrdtType,
-    DocApplyEncodedStateParams,
-    DocSubscribeCallbackParams,
-    InferCrdtStorageJson,
-} from "@pluv/crdt";
+import type { DocApplyEncodedStateParams, DocSubscribeCallbackParams, InferCrdtJson } from "@pluv/crdt";
 import { AbstractCrdtDoc } from "@pluv/crdt";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import type { Container, LoroEventBatch } from "loro-crdt";
-import { Loro } from "loro-crdt";
-import { CrdtLoroArray } from "../array/CrdtLoroArray";
-import { CrdtLoroMap } from "../map/CrdtLoroMap";
-import { CrdtLoroObject } from "../object/CrdtLoroObject";
-import { CrdtLoroText } from "../text/CrdtLoroText";
+import { Loro, LoroList, LoroMap, LoroText, isContainer } from "loro-crdt";
+import { LoroType } from "../types";
 
-export class CrdtLoroDoc<
-    TStorage extends Record<string, AbstractCrdtType<any, any>>,
-> extends AbstractCrdtDoc<TStorage> {
+export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> extends AbstractCrdtDoc<TStorage> {
     public value: Loro = new Loro();
 
     private _storage: TStorage;
@@ -24,31 +14,32 @@ export class CrdtLoroDoc<
         super();
 
         this._storage = Object.entries(value).reduce((acc, [key, node]) => {
-            if (node instanceof CrdtLoroArray) {
-                const loroList = this.value.getList(key);
+            if (node instanceof LoroList) {
+                const container = this.value.getList(key);
 
-                node.value = loroList;
-                node.doc = this;
+                node.toArray().forEach((item, i) => {
+                    isContainer(item) ? container.insertContainer(i, item) : container.insert(i, item);
+                });
 
-                return { ...acc, [key]: node };
+                return { ...acc, [key]: container };
             }
 
-            if (node instanceof CrdtLoroMap || node instanceof CrdtLoroObject) {
-                const loroMap = this.value.getMap(key);
+            if (node instanceof LoroMap) {
+                const container = this.value.getMap(key);
 
-                node.value = loroMap;
-                node.doc = this;
+                container.entries().forEach(([key, item]) => {
+                    isContainer(item) ? container.setContainer(key, item) : container.set(key, item);
+                });
 
-                return { ...acc, [key]: node };
+                return { ...acc, [key]: container };
             }
 
-            if (node instanceof CrdtLoroText) {
-                const loroText = this.value.getText(key);
+            if (node instanceof LoroText) {
+                const container = this.value.getText(key);
 
-                node.value = loroText;
-                node.doc = this;
+                container.insert(0, node.toString());
 
-                return { ...acc, [key]: loroText };
+                return { ...acc, [key]: container };
             }
 
             return acc;
@@ -135,15 +126,26 @@ export class CrdtLoroDoc<
         return fromUint8Array(this.value.exportSnapshot());
     }
 
-    public toJson(): InferCrdtStorageJson<TStorage> {
+    public toJson(): InferCrdtJson<TStorage>;
+    public toJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]>;
+    public toJson<TKey extends keyof TStorage>(type?: TKey) {
+        if (typeof type === "string") {
+            const container = this._storage[type] as unknown as Container;
+
+            return container instanceof LoroText ? container.toString() : container.toJSON!();
+        }
+
         return Object.entries(this._storage).reduce(
-            (acc, [key, value]) => ({ ...acc, [key]: value.toJson() }),
-            {} as InferCrdtStorageJson<TStorage>,
+            (acc, [key, value]) => ({
+                ...(acc as any),
+                [key]: value instanceof LoroText ? value.toString() : value.toJSON!(),
+            }),
+            {} as InferCrdtJson<TStorage>,
         );
     }
 
     public isEmpty(): boolean {
-        const serialized = this.value.toJson();
+        const serialized = this.value.toJSON();
 
         return !serialized || !Object.keys(serialized).length;
     }
@@ -162,28 +164,28 @@ export class CrdtLoroDoc<
 
             listener({
                 doc: this,
-                local: event.local,
+                local: event.by === "local",
                 origin: event.origin ? String(event.origin) : null,
                 update,
             });
         };
 
         const subscriptionIds = Object.entries(this._storage).reduce((map, [key, crdtType]) => {
-            const container = crdtType.value as Container;
-            const subscriptionId = container.subscribe(this.value, fn);
+            const container = crdtType as unknown as Container;
+            const subscriptionId = container.subscribe(fn);
 
             return map.set(key, subscriptionId);
         }, new Map<string, number>());
 
         return () => {
             Array.from(subscriptionIds.entries()).forEach(([key, subscriptionId]) => {
-                const container = (this._storage[key]?.value ?? null) as Container | null;
+                const container = (this._storage[key] ?? null) as unknown as Container | null;
 
                 if (!container) {
                     throw new Error("Storage could not be found");
                 }
 
-                container.unsubscribe(this.value, subscriptionId);
+                container.unsubscribe(subscriptionId);
             });
         };
     }
@@ -202,6 +204,8 @@ export class CrdtLoroDoc<
      */
     public transact(fn: () => void): this {
         fn();
+
+        this.value.commit();
 
         return this;
     }

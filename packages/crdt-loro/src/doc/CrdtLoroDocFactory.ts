@@ -1,13 +1,10 @@
-import type { AbstractCrdtType } from "@pluv/crdt";
 import { AbstractCrdtDocFactory } from "@pluv/crdt";
-import { CrdtLoroArray } from "../array";
-import { CrdtLoroMap } from "../map";
-import { CrdtLoroObject } from "../object";
-import { CrdtLoroText } from "../text";
+import { LoroList, LoroMap, LoroText } from "loro-crdt";
+import type { LoroType } from "../types";
 import { CrdtLoroDoc } from "./CrdtLoroDoc";
 
 export class CrdtLoroDocFactory<
-    TStorage extends Record<string, AbstractCrdtType<any, any>>,
+    TStorage extends Record<string, LoroType<any, any>>,
 > extends AbstractCrdtDocFactory<TStorage> {
     private _initialStorage: () => TStorage;
 
@@ -30,20 +27,16 @@ export class CrdtLoroDocFactory<
 
         return new CrdtLoroDoc<TStorage>(
             Object.entries(storage).reduce((acc, [key, node]) => {
-                if (node instanceof CrdtLoroArray) {
-                    return { ...acc, [key]: new CrdtLoroArray([]) };
+                if (node instanceof LoroList) {
+                    return { ...acc, [key]: new LoroList() };
                 }
 
-                if (node instanceof CrdtLoroMap) {
-                    return { ...acc, [key]: new CrdtLoroMap([]) };
+                if (node instanceof LoroMap) {
+                    return { ...acc, [key]: new LoroMap() };
                 }
 
-                if (node instanceof CrdtLoroObject) {
-                    return { ...acc, [key]: new CrdtLoroObject({}) };
-                }
-
-                if (node instanceof CrdtLoroText) {
-                    return { ...acc, [key]: new CrdtLoroText("") };
+                if (node instanceof LoroText) {
+                    return { ...acc, [key]: new LoroText() };
                 }
 
                 return acc;

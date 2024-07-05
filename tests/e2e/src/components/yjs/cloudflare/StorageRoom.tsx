@@ -1,13 +1,6 @@
 import { yjs } from "@pluv/crdt-yjs";
 import type { FC } from "react";
-import {
-    useCanRedo,
-    useCanUndo,
-    useRedo,
-    useStorage,
-    useTransact,
-    useUndo,
-} from "../../../pluv-io/yjs/cloudflare";
+import { useCanRedo, useCanUndo, useRedo, useStorage, useTransact, useUndo } from "../../../pluv-io/yjs/cloudflare";
 
 export type StorageRoomProps = Record<string, never>;
 
@@ -30,12 +23,12 @@ export const StorageRoom: FC<StorageRoomProps> = () => {
                     id="button-add-message"
                     onClick={() => {
                         transact(() => {
-                            sharedType?.push(
+                            sharedType?.push([
                                 yjs.object({
                                     message: `new message ${messages?.length ?? 0}`,
                                     name: "John Doe",
                                 }),
-                            );
+                            ]);
                         });
                     }}
                     type="button"

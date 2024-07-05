@@ -1,16 +1,23 @@
-import type { AbstractCrdtType } from "@pluv/crdt";
 import { AbstractCrdtDocFactory } from "@pluv/crdt";
-import { CrdtYjsArray } from "../array";
-import { CrdtYjsMap } from "../map";
-import { CrdtYjsObject } from "../object";
-import { CrdtYjsText } from "../text";
-import { CrdtYjsXmlElement } from "../xmlElement";
-import { CrdtYjsXmlFragment } from "../xmlFragment";
-import { CrdtYjsXmlText } from "../xmlText";
+import { XmlFragment as YXmlFragment } from "yjs";
+import { array } from "../array";
+import { YjsArray } from "../array/YjsArray";
+import { map } from "../map";
+import { YjsMap } from "../map/YjsMap";
+import { object } from "../object";
+import { YjsObject } from "../object/YjsObject";
+import { text } from "../text";
+import { YjsText } from "../text/YjsText";
+import type { YjsType } from "../types";
+import { xmlElement } from "../xmlElement";
+import { YjsXmlElement } from "../xmlElement/YjsXmlElement";
+import { xmlFragment } from "../xmlFragment";
+import { xmlText } from "../xmlText";
+import { YjsXmlText } from "../xmlText/YjsXmlText";
 import { CrdtYjsDoc } from "./CrdtYjsDoc";
 
 export class CrdtYjsDocFactory<
-    TStorage extends Record<string, AbstractCrdtType<any, any>>,
+    TStorage extends Record<string, YjsType<any, any>>,
 > extends AbstractCrdtDocFactory<TStorage> {
     private _initialStorage: () => TStorage;
 
@@ -33,35 +40,32 @@ export class CrdtYjsDocFactory<
 
         return new CrdtYjsDoc<TStorage>(
             Object.entries(storage).reduce((acc, [key, node]) => {
-                if (node instanceof CrdtYjsArray) {
-                    return { ...acc, [key]: new CrdtYjsArray([]) };
+                if (node instanceof YjsArray) {
+                    return { ...acc, [key]: array() };
                 }
 
-                if (node instanceof CrdtYjsMap) {
-                    return { ...acc, [key]: new CrdtYjsMap([]) };
+                if (node instanceof YjsMap) {
+                    return { ...acc, [key]: map() };
                 }
 
-                if (node instanceof CrdtYjsObject) {
-                    return { ...acc, [key]: new CrdtYjsObject({}) };
+                if (node instanceof YjsObject) {
+                    return { ...acc, [key]: object() };
                 }
 
-                if (node instanceof CrdtYjsText) {
-                    return { ...acc, [key]: new CrdtYjsText("") };
+                if (node instanceof YjsText) {
+                    return { ...acc, [key]: text() };
                 }
 
-                if (node instanceof CrdtYjsXmlElement) {
-                    return {
-                        ...acc,
-                        [key]: new CrdtYjsXmlElement(node.name, []),
-                    };
+                if (node instanceof YjsXmlElement) {
+                    return { ...acc, [key]: xmlElement(node.nodeName, []) };
                 }
 
-                if (node instanceof CrdtYjsXmlFragment) {
-                    return { ...acc, [key]: new CrdtYjsXmlFragment([]) };
+                if (node instanceof YXmlFragment) {
+                    return { ...acc, [key]: xmlFragment([]) };
                 }
 
-                if (node instanceof CrdtYjsXmlText) {
-                    return { ...acc, [key]: new CrdtYjsXmlText("") };
+                if (node instanceof YjsXmlText) {
+                    return { ...acc, [key]: xmlText() };
                 }
 
                 return acc;

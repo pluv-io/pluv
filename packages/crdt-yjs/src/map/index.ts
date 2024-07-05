@@ -1,2 +1,2 @@
-export { CrdtYjsMap } from "./CrdtYjsMap";
 export { map } from "./map";
+export type { YjsMap } from "./YjsMap";

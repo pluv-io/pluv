@@ -16,10 +16,10 @@ importers:
         version: link:internal/tailwind-config
       commitizen:
         specifier: ^4.3.0
-        version: 4.3.0(@types/node@20.14.9)(typescript@5.5.2)
+        version: 4.3.0(@types/node@20.14.9)(typescript@5.5.3)
       cz-conventional-changelog:
         specifier: ^3.3.0
-        version: 3.3.0(@types/node@20.14.9)(typescript@5.5.2)
+        version: 3.3.0(@types/node@20.14.9)(typescript@5.5.3)
       eslint-config-pluv:
         specifier: workspace:^
         version: link:packages/eslint-config-pluv
@@ -990,8 +990,8 @@ importers:
         specifier: workspace:^
         version: link:../eslint-config-pluv
       loro-crdt:
-        specifier: ^0.11.1
-        version: 0.11.1
+        specifier: ^0.16.6
+        version: 0.16.6
       tsup:
         specifier: ^8.1.0
         version: 8.1.0(postcss@8.4.39)(typescript@5.4.5)
@@ -1381,8 +1381,8 @@ importers:
         specifier: ^5.4.1
         version: 5.4.1
       loro-crdt:
-        specifier: ^0.11.1
-        version: 0.11.1
+        specifier: ^0.16.6
+        version: 0.16.6
       ms:
         specifier: ^2.1.3
         version: 2.1.3
@@ -3152,7 +3152,7 @@ packages:
     dev: true
     optional: true
 
-  /@commitlint/load@19.2.0(@types/node@20.14.9)(typescript@5.5.2):
+  /@commitlint/load@19.2.0(@types/node@20.14.9)(typescript@5.5.3):
     resolution: {integrity: sha512-XvxxLJTKqZojCxaBQ7u92qQLFMMZc4+p9qrIq/9kJDy8DOrEa7P1yx7Tjdc2u2JxIalqT4KOGraVgCE7eCYJyQ==}
     engines: {node: '>=v18'}
     requiresBuild: true
@@ -3162,8 +3162,8 @@ packages:
       '@commitlint/resolve-extends': 19.1.0
       '@commitlint/types': 19.0.3
       chalk: 5.3.0
-      cosmiconfig: 9.0.0(typescript@5.5.2)
-      cosmiconfig-typescript-loader: 5.0.0(@types/node@20.14.9)(cosmiconfig@9.0.0)(typescript@5.5.2)
+      cosmiconfig: 9.0.0(typescript@5.5.3)
+      cosmiconfig-typescript-loader: 5.0.0(@types/node@20.14.9)(cosmiconfig@9.0.0)(typescript@5.5.3)
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       lodash.uniq: 4.5.0
@@ -8867,13 +8867,13 @@ packages:
     engines: {node: '>= 12'}
     dev: true
 
-  /commitizen@4.3.0(@types/node@20.14.9)(typescript@5.5.2):
+  /commitizen@4.3.0(@types/node@20.14.9)(typescript@5.5.3):
     resolution: {integrity: sha512-H0iNtClNEhT0fotHvGV3E9tDejDeS04sN1veIebsKYGMuGscFaswRoYJKmT3eW85eIJAs0F28bG2+a/9wCOfPw==}
     engines: {node: '>= 12'}
     hasBin: true
     dependencies:
       cachedir: 2.3.0
-      cz-conventional-changelog: 3.3.0(@types/node@20.14.9)(typescript@5.5.2)
+      cz-conventional-changelog: 3.3.0(@types/node@20.14.9)(typescript@5.5.3)
       dedent: 0.7.0
       detect-indent: 6.1.0
       find-node-modules: 2.1.3
@@ -9032,7 +9032,7 @@ packages:
       vary: 1.1.2
     dev: false
 
-  /cosmiconfig-typescript-loader@5.0.0(@types/node@20.14.9)(cosmiconfig@9.0.0)(typescript@5.5.2):
+  /cosmiconfig-typescript-loader@5.0.0(@types/node@20.14.9)(cosmiconfig@9.0.0)(typescript@5.5.3):
     resolution: {integrity: sha512-+8cK7jRAReYkMwMiG+bxhcNKiHJDM6bR9FD/nGBXOWdMLuYawjF5cGrtLilJ+LGd3ZjCXnJjR5DkfWPoIVlqJA==}
     engines: {node: '>=v16'}
     requiresBuild: true
@@ -9042,9 +9042,9 @@ packages:
       typescript: '>=4'
     dependencies:
       '@types/node': 20.14.9
-      cosmiconfig: 9.0.0(typescript@5.5.2)
+      cosmiconfig: 9.0.0(typescript@5.5.3)
       jiti: 1.21.6
-      typescript: 5.5.2
+      typescript: 5.5.3
     dev: true
     optional: true
 
@@ -9091,7 +9091,7 @@ packages:
       typescript: 5.4.5
     dev: true
 
-  /cosmiconfig@9.0.0(typescript@5.5.2):
+  /cosmiconfig@9.0.0(typescript@5.5.3):
     resolution: {integrity: sha512-itvL5h8RETACmOTFc4UfIyB2RfEHi71Ax6E/PivVxq9NseKbOWpeyHEOIbmAw1rs8Ak0VursQNww7lf7YtUwzg==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -9104,7 +9104,7 @@ packages:
       import-fresh: 3.3.0
       js-yaml: 4.1.0
       parse-json: 5.2.0
-      typescript: 5.5.2
+      typescript: 5.5.3
     dev: true
     optional: true
 
@@ -9275,18 +9275,18 @@ packages:
   /csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
 
-  /cz-conventional-changelog@3.3.0(@types/node@20.14.9)(typescript@5.5.2):
+  /cz-conventional-changelog@3.3.0(@types/node@20.14.9)(typescript@5.5.3):
     resolution: {integrity: sha512-U466fIzU5U22eES5lTNiNbZ+d8dfcHcssH4o7QsdWaCcRs/feIPCxKYSWkYBNs5mny7MvEfwpTLWjvbm94hecw==}
     engines: {node: '>= 10'}
     dependencies:
       chalk: 2.4.2
-      commitizen: 4.3.0(@types/node@20.14.9)(typescript@5.5.2)
+      commitizen: 4.3.0(@types/node@20.14.9)(typescript@5.5.3)
       conventional-commit-types: 3.0.0
       lodash.map: 4.6.0
       longest: 2.0.1
       word-wrap: 1.2.5
     optionalDependencies:
-      '@commitlint/load': 19.2.0(@types/node@20.14.9)(typescript@5.5.2)
+      '@commitlint/load': 19.2.0(@types/node@20.14.9)(typescript@5.5.3)
     transitivePeerDependencies:
       - '@types/node'
       - typescript
@@ -12530,13 +12530,13 @@ packages:
     dependencies:
       js-tokens: 4.0.0
 
-  /loro-crdt@0.11.1:
-    resolution: {integrity: sha512-C4+lryPZUDqUiLqX0mVp9wRb6+MPvhNngJNQhQxwIDqzn3oP/7Qra8XgY37M4d4Yvx2ZgG+1nYnR+43/xRwq7g==}
+  /loro-crdt@0.16.6:
+    resolution: {integrity: sha512-5QwodQHqUntAcBFHxo9mgMUidjrGLlfD/bn6N7WNdKfcUm66V3QuIgwwMzxjar78I3dGwrQogCgaQS1NjYyJng==}
     dependencies:
-      loro-wasm: 0.11.1
+      loro-wasm: 0.16.6
 
-  /loro-wasm@0.11.1:
-    resolution: {integrity: sha512-/AkU2uXDRrKf6iu2WeaFIXjWzcwLgn3aWZFDW5yrIZGxc/0lB60b8F5cjyU+HqGzeXqGy0KnMrio+mTRDy1W0w==}
+  /loro-wasm@0.16.6:
+    resolution: {integrity: sha512-ecDo3dK/OiKNlzobIMVGNmtdxpiqhJfD3njjspYsCXxIcVqTo+0k8zmi6bsbXV5aZCZtqQ+vA87TISJrZBG/yA==}
 
   /loupe@2.3.7:
     resolution: {integrity: sha512-zSMINGVYkdpYSOBmLi0D1Uo7JU9nVdQKrHxC8eYlV+9YKK9WePqAlL7lSlorG/U2Fw1w0hTBmaa/jrQ3UbPHtA==}
@@ -16797,8 +16797,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  /typescript@5.5.2:
-    resolution: {integrity: sha512-NcRtPEOsPFFWjobJEtfihkLCZCXZt/os3zf8nTxjVH3RvTSxjrCamJpbExGvYOF+tFHc3pA65qpdwPbzjohhew==}
+  /typescript@5.5.3:
+    resolution: {integrity: sha512-/hreyEujaB0w76zKo6717l3L0o/qEUtRgdvUBvlkhoWeOVMjMuHNHk0BRBzikzuGDqNmPQbg5ifMEqsHLiIUcQ==}
     engines: {node: '>=14.17'}
     hasBin: true
     dev: true
