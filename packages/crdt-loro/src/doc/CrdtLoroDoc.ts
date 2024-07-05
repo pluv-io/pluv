@@ -205,6 +205,8 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
     public transact(fn: () => void): this {
         fn();
 
+        this.value.commit();
+
         return this;
     }
 
