@@ -44,7 +44,7 @@ export const {
     useUndo,
 } = createRoomBundle({
     initialStorage: loro.doc(() => ({
-        messages: loro.array([
+        messages: loro.list([
             loro.object({
                 message: "hello",
                 name: "leedavidcs",

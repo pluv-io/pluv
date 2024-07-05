@@ -1,9 +1,5 @@
 import type { FC } from "react";
-import {
-    useMyPresence,
-    useMyself,
-    useOthers,
-} from "../../../pluv-io/yjs/cloudflare";
+import { useMyPresence, useMyself, useOthers } from "../../../pluv-io/yjs/cloudflare";
 
 export type PresenceRoomProps = Record<string, never>;
 

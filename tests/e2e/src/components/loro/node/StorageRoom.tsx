@@ -5,7 +5,7 @@ import { useCanRedo, useCanUndo, useRedo, useStorage, useTransact, useUndo } fro
 export type StorageRoomProps = Record<string, never>;
 
 export const StorageRoom: FC<StorageRoomProps> = () => {
-    const [messages, sharedType] = useStorage("messages");
+    const [messages] = useStorage("messages");
 
     const canUndo = useCanUndo();
     const canRedo = useCanRedo();
@@ -23,7 +23,7 @@ export const StorageRoom: FC<StorageRoomProps> = () => {
                     id="button-add-message"
                     onClick={() => {
                         transact((tx) => {
-                            sharedType?.push(
+                            tx.messages.push(
                                 loro.object({
                                     message: `new message ${messages?.length ?? 0}`,
                                     name: "John Doe",

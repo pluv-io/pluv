@@ -23,12 +23,12 @@ export const StorageRoom: FC<StorageRoomProps> = () => {
                     id="button-add-message"
                     onClick={() => {
                         transact(() => {
-                            sharedType?.push(
+                            sharedType?.push([
                                 yjs.object({
                                     message: `new message ${messages?.length ?? 0}`,
                                     name: "John Doe",
                                 }),
-                            );
+                            ]);
                         });
                     }}
                     type="button"
