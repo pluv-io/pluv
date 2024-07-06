@@ -4,6 +4,7 @@ import type {
     BaseIOAuthorize,
     IOAuthorize,
     IORouterLike,
+    Id,
     InferIOAuthorize,
     InferIOAuthorizeUser,
     JsonObject,
@@ -37,9 +38,10 @@ export type PluvServerConfig<
     router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 };
 
-export type GetRoomOptions<TPlatform extends AbstractPlatform> = {
-    debug?: boolean;
-} & InferPlatformRoomContextType<TPlatform>;
+export type GetRoomOptions<TPlatform extends AbstractPlatform> =
+    keyof InferPlatformRoomContextType<TPlatform> extends never
+        ? [{ debug?: boolean }] | []
+        : [Id<{ debug?: boolean } & InferPlatformRoomContextType<TPlatform>>];
 
 export class PluvServer<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -107,8 +109,11 @@ export class PluvServer<
         }).encode(params);
     }
 
-    public getRoom(room: string, options: GetRoomOptions<TPlatform>): IORoom<TPlatform, TAuthorize, TContext, TEvents> {
-        const { debug, ...platformRoomContext } = options;
+    public getRoom(
+        room: string,
+        ...options: GetRoomOptions<TPlatform>
+    ): IORoom<TPlatform, TAuthorize, TContext, TEvents> {
+        const { debug, ...platformRoomContext } = options[0] ?? {};
 
         this._purgeEmptyRooms();
 

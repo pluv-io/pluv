@@ -1,19 +1,15 @@
-import type { AbstractPersistance, ConvertWebSocketConfig } from "@pluv/io";
-import { AbstractPlatform, AbstractPubSub } from "@pluv/io";
+import type { AbstractPersistance, AbstractPubSub, ConvertWebSocketConfig } from "@pluv/io";
+import { AbstractPlatform } from "@pluv/io";
 import crypto from "node:crypto";
-import { IncomingMessage } from "node:http";
 import { TextDecoder } from "node:util";
 import type { WebSocket } from "ws";
 import { NodeWebSocket } from "./NodeWebSocket";
 
 export type NodePlatformOptions =
     | { persistance?: undefined; pubSub?: undefined }
-    | {
-          persistance: AbstractPersistance;
-          pubSub: AbstractPubSub;
-      };
+    | { persistance: AbstractPersistance; pubSub: AbstractPubSub };
 
-export class NodePlatform extends AbstractPlatform<WebSocket, { req: IncomingMessage }> {
+export class NodePlatform extends AbstractPlatform<WebSocket> {
     constructor(options: NodePlatformOptions = {}) {
         const { persistance, pubSub } = options;
 

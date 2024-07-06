@@ -97,9 +97,9 @@ export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform, a
 
         if (Array.isArray(token)) return onError.invalidToken();
 
-        const room = io.getRoom(roomId, { req });
+        const room = io.getRoom(roomId);
 
-        await room.register(ws, { req, token });
+        await room.register(ws, { token });
 
         return { matched: true };
     };
@@ -144,11 +144,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform, a
 
             if (!user) throw new Error();
 
-            const token = await io.createToken({
-                req,
-                room: roomId,
-                user,
-            });
+            const token = await io.createToken({ room: roomId, user });
 
             res.writeHead(200, { "Content-Type": "text/plain" });
             return res.end(token);

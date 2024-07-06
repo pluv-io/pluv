@@ -201,9 +201,7 @@ export class PluvIO<
     public async createToken(
         params: JWTEncodeParams<InferIOAuthorizeUser<InferIOAuthorize<this>>, TPlatform>,
     ): Promise<string> {
-        if (!this._authorize) {
-            throw new Error("IO does not specify authorize during initialization.");
-        }
+        if (!this._authorize) throw new Error("IO does not specify authorize during initialization.");
 
         const ioAuthorize =
             typeof this._authorize === "function" ? this._authorize(params) : (this._authorize as { secret: string });

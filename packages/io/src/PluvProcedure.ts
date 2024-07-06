@@ -1,5 +1,5 @@
 import type { EventRecord, IOAuthorize, InputZodLike, JsonObject } from "@pluv/types";
-import type { AbstractPlatform, InferPlatformEventContextType, InferPlatformRoomContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferPlatformRoomContextType } from "./AbstractPlatform";
 import type { EventResolver, MergeEventRecords } from "./types";
 
 export interface PluvProcedureConfig<
@@ -12,7 +12,7 @@ export interface PluvProcedureConfig<
     broadcast?: EventResolver<
         TPlatform,
         TAuthorize,
-        TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
+        TContext & InferPlatformRoomContextType<TPlatform>,
         TInput,
         Partial<TOutput>
     > | null;
@@ -20,7 +20,7 @@ export interface PluvProcedureConfig<
     self?: EventResolver<
         TPlatform,
         TAuthorize,
-        TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
+        TContext & InferPlatformRoomContextType<TPlatform>,
         TInput,
         Partial<TOutput>
     > | null;
@@ -38,7 +38,7 @@ export class PluvProcedure<
     private _broadcast: EventResolver<
         TPlatform,
         TAuthorize,
-        TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
+        TContext & InferPlatformRoomContextType<TPlatform>,
         TInput,
         Partial<TOutput>
     > | null = null;
@@ -46,7 +46,7 @@ export class PluvProcedure<
     private _self: EventResolver<
         TPlatform,
         TAuthorize,
-        TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
+        TContext & InferPlatformRoomContextType<TPlatform>,
         TInput,
         Partial<TOutput>
     > | null = null;
@@ -75,7 +75,7 @@ export class PluvProcedure<
         resolver: EventResolver<
             TPlatform,
             TAuthorize,
-            TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
+            TContext & InferPlatformRoomContextType<TPlatform>,
             TInput,
             TResult
         >,
@@ -117,7 +117,7 @@ export class PluvProcedure<
         resolver: EventResolver<
             TPlatform,
             TAuthorize,
-            TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
+            TContext & InferPlatformRoomContextType<TPlatform>,
             TInput,
             TResult
         >,
@@ -153,7 +153,7 @@ export class PluvProcedure<
         resolver: EventResolver<
             TPlatform,
             TAuthorize,
-            TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
+            TContext & InferPlatformRoomContextType<TPlatform>,
             TInput,
             TResult
         >,
@@ -188,7 +188,7 @@ export class PluvProcedure<
     private _resolver(): EventResolver<
         TPlatform,
         TAuthorize,
-        TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>,
+        TContext & InferPlatformRoomContextType<TPlatform>,
         TInput,
         TOutput
     > {
