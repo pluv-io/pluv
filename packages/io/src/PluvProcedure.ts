@@ -1,10 +1,10 @@
 import type { EventRecord, IOAuthorize, InputZodLike, JsonObject } from "@pluv/types";
-import type { AbstractPlatform, InferPlatformRoomContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferRoomContextType } from "./AbstractPlatform";
 import type { EventResolver, MergeEventRecords } from "./types";
 
 export interface PluvProcedureConfig<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>>,
     TContext extends JsonObject,
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
@@ -12,7 +12,7 @@ export interface PluvProcedureConfig<
     broadcast?: EventResolver<
         TPlatform,
         TAuthorize,
-        TContext & InferPlatformRoomContextType<TPlatform>,
+        TContext & InferRoomContextType<TPlatform>,
         TInput,
         Partial<TOutput>
     > | null;
@@ -20,7 +20,7 @@ export interface PluvProcedureConfig<
     self?: EventResolver<
         TPlatform,
         TAuthorize,
-        TContext & InferPlatformRoomContextType<TPlatform>,
+        TContext & InferRoomContextType<TPlatform>,
         TInput,
         Partial<TOutput>
     > | null;
@@ -29,7 +29,7 @@ export interface PluvProcedureConfig<
 
 export class PluvProcedure<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>>,
     TContext extends JsonObject,
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
@@ -38,7 +38,7 @@ export class PluvProcedure<
     private _broadcast: EventResolver<
         TPlatform,
         TAuthorize,
-        TContext & InferPlatformRoomContextType<TPlatform>,
+        TContext & InferRoomContextType<TPlatform>,
         TInput,
         Partial<TOutput>
     > | null = null;
@@ -46,7 +46,7 @@ export class PluvProcedure<
     private _self: EventResolver<
         TPlatform,
         TAuthorize,
-        TContext & InferPlatformRoomContextType<TPlatform>,
+        TContext & InferRoomContextType<TPlatform>,
         TInput,
         Partial<TOutput>
     > | null = null;
@@ -72,13 +72,7 @@ export class PluvProcedure<
     }
 
     public broadcast<TResult extends EventRecord<string, any> = {}>(
-        resolver: EventResolver<
-            TPlatform,
-            TAuthorize,
-            TContext & InferPlatformRoomContextType<TPlatform>,
-            TInput,
-            TResult
-        >,
+        resolver: EventResolver<TPlatform, TAuthorize, TContext & InferRoomContextType<TPlatform>, TInput, TResult>,
     ): Omit<
         PluvProcedure<
             TPlatform,
@@ -114,13 +108,7 @@ export class PluvProcedure<
     }
 
     public self<TResult extends EventRecord<string, any> = {}>(
-        resolver: EventResolver<
-            TPlatform,
-            TAuthorize,
-            TContext & InferPlatformRoomContextType<TPlatform>,
-            TInput,
-            TResult
-        >,
+        resolver: EventResolver<TPlatform, TAuthorize, TContext & InferRoomContextType<TPlatform>, TInput, TResult>,
     ): Omit<
         PluvProcedure<
             TPlatform,
@@ -150,13 +138,7 @@ export class PluvProcedure<
     }
 
     public sync<TResult extends EventRecord<string, any> = {}>(
-        resolver: EventResolver<
-            TPlatform,
-            TAuthorize,
-            TContext & InferPlatformRoomContextType<TPlatform>,
-            TInput,
-            TResult
-        >,
+        resolver: EventResolver<TPlatform, TAuthorize, TContext & InferRoomContextType<TPlatform>, TInput, TResult>,
     ): Omit<
         PluvProcedure<
             TPlatform,
@@ -188,7 +170,7 @@ export class PluvProcedure<
     private _resolver(): EventResolver<
         TPlatform,
         TAuthorize,
-        TContext & InferPlatformRoomContextType<TPlatform>,
+        TContext & InferRoomContextType<TPlatform>,
         TInput,
         TOutput
     > {

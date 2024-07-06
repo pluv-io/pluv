@@ -4,7 +4,8 @@ import { CloudflareWebSocket } from "./CloudflareWebSocket";
 
 export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends AbstractPlatform<
     WebSocket,
-    { env: TEnv }
+    { env: TEnv },
+    { state: DurableObjectState }
 > {
     public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): CloudflareWebSocket {
         return new CloudflareWebSocket(webSocket, config);

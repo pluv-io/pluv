@@ -7,8 +7,13 @@ import { PubSub } from "./PubSub";
 export type InferPlatformWebSocketType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<infer IWebSocket> ? IWebSocket : never;
 
-export type InferPlatformRoomContextType<TPlatform extends AbstractPlatform> =
-    TPlatform extends AbstractPlatform<any, infer IIOContext> ? IIOContext : never;
+export type InferPlatformContextType<TPlatform extends AbstractPlatform> =
+    TPlatform extends AbstractPlatform<any, infer IPlatformContext> ? IPlatformContext : never;
+
+export type InferRoomContextType<TPlatform extends AbstractPlatform> =
+    TPlatform extends AbstractPlatform<any, infer IPlatformContext, infer IRoomContext>
+        ? IPlatformContext & IRoomContext
+        : never;
 
 export type AbstractPlatformConfig =
     | { persistance?: undefined; pubSub?: undefined }
@@ -16,8 +21,13 @@ export type AbstractPlatformConfig =
 
 export type ConvertWebSocketConfig = AbstractWebSocketConfig;
 
-export abstract class AbstractPlatform<TWebSocket = any, TIOContext extends Record<string, any> = {}> {
-    readonly _ioContext: TIOContext | undefined;
+export abstract class AbstractPlatform<
+    TWebSocket = any,
+    TPlatformContext extends Record<string, any> = {},
+    TRoomContext extends Record<string, any> = {},
+> {
+    readonly _ioContext: TPlatformContext | undefined;
+    readonly _roomContext: TRoomContext | undefined;
 
     public persistance: AbstractPersistance;
     public pubSub: AbstractPubSub;
