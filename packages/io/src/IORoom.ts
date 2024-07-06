@@ -16,12 +16,7 @@ import type {
     Maybe,
 } from "@pluv/types";
 import colors from "kleur";
-import type {
-    AbstractPlatform,
-    InferPlatformEventContextType,
-    InferPlatformRoomContextType,
-    InferPlatformWebSocketType,
-} from "./AbstractPlatform";
+import type { AbstractPlatform, InferPlatformRoomContextType, InferPlatformWebSocketType } from "./AbstractPlatform";
 import { AbstractMessageEvent } from "./AbstractWebSocket";
 import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { authorize } from "./authorize";
@@ -68,10 +63,9 @@ interface SendMessageSender {
     user: JsonObject | null;
 }
 
-export type WebsocketRegisterOptions<TPlatform extends AbstractPlatform> = {
+export interface WebsocketRegisterOptions {
     token?: string | null;
-} & InferPlatformRoomContextType<TPlatform> &
-    InferPlatformEventContextType<TPlatform>;
+}
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -153,15 +147,13 @@ export class IORoom<
 
     public async register(
         webSocket: InferPlatformWebSocketType<TPlatform>,
-        options: WebsocketRegisterOptions<TPlatform>,
+        options: WebsocketRegisterOptions,
     ): Promise<void> {
-        const { token, ..._platformEventContext } = options;
-        const platformEventContext = _platformEventContext as InferPlatformRoomContextType<TPlatform> &
-            InferPlatformEventContextType<TPlatform>;
+        const { token } = options;
 
         if (!this._uninitialize) await this._initialize();
 
-        const user = await this._getAuthorizedUser(token, options);
+        const user = await this._getAuthorizedUser(token);
 
         const pluvWs = this._platform.convertWebSocket(webSocket, {
             room: this.id,
@@ -171,7 +163,7 @@ export class IORoom<
         this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
 
         const uninitializeWs = await pluvWs.initialize();
-        const ioAuthorize = this._getIOAuthorize(options);
+        const ioAuthorize = this._getIOAuthorize();
 
         const isUnauthorized = !!ioAuthorize?.required && !user;
         // There is an attempt for multiple of the same identities. Probably malicious.
@@ -205,7 +197,7 @@ export class IORoom<
         await this._platform.persistance.addUser(this.id, pluvWs.sessionId, user ?? {});
 
         const onClose = this._onClose(session, uninitializeWs).bind(this);
-        const onMessage = this._onMessage(session, platformEventContext).bind(this);
+        const onMessage = this._onMessage(session).bind(this);
 
         pluvWs.addEventListener("close", onClose);
         pluvWs.addEventListener("error", onClose);
@@ -266,9 +258,9 @@ export class IORoom<
         );
     }
 
-    private _getIOAuthorize(context: InferPlatformRoomContextType<TPlatform>) {
+    private _getIOAuthorize() {
         if (typeof this._authorize === "function") {
-            return this._authorize(context);
+            return this._authorize(this._context);
         }
 
         return this._authorize as {
@@ -278,11 +270,8 @@ export class IORoom<
         } | null;
     }
 
-    private async _getAuthorizedUser(
-        token: Maybe<string>,
-        context: InferPlatformRoomContextType<TPlatform>,
-    ): Promise<InferIOAuthorizeUser<InferIOAuthorize<this>>> {
-        const ioAuthorize = this._getIOAuthorize(context);
+    private async _getAuthorizedUser(token: Maybe<string>): Promise<InferIOAuthorizeUser<InferIOAuthorize<this>>> {
+        const ioAuthorize = this._getIOAuthorize();
 
         if (!ioAuthorize) return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
         if (!token) return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
@@ -402,10 +391,7 @@ export class IORoom<
         };
     }
 
-    private _onMessage(
-        session: WebSocketSession<TAuthorize>,
-        platformEventContext: InferPlatformEventContextType<TPlatform>,
-    ): (event: AbstractMessageEvent) => void {
+    private _onMessage(session: WebSocketSession<TAuthorize>): (event: AbstractMessageEvent) => void {
         return (event: AbstractMessageEvent): void => {
             const baseContext: EventResolverContext<TPlatform, TAuthorize, TContext> = {
                 context: this._context,
@@ -448,11 +434,8 @@ export class IORoom<
             const extendedContext: EventResolverContext<
                 TPlatform,
                 TAuthorize,
-                TContext & InferPlatformRoomContextType<TPlatform> & InferPlatformEventContextType<TPlatform>
-            > = {
-                ...baseContext,
-                context: { ...this._context, ...platformEventContext },
-            };
+                TContext & InferPlatformRoomContextType<TPlatform>
+            > = { ...baseContext, context: { ...this._context } };
 
             Promise.all([
                 procedure.config.broadcast?.(inputs, extendedContext),

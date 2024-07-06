@@ -10,25 +10,14 @@ export type InferPlatformWebSocketType<TPlatform extends AbstractPlatform> =
 export type InferPlatformRoomContextType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<any, infer IIOContext> ? IIOContext : never;
 
-export type InferPlatformEventContextType<TPlatform extends AbstractPlatform> =
-    TPlatform extends AbstractPlatform<any, any, infer IRoomContext> ? IRoomContext : never;
-
 export type AbstractPlatformConfig =
     | { persistance?: undefined; pubSub?: undefined }
-    | {
-          persistance: AbstractPersistance;
-          pubSub: AbstractPubSub;
-      };
+    | { persistance: AbstractPersistance; pubSub: AbstractPubSub };
 
 export type ConvertWebSocketConfig = AbstractWebSocketConfig;
 
-export abstract class AbstractPlatform<
-    TWebSocket = any,
-    TIOContext extends Record<string, any> = {},
-    TRoomContext extends Record<string, any> = {},
-> {
+export abstract class AbstractPlatform<TWebSocket = any, TIOContext extends Record<string, any> = {}> {
     readonly _ioContext: TIOContext | undefined;
-    readonly _roomContext: TRoomContext | undefined;
 
     public persistance: AbstractPersistance;
     public pubSub: AbstractPubSub;
