@@ -163,14 +163,12 @@ export class IORoom<
 
         const user = await this._getAuthorizedUser(token, options);
 
-        const sessionId = this._platform.randomUUID();
         const pluvWs = this._platform.convertWebSocket(webSocket, {
             room: this.id,
-            sessionId,
             userId: user?.id ?? null,
         });
 
-        this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)} ${sessionId}`);
+        this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
 
         const uninitializeWs = await pluvWs.initialize();
         const ioAuthorize = this._getIOAuthorize(options);
@@ -181,7 +179,7 @@ export class IORoom<
             !!user && Array.from(this._sessions.values()).some((session) => session.user?.id === user.id);
 
         if (isUnauthorized || isTokenInUse) {
-            this._logDebug(`${colors.blue("Authorization failed for connection:")} ${sessionId}`);
+            this._logDebug(`${colors.blue("Authorization failed for connection:")} ${pluvWs.sessionId}`);
 
             pluvWs.handleError({ error: new Error("Not authorized") });
             pluvWs.close(3000, "WebSocket unauthorized.");
@@ -191,7 +189,7 @@ export class IORoom<
 
         const currentTime = new Date().getTime();
         const session: WebSocketSession<TAuthorize> = {
-            id: sessionId,
+            id: pluvWs.sessionId,
             presence: null,
             quit: false,
             room: this.id,
@@ -204,7 +202,7 @@ export class IORoom<
 
         this._sessions.set(session.id, session);
 
-        await this._platform.persistance.addUser(this.id, sessionId, user ?? {});
+        await this._platform.persistance.addUser(this.id, pluvWs.sessionId, user ?? {});
 
         const onClose = this._onClose(session, uninitializeWs).bind(this);
         const onMessage = this._onMessage(session, platformEventContext).bind(this);
@@ -215,7 +213,7 @@ export class IORoom<
 
         this._emitRegistered(session);
 
-        this._logDebug(`${colors.blue(`Registered connection for room ${this.id}:`)} ${sessionId}`);
+        this._logDebug(`${colors.blue(`Registered connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
 
         const size = this.getSize();
 

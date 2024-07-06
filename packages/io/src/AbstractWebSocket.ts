@@ -37,7 +37,6 @@ export type AbstractListener<TType extends keyof AbstractEventMap> = (
 
 export interface AbstractWebSocketConfig {
     room: string;
-    sessionId: string;
     userId: string | null;
 }
 
@@ -52,15 +51,14 @@ export abstract class AbstractWebSocket {
     public readonly CLOSED = 3;
 
     public room: string;
-    public sessionId: string;
 
     public abstract get readyState(): 0 | 1 | 2 | 3;
+    public abstract get sessionId(): string;
 
     constructor(config: AbstractWebSocketConfig) {
-        const { room, sessionId } = config;
+        const { room } = config;
 
         this.room = room;
-        this.sessionId = sessionId;
     }
 
     /**

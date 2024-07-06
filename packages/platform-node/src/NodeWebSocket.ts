@@ -7,6 +7,7 @@ import type {
     AbstractWebSocketConfig,
 } from "@pluv/io";
 import { AbstractWebSocket } from "@pluv/io";
+import crypto from "node:crypto";
 import type { WebSocket } from "ws";
 
 export interface NodeWebSocketEventMap {
@@ -18,17 +19,24 @@ export interface NodeWebSocketEventMap {
 export type NodeWebSocketConfig = AbstractWebSocketConfig;
 
 export class NodeWebSocket extends AbstractWebSocket {
+    private _sessionId: string;
+
     public webSocket: WebSocket;
 
     public get readyState(): 0 | 1 | 2 | 3 {
         return this.webSocket.readyState;
     }
 
+    public get sessionId(): string {
+        return this._sessionId;
+    }
+
     constructor(webSocket: WebSocket, config: NodeWebSocketConfig) {
-        const { room, sessionId, userId } = config;
+        const { room, userId } = config;
 
-        super({ room, sessionId, userId });
+        super({ room, userId });
 
+        this._sessionId = crypto.randomUUID();
         this.webSocket = webSocket;
     }
 

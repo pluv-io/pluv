@@ -16,10 +16,19 @@ export class CloudflareWebSocket extends AbstractWebSocket {
         return this.webSocket.readyState as 0 | 1 | 2 | 3;
     }
 
-    constructor(webSocket: WebSocket, config: CloudflareWebSocketConfig) {
-        const { room, sessionId, userId } = config;
+    public get sessionId(): string {
+        const deserialized = this.webSocket.deserializeAttachment() ?? {};
+        const sessionId = deserialized.sessionId ?? crypto.randomUUID();
 
-        super({ room, sessionId, userId });
+        this.webSocket.serializeAttachment({ ...deserialized, sessionId });
+
+        return sessionId;
+    }
+
+    constructor(webSocket: WebSocket, config: CloudflareWebSocketConfig) {
+        const { room, userId } = config;
+
+        super({ room, userId });
 
         this.webSocket = webSocket;
     }
