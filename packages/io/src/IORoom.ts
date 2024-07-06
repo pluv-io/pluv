@@ -16,7 +16,7 @@ import type {
     Maybe,
 } from "@pluv/types";
 import colors from "kleur";
-import type { AbstractPlatform, InferPlatformRoomContextType, InferPlatformWebSocketType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferRoomContextType, InferPlatformWebSocketType } from "./AbstractPlatform";
 import { AbstractMessageEvent } from "./AbstractWebSocket";
 import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { authorize } from "./authorize";
@@ -46,12 +46,12 @@ export type BroadcastProxy<TIO extends IORoom<any, any, any, any>> = (<TEvent ex
 
 export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<IORoomListeners<TPlatform>> & {
     authorize?: TAuthorize;
-    context: TContext & InferPlatformRoomContextType<TPlatform>;
+    context: TContext & InferRoomContextType<TPlatform>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug: boolean;
     platform: TPlatform;
@@ -69,12 +69,12 @@ export interface WebsocketRegisterOptions {
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IOLike<TAuthorize, TEvents>
 {
-    private readonly _context: TContext & InferPlatformRoomContextType<TPlatform>;
+    private readonly _context: TContext & InferRoomContextType<TPlatform>;
     private readonly _debug: boolean;
     private readonly _docFactory: AbstractCrdtDocFactory<any>;
     private readonly _platform: TPlatform;
@@ -434,7 +434,7 @@ export class IORoom<
             const extendedContext: EventResolverContext<
                 TPlatform,
                 TAuthorize,
-                TContext & InferPlatformRoomContextType<TPlatform>
+                TContext & InferRoomContextType<TPlatform>
             > = { ...baseContext, context: { ...this._context } };
 
             Promise.all([

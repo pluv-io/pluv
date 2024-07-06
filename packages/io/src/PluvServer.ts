@@ -10,7 +10,7 @@ import type {
     JsonObject,
 } from "@pluv/types";
 import colors from "kleur";
-import type { AbstractPlatform, InferPlatformRoomContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferPlatformContextType, InferRoomContextType } from "./AbstractPlatform";
 import { IORoom } from "./IORoom";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
@@ -26,7 +26,7 @@ export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
 
 export type PluvServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferPlatformContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform>> & {
@@ -38,14 +38,13 @@ export type PluvServerConfig<
     router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 };
 
-export type GetRoomOptions<TPlatform extends AbstractPlatform> =
-    keyof InferPlatformRoomContextType<TPlatform> extends never
-        ? [{ debug?: boolean }] | []
-        : [Id<{ debug?: boolean } & InferPlatformRoomContextType<TPlatform>>];
+export type GetRoomOptions<TPlatform extends AbstractPlatform> = keyof InferRoomContextType<TPlatform> extends never
+    ? [{ debug?: boolean }] | []
+    : [Id<{ debug?: boolean } & InferRoomContextType<TPlatform>>];
 
 export class PluvServer<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferPlatformContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IORouterLike<TEvents>
@@ -129,7 +128,7 @@ export class PluvServer<
         const roomContext = {
             ...this._context,
             ...platformRoomContext,
-        } as TContext & InferPlatformRoomContextType<TPlatform>;
+        } as TContext & InferRoomContextType<TPlatform>;
 
         const newRoom = new IORoom<TPlatform, TAuthorize, TContext, TEvents>(room, {
             authorize: this._authorize ?? undefined,
@@ -143,7 +142,7 @@ export class PluvServer<
                     room,
                     encodedState,
                     ...platformRoomContext,
-                } as IORoomListenerEvent<TPlatform> & InferPlatformRoomContextType<TPlatform>;
+                } as IORoomListenerEvent<TPlatform> & InferRoomContextType<TPlatform>;
 
                 this._rooms.delete(room);
                 this._listeners.onRoomDeleted(roomContext);

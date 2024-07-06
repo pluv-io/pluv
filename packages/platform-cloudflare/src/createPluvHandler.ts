@@ -55,7 +55,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
         private _io: IORoom<CloudflarePlatform>;
 
         constructor(state: DurableObjectState, env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>) {
-            this._io = io.getRoom(state.id.toString(), { env });
+            this._io = io.getRoom(state.id.toString(), { env, state });
         }
 
         webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean): void | Promise<void> {}

@@ -1,6 +1,6 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import type { BaseUser, IOAuthorize, JsonObject } from "@pluv/types";
-import type { AbstractPlatform, InferPlatformRoomContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferPlatformContextType } from "./AbstractPlatform";
 import { PluvIO } from "./PluvIO";
 import type { GetInitialStorageFn, PluvIOListeners } from "./types";
 
@@ -10,7 +10,7 @@ export type CreateIOParams<
     TAuthorizeUser extends BaseUser = BaseUser,
     TAuthorizeRequired extends boolean = false,
 > = Partial<PluvIOListeners<TPlatform>> & {
-    authorize?: IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferPlatformRoomContextType<TPlatform>>;
+    authorize?: IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferPlatformContextType<TPlatform>>;
     context?: TContext;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug?: boolean;
@@ -27,14 +27,14 @@ export const createIO = <
     params: CreateIOParams<TPlatform, TContext, TAuthorizeUser, TAuthorizeRequired>,
 ): PluvIO<
     TPlatform,
-    IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferPlatformRoomContextType<TPlatform>>,
+    IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferPlatformContextType<TPlatform>>,
     TContext
 > => {
     const { authorize, context, crdt, debug, getInitialStorage, onRoomDeleted, onStorageUpdated, platform } = params;
 
     return new PluvIO<
         TPlatform,
-        IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferPlatformRoomContextType<TPlatform>>,
+        IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferPlatformContextType<TPlatform>>,
         TContext
     >({
         authorize,

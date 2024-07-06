@@ -9,7 +9,7 @@ import type {
     Maybe,
     MaybePromise,
 } from "@pluv/types";
-import type { AbstractPlatform, InferPlatformRoomContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferRoomContextType } from "./AbstractPlatform";
 import type { AbstractWebSocket } from "./AbstractWebSocket";
 
 declare global {
@@ -20,7 +20,7 @@ declare global {
 
 export type EventResolver<
     TPlatform extends AbstractPlatform = AbstractPlatform,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
@@ -28,7 +28,7 @@ export type EventResolver<
 
 export interface EventResolverContext<
     TPlatform extends AbstractPlatform = AbstractPlatform,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformRoomContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
 > {
     context: TContext;
@@ -86,7 +86,7 @@ export type MergeEventRecords<
 
 type GetInitialStorageEvent<TPlatform extends AbstractPlatform> = {
     room: string;
-} & InferPlatformRoomContextType<TPlatform>;
+} & InferRoomContextType<TPlatform>;
 
 export type GetInitialStorageFn<TPlatform extends AbstractPlatform> = (
     event: GetInitialStorageEvent<TPlatform>,
@@ -100,4 +100,4 @@ export interface PluvIOListeners<TPlatform extends AbstractPlatform> {
 export type IORoomListenerEvent<TPlatform extends AbstractPlatform> = {
     room: string;
     encodedState: string;
-} & InferPlatformRoomContextType<TPlatform>;
+} & InferRoomContextType<TPlatform>;
