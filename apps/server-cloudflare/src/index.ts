@@ -3,7 +3,7 @@ import { ioServer } from "./pluv-io";
 
 export { ioServer } from "./pluv-io";
 
-const CORS_VALID_DOMAINS = ["pluv.io", "pluv.vercel.app"];
+const CORS_VALID_DOMAINS = ["pluv.io", "pluv.vercel.app"] as const;
 const CORS_MAX_AGE = 86_400;
 
 const Pluv = createPluvHandler({

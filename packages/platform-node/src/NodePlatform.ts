@@ -1,8 +1,8 @@
 import type { AbstractPersistance, ConvertWebSocketConfig } from "@pluv/io";
 import { AbstractPlatform, AbstractPubSub } from "@pluv/io";
-import crypto from "crypto";
-import { IncomingMessage } from "http";
-import { TextDecoder } from "util";
+import crypto from "node:crypto";
+import { IncomingMessage } from "node:http";
+import { TextDecoder } from "node:util";
 import type { WebSocket } from "ws";
 import { NodeWebSocket } from "./NodeWebSocket";
 
