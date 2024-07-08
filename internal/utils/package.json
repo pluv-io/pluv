@@ -13,11 +13,11 @@
 	"dependencies": {
 		"@types/react": "^18.3.3",
 		"clsx": "^2.1.1",
-		"tailwind-merge": "^2.3.0"
+		"tailwind-merge": "^2.4.0"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
-		"typescript": "^5.4.5"
+		"typescript": "^5.5.3"
 	}
 }

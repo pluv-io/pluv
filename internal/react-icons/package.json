@@ -26,13 +26,13 @@
 		"@types/common-tags": "^1.8.4",
 		"@types/fs-extra": "^11.0.4",
 		"@types/glob": "^8.1.0",
-		"@types/node": "^20.14.9",
+		"@types/node": "^20.14.10",
 		"common-tags": "^1.8.2",
 		"dotenv-cli": "^7.4.2",
 		"eslint-config-pluv": "workspace:^",
 		"fs-extra": "^11.2.0",
-		"glob": "^10.4.2",
+		"glob": "^10.4.3",
 		"ts-node": "^10.9.2",
-		"typescript": "^5.4.5"
+		"typescript": "^5.5.3"
 	}
 }
