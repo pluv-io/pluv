@@ -1,4 +1,4 @@
-import type { AbstractPersistance, AbstractPubSub, ConvertWebSocketConfig } from "@pluv/io";
+import type { AbstractPersistance, AbstractPlatformConfig, AbstractPubSub, ConvertWebSocketConfig } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
 import crypto from "node:crypto";
 import { TextDecoder } from "node:util";
@@ -16,8 +16,24 @@ export class NodePlatform extends AbstractPlatform<WebSocket> {
         super(persistance && pubSub ? { persistance, pubSub } : {});
     }
 
+    public acceptWebSocket(webSocket: NodeWebSocket): Promise<void> {
+        return Promise.resolve(undefined);
+    }
+
     public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): NodeWebSocket {
         return new NodeWebSocket(webSocket, config);
+    }
+
+    public getLastPingTime(webSocket: NodeWebSocket): number | null {
+        return null;
+    }
+
+    public getWebSockets(): readonly WebSocket[] {
+        return [];
+    }
+
+    public initialize(config: AbstractPlatformConfig<{}, {}>): NodePlatform {
+        return new NodePlatform()._initialize();
     }
 
     public parseData(data: string | ArrayBuffer): Record<string, any> {

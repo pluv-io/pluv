@@ -75,8 +75,6 @@ export abstract class AbstractWebSocket {
 
     public abstract close(code?: number | undefined, reason?: string | undefined): void;
 
-    public abstract initialize(): Promise<() => void>;
-
     public abstract send(message: ArrayBuffer | ArrayBufferView | string): void;
 
     public abstract terminate(): void;

@@ -141,7 +141,9 @@ export class IORoom<
         return Array.from(this._sessions.values()).reduce((count, session) => {
             if (session.quit) return count;
 
-            return currentTime - session.timers.ping > PING_TIMEOUT_MS ? count : count + 1;
+            const pingTime = this._platform.getLastPingTime(session.webSocket) ?? session.timers.ping;
+
+            return currentTime - pingTime > PING_TIMEOUT_MS ? count : count + 1;
         }, 0);
     }
 
@@ -162,7 +164,8 @@ export class IORoom<
 
         this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
 
-        const uninitializeWs = await pluvWs.initialize();
+        await this._platform.acceptWebSocket(pluvWs);
+
         const ioAuthorize = this._getIOAuthorize();
 
         const isUnauthorized = !!ioAuthorize?.required && !user;
@@ -196,7 +199,7 @@ export class IORoom<
 
         await this._platform.persistance.addUser(this.id, pluvWs.sessionId, user ?? {});
 
-        const onClose = this._onClose(session, uninitializeWs).bind(this);
+        const onClose = this._onClose(session).bind(this);
         const onMessage = this._onMessage(session).bind(this);
 
         pluvWs.addEventListener("close", onClose);
@@ -359,7 +362,7 @@ export class IORoom<
         this._debug && console.log(...data);
     }
 
-    private _onClose(session: WebSocketSession<TAuthorize>, callback?: () => void): () => void {
+    private _onClose(session: WebSocketSession<TAuthorize>): () => void {
         return (): void => {
             if (!this._uninitialize) return;
 
@@ -376,8 +379,6 @@ export class IORoom<
                     },
                     senderId: session.id,
                 });
-
-                callback?.();
 
                 const size = this.getSize();
 
