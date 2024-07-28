@@ -27,7 +27,7 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
 
         this._registrationMode = config.mode ?? "attached";
 
-        if (!state) return;
+        if (!state || config.mode !== "detached") return;
 
         state.setWebSocketAutoResponse(
             new WebSocketRequestResponsePair('{"type":"$PING","data":{}}', JSON.stringify({ type: "$PONG", data: {} })),
