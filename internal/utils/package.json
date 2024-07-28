@@ -18,6 +18,6 @@
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
-		"typescript": "^5.5.3"
+		"typescript": "^5.5.4"
 	}
 }

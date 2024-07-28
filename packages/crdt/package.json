@@ -29,7 +29,7 @@
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^8.57.0",
 		"eslint-config-pluv": "workspace:^",
-		"tsup": "^8.1.0",
-		"typescript": "^5.5.3"
+		"tsup": "^8.2.3",
+		"typescript": "^5.5.4"
 	}
 }
