@@ -4,6 +4,8 @@ import type { AbstractWebSocket, AbstractWebSocketConfig } from "./AbstractWebSo
 import { Persistance } from "./Persistance";
 import { PubSub } from "./PubSub";
 
+export type WebSocketRegistrationMode = "attached" | "detached";
+
 export type InferPlatformWebSocketType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<infer IWebSocket> ? IWebSocket : never;
 
@@ -36,6 +38,8 @@ export abstract class AbstractPlatform<
     readonly _ioContext: TPlatformContext | undefined;
     readonly _roomContext: TRoomContext | undefined;
 
+    abstract readonly _registrationMode: WebSocketRegistrationMode;
+
     public persistance: AbstractPersistance;
     public pubSub: AbstractPubSub;
 
@@ -53,7 +57,9 @@ export abstract class AbstractPlatform<
 
     public abstract convertWebSocket(webSocket: TWebSocket, config: ConvertWebSocketConfig): AbstractWebSocket;
 
-    public abstract getLastPingTime(webSocket: AbstractWebSocket): number | null;
+    public abstract getLastPing(webSocket: AbstractWebSocket): number | null;
+
+    public abstract getSessionId(webSocket: TWebSocket): string | null;
 
     public abstract getWebSockets(): readonly TWebSocket[];
 

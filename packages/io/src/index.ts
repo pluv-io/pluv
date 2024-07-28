@@ -7,6 +7,7 @@ export type {
     InferPlatformContextType,
     InferPlatformWebSocketType,
     InferRoomContextType,
+    WebSocketRegistrationMode,
 } from "./AbstractPlatform";
 export { AbstractPubSub } from "./AbstractPubSub";
 export type { IOPubSubEventMessage } from "./AbstractPubSub";

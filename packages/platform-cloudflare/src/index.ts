@@ -1,3 +1,5 @@
+export type { CloudflarePlatformConfig } from "./CloudflarePlatform";
+export { createPluvHandler } from "./createPluvHandler";
 export type {
     AuthorizeFunction,
     AuthorizeFunctionContext,
@@ -5,5 +7,4 @@ export type {
     CreatePluvHandlerResult,
     PluvHandlerFetch,
 } from "./createPluvHandler";
-export { createPluvHandler } from "./createPluvHandler";
 export { platformCloudflare } from "./platformCloudflare";

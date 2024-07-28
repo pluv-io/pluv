@@ -17,7 +17,7 @@ import type {
 } from "@pluv/types";
 import colors from "kleur";
 import type { AbstractPlatform, InferRoomContextType, InferPlatformWebSocketType } from "./AbstractPlatform";
-import { AbstractMessageEvent } from "./AbstractWebSocket";
+import { AbstractCloseEvent, AbstractErrorEvent, AbstractMessageEvent } from "./AbstractWebSocket";
 import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { authorize } from "./authorize";
 import type { EventResolverContext, IORoomListenerEvent, SendMessageOptions, WebSocketSession } from "./types";
@@ -141,10 +141,40 @@ export class IORoom<
         return Array.from(this._sessions.values()).reduce((count, session) => {
             if (session.quit) return count;
 
-            const pingTime = this._platform.getLastPingTime(session.webSocket) ?? session.timers.ping;
+            const pingTime = this._platform.getLastPing(session.webSocket) ?? session.timers.ping;
 
             return currentTime - pingTime > PING_TIMEOUT_MS ? count : count + 1;
         }, 0);
+    }
+
+    public onClose(webSocket: InferPlatformWebSocketType<TPlatform>): (event: AbstractCloseEvent) => void {
+        this._ensureDetached();
+
+        const wsSession = this._getSessionFromWs(webSocket);
+
+        if (!wsSession) return (): void => undefined;
+
+        return this._onClose(wsSession);
+    }
+
+    public onError(webSocket: InferPlatformWebSocketType<TPlatform>): (event: AbstractErrorEvent) => void {
+        this._ensureDetached();
+
+        const wsSession = this._getSessionFromWs(webSocket);
+
+        if (!wsSession) return (): void => undefined;
+
+        return this._onClose(wsSession);
+    }
+
+    public onMessage(webSocket: InferPlatformWebSocketType<TPlatform>): (event: AbstractMessageEvent) => void {
+        this._ensureDetached();
+
+        const wsSession = this._getSessionFromWs(webSocket);
+
+        if (!wsSession) return (): void => undefined;
+
+        return this._onMessage(wsSession);
     }
 
     public async register(
@@ -199,12 +229,14 @@ export class IORoom<
 
         await this._platform.persistance.addUser(this.id, pluvWs.sessionId, user ?? {});
 
-        const onClose = this._onClose(session).bind(this);
-        const onMessage = this._onMessage(session).bind(this);
+        if (this._platform._registrationMode === "attached") {
+            const onClose = this._onClose(session).bind(this);
+            const onMessage = this._onMessage(session).bind(this);
 
-        pluvWs.addEventListener("close", onClose);
-        pluvWs.addEventListener("error", onClose);
-        pluvWs.addEventListener("message", onMessage);
+            pluvWs.addEventListener("close", onClose);
+            pluvWs.addEventListener("error", onClose);
+            pluvWs.addEventListener("message", onMessage);
+        }
 
         this._emitRegistered(session);
 
@@ -259,6 +291,12 @@ export class IORoom<
             },
             session,
         );
+    }
+
+    private _ensureDetached(): void {
+        if (this._platform._registrationMode === "detached") return;
+
+        throw new Error("Platform must use detached mode");
     }
 
     private _getIOAuthorize() {
@@ -320,6 +358,20 @@ export class IORoom<
         if (!procedure) return message.data;
 
         return procedure.config.input ? procedure.config.input.parse(message.data) : message.data;
+    }
+
+    private _getSessionFromWs(webSocket: InferPlatformWebSocketType<TPlatform>): WebSocketSession<TAuthorize> | null {
+        const sessionId = this._platform.getSessionId(webSocket);
+
+        if (typeof sessionId === "string") {
+            const session = this._sessions.get(sessionId) ?? null;
+
+            if (session) return session;
+        }
+
+        const sessions = Array.from(this._sessions.values());
+
+        return sessions.find((session) => session.webSocket === webSocket) ?? null;
     }
 
     private async _initialize(): Promise<void> {
