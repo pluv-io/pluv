@@ -23,23 +23,27 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
                 : {}),
         });
 
-        const state = config.context?.state;
-
         this._registrationMode = config.mode ?? "attached";
 
-        if (!state || config.mode !== "detached") return;
+        const detachedState = this._getDetachedState();
 
-        state.setWebSocketAutoResponse(
+        if (!detachedState) return;
+
+        detachedState.setWebSocketAutoResponse(
             new WebSocketRequestResponsePair('{"type":"$PING","data":{}}', JSON.stringify({ type: "$PONG", data: {} })),
         );
     }
 
     public async acceptWebSocket(webSocket: CloudflareWebSocket): Promise<void> {
-        const state = this._roomContext?.state;
+        const detachedState = this._getDetachedState();
 
-        if (!state) return;
+        if (!detachedState) {
+            webSocket.webSocket.accept();
 
-        state.acceptWebSocket(webSocket.webSocket);
+            return;
+        }
+
+        detachedState.acceptWebSocket(webSocket.webSocket);
     }
 
     public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): CloudflareWebSocket {
@@ -47,11 +51,11 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
     }
 
     public getLastPing(webSocket: CloudflareWebSocket): number | null {
-        const state = this._roomContext?.state;
+        const detachedState = this._getDetachedState();
 
-        if (!state) return null;
+        if (!detachedState) return null;
 
-        const timestamp = state.getWebSocketAutoResponseTimestamp(webSocket.webSocket);
+        const timestamp = detachedState.getWebSocketAutoResponseTimestamp(webSocket.webSocket);
 
         return timestamp?.getTime() ?? null;
     }
@@ -68,9 +72,11 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
     }
 
     public getWebSockets(): readonly WebSocket[] {
-        const state = this._roomContext?.state;
+        const detachedState = this._getDetachedState();
 
-        return state?.getWebSockets() ?? [];
+        if (!detachedState) return [];
+
+        return detachedState.getWebSockets() ?? [];
     }
 
     public initialize(
@@ -89,5 +95,11 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
 
     public randomUUID(): string {
         return crypto.randomUUID();
+    }
+
+    private _getDetachedState(): DurableObjectState | null {
+        if (this._registrationMode !== "detached") return null;
+
+        return this._roomContext?.state ?? null;
     }
 }
