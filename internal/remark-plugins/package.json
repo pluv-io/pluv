@@ -18,12 +18,12 @@
 		"@types/unist": "^3.0.2",
 		"acorn": "^8.12.1",
 		"gray-matter": "^4.0.3",
-		"vfile": "^6.0.1"
+		"vfile": "^6.0.2"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
-		"tsup": "^8.1.0",
-		"typescript": "^5.5.3"
+		"tsup": "^8.2.3",
+		"typescript": "^5.5.4"
 	}
 }

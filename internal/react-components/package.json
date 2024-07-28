@@ -19,7 +19,7 @@
 	},
 	"dependencies": {
 		"@emotion/is-prop-valid": "^1.2.2",
-		"@hookform/resolvers": "^3.7.0",
+		"@hookform/resolvers": "^3.9.0",
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@pluv-internal/react-icons": "workspace:^",
 		"@pluv-internal/utils": "workspace:^",
@@ -48,9 +48,9 @@
 		"clsx": "^2.1.1",
 		"cmdk": "^1.0.0",
 		"common-tags": "^1.8.2",
-		"framer-motion": "^11.2.13",
+		"framer-motion": "^11.3.19",
 		"ms": "^2.1.3",
-		"next": "^14.2.4",
+		"next": "^14.2.5",
 		"next-themes": "^0.3.0",
 		"nextjs-toploader": "^1.6.12",
 		"react": "^18.3.1",
@@ -64,8 +64,8 @@
 		"@pluv/tsconfig": "workspace:^",
 		"autoprefixer": "^10.4.19",
 		"eslint-config-pluv": "workspace:^",
-		"postcss": "^8.4.39",
-		"tailwindcss": "^3.4.4",
-		"typescript": "^5.5.3"
+		"postcss": "^8.4.40",
+		"tailwindcss": "^3.4.7",
+		"typescript": "^5.5.4"
 	}
 }
