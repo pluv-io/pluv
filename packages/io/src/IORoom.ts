@@ -179,7 +179,7 @@ export class IORoom<
 
     public async register(
         webSocket: InferPlatformWebSocketType<TPlatform>,
-        options: WebsocketRegisterOptions,
+        options: WebsocketRegisterOptions = {},
     ): Promise<void> {
         const { token } = options;
 

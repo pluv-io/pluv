@@ -91,7 +91,7 @@ export class RoomDurableObject implements DurableObject {
 
     constructor(state: DurableObjectState, env: Env) {
         this._env = env;
-        this._room = ioServer.getRoom(state.id.toString(), { env });
+        this._room = ioServer.getRoom(state.id.toString(), { env, state });
     }
 
     async fetch(request: Request) {
@@ -101,10 +101,7 @@ export class RoomDurableObject implements DurableObject {
 
         const { 0: client, 1: server } = new WebSocketPair();
 
-        await this._room.register(server, {
-            env: this._env,
-            request,
-        });
+        await this._room.register(server);
 
         return new Response(null, { status: 101, webSocket: client });
     }
