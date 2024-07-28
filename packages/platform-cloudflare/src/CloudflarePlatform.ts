@@ -18,7 +18,9 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
     constructor(config: CloudflarePlatformConfig<TEnv> = {}) {
         super({
             ...config,
-            ...(config.context ? { persistance: new PersistanceCloudflare(config.context) } : {}),
+            ...(config.context && config.mode === "detached"
+                ? { persistance: new PersistanceCloudflare(config.context) }
+                : {}),
         });
 
         const state = config.context?.state;
