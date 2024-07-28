@@ -52,17 +52,37 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
     const { authorize, binding, endpoint = "/api/pluv", modify, io } = config;
 
     const DurableObject = class implements DurableObject {
-        private _io: IORoom<CloudflarePlatform>;
+        private _room: IORoom<CloudflarePlatform>;
 
         constructor(state: DurableObjectState, env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>) {
-            this._io = io.getRoom(state.id.toString(), { env, state });
+            this._room = io.getRoom(state.id.toString(), { env, state });
         }
 
-        webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean): void | Promise<void> {}
+        public webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean): void | Promise<void> {
+            if (io._registrationMode !== "detached") return;
 
-        webSocketError(ws: WebSocket, error: unknown): void | Promise<void> {}
+            const handler = this._room.onClose(ws);
 
-        webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void | Promise<void> {}
+            handler({ code, reason });
+        }
+
+        public webSocketError(ws: WebSocket, error: unknown): void | Promise<void> {
+            if (io._registrationMode !== "detached") return;
+
+            const handler = this._room.onError(ws);
+
+            const eventError = error instanceof Error ? error : new Error("Internal Error");
+
+            handler({ error: eventError, message: eventError.message });
+        }
+
+        public webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void | Promise<void> {
+            if (io._registrationMode !== "detached") return;
+
+            const handler = this._room.onMessage(ws);
+
+            handler({ data: message });
+        }
 
         async fetch(request: Request<any, CfProperties<any>>): Promise<Response> {
             const isWSRequest = request.headers.get("Upgrade") === "websocket";
@@ -75,7 +95,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
 
             const token = new URL(request.url).searchParams.get("token");
 
-            await this._io.register(server, { token });
+            await this._room.register(server, { token });
 
             return new Response(null, { status: 101, webSocket: client });
         }

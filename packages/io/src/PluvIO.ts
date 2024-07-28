@@ -9,7 +9,7 @@ import type {
     JsonObject,
     Maybe,
 } from "@pluv/types";
-import type { AbstractPlatform, InferPlatformContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferPlatformContextType, WebSocketRegistrationMode } from "./AbstractPlatform";
 import { PluvProcedure } from "./PluvProcedure";
 import type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
@@ -175,6 +175,10 @@ export class PluvIO<
 
     public get _events() {
         return this._router._events;
+    }
+
+    public get _registrationMode(): WebSocketRegistrationMode {
+        return this._platform._registrationMode;
     }
 
     public get procedure(): PluvProcedure<TPlatform, TAuthorize, TContext, {}, {}> {

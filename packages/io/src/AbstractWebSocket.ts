@@ -14,7 +14,7 @@ export type AbstractMessageEvent<T = any> = AbstractEvent & {
 
 export type AbstractErrorEvent = AbstractEvent & {
     error: unknown;
-    message: string;
+    message?: string;
 };
 
 export interface AbstractEventMap {

@@ -2,6 +2,7 @@ import type { AbstractPlatformConfig, ConvertWebSocketConfig, WebSocketRegistrat
 import { AbstractPlatform } from "@pluv/io";
 import { CloudflareWebSocket } from "./CloudflareWebSocket";
 import { PersistanceCloudflare } from "./PersistanceCloudflare";
+import { DEFAULT_REGISTRATION_MODE } from "./constants";
 
 export type CloudflarePlatformConfig<TEnv extends Record<string, any> = {}> = AbstractPlatformConfig<
     { env: TEnv },
@@ -23,7 +24,7 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
                 : {}),
         });
 
-        this._registrationMode = config.mode ?? "attached";
+        this._registrationMode = config.mode ?? DEFAULT_REGISTRATION_MODE;
 
         const detachedState = this._getDetachedState();
 
