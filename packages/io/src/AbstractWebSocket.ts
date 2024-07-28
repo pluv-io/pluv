@@ -75,8 +75,6 @@ export abstract class AbstractWebSocket {
 
     public abstract close(code?: number | undefined, reason?: string | undefined): void;
 
-    public abstract initialize(): Promise<() => void>;
-
     public abstract send(message: ArrayBuffer | ArrayBufferView | string): void;
 
     public abstract terminate(): void;
@@ -84,7 +82,7 @@ export abstract class AbstractWebSocket {
     public handleError(params: AbstractWebSocketHandleErrorParams): void {
         const { error, message = error instanceof Error ? error.message : "Unexpected error", session } = params;
 
-        const stack: string | null = error instanceof Error ? error.stack ?? null : null;
+        const stack: string | null = error instanceof Error ? (error.stack ?? null) : null;
 
         return this.sendMessage({
             connectionId: session?.id ?? null,

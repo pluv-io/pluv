@@ -871,7 +871,13 @@ export class PluvRoom<
         this._clearTimeout(this._timeouts.pong);
         this._timeouts.pong = setTimeout(this._reconnect.bind(this), PONG_TIMEOUT_MS);
 
-        this._sendMessage({ type: "$PING", data: {} });
+        /**
+         * !HACK
+         * @description Send data as a stable string so that the server can react to this in a
+         * consistent way.
+         * @date July 8, 2024
+         */
+        this._sendMessage('{"type":"$PING","data":{}}');
     }
 
     private _logDebug(...data: any[]): void {
@@ -1092,19 +1098,36 @@ export class PluvRoom<
         await this.connect();
     }
 
-    private _sendMessage<TMessage extends EventMessage<string, any> = EventMessage<string, any>>(data: TMessage): void {
+    private _sendMessage(data: string): void;
+    private _sendMessage<TMessage extends EventMessage<string, any> = EventMessage<string, any>>(data: TMessage): void;
+    private _sendMessage(data: any): void {
         const webSocket = this._state.webSocket;
 
         if (webSocket?.readyState !== WebSocket.OPEN) return;
 
-        const shouldLog =
-            typeof this._debug === "boolean" ? this._debug : this._debug.input.find((value) => value === data.type);
+        const dataType: string | null = ((): string | null => {
+            if (typeof data === "object") return data.type ?? null;
+            if (typeof data !== "string") return null;
 
-        if (shouldLog) {
-            this._logDebug("WebSocket event sent: ", data.type, data);
-        }
+            try {
+                return JSON.parse(data)?.type ?? null;
+            } catch {
+                return null;
+            }
+        })();
 
-        webSocket.send(JSON.stringify(data));
+        const shouldLog: boolean =
+            typeof this._debug === "boolean"
+                ? this._debug
+                : !dataType
+                  ? false
+                  : this._debug.input.some((value) => value === data.type);
+
+        if (shouldLog) this._logDebug("WebSocket event sent: ", data.type, data);
+
+        const message = typeof data === "string" ? data : JSON.stringify(data);
+
+        webSocket.send(message);
     }
 
     private _updateState(updater: (oldState: WebSocketState<TIO>) => WebSocketState<TIO>): WebSocketState<TIO> {

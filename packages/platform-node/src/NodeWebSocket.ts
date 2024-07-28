@@ -86,10 +86,6 @@ export class NodeWebSocket extends AbstractWebSocket {
         this.webSocket.close(code, reason);
     }
 
-    public async initialize(): Promise<() => void> {
-        return Promise.resolve(() => undefined);
-    }
-
     public send(message: string | ArrayBuffer | ArrayBufferView): void {
         if (this.readyState !== this.OPEN) return;
 

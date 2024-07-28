@@ -1,4 +1,5 @@
-import { AbstractEventMap, AbstractListener, AbstractWebSocket, AbstractWebSocketConfig } from "@pluv/io";
+import type { AbstractEventMap, AbstractListener, AbstractWebSocketConfig } from "@pluv/io";
+import { AbstractWebSocket } from "@pluv/io";
 
 export interface CloudflareWebSocketEventMap {
     close: CloseEvent;
