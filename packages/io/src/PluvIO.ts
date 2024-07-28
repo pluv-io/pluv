@@ -18,6 +18,7 @@ import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
 import type { GetInitialStorageFn, PluvIOListeners } from "./types";
 import { __PLUV_VERSION } from "./version";
+import { PING_TIMEOUT_MS } from "./constants";
 
 export type PluvIOConfig<
     TPlatform extends AbstractPlatform<any>,
@@ -49,8 +50,16 @@ export class PluvIO<
 {
     private _router: PluvRouter<TPlatform, TAuthorize, TContext, {}> = new PluvRouter({
         $GET_OTHERS: this.procedure.sync((data, { room, session, sessions }) => {
+            const currentTime = new Date().getTime();
+
             const others = Array.from(sessions.entries())
-                .filter(([, wsSession]) => wsSession.id !== session?.id)
+                .filter(([, wsSession]) => {
+                    if (wsSession.id === session?.id) return false;
+                    if (wsSession.quit) return false;
+                    if (currentTime - wsSession.timers.ping > PING_TIMEOUT_MS) return false;
+
+                    return true;
+                })
                 .reduce<{
                     [connectionId: string]: {
                         connectionId: string;
