@@ -16,13 +16,12 @@ import type {
     Maybe,
 } from "@pluv/types";
 import colors from "kleur";
-import type { AbstractPlatform, InferRoomContextType, InferPlatformWebSocketType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferPlatformWebSocketType, InferRoomContextType } from "./AbstractPlatform";
 import { AbstractCloseEvent, AbstractErrorEvent, AbstractMessageEvent } from "./AbstractWebSocket";
 import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { authorize } from "./authorize";
+import { PING_TIMEOUT_MS } from "./constants";
 import type { EventResolverContext, IORoomListenerEvent, SendMessageOptions, WebSocketSession } from "./types";
-
-const PING_TIMEOUT_MS = 30_000;
 
 type BroadcastMessage<TIO extends IORoom<any, any, any, any>> =
     | InferEventMessage<InferIOInput<TIO>>
@@ -252,8 +251,6 @@ export class IORoom<
 
         const sender = senderId ? this._sessions.get(senderId) : null;
 
-        this._emitQuitters();
-
         this._platform.pubSub.publish(this.id, {
             connectionId: senderId ?? null,
             room: this.id,
@@ -284,8 +281,6 @@ export class IORoom<
     }
 
     private _emitRegistered(session: WebSocketSession<TAuthorize>): void {
-        this._emitQuitters();
-
         this._sendSelfMessage(
             {
                 type: "$REGISTERED",
@@ -600,6 +595,7 @@ export class IORoom<
         const session = this._sessions.get(senderId);
 
         if (!session) return;
+        if (message.type === "$PONG") this._emitQuitters();
 
         session.webSocket.sendMessage({
             connectionId: sender.id,
