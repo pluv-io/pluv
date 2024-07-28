@@ -61,6 +61,7 @@ export const ServerCodeBlock: FC<ServerCodeBlockProps> = async ({
                     text-sm
                     md:text-base
                     [&>pre]:size-full
+                    [&>pre]:min-w-fit
                     [&>pre]:p-3
                 `,
                 className,

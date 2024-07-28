@@ -29,9 +29,12 @@ export const BreadcrumbsItem: FC<BreadcrumbsItemProps> = ({
             className={cn(
                 oneLine`
                     flex
+                    min-w-0
                     flex-row
                     items-center
                     gap-2
+                    truncate
+                    text-nowrap
                     [&:last-child>svg]:hidden
                 `,
                 className,
@@ -41,16 +44,19 @@ export const BreadcrumbsItem: FC<BreadcrumbsItemProps> = ({
             <NavigationMenu.Link asChild>
                 <Pill
                     className={oneLine`
+                        overflow-hidden
                         text-inherit
                     `}
                     title={title}
                     aria-label={ariaLabel}
                     data-selected={selected}
                 >
-                    <NextLink href={href}>{children}</NextLink>
+                    <NextLink className="truncate" href={href}>
+                        {children}
+                    </NextLink>
                 </Pill>
             </NavigationMenu.Link>
-            <ChevronDownIcon className="-rotate-90" height={16} width={16} />
+            <ChevronDownIcon className="shrink-0 -rotate-90" height={16} width={16} />
         </NavigationMenu.Item>
     );
 };

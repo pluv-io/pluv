@@ -23,7 +23,7 @@ export const DataTablePagination = <TData extends unknown>({ className, table }:
                 selected.
             </div>
             <div className="ml-auto flex items-center space-x-6 lg:space-x-8">
-                <div className="flex items-center space-x-2">
+                <div className="hidden items-center space-x-2 sm:flex">
                     <p className="text-nowrap text-sm font-medium">Rows per page</p>
                     <Select
                         value={`${table.getState().pagination.pageSize}`}
