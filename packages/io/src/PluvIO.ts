@@ -16,9 +16,9 @@ import { PluvRouter } from "./PluvRouter";
 import { PluvServer } from "./PluvServer";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
+import { PING_TIMEOUT_MS } from "./constants";
 import type { GetInitialStorageFn, PluvIOListeners } from "./types";
 import { __PLUV_VERSION } from "./version";
-import { PING_TIMEOUT_MS } from "./constants";
 
 export type PluvIOConfig<
     TPlatform extends AbstractPlatform<any>,
