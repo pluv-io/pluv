@@ -7,6 +7,7 @@ import { SiteWideLayout } from "../components/SiteWideLayout";
 import "@pluv-internal/react-components/styles.css";
 import "@shikijs/twoslash/style-rich.css";
 import "../styles/global.css";
+import { CodeBlockProvider } from "../components/CodeBlock";
 
 export const runtime: ServerRuntime = "edge";
 
@@ -31,9 +32,11 @@ const Layout: FC<LayoutProps> = ({ children }) => {
             <body>
                 <PageProgressBar />
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-                    <LazyMotion>
-                        <SiteWideLayout className={inter.className}>{children}</SiteWideLayout>
-                    </LazyMotion>
+                    <CodeBlockProvider>
+                        <LazyMotion>
+                            <SiteWideLayout className={inter.className}>{children}</SiteWideLayout>
+                        </LazyMotion>
+                    </CodeBlockProvider>
                 </ThemeProvider>
                 <Toaster />
             </body>
