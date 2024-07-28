@@ -53,6 +53,8 @@ export const ServerCodeBlock: FC<ServerCodeBlockProps> = async ({
         transformers: [...(twoslash ? [twoslash] : [])],
     });
 
+    highlighter.dispose();
+
     return (
         <div
             {...restProps}

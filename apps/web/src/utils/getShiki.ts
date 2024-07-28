@@ -1,13 +1,13 @@
 import type { HighlighterGeneric } from "shiki/core";
-import { getHighlighterCore } from "shiki/core";
 
 export type ShikiLanguage = "bash" | "tsx" | "typescript";
 export type ShikiTheme = "catppuccin-latte" | "catppuccin-macchiato";
 
 export const getShiki = async () => {
+    const createHighlighterCore = await import("shiki/core").then((mod) => mod.createHighlighterCore);
     const getWasm = await import("shiki/wasm");
 
-    const highlighter = await getHighlighterCore({
+    const highlighter = await createHighlighterCore({
         langAlias: {
             bash: "bash",
             javascript: "tsx",
