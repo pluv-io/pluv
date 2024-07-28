@@ -229,11 +229,19 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                     className="flex min-h-0 min-w-0 grow-[3] basis-0 flex-col items-stretch gap-2"
                     defaultValue="Room.tsx"
                 >
-                    <Tabs.List className="grid w-full grid-cols-4">
-                        <Tabs.Trigger value="Room.tsx">Room.tsx</Tabs.Trigger>
-                        <Tabs.Trigger value="Provider.tsx">Provider.tsx</Tabs.Trigger>
-                        <Tabs.Trigger value="client/pluv.ts">client/pluv.ts</Tabs.Trigger>
-                        <Tabs.Trigger value="server/pluv.ts">server/pluv.ts</Tabs.Trigger>
+                    <Tabs.List className="flex w-full items-stretch justify-start overflow-x-auto [&::-webkit-scrollbar]:hidden">
+                        <Tabs.Trigger className="min-w-28 grow basis-0" value="Room.tsx">
+                            Room.tsx
+                        </Tabs.Trigger>
+                        <Tabs.Trigger className="min-w-28 grow basis-0" value="Provider.tsx">
+                            Provider.tsx
+                        </Tabs.Trigger>
+                        <Tabs.Trigger className="min-w-28 grow basis-0" value="client/pluv.ts">
+                            client/pluv.ts
+                        </Tabs.Trigger>
+                        <Tabs.Trigger className="min-w-28 grow basis-0" value="server/pluv.ts">
+                            server/pluv.ts
+                        </Tabs.Trigger>
                     </Tabs.List>
                     <Card className="flex min-h-0 grow basis-0 flex-col items-stretch overflow-y-auto shadow-md">
                         <Tabs.Content asChild value="Room.tsx">

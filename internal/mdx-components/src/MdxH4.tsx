@@ -8,7 +8,9 @@ export type MdxH4Props = InferComponentProps<"h4">;
 export const MdxH4 = forwardRef<HTMLHeadingElement, MdxH4Props>((props, ref) => {
     const { className, ...restProps } = props;
 
-    return <MdxHeader {...restProps} className={cn("text-lg font-semibold", className)} ref={ref} type="h4" />;
+    return (
+        <MdxHeader {...restProps} className={cn("text-base font-semibold sm:text-lg", className)} ref={ref} type="h4" />
+    );
 });
 
 MdxH4.displayName = "MdxH4";

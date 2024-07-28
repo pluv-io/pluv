@@ -43,6 +43,7 @@ export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>((props, ref)
                     text-sm
                     md:text-base
                     [&>pre]:size-full
+                    [&>pre]:min-w-fit
                     [&>pre]:p-3
                 `,
                 className,
