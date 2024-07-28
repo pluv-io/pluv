@@ -250,18 +250,9 @@ export class IORoom<
     private _broadcast(params: BroadcastParams<this>): void {
         const { message, senderId } = params;
 
-        const currentTime = new Date().getTime();
         const sender = senderId ? this._sessions.get(senderId) : null;
 
-        const quitters = Array.from(this._sessions.values()).filter(
-            (session) => session.quit || currentTime - session.timers.ping > PING_TIMEOUT_MS,
-        );
-
-        quitters.forEach((session) => {
-            this._sessions.delete(session.id);
-        });
-
-        this._emitQuitters(quitters);
+        this._emitQuitters();
 
         this._platform.pubSub.publish(this.id, {
             connectionId: senderId ?? null,
@@ -271,7 +262,16 @@ export class IORoom<
         });
     }
 
-    private _emitQuitters(quitters: readonly WebSocketSession<TAuthorize>[]): void {
+    private _emitQuitters(): void {
+        const currentTime = new Date().getTime();
+        const quitters = Array.from(this._sessions.values()).filter(
+            (session) => session.quit || currentTime - session.timers.ping > PING_TIMEOUT_MS,
+        );
+
+        quitters.forEach((session) => {
+            this._sessions.delete(session.id);
+        });
+
         quitters.forEach((quitter) => {
             this._broadcast({
                 message: {
@@ -284,6 +284,8 @@ export class IORoom<
     }
 
     private _emitRegistered(session: WebSocketSession<TAuthorize>): void {
+        this._emitQuitters();
+
         this._sendSelfMessage(
             {
                 type: "$REGISTERED",
