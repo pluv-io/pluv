@@ -1,4 +1,4 @@
-import type { AbstractEventMap, AbstractListener, AbstractWebSocketConfig } from "@pluv/io";
+import type { AbstractEventMap, AbstractListener, AbstractWebSocketConfig, WebSocketSerializedState } from "@pluv/io";
 import { AbstractWebSocket } from "@pluv/io";
 
 export interface CloudflareWebSocketEventMap {
@@ -10,9 +10,7 @@ export interface CloudflareWebSocketEventMap {
 
 export type CloudflareWebSocketConfig = AbstractWebSocketConfig;
 
-export class CloudflareWebSocket extends AbstractWebSocket {
-    public webSocket: WebSocket;
-
+export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
     public get readyState(): 0 | 1 | 2 | 3 {
         return this.webSocket.readyState as 0 | 1 | 2 | 3;
     }
@@ -21,17 +19,39 @@ export class CloudflareWebSocket extends AbstractWebSocket {
         const deserialized = this.webSocket.deserializeAttachment() ?? {};
         const sessionId = deserialized.sessionId ?? crypto.randomUUID();
 
-        this.webSocket.serializeAttachment({ ...deserialized, sessionId });
+        if (typeof deserialized.sessionId !== "string") {
+            this.webSocket.serializeAttachment({ ...deserialized, sessionId });
+        }
 
         return sessionId;
     }
 
+    public get state(): WebSocketSerializedState {
+        const deserialized = this.webSocket.deserializeAttachment();
+        const state = deserialized.state ?? null;
+
+        if (!state) throw new Error("Could not get websocket state");
+
+        return state;
+    }
+
     constructor(webSocket: WebSocket, config: CloudflareWebSocketConfig) {
-        const { room, userId } = config;
+        const { room } = config;
 
-        super({ room, userId });
+        super(webSocket, config);
 
-        this.webSocket = webSocket;
+        const state: WebSocketSerializedState = {
+            presence: null,
+            quit: false,
+            room,
+            timers: { ping: new Date().getTime() },
+        };
+
+        webSocket.serializeAttachment({
+            sessionId: this.sessionId,
+            state,
+            ...webSocket.deserializeAttachment(),
+        });
     }
 
     public addEventListener<TType extends keyof AbstractEventMap>(type: TType, handler: AbstractListener<TType>) {
@@ -44,12 +64,6 @@ export class CloudflareWebSocket extends AbstractWebSocket {
         if (!canClose) return;
 
         this.webSocket.close(code, reason);
-    }
-
-    public initialize(): Promise<() => undefined> {
-        this.webSocket.accept();
-
-        return Promise.resolve(() => undefined);
     }
 
     public send(message: string | ArrayBuffer | ArrayBufferView): void {

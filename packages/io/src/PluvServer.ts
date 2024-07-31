@@ -144,7 +144,7 @@ export class PluvServer<
             context: roomContext,
             crdt: this._crdt,
             debug: debug ?? this._debug,
-            onDestroy: ({ encodedState, room }) => {
+            onDestroy: async ({ encodedState, room }) => {
                 this._logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
 
                 const roomContext = {
@@ -154,7 +154,9 @@ export class PluvServer<
                 } as IORoomListenerEvent<TPlatform> & InferRoomContextType<TPlatform>;
 
                 this._rooms.delete(room);
-                this._listeners.onRoomDeleted(roomContext);
+
+                await Promise.resolve(this._listeners.onRoomDeleted(roomContext));
+                await this._platform.persistance.deleteStorageState(room);
 
                 if (this._debug) {
                     const rooms = Array.from(this._rooms.keys());

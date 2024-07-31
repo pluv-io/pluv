@@ -1,5 +1,6 @@
-import type { IOEventMessage, MaybePromise } from "@pluv/types";
-import type { WebSocketSession } from "./types";
+import type { BaseUser, InferIOAuthorizeUser, IOAuthorize, IOEventMessage, MaybePromise } from "@pluv/types";
+import type { AbstractPersistance } from "./AbstractPersistance";
+import type { WebSocketSerializedState, WebSocketSession } from "./types";
 
 export type AbstractEvent = {};
 
@@ -28,6 +29,7 @@ export type EventType = keyof AbstractEventMap;
 export interface AbstractWebSocketHandleErrorParams {
     error: unknown;
     message?: string;
+    room: string;
     session?: WebSocketSession<any>;
 }
 
@@ -35,12 +37,15 @@ export type AbstractListener<TType extends keyof AbstractEventMap> = (
     event: AbstractEventMap[TType],
 ) => MaybePromise<void>;
 
+export type InferWebSocketSource<TAbstractWebSocket extends AbstractWebSocket> =
+    TAbstractWebSocket extends AbstractWebSocket<infer IWebSocket> ? IWebSocket : never;
+
 export interface AbstractWebSocketConfig {
+    persistance: AbstractPersistance;
     room: string;
-    userId: string | null;
 }
 
-export abstract class AbstractWebSocket {
+export abstract class AbstractWebSocket<TWebSocket = any> {
     /** The connection is not yet open. */
     public readonly CONNECTING = 0;
     /** The connection is open and ready to communicate. */
@@ -50,15 +55,22 @@ export abstract class AbstractWebSocket {
     /** The connection is closed. */
     public readonly CLOSED = 3;
 
-    public room: string;
+    public readonly persistance: AbstractPersistance;
+    public readonly room: string;
+    public readonly webSocket: TWebSocket;
+
+    private _user: BaseUser | null = null;
 
     public abstract get readyState(): 0 | 1 | 2 | 3;
     public abstract get sessionId(): string;
+    public abstract get state(): WebSocketSerializedState;
 
-    constructor(config: AbstractWebSocketConfig) {
-        const { room } = config;
+    constructor(webSocket: TWebSocket, config: AbstractWebSocketConfig) {
+        const { persistance, room } = config;
 
+        this.persistance = persistance;
         this.room = room;
+        this.webSocket = webSocket;
     }
 
     /**
@@ -79,15 +91,33 @@ export abstract class AbstractWebSocket {
 
     public abstract terminate(): void;
 
-    public handleError(params: AbstractWebSocketHandleErrorParams): void {
-        const { error, message = error instanceof Error ? error.message : "Unexpected error", session } = params;
+    public async getSession<TAuthorize extends IOAuthorize<any, any, any>>(): Promise<WebSocketSession<TAuthorize>> {
+        const sessionId = this.sessionId;
+        const state = this.state;
+        const room = state.room;
 
+        const user = this._user ?? (await this.persistance.getUser(room, sessionId));
+
+        this._user = user as BaseUser;
+
+        return {
+            ...state,
+            id: sessionId,
+            user: user as InferIOAuthorizeUser<TAuthorize>,
+            webSocket: this,
+        };
+    }
+
+    public handleError(params: AbstractWebSocketHandleErrorParams): void {
+        const { error, message: _message, room, session } = params;
+
+        const message = error instanceof Error ? error.message : "Unexpected error";
         const stack: string | null = error instanceof Error ? (error.stack ?? null) : null;
 
         return this.sendMessage({
             connectionId: session?.id ?? null,
             data: { message, stack },
-            room: this.room,
+            room,
             type: "$ERROR",
             user: session?.user ?? null,
         });

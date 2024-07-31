@@ -1,4 +1,9 @@
-import type { AbstractPlatformConfig, ConvertWebSocketConfig, WebSocketRegistrationMode } from "@pluv/io";
+import type {
+    AbstractPlatformConfig,
+    ConvertWebSocketConfig,
+    WebSocketRegistrationMode,
+    WebSocketSerializedState,
+} from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
 import { CloudflareWebSocket } from "./CloudflareWebSocket";
 import { PersistanceCloudflare } from "./PersistanceCloudflare";
@@ -10,7 +15,7 @@ export type CloudflarePlatformConfig<TEnv extends Record<string, any> = {}> = Ab
 > & { mode?: WebSocketRegistrationMode };
 
 export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends AbstractPlatform<
-    WebSocket,
+    CloudflareWebSocket,
     { env: TEnv },
     { state: DurableObjectState }
 > {
@@ -48,7 +53,9 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
     }
 
     public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): CloudflareWebSocket {
-        return new CloudflareWebSocket(webSocket, config);
+        const { room } = config;
+
+        return new CloudflareWebSocket(webSocket, { persistance: this.persistance, room });
     }
 
     public getLastPing(webSocket: CloudflareWebSocket): number | null {
@@ -61,8 +68,14 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
         return timestamp?.getTime() ?? null;
     }
 
-    public getSessionId(webSocket: WebSocket): string | null {
-        const deserialized = webSocket.deserializeAttachment() ?? {};
+    public getSerializedState(webSocket: CloudflareWebSocket): WebSocketSerializedState | null {
+        const deserialized = webSocket.webSocket.deserializeAttachment();
+
+        return deserialized?.state ?? null;
+    }
+
+    public getSessionId(webSocket: CloudflareWebSocket): string | null {
+        const deserialized = webSocket.webSocket.deserializeAttachment() ?? {};
         const sessionId = deserialized.sessionId;
 
         if (typeof sessionId !== "string") {
@@ -80,10 +93,8 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
         return detachedState.getWebSockets() ?? [];
     }
 
-    public initialize(
-        config: AbstractPlatformConfig<{ env: TEnv }, { state: DurableObjectState }>,
-    ): CloudflarePlatform<TEnv> {
-        return new CloudflarePlatform(config)._initialize();
+    public initialize(config: AbstractPlatformConfig<{ env: TEnv }, { state: DurableObjectState }>): this {
+        return new CloudflarePlatform<TEnv>(config)._initialize() as this;
     }
 
     public parseData(data: string | ArrayBuffer): Record<string, any> {
@@ -96,6 +107,12 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
 
     public randomUUID(): string {
         return crypto.randomUUID();
+    }
+
+    public setSerializedState(webSocket: CloudflareWebSocket, state: WebSocketSerializedState): void {
+        const deserialized = webSocket.webSocket.deserializeAttachment() ?? {};
+
+        webSocket.webSocket.serializeAttachment({ ...deserialized, state });
     }
 
     private _getDetachedState(): DurableObjectState | null {

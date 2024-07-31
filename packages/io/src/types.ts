@@ -9,7 +9,12 @@ import type {
     Maybe,
     MaybePromise,
 } from "@pluv/types";
-import type { AbstractPlatform, InferRoomContextType } from "./AbstractPlatform";
+import type {
+    AbstractPlatform,
+    InferPlatformWebSocketSource,
+    InferPlatformWebSocketType,
+    InferRoomContextType,
+} from "./AbstractPlatform";
 import type { AbstractWebSocket } from "./AbstractWebSocket";
 
 declare global {
@@ -47,7 +52,7 @@ export interface EventResolverContext<
      * @date December 25, 2022
      */
     session: WebSocketSession<TAuthorize> | null;
-    sessions: Map<string, WebSocketSession<TAuthorize>>;
+    sessions: readonly WebSocketSession<TAuthorize>[];
 }
 
 export type SendMessageOptions =
@@ -59,15 +64,19 @@ export interface WebSocketSessionTimers {
     ping: number;
 }
 
-export interface WebSocketSession<TAuthorize extends IOAuthorize<any, any, any> = BaseIOAuthorize> {
-    id: string;
+export interface WebSocketSerializedState {
     presence: JsonObject | null;
     quit: boolean;
     room: string;
     timers: WebSocketSessionTimers;
-    webSocket: AbstractWebSocket;
-    user: InferIOAuthorizeUser<TAuthorize>;
 }
+
+export type WebSocketSession<TAuthorize extends IOAuthorize<any, any, any> = BaseIOAuthorize> =
+    WebSocketSerializedState & {
+        id: string;
+        user: InferIOAuthorizeUser<TAuthorize>;
+        webSocket: AbstractWebSocket;
+    };
 
 export type MergeEventRecords<
     TEventRecords extends EventRecord<string, any>[],
@@ -101,3 +110,7 @@ export type IORoomListenerEvent<TPlatform extends AbstractPlatform> = {
     room: string;
     encodedState: string;
 } & InferRoomContextType<TPlatform>;
+
+export type WebSocketType<TPlatform extends AbstractPlatform> =
+    | InferPlatformWebSocketType<TPlatform>
+    | InferPlatformWebSocketSource<TPlatform>;
