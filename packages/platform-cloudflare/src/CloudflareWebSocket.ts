@@ -13,7 +13,13 @@ export type CloudflareWebSocketConfig = AbstractWebSocketConfig;
 
 export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
     public set presence(presence: JsonObject | null) {
-        this.webSocket.serializeAttachment({ ...this.webSocket.deserializeAttachment(), presence });
+        const deserialized = this.webSocket.deserializeAttachment();
+        const state = deserialized.state;
+
+        this.webSocket.serializeAttachment({
+            ...this.webSocket.deserializeAttachment(),
+            state: { ...state, presence },
+        });
     }
 
     public get readyState(): 0 | 1 | 2 | 3 {
