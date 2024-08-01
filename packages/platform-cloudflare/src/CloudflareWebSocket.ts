@@ -1,5 +1,6 @@
 import type { AbstractEventMap, AbstractListener, AbstractWebSocketConfig, WebSocketSerializedState } from "@pluv/io";
 import { AbstractWebSocket } from "@pluv/io";
+import type { JsonObject } from "@pluv/types";
 
 export interface CloudflareWebSocketEventMap {
     close: CloseEvent;
@@ -11,6 +12,10 @@ export interface CloudflareWebSocketEventMap {
 export type CloudflareWebSocketConfig = AbstractWebSocketConfig;
 
 export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
+    public set presence(presence: JsonObject | null) {
+        this.webSocket.serializeAttachment({ ...this.webSocket.deserializeAttachment(), presence });
+    }
+
     public get readyState(): 0 | 1 | 2 | 3 {
         return this.webSocket.readyState as 0 | 1 | 2 | 3;
     }

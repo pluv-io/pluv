@@ -1,4 +1,11 @@
-import type { BaseUser, InferIOAuthorizeUser, IOAuthorize, IOEventMessage, MaybePromise } from "@pluv/types";
+import type {
+    BaseUser,
+    InferIOAuthorizeUser,
+    IOAuthorize,
+    IOEventMessage,
+    JsonObject,
+    MaybePromise,
+} from "@pluv/types";
 import type { AbstractPersistance } from "./AbstractPersistance";
 import type { WebSocketSerializedState, WebSocketSession } from "./types";
 
@@ -61,6 +68,7 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
 
     private _user: BaseUser | null = null;
 
+    public abstract set presence(presence: JsonObject | null);
     public abstract get readyState(): 0 | 1 | 2 | 3;
     public abstract get sessionId(): string;
     public abstract get state(): WebSocketSerializedState;

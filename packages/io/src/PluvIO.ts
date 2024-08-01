@@ -137,19 +137,11 @@ export class PluvIO<
 
             if (!session) return {};
 
-            /**
-             * !HACK
-             * @description Do mutable update to session because `setSerializedState` works
-             * differently between platforms
-             * @date July 28, 2024
-             */
-            session.presence = Object.assign(Object.create(null), session.presence, presence);
+            const updated = Object.assign(Object.create(null), session.presence, presence);
 
-            const { webSocket, ...serialized } = session;
+            session.webSocket.presence = updated;
 
-            this._platform.setSerializedState(webSocket.webSocket, { ...serialized, presence: session.presence });
-
-            return { $PRESENCE_UPDATED: { presence: session.presence } };
+            return { $PRESENCE_UPDATED: { presence: updated } };
         }),
         $UPDATE_STORAGE: this.procedure.broadcast((data, { context, doc, room }) => {
             const origin = (data as any)?.origin as Maybe<string>;

@@ -8,6 +8,7 @@ import type {
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractWebSocket } from "@pluv/io";
+import type { JsonObject } from "@pluv/types";
 import crypto from "node:crypto";
 import type { WebSocket } from "ws";
 
@@ -22,6 +23,10 @@ export type NodeWebSocketConfig = AbstractWebSocketConfig;
 export class NodeWebSocket extends AbstractWebSocket<WebSocket> {
     private _sessionId: string;
     private _state: WebSocketSerializedState;
+
+    public set presence(presence: JsonObject | null) {
+        this._state.presence = presence;
+    }
 
     public get readyState(): 0 | 1 | 2 | 3 {
         return this.webSocket.readyState;
