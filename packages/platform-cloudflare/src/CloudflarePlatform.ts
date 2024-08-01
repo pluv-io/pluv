@@ -94,7 +94,19 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
     }
 
     public initialize(config: AbstractPlatformConfig<{ env: TEnv }, { state: DurableObjectState }>): this {
-        return new CloudflarePlatform<TEnv>(config)._initialize() as this;
+        const context = config.context ?? { ...this._ioContext, ...this._roomContext };
+
+        if (!context.env || !context.state) {
+            throw new Error("Could not derive platform context");
+        }
+
+        return new CloudflarePlatform<TEnv>({
+            mode: this._registrationMode,
+            persistance: this.persistance,
+            pubSub: this.pubSub,
+            ...config,
+            context: { env: context.env, state: context.state },
+        })._initialize() as this;
     }
 
     public parseData(data: string | ArrayBuffer): Record<string, any> {

@@ -128,7 +128,7 @@ export class IORoom<
         this._docFactory = crdt.doc(() => ({}));
         this._doc = this._docFactory.getEmpty();
         this._router = router;
-        this._platform = platform;
+        this._platform = platform.initialize({ context });
 
         this.id = id;
 
