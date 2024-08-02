@@ -55,7 +55,12 @@ export class NodePlatform extends AbstractPlatform<NodeWebSocket> {
     }
 
     public initialize(config: AbstractPlatformConfig<{}, {}>): this {
-        return new NodePlatform(config as NodePlatformOptions)._initialize() as this;
+        return new NodePlatform({
+            mode: this._registrationMode,
+            persistance: this.persistance,
+            pubSub: this.pubSub,
+            ...config,
+        } as NodePlatformOptions)._initialize() as this;
     }
 
     public parseData(data: string | ArrayBuffer): Record<string, any> {
