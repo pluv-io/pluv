@@ -52,8 +52,8 @@ export class PluvIO<
         $GET_OTHERS: this.procedure.sync((data, { room, session, sessions }) => {
             const currentTime = new Date().getTime();
 
-            const others = Array.from(sessions.entries())
-                .filter(([, wsSession]) => {
+            const others = sessions
+                .filter((wsSession) => {
                     if (wsSession.id === session?.id) return false;
                     if (wsSession.quit) return false;
                     if (currentTime - wsSession.timers.ping > PING_TIMEOUT_MS) return false;
@@ -67,10 +67,10 @@ export class PluvIO<
                         user: JsonObject;
                     };
                 }>(
-                    (acc, [connectionId, { presence, user }]) => ({
+                    (acc, { id, presence, user }) => ({
                         ...acc,
-                        [connectionId]: {
-                            connectionId,
+                        [id]: {
+                            connectionId: id,
                             presence,
                             room,
                             user,
