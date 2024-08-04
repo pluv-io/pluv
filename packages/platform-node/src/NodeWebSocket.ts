@@ -5,8 +5,10 @@ import type {
     AbstractListener,
     AbstractMessageEvent,
     AbstractWebSocketConfig,
+    WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractWebSocket } from "@pluv/io";
+import type { JsonObject } from "@pluv/types";
 import crypto from "node:crypto";
 import type { WebSocket } from "ws";
 
@@ -18,10 +20,13 @@ export interface NodeWebSocketEventMap {
 
 export type NodeWebSocketConfig = AbstractWebSocketConfig;
 
-export class NodeWebSocket extends AbstractWebSocket {
+export class NodeWebSocket extends AbstractWebSocket<WebSocket> {
     private _sessionId: string;
+    private _state: WebSocketSerializedState;
 
-    public webSocket: WebSocket;
+    public set presence(presence: JsonObject | null) {
+        this._state.presence = presence;
+    }
 
     public get readyState(): 0 | 1 | 2 | 3 {
         return this.webSocket.readyState;
@@ -31,46 +36,45 @@ export class NodeWebSocket extends AbstractWebSocket {
         return this._sessionId;
     }
 
-    constructor(webSocket: WebSocket, config: NodeWebSocketConfig) {
-        const { room, userId } = config;
+    public get state(): WebSocketSerializedState {
+        return this._state;
+    }
 
-        super({ room, userId });
+    constructor(webSocket: WebSocket, config: NodeWebSocketConfig) {
+        const { room } = config;
+
+        super(webSocket, config);
 
         this._sessionId = crypto.randomUUID();
-        this.webSocket = webSocket;
+        this._state = {
+            presence: null,
+            quit: false,
+            room,
+            timers: { ping: new Date().getTime() },
+        };
     }
 
     public addEventListener<TType extends keyof AbstractEventMap>(type: TType, handler: AbstractListener<TType>): void {
         switch (type) {
             case "close":
-                this.webSocket.on("close", async (code, reason) => {
-                    await Promise.resolve(
-                        (handler as AbstractListener<"close">)({
-                            code,
-                            reason: reason.toString("utf-8"),
-                        }),
-                    );
+                this.webSocket.on("close", async (code, buffer) => {
+                    const reason = buffer.toString("utf-8");
+
+                    await Promise.resolve((handler as AbstractListener<"close">)({ code, reason }));
                 });
 
                 return;
             case "error":
                 this.webSocket.on("error", async (error) => {
-                    await Promise.resolve(
-                        (handler as AbstractListener<"error">)({
-                            error,
-                            message: error.message,
-                        }),
-                    );
+                    const message = error.message;
+
+                    await Promise.resolve((handler as AbstractListener<"error">)({ error, message }));
                 });
 
                 return;
             case "message":
                 this.webSocket.on("message", async (data) => {
-                    await Promise.resolve(
-                        (handler as AbstractListener<"message">)({
-                            data,
-                        }),
-                    );
+                    await Promise.resolve((handler as AbstractListener<"message">)({ data }));
                 });
 
                 return;

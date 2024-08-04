@@ -10,7 +10,12 @@ import type {
     JsonObject,
 } from "@pluv/types";
 import colors from "kleur";
-import type { AbstractPlatform, InferPlatformContextType, InferRoomContextType } from "./AbstractPlatform";
+import type {
+    AbstractPlatform,
+    InferPlatformContextType,
+    InferRoomContextType,
+    WebSocketRegistrationMode,
+} from "./AbstractPlatform";
 import { IORoom } from "./IORoom";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
@@ -62,6 +67,10 @@ export class PluvServer<
 
     public get _events() {
         return this._router._events;
+    }
+
+    public get _registrationMode(): WebSocketRegistrationMode {
+        return this._platform._registrationMode;
     }
 
     constructor(options: PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>) {
@@ -135,7 +144,7 @@ export class PluvServer<
             context: roomContext,
             crdt: this._crdt,
             debug: debug ?? this._debug,
-            onDestroy: ({ encodedState, room }) => {
+            onDestroy: async ({ encodedState, room }) => {
                 this._logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
 
                 const roomContext = {
@@ -145,7 +154,9 @@ export class PluvServer<
                 } as IORoomListenerEvent<TPlatform> & InferRoomContextType<TPlatform>;
 
                 this._rooms.delete(room);
-                this._listeners.onRoomDeleted(roomContext);
+
+                await Promise.resolve(this._listeners.onRoomDeleted(roomContext));
+                await this._platform.persistance.deleteStorageState(room);
 
                 if (this._debug) {
                     const rooms = Array.from(this._rooms.keys());

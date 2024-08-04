@@ -4,6 +4,7 @@ import type {
     AbstractPubSub,
     ConvertWebSocketConfig,
     WebSocketRegistrationMode,
+    WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
 import crypto from "node:crypto";
@@ -16,7 +17,7 @@ export type NodePlatformOptions = { mode?: WebSocketRegistrationMode } & (
     | { persistance: AbstractPersistance; pubSub: AbstractPubSub }
 );
 
-export class NodePlatform extends AbstractPlatform<WebSocket> {
+export class NodePlatform extends AbstractPlatform<NodeWebSocket> {
     readonly _registrationMode: WebSocketRegistrationMode;
 
     constructor(options: NodePlatformOptions = {}) {
@@ -32,14 +33,20 @@ export class NodePlatform extends AbstractPlatform<WebSocket> {
     }
 
     public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): NodeWebSocket {
-        return new NodeWebSocket(webSocket, config);
+        const { room } = config;
+
+        return new NodeWebSocket(webSocket, { persistance: this.persistance, room });
     }
 
     public getLastPing(webSocket: NodeWebSocket): number | null {
         return null;
     }
 
-    public getSessionId(webSocket: WebSocket): string | null {
+    public getSerializedState(webSocket: NodeWebSocket): WebSocketSerializedState | null {
+        return null;
+    }
+
+    public getSessionId(webSocket: NodeWebSocket): string | null {
         return null;
     }
 
@@ -47,8 +54,13 @@ export class NodePlatform extends AbstractPlatform<WebSocket> {
         return [];
     }
 
-    public initialize(config: AbstractPlatformConfig<{}, {}>): NodePlatform {
-        return new NodePlatform()._initialize();
+    public initialize(config: AbstractPlatformConfig<{}, {}>): this {
+        return new NodePlatform({
+            mode: this._registrationMode,
+            persistance: this.persistance,
+            pubSub: this.pubSub,
+            ...config,
+        } as NodePlatformOptions)._initialize() as this;
     }
 
     public parseData(data: string | ArrayBuffer): Record<string, any> {
@@ -61,5 +73,9 @@ export class NodePlatform extends AbstractPlatform<WebSocket> {
 
     public randomUUID(): string {
         return crypto.randomUUID();
+    }
+
+    public setSerializedState(webSocket: NodeWebSocket, state: WebSocketSerializedState): void {
+        return;
     }
 }

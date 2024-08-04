@@ -9,7 +9,7 @@ import type {
     JsonObject,
     Maybe,
 } from "@pluv/types";
-import type { AbstractPlatform, InferPlatformContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferPlatformContextType, WebSocketRegistrationMode } from "./AbstractPlatform";
 import { PluvProcedure } from "./PluvProcedure";
 import type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
@@ -52,8 +52,8 @@ export class PluvIO<
         $GET_OTHERS: this.procedure.sync((data, { room, session, sessions }) => {
             const currentTime = new Date().getTime();
 
-            const others = Array.from(sessions.entries())
-                .filter(([, wsSession]) => {
+            const others = sessions
+                .filter((wsSession) => {
                     if (wsSession.id === session?.id) return false;
                     if (wsSession.quit) return false;
                     if (currentTime - wsSession.timers.ping > PING_TIMEOUT_MS) return false;
@@ -67,10 +67,10 @@ export class PluvIO<
                         user: JsonObject;
                     };
                 }>(
-                    (acc, [connectionId, { presence, user }]) => ({
+                    (acc, { id, presence, user }) => ({
                         ...acc,
-                        [connectionId]: {
-                            connectionId,
+                        [id]: {
+                            connectionId: id,
                             presence,
                             room,
                             user,
@@ -137,9 +137,11 @@ export class PluvIO<
 
             if (!session) return {};
 
-            session.presence = Object.assign(Object.create(null), session.presence, presence);
+            const updated = Object.assign(Object.create(null), session.presence, presence);
 
-            return { $PRESENCE_UPDATED: { presence } };
+            session.webSocket.presence = updated;
+
+            return { $PRESENCE_UPDATED: { presence: updated } };
         }),
         $UPDATE_STORAGE: this.procedure.broadcast((data, { context, doc, room }) => {
             const origin = (data as any)?.origin as Maybe<string>;
@@ -175,6 +177,10 @@ export class PluvIO<
 
     public get _events() {
         return this._router._events;
+    }
+
+    public get _registrationMode(): WebSocketRegistrationMode {
+        return this._platform._registrationMode;
     }
 
     public get procedure(): PluvProcedure<TPlatform, TAuthorize, TContext, {}, {}> {

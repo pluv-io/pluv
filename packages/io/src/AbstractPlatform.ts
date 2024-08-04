@@ -1,13 +1,17 @@
-import { AbstractPersistance } from "./AbstractPersistance";
+import type { AbstractPersistance } from "./AbstractPersistance";
 import type { AbstractPubSub } from "./AbstractPubSub";
-import type { AbstractWebSocket, AbstractWebSocketConfig } from "./AbstractWebSocket";
+import type { AbstractWebSocket, InferWebSocketSource } from "./AbstractWebSocket";
 import { Persistance } from "./Persistance";
 import { PubSub } from "./PubSub";
+import type { WebSocketSerializedState } from "./types";
 
 export type WebSocketRegistrationMode = "attached" | "detached";
 
 export type InferPlatformWebSocketType<TPlatform extends AbstractPlatform> =
-    TPlatform extends AbstractPlatform<infer IWebSocket> ? IWebSocket : never;
+    TPlatform extends AbstractPlatform<infer IAbstractWebSocket> ? IAbstractWebSocket : never;
+
+export type InferPlatformWebSocketSource<TPlatform> =
+    TPlatform extends AbstractPlatform<infer IAbstractWebSocket> ? InferWebSocketSource<IAbstractWebSocket> : never;
 
 export type InferPlatformContextType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<any, infer IPlatformContext> ? IPlatformContext : never;
@@ -26,10 +30,12 @@ export type AbstractPlatformConfig<
     pubSub?: AbstractPubSub;
 };
 
-export type ConvertWebSocketConfig = AbstractWebSocketConfig;
+export interface ConvertWebSocketConfig {
+    room: string;
+}
 
 export abstract class AbstractPlatform<
-    TWebSocket = any,
+    TWebSocket extends AbstractWebSocket = AbstractWebSocket,
     TPlatformContext extends Record<string, any> = {},
     TRoomContext extends Record<string, any> = {},
 > {
@@ -55,21 +61,26 @@ export abstract class AbstractPlatform<
 
     public abstract acceptWebSocket(webSocket: AbstractWebSocket): Promise<void>;
 
-    public abstract convertWebSocket(webSocket: TWebSocket, config: ConvertWebSocketConfig): AbstractWebSocket;
+    public abstract convertWebSocket(
+        webSocket: InferWebSocketSource<TWebSocket>,
+        config: ConvertWebSocketConfig,
+    ): AbstractWebSocket;
 
     public abstract getLastPing(webSocket: AbstractWebSocket): number | null;
 
-    public abstract getSessionId(webSocket: TWebSocket): string | null;
+    public abstract getSerializedState(webSocket: AbstractWebSocket): WebSocketSerializedState | null;
 
-    public abstract getWebSockets(): readonly TWebSocket[];
+    public abstract getSessionId(webSocket: AbstractWebSocket): string | null;
 
-    public abstract initialize(
-        config: AbstractPlatformConfig<TPlatformContext, TRoomContext>,
-    ): AbstractPlatform<TWebSocket, TPlatformContext, TRoomContext>;
+    public abstract getWebSockets(): readonly InferWebSocketSource<TWebSocket>[];
+
+    public abstract initialize(config: AbstractPlatformConfig<TPlatformContext, TRoomContext>): this;
 
     public abstract parseData(data: string | ArrayBuffer): Record<string, any>;
 
     public abstract randomUUID(): string;
+
+    public abstract setSerializedState(webSocket: AbstractWebSocket, state: WebSocketSerializedState): void;
 
     protected _initialize(): this {
         if (this._initialized) throw new Error("Platform is already initialized");
