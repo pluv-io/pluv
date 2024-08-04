@@ -445,11 +445,11 @@ export class IORoom<
 
             webSocket.state.quit = true;
 
-            this._logDebug(`${colors.blue(`(Unregistering connection for room ${this.id}:`)} ${webSocket.sessionId}`);
+            this._logDebug(`${colors.blue(`Unregistering connection for room ${this.id}:`)} ${webSocket.sessionId}`);
             this._sessions.delete(webSocket.sessionId);
 
             this._platform.persistance.deleteUser(this.id, webSocket.sessionId).finally(async () => {
-                this._broadcast({
+                await this._broadcast({
                     message: {
                         type: "$EXIT",
                         data: { sessionId: webSocket.sessionId },
