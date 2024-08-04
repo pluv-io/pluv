@@ -36,7 +36,7 @@
 		"eslint": "^8.57.0",
 		"eslint-config-pluv": "workspace:^",
 		"genversion": "^3.2.0",
-		"tsup": "^8.2.3",
+		"tsup": "^8.2.4",
 		"typescript": "^5.5.4"
 	}
 }
