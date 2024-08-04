@@ -31,6 +31,6 @@
         "eslint-config-pluv": "workspace:^",
         "prettier": "^3.3.3",
         "tailwindcss": "^3.4.7",
-        "turbo": "^2.0.9"
+        "turbo": "^2.0.11"
     }
 }
