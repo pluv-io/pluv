@@ -1,5 +1,48 @@
 # @pluv/platform-node
 
+## 0.21.0
+
+### Minor Changes
+
+- 41b15e4: **BREAKING** - Updated `sessions` type in the procedure context from `Map<string, WebSocketSession>` to `readonly WebSocketSession[]`.
+- f570c8a: **BREAKING**: The original request object is no longer available in the context of any event resolvers.
+
+  Previously, the request object that was passed into `PluvServer.getRoom` would be made available on the context object of each of the resolvers. This is no-longer a part of the event context, and therefore needs to be omitted from calls to `PluvServer.getRoom`.
+
+  ```ts
+  // Before
+
+  // With platform-node
+  ioServer.getRoom(websocket, { req, token });
+
+  // With platform-cloudflare
+  ioServer.getRoom(websocket, { env, req, token });
+  ```
+
+  ```ts
+  // Now
+
+  // With platform-node
+  ioServer.getRoom(websocket, { req });
+
+  // With platform-cloudflare
+  ioServer.getRoom(websocket, { env, req });
+  ```
+
+- b98ab6b: Internal updates to platforms (i.e. `@pluv/platform-cloudflare` and `@pluv/platform-node`) to be able to support Cloudflare Worker Websocket Hibernation APIs.
+
+### Patch Changes
+
+- cc2613e: Moved `sessionId` from being derived in `IORoom` to being derived as a getter in `AbstractWebsocket`.
+- Updated dependencies [307bd44]
+- Updated dependencies [41b15e4]
+- Updated dependencies [f570c8a]
+- Updated dependencies [b98ab6b]
+- Updated dependencies [4c2228d]
+- Updated dependencies [cc2613e]
+  - @pluv/io@0.21.0
+  - @pluv/types@0.21.0
+
 ## 0.20.0
 
 ### Patch Changes

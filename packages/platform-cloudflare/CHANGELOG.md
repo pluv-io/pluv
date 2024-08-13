@@ -1,5 +1,83 @@
 # @pluv/platform-cloudflare
 
+## 0.21.0
+
+### Minor Changes
+
+- 307bd44: `@pluv/platform-cloudflare` now supports Cloudflare Worker's WebSocket Hibernation API, and usees it by default.
+
+  To switch back to not using the WebSocket Hibernation API, specify a `mode` of `attached`.
+
+  ```ts
+  // With event-listeners directly attached to the websocket on registration (i.e. non-hibernation)
+  createIO({
+    platform: platformCloudflare({
+      mode: "attached",
+    }),
+  });
+
+  // With event listeners unattached to the websocket during registration (i.e. hibernation)
+  createIO({
+    platform: platformCloudflare({
+      mode: "detached",
+    }),
+  });
+  ```
+
+- 41b15e4: **BREAKING** - Updated `sessions` type in the procedure context from `Map<string, WebSocketSession>` to `readonly WebSocketSession[]`.
+- f570c8a: **BREAKING**: The original request object is no longer available in the context of any event resolvers.
+
+  Previously, the request object that was passed into `PluvServer.getRoom` would be made available on the context object of each of the resolvers. This is no-longer a part of the event context, and therefore needs to be omitted from calls to `PluvServer.getRoom`.
+
+  ```ts
+  // Before
+
+  // With platform-node
+  ioServer.getRoom(websocket, { req, token });
+
+  // With platform-cloudflare
+  ioServer.getRoom(websocket, { env, req, token });
+  ```
+
+  ```ts
+  // Now
+
+  // With platform-node
+  ioServer.getRoom(websocket, { req });
+
+  // With platform-cloudflare
+  ioServer.getRoom(websocket, { env, req });
+  ```
+
+- b98ab6b: Internal updates to platforms (i.e. `@pluv/platform-cloudflare` and `@pluv/platform-node`) to be able to support Cloudflare Worker Websocket Hibernation APIs.
+- 4c2228d: **BREAKING**: Require `DurableObjectState` in `ioServer.getRoom`.
+
+  ```ts
+  // Before
+
+  // With platform-cloudflare
+  ioServer.getRoom(websocket, { env, req });
+  ```
+
+  ```ts
+  // Now
+
+  // With platform-cloudflare
+  ioServer.getRoom(websocket, { env, req, state });
+  ```
+
+### Patch Changes
+
+- cc2613e: Moved `sessionId` from being derived in `IORoom` to being derived as a getter in `AbstractWebsocket`.
+- Updated dependencies [307bd44]
+- Updated dependencies [41b15e4]
+- Updated dependencies [f570c8a]
+- Updated dependencies [b98ab6b]
+- Updated dependencies [4c2228d]
+- Updated dependencies [cc2613e]
+  - @pluv/io@0.21.0
+  - @pluv/types@0.21.0
+
 ## 0.20.0
 
 ### Patch Changes
