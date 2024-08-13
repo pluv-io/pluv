@@ -1,5 +1,13 @@
 # @pluv/platform-cloudflare
 
+## 0.21.1
+
+### Patch Changes
+
+- ba53e7a: Revert `@platform/cloudflare` mode to `attached` from `detached` temporarily.
+  - @pluv/io@0.21.1
+  - @pluv/types@0.21.1
+
 ## 0.21.0
 
 ### Minor Changes
