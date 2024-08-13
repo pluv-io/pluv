@@ -12,7 +12,7 @@ import { TextDecoder } from "node:util";
 import type { WebSocket } from "ws";
 import { NodeWebSocket } from "./NodeWebSocket";
 
-export type NodePlatformOptions = { mode?: WebSocketRegistrationMode } & (
+export type NodePlatformConfig = { mode?: WebSocketRegistrationMode } & (
     | { persistance?: undefined; pubSub?: undefined }
     | { persistance: AbstractPersistance; pubSub: AbstractPubSub }
 );
@@ -20,8 +20,8 @@ export type NodePlatformOptions = { mode?: WebSocketRegistrationMode } & (
 export class NodePlatform extends AbstractPlatform<NodeWebSocket> {
     readonly _registrationMode: WebSocketRegistrationMode;
 
-    constructor(options: NodePlatformOptions = {}) {
-        const { mode = "attached", persistance, pubSub } = options;
+    constructor(config: NodePlatformConfig = {}) {
+        const { mode = "attached", persistance, pubSub } = config;
 
         super(persistance && pubSub ? { persistance, pubSub } : {});
 
@@ -46,7 +46,7 @@ export class NodePlatform extends AbstractPlatform<NodeWebSocket> {
         return null;
     }
 
-    public getSessionId(webSocket: NodeWebSocket): string | null {
+    public getSessionId(webSocket: WebSocket): string | null {
         return null;
     }
 
@@ -60,7 +60,7 @@ export class NodePlatform extends AbstractPlatform<NodeWebSocket> {
             persistance: this.persistance,
             pubSub: this.pubSub,
             ...config,
-        } as NodePlatformOptions)._initialize() as this;
+        } as NodePlatformConfig)._initialize() as this;
     }
 
     public parseData(data: string | ArrayBuffer): Record<string, any> {

@@ -1,6 +1,6 @@
-import type { NodePlatformOptions } from "./NodePlatform";
+import type { NodePlatformConfig } from "./NodePlatform";
 import { NodePlatform } from "./NodePlatform";
 
-export const platformNode = (options: NodePlatformOptions = {}): NodePlatform => {
-    return new NodePlatform(options);
+export const platformNode = (config: NodePlatformConfig = {}): NodePlatform => {
+    return new NodePlatform(config);
 };
