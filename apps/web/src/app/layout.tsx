@@ -2,12 +2,12 @@ import { LazyMotion, PageProgressBar, ThemeProvider, Toaster } from "@pluv-inter
 import type { ServerRuntime } from "next";
 import { Inter } from "next/font/google";
 import type { FC, ReactNode } from "react";
+import { CodeBlockProvider } from "../components/CodeBlock";
 import { SiteWideLayout } from "../components/SiteWideLayout";
 
 import "@pluv-internal/react-components/styles.css";
 import "@shikijs/twoslash/style-rich.css";
 import "../styles/global.css";
-import { CodeBlockProvider } from "../components/CodeBlock";
 
 export const runtime: ServerRuntime = "edge";
 
