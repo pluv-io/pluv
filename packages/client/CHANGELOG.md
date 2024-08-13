@@ -1,5 +1,16 @@
 # @pluv/client
 
+## 0.21.0
+
+### Minor Changes
+
+- b98ab6b: Internal updates to platforms (i.e. `@pluv/platform-cloudflare` and `@pluv/platform-node`) to be able to support Cloudflare Worker Websocket Hibernation APIs.
+
+### Patch Changes
+
+- @pluv/crdt@0.21.0
+- @pluv/types@0.21.0
+
 ## 0.20.0
 
 ### Minor Changes
