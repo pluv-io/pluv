@@ -1,5 +1,13 @@
 # @pluv/react
 
+## 0.21.1
+
+### Patch Changes
+
+- @pluv/client@0.21.1
+- @pluv/crdt@0.21.1
+- @pluv/types@0.21.1
+
 ## 0.21.0
 
 ### Patch Changes
