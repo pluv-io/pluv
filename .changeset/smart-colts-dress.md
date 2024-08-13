@@ -9,12 +9,12 @@
 // Before
 
 // With platform-cloudflare
-ioServer.getRoom(websocket, { env, state, token });
+ioServer.getRoom(websocket, { env, req });
 ```
 
 ```ts
 // Now
 
 // With platform-cloudflare
-ioServer.getRoom(websocket, { env, state, req });
+ioServer.getRoom(websocket, { env, req, state });
 ```
