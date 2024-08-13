@@ -70,7 +70,7 @@ export abstract class AbstractPlatform<
 
     public abstract getSerializedState(webSocket: AbstractWebSocket): WebSocketSerializedState | null;
 
-    public abstract getSessionId(webSocket: AbstractWebSocket): string | null;
+    public abstract getSessionId(webSocket: InferWebSocketSource<TWebSocket>): string | null;
 
     public abstract getWebSockets(): readonly InferWebSocketSource<TWebSocket>[];
 

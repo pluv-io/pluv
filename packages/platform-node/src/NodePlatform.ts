@@ -46,7 +46,7 @@ export class NodePlatform extends AbstractPlatform<NodeWebSocket> {
         return null;
     }
 
-    public getSessionId(webSocket: NodeWebSocket): string | null {
+    public getSessionId(webSocket: WebSocket): string | null {
         return null;
     }
 

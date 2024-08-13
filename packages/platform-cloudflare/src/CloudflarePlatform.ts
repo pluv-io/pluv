@@ -74,8 +74,8 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
         return deserialized?.state ?? null;
     }
 
-    public getSessionId(webSocket: CloudflareWebSocket): string | null {
-        const deserialized = webSocket.webSocket.deserializeAttachment() ?? {};
+    public getSessionId(webSocket: WebSocket): string | null {
+        const deserialized = webSocket.deserializeAttachment() ?? {};
         const sessionId = deserialized.sessionId;
 
         if (typeof sessionId !== "string") {
