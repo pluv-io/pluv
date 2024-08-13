@@ -108,7 +108,7 @@ export interface PluvIOListeners<TPlatform extends AbstractPlatform> {
 
 export type IORoomListenerEvent<TPlatform extends AbstractPlatform> = {
     room: string;
-    encodedState: string;
+    encodedState: string | null;
 } & InferRoomContextType<TPlatform>;
 
 export type WebSocketType<TPlatform extends AbstractPlatform> =
