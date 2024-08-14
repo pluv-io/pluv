@@ -42,7 +42,7 @@ export class NodePlatform extends AbstractPlatform<NodeWebSocket> {
         return null;
     }
 
-    public getSerializedState(webSocket: NodeWebSocket): WebSocketSerializedState | null {
+    public getSerializedState(webSocket: WebSocket): WebSocketSerializedState | null {
         return null;
     }
 

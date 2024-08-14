@@ -68,7 +68,7 @@ export abstract class AbstractPlatform<
 
     public abstract getLastPing(webSocket: AbstractWebSocket): number | null;
 
-    public abstract getSerializedState(webSocket: AbstractWebSocket): WebSocketSerializedState | null;
+    public abstract getSerializedState(webSocket: InferWebSocketSource<TWebSocket>): WebSocketSerializedState | null;
 
     public abstract getSessionId(webSocket: InferWebSocketSource<TWebSocket>): string | null;
 

@@ -189,7 +189,7 @@ export class PluvServer<
         const rooms = Array.from(this._rooms.entries());
 
         rooms.forEach(([id, room]) => {
-            if (room.getSize()) return;
+            if (!!room?.getSize()) return;
 
             this._rooms.delete(id);
         });

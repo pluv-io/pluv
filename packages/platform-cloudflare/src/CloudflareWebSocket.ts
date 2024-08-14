@@ -46,6 +46,12 @@ export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
         return state;
     }
 
+    public set state(state: WebSocketSerializedState) {
+        const deserialized = this.webSocket.deserializeAttachment();
+
+        this.webSocket.serializeAttachment({ ...deserialized, state });
+    }
+
     constructor(webSocket: WebSocket, config: CloudflareWebSocketConfig) {
         const { room } = config;
 

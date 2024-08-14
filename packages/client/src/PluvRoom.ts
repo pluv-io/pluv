@@ -215,14 +215,8 @@ export class PluvRoom<
             },
         };
 
-        this._usersManager = new UsersManager<TIO, TPresence>({
-            initialPresence,
-            presence,
-        });
-
-        this._crdtManager = new CrdtManager<TStorage>({
-            initialStorage,
-        });
+        this._usersManager = new UsersManager<TIO, TPresence>({ initialPresence, presence });
+        this._crdtManager = new CrdtManager<TStorage>({ initialStorage });
     }
 
     public get storageLoaded(): boolean {
