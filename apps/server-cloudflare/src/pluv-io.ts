@@ -4,7 +4,7 @@ import { platformCloudflare } from "@pluv/platform-cloudflare";
 
 export const io = createIO({
     crdt: yjs,
-    platform: platformCloudflare(),
+    platform: platformCloudflare({ mode: "attached" }),
 });
 
 export const ioServer = io.server();

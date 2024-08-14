@@ -72,6 +72,7 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
     public abstract get readyState(): 0 | 1 | 2 | 3;
     public abstract get sessionId(): string;
     public abstract get state(): WebSocketSerializedState;
+    public abstract set state(state: WebSocketSerializedState);
 
     constructor(webSocket: TWebSocket, config: AbstractWebSocketConfig) {
         const { persistance, room } = config;

@@ -40,6 +40,10 @@ export class NodeWebSocket extends AbstractWebSocket<WebSocket> {
         return this._state;
     }
 
+    public set state(state: WebSocketSerializedState) {
+        this._state = state;
+    }
+
     constructor(webSocket: WebSocket, config: NodeWebSocketConfig) {
         const { room } = config;
 

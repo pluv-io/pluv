@@ -127,8 +127,15 @@ export class PluvIO<
             if (!session) return {};
 
             const currentTime = new Date().getTime();
+            const prevState = session.webSocket.state;
 
-            session.timers.ping = currentTime;
+            session.webSocket.state = {
+                ...prevState,
+                timers: {
+                    ...prevState.timers,
+                    ping: currentTime,
+                },
+            };
 
             return { $PONG: {} };
         }),

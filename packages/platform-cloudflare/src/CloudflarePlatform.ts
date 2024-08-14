@@ -68,8 +68,8 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
         return timestamp?.getTime() ?? null;
     }
 
-    public getSerializedState(webSocket: CloudflareWebSocket): WebSocketSerializedState | null {
-        const deserialized = webSocket.webSocket.deserializeAttachment();
+    public getSerializedState(webSocket: WebSocket): WebSocketSerializedState | null {
+        const deserialized = webSocket.deserializeAttachment();
 
         return deserialized?.state ?? null;
     }
