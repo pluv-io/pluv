@@ -1,5 +1,18 @@
 # @pluv/platform-cloudflare
 
+## 0.22.0
+
+### Minor Changes
+
+- 650e577: \* Fix `@pluv/platform-cloudflare` causing frequent disconnects due to incorrect heartbeat handling.
+  - Updated default `mode` of `@pluv/platform-cloudflare` back to `"detached"` (i.e. use Cloudflare Worker Hibernation API by default).
+
+### Patch Changes
+
+- Updated dependencies [650e577]
+  - @pluv/io@0.22.0
+  - @pluv/types@0.22.0
+
 ## 0.21.1
 
 ### Patch Changes
