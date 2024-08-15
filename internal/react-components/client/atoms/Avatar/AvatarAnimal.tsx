@@ -190,14 +190,7 @@ export interface AvatarAnimalProps {
 
 const BaseAvatarAnimal = forwardRef<ElementRef<typeof RadixAvatar.Image>, AvatarAnimalProps>(
     ({ className, data, height = DEFAULT_SIZE, width = DEFAULT_SIZE }, ref) => {
-        const [randomHash] = useState(() => Math.floor(Math.random() * Math.min(ANIMALS.length, COLORS.length)));
-
-        const hash = useMemo(() => {
-            if (typeof data === "undefined") return randomHash;
-
-            return getHash(data);
-        }, [data, randomHash]);
-
+        const hash = useMemo(() => (typeof data === "undefined" ? 0 : getHash(data)), [data]);
         const animalIndex = hash % ANIMALS.length;
         const colorIndex = hash % COLORS.length;
         const animal = ANIMALS[animalIndex];
@@ -205,6 +198,8 @@ const BaseAvatarAnimal = forwardRef<ElementRef<typeof RadixAvatar.Image>, Avatar
 
         const alt = useMemo(() => `Anomymous ${capitalize(animal)}`, [animal]);
         const src = `https://ssl.gstatic.com/docs/common/profile/${animal}_lg.png`;
+
+        if (!data) return null;
 
         return (
             <RadixAvatar.Image asChild src={src}>
