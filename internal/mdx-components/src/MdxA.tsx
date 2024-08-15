@@ -20,8 +20,8 @@ export const MdxA = forwardRef<HTMLAnchorElement, MdxAProps>((props, ref) => {
         return false;
     }, false);
 
-    const rel = props.rel ?? isExternal ? "noopener noreferrer" : undefined;
-    const target = props.target ?? isExternal ? "_blank" : undefined;
+    const rel = (props.rel ?? isExternal) ? "noopener noreferrer" : undefined;
+    const target = (props.target ?? isExternal) ? "_blank" : undefined;
 
     if (!href) return null;
 

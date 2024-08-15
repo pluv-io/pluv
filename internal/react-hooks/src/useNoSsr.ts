@@ -19,7 +19,7 @@ export const useNoSsr = (): NoSsrFunction => {
                 ? typeof value !== "function"
                     ? value
                     : (value as () => TValue)()
-                : fallback ?? (null as TFallback);
+                : (fallback ?? (null as TFallback));
         },
         [didMount],
     );

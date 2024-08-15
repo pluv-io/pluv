@@ -34,12 +34,12 @@
         "@pluv/react": "workspace:^",
         "@radix-ui/react-tooltip": "^1.1.2",
         "@seznam/compose-react-refs": "^1.0.6",
-        "@shikijs/twoslash": "^1.12.1",
+        "@shikijs/twoslash": "^1.13.0",
         "@tanstack/react-table": "^8.20.1",
         "@types/common-tags": "^1.8.4",
         "@types/mdx": "^2.0.13",
         "@types/ms": "^0.7.34",
-        "@types/node": "^22.2.0",
+        "@types/node": "^22.3.0",
         "@types/react": "^18.3.3",
         "@types/react-dom": "^18.3.0",
         "@types/ws": "^8.5.12",
@@ -50,7 +50,7 @@
         "next": "^14.2.5",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
-        "shiki": "^1.12.1",
+        "shiki": "^1.13.0",
         "yjs": "^13.6.18",
         "zod": "^3.23.8"
     },
@@ -80,7 +80,7 @@
         "postcss": "^8.4.41",
         "remark-gfm": "^4.0.0",
         "serve": "^14.2.3",
-        "tailwindcss": "^3.4.9",
+        "tailwindcss": "^3.4.10",
         "ts-node": "^10.9.2",
         "typescript": "^5.5.4"
     }
