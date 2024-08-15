@@ -15,7 +15,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@types/unist": "^3.0.2",
+		"@types/unist": "^3.0.3",
 		"acorn": "^8.12.1",
 		"gray-matter": "^4.0.3",
 		"vfile": "^6.0.2"

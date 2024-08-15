@@ -4,7 +4,7 @@
     "engines": {
         "node": ">=18.0.0"
     },
-    "packageManager": "pnpm@9.7.0+sha256.b35018fbfa8f583668b2649e407922a721355cd81f61beeb4ac1d4258e585559",
+    "packageManager": "pnpm@9.7.1+sha256.46f1bbc8f8020aa9869568c387198f1a813f21fb44c82f400e7d1dbde6c70b40",
     "scripts": {
         "build": "turbo run build",
         "build:internal": "turbo run build --filter=./internal/*",
@@ -30,7 +30,7 @@
         "cz-conventional-changelog": "^3.3.0",
         "eslint-config-pluv": "workspace:^",
         "prettier": "^3.3.3",
-        "tailwindcss": "^3.4.9",
-        "turbo": "^2.0.12"
+        "tailwindcss": "^3.4.10",
+        "turbo": "^2.0.13"
     }
 }
