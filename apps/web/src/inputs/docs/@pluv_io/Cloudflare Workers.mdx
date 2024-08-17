@@ -39,7 +39,16 @@ export type Env = {
 };
 
 export const io = createIO({
-    platform: platformCloudflare<Env>(),
+    platform: platformCloudflare<Env>({
+        /**
+         * Specify whether WebSocket event listeners should be "attached" to or
+         * "detached" from the WebSocket upon registration.
+         * 
+         * Event listeners should be "detached" to use Cloudflare's WebSocket
+         * hibernation.
+         */
+        mode: "detached", // @default = "detached"
+    }),
     // Example of using Cloudflare's D1 database with drizzle-orm
     getInitialStorage: async ({ env, room }) => {
         const db = drizzle(env.DB, { schema });
@@ -86,22 +95,49 @@ import { type InferIORoom } from "@pluv/io";
 import { AppPluvIO, Env, ioServer } from "./io";
 
 export class RoomDurableObject implements DurableObject {
-    private _env: Env;
-    private _room: InferIORoom<AppPluvIO>;
+    private _room: IORoom<CloudflarePlatform>;
 
     constructor(state: DurableObjectState, env: Env) {
-        this._env = env;
         this._room = ioServer.getRoom(state.id.toString(), { env, state });
     }
 
+    // Only needed if using "detached" mode (i.e. hibernation)
+    public webSocketClose(ws: WebSocket, code: number, reason: string): void | Promise<void> {
+        const handler = this._room.onClose(ws);
+
+        handler({ code, reason });
+    }
+
+    // Only needed if using "detached" mode (i.e. hibernation)
+    public webSocketError(ws: WebSocket, error: unknown): void | Promise<void> {
+        const handler = this._room.onError(ws);
+        const eventError = error instanceof Error ? error : new Error("Internal Error");
+
+        handler({ error: eventError, message: eventError.message });
+    }
+
+    // Only needed if using "detached" mode (i.e. hibernation)
+    public webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void | Promise<void> {
+        const handler = this._room.onMessage(ws);
+
+        handler({ data: message });
+    }
+
     async fetch(request: Request) {
-        if (request.headers.get("Upgrade") !== "WebSocket") {
+        if (request.headers.get("Upgrade") !== "websocket") {
             return new Response("Expected WebSocket", { status: 400 });
         }
 
         const { 0: client, 1: server } = new WebSocketPair();
 
-        await this._room.register(server);
+        // Only needed if you have configured authentication
+        const token = new URL(request.url).searchParams.get("token");
+
+        await this._room.register(
+            server,
+            // Only needed if you have configured authentication
+            { token },
+        );
 
         return new Response(null, { status: 101, webSocket: client });
     }

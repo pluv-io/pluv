@@ -65,7 +65,14 @@ wsServer.on("connection", async (ws, req) => {
     const roomId = parseRoomId(req.url);
     const room = ioServer.getRoom(roomId);
 
-    await room.register(ws);
+    // Only needed if you have configured authentication
+    const token = new URL(req.url).searchParams.get("token");
+
+    await room.register(
+        ws,
+        // Only needed if you have configured authentication
+        { token },
+    );
 });
 
 server.listen(PORT, () => {

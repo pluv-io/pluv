@@ -70,7 +70,6 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
             if (io._registrationMode !== "detached") return;
 
             const handler = this._room.onError(ws);
-
             const eventError = error instanceof Error ? error : new Error("Internal Error");
 
             handler({ error: eventError, message: eventError.message });
@@ -92,7 +91,6 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
             }
 
             const { 0: client, 1: server } = new WebSocketPair();
-
             const token = new URL(request.url).searchParams.get("token");
 
             await this._room.register(server, { token });
