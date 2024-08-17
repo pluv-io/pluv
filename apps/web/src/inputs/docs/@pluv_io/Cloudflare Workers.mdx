@@ -103,21 +103,14 @@ export class RoomDurableObject implements DurableObject {
     }
 
     // Only needed if using "detached" mode (i.e. hibernation)
-    public webSocketClose(
-        ws: WebSocket,
-        code: number,
-        reason: string
-    ): void {
+    public webSocketClose(ws: WebSocket, code: number, reason: string): void {
         const handler = this._room.onClose(ws);
 
         handler({ code, reason });
     }
 
     // Only needed if using "detached" mode (i.e. hibernation)
-    public webSocketError(
-        ws: WebSocket,
-        error: unknown
-    ): void {
+    public webSocketError(ws: WebSocket, error: unknown): void {
         const handler = this._room.onError(ws);
         const eventError = error instanceof Error ? error : new Error("Internal Error");
 
@@ -125,10 +118,7 @@ export class RoomDurableObject implements DurableObject {
     }
 
     // Only needed if using "detached" mode (i.e. hibernation)
-    public webSocketMessage(
-        ws: WebSocket,
-        message: string | ArrayBuffer
-    ): void {
+    public webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {
         const handler = this._room.onMessage(ws);
 
         handler({ data: message });
