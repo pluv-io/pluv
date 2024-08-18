@@ -17,6 +17,7 @@ import type {
     InferRoomContextType,
     WebSocketRegistrationMode,
 } from "./AbstractPlatform";
+import type { IORoomListeners } from "./IORoom";
 import { IORoom } from "./IORoom";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouterEventConfig } from "./PluvRouter";
@@ -47,9 +48,23 @@ export type PluvServerConfig<
     router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 };
 
-export type GetRoomOptions<TPlatform extends AbstractPlatform> = keyof InferRoomContextType<TPlatform> extends never
-    ? [{ debug?: boolean }] | []
-    : [Id<{ debug?: boolean } & InferRoomContextType<TPlatform>>];
+type BaseCreateRoomOptions<
+    TPlatform extends AbstractPlatform<any>,
+    TAuthorize extends IOAuthorize<any, any, InferPlatformContextType<TPlatform>>,
+    TContext extends JsonObject,
+    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
+> = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
+    debug?: boolean;
+};
+
+export type CreateRoomOptions<
+    TPlatform extends AbstractPlatform<any>,
+    TAuthorize extends IOAuthorize<any, any, InferPlatformContextType<TPlatform>>,
+    TContext extends JsonObject,
+    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
+> = keyof InferRoomContextType<TPlatform> extends never
+    ? [BaseCreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>] | []
+    : [Id<BaseCreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents> & InferRoomContextType<TPlatform>>];
 
 export class PluvServer<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -192,7 +207,6 @@ export class PluvServer<
     private readonly _debug: boolean;
     private readonly _getInitialStorage: GetInitialStorageFn<TPlatform> | null = null;
     private readonly _platform: TPlatform;
-    private readonly _rooms = new Map<string, IORoom<TPlatform, TAuthorize, TContext, TEvents>>();
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
     public get _events() {
@@ -242,6 +256,48 @@ export class PluvServer<
         };
     }
 
+    public createRoom(
+        room: string,
+        ...options: CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>
+    ): IORoom<TPlatform, TAuthorize, TContext, TEvents> {
+        const { debug, onDestroy, onMessage, ...platformRoomContext } = options[0] ?? {};
+
+        if (!/^[a-z0-9]+[a-z0-9\-_]+[a-z0-9]+$/i.test(room)) {
+            throw new Error("Unsupported room name");
+        }
+
+        const roomContext = {
+            ...this._context,
+            ...platformRoomContext,
+        } as TContext & InferRoomContextType<TPlatform>;
+
+        const newRoom = new IORoom<TPlatform, TAuthorize, TContext, TEvents>(room, {
+            authorize: this._authorize ?? undefined,
+            context: roomContext,
+            crdt: this._crdt,
+            debug: debug ?? this._debug,
+            onDestroy: async (event) => {
+                this._logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
+
+                await Promise.resolve(onDestroy?.(event));
+                await Promise.resolve(this._listeners.onRoomDeleted(event));
+                await this._platform.persistance.deleteStorageState(room);
+
+                this._logDebug(`${colors.blue("Deleted room:")} ${room}`);
+            },
+            onMessage: async (event) => {
+                await Promise.resolve(onMessage?.(event));
+                await Promise.resolve(this._listeners.onRoomMessage(event));
+            },
+            platform: this._platform,
+            router: this._router,
+        });
+
+        this._logDebug(`${colors.blue("Created room:")} ${room}`);
+
+        return newRoom;
+    }
+
     public async createToken(
         params: JWTEncodeParams<InferIOAuthorizeUser<InferIOAuthorize<this>>, TPlatform>,
     ): Promise<string> {
@@ -260,77 +316,7 @@ export class PluvServer<
         }).encode(params);
     }
 
-    public getRoom(
-        room: string,
-        ...options: GetRoomOptions<TPlatform>
-    ): IORoom<TPlatform, TAuthorize, TContext, TEvents> {
-        const { debug, ...platformRoomContext } = options[0] ?? {};
-
-        this._purgeEmptyRooms();
-
-        if (!/^[a-z0-9]+[a-z0-9\-_]+[a-z0-9]+$/i.test(room)) {
-            throw new Error("Unsupported room name");
-        }
-
-        const platform = this._platform;
-        const oldRoom = this._rooms.get(room);
-
-        if (oldRoom) return oldRoom;
-
-        const roomContext = {
-            ...this._context,
-            ...platformRoomContext,
-        } as TContext & InferRoomContextType<TPlatform>;
-
-        const newRoom = new IORoom<TPlatform, TAuthorize, TContext, TEvents>(room, {
-            authorize: this._authorize ?? undefined,
-            context: roomContext,
-            crdt: this._crdt,
-            debug: debug ?? this._debug,
-            onDestroy: async (event) => {
-                this._logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
-                this._rooms.delete(room);
-
-                await Promise.resolve(this._listeners.onRoomDeleted(event));
-                await this._platform.persistance.deleteStorageState(room);
-
-                if (this._debug) {
-                    const rooms = Array.from(this._rooms.keys());
-
-                    this._logDebug(`${colors.blue("Deleted room:")} ${room}`);
-                    this._logDebug(`${colors.blue("Rooms available:")} ${rooms.join(", ")}`);
-                }
-            },
-            onMessage: async (event) => {
-                await Promise.resolve(this._listeners.onRoomMessage(event));
-            },
-            platform,
-            router: this._router,
-        });
-
-        this._rooms.set(room, newRoom);
-
-        if (this._debug) {
-            const rooms = Array.from(this._rooms.keys());
-
-            this._logDebug(`${colors.blue("Created room:")} ${room}`);
-            this._logDebug(`${colors.blue("Rooms available:")} ${rooms.join(", ")}`);
-        }
-
-        return newRoom;
-    }
-
     private _logDebug(...data: any[]): void {
         this._debug && console.log(...data);
-    }
-
-    private _purgeEmptyRooms(): void {
-        const rooms = Array.from(this._rooms.entries());
-
-        rooms.forEach(([id, room]) => {
-            if (!!room?.getSize()) return;
-
-            this._rooms.delete(id);
-        });
     }
 }

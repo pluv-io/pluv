@@ -39,7 +39,7 @@ export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
 
     public get state(): WebSocketSerializedState {
         const deserialized = this.webSocket.deserializeAttachment();
-        const state = deserialized.state ?? null;
+        const state = deserialized?.state ?? null;
 
         if (!state) throw new Error("Could not get websocket state");
 

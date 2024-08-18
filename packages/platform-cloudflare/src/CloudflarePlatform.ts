@@ -78,9 +78,7 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
         const deserialized = webSocket.deserializeAttachment() ?? {};
         const sessionId = deserialized.sessionId;
 
-        if (typeof sessionId !== "string") {
-            throw new Error("This websocket was not registered");
-        }
+        if (typeof sessionId !== "string") return null;
 
         return sessionId;
     }

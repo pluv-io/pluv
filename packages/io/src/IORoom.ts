@@ -40,7 +40,7 @@ interface BroadcastParams<TIO extends IORoom<any, any, any, any>> {
     senderId?: string;
 }
 
-interface IORoomListeners<
+export interface IORoomListeners<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>>,
     TContext extends JsonObject,
@@ -152,7 +152,9 @@ export class IORoom<
             if (!deserialized) return;
             if (typeof sessionId !== "string") return;
 
-            this._sessions.set(sessionId, this._platform.convertWebSocket(webSocket, { room: this.id }));
+            const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
+
+            this._sessions.set(sessionId, pluvWs);
         });
     }
 
@@ -210,6 +212,11 @@ export class IORoom<
     ): Promise<void> {
         const { token } = options;
 
+        const sessionId = this._platform.getSessionId(webSocket);
+        const sessionExists = typeof sessionId === "string" && this._sessions.has(sessionId);
+
+        if (sessionExists) return;
+
         if (!this._uninitialize) await this._initialize();
 
         const user = await this._getAuthorizedUser(token);
@@ -221,7 +228,7 @@ export class IORoom<
             !!user &&
             (await this._getSessions().then((sessions) => sessions.some((session) => session.user?.id === user.id)));
 
-        const pluvWs = await this._platform.convertWebSocket(webSocket, { room: this.id });
+        const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
 
         this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
 
@@ -465,7 +472,7 @@ export class IORoom<
         return (): void => {
             if (!this._uninitialize) return;
 
-            webSocket.state.quit = true;
+            webSocket.state = { ...webSocket.state, quit: true };
 
             this._logDebug(`${colors.blue(`Unregistering connection for room ${this.id}:`)} ${webSocket.sessionId}`);
             this._sessions.delete(webSocket.sessionId);

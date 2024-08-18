@@ -968,10 +968,6 @@ export class PluvRoom<
 
         this._eventNotifier.subject(message.type as keyof InferIOOutput<TIO>).next(message as any);
 
-        const { connectionId } = message;
-
-        if (!connectionId) return;
-
         switch (message.type) {
             case "$EXIT": {
                 this._handleExit(message);
