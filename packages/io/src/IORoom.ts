@@ -87,20 +87,19 @@ export class IORoom<
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IOLike<TAuthorize, TEvents>
 {
+    public readonly id: string;
+    public readonly _authorize: TAuthorize | null = null;
+
+    private _doc: AbstractCrdtDoc<any>;
+    private _uninitialize: (() => Promise<void>) | null = null;
+
     private readonly _context: TContext & InferRoomContextType<TPlatform>;
     private readonly _debug: boolean;
     private readonly _docFactory: AbstractCrdtDocFactory<any>;
+    private readonly _listeners: IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>;
     private readonly _platform: TPlatform;
-
-    private _doc: AbstractCrdtDoc<any>;
-    private _listeners: IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>;
-    private _sessions = new Map<string, AbstractWebSocket>();
-    private _uninitialize: (() => Promise<void>) | null = null;
-
-    readonly _authorize: TAuthorize | null = null;
-    readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
-
-    readonly id: string;
+    private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
+    private readonly _sessions = new Map<string, AbstractWebSocket>();
 
     public get _events() {
         return this._router._events;

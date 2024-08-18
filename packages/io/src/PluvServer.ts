@@ -60,18 +60,10 @@ export class PluvServer<
 {
     public _listeners: PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>;
 
-    readonly _authorize: TAuthorize | null = null;
-    readonly _context: TContext = {} as TContext;
-    readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
-    readonly _debug: boolean;
-    readonly _getInitialStorage: GetInitialStorageFn<TPlatform> | null = null;
-    readonly _platform: TPlatform;
-    readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
-    readonly _version: string = __PLUV_VERSION as any;
+    public readonly version: string = __PLUV_VERSION as any;
+    public readonly _authorize: TAuthorize | null = null;
 
-    private _rooms = new Map<string, IORoom<TPlatform, TAuthorize, TContext, TEvents>>();
-
-    private _baseRouter: PluvRouter<TPlatform, TAuthorize, TContext, {}> = new PluvRouter({
+    private readonly _baseRouter: PluvRouter<TPlatform, TAuthorize, TContext, {}> = new PluvRouter({
         $GET_OTHERS: this._procedure.sync((data, { room, session, sessions }) => {
             const currentTime = new Date().getTime();
 
@@ -195,6 +187,13 @@ export class PluvServer<
             return { $STORAGE_UPDATED: { state: encodedState } };
         }),
     });
+    private readonly _context: TContext = {} as TContext;
+    private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
+    private readonly _debug: boolean;
+    private readonly _getInitialStorage: GetInitialStorageFn<TPlatform> | null = null;
+    private readonly _platform: TPlatform;
+    private readonly _rooms = new Map<string, IORoom<TPlatform, TAuthorize, TContext, TEvents>>();
+    private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
     public get _events() {
         return this._router._events;

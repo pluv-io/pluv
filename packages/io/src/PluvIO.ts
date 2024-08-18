@@ -38,12 +38,13 @@ export class PluvIO<
     TAuthorize extends IOAuthorize<any, any, InferPlatformContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
 > {
-    readonly _authorize: TAuthorize | null = null;
-    readonly _context: TContext = {} as TContext;
-    readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
-    readonly _debug: boolean;
-    readonly _platform: TPlatform;
-    readonly _version: string = __PLUV_VERSION as any;
+    public readonly version: string = __PLUV_VERSION as any;
+    public readonly _authorize: TAuthorize | null = null;
+
+    private readonly _context: TContext = {} as TContext;
+    private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
+    private readonly _debug: boolean;
+    private readonly _platform: TPlatform;
 
     public get _registrationMode(): WebSocketRegistrationMode {
         return this._platform._registrationMode;
