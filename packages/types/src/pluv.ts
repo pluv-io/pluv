@@ -152,26 +152,26 @@ export interface IOLike<
     _authorize: TAuthorize | null;
 }
 
+export type InferEventsInput<TEvents extends Record<string, ProcedureLike<any, any>>> = {
+    [P in keyof TEvents]: TEvents[P] extends ProcedureLike<infer IInput, any> ? IInput : never;
+};
+
+export type InferEventsOutput<TEvents extends Record<string, ProcedureLike<any, any>>> = UnionToIntersection<
+    {
+        [P in keyof TEvents]: TEvents[P] extends ProcedureLike<any, infer IOutput> ? IOutput : never;
+    }[keyof TEvents]
+>;
+
 export type InferIOInput<TRouter extends IORouterLike<any>> =
-    TRouter extends IORouterLike<infer IEvents>
-        ? { [P in keyof IEvents]: IEvents[P] extends ProcedureLike<infer IInput, any> ? IInput : never }
-        : never;
+    TRouter extends IORouterLike<infer IEvents> ? InferEventsInput<IEvents> : never;
 
 export type InferIOOutput<TRouter extends IORouterLike<any>> =
-    TRouter extends IORouterLike<infer IEvents>
-        ? UnionToIntersection<
-              {
-                  [P in keyof IEvents]: IEvents[P] extends ProcedureLike<any, infer IOutput> ? IOutput : never;
-              }[keyof IEvents]
-          >
-        : never;
+    TRouter extends IORouterLike<infer IEvents> ? InferEventsOutput<IEvents> : never;
 
-export type InferEventMessage<
-    TEvents extends EventRecord<string, any> = EventRecord<string, any>,
-    TEvent extends keyof TEvents = keyof TEvents,
-> = {
-    [P in TEvent]: P extends string ? Id<EventMessage<P, TEvents[P]>> : never;
-}[TEvent];
+export type InferEventMessage<TEvents = EventRecord<string, any>, TEvent extends keyof TEvents = keyof TEvents> =
+    TEvents extends EventRecord<string, any>
+        ? { [P in TEvent]: P extends string ? Id<EventMessage<P, TEvents[P]>> : never }[TEvent]
+        : never;
 
 export type IOEventMessage<
     TIO extends IOLike<any>,
