@@ -135,6 +135,7 @@ export type IORoomMessageEvent<
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents> & {
     message: InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>;
+    user?: InferIOAuthorizeUser<TAuthorize>;
 };
 
 export type WebSocketType<TPlatform extends AbstractPlatform> =

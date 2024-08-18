@@ -613,6 +613,7 @@ export class IORoom<
             encodedState: this._doc.getEncodedState(),
             message: { data, type } as InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>,
             room: this.id,
+            user: message.user,
         });
 
         await Promise.resolve(pluvWs.sendMessage(message));
