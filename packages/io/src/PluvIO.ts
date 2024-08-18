@@ -46,10 +46,6 @@ export class PluvIO<
     private readonly _debug: boolean;
     private readonly _platform: TPlatform;
 
-    public get _registrationMode(): WebSocketRegistrationMode {
-        return this._platform._registrationMode;
-    }
-
     public get procedure(): PluvProcedure<TPlatform, TAuthorize, TContext, {}, {}> {
         return new PluvProcedure();
     }

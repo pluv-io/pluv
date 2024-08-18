@@ -39,15 +39,15 @@ export abstract class AbstractPlatform<
     TPlatformContext extends Record<string, any> = {},
     TRoomContext extends Record<string, any> = {},
 > {
+    protected readonly _ioContext: TPlatformContext | undefined;
+    protected readonly _roomContext: TRoomContext | undefined;
+
     private _initialized: boolean = false;
-
-    readonly _ioContext: TPlatformContext | undefined;
-    readonly _roomContext: TRoomContext | undefined;
-
-    abstract readonly _registrationMode: WebSocketRegistrationMode;
 
     public persistance: AbstractPersistance;
     public pubSub: AbstractPubSub;
+
+    public abstract readonly _registrationMode: WebSocketRegistrationMode;
 
     constructor(config: AbstractPlatformConfig<TPlatformContext, TRoomContext> = {}) {
         const { context, persistance, pubSub } = config;
