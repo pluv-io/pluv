@@ -32,6 +32,8 @@ export type {
     IOLike,
     IORouterLike,
     InferEventMessage,
+    InferEventsInput,
+    InferEventsOutput,
     InferIOAuthorize,
     InferIOAuthorizeRequired,
     InferIOAuthorizeUser,

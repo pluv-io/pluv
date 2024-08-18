@@ -18,23 +18,6 @@ export const io = createIO({
     crdt: yjs,
     debug: true,
     platform: platformNode(),
-    onRoomDeleted: async ({ room: name, encodedState: storage }) => {
-        if (name !== "e2e-node-storage-saved") return;
-
-        await prisma.room.upsert({
-            where: { name },
-            create: { name, storage },
-            update: { storage },
-        });
-    },
-    getInitialStorage: async ({ room: name }) => {
-        if (name !== "e2e-node-storage-saved") return null;
-
-        const room = await prisma.room.findUnique({ where: { name } });
-        const storage = room?.storage ?? null;
-
-        return storage;
-    },
 });
 
 const router = io.router({
@@ -46,4 +29,23 @@ const router = io.router({
         .self(({ value }) => ({ DOUBLED_VALUE: { value: value * 2 } })),
 });
 
-export const ioServer = io.server({ router });
+export const ioServer = io.server({
+    router,
+    getInitialStorage: async ({ room: name }) => {
+        if (name !== "e2e-node-storage-saved") return null;
+
+        const room = await prisma.room.findUnique({ where: { name } });
+        const storage = room?.storage ?? null;
+
+        return storage;
+    },
+    onRoomDeleted: async ({ room: name, encodedState: storage }) => {
+        if (name !== "e2e-node-storage-saved") return;
+
+        await prisma.room.upsert({
+            where: { name },
+            create: { name, storage },
+            update: { storage },
+        });
+    },
+});

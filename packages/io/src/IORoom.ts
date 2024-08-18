@@ -5,9 +5,11 @@ import type {
     BaseIOEventRecord,
     EventMessage,
     IOAuthorize,
+    IOEventMessage,
     IOLike,
     Id,
     InferEventMessage,
+    InferEventsOutput,
     InferIOAuthorize,
     InferIOAuthorizeUser,
     InferIOInput,
@@ -16,12 +18,7 @@ import type {
     Maybe,
 } from "@pluv/types";
 import colors from "kleur";
-import type {
-    AbstractPlatform,
-    InferPlatformWebSocketSource,
-    InferPlatformWebSocketType,
-    InferRoomContextType,
-} from "./AbstractPlatform";
+import type { AbstractPlatform, InferPlatformWebSocketSource, InferRoomContextType } from "./AbstractPlatform";
 import { AbstractCloseEvent, AbstractErrorEvent, AbstractMessageEvent, AbstractWebSocket } from "./AbstractWebSocket";
 import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { authorize } from "./authorize";
@@ -29,7 +26,7 @@ import { PING_TIMEOUT_MS } from "./constants";
 import type {
     EventResolverContext,
     IORoomListenerEvent,
-    SendMessageOptions,
+    IORoomMessageEvent,
     WebSocketSession,
     WebSocketType,
 } from "./types";
@@ -43,8 +40,14 @@ interface BroadcastParams<TIO extends IORoom<any, any, any, any>> {
     senderId?: string;
 }
 
-interface IORoomListeners<TPlatform extends AbstractPlatform> {
-    onDestroy: (event: IORoomListenerEvent<TPlatform>) => void;
+interface IORoomListeners<
+    TPlatform extends AbstractPlatform<any>,
+    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>>,
+    TContext extends JsonObject,
+    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
+> {
+    onDestroy: (event: IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
+    onMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
 }
 
 export type BroadcastProxy<TIO extends IORoom<any, any, any, any>> = (<TEvent extends keyof InferIOInput<TIO>>(
@@ -59,7 +62,7 @@ export type IORoomConfig<
     TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> = Partial<IORoomListeners<TPlatform>> & {
+> = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
     authorize?: TAuthorize;
     context: TContext & InferRoomContextType<TPlatform>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
@@ -90,7 +93,7 @@ export class IORoom<
     private readonly _platform: TPlatform;
 
     private _doc: AbstractCrdtDoc<any>;
-    private _listeners: IORoomListeners<TPlatform>;
+    private _listeners: IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>;
     private _sessions = new Map<string, AbstractWebSocket>();
     private _uninitialize: (() => Promise<void>) | null = null;
 
@@ -121,7 +124,7 @@ export class IORoom<
     }
 
     constructor(id: string, config: IORoomConfig<TPlatform, TAuthorize, TContext, TEvents>) {
-        const { authorize, context, crdt = noop, debug, onDestroy, platform, router } = config;
+        const { authorize, context, crdt = noop, debug, onDestroy, onMessage, platform, router } = config;
 
         this._context = context;
         this._debug = debug;
@@ -134,6 +137,7 @@ export class IORoom<
 
         this._listeners = {
             onDestroy: (event) => onDestroy?.(event),
+            onMessage: (event) => onMessage?.(event),
         };
 
         if (authorize) this._authorize = authorize;
@@ -410,10 +414,29 @@ export class IORoom<
         const pubSubId = await this._platform.pubSub.subscribe(
             this.id,
             async ({ options = {}, ...message }): Promise<void> => {
-                const sessionId = message.connectionId;
-                const user = message.user;
+                const sender: SendMessageSender = {
+                    sessionId: message.connectionId,
+                    user: message.user,
+                };
 
-                await this._sendMessage(message, { sessionId, user }, options);
+                switch (options.type) {
+                    case "self": {
+                        await this._sendSelfMessage(message, sender);
+
+                        return;
+                    }
+                    case "sync": {
+                        await this._sendSyncMessage(message, sender);
+
+                        return;
+                    }
+                    case "broadcast":
+                    default: {
+                        const sessionIds = options.sessionIds;
+
+                        await this._sendBroadcastMessage(message, sender, sessionIds);
+                    }
+                }
             },
         );
 
@@ -426,7 +449,7 @@ export class IORoom<
             this._doc = this._docFactory.getEmpty();
 
             this._listeners.onDestroy({
-                ...this._context,
+                context: this._context,
                 encodedState,
                 room: this.id,
             });
@@ -583,29 +606,17 @@ export class IORoom<
         }
     }
 
-    private async _sendMessage(
-        message: EventMessage<string, any>,
-        sender: SendMessageSender | null,
-        options: SendMessageOptions = {},
-    ): Promise<void> {
-        switch (options.type) {
-            case "self": {
-                await this._sendSelfMessage(message, sender);
+    private async _sendMessage(pluvWs: AbstractWebSocket<any>, message: IOEventMessage<any>): Promise<void> {
+        const { data, type } = message;
 
-                return;
-            }
-            case "sync": {
-                await this._sendSyncMessage(message, sender);
+        this._listeners.onMessage({
+            context: this._context,
+            encodedState: this._doc.getEncodedState(),
+            message: { data, type } as InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>,
+            room: this.id,
+        });
 
-                return;
-            }
-            case "broadcast":
-            default: {
-                const sessionIds = options.sessionIds;
-
-                await this._sendBroadcastMessage(message, sender, sessionIds);
-            }
-        }
+        await Promise.resolve(pluvWs.sendMessage(message));
     }
 
     private async _sendBroadcastMessage(
@@ -628,7 +639,7 @@ export class IORoom<
             const session = await pluvWs.getSession();
             const user = session.user ?? null;
 
-            pluvWs.sendMessage({ connectionId, data, room, type, user });
+            this._sendMessage(pluvWs, { connectionId, data, room, type, user });
         });
 
         await Promise.all(promises);
@@ -650,7 +661,7 @@ export class IORoom<
         const session = await pluvWs.getSession();
         const user = session.user ?? null;
 
-        pluvWs.sendMessage({
+        this._sendMessage(pluvWs, {
             connectionId: senderId,
             room: this.id,
             user,

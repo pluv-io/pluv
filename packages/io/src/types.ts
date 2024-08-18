@@ -3,8 +3,12 @@ import type {
     BaseIOAuthorize,
     EventRecord,
     IOAuthorize,
+    IORouterLike,
     Id,
+    InferEventMessage,
+    InferEventsOutput,
     InferIOAuthorizeUser,
+    InferIOOutput,
     JsonObject,
     Maybe,
     MaybePromise,
@@ -16,6 +20,7 @@ import type {
     InferRoomContextType,
 } from "./AbstractPlatform";
 import type { AbstractWebSocket } from "./AbstractWebSocket";
+import type { PluvRouterEventConfig } from "./PluvRouter";
 
 declare global {
     var console: {
@@ -101,15 +106,36 @@ export type GetInitialStorageFn<TPlatform extends AbstractPlatform> = (
     event: GetInitialStorageEvent<TPlatform>,
 ) => MaybePromise<Maybe<string>>;
 
-export interface PluvIOListeners<TPlatform extends AbstractPlatform> {
-    onRoomDeleted: (event: IORoomListenerEvent<TPlatform>) => void;
-    onStorageUpdated: (event: IORoomListenerEvent<TPlatform>) => void;
+export interface PluvIOListeners<
+    TPlatform extends AbstractPlatform<any>,
+    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>>,
+    TContext extends JsonObject,
+    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
+> {
+    onRoomDeleted: (event: IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
+    onRoomMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
+    onStorageUpdated: (event: IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
 }
 
-export type IORoomListenerEvent<TPlatform extends AbstractPlatform> = {
-    room: string;
+export type IORoomListenerEvent<
+    TPlatform extends AbstractPlatform<any>,
+    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>>,
+    TContext extends JsonObject,
+    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
+> = {
+    context: TContext & InferRoomContextType<TPlatform>;
     encodedState: string | null;
-} & InferRoomContextType<TPlatform>;
+    room: string;
+};
+
+export type IORoomMessageEvent<
+    TPlatform extends AbstractPlatform<any>,
+    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>>,
+    TContext extends JsonObject,
+    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
+> = IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents> & {
+    message: InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>;
+};
 
 export type WebSocketType<TPlatform extends AbstractPlatform> =
     | InferPlatformWebSocketType<TPlatform>

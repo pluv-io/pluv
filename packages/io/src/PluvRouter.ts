@@ -6,9 +6,7 @@ export type PluvRouterEventConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
-> = {
-    [P: string]: Pick<PluvProcedure<TPlatform, TAuthorize, TContext, any, any>, "config">;
-};
+> = { [P: string]: Pick<PluvProcedure<TPlatform, TAuthorize, TContext, any, any>, "config"> };
 
 export type MergedRouter<
     TRouters extends PluvRouter<TPlatform, TAuthorize, TContext, any>[] = [],
