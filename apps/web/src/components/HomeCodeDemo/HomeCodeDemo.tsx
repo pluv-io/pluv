@@ -97,10 +97,10 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
         return codeBlock`
           import { yjs } from "@pluv/crdt-yjs";
           import { createBundle, createClient } from "@pluv/react";
-          import type { io } from "server/pluv";
+          import type { ioServer } from "server/pluv";
           import { z } from "zod";
 
-          const client = createClient<typeof io>({
+          const client = createClient<typeof ioServer>({
             wsEndpoint: (room) => \`ws://pluv.io/api/room/\${room}\`
           });
 
@@ -166,6 +166,8 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
             crdt: yjs,
             platform: platformNode(),
           });
+
+          export const ioServer = io.server();
         `;
     }, []);
 

@@ -168,19 +168,19 @@ const server = io.server();
 
 ## PluvServer
 
-### getRoom
+### createRoom
 
 Returns `IORoom`.
 
-Retrieves a room by room name if it already exists. If the room doesn't already exist, the room is created and returned.
+Creates a room with the specified id.
 
 ```ts
-const room = server.getRoom("my-example-room");
+const room = server.createRoom("my-example-room");
 ```
 
 ## IORoom
 
-This is the room returned by `PluvServer.getRoom`. This is what websockets are registered to.
+This is the room returned by `PluvServer.createRoom`. This is what websockets are registered to.
 
 ### broadcast
 

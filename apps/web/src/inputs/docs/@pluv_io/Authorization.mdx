@@ -127,6 +127,7 @@ const client = createClient<AppPluvIO>({
 When the frontend receives a JWT from your authorization endpoint, it will add that token as a `token` query parameter to your websocket connection request. To use this token, pass the token into `io.room.register` on your server.
 
 ```ts
+import type { InferIORoom } from "@pluv/io";
 import express from "express";
 import Http from "http";
 import WebSocket from "ws";
@@ -146,10 +147,26 @@ const parseToken = (url: string): string => {
     /* get token from query parameters of req.url */
 };
 
+const rooms = new Map<string, InferIORoom<typeof ioServer>>();
+const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
+    const existing = rooms.get(roomId);
+
+    if (existing) return existing;
+
+    const room = ioServer.createRoom(roomId, {
+        onDelete: (event) => {
+            rooms.delete(event.room);
+        },
+    });
+    rooms.set(roomId, room);
+
+    return room;
+};
+
 wsServer.on("connection", async (ws, req) => {
     const roomId = parseRoomId(req.url);
     const token = parseToken(req.url);
-    const room = ioServer.getRoom(roomId);
+    const room = getRoom(roomId);
 
     // Pass in the token from query params
     await room.register(ws, { token });
