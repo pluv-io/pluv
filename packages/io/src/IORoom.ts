@@ -142,8 +142,6 @@ export class IORoom<
             onMessage: (event) => onMessage?.(event),
         };
 
-        this._doc = this._getInitialDoc();
-
         if (authorize) this._authorize = authorize;
 
         const webSockets = this._platform.getWebSockets() as readonly InferPlatformWebSocketSource<TPlatform>[];
@@ -160,7 +158,10 @@ export class IORoom<
             this._sessions.set(sessionId, pluvWs);
         });
 
-        this._initialize();
+        const { doc, uninitialize } = this._initialize();
+
+        this._doc = doc;
+        this._uninitialize = uninitialize;
     }
 
     public getSize(): number {
@@ -221,6 +222,11 @@ export class IORoom<
         const sessionExists = typeof sessionId === "string" && this._sessions.has(sessionId);
 
         if (sessionExists) return;
+        if (!(await this._initialized)) {
+            this._initialize();
+
+            await this._initialized;
+        }
 
         const user = await this._getAuthorizedUser(token);
         const ioAuthorize = this._getIOAuthorize();
@@ -420,8 +426,8 @@ export class IORoom<
         return await Promise.all(promises);
     }
 
-    private _initialize(): void {
-        this._uninitialize = (async () => {
+    private _initialize() {
+        const promise = (async () => {
             this._logDebug(`${colors.blue(`Initializing room ${this.id}:`)}`);
 
             if (!!this._uninitialize) {
@@ -460,7 +466,8 @@ export class IORoom<
                 },
             );
 
-            return async () => {
+            const doc = await this._getInitialDoc();
+            const uninitialize = async () => {
                 this._platform.pubSub.unsubscribe(pubSubId);
 
                 const doc = await this._doc;
@@ -477,7 +484,14 @@ export class IORoom<
 
                 this._uninitialize = null;
             };
+
+            return { doc, uninitialize };
         })();
+
+        this._doc = promise.then((result) => result.doc);
+        this._uninitialize = promise.then((result) => result.uninitialize);
+
+        return { doc: this._doc, uninitialize: this._uninitialize };
     }
 
     private _logDebug(...data: any[]): void {

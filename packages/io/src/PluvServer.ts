@@ -132,12 +132,7 @@ export class PluvServer<
                 const update = (data as any)?.update as Maybe<string>;
 
                 const updates: readonly Maybe<string>[] = [
-                    oldState
-                        ? null
-                        : await this._getInitialStorage?.({
-                              ...context,
-                              room,
-                          }),
+                    oldState ? null : await this._getInitialStorage?.({ ...context, room }),
                     update,
                 ];
 
