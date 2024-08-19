@@ -645,6 +645,8 @@ export class IORoom<
     private async _sendMessage(pluvWs: AbstractWebSocket<any>, message: IOEventMessage<any>): Promise<void> {
         const { data, type } = message;
 
+        if (!(await this._initialized)) return;
+
         const doc = await this._doc;
 
         this._listeners.onMessage({
