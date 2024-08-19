@@ -49,6 +49,9 @@ export const io = createIO({
          */
         mode: "detached", // @default = "detached"
     }),
+});
+
+export const ioServer = io.server({
     // Example of using Cloudflare's D1 database with drizzle-orm
     getInitialStorage: async ({ env, room }) => {
         const db = drizzle(env.DB, { schema });
@@ -78,8 +81,6 @@ export const io = createIO({
     },
 });
 
-export const ioServer = io.server();
-
 // Export the ioServer type, so that this can be type-imported on the
 // frontend
 export type AppPluvIO = typeof ioServer
@@ -99,29 +100,29 @@ export class RoomDurableObject implements DurableObject {
     private _room: IORoom<CloudflarePlatform>;
 
     constructor(state: DurableObjectState, env: Env) {
-        this._room = ioServer.getRoom(state.id.toString(), { env, state });
+        this._room = ioServer.createRoom(state.id.toString(), { env, state });
     }
 
     // Only needed if using "detached" mode (i.e. hibernation)
-    public webSocketClose(ws: WebSocket, code: number, reason: string): void {
+    public async webSocketClose(ws: WebSocket, code: number, reason: string): Promise<void> {
         const handler = this._room.onClose(ws);
 
-        handler({ code, reason });
+        await handler({ code, reason });
     }
 
     // Only needed if using "detached" mode (i.e. hibernation)
-    public webSocketError(ws: WebSocket, error: unknown): void {
+    public async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
         const handler = this._room.onError(ws);
         const eventError = error instanceof Error ? error : new Error("Internal Error");
 
-        handler({ error: eventError, message: eventError.message });
+        await handler({ error: eventError, message: eventError.message });
     }
 
     // Only needed if using "detached" mode (i.e. hibernation)
-    public webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {
+    public async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
         const handler = this._room.onMessage(ws);
 
-        handler({ data: message });
+        await handler({ data: message });
     }
 
     async fetch(request: Request) {

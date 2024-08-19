@@ -46,6 +46,7 @@ Integrate with [ws](https://www.npmjs.com/package/ws) on your Node.js server.
 ```ts
 // backend/server.ts
 
+import type { InferIORoom } from "@pluv/io";
 import express from "express";
 import Http from "http";
 import WebSocket from "ws";
@@ -61,9 +62,25 @@ const parseRoomId = (url: string): string => {
     /* get room from req.url */
 };
 
+const rooms = new Map<string, InferIORoom<typeof ioServer>>();
+const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
+    const existing = rooms.get(roomId);
+
+    if (existing) return existing;
+
+    const room = ioServer.createRoom(roomId, {
+        onDelete: (event) => {
+            rooms.delete(event.room);
+        },
+    });
+    rooms.set(roomId, room);
+
+    return room;
+};
+
 wsServer.on("connection", async (ws, req) => {
     const roomId = parseRoomId(req.url);
-    const room = ioServer.getRoom(roomId);
+    const room = getRoom(roomId);
 
     // Only needed if you have configured authentication
     const token = new URL(req.url).searchParams.get("token");
