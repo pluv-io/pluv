@@ -33,5 +33,5 @@ export type { PluvProcedureConfig } from "./PluvProcedure";
 export { PluvRouter } from "./PluvRouter";
 export type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 export { PluvServer } from "./PluvServer";
-export type { GetRoomOptions, InferIORoom, PluvServerConfig } from "./PluvServer";
+export type { CreateRoomOptions, InferIORoom, PluvServerConfig } from "./PluvServer";
 export type { WebSocketSerializedState, WebSocketSession } from "./types";

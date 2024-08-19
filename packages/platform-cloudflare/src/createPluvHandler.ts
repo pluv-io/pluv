@@ -55,7 +55,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
         private _room: IORoom<CloudflarePlatform>;
 
         constructor(state: DurableObjectState, env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>) {
-            this._room = io.getRoom(state.id.toString(), { env, state });
+            this._room = io.createRoom(state.id.toString(), { env, state });
         }
 
         public webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean): void | Promise<void> {
@@ -177,8 +177,8 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
     };
 
     const fetch: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = async (request, env) => {
-        return [authHandler, roomHandler].reduce((promise, current) => {
-            return promise.then((value) => value ?? current(request, env));
+        return [authHandler, roomHandler].reduce(async (promise, current) => {
+            return await promise.then(async (value) => value ?? (await current(request, env)));
         }, Promise.resolve<Response | null>(null));
     };
 

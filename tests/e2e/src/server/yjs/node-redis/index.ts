@@ -30,6 +30,49 @@ const app = express();
 const server = Http.createServer(app);
 const wsServer = new WebSocket.Server({ server });
 
+const rooms1 = new Map<string, ReturnType<typeof ioServer1st.createRoom>>();
+const rooms2 = new Map<string, ReturnType<typeof ioServer2nd.createRoom>>();
+
+const getRoom1 = (roomId: string): ReturnType<typeof ioServer1st.createRoom> => {
+    Array.from(rooms1.values()).forEach((room) => {
+        if (!room.getSize()) rooms1.delete(room.id);
+    });
+
+    const existing = rooms1.get(roomId);
+
+    if (existing) return existing;
+
+    const newRoom = ioServer1st.createRoom(roomId, {
+        onDestroy: (event) => {
+            rooms1.delete(event.room);
+        },
+    });
+
+    rooms1.set(roomId, newRoom);
+
+    return newRoom;
+};
+
+const getRoom2 = (roomId: string): ReturnType<typeof ioServer2nd.createRoom> => {
+    Array.from(rooms2.values()).forEach((room) => {
+        if (!room.getSize()) rooms2.delete(room.id);
+    });
+
+    const existing = rooms2.get(roomId);
+
+    if (existing) return existing;
+
+    const newRoom = ioServer2nd.createRoom(roomId, {
+        onDestroy: (event) => {
+            rooms2.delete(event.room);
+        },
+    });
+
+    rooms2.set(roomId, newRoom);
+
+    return newRoom;
+};
+
 wsServer.on("connection", async (ws, req) => {
     const url = req.url;
 
@@ -48,7 +91,7 @@ wsServer.on("connection", async (ws, req) => {
 
     const token = parsed.query?.token as string | undefined;
     const io = parsed.query?.io as string | undefined;
-    const room = !io ? ioServer1st.getRoom(roomId) : ioServer2nd.getRoom(roomId);
+    const room = !io ? getRoom1(roomId) : getRoom2(roomId);
 
     await room.register(ws, { token });
 });

@@ -72,6 +72,27 @@ export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform, a
     }
 
     const wsServer = new WsServer({ server });
+    const rooms = new Map<string, ReturnType<typeof io.createRoom>>();
+
+    const getRoom = (roomId: string): ReturnType<typeof io.createRoom> => {
+        Array.from(rooms.values()).forEach((room) => {
+            if (!room.getSize()) rooms.delete(room.id);
+        });
+
+        const existing = rooms.get(roomId);
+
+        if (existing) return existing;
+
+        const newRoom = io.createRoom(roomId, {
+            onDestroy: (event) => {
+                rooms.delete(event.room);
+            },
+        });
+
+        rooms.set(roomId, newRoom);
+
+        return newRoom;
+    };
 
     const wsHandler = async (ws: WebSocket, req: IncomingMessage): Promise<WebSocketHandlerResult> => {
         const url = req.url;
@@ -101,7 +122,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform, a
 
         if (Array.isArray(token)) return onError.invalidToken();
 
-        const room = io.getRoom(roomId);
+        const room = getRoom(roomId);
 
         await room.register(ws, { token });
 
