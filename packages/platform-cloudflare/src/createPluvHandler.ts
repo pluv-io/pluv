@@ -58,29 +58,29 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
             this._room = io.createRoom(state.id.toString(), { env, state });
         }
 
-        public webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean): void | Promise<void> {
+        public async webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean): Promise<void> {
             if (io._registrationMode !== "detached") return;
 
             const handler = this._room.onClose(ws);
 
-            handler({ code, reason });
+            await handler({ code, reason });
         }
 
-        public webSocketError(ws: WebSocket, error: unknown): void | Promise<void> {
+        public async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
             if (io._registrationMode !== "detached") return;
 
             const handler = this._room.onError(ws);
             const eventError = error instanceof Error ? error : new Error("Internal Error");
 
-            handler({ error: eventError, message: eventError.message });
+            await handler({ error: eventError, message: eventError.message });
         }
 
-        public webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void | Promise<void> {
+        public async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
             if (io._registrationMode !== "detached") return;
 
             const handler = this._room.onMessage(ws);
 
-            handler({ data: message });
+            await handler({ data: message });
         }
 
         async fetch(request: Request<any, CfProperties<any>>): Promise<Response> {

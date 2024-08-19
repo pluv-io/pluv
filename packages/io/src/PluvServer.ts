@@ -132,12 +132,7 @@ export class PluvServer<
                 const update = (data as any)?.update as Maybe<string>;
 
                 const updates: readonly Maybe<string>[] = [
-                    oldState
-                        ? null
-                        : await this._getInitialStorage?.({
-                              ...context,
-                              room,
-                          }),
+                    oldState ? null : await this._getInitialStorage?.({ ...context, room }),
                     update,
                 ];
 
@@ -184,9 +179,7 @@ export class PluvServer<
             const origin = (data as any)?.origin as Maybe<string>;
             const update: string | null = (data as any)?.update ?? null;
 
-            if (origin === "$INITIALIZED" && Object.keys(doc.toJson()).length) {
-                return {};
-            }
+            if (origin === "$INITIALIZED" && Object.keys(doc.toJson()).length) return {};
 
             const updated = update === null ? doc : doc.applyEncodedState({ update });
             const encodedState = updated.getEncodedState();
