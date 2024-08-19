@@ -574,7 +574,7 @@ export class IORoom<
                 TContext & InferRoomContextType<TPlatform>
             > = { ...baseContext, context: { ...this._context } };
 
-            Promise.all([
+            await Promise.all([
                 procedure.config.broadcast?.(inputs, extendedContext),
                 procedure.config.self?.(inputs, extendedContext),
                 procedure.config.sync?.(inputs, baseContext),
@@ -582,25 +582,33 @@ export class IORoom<
                 const sessionId = session.id;
                 const user = session.user;
 
-                if (broadcast) {
-                    Object.entries(broadcast).forEach(([type, data]: any) => {
-                        this._broadcast({
-                            message: { data, type },
-                            senderId: sessionId,
-                        });
-                    });
-                }
+                const handleBroadcast = async () => {
+                    if (!broadcast) return;
 
-                if (self) {
+                    await Promise.all(
+                        Object.entries(broadcast).map(async ([type, data]: any) => {
+                            await this._broadcast({
+                                message: { data, type },
+                                senderId: sessionId,
+                            });
+                        }),
+                    );
+                };
+
+                const handleSelf = async () => {
+                    if (!self) return;
+
                     await Promise.all(
                         Object.entries(self).map(async ([type, data]) => {
                             await this._sendSelfMessage({ data, type }, { sessionId, user });
                         }),
                     );
-                }
+                };
 
-                if (sync) {
-                    this._platform.pubSub.publish(this.id, {
+                const handleSync = async () => {
+                    if (!sync) return;
+
+                    await this._platform.pubSub.publish(this.id, {
                         connectionId: session.id,
                         options: { type: "sync" },
                         room: this.id,
@@ -613,7 +621,9 @@ export class IORoom<
                             await this._sendSelfMessage({ data, type }, { sessionId, user });
                         }),
                     );
-                }
+                };
+
+                await Promise.all([handleBroadcast(), handleSelf(), handleSync()]);
             });
         };
     }
