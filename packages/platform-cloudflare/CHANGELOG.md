@@ -1,5 +1,14 @@
 # @pluv/platform-cloudflare
 
+## 0.24.0
+
+### Patch Changes
+
+- Updated dependencies [6ac8a46]
+- Updated dependencies [c26986d]
+  - @pluv/io@0.24.0
+  - @pluv/types@0.24.0
+
 ## 0.23.0
 
 ### Patch Changes

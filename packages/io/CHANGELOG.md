@@ -1,5 +1,133 @@
 # @pluv/io
 
+## 0.24.0
+
+### Minor Changes
+
+- 6ac8a46: \* Fixed errors thrown when using Cloudflare's websocket hibernation API caused by rooms being re-used between different instances of DurableObjects.
+
+  - Add configurable `onDelete` and `onMessage` event listeners that can be set when rooms are created.
+
+  **BREAKING**
+
+  - Changed `PluvServer.getRoom` to `PluvServer.createRoom`. This means `PluvServer` only handles room creation. Room management must now be handled manually. This mainly affects manually creating rooms with `@pluv/platform-node`, and will likely not affect you if you are either using `createPluvHandler` on any platform, or if you are using `@pluv/platform-cloudflare`.
+
+  ```ts
+  // For @pluv/platform-node
+
+  // Before
+
+  import { createIO } from "@pluv/io";
+
+  const io = createIO(/* ... */);
+  const ioServer = io.server(/* ... */);
+
+  const roomId = "my-room-id";
+  const room = ioServer.getRoom(roomId);
+
+  // After
+
+  import { createIO, type InferIORoom } from "@pluv/io";
+
+  const io = createIO(/* ... */);
+  const ioServer = io.server(/* ... */);
+
+  const rooms = new Map<string, InferIORoom<typeof ioServer>>();
+
+  const roomId = "my-room-id";
+  const room = ioServer.createRoom(roomId, {
+    // Use new onDelete event listener
+    onDelete: (event) => {
+      rooms.delete(event.room);
+    },
+  });
+
+  rooms.set(roomId, room);
+  ```
+
+- c26986d: Fixed websocket messages getting lost after the Cloudflare Worker Durable Object wakes up from hibernation.
+
+  **BREAKING**
+
+  Updated `onMessage`, `onClose` and `onError` to all return `Promise.void` instead of `void`.
+
+  ```ts
+  // Before
+
+  const io = createIO(/* ... */);
+  const ioServer = io.server(/* ... */);
+
+  class RoomDurableObject implements DurableObject {
+    public webSocketClose(ws: WebSocket, code: number, reason: string): void {
+      const handler = this._room.onClose(ws);
+
+      // Previously returned `void`
+      handler({ code, reason });
+    }
+
+    public webSocketError(ws: WebSocket, error: unknown): void {
+      const handler = this._room.onError(ws);
+      const eventError =
+        error instanceof Error ? error : new Error("Internal Error");
+
+      // Previously returned `void`
+      handler({ error: eventError, message: eventError.message });
+    }
+
+    public webSocketMessage(
+      ws: WebSocket,
+      message: string | ArrayBuffer,
+    ): void {
+      const handler = this._room.onMessage(ws);
+
+      // Previously returned `void`
+      handler({ data: message });
+    }
+  }
+
+  // After
+
+  const io = createIO(/* ... */);
+  const ioServer = io.server(/* ... */);
+
+  class RoomDurableObject implements DurableObject {
+    public async webSocketClose(
+      ws: WebSocket,
+      code: number,
+      reason: string,
+    ): Promise<void> {
+      const handler = this._room.onClose(ws);
+
+      // Handler must now be awaited
+      await handler({ code, reason });
+    }
+
+    public async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
+      const handler = this._room.onError(ws);
+      const eventError =
+        error instanceof Error ? error : new Error("Internal Error");
+
+      // Handler must now be awaited
+      await handler({ error: eventError, message: eventError.message });
+    }
+
+    public async webSocketMessage(
+      ws: WebSocket,
+      message: string | ArrayBuffer,
+    ): Promise<void> {
+      const handler = this._room.onMessage(ws);
+
+      // Handler must now be awaited
+      await handler({ data: message });
+    }
+  }
+  ```
+
+### Patch Changes
+
+- @pluv/crdt@0.24.0
+- @pluv/types@0.24.0
+
 ## 0.23.0
 
 ### Minor Changes
