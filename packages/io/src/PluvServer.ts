@@ -184,9 +184,7 @@ export class PluvServer<
             const origin = (data as any)?.origin as Maybe<string>;
             const update: string | null = (data as any)?.update ?? null;
 
-            if (origin === "$INITIALIZED" && Object.keys(doc.toJson()).length) {
-                return {};
-            }
+            if (origin === "$INITIALIZED" && Object.keys(doc.toJson()).length) return {};
 
             const updated = update === null ? doc : doc.applyEncodedState({ update });
             const encodedState = updated.getEncodedState();
