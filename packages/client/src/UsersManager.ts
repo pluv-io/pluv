@@ -85,6 +85,10 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
         this._others.delete(connectionId);
     }
 
+    public removeUsers(): void {
+        this._others.clear();
+    }
+
     public setMyself(connectionId: string, user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>): void {
         this._myself = {
             connectionId,
