@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.24.1
+
+### Patch Changes
+
+- ba299e2: Fixed "others" state in the PluvClient not getting cleared when the user's websocket connection is closed, creating "ghost users" during some reconnects.
+  - @pluv/crdt@0.24.1
+  - @pluv/types@0.24.1
+
 ## 0.24.0
 
 ### Patch Changes
