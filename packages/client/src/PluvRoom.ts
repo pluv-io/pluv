@@ -534,7 +534,12 @@ export class PluvRoom<
         this._clearTimeout(this._timeouts.reconnect);
 
         this._detachWindowListeners();
+
         this._usersManager.removeMyself();
+        this._usersManager.removeUsers();
+        this._otherNotifier.clear();
+        this._stateNotifier.subjects.myself.next(null);
+        this._stateNotifier.subjects.others.next([]);
 
         const canClose = [WebSocket.CONNECTING, WebSocket.OPEN].some(
             (readyState) => readyState === this._state.webSocket?.readyState,

@@ -8,6 +8,15 @@ export type OtherNotifierSubscriptionCallback<TIO extends IOLike> = (value: Id<U
 export class OtherNotifier<TIO extends IOLike> {
     public subjects = new Map<string, Subject<Id<UserInfo<TIO>> | null>>();
 
+    public clear(): void {
+        const connectionIds = Array.from(this.subjects.keys());
+
+        connectionIds.forEach((connectionId) => {
+            this.subject(connectionId).next(null);
+            this.subjects.delete(connectionId);
+        });
+    }
+
     public subject<TEvent extends string>(name: TEvent): Subject<Id<UserInfo<TIO>> | null> {
         const subject = this.subjects.get(name);
 
