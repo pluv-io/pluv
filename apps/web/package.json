@@ -35,7 +35,7 @@
         "@radix-ui/react-tooltip": "^1.1.2",
         "@seznam/compose-react-refs": "^1.0.6",
         "@shikijs/twoslash": "^1.14.1",
-        "@tanstack/react-table": "^8.20.1",
+        "@tanstack/react-table": "^8.20.5",
         "@types/common-tags": "^1.8.4",
         "@types/mdx": "^2.0.13",
         "@types/ms": "^0.7.34",
