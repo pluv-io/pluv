@@ -1,5 +1,5 @@
 import type {
-    AbstractPersistance,
+    AbstractPersistence,
     AbstractPlatformConfig,
     AbstractPubSub,
     ConvertWebSocketConfig,
@@ -13,17 +13,17 @@ import type { WebSocket } from "ws";
 import { NodeWebSocket } from "./NodeWebSocket";
 
 export type NodePlatformConfig = { mode?: WebSocketRegistrationMode } & (
-    | { persistance?: undefined; pubSub?: undefined }
-    | { persistance: AbstractPersistance; pubSub: AbstractPubSub }
+    | { persistence?: undefined; pubSub?: undefined }
+    | { persistence: AbstractPersistence; pubSub: AbstractPubSub }
 );
 
 export class NodePlatform extends AbstractPlatform<NodeWebSocket> {
     readonly _registrationMode: WebSocketRegistrationMode;
 
     constructor(config: NodePlatformConfig = {}) {
-        const { mode = "attached", persistance, pubSub } = config;
+        const { mode = "attached", persistence, pubSub } = config;
 
-        super(persistance && pubSub ? { persistance, pubSub } : {});
+        super(persistence && pubSub ? { persistence, pubSub } : {});
 
         this._registrationMode = mode;
     }
@@ -35,7 +35,7 @@ export class NodePlatform extends AbstractPlatform<NodeWebSocket> {
     public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): NodeWebSocket {
         const { room } = config;
 
-        return new NodeWebSocket(webSocket, { persistance: this.persistance, room });
+        return new NodeWebSocket(webSocket, { persistence: this.persistence, room });
     }
 
     public getLastPing(webSocket: NodeWebSocket): number | null {
@@ -57,7 +57,7 @@ export class NodePlatform extends AbstractPlatform<NodeWebSocket> {
     public initialize(config: AbstractPlatformConfig<{}, {}>): this {
         return new NodePlatform({
             mode: this._registrationMode,
-            persistance: this.persistance,
+            persistence: this.persistence,
             pubSub: this.pubSub,
             ...config,
         } as NodePlatformConfig)._initialize() as this;

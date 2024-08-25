@@ -1,7 +1,7 @@
 import type { JsonObject } from "@pluv/types";
-import { AbstractPersistance } from "./AbstractPersistance";
+import { AbstractPersistence } from "./AbstractPersistence";
 
-export class Persistance extends AbstractPersistance {
+export class Persistence extends AbstractPersistence {
     private _storages = new Map<string, string>();
     private _users = new Map<string, Map<string, JsonObject | null>>();
 

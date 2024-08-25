@@ -1,6 +1,6 @@
 import type { JsonObject } from "@pluv/types";
 
-export abstract class AbstractPersistance {
+export abstract class AbstractPersistence {
     public abstract addUser(room: string, connectionId: string, user: JsonObject | null): Promise<void>;
 
     public abstract deleteStorageState(room: string): Promise<void>;

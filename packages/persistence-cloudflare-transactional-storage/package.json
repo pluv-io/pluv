@@ -1,14 +1,14 @@
 {
-	"name": "@pluv/addon-indexeddb",
+	"name": "@pluv/persistence-cloudflare-transactional-storage",
 	"version": "0.24.1",
-	"description": "@pluv/io indexeddb for client storage persistence",
+	"description": "@pluv/io crdt storage persistence for cloudflare via transactional storage",
 	"author": "leedavidcs",
 	"license": "MIT",
 	"homepage": "https://github.com/pluv-io/pluv",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/pluv-io/pluv.git",
-		"directory": "packages/addon-indexeddb"
+		"directory": "packages/persistence-cloudflare-transactional-storage"
 	},
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
@@ -23,13 +23,12 @@
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
 	"dependencies": {
-		"@pluv/client": "workspace:^",
-		"@pluv/crdt": "workspace:^",
-		"idb": "^8.0.0"
+		"@pluv/io": "workspace:^",
+		"@pluv/types": "workspace:^"
 	},
 	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20240821.1",
 		"@pluv/tsconfig": "workspace:^",
-		"@pluv/types": "workspace:^",
 		"eslint": "^8.57.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.2.4",

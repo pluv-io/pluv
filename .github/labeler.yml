@@ -13,8 +13,11 @@
 '@pluv/io':
   - any: ['packages/io/**', '!packages/io/package.json']
 
-'@pluv/persistance-redis':
-  - any: ['packages/persistance-redis/**', '!packages/persistance-redis/package.json']
+'@pluv/persistence-cloudflare-transactional-storage':
+  - any: ['packages/persistence-cloudflare-transactional-storage/**', '!packages/persistence-cloudflare-transactional-storage/package.json']
+
+'@pluv/persistence-redis':
+  - any: ['packages/persistence-redis/**', '!packages/persistence-redis/package.json']
 
 '@pluv/platform-cloudflare':
   - any: ['packages/platform-cloudflare/**', '!packages/platform-cloudflare/package.json']

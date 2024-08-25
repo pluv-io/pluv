@@ -264,7 +264,7 @@ export class IORoom<
 
         this._sessions.set(pluvWs.sessionId, pluvWs);
 
-        await this._platform.persistance.addUser(this.id, pluvWs.sessionId, user ?? {});
+        await this._platform.persistence.addUser(this.id, pluvWs.sessionId, user ?? {});
 
         if (this._platform._registrationMode === "attached") {
             const onClose = this._onClose(pluvWs).bind(this);
@@ -389,7 +389,7 @@ export class IORoom<
 
     private async _getInitialDoc(): Promise<AbstractCrdtDoc<any>> {
         const doc = this._docFactory.getEmpty();
-        const encodedState = await this._platform.persistance.getStorageState(this.id);
+        const encodedState = await this._platform.persistence.getStorageState(this.id);
 
         if (typeof encodedState === "string") doc.applyEncodedState({ update: encodedState });
 
@@ -518,7 +518,7 @@ export class IORoom<
             this._logDebug(`${colors.blue(`Unregistering connection for room ${this.id}:`)} ${webSocket.sessionId}`);
             this._sessions.delete(webSocket.sessionId);
 
-            this._platform.persistance.deleteUser(this.id, webSocket.sessionId).finally(async () => {
+            this._platform.persistence.deleteUser(this.id, webSocket.sessionId).finally(async () => {
                 await this._broadcast({
                     message: {
                         type: "$EXIT",

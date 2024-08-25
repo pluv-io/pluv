@@ -1,4 +1,4 @@
-import { AbstractPersistance } from "@pluv/io";
+import { AbstractPersistence } from "@pluv/io";
 import type { JsonObject } from "@pluv/types";
 import { partitionByLength } from "./utils";
 
@@ -12,15 +12,14 @@ const CLOUDFLARE_DELETE_BATCH_LIMIT = 128;
 const STORAGE_PREFIX = "$PLUV_STORAGE;";
 const USER_PREFIX = "$PLUV_USER";
 
-export interface PersistanceCloudflareConfig<TEnv extends Record<string, any> = {}> {
-    env: TEnv;
+export interface PersistenceCloudflareTransactionalStorageConfig {
     state: DurableObjectState;
 }
 
-export class PersistanceCloudflare<TEnv extends Record<string, any> = {}> extends AbstractPersistance {
+export class PersistenceCloudflareTransactionalStorage extends AbstractPersistence {
     private _state: DurableObjectState;
 
-    constructor(config: PersistanceCloudflareConfig<TEnv>) {
+    constructor(config: PersistenceCloudflareTransactionalStorageConfig) {
         super();
 
         const { state } = config;
