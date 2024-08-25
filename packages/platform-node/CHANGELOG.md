@@ -1,5 +1,13 @@
 # @pluv/platform-node
 
+## 0.25.2
+
+### Patch Changes
+
+- Updated dependencies [60a0bf1]
+  - @pluv/io@0.25.2
+  - @pluv/types@0.25.2
+
 ## 0.25.1
 
 ### Patch Changes
