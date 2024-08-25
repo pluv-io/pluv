@@ -73,8 +73,6 @@ export class PluvServer<
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IORouterLike<TEvents>
 {
-    public _listeners: PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>;
-
     public readonly version: string = __PLUV_VERSION as any;
 
     private readonly _authorize: TAuthorize | null = null;
@@ -141,7 +139,7 @@ export class PluvServer<
 
                     await this._platform.persistence.setStorageState(room, encodedState);
 
-                    this._listeners.onStorageUpdated({ context, encodedState, room });
+                    this._getListeners().onStorageUpdated({ context, encodedState, room });
                 }
 
                 const state = (await this._platform.persistence.getStorageState(room)) ?? doc.getEncodedState();
@@ -185,7 +183,7 @@ export class PluvServer<
             const encodedState = updated.getEncodedState();
 
             this._platform.persistence.setStorageState(room, encodedState).then(() => {
-                this._listeners.onStorageUpdated({
+                this._getListeners().onStorageUpdated({
                     context,
                     encodedState,
                     room,
@@ -248,11 +246,11 @@ export class PluvServer<
         if (context) this._context = context;
         if (getInitialStorage) this._getInitialStorage = getInitialStorage;
 
-        this._listeners = {
+        (this as any)._listeners = {
             onRoomDeleted: (event) => onRoomDeleted?.(event),
             onRoomMessage: (event) => onRoomMessage?.(event),
             onStorageUpdated: (event) => onStorageUpdated?.(event),
-        };
+        } as PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>;
     }
 
     public createRoom(
@@ -279,14 +277,14 @@ export class PluvServer<
                 this._logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
 
                 await Promise.resolve(onDestroy?.(event));
-                await Promise.resolve(this._listeners.onRoomDeleted(event));
+                await Promise.resolve(this._getListeners().onRoomDeleted(event));
                 await this._platform.persistence.deleteStorageState(room);
 
                 this._logDebug(`${colors.blue("Deleted room:")} ${room}`);
             },
             onMessage: async (event) => {
                 await Promise.resolve(onMessage?.(event));
-                await Promise.resolve(this._listeners.onRoomMessage(event));
+                await Promise.resolve(this._getListeners().onRoomMessage(event));
             },
             platform: this._platform,
             router: this._router,
@@ -313,6 +311,10 @@ export class PluvServer<
             platform: this._platform,
             secret,
         }).encode(params);
+    }
+
+    private _getListeners(): PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents> {
+        return (this as any)._listeners;
     }
 
     private _logDebug(...data: any[]): void {
