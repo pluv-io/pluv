@@ -487,7 +487,7 @@ export class IORoom<
                 this._doc = Promise.resolve(this._docFactory.getEmpty());
 
                 this._listeners.onDestroy({
-                    ...(this._platform._meta ? { _meta: this._platform._meta } : {}),
+                    ...("_meta" in this._platform && !!this._platform._meta ? { _meta: this._platform._meta } : {}),
                     context: this._context,
                     encodedState,
                     room: this.id,
@@ -577,7 +577,7 @@ export class IORoom<
             const procedure = this._getProcedure(message);
 
             this._listeners.onMessage({
-                ...(this._platform._meta ? { _meta: this._platform._meta } : {}),
+                ...("_meta" in this._platform && !!this._platform._meta ? { _meta: this._platform._meta } : {}),
                 context: this._context,
                 encodedState: doc.getEncodedState(),
                 message: message as InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>,

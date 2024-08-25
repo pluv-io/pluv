@@ -52,15 +52,12 @@ export abstract class AbstractPlatform<
     constructor(config: AbstractPlatformConfig<TPlatformContext, TRoomContext> = {}) {
         const { context, persistence, pubSub } = config;
 
+        (this as any)._meta = (config as any)._meta;
         context && (this._ioContext = context);
         context && (this._roomContext = context);
 
         this.persistence = persistence ?? new Persistence();
         this.pubSub = pubSub ?? new PubSub();
-    }
-
-    public get _meta(): any {
-        return undefined;
     }
 
     public abstract acceptWebSocket(webSocket: AbstractWebSocket): Promise<void>;
