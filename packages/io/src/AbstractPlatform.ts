@@ -1,7 +1,7 @@
-import type { AbstractPersistance } from "./AbstractPersistance";
+import type { AbstractPersistence } from "./AbstractPersistence";
 import type { AbstractPubSub } from "./AbstractPubSub";
 import type { AbstractWebSocket, InferWebSocketSource } from "./AbstractWebSocket";
-import { Persistance } from "./Persistance";
+import { Persistence } from "./Persistence";
 import { PubSub } from "./PubSub";
 import type { WebSocketSerializedState } from "./types";
 
@@ -26,7 +26,7 @@ export type AbstractPlatformConfig<
     TRoomContext extends Record<string, any> = {},
 > = {
     context?: TPlatformContext & TRoomContext;
-    persistance?: AbstractPersistance;
+    persistence?: AbstractPersistence;
     pubSub?: AbstractPubSub;
 };
 
@@ -44,7 +44,7 @@ export abstract class AbstractPlatform<
 
     private _initialized: boolean = false;
 
-    public persistance: AbstractPersistance;
+    public persistence: AbstractPersistence;
     public pubSub: AbstractPubSub;
 
     public readonly _meta: any = undefined;
@@ -52,12 +52,12 @@ export abstract class AbstractPlatform<
     public abstract readonly _registrationMode: WebSocketRegistrationMode;
 
     constructor(config: AbstractPlatformConfig<TPlatformContext, TRoomContext> = {}) {
-        const { context, persistance, pubSub } = config;
+        const { context, persistence, pubSub } = config;
 
         context && (this._ioContext = context);
         context && (this._roomContext = context);
 
-        this.persistance = persistance ?? new Persistance();
+        this.persistence = persistence ?? new Persistence();
         this.pubSub = pubSub ?? new PubSub();
     }
 

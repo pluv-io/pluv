@@ -1,5 +1,5 @@
 export type { BaseUser, EventMessage, EventRecord, IOEventMessage } from "@pluv/types";
-export { AbstractPersistance } from "./AbstractPersistance";
+export { AbstractPersistence } from "./AbstractPersistence";
 export { AbstractPlatform } from "./AbstractPlatform";
 export type {
     AbstractPlatformConfig,

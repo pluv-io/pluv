@@ -1,6 +1,6 @@
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
-import { PersistanceRedis } from "@pluv/persistance-redis";
+import { PersistenceRedis } from "@pluv/persistence-redis";
 import { platformNode } from "@pluv/platform-node";
 import { PubSubRedis } from "@pluv/pubsub-redis";
 import { z } from "zod";
@@ -20,7 +20,7 @@ export const io = createIO({
     crdt: yjs,
     debug: true,
     platform: platformNode({
-        persistance: new PersistanceRedis({ client: cluster }),
+        persistence: new PersistenceRedis({ client: cluster }),
         pubSub: new PubSubRedis({
             publisher: cluster,
             subscriber: cluster,

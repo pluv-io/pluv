@@ -7,7 +7,7 @@ export const metadata = {
 
 > **Note**: Currently PubSub's are supported for Node.js only.
 
-You may want to run a single room across multiple servers to horizontally scale your API. For that a PubSub will be necessary to share the events, and Persistance will be necessary for syncing storage state across servers.
+You may want to run a single room across multiple servers to horizontally scale your API. For that a PubSub will be necessary to share the events, and Persistence will be necessary for syncing storage state across servers.
 
 ## Usage Example
 
@@ -15,18 +15,18 @@ Let's step through how we'd setup a pubsub to our pluv.io API.
 
 ### Installation
 
-Install your PubSub and Persistance of your choosing:
+Install your PubSub and Persistence of your choosing:
 
 ```bash
 # For the server
-npm install @pluv/pubsub-redis @pluv/persistance-redis
+npm install @pluv/pubsub-redis @pluv/persistence-redis
 # Peer-dependencies
 npm install ioredis
 ```
 
-### Setup your PubSub and Persistance
+### Setup your PubSub and Persistence
 
-Create your pluv.io instance with your selected PubSub and Persistance:
+Create your pluv.io instance with your selected PubSub and Persistence:
 
 ```ts
 // server/io.ts
@@ -34,7 +34,7 @@ Create your pluv.io instance with your selected PubSub and Persistance:
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { PubSubRedis } from "@pluv/pubsub-redis";
-import { PersistanceRedis } from "@pluv/persistance-redis";
+import { PersistenceRedis } from "@pluv/persistence-redis";
 import { Redis } from "ioredis";
 
 // Setup redis. You can also use a Redis Cluster
@@ -44,7 +44,7 @@ const redis = new Redis({
 
 export const io = createIO({
     platform: platformNode({
-        persistance: new PersistanceRedis({ client: redis }),
+        persistence: new PersistenceRedis({ client: redis }),
         pubSub: new PubSubRedis({
             publisher: redis,
             subscriber: redis,
@@ -61,6 +61,6 @@ Below are the available pubsubs and libraries written for pluv.io. Check the [ro
 
 * [Redis](https://www.npmjs.com/package/@pluv/pubsub-redis)
 
-### Persistances
+### Persistences
 
-* [Redis](https://www.npmjs.com/package/@pluv/persistance-redis)
+* [Redis](https://www.npmjs.com/package/@pluv/persistence-redis)

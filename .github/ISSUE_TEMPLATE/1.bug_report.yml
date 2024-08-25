@@ -10,7 +10,7 @@ body:
         Run this command in your project root and paste the results:
 
         ```terminal
-        npx envinfo --system --binaries --browsers --npmPackages "@pluv/client,@pluv/io,@pluv/persistance-redis,@pluv/platform-cloudflare,@pluv/platform-node,@pluv/pubsub-redis,@pluv/react,pluv,react,typescript"
+        npx envinfo --system --binaries --browsers --npmPackages "@pluv/client,@pluv/io,@pluv/persistence-redis,@pluv/platform-cloudflare,@pluv/platform-node,@pluv/pubsub-redis,@pluv/react,pluv,react,typescript"
         ```
       placeholder: |
         ``` 

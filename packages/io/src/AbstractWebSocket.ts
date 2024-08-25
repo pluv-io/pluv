@@ -6,7 +6,7 @@ import type {
     JsonObject,
     MaybePromise,
 } from "@pluv/types";
-import type { AbstractPersistance } from "./AbstractPersistance";
+import type { AbstractPersistence } from "./AbstractPersistence";
 import type { WebSocketSerializedState, WebSocketSession } from "./types";
 
 export type AbstractEvent = {};
@@ -48,7 +48,7 @@ export type InferWebSocketSource<TAbstractWebSocket extends AbstractWebSocket> =
     TAbstractWebSocket extends AbstractWebSocket<infer IWebSocket> ? IWebSocket : never;
 
 export interface AbstractWebSocketConfig {
-    persistance: AbstractPersistance;
+    persistence: AbstractPersistence;
     room: string;
 }
 
@@ -62,7 +62,7 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
     /** The connection is closed. */
     public readonly CLOSED = 3;
 
-    public readonly persistance: AbstractPersistance;
+    public readonly persistence: AbstractPersistence;
     public readonly room: string;
     public readonly webSocket: TWebSocket;
 
@@ -75,9 +75,9 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
     public abstract set state(state: WebSocketSerializedState);
 
     constructor(webSocket: TWebSocket, config: AbstractWebSocketConfig) {
-        const { persistance, room } = config;
+        const { persistence, room } = config;
 
-        this.persistance = persistance;
+        this.persistence = persistence;
         this.room = room;
         this.webSocket = webSocket;
     }
@@ -105,7 +105,7 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
         const state = this.state;
         const room = state.room;
 
-        const user = this._user ?? (await this.persistance.getUser(room, sessionId));
+        const user = this._user ?? (await this.persistence.getUser(room, sessionId));
 
         this._user = user as BaseUser;
 

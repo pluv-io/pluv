@@ -1,14 +1,14 @@
 {
-	"name": "@pluv/persistance-redis",
+	"name": "@pluv/persistence-redis",
 	"version": "0.24.1",
-	"description": "@pluv/io yjs storage persistance for node.js",
+	"description": "@pluv/io crdt storage persistence for node.js",
 	"author": "leedavidcs",
 	"license": "MIT",
 	"homepage": "https://github.com/pluv-io/pluv",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/pluv-io/pluv.git",
-		"directory": "packages/persistance-redis"
+		"directory": "packages/persistence-redis"
 	},
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",

@@ -30,7 +30,7 @@
 		"@pluv/crdt-loro": "workspace:^",
 		"@pluv/crdt-yjs": "workspace:^",
 		"@pluv/io": "workspace:^",
-		"@pluv/persistance-redis": "workspace:^",
+		"@pluv/persistence-redis": "workspace:^",
 		"@pluv/platform-cloudflare": "workspace:^",
 		"@pluv/platform-node": "workspace:^",
 		"@pluv/pubsub-redis": "workspace:^",

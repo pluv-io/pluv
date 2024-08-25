@@ -5,8 +5,8 @@ import type {
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
+import { PersistenceCloudflareTransactionalStorage } from "@pluv/persistence-cloudflare-transactional-storage";
 import { CloudflareWebSocket } from "./CloudflareWebSocket";
-import { PersistanceCloudflare } from "./PersistanceCloudflare";
 import { DEFAULT_REGISTRATION_MODE } from "./constants";
 
 export type CloudflarePlatformConfig<TEnv extends Record<string, any> = {}> = AbstractPlatformConfig<
@@ -25,7 +25,7 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
         super({
             ...config,
             ...(config.context && config.mode === "detached"
-                ? { persistance: new PersistanceCloudflare(config.context) }
+                ? { persistence: new PersistenceCloudflareTransactionalStorage(config.context) }
                 : {}),
         });
 
@@ -55,7 +55,7 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
     public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): CloudflareWebSocket {
         const { room } = config;
 
-        return new CloudflareWebSocket(webSocket, { persistance: this.persistance, room });
+        return new CloudflareWebSocket(webSocket, { persistence: this.persistence, room });
     }
 
     public getLastPing(webSocket: CloudflareWebSocket): number | null {
@@ -100,7 +100,7 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
 
         return new CloudflarePlatform<TEnv>({
             mode: this._registrationMode,
-            persistance: this.persistance,
+            persistence: this.persistence,
             pubSub: this.pubSub,
             ...config,
             context: { env: context.env, state: context.state },

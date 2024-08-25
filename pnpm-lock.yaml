@@ -1110,7 +1110,35 @@ importers:
         specifier: ^5.5.4
         version: 5.5.4
 
-  packages/persistance-redis:
+  packages/persistence-cloudflare-transactional-storage:
+    dependencies:
+      '@pluv/io':
+        specifier: workspace:^
+        version: link:../io
+      '@pluv/types':
+        specifier: workspace:^
+        version: link:../types
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20240821.1
+        version: 4.20240821.1
+      '@pluv/tsconfig':
+        specifier: workspace:^
+        version: link:../tsconfig
+      eslint:
+        specifier: ^8.57.0
+        version: 8.57.0
+      eslint-config-pluv:
+        specifier: workspace:^
+        version: link:../eslint-config-pluv
+      tsup:
+        specifier: ^8.2.4
+        version: 8.2.4(jiti@1.21.6)(postcss@8.4.41)(typescript@5.5.4)(yaml@2.5.0)
+      typescript:
+        specifier: ^5.5.4
+        version: 5.5.4
+
+  packages/persistence-redis:
     dependencies:
       '@pluv/io':
         specifier: workspace:^
@@ -1146,6 +1174,9 @@ importers:
       '@pluv/io':
         specifier: workspace:^
         version: link:../io
+      '@pluv/persistence-cloudflare-transactional-storage':
+        specifier: workspace:^
+        version: link:../persistence-cloudflare-transactional-storage
       '@pluv/types':
         specifier: workspace:^
         version: link:../types
@@ -1311,9 +1342,9 @@ importers:
       '@pluv/io':
         specifier: workspace:^
         version: link:../../packages/io
-      '@pluv/persistance-redis':
+      '@pluv/persistence-redis':
         specifier: workspace:^
-        version: link:../../packages/persistance-redis
+        version: link:../../packages/persistence-redis
       '@pluv/platform-cloudflare':
         specifier: workspace:^
         version: link:../../packages/platform-cloudflare

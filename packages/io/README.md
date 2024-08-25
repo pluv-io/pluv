@@ -71,7 +71,7 @@ pluv.io allows you to more easily build real-time collaborative experiences with
     - ✅ [Redis](https://redis.io/)
     - ⬜ [RabbitMQ](https://www.rabbitmq.com/)
     - ⬜ [Kafka](https://kafka.apache.org/)
-  - ✅ **CRDT State Persistance**
+  - ✅ **CRDT State Persistence**
     - ✅ [Redis](https://redis.io/)
     - ⬜ [Prisma](https://www.prisma.io/)
 
@@ -95,7 +95,7 @@ Documentation is available at [pluv.io](https://pluv.io/docs/introduction).
 - [@pluv/client](https://www.npmjs.com/package/@pluv/client) - Framework agnostic client
 - [@pluv/crdt-loro](https://www.npmjs.com/package/@pluv/crdt-loro) - Loro CRDT for Pluv.IO
 - [@pluv/crdt-yjs](https://www.npmjs.com/package/@pluv/crdt-yjs) - Yjs CRDT for Pluv.IO
-- [@pluv/persistance-redis](https://www.npmjs.com/package/@pluv/persistance-redis) - Persistance for storage on distributed systems (Node.js only)
+- [@pluv/persistence-redis](https://www.npmjs.com/package/@pluv/persistence-redis) - Persistence for storage on distributed systems (Node.js only)
 - [@pluv/platform-cloudflare](https://www.npmjs.com/package/@pluv/platform-cloudflare) - Adapter to run @pluv/io on Cloudflare Workers
 - [@pluv/platform-node](https://www.npmjs.com/package/@pluv/platform-node) - Adapter to run @pluv/io on Node.js
 - [@pluv/pubsub-redis](https://www.npmjs.com/package/@pluv/pubsub-redis) - PubSub for rooms across distributed systems

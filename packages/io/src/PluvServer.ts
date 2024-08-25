@@ -128,7 +128,7 @@ export class PluvServer<
                 };
             })
             .self(async (data, { context, doc, room }) => {
-                const oldState = await this._platform.persistance.getStorageState(room);
+                const oldState = await this._platform.persistence.getStorageState(room);
                 const update = (data as any)?.update as Maybe<string>;
 
                 const updates: readonly Maybe<string>[] = [
@@ -139,12 +139,12 @@ export class PluvServer<
                 if (updates.some((_update) => !!_update)) {
                     const encodedState = doc.batchApplyEncodedState(updates).getEncodedState();
 
-                    await this._platform.persistance.setStorageState(room, encodedState);
+                    await this._platform.persistence.setStorageState(room, encodedState);
 
                     this._listeners.onStorageUpdated({ context, encodedState, room });
                 }
 
-                const state = (await this._platform.persistance.getStorageState(room)) ?? doc.getEncodedState();
+                const state = (await this._platform.persistence.getStorageState(room)) ?? doc.getEncodedState();
 
                 return { $STORAGE_RECEIVED: { state } };
             }),
@@ -184,7 +184,7 @@ export class PluvServer<
             const updated = update === null ? doc : doc.applyEncodedState({ update });
             const encodedState = updated.getEncodedState();
 
-            this._platform.persistance.setStorageState(room, encodedState).then(() => {
+            this._platform.persistence.setStorageState(room, encodedState).then(() => {
                 this._listeners.onStorageUpdated({
                     context,
                     encodedState,
@@ -280,7 +280,7 @@ export class PluvServer<
 
                 await Promise.resolve(onDestroy?.(event));
                 await Promise.resolve(this._listeners.onRoomDeleted(event));
-                await this._platform.persistance.deleteStorageState(room);
+                await this._platform.persistence.deleteStorageState(room);
 
                 this._logDebug(`${colors.blue("Deleted room:")} ${room}`);
             },

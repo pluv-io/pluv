@@ -1,20 +1,20 @@
-import { AbstractPersistance } from "@pluv/io";
+import { AbstractPersistence } from "@pluv/io";
 import type { JsonObject } from "@pluv/types";
 import type { Cluster, Redis } from "ioredis";
 
 const DELIMITER = ":::";
-const HASH_TAG = "{PluvPersistanceRedis}";
+const HASH_TAG = "{PluvPersistenceRedis}";
 
 export type RedisClient = Cluster | Redis;
 
-export interface PersistanceRedisOptions {
+export interface PersistenceRedisOptions {
     client: RedisClient;
 }
 
-export class PersistanceRedis extends AbstractPersistance {
+export class PersistenceRedis extends AbstractPersistence {
     private _client: RedisClient;
 
-    constructor(options: PersistanceRedisOptions) {
+    constructor(options: PersistenceRedisOptions) {
         super();
 
         const { client } = options;
