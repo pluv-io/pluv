@@ -88,11 +88,11 @@ export class IORoom<
 > implements IOLike<TAuthorize, TEvents>
 {
     public readonly id: string;
-    public readonly _authorize: TAuthorize | null = null;
 
     private _doc: Promise<AbstractCrdtDoc<any>>;
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
+    private readonly _authorize: TAuthorize | null = null;
     private readonly _context: TContext & InferRoomContextType<TPlatform>;
     private readonly _debug: boolean;
     private readonly _docFactory: AbstractCrdtDocFactory<any>;
@@ -101,8 +101,18 @@ export class IORoom<
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
     private readonly _sessions = new Map<string, AbstractWebSocket>();
 
-    public get _events() {
-        return this._router._events;
+    /**
+     * @ignore
+     * @readonly
+     * @deprecated Internal use only. Changes to this will never be marked as breaking.
+     */
+    public get _defs() {
+        return {
+            authorize: this._authorize,
+            context: this._context,
+            events: this._router._defs.events,
+            platform: this._platform,
+        };
     }
 
     public get broadcast(): BroadcastProxy<this> {
@@ -400,8 +410,8 @@ export class IORoom<
 
     private _getProcedure(
         message: EventMessage<string, any>,
-    ): (typeof this._router)["_events"][keyof (typeof this._router)["_events"]] | null {
-        return this._router._events[message.type as keyof (typeof this._router)["_events"]] ?? null;
+    ): (typeof this._router)["_defs"]["events"][keyof (typeof this._router)["_defs"]["events"]] | null {
+        return this._router._defs.events[message.type as keyof (typeof this._router)["_defs"]["events"]] ?? null;
     }
 
     private _getProcedureInputs(message: EventMessage<string, any>): InferIOInput<this>[keyof TEvents] {
