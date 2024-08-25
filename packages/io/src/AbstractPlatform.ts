@@ -47,6 +47,8 @@ export abstract class AbstractPlatform<
     public persistance: AbstractPersistance;
     public pubSub: AbstractPubSub;
 
+    public readonly _meta: any = undefined;
+
     public abstract readonly _registrationMode: WebSocketRegistrationMode;
 
     constructor(config: AbstractPlatformConfig<TPlatformContext, TRoomContext> = {}) {
