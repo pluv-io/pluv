@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.25.1
+
+### Patch Changes
+
+- 3925f7c: Update internal accessor.
+  - @pluv/crdt@0.25.1
+  - @pluv/types@0.25.1
+
 ## 0.25.0
 
 ### Minor Changes
