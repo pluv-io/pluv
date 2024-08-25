@@ -47,8 +47,6 @@ export abstract class AbstractPlatform<
     public persistence: AbstractPersistence;
     public pubSub: AbstractPubSub;
 
-    public readonly _meta: any = undefined;
-
     public abstract readonly _registrationMode: WebSocketRegistrationMode;
 
     constructor(config: AbstractPlatformConfig<TPlatformContext, TRoomContext> = {}) {
@@ -59,6 +57,10 @@ export abstract class AbstractPlatform<
 
         this.persistence = persistence ?? new Persistence();
         this.pubSub = pubSub ?? new PubSub();
+    }
+
+    public get _meta(): any {
+        return undefined;
     }
 
     public abstract acceptWebSocket(webSocket: AbstractWebSocket): Promise<void>;
