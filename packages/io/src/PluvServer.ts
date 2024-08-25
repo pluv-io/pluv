@@ -76,8 +76,8 @@ export class PluvServer<
     public _listeners: PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>;
 
     public readonly version: string = __PLUV_VERSION as any;
-    public readonly _authorize: TAuthorize | null = null;
 
+    private readonly _authorize: TAuthorize | null = null;
     private readonly _baseRouter: PluvRouter<TPlatform, TAuthorize, TContext, {}> = new PluvRouter({
         $GET_OTHERS: this._procedure.sync((data, { room, session, sessions }) => {
             const currentTime = new Date().getTime();
@@ -202,12 +202,18 @@ export class PluvServer<
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
-    public get _events() {
-        return this._router._events;
-    }
-
-    public get _registrationMode(): WebSocketRegistrationMode {
-        return this._platform._registrationMode;
+    /**
+     * @ignore
+     * @readonly
+     * @deprecated Internal use only. Changes to this will never be marked as breaking.
+     */
+    public get _defs() {
+        return {
+            authorize: this._authorize,
+            context: this._context,
+            events: this._router._defs.events,
+            platform: this._platform,
+        };
     }
 
     private get _procedure(): PluvProcedure<TPlatform, TAuthorize, TContext, {}, {}> {

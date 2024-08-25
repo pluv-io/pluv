@@ -67,7 +67,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform, a
 ): CreatePluvHandlerResult => {
     const { authorize, endpoint = "/api/pluv", io, server } = config;
 
-    if (io._registrationMode === "detached") {
+    if (io._defs.platform._registrationMode === "detached") {
         throw new Error("Cannot use createPluvHandler in detached mode for Node.js");
     }
 

@@ -39,8 +39,8 @@ export class PluvIO<
     TContext extends JsonObject = {},
 > {
     public readonly version: string = __PLUV_VERSION as any;
-    public readonly _authorize: TAuthorize | null = null;
 
+    private readonly _authorize: TAuthorize | null = null;
     private readonly _context: TContext = {} as TContext;
     private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     private readonly _debug: boolean;

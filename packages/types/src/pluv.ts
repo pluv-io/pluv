@@ -142,14 +142,19 @@ export type ProcedureLike<TInput extends JsonObject = {}, TOutput extends EventR
 };
 
 export interface IORouterLike<TEvents extends Record<string, ProcedureLike<any, any>> = {}> {
-    _events: TEvents;
+    _defs: {
+        events: TEvents;
+    };
 }
 
 export interface IOLike<
     TAuthorize extends IOAuthorize<any, any, any> = IOAuthorize<any, any, any>,
     TEvents extends Record<string, ProcedureLike<any, any>> = {},
 > extends IORouterLike<TEvents> {
-    _authorize: TAuthorize | null;
+    _defs: {
+        authorize: TAuthorize | null;
+        events: TEvents;
+    };
 }
 
 export type InferEventsInput<TEvents extends Record<string, ProcedureLike<any, any>>> = {
