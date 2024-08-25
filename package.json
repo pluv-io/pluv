@@ -4,7 +4,7 @@
     "engines": {
         "node": ">=18.0.0"
     },
-    "packageManager": "pnpm@9.7.1+sha256.46f1bbc8f8020aa9869568c387198f1a813f21fb44c82f400e7d1dbde6c70b40",
+    "packageManager": "pnpm@9.8.0+sha512.8e4c3550fb500e808dbc30bb0ce4dd1eb614e30b1c55245f211591ec2cdf9c611cabd34e1364b42f564bd54b3945ed0f49d61d1bbf2ec9bd74b866fcdc723276",
     "scripts": {
         "build": "turbo run build",
         "build:internal": "turbo run build --filter=./internal/*",
