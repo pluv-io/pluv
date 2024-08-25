@@ -487,6 +487,7 @@ export class IORoom<
                 this._doc = Promise.resolve(this._docFactory.getEmpty());
 
                 this._listeners.onDestroy({
+                    ...(this._platform._meta ? { _meta: this._platform._meta } : {}),
                     context: this._context,
                     encodedState,
                     room: this.id,
@@ -574,6 +575,15 @@ export class IORoom<
             if (!message) return;
 
             const procedure = this._getProcedure(message);
+
+            this._listeners.onMessage({
+                ...(this._platform._meta ? { _meta: this._platform._meta } : {}),
+                context: this._context,
+                encodedState: doc.getEncodedState(),
+                message: message as InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>,
+                room: this.id,
+                user: session.user,
+            });
 
             if (!procedure) return;
 
@@ -667,19 +677,7 @@ export class IORoom<
     }
 
     private async _sendMessage(pluvWs: AbstractWebSocket<any>, message: IOEventMessage<any>): Promise<void> {
-        const { data, type } = message;
-
         if (!(await this._initialized)) return;
-
-        const doc = await this._doc;
-
-        this._listeners.onMessage({
-            context: this._context,
-            encodedState: doc.getEncodedState(),
-            message: { data, type } as InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>,
-            room: this.id,
-            user: message.user,
-        });
 
         await Promise.resolve(pluvWs.sendMessage(message));
     }
