@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/persistence-cloudflare-transactional-storage",
-	"version": "0.25.1",
+	"version": "0.25.2",
 	"description": "@pluv/io crdt storage persistence for cloudflare via transactional storage",
 	"author": "leedavidcs",
 	"license": "MIT",
