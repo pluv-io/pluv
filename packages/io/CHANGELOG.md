@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.25.4
+
+### Patch Changes
+
+- 7a9080c: Fix not passing all properties to the platform initialization.
+  - @pluv/crdt@0.25.4
+  - @pluv/types@0.25.4
+
 ## 0.25.3
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@pluv/tsconfig",
-  "version": "0.25.3",
+  "version": "0.25.4",
   "description": "@pluv/io internal tsconfigs",
   "author": "leedavidcs",
   "license": "MIT",
