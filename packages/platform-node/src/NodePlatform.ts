@@ -56,10 +56,10 @@ export class NodePlatform extends AbstractPlatform<NodeWebSocket> {
 
     public initialize(config: AbstractPlatformConfig<{}, {}>): this {
         return new NodePlatform({
+            context: config.context,
             mode: this._registrationMode,
             persistence: this.persistence,
             pubSub: this.pubSub,
-            ...config,
         } as NodePlatformConfig)._initialize() as this;
     }
 
