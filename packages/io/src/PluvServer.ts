@@ -257,11 +257,14 @@ export class PluvServer<
         room: string,
         ...options: CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>
     ): IORoom<TPlatform, TAuthorize, TContext, TEvents> {
-        const { debug, onDestroy, onMessage, ...platformRoomContext } = options[0] ?? {};
+        const { _meta, debug, onDestroy, onMessage, ...platformRoomContext } = (options[0] ?? {}) as CreateRoomOptions<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TEvents
+        >[0] & { _meta?: any };
 
-        if (!/^[a-z0-9]+[a-z0-9\-_]+[a-z0-9]+$/i.test(room)) {
-            throw new Error("Unsupported room name");
-        }
+        if (!/^[a-z0-9]+[a-z0-9\-_]+[a-z0-9]+$/i.test(room)) throw new Error("Unsupported room name");
 
         const roomContext = {
             ...this._context,
@@ -269,6 +272,7 @@ export class PluvServer<
         } as TContext & InferRoomContextType<TPlatform>;
 
         const newRoom = new IORoom<TPlatform, TAuthorize, TContext, TEvents>(room, {
+            ...(!!_meta ? { _meta } : {}),
             authorize: this._authorize ?? undefined,
             context: roomContext,
             crdt: this._crdt,
