@@ -99,11 +99,10 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
         }
 
         return new CloudflarePlatform<TEnv>({
+            context: { env: context.env, state: context.state },
             mode: this._registrationMode,
             persistence: this.persistence,
             pubSub: this.pubSub,
-            ...config,
-            context: { env: context.env, state: context.state },
         })._initialize() as this;
     }
 
