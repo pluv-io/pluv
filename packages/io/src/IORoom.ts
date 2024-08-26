@@ -137,7 +137,17 @@ export class IORoom<
     }
 
     constructor(id: string, config: IORoomConfig<TPlatform, TAuthorize, TContext, TEvents>) {
-        const { authorize, context, crdt = noop, debug, onDestroy, onMessage, platform, router } = config;
+        const {
+            _meta,
+            authorize,
+            context,
+            crdt = noop,
+            debug,
+            onDestroy,
+            onMessage,
+            platform,
+            router,
+        } = config as IORoomConfig<TPlatform, TAuthorize, TContext, TEvents> & { _meta?: any };
 
         this.id = id;
 
@@ -145,7 +155,7 @@ export class IORoom<
         this._debug = debug;
         this._docFactory = crdt.doc(() => ({}));
         this._router = router;
-        this._platform = platform.initialize({ context });
+        this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), context });
 
         this._listeners = {
             onDestroy: (event) => onDestroy?.(event),
