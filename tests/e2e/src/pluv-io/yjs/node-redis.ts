@@ -3,22 +3,7 @@ import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node-redis";
 
-const client = createClient<typeof ioServer>({
-    authEndpoint: (roomName) => {
-        const [room] = roomName.split("_");
-
-        return `http://localhost:3103/api/authorize?roomName=${room}`;
-    },
-    wsEndpoint: (roomName) => {
-        const [room, io] = roomName.split("_");
-
-        const url = new URL(`ws://localhost:3103/api/room/${room}/websocket`);
-
-        if (io === "1") url.searchParams.set("io", "1");
-
-        return url.toString();
-    },
-});
+const client = createClient<typeof ioServer>();
 
 export const {
     // factories
@@ -51,6 +36,11 @@ export const {
     useTransact,
     useUndo,
 } = createRoomBundle({
+    authEndpoint: ({ room }) => {
+        const [roomName] = room.split("_");
+
+        return `http://localhost:3103/api/authorize?roomName=${roomName}`;
+    },
     initialStorage: yjs.doc(() => ({
         messages: yjs.array([
             yjs.object({
@@ -62,4 +52,13 @@ export const {
     presence: z.object({
         count: z.number(),
     }),
+    wsEndpoint: ({ room }) => {
+        const [roomName, io] = room.split("_");
+
+        const url = new URL(`ws://localhost:3103/api/room/${roomName}/websocket`);
+
+        if (io === "1") url.searchParams.set("io", "1");
+
+        return url.toString();
+    },
 });

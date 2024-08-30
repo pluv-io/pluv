@@ -4,14 +4,7 @@ import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node";
 
-const client = createClient<typeof ioServer>({
-    authEndpoint: (room) => {
-        return `http://localhost:3102/api/pluv/authorize?room=${room}`;
-    },
-    wsEndpoint: (room) => {
-        return `ws://localhost:3102/api/pluv/room/${room}`;
-    },
-});
+const client = createClient<typeof ioServer>();
 
 export const {
     // factories
@@ -44,6 +37,7 @@ export const {
     useTransact,
     useUndo,
 } = createRoomBundle({
+    authEndpoint: ({ room }) => `http://localhost:3102/api/pluv/authorize?room=${room}`,
     addons: [
         addonIndexedDB({
             enabled: (room) => room.id === "e2e-node-storage-addon-indexeddb",
@@ -60,4 +54,5 @@ export const {
     presence: z.object({
         count: z.number(),
     }),
+    wsEndpoint: ({ room }) => `ws://localhost:3102/api/pluv/room/${room}`,
 });

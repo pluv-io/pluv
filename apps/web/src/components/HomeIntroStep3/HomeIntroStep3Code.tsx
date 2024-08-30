@@ -20,9 +20,7 @@ export const HomeIntroStep3Code: FC<HomeIntroStep3CodeProps> = ({ className }) =
                     import type { IOServer } from "./server";
 
                     // ---cut---
-                    const client = createClient<IOServer>({
-                      wsEndpoint: (room) => \`wss://pluv.io/api/pluv/room/\${room}\`,
-                    });
+                    const client = createClient<IOServer>();
 
                     const { createRoomBundle } = createBundle(client);
 
@@ -37,6 +35,7 @@ export const HomeIntroStep3Code: FC<HomeIntroStep3CodeProps> = ({ className }) =
                           { id: "TASK-5720", status: "progress", priority: "high" },
                         ]),
                       })),
+                      wsEndpoint: ({ room }) => \`wss://pluv.io/api/pluv/room/\${room}\`,
                     });
                 `}
                 lang="tsx"

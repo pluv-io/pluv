@@ -33,6 +33,11 @@ export const room = client.createRoom(ROOM_NAME, {
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
+    // Optional. Defaults to (room) => `/api/pluv/room/${room}`
+    wsEndpoint: (room: string): string => {
+        // Specify the ws endpoint to connect to 
+        return `http://localhost:3000/api/room?room=${room}`;
+    },
 });
 ```
 

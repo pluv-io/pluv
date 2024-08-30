@@ -12,9 +12,13 @@ export interface PluvProviderProps {
 
 export interface CreateBundle<TIO extends IOLike> {
     // factories
-    createRoomBundle: <TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
-        options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
-    ) => CreateRoomBundle<TIO, TPresence, TStorage>;
+    createRoomBundle: <
+        TMetadata extends Record<string, any> = {},
+        TPresence extends JsonObject = {},
+        TStorage extends Record<string, CrdtType<any, any>> = {},
+    >(
+        options: CreateRoomBundleOptions<TIO, TMetadata, TPresence, TStorage>,
+    ) => CreateRoomBundle<TIO, TMetadata, TPresence, TStorage>;
 
     // components
     PluvProvider: FC<PluvProviderProps>;
@@ -44,11 +48,12 @@ export const createBundle = <TIO extends IOLike>(client: PluvClient<TIO>): Creat
     const useClient = (): PluvClient<TIO> => useContext(PluvContext);
 
     const createRoomBundle = <
+        TMetadata extends Record<string, any> = {},
         TPresence extends JsonObject = {},
         TStorage extends Record<string, CrdtType<any, any>> = {},
     >(
-        options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
-    ): CreateRoomBundle<TIO, TPresence, TStorage> => _createRoomBundle(client, options);
+        options: CreateRoomBundleOptions<TIO, TMetadata, TPresence, TStorage>,
+    ): CreateRoomBundle<TIO, TMetadata, TPresence, TStorage> => _createRoomBundle(client, options);
 
     return {
         createRoomBundle,
