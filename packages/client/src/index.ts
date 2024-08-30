@@ -7,7 +7,7 @@ export type { MockedRoomConfig, MockedRoomEvents } from "./MockedRoom";
 export { PluvClient } from "./PluvClient";
 export type { PluvClientOptions } from "./PluvClient";
 export { PluvRoom } from "./PluvRoom";
-export type { PluvRoomAddon, PluvRoomAddonInput, PluvRoomAddonResult, PluvRoomDebug } from "./PluvRoom";
+export type { PluvRoomAddon, PluvRoomAddonInput, PluvRoomAddonResult, PluvRoomDebug, RoomConfig } from "./PluvRoom";
 export { createClient } from "./createClient";
 export { ConnectionState } from "./types";
 export type { UserInfo, WebSocketConnection, WebSocketState } from "./types";

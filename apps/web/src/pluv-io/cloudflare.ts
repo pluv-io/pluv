@@ -6,9 +6,7 @@ import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
 import tasks from "../generated/tasks.json";
 
-const client = createClient<typeof ioServer>({
-    wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/pluv/room/${room}`,
-});
+const client = createClient<typeof ioServer>();
 
 export const {
     // factories
@@ -44,4 +42,5 @@ export const {
     initialStorage: yjs.doc(() => ({
         demoTasks: yjs.array(tasks.map((task) => yjs.object(task))),
     })),
+    wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/pluv/room/${room}`,
 });

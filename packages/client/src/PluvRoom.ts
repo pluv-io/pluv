@@ -121,22 +121,16 @@ export type PluvRoomDebug<TIO extends IOLike> = Id<{
     input: readonly (keyof InferIOInput<TIO>)[];
 }>;
 
-export type PluvRoomOptions<
+export type RoomConfig<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
-> = {
+> = RoomEndpoints<TIO> & {
     addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
     debug?: boolean | PluvRoomDebug<TIO>;
     onAuthorizationFail?: (error: Error) => void;
 } & Omit<CrdtManagerOptions<TStorage>, "encodedState"> &
     UsersManagerConfig<TPresence>;
-
-export type RoomConfig<
-    TIO extends IOLike,
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
-> = RoomEndpoints<TIO> & PluvRoomOptions<TIO, TPresence, TStorage>;
 
 export class PluvRoom<
     TIO extends IOLike,
@@ -201,9 +195,7 @@ export class PluvRoom<
         };
 
         this._storageStore = storage;
-
         this._debug = debug;
-
         this._endpoints = { authEndpoint, wsEndpoint } as RoomEndpoints<TIO>;
 
         this._listeners = {
@@ -256,10 +248,6 @@ export class PluvRoom<
     };
 
     public async connect(): Promise<void> {
-        if (!this._endpoints.wsEndpoint) {
-            throw new Error("Must provide an wsEndpoint.");
-        }
-
         const canConnect = [ConnectionState.Closed, ConnectionState.Untouched].some(
             (state) => this._state.connection.state === state,
         );
@@ -308,10 +296,6 @@ export class PluvRoom<
     }
 
     public async disconnect(): Promise<void> {
-        if (!this._endpoints.wsEndpoint) {
-            throw new Error("Must provide an wsEndpoint.");
-        }
-
         if (!this._state.webSocket) return;
 
         const canDisconnect = [ConnectionState.Connecting, ConnectionState.Open].some(
@@ -1074,10 +1058,6 @@ export class PluvRoom<
     }
 
     private async _reconnect(): Promise<void> {
-        if (!this._endpoints.wsEndpoint) {
-            throw new Error("Must provide an wsEndpoint.");
-        }
-
         if (!this._state.webSocket) return;
 
         this._closeWs();

@@ -1,30 +1,26 @@
 import type { CrdtType } from "@pluv/crdt";
 import type { IOLike, JsonObject } from "@pluv/types";
-import type { AuthEndpoint, PluvRoomOptions, RoomConfig, RoomEndpoints, WsEndpoint } from "./PluvRoom";
+import type { RoomConfig } from "./PluvRoom";
 import { PluvRoom } from "./PluvRoom";
 
-export type PluvClientOptions<TIO extends IOLike> = RoomEndpoints<TIO> & {
+export type PluvClientOptions<TIO extends IOLike> = {
     debug?: boolean;
 };
 
 export class PluvClient<TIO extends IOLike = IOLike> {
-    private _authEndpoint: AuthEndpoint | undefined;
     private _debug: boolean;
-    private _wsEndpoint: WsEndpoint | undefined;
 
     private _rooms = new Map<string, PluvRoom<TIO, any, any>>();
 
-    constructor(options: PluvClientOptions<TIO>) {
-        const { authEndpoint, debug = false, wsEndpoint } = options;
+    constructor(options: PluvClientOptions<TIO> = {}) {
+        const { debug = false } = options;
 
-        this._authEndpoint = authEndpoint as AuthEndpoint;
         this._debug = debug;
-        this._wsEndpoint = wsEndpoint;
     }
 
     public createRoom = <TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
         room: string,
-        options: PluvRoomOptions<TIO, TPresence, TStorage>,
+        options: RoomConfig<TIO, TPresence, TStorage>,
     ): PluvRoom<TIO, TPresence, TStorage> => {
         const oldRoom = this.getRoom<TPresence, TStorage>(room);
 
@@ -32,12 +28,12 @@ export class PluvClient<TIO extends IOLike = IOLike> {
 
         const newRoom = new PluvRoom<TIO, TPresence, TStorage>(room, {
             addons: options.addons,
-            authEndpoint: this._authEndpoint,
+            authEndpoint: options.authEndpoint,
             debug: options.debug,
             initialPresence: options.initialPresence,
             initialStorage: options.initialStorage,
             onAuthorizationFail: options.onAuthorizationFail,
-            wsEndpoint: this._wsEndpoint,
+            wsEndpoint: options.wsEndpoint,
         } as RoomConfig<TIO, TPresence, TStorage>);
 
         this._rooms.set(room, newRoom);

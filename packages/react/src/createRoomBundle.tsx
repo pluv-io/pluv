@@ -5,25 +5,52 @@ import type {
     PluvRoom,
     PluvRoomAddon,
     PluvRoomDebug,
+    RoomConfig,
     UserInfo,
     WebSocketConnection,
 } from "@pluv/client";
 import { MockedRoom } from "@pluv/client";
 import type { AbstractCrdtDoc, AbstractCrdtDocFactory, CrdtType, InferCrdtJson } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type { IOEventMessage, IOLike, Id, InferIOInput, InferIOOutput, InputZodLike, JsonObject } from "@pluv/types";
+import type {
+    IOEventMessage,
+    IOLike,
+    Id,
+    InferIOAuthorize,
+    InferIOAuthorizeRequired,
+    InferIOInput,
+    InferIOOutput,
+    InputZodLike,
+    JsonObject,
+} from "@pluv/types";
 import fastDeepEqual from "fast-deep-equal";
 import type { Dispatch, FC, ReactNode } from "react";
 import { createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { identity, shallowArrayEqual, useRerender, useSyncExternalStoreWithSelector } from "./internal";
 
+export interface CreateRoomEndpointParams<TMetadata extends JsonObject> {
+    metadata: TMetadata;
+    room: string;
+}
+export type CreateRoomEndpoint<TMetadata extends Record<string, any>> =
+    | string
+    | ((params: CreateRoomEndpointParams<TMetadata>) => string);
+
+export type CreateRoomEndpoints<TIO extends IOLike, TMetadata extends JsonObject> = {
+    wsEndpoint?: CreateRoomEndpoint<TMetadata>;
+} & (InferIOAuthorizeRequired<InferIOAuthorize<TIO>> extends true
+    ? { authEndpoint: CreateRoomEndpoint<TMetadata> }
+    : { authEndpoint?: undefined });
+
 export type CreateRoomBundleOptions<
     TIO extends IOLike,
+    TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
-> = {
+> = CreateRoomEndpoints<TIO, TMetadata> & {
     addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
     initialStorage?: AbstractCrdtDocFactory<TStorage>;
+    metadata?: InputZodLike<TMetadata>;
     presence?: InputZodLike<TPresence>;
 };
 
@@ -43,12 +70,13 @@ export type MockedRoomProviderProps<
 
 export type PluvRoomProviderProps<
     TIO extends IOLike,
+    TMetadata extends JsonObject,
     TPresence extends JsonObject,
     TStorage extends Record<string, CrdtType<any, any>>,
 > = BaseRoomProviderProps<TPresence, TStorage> & {
     debug?: boolean | PluvRoomDebug<TIO>;
     onAuthorizationFail?: (error: Error) => void;
-};
+} & (keyof TMetadata extends never ? { metadata?: undefined } : { metadata: TMetadata });
 
 export interface SubscriptionHookOptions<T extends unknown> {
     isEqual?: (a: T, b: T) => boolean;
@@ -73,12 +101,13 @@ export type EventProxy<TIO extends IOLike> = {
 
 export interface CreateRoomBundle<
     TIO extends IOLike,
+    TMetadata extends JsonObject,
     TPresence extends JsonObject,
     TStorage extends Record<string, CrdtType<any, any>>,
 > {
     // components
     MockedRoomProvider: FC<MockedRoomProviderProps<TIO, TPresence, TStorage>>;
-    PluvRoomProvider: FC<PluvRoomProviderProps<TIO, TPresence, TStorage>>;
+    PluvRoomProvider: FC<PluvRoomProviderProps<TIO, TMetadata, TPresence, TStorage>>;
 
     // proxies
     event: EventProxy<TIO>;
@@ -124,17 +153,18 @@ export interface CreateRoomBundle<
     useUndo: () => () => void;
 }
 
-export type InferRoomStorage<TRoomBundle extends CreateRoomBundle<any, any, any>> =
-    TRoomBundle extends CreateRoomBundle<any, any, infer IStorage> ? IStorage : never;
+export type InferRoomStorage<TRoomBundle extends CreateRoomBundle<any, any, any, any>> =
+    TRoomBundle extends CreateRoomBundle<any, any, any, infer IStorage> ? IStorage : never;
 
 export const createRoomBundle = <
     TIO extends IOLike,
+    TMetadata extends Record<string, any> = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
 >(
     client: PluvClient<TIO>,
-    options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
-): CreateRoomBundle<TIO, TPresence, TStorage> => {
+    options: CreateRoomBundleOptions<TIO, TMetadata, TPresence, TStorage>,
+): CreateRoomBundle<TIO, TMetadata, TPresence, TStorage> => {
     const _initialStorage = (options.initialStorage ?? noop.doc()) as AbstractCrdtDocFactory<TStorage>;
 
     /**
@@ -172,22 +202,41 @@ export const createRoomBundle = <
 
     MockedRoomProvider.displayName = "MockedRoomProvider";
 
-    const PluvRoomProvider = memo<PluvRoomProviderProps<TIO, TPresence, TStorage>>((props) => {
-        const { children, debug, initialPresence, initialStorage, onAuthorizationFail, room: _room } = props;
+    const PluvRoomProvider = memo<PluvRoomProviderProps<TIO, TMetadata, TPresence, TStorage>>((props) => {
+        const {
+            children,
+            debug,
+            initialPresence,
+            initialStorage,
+            metadata = {},
+            onAuthorizationFail,
+            room: _room,
+        } = props;
 
         const rerender = useRerender();
         const { room: mockedRoom } = useContext(MockedRoomContext);
 
         const [room] = useState<PluvRoom<TIO, TPresence, TStorage>>(() => {
+            const authEndpoint =
+                typeof options.authEndpoint === "string"
+                    ? options.authEndpoint
+                    : options.authEndpoint?.({ room: _room, metadata: metadata as TMetadata });
+            const wsEndpoint =
+                typeof options.wsEndpoint === "string"
+                    ? options.wsEndpoint
+                    : options.wsEndpoint?.({ room: _room, metadata: metadata as TMetadata });
+
             return client.createRoom<TPresence, TStorage>(_room, {
                 addons: options.addons,
+                authEndpoint,
                 debug,
                 initialPresence,
                 initialStorage:
                     typeof initialStorage === "function" ? _initialStorage.getFactory(initialStorage) : _initialStorage,
                 presence: options.presence,
                 onAuthorizationFail,
-            });
+                wsEndpoint,
+            } as RoomConfig<TIO, TPresence, TStorage>);
         });
 
         useEffect(() => {

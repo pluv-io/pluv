@@ -3,14 +3,7 @@ import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "../../server/yjs/cloudflare";
 
-const client = createClient<typeof ioServer>({
-    authEndpoint: (room) => {
-        return `http://localhost:3101/api/pluv/authorize?room=${room}`;
-    },
-    wsEndpoint: (room) => {
-        return `ws://localhost:3101/api/pluv/room/${room}`;
-    },
-});
+const client = createClient<typeof ioServer>();
 
 export const {
     // factories
@@ -43,6 +36,7 @@ export const {
     useTransact,
     useUndo,
 } = createRoomBundle({
+    authEndpoint: ({ room }) => `http://localhost:3101/api/pluv/authorize?room=${room}`,
     initialStorage: yjs.doc(() => ({
         messages: yjs.array([
             yjs.object({
@@ -54,4 +48,5 @@ export const {
     presence: z.object({
         count: z.number(),
     }),
+    wsEndpoint: ({ room }) => `ws://localhost:3101/api/pluv/room/${room}`,
 });
