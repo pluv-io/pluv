@@ -36,7 +36,7 @@ export const {
     useTransact,
     useUndo,
 } = createRoomBundle({
-    authEndpoint: (room) => `http://localhost:3112/api/pluv/authorize?room=${room}`,
+    authEndpoint: ({ room }) => `http://localhost:3112/api/pluv/authorize?room=${room}`,
     initialStorage: loro.doc(() => ({
         messages: loro.list([
             loro.object({
@@ -48,5 +48,5 @@ export const {
     presence: z.object({
         count: z.number(),
     }),
-    wsEndpoint: (room) => `ws://localhost:3112/api/pluv/room/${room}`,
+    wsEndpoint: ({ room }) => `ws://localhost:3112/api/pluv/room/${room}`,
 });
