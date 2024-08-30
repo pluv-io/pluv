@@ -13,54 +13,12 @@ Returns a `PluvClient` instance
 
 Create a frontend `PluvClient` that will create rooms to connect to your server's `PluvIO` instance.
 
-### createClient basic example
-
-If you've created a basic `PluvIO` backend without any auth, you can create a `PluvClient` with your websocket connection endpoint.
-
 ```ts
 // frontend/io.ts
 
 import { createClient } from "@pluv/client";
 
-const client = createClient({
-    // Defaults to (room) => `/api/pluv/room/${room}`
-    // This is the default from `createPluvHandler`.
-    wsEndpoint: (room: string) => `/api/room?room=${room}`,
-});
-```
-
-### createClient with fetch options
-
-If you need to use a POST request or specify additional headers, you can return an object containing options for `fetch`.
-
-```ts
-// frontend/io.ts
-
-import { createClient } from "@pluv/client";
-
-const client = createClient({
-    wsEndpoint: (room: string) => ({
-        url: "/api/room",
-        // specify fetch options here
-        options: {
-            method: "post",
-            body: JSON.stringify({ room }),
-        },
-    }),
-});
-```
-
-### createClient with auth endpoint
-
-If your `PluvIO` implements auth, you will need to specify an `authEndpoint` on your frontend client.
-
-```ts
-import { createClient } from "@pluv/client";
-
-const client = createClient({
-    wsEndpoint: (room: string) => `/api/room?room=${room}`,
-    authEndpoint: (room: string) => `/api/room/auth?room=${room}`,
-});
+const client = createClient();
 ```
 
 ## PluvClient
@@ -80,6 +38,9 @@ import { z } from "zod";
 import { client } from "./io.ts";
 
 const room = client.createRoom("my-example-room", {
+    // If your `PluvIO` implements auth, you will need to specify an
+    // `authEndpoint` on your room.
+    authEndpoint: (room: string) => `/api/room/auth?room=${room}`,
     /**
      * @description Define your presence schema
      */
@@ -98,6 +59,23 @@ const room = client.createRoom("my-example-room", {
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
+    // Defaults to (room) => `/api/pluv/room/${room}`
+    // This is the default from `createPluvHandler`.
+    wsEndpoint: (room: string) => `/api/room?room=${room}`,
+});
+
+const room = client.createRoom("my-example-room", {
+    // If you need to use a POST request or specify additional headers,
+    // you can return an object containing options for `fetch`.
+    authEndpoint: (room: string) => ({
+        url: "/api/room",
+        // specify fetch options here
+        options: {
+            method: "post",
+            body: JSON.stringify({ room }),
+        },
+    }),
+    // ...
 });
 ```
 

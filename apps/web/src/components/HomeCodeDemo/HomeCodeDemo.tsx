@@ -100,9 +100,7 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
           import type { ioServer } from "server/pluv";
           import { z } from "zod";
 
-          const client = createClient<typeof ioServer>({
-            wsEndpoint: (room) => \`ws://pluv.io/api/room/\${room}\`
-          });
+          const client = createClient<typeof ioServer>();
 
           export const {
             // factories
@@ -150,6 +148,7 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
                 second: yjs.object({ x: 0, y: 0 }),
               }),
             })),
+            wsEndpoint: ({ room }) => \`ws://pluv.io/api/room/\${room}\`
           });
         `;
     }, []);
