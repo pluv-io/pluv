@@ -93,7 +93,7 @@ import { client } from "./io.ts";
 
 const room = client.createRoom("my-example-room", {
     // ...
-})
+});
 
 // Enter room by room name
 client.enter("my-example-room").then(() => {
@@ -145,7 +145,7 @@ import { client } from "./io.ts";
 
 const room = client.createRoom("my-example-room", {
     // ...
-})
+});
 
 // Leave room by room name
 client.leave("my-example-room");
@@ -338,6 +338,7 @@ const room = client.createRoom("my-example-room", {
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
+    // ...
 });
 
 // Get messages as defined from the `createRoom` config
@@ -404,6 +405,7 @@ const room = client.createRoom("my-example-room", {
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
+    // ...
 });
 
 const unsubscribe = room.storage("messages", (messages: string[]) => {

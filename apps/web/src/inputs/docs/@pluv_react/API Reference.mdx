@@ -58,6 +58,8 @@ export const {
     useTransact,
     useUndo,
 } = createRoomBundle({
+    // Endpoint if your server specifies pluv authentication
+    authEndpoint: ({ metadata, room }) => `https://${metadata.myUrl}/room/${room}`,
     /**
      * @optional
      * @description Define the initial storage for the room, as well as the CRDT to use
@@ -70,6 +72,9 @@ export const {
             }),
         ]),
     })),
+    metadata: z.object({
+        myUrl: z.string(),
+    }),
     /**
      * @optional
      * @description Define your presence schema
@@ -77,6 +82,7 @@ export const {
     presence: z.object({
         count: z.number(),
     }),
+    wsEndpoint: ({ metadata, room }) => `wss://${metadata.myUrl}/room/${room}`,
 });
 ```
 
@@ -168,6 +174,12 @@ const MyComponent: FC = () => {
              */
             initialStorage={() => ({
                 messages: yjs.array(),
+            })}
+            /**
+             * @description This is only required if metadata is specified in your `createRoomBundle`
+             */
+            metadata={() => ({
+                myUrl: "www.pluv.io/api"
             })}
             /**
              * @optional
