@@ -62,7 +62,8 @@ export const {
     authEndpoint: ({ metadata, room }) => `https://${metadata.myUrl}/room/${room}`,
     /**
      * @optional
-     * @description Define the initial storage for the room, as well as the CRDT to use
+     * @description Define the initial storage for the room, as well as
+     * the CRDT to use
      */
     initialStorage: yjs.doc(() => ({
         messages: yjs.array([
@@ -72,6 +73,11 @@ export const {
             }),
         ]),
     })),
+    /**
+     * @optional
+     * @description Define metadata used to specify your endpoints. This
+     * is particularly useful for Cloudflare Pages specifically
+     */
     metadata: z.object({
         myUrl: z.string(),
     }),
@@ -176,7 +182,8 @@ const MyComponent: FC = () => {
                 messages: yjs.array(),
             })}
             /**
-             * @description This is only required if metadata is specified in your `createRoomBundle`
+             * @description This is only required if metadata is specified in
+             * your `createRoomBundle`
              */
             metadata={() => ({
                 myUrl: "www.pluv.io/api"

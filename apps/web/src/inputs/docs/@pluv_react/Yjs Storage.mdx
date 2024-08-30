@@ -29,9 +29,7 @@ import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 import type { AppPluvIO } from "backend/io";
 
-const client = createClient<AppPluvIO>({
-    wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
-});
+const client = createClient<AppPluvIO>();
 
 const { createRoomBundle } = createBundle(client);
 
@@ -41,6 +39,7 @@ export const pluvRoom = createRoomBundle({
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
+    wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
 });
 ```
 

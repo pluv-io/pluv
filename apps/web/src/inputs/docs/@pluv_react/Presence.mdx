@@ -16,9 +16,7 @@ import { createBundle, createClient } from "@pluv/react";
 import type { AppPluvIO } from "backend/io";
 import { z } from "zod";
 
-const client = createClient<AppPluvIO>({
-    wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
-});
+const client = createClient<AppPluvIO>();
 
 const pluv = createBundle(client);
 
@@ -27,6 +25,7 @@ export const pluvRoom = pluv.createRoomBundle({
     presence: z.object({
         selectionId: z.nullable(z.string()),
     }),
+    wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
 });
 ```
 
