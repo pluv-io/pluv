@@ -217,14 +217,16 @@ export const createRoomBundle = <
         const { room: mockedRoom } = useContext(MockedRoomContext);
 
         const [room] = useState<PluvRoom<TIO, TPresence, TStorage>>(() => {
+            const parsed = options.metadata ? options.metadata.parse(metadata) : metadata;
+
             const authEndpoint =
                 typeof options.authEndpoint === "string"
                     ? options.authEndpoint
-                    : options.authEndpoint?.({ room: _room, metadata: metadata as TMetadata });
+                    : options.authEndpoint?.({ room: _room, metadata: parsed as TMetadata });
             const wsEndpoint =
                 typeof options.wsEndpoint === "string"
                     ? options.wsEndpoint
-                    : options.wsEndpoint?.({ room: _room, metadata: metadata as TMetadata });
+                    : options.wsEndpoint?.({ room: _room, metadata: parsed as TMetadata });
 
             return client.createRoom<TPresence, TStorage>(_room, {
                 addons: options.addons,
