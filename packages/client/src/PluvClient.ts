@@ -3,42 +3,43 @@ import type { IOLike, JsonObject } from "@pluv/types";
 import type { AuthEndpoint, PluvRoomOptions, RoomConfig, RoomEndpoints, WsEndpoint } from "./PluvRoom";
 import { PluvRoom } from "./PluvRoom";
 
-export type PluvClientOptions<TIO extends IOLike> = RoomEndpoints<TIO> & {
+export type PluvClientOptions<TIO extends IOLike, TMetadata extends JsonObject> = RoomEndpoints<TIO, TMetadata> & {
     debug?: boolean;
 };
 
-export class PluvClient<TIO extends IOLike = IOLike> {
-    private _authEndpoint: AuthEndpoint | undefined;
+export class PluvClient<TIO extends IOLike = IOLike, TMetadata extends JsonObject = {}> {
+    private _authEndpoint: AuthEndpoint<TMetadata> | undefined;
     private _debug: boolean;
-    private _wsEndpoint: WsEndpoint | undefined;
+    private _wsEndpoint: WsEndpoint<TMetadata> | undefined;
 
-    private _rooms = new Map<string, PluvRoom<TIO, any, any>>();
+    private _rooms = new Map<string, PluvRoom<TIO, TMetadata, any, any>>();
 
-    constructor(options: PluvClientOptions<TIO>) {
+    constructor(options: PluvClientOptions<TIO, TMetadata>) {
         const { authEndpoint, debug = false, wsEndpoint } = options;
 
-        this._authEndpoint = authEndpoint as AuthEndpoint;
+        this._authEndpoint = authEndpoint as AuthEndpoint<TMetadata>;
         this._debug = debug;
         this._wsEndpoint = wsEndpoint;
     }
 
     public createRoom = <TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
         room: string,
-        options: PluvRoomOptions<TIO, TPresence, TStorage>,
-    ): PluvRoom<TIO, TPresence, TStorage> => {
+        options: PluvRoomOptions<TIO, TMetadata, TPresence, TStorage>,
+    ): PluvRoom<TIO, TMetadata, TPresence, TStorage> => {
         const oldRoom = this.getRoom<TPresence, TStorage>(room);
 
         if (oldRoom) return oldRoom;
 
-        const newRoom = new PluvRoom<TIO, TPresence, TStorage>(room, {
+        const newRoom = new PluvRoom<TIO, TMetadata, TPresence, TStorage>(room, {
             addons: options.addons,
             authEndpoint: this._authEndpoint,
             debug: options.debug,
             initialPresence: options.initialPresence,
             initialStorage: options.initialStorage,
+            metadata: options.metadata,
             onAuthorizationFail: options.onAuthorizationFail,
             wsEndpoint: this._wsEndpoint,
-        } as RoomConfig<TIO, TPresence, TStorage>);
+        } as RoomConfig<TIO, TMetadata, TPresence, TStorage>);
 
         this._rooms.set(room, newRoom);
 
@@ -47,12 +48,12 @@ export class PluvClient<TIO extends IOLike = IOLike> {
         return newRoom;
     };
 
-    public enter = async (room: string | PluvRoom<TIO, any, any>): Promise<PluvRoom<TIO, JsonObject, any>> => {
+    public enter = async (
+        room: string | PluvRoom<TIO, any, any, any>,
+    ): Promise<PluvRoom<TIO, TMetadata, JsonObject, any>> => {
         const toEnter = typeof room === "string" ? this.getRoom(room) : room;
 
-        if (!toEnter) {
-            throw new Error(`Could not find room: ${room}.`);
-        }
+        if (!toEnter) throw new Error(`Could not find room: ${room}.`);
 
         this._rooms.set(toEnter.id, toEnter);
 
@@ -65,17 +66,17 @@ export class PluvClient<TIO extends IOLike = IOLike> {
 
     public getRoom = <TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
         room: string,
-    ): PluvRoom<TIO, TPresence, TStorage> | null => {
-        const found = this._rooms.get(room) as PluvRoom<TIO, TPresence, TStorage> | undefined;
+    ): PluvRoom<TIO, TMetadata, TPresence, TStorage> | null => {
+        const found = this._rooms.get(room) as PluvRoom<TIO, TMetadata, TPresence, TStorage> | undefined;
 
         return found ?? null;
     };
 
-    public getRooms = (): readonly PluvRoom<TIO, JsonObject, any>[] => {
+    public getRooms = (): readonly PluvRoom<TIO, TMetadata, JsonObject, any>[] => {
         return Array.from(this._rooms.values());
     };
 
-    public leave = async (room: string | PluvRoom<TIO, any, any>): Promise<void> => {
+    public leave = async (room: string | PluvRoom<TIO, any, any, any>): Promise<void> => {
         const toLeave = typeof room === "string" ? this.getRoom(room) : room;
 
         if (!toLeave) return;

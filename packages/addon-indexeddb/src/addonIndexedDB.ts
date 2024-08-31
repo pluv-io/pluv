@@ -5,19 +5,21 @@ import { IndexedDBStorage } from "./IndexedDBStorage";
 
 export interface AddonIndexedDBConfig<
     TIO extends IOLike,
+    TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
 > {
-    enabled?: boolean | ((room: PluvRoom<TIO, TPresence, TStorage>) => boolean);
+    enabled?: boolean | ((room: PluvRoom<TIO, TMetadata, TPresence, TStorage>) => boolean);
 }
 
 export const addonIndexedDB = <
     TIO extends IOLike,
+    TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
 >(
-    config?: AddonIndexedDBConfig<TIO, TPresence, TStorage>,
-): PluvRoomAddon<TIO, TPresence, TStorage> => {
+    config?: AddonIndexedDBConfig<TIO, TMetadata, TPresence, TStorage>,
+): PluvRoomAddon<TIO, TMetadata, TPresence, TStorage> => {
     const { enabled = true } = config ?? {};
 
     return ({ room }) => {

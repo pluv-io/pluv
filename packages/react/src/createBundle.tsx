@@ -10,20 +10,22 @@ export interface PluvProviderProps {
     children?: ReactNode;
 }
 
-export interface CreateBundle<TIO extends IOLike> {
+export interface CreateBundle<TIO extends IOLike, TMetadata extends JsonObject> {
     // factories
     createRoomBundle: <TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
-        options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
-    ) => CreateRoomBundle<TIO, TPresence, TStorage>;
+        options: CreateRoomBundleOptions<TIO, TMetadata, TPresence, TStorage>,
+    ) => CreateRoomBundle<TIO, TMetadata, TPresence, TStorage>;
 
     // components
     PluvProvider: FC<PluvProviderProps>;
 
     // hooks
-    useClient: () => PluvClient<TIO>;
+    useClient: () => PluvClient<TIO, TMetadata>;
 }
 
-export const createBundle = <TIO extends IOLike>(client: PluvClient<TIO>): CreateBundle<TIO> => {
+export const createBundle = <TIO extends IOLike, TMetadata extends JsonObject>(
+    client: PluvClient<TIO, TMetadata>,
+): CreateBundle<TIO, TMetadata> => {
     /**
      * !HACK
      * @description We'll let the context error out if client is not provided,
@@ -31,7 +33,7 @@ export const createBundle = <TIO extends IOLike>(client: PluvClient<TIO>): Creat
      * @author leedavidcs
      * @date October 27, 2022
      */
-    const PluvContext = createContext<PluvClient<any>>(null as any);
+    const PluvContext = createContext<PluvClient<TIO, TMetadata>>(null as any);
 
     const PluvProvider = memo<PluvProviderProps>((props) => {
         const { children } = props;
@@ -41,14 +43,14 @@ export const createBundle = <TIO extends IOLike>(client: PluvClient<TIO>): Creat
 
     PluvProvider.displayName = "PluvProvider";
 
-    const useClient = (): PluvClient<TIO> => useContext(PluvContext);
+    const useClient = (): PluvClient<TIO, TMetadata> => useContext(PluvContext);
 
     const createRoomBundle = <
         TPresence extends JsonObject = {},
         TStorage extends Record<string, CrdtType<any, any>> = {},
     >(
-        options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
-    ): CreateRoomBundle<TIO, TPresence, TStorage> => _createRoomBundle(client, options);
+        options: CreateRoomBundleOptions<TIO, TMetadata, TPresence, TStorage>,
+    ): CreateRoomBundle<TIO, TMetadata, TPresence, TStorage> => _createRoomBundle(client, options);
 
     return {
         createRoomBundle,
