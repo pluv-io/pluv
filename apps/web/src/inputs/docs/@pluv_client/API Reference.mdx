@@ -25,28 +25,7 @@ import { createClient } from "@pluv/client";
 const client = createClient({
     // Defaults to (room) => `/api/pluv/room/${room}`
     // This is the default from `createPluvHandler`.
-    wsEndpoint: (room: string) => `/api/room?room=${room}`,
-});
-```
-
-### createClient with fetch options
-
-If you need to use a POST request or specify additional headers, you can return an object containing options for `fetch`.
-
-```ts
-// frontend/io.ts
-
-import { createClient } from "@pluv/client";
-
-const client = createClient({
-    wsEndpoint: (room: string) => ({
-        url: "/api/room",
-        // specify fetch options here
-        options: {
-            method: "post",
-            body: JSON.stringify({ room }),
-        },
-    }),
+    wsEndpoint: ({ room }) => `/api/room?room=${room}`,
 });
 ```
 
@@ -58,8 +37,29 @@ If your `PluvIO` implements auth, you will need to specify an `authEndpoint` on 
 import { createClient } from "@pluv/client";
 
 const client = createClient({
-    wsEndpoint: (room: string) => `/api/room?room=${room}`,
-    authEndpoint: (room: string) => `/api/room/auth?room=${room}`,
+    wsEndpoint: ({ room }) => `/api/room?room=${room}`,
+    authEndpoint: ({ room }) => `/api/room/auth?room=${room}`,
+});
+```
+
+### createClient with fetch options
+
+If you need to use a POST request or specify additional headers, you can return an object containing options for `fetch` (for `authEndpoint` only).
+
+```ts
+// frontend/io.ts
+
+import { createClient } from "@pluv/client";
+
+const client = createClient({
+    authEndpoint: ({ room }) => ({
+        url: "/api/room/auth",
+        // specify fetch options here
+        options: {
+            method: "post",
+            body: JSON.stringify({ room }),
+        },
+    }),
 });
 ```
 
