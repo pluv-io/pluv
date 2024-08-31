@@ -4,10 +4,10 @@ import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node";
 
 const client = createClient<typeof ioServer>({
-    authEndpoint: (room) => {
+    authEndpoint: ({ room }) => {
         return `http://localhost:3112/api/pluv/authorize?room=${room}`;
     },
-    wsEndpoint: (room) => {
+    wsEndpoint: ({ room }) => {
         return `ws://localhost:3112/api/pluv/room/${room}`;
     },
 });

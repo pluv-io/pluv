@@ -4,15 +4,15 @@ import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node-redis";
 
 const client = createClient<typeof ioServer>({
-    authEndpoint: (roomName) => {
-        const [room] = roomName.split("_");
+    authEndpoint: ({ room }) => {
+        const [roomName] = room.split("_");
 
-        return `http://localhost:3103/api/authorize?roomName=${room}`;
+        return `http://localhost:3103/api/authorize?roomName=${roomName}`;
     },
-    wsEndpoint: (roomName) => {
-        const [room, io] = roomName.split("_");
+    wsEndpoint: ({ room }) => {
+        const [roomName, io] = room.split("_");
 
-        const url = new URL(`ws://localhost:3103/api/room/${room}/websocket`);
+        const url = new URL(`ws://localhost:3103/api/room/${roomName}/websocket`);
 
         if (io === "1") url.searchParams.set("io", "1");
 

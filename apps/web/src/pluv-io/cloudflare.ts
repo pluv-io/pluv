@@ -7,7 +7,7 @@ import { z } from "zod";
 import tasks from "../generated/tasks.json";
 
 const client = createClient<typeof ioServer>({
-    wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/pluv/room/${room}`,
+    wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/pluv/room/${room}`,
 });
 
 export const {
