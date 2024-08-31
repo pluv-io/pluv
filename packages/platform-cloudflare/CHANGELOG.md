@@ -1,5 +1,14 @@
 # @pluv/platform-cloudflare
 
+## 0.26.0
+
+### Patch Changes
+
+- 2a6e078: Updated `@pluv/platform-cloudflare` and `@pluv/platform-node` so that exact properties are used in its initialization.
+  - @pluv/io@0.26.0
+  - @pluv/persistence-cloudflare-transactional-storage@0.26.0
+  - @pluv/types@0.26.0
+
 ## 0.25.4
 
 ### Patch Changes
