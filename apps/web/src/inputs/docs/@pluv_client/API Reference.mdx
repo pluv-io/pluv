@@ -23,7 +23,7 @@ If you've created a basic `PluvIO` backend without any auth, you can create a `P
 import { createClient } from "@pluv/client";
 
 const client = createClient({
-    // Defaults to (room) => `/api/pluv/room/${room}`
+    // Defaults to ({ room }) => `/api/pluv/room/${room}`
     // This is the default from `createPluvHandler`.
     wsEndpoint: ({ room }) => `/api/room?room=${room}`,
 });
