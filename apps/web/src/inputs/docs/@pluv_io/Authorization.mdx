@@ -96,7 +96,7 @@ const client = createClient<AppPluvIO>({
     // Set to `true` if you have authorization on your io instance, and you
     // want to use the default of (room) => `/api/pluv/authorize?room=${room}`
     // This is the default from `createPluvHandler`
-    authEndpoint: (room) => `/api/authorize?room=${room}`,
+    authEndpoint: ({ room }) => `/api/authorize?room=${room}`,
     // ...
 });
 ```
@@ -110,7 +110,7 @@ import { createClient } from "@pluv/react";
 import type { AppPluvIO } from "server/io";
 
 const client = createClient<AppPluvIO>({
-    authEndpoint: (room) => ({
+    authEndpoint: ({ room }) => ({
         url: "/api/authorize",
         // You can use fetch options as well like so
         options: {

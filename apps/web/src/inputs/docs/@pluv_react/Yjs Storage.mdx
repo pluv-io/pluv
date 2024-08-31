@@ -30,7 +30,7 @@ import { createBundle, createClient } from "@pluv/react";
 import type { AppPluvIO } from "backend/io";
 
 const client = createClient<AppPluvIO>({
-    wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
+    wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
 });
 
 const { createRoomBundle } = createBundle(client);

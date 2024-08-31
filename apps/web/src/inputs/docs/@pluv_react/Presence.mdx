@@ -17,7 +17,7 @@ import type { AppPluvIO } from "backend/io";
 import { z } from "zod";
 
 const client = createClient<AppPluvIO>({
-    wsEndpoint: (room) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
+    wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
 });
 
 const pluv = createBundle(client);
