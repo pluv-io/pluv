@@ -5,6 +5,7 @@ import type {
     PluvRoom,
     PluvRoomAddon,
     PluvRoomDebug,
+    PluvRoomOptions,
     UserInfo,
     WebSocketConnection,
 } from "@pluv/client";
@@ -19,10 +20,11 @@ import { identity, shallowArrayEqual, useRerender, useSyncExternalStoreWithSelec
 
 export type CreateRoomBundleOptions<
     TIO extends IOLike,
+    TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
 > = {
-    addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
+    addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
     initialStorage?: AbstractCrdtDocFactory<TStorage>;
     presence?: InputZodLike<TPresence>;
 };
@@ -43,12 +45,13 @@ export type MockedRoomProviderProps<
 
 export type PluvRoomProviderProps<
     TIO extends IOLike,
+    TMetadata extends JsonObject,
     TPresence extends JsonObject,
     TStorage extends Record<string, CrdtType<any, any>>,
 > = BaseRoomProviderProps<TPresence, TStorage> & {
     debug?: boolean | PluvRoomDebug<TIO>;
     onAuthorizationFail?: (error: Error) => void;
-};
+} & (keyof TMetadata extends never ? { metadata?: undefined } : { metadata: TMetadata });
 
 export interface SubscriptionHookOptions<T extends unknown> {
     isEqual?: (a: T, b: T) => boolean;
@@ -73,12 +76,13 @@ export type EventProxy<TIO extends IOLike> = {
 
 export interface CreateRoomBundle<
     TIO extends IOLike,
+    TMetadata extends JsonObject,
     TPresence extends JsonObject,
     TStorage extends Record<string, CrdtType<any, any>>,
 > {
     // components
     MockedRoomProvider: FC<MockedRoomProviderProps<TIO, TPresence, TStorage>>;
-    PluvRoomProvider: FC<PluvRoomProviderProps<TIO, TPresence, TStorage>>;
+    PluvRoomProvider: FC<PluvRoomProviderProps<TIO, TMetadata, TPresence, TStorage>>;
 
     // proxies
     event: EventProxy<TIO>;
@@ -124,17 +128,18 @@ export interface CreateRoomBundle<
     useUndo: () => () => void;
 }
 
-export type InferRoomStorage<TRoomBundle extends CreateRoomBundle<any, any, any>> =
-    TRoomBundle extends CreateRoomBundle<any, any, infer IStorage> ? IStorage : never;
+export type InferRoomStorage<TRoomBundle extends CreateRoomBundle<any, any, any, any>> =
+    TRoomBundle extends CreateRoomBundle<any, any, any, infer IStorage> ? IStorage : never;
 
 export const createRoomBundle = <
     TIO extends IOLike,
+    TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
 >(
-    client: PluvClient<TIO>,
-    options: CreateRoomBundleOptions<TIO, TPresence, TStorage>,
-): CreateRoomBundle<TIO, TPresence, TStorage> => {
+    client: PluvClient<TIO, TMetadata>,
+    options: CreateRoomBundleOptions<TIO, TMetadata, TPresence, TStorage>,
+): CreateRoomBundle<TIO, TMetadata, TPresence, TStorage> => {
     const _initialStorage = (options.initialStorage ?? noop.doc()) as AbstractCrdtDocFactory<TStorage>;
 
     /**
@@ -172,22 +177,23 @@ export const createRoomBundle = <
 
     MockedRoomProvider.displayName = "MockedRoomProvider";
 
-    const PluvRoomProvider = memo<PluvRoomProviderProps<TIO, TPresence, TStorage>>((props) => {
-        const { children, debug, initialPresence, initialStorage, onAuthorizationFail, room: _room } = props;
+    const PluvRoomProvider = memo<PluvRoomProviderProps<TIO, TMetadata, TPresence, TStorage>>((props) => {
+        const { children, debug, initialPresence, initialStorage, metadata, onAuthorizationFail, room: _room } = props;
 
         const rerender = useRerender();
         const { room: mockedRoom } = useContext(MockedRoomContext);
 
-        const [room] = useState<PluvRoom<TIO, TPresence, TStorage>>(() => {
+        const [room] = useState<PluvRoom<TIO, TMetadata, TPresence, TStorage>>(() => {
             return client.createRoom<TPresence, TStorage>(_room, {
                 addons: options.addons,
                 debug,
                 initialPresence,
                 initialStorage:
                     typeof initialStorage === "function" ? _initialStorage.getFactory(initialStorage) : _initialStorage,
+                metadata,
                 presence: options.presence,
                 onAuthorizationFail,
-            });
+            } as PluvRoomOptions<TIO, TMetadata, TPresence, TStorage>);
         });
 
         useEffect(() => {

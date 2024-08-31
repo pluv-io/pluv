@@ -101,7 +101,7 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
           import { z } from "zod";
 
           const client = createClient<typeof ioServer>({
-            wsEndpoint: (room) => \`ws://pluv.io/api/room/\${room}\`
+            wsEndpoint: ({ room }) => \`ws://pluv.io/api/room/\${room}\`
           });
 
           export const {

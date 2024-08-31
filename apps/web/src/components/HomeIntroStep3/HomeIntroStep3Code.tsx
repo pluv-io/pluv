@@ -21,7 +21,7 @@ export const HomeIntroStep3Code: FC<HomeIntroStep3CodeProps> = ({ className }) =
 
                     // ---cut---
                     const client = createClient<IOServer>({
-                      wsEndpoint: (room) => \`wss://pluv.io/api/pluv/room/\${room}\`,
+                      wsEndpoint: ({ room }) => \`wss://pluv.io/api/pluv/room/\${room}\`,
                     });
 
                     const { createRoomBundle } = createBundle(client);

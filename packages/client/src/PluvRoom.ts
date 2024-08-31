@@ -46,10 +46,11 @@ const ORIGIN_STORAGE_UPDATED = "$STORAGE_UPDATED";
 
 export const DEFAULT_PLUV_CLIENT_ADDON = <
     TIO extends IOLike = IOLike,
+    TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
 >(
-    input: PluvRoomAddonInput<TIO, TPresence, TStorage>,
+    input: PluvRoomAddonInput<TIO, TMetadata, TPresence, TStorage>,
 ): PluvRoomAddonResult => ({
     storage: new StorageStore(input.room.id),
 });
@@ -83,15 +84,22 @@ interface TimeoutIds {
     reconnect: number | null;
 }
 
-export type AuthEndpoint = string | ((room: string) => string | FetchOptions) | true;
-export type WsEndpoint = string | ((room: string) => string);
+export interface EndpointParams<TMetadata extends JsonObject> {
+    metadata: TMetadata;
+    room: string;
+}
+export type AuthEndpoint<TMetadata extends JsonObject> =
+    | string
+    | ((params: EndpointParams<TMetadata>) => string | FetchOptions)
+    | true;
+export type WsEndpoint<TMetadata extends JsonObject> = string | ((params: EndpointParams<TMetadata>) => string);
 
 type FetchOptions = { url: string; options?: RequestInit };
 
-export type RoomEndpoints<TIO extends IOLike> = {
-    wsEndpoint?: WsEndpoint;
+export type RoomEndpoints<TIO extends IOLike, TMetadata extends JsonObject> = {
+    wsEndpoint?: WsEndpoint<TMetadata>;
 } & (InferIOAuthorizeRequired<InferIOAuthorize<TIO>> extends true
-    ? { authEndpoint: AuthEndpoint }
+    ? { authEndpoint: AuthEndpoint<TMetadata> }
     : { authEndpoint?: undefined });
 
 interface InternalListeners {
@@ -100,16 +108,18 @@ interface InternalListeners {
 
 export type PluvRoomAddon<
     TIO extends IOLike = IOLike,
+    TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
-> = (input: PluvRoomAddonInput<TIO, TPresence, TStorage>) => Partial<PluvRoomAddonResult>;
+> = (input: PluvRoomAddonInput<TIO, TMetadata, TPresence, TStorage>) => Partial<PluvRoomAddonResult>;
 
 export interface PluvRoomAddonInput<
     TIO extends IOLike = IOLike,
+    TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
 > {
-    room: PluvRoom<TIO, TPresence, TStorage>;
+    room: PluvRoom<TIO, TMetadata, TPresence, TStorage>;
 }
 
 export interface PluvRoomAddonResult {
@@ -123,27 +133,31 @@ export type PluvRoomDebug<TIO extends IOLike> = Id<{
 
 export type PluvRoomOptions<
     TIO extends IOLike,
+    TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
 > = {
-    addons?: readonly PluvRoomAddon<TIO, TPresence, TStorage>[];
+    addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
     debug?: boolean | PluvRoomDebug<TIO>;
     onAuthorizationFail?: (error: Error) => void;
 } & Omit<CrdtManagerOptions<TStorage>, "encodedState"> &
-    UsersManagerConfig<TPresence>;
+    UsersManagerConfig<TPresence> &
+    (keyof TMetadata extends never ? { metadata?: undefined } : { metadata: TMetadata });
 
 export type RoomConfig<
     TIO extends IOLike,
+    TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
-> = RoomEndpoints<TIO> & PluvRoomOptions<TIO, TPresence, TStorage>;
+> = RoomEndpoints<TIO, TMetadata> & PluvRoomOptions<TIO, TMetadata, TPresence, TStorage>;
 
 export class PluvRoom<
     TIO extends IOLike,
+    TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
 > extends AbstractRoom<TIO, TPresence, TStorage> {
-    readonly _endpoints: RoomEndpoints<TIO>;
+    readonly _endpoints: RoomEndpoints<TIO, TMetadata>;
 
     private _crdtManager: CrdtManager<TStorage>;
     private _crdtNotifier = new CrdtNotifier<TStorage>();
@@ -153,6 +167,7 @@ export class PluvRoom<
         heartbeat: null,
     };
     private _listeners: InternalListeners;
+    private _metadata: TMetadata = {} as TMetadata;
     private _otherNotifier = new OtherNotifier<TIO>();
     private _state: WebSocketState<TIO> = {
         authorization: {
@@ -179,13 +194,14 @@ export class PluvRoom<
     private _wsListeners: WebSocketListeners | null = null;
     private _usersManager: UsersManager<TIO, TPresence>;
 
-    constructor(room: string, options: RoomConfig<TIO, TPresence, TStorage>) {
+    constructor(room: string, options: RoomConfig<TIO, TMetadata, TPresence, TStorage>) {
         const {
             addons = [],
             authEndpoint,
             debug = false,
             initialPresence,
             initialStorage,
+            metadata,
             onAuthorizationFail,
             presence,
             wsEndpoint,
@@ -200,11 +216,11 @@ export class PluvRoom<
             ...addon({ room: this }),
         };
 
+        this._debug = debug;
+        this._endpoints = { authEndpoint, wsEndpoint } as RoomEndpoints<TIO, TMetadata>;
         this._storageStore = storage;
 
-        this._debug = debug;
-
-        this._endpoints = { authEndpoint, wsEndpoint } as RoomEndpoints<TIO>;
+        if (!!metadata) this._metadata = metadata;
 
         this._listeners = {
             onAuthorizationFail: (error) => {
@@ -607,9 +623,9 @@ export class PluvRoom<
     );
 
     private _getAddon = (
-        addons: readonly PluvRoomAddon<TIO, TPresence, TStorage>[],
-    ): PluvRoomAddon<TIO, TPresence, TStorage> => {
-        return addons.reduce<PluvRoomAddon<TIO, TPresence, TStorage>>(
+        addons: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[],
+    ): PluvRoomAddon<TIO, TMetadata, TPresence, TStorage> => {
+        return addons.reduce<PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>>(
             (acc, addon) => () => ({
                 ...acc({ room: this }),
                 ...addon({ room: this }),
@@ -635,7 +651,7 @@ export class PluvRoom<
             };
         }
 
-        const result = this._endpoints.authEndpoint(room);
+        const result = this._endpoints.authEndpoint({ metadata: this._metadata, room });
 
         return typeof result === "string" ? { url: result, options: {} } : result;
     }
@@ -667,7 +683,7 @@ export class PluvRoom<
             case "string":
                 return this._endpoints.wsEndpoint;
             default:
-                return this._endpoints.wsEndpoint(room);
+                return this._endpoints.wsEndpoint({ metadata: this._metadata, room });
         }
     }
 
