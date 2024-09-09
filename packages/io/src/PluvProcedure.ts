@@ -1,4 +1,4 @@
-import type { EventRecord, IOAuthorize, InputZodLike, JsonObject } from "@pluv/types";
+import type { EventRecord, IOAuthorize, InputZodLike, JsonObject, ProcedureLike } from "@pluv/types";
 import type { AbstractPlatform, InferRoomContextType } from "./AbstractPlatform";
 import type { EventResolver, MergeEventRecords } from "./types";
 
@@ -52,14 +52,14 @@ export class PluvProcedure<
     > | null = null;
     private _sync: EventResolver<TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null = null;
 
-    public get config() {
+    public get config(): ProcedureLike<TInput, TOutput>["config"] {
         return {
             broadcast: this._broadcast?.bind(this) ?? null,
             input: this._input ?? null,
-            resolver: this._resolver,
+            resolver: this._resolver(),
             self: this._self?.bind(this) ?? null,
             sync: this._sync?.bind(this) ?? null,
-        };
+        } as ProcedureLike<TInput, TOutput>["config"];
     }
 
     constructor(config: PluvProcedureConfig<TPlatform, TAuthorize, TContext, TInput, TOutput> = {}) {
