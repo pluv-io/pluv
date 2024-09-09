@@ -595,7 +595,17 @@ export class IORoom<
                 user: session.user,
             });
 
-            if (!procedure) return;
+            const sessionId = session.id;
+            const user = session.user;
+
+            if (!procedure) {
+                await this._broadcast({
+                    message: message as any,
+                    senderId: sessionId,
+                });
+
+                return;
+            }
 
             let inputs: InferIOInput<this>[keyof TEvents];
 
@@ -623,9 +633,6 @@ export class IORoom<
                 procedure.config.self?.(inputs, extendedContext),
                 procedure.config.sync?.(inputs, baseContext),
             ]).then(async ([broadcast, self, sync]) => {
-                const sessionId = session.id;
-                const user = session.user;
-
                 const handleBroadcast = async () => {
                     if (!broadcast) return;
 
