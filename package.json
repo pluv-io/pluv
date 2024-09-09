@@ -24,13 +24,13 @@
         "version-packages": "changeset version"
     },
     "devDependencies": {
-        "@changesets/cli": "^2.27.7",
+        "@changesets/cli": "^2.27.8",
         "@pluv-internal/tailwind-config": "workspace:^",
         "commitizen": "^4.3.0",
         "cz-conventional-changelog": "^3.3.0",
         "eslint-config-pluv": "workspace:^",
         "prettier": "^3.3.3",
         "tailwindcss": "^3.4.10",
-        "turbo": "^2.0.14"
+        "turbo": "^2.1.1"
     }
 }
