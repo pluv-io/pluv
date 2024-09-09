@@ -1,11 +1,31 @@
 import type { CrdtType } from "@pluv/crdt";
 import type { IOLike, JsonObject } from "@pluv/types";
+import { PluvProcedure } from "./PluvProcedure";
 import type { AuthEndpoint, PluvRoomOptions, RoomConfig, RoomEndpoints, WsEndpoint } from "./PluvRoom";
 import { PluvRoom } from "./PluvRoom";
+import type { PluvRouterEventConfig } from "./PluvRouter";
+import { PluvRouter } from "./PluvRouter";
 
 export type PluvClientOptions<TIO extends IOLike, TMetadata extends JsonObject> = RoomEndpoints<TIO, TMetadata> & {
     debug?: boolean;
 };
+
+export type GetHelpersParams<
+    TIO extends IOLike,
+    TPresence extends JsonObject = {},
+    TStorage extends Record<string, CrdtType<any, any>> = {},
+> = Pick<PluvRoomOptions<TIO, any, TPresence, TStorage>, "initialStorage" | "presence">;
+
+export interface PluvClientHelpers<
+    TIO extends IOLike,
+    TPresence extends JsonObject = {},
+    TStorage extends Record<string, CrdtType<any, any>> = {},
+> {
+    procedure: PluvProcedure<TIO, {}, {}, TPresence, TStorage>;
+    router: <TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
+        events: TEvents,
+    ) => PluvRouter<TIO, TPresence, TStorage, TEvents>;
+}
 
 export class PluvClient<TIO extends IOLike = IOLike, TMetadata extends JsonObject = {}> {
     private _authEndpoint: AuthEndpoint<TMetadata> | undefined;
@@ -63,6 +83,21 @@ export class PluvClient<TIO extends IOLike = IOLike, TMetadata extends JsonObjec
 
         return toEnter;
     };
+
+    public getHelpers<TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
+        params: GetHelpersParams<TIO, TPresence, TStorage>,
+    ): PluvClientHelpers<TIO, TPresence, TStorage> {
+        return {
+            get procedure(): PluvProcedure<TIO, {}, {}, TPresence, TStorage> {
+                return new PluvProcedure<TIO, {}, {}, TPresence, TStorage>();
+            },
+            router: <TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
+                events: TEvents,
+            ): PluvRouter<TIO, TPresence, TStorage, TEvents> => {
+                return new PluvRouter<TIO, TPresence, TStorage, TEvents>(events);
+            },
+        };
+    }
 
     public getRoom = <TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
         room: string,
