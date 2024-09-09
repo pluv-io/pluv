@@ -21,5 +21,5 @@ export const withForwardRef = <T extends unknown, P extends { innerRef?: Forward
 
     wrappedComponent.displayName = `WithForwardedRef(${wrappedComponent.displayName || wrappedComponent.name})`;
 
-    return forwardRef<T, P>(wrappedComponent);
+    return forwardRef<T, P>(wrappedComponent as any);
 };
