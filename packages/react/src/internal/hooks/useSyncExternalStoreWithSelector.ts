@@ -26,7 +26,7 @@ export const useSyncExternalStoreWithSelector = <TSnapshot, TSelection>(
                * @description Memoize only the last snapshot so that we can only rerender on changes
                * @date June 22, 2024
                */
-              cacheRef.current = isUnchanged ? cached ?? snapshot : snapshot;
+              cacheRef.current = isUnchanged ? (cached ?? snapshot) : snapshot;
 
               return cacheRef.current;
           }
@@ -45,7 +45,7 @@ export const useSyncExternalStoreWithSelector = <TSnapshot, TSelection>(
          * @description Memoize only the last snapshot so that we can only rerender on changes
          * @date June 22, 2024
          */
-        cacheRef.current = isUnchanged ? cached ?? snapshot : snapshot;
+        cacheRef.current = isUnchanged ? (cached ?? snapshot) : snapshot;
 
         return cacheRef.current;
     };
