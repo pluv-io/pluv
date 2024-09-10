@@ -39,6 +39,10 @@ export class PluvRouter<
     ): MergedRouter<TRouters> {
         const events = Object.assign(Object.create(null), ...routers.map((router) => router._defs.events));
 
+        if (Object.keys(events).some((key) => key.startsWith("$"))) {
+            throw new Error('Procedures may not start with "$"');
+        }
+
         return new PluvRouter<any, any, any, any>(events) as MergedRouter<TRouters>;
     }
 }
