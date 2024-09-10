@@ -21,6 +21,8 @@ import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import { EventNotifier } from "./EventNotifier";
 import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
 import { OtherNotifier } from "./OtherNotifier";
+import type { PluvRouterEventConfig } from "./PluvRouter";
+import { PluvRouter } from "./PluvRouter";
 import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import { StorageStore } from "./StorageStore";
@@ -131,25 +133,23 @@ export type PluvRoomDebug<TIO extends IOLike> = Id<{
     input: readonly (keyof InferIOInput<TIO>)[];
 }>;
 
-export type PluvRoomOptions<
-    TIO extends IOLike,
-    TMetadata extends JsonObject = {},
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
-> = {
-    addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
-    debug?: boolean | PluvRoomDebug<TIO>;
-    onAuthorizationFail?: (error: Error) => void;
-} & Omit<CrdtManagerOptions<TStorage>, "encodedState"> &
-    UsersManagerConfig<TPresence> &
-    (keyof TMetadata extends never ? { metadata?: undefined } : { metadata: TMetadata });
-
 export type RoomConfig<
     TIO extends IOLike,
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
-> = RoomEndpoints<TIO, TMetadata> & PluvRoomOptions<TIO, TMetadata, TPresence, TStorage>;
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
+> = Id<
+    {
+        addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
+        debug?: boolean | PluvRoomDebug<TIO>;
+        onAuthorizationFail?: (error: Error) => void;
+        router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
+    } & RoomEndpoints<TIO, TMetadata> &
+        Pick<CrdtManagerOptions<TStorage>, "initialStorage"> &
+        UsersManagerConfig<TPresence> &
+        (keyof TMetadata extends never ? { metadata?: undefined } : { metadata: TMetadata })
+>;
 
 export class PluvRoom<
     TIO extends IOLike,

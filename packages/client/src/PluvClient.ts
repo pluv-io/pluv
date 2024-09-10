@@ -1,50 +1,75 @@
-import type { CrdtType } from "@pluv/crdt";
-import type { IOLike, JsonObject } from "@pluv/types";
+import type { AbstractCrdtDocFactory, CrdtType } from "@pluv/crdt";
+import type { InputZodLike, IOLike, JsonObject } from "@pluv/types";
 import { PluvProcedure } from "./PluvProcedure";
-import type { AuthEndpoint, PluvRoomOptions, RoomConfig, RoomEndpoints, WsEndpoint } from "./PluvRoom";
+import type { AuthEndpoint, PluvRoomAddon, PluvRoomDebug, RoomConfig, RoomEndpoints, WsEndpoint } from "./PluvRoom";
 import { PluvRoom } from "./PluvRoom";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
+import type { identity } from "./utils";
 
-export type PluvClientOptions<TIO extends IOLike, TMetadata extends JsonObject> = RoomEndpoints<TIO, TMetadata> & {
-    debug?: boolean;
+export type InferCallback<TIO extends IOLike> = (i: typeof identity) => {
+    io: (io: TIO) => TIO;
 };
 
-export type GetHelpersParams<
+export type PluvClientOptions<
     TIO extends IOLike,
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
-> = Pick<PluvRoomOptions<TIO, any, TPresence, TStorage>, "initialStorage" | "presence">;
+    TPresence extends JsonObject,
+    TStorage extends Record<string, CrdtType<any, any>>,
+    TMetadata extends JsonObject,
+> = RoomEndpoints<TIO, TMetadata> & {
+    debug?: boolean;
+    infer: InferCallback<TIO>;
+    initialStorage?: AbstractCrdtDocFactory<TStorage>;
+    metadata?: InputZodLike<TMetadata>;
+    presence?: InputZodLike<TPresence>;
+};
 
-export interface PluvClientHelpers<
+export type CreateRoomOptions<
     TIO extends IOLike,
+    TPresence extends JsonObject,
+    TStorage extends Record<string, CrdtType<any, any>>,
+    TMetadata extends JsonObject,
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
+> = {
+    addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
+    debug?: boolean | PluvRoomDebug<TIO>;
+    initialPresence?: TPresence;
+    initialStorage?: AbstractCrdtDocFactory<TStorage>;
+    onAuthorizationFail?: (error: Error) => void;
+    router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
+} & (keyof TMetadata extends never ? { metadata?: undefined } : { metadata: TMetadata });
+
+export class PluvClient<
+    TIO extends IOLike = IOLike,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
+    TMetadata extends JsonObject = {},
 > {
-    procedure: PluvProcedure<TIO, {}, {}, TPresence, TStorage>;
-    router: <TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
-        events: TEvents,
-    ) => PluvRouter<TIO, TPresence, TStorage, TEvents>;
-}
-
-export class PluvClient<TIO extends IOLike = IOLike, TMetadata extends JsonObject = {}> {
     private _authEndpoint: AuthEndpoint<TMetadata> | undefined;
     private _debug: boolean;
+    private _initialStorage?: AbstractCrdtDocFactory<TStorage>;
+    private _presence?: InputZodLike<TPresence>;
     private _wsEndpoint: WsEndpoint<TMetadata> | undefined;
 
     private _rooms = new Map<string, PluvRoom<TIO, TMetadata, any, any>>();
 
-    constructor(options: PluvClientOptions<TIO, TMetadata>) {
-        const { authEndpoint, debug = false, wsEndpoint } = options;
+    public get procedure(): PluvProcedure<TIO, {}, {}, TPresence, TStorage> {
+        return new PluvProcedure<TIO, {}, {}, TPresence, TStorage>();
+    }
+
+    constructor(options: PluvClientOptions<TIO, TPresence, TStorage, TMetadata>) {
+        const { authEndpoint, debug = false, initialStorage, presence, wsEndpoint } = options;
 
         this._authEndpoint = authEndpoint as AuthEndpoint<TMetadata>;
         this._debug = debug;
+        this._initialStorage = initialStorage;
+        this._presence = presence;
         this._wsEndpoint = wsEndpoint;
     }
 
-    public createRoom = <TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
+    public createRoom = (
         room: string,
-        options: PluvRoomOptions<TIO, TMetadata, TPresence, TStorage>,
+        options: CreateRoomOptions<TIO, TPresence, TStorage, TMetadata>,
     ): PluvRoom<TIO, TMetadata, TPresence, TStorage> => {
         const oldRoom = this.getRoom<TPresence, TStorage>(room);
 
@@ -55,9 +80,10 @@ export class PluvClient<TIO extends IOLike = IOLike, TMetadata extends JsonObjec
             authEndpoint: this._authEndpoint,
             debug: options.debug,
             initialPresence: options.initialPresence,
-            initialStorage: options.initialStorage,
+            initialStorage: this._initialStorage,
             metadata: options.metadata,
             onAuthorizationFail: options.onAuthorizationFail,
+            presence: this._presence,
             wsEndpoint: this._wsEndpoint,
         } as RoomConfig<TIO, TMetadata, TPresence, TStorage>);
 
@@ -84,21 +110,6 @@ export class PluvClient<TIO extends IOLike = IOLike, TMetadata extends JsonObjec
         return toEnter;
     };
 
-    public getHelpers<TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
-        params: GetHelpersParams<TIO, TPresence, TStorage>,
-    ): PluvClientHelpers<TIO, TPresence, TStorage> {
-        return {
-            get procedure(): PluvProcedure<TIO, {}, {}, TPresence, TStorage> {
-                return new PluvProcedure<TIO, {}, {}, TPresence, TStorage>();
-            },
-            router: <TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
-                events: TEvents,
-            ): PluvRouter<TIO, TPresence, TStorage, TEvents> => {
-                return new PluvRouter<TIO, TPresence, TStorage, TEvents>(events);
-            },
-        };
-    }
-
     public getRoom = <TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
         room: string,
     ): PluvRoom<TIO, TMetadata, TPresence, TStorage> | null => {
@@ -122,6 +133,12 @@ export class PluvClient<TIO extends IOLike = IOLike, TMetadata extends JsonObjec
 
         this._logDebug(`Left and deleted room: ${room}`);
     };
+
+    public router<TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
+        events: TEvents,
+    ): PluvRouter<TIO, TPresence, TStorage, TEvents> {
+        return new PluvRouter<TIO, TPresence, TStorage, TEvents>(events);
+    }
 
     private _logDebug(...data: any[]): void {
         // eslint-disable-next-line turbo/no-undeclared-env-vars
