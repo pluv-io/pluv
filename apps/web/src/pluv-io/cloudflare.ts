@@ -6,7 +6,14 @@ import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
 import tasks from "../generated/tasks.json";
 
-const client = createClient<typeof ioServer>({
+const client = createClient({
+    infer: (i) => ({ io: i<typeof ioServer> }),
+    initialStorage: yjs.doc(() => ({
+        demoTasks: yjs.array(tasks.map((task) => yjs.object(task))),
+    })),
+    presence: z.object({
+        selectionId: z.string().nullable(),
+    }),
     wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/pluv/room/${room}`,
 });
 
@@ -37,11 +44,4 @@ export const {
     useRoom,
     useStorage,
     useTransact,
-} = createRoomBundle({
-    presence: z.object({
-        selectionId: z.string().nullable(),
-    }),
-    initialStorage: yjs.doc(() => ({
-        demoTasks: yjs.array(tasks.map((task) => yjs.object(task))),
-    })),
-});
+} = createRoomBundle({});

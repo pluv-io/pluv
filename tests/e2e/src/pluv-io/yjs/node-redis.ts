@@ -9,6 +9,18 @@ const client = createClient<typeof ioServer>({
 
         return `http://localhost:3103/api/authorize?roomName=${roomName}`;
     },
+    infer: (i) => ({ io: i<typeof ioServer> }),
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array([
+            yjs.object({
+                message: "hello",
+                name: "leedavidcs",
+            }),
+        ]),
+    })),
+    presence: z.object({
+        count: z.number(),
+    }),
     wsEndpoint: ({ room }) => {
         const [roomName, io] = room.split("_");
 
@@ -50,16 +62,4 @@ export const {
     useStorage,
     useTransact,
     useUndo,
-} = createRoomBundle({
-    initialStorage: yjs.doc(() => ({
-        messages: yjs.array([
-            yjs.object({
-                message: "hello",
-                name: "leedavidcs",
-            }),
-        ]),
-    })),
-    presence: z.object({
-        count: z.number(),
-    }),
-});
+} = createRoomBundle({});
