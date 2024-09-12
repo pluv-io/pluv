@@ -1,5 +1,5 @@
 import type { CrdtType } from "@pluv/crdt";
-import type { IOLike, IORouterLike, JsonObject } from "@pluv/types";
+import type { IOLike, IORouterLike, JsonObject, ProcedureLike } from "@pluv/types";
 import type { PluvProcedure } from "./PluvProcedure";
 
 export type PluvRouterEventConfig<
@@ -20,6 +20,23 @@ export type MergedRouter<
 ]
     ? MergedRouter<ITail, TIO, TPresence, TStorage, TRoot & IHead["_defs"]["events"]>
     : PluvRouter<TIO, TPresence, TStorage, TRoot>;
+
+export type MergeEvents<
+    TClientEvents extends PluvRouterEventConfig<any, any, any>,
+    TServerIO extends IOLike<any, any>,
+> =
+    TServerIO extends IOLike<infer IAuthorize, infer IServerEvents>
+        ? IOLike<
+              IAuthorize,
+              {
+                  [P in keyof TClientEvents]: TClientEvents[P] extends ProcedureLike<any, infer IClientOutput>
+                      ? keyof IClientOutput extends keyof IServerEvents
+                          ? IServerEvents[keyof IClientOutput]
+                          : TClientEvents[P]
+                      : never;
+              } & IServerEvents
+          >
+        : never;
 
 export class PluvRouter<
     TIO extends IOLike = IOLike,

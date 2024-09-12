@@ -5,23 +5,16 @@ import type {
     InferIOAuthorize,
     InferIOAuthorizeUser,
     IOLike,
-    IORouterLike,
     JsonObject,
     MaybePromise,
     ProcedureLike,
 } from "@pluv/types";
+import type { ConnectionState } from "./enums";
+import type { PluvRouterEventConfig } from "./PluvRouter";
 
 export interface AuthorizationState<TIO extends IOLike> {
     token: string | null;
     user: InferIOAuthorizeUser<InferIOAuthorize<TIO>> | null;
-}
-
-export enum ConnectionState {
-    Closed = "Closed",
-    Connecting = "Connecting",
-    Open = "Open",
-    Unavailable = "Unavailable",
-    Untouched = "Untouched",
 }
 
 export type EventResolver<
@@ -83,16 +76,3 @@ export interface WebSocketState<TIO extends IOLike> {
     connection: WebSocketConnection;
     webSocket: WebSocket | null;
 }
-
-export type MergeClientServerEvents<TClientRouter extends IORouterLike<any>, TServerRouter extends IORouterLike<any>> =
-    TClientRouter extends IORouterLike<infer IClientEvents>
-        ? TServerRouter extends IORouterLike<infer IServerEvents>
-            ? {
-                  [P in keyof IClientEvents]: IClientEvents[P] extends ProcedureLike<any, infer IClientOutput>
-                      ? keyof IClientOutput extends keyof IServerEvents
-                          ? IServerEvents[keyof IClientOutput]
-                          : IClientEvents[P]
-                      : never;
-              } & IServerEvents
-            : never
-        : never;

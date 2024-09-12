@@ -51,7 +51,7 @@ export class PluvClient<
     private _presence?: InputZodLike<TPresence>;
     private _wsEndpoint: WsEndpoint<TMetadata> | undefined;
 
-    private _rooms = new Map<string, PluvRoom<TIO, TMetadata, any, any>>();
+    private _rooms = new Map<string, PluvRoom<TIO, TMetadata, TPresence, TStorage, any>>();
 
     public get procedure(): PluvProcedure<TIO, {}, {}, TPresence, TStorage> {
         return new PluvProcedure<TIO, {}, {}, TPresence, TStorage>();
@@ -67,15 +67,15 @@ export class PluvClient<
         this._wsEndpoint = wsEndpoint;
     }
 
-    public createRoom = (
+    public createRoom = <TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
         room: string,
-        options: CreateRoomOptions<TIO, TPresence, TStorage, TMetadata>,
+        options: CreateRoomOptions<TIO, TPresence, TStorage, TMetadata, TEvents>,
     ): PluvRoom<TIO, TMetadata, TPresence, TStorage> => {
-        const oldRoom = this.getRoom<TPresence, TStorage>(room);
+        const oldRoom = this.getRoom(room);
 
         if (oldRoom) return oldRoom;
 
-        const newRoom = new PluvRoom<TIO, TMetadata, TPresence, TStorage>(room, {
+        const newRoom = new PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents>(room, {
             addons: options.addons,
             authEndpoint: this._authEndpoint,
             debug: options.debug,
@@ -85,7 +85,7 @@ export class PluvClient<
             onAuthorizationFail: options.onAuthorizationFail,
             presence: this._presence,
             wsEndpoint: this._wsEndpoint,
-        } as RoomConfig<TIO, TMetadata, TPresence, TStorage>);
+        } as RoomConfig<TIO, TMetadata, TPresence, TStorage, TEvents>);
 
         this._rooms.set(room, newRoom);
 
@@ -96,7 +96,7 @@ export class PluvClient<
 
     public enter = async (
         room: string | PluvRoom<TIO, any, any, any>,
-    ): Promise<PluvRoom<TIO, TMetadata, JsonObject, any>> => {
+    ): Promise<PluvRoom<TIO, TMetadata, TPresence, TStorage, any>> => {
         const toEnter = typeof room === "string" ? this.getRoom(room) : room;
 
         if (!toEnter) throw new Error(`Could not find room: ${room}.`);
@@ -110,15 +110,13 @@ export class PluvClient<
         return toEnter;
     };
 
-    public getRoom = <TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
-        room: string,
-    ): PluvRoom<TIO, TMetadata, TPresence, TStorage> | null => {
-        const found = this._rooms.get(room) as PluvRoom<TIO, TMetadata, TPresence, TStorage> | undefined;
+    public getRoom = (room: string): PluvRoom<TIO, TMetadata, TPresence, TStorage, any> | null => {
+        const found = this._rooms.get(room) as PluvRoom<TIO, TMetadata, TPresence, TStorage, any> | undefined;
 
         return found ?? null;
     };
 
-    public getRooms = (): readonly PluvRoom<TIO, TMetadata, JsonObject, any>[] => {
+    public getRooms = (): readonly PluvRoom<TIO, TMetadata, TPresence, TStorage, any>[] => {
         return Array.from(this._rooms.values());
     };
 

@@ -8,18 +8,23 @@ import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import { EventNotifier } from "./EventNotifier";
 import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
 import { OtherNotifier } from "./OtherNotifier";
+import { PluvProcedure } from "./PluvProcedure";
+import type { MergeEvents, PluvRouterEventConfig } from "./PluvRouter";
+import { PluvRouter } from "./PluvRouter";
 import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
+import { ConnectionState } from "./enums";
 import type {
+    EventResolver,
+    EventResolverContext,
     InternalSubscriptions,
     UpdateMyPresenceAction,
     UserInfo,
     WebSocketConnection,
     WebSocketState,
 } from "./types";
-import { ConnectionState } from "./types";
 
 export type MockedRoomEvents<TIO extends IOLike> = Partial<{
     [P in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[P]>) => Partial<InferIOOutput<TIO>>;
@@ -29,19 +34,25 @@ export type MockedRoomConfig<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
-> = { events?: MockedRoomEvents<TIO> } & Omit<CrdtManagerOptions<TStorage>, "encodedState"> &
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
+> = {
+    events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
+    router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
+} & Pick<CrdtManagerOptions<TStorage>, "initialStorage"> &
     UsersManagerConfig<TPresence>;
 
 export class MockedRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     private _crdtManager: CrdtManager<TStorage>;
     private _crdtNotifier = new CrdtNotifier<TStorage>();
-    private _eventNotifier = new EventNotifier<TIO>();
-    private _events?: MockedRoomEvents<TIO>;
+    private _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
+    private _events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
     private _otherNotifier = new OtherNotifier<TIO>();
+    private _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
     private _state: WebSocketState<TIO> = {
         authorization: {
             token: null,
@@ -60,13 +71,14 @@ export class MockedRoom<
     };
     private _usersManager: UsersManager<TIO, TPresence>;
 
-    constructor(room: string, options: MockedRoomConfig<TIO, TPresence, TStorage>) {
-        const { events, initialPresence, initialStorage, presence } = options;
+    constructor(room: string, options: MockedRoomConfig<TIO, TPresence, TStorage, TEvents>) {
+        const { events, initialPresence, initialStorage, presence, router } = options;
 
         super(room);
 
         this._events = events;
 
+        this._router = router ?? (new PluvRouter({}) as PluvRouter<TIO, TPresence, TStorage, TEvents>);
         this._usersManager = new UsersManager<TIO, TPresence>({
             initialPresence,
             presence,
@@ -83,24 +95,64 @@ export class MockedRoom<
         return true;
     }
 
-    public broadcast<TEvent extends keyof InferIOInput<TIO>>(event: TEvent, data: Id<InferIOInput<TIO>[TEvent]>): void {
-        if (!this._events) return;
+    public broadcast = new Proxy(
+        async <TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
+            event: TEvent,
+            data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
+        ): Promise<void> => {
+            if (!this._state.webSocket) return;
+            if (this._state.connection.state !== ConnectionState.Open) return;
 
-        const resolver = this._events[event];
+            const type = event.toString();
 
-        if (!resolver) return;
+            const procedure = this._router._defs.events[type] as PluvProcedure<
+                TIO,
+                any,
+                any,
+                TPresence,
+                TStorage
+            > | null;
 
-        const result = resolver(data);
+            if (!procedure?.config.broadcast) {
+                this._simulateEvent(type as TEvent, data);
 
-        Object.keys(result).forEach((type) => {
-            const _type = type.toString() as keyof Partial<InferIOOutput<TIO>>;
-            const data = result[_type] as any;
+                return;
+            }
 
-            if (!data) return;
+            const myself = this._usersManager.myself;
 
-            this._eventNotifier.subject(_type).next(data);
-        });
-    }
+            if (!myself) return;
+
+            const parsed = procedure.config.input ? procedure.config.input.parse(data) : data;
+            const context: EventResolverContext<TIO, TPresence, TStorage> = {
+                doc: this._crdtManager.doc,
+                others: this._usersManager.getOthers(),
+                room: this.id,
+                user: myself,
+            };
+
+            const output = await (procedure.config.broadcast as EventResolver<TIO, any, any, TPresence, TStorage>)(
+                parsed,
+                context,
+            );
+
+            Object.entries(output).forEach(([_type, _data]) => {
+                this._simulateEvent(_type as TEvent, _data as any);
+            });
+        },
+        {
+            get(fn, prop) {
+                return async (data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[any]>): Promise<void> => {
+                    return await fn(prop, data);
+                };
+            },
+        },
+    ) as (<TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
+        event: TEvent,
+        data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
+    ) => Promise<void>) & {
+        [event in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[event]>) => Promise<void>;
+    };
 
     public canRedo = (): boolean => {
         return !!this._crdtManager.doc.canRedo();
@@ -110,11 +162,24 @@ export class MockedRoom<
         return !!this._crdtManager.doc.canUndo();
     };
 
-    public event = <TEvent extends keyof InferIOOutput<TIO>>(
+    public event = new Proxy(
+        <TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
+            event: TEvent,
+            callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
+        ): (() => void) => this._eventNotifier.subscribe(event, callback),
+        {
+            get(fn, prop) {
+                return (callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>): (() => void) =>
+                    fn(prop as any, callback);
+            },
+        },
+    ) as (<TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
         event: TEvent,
-        callback: EventNotifierSubscriptionCallback<TIO, TEvent>,
-    ): (() => void) => {
-        return this._eventNotifier.subscribe(event, callback);
+        callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, TEvent>,
+    ) => () => void) & {
+        [event in keyof InferIOOutput<MergeEvents<TEvents, TIO>>]: (
+            callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
+        ) => () => void;
     };
 
     public getConnection = (): WebSocketConnection => {
@@ -259,5 +324,28 @@ export class MockedRoom<
         });
 
         this._subscriptions.observeCrdt = unsubscribe;
+    }
+
+    private _simulateEvent<TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
+        event: TEvent,
+        data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
+    ) {
+        if (!this._events) return;
+
+        const type = event.toString();
+        const resolver = this._events[type as TEvent];
+
+        if (!resolver) return;
+
+        const result = resolver(data);
+
+        Object.keys(result).forEach((type) => {
+            const _type = type.toString() as keyof Partial<InferIOOutput<TIO>>;
+            const data = result[_type] as any;
+
+            if (!data) return;
+
+            this._eventNotifier.subject(_type).next(data);
+        });
     }
 }

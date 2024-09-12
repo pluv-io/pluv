@@ -21,22 +21,25 @@ import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import { EventNotifier } from "./EventNotifier";
 import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
 import { OtherNotifier } from "./OtherNotifier";
-import type { PluvRouterEventConfig } from "./PluvRouter";
+import { PluvProcedure } from "./PluvProcedure";
+import type { MergeEvents, PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import { StorageStore } from "./StorageStore";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
+import { ConnectionState } from "./enums";
 import type {
     AuthorizationState,
+    EventResolver,
+    EventResolverContext,
     InternalSubscriptions,
     UpdateMyPresenceAction,
     UserInfo,
     WebSocketConnection,
     WebSocketState,
 } from "./types";
-import { ConnectionState } from "./types";
 import { debounce } from "./utils";
 
 const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
@@ -156,19 +159,21 @@ export class PluvRoom<
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     readonly _endpoints: RoomEndpoints<TIO, TMetadata>;
 
     private _crdtManager: CrdtManager<TStorage>;
     private _crdtNotifier = new CrdtNotifier<TStorage>();
     private _debug: boolean | PluvRoomDebug<TIO>;
-    private _eventNotifier = new EventNotifier<TIO>();
+    private _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
     private _intervals: IntervalIds = {
         heartbeat: null,
     };
     private _listeners: InternalListeners;
     private _metadata: TMetadata = {} as TMetadata;
     private _otherNotifier = new OtherNotifier<TIO>();
+    private _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
     private _state: WebSocketState<TIO> = {
         authorization: {
             token: null,
@@ -194,7 +199,7 @@ export class PluvRoom<
     private _wsListeners: WebSocketListeners | null = null;
     private _usersManager: UsersManager<TIO, TPresence>;
 
-    constructor(room: string, options: RoomConfig<TIO, TMetadata, TPresence, TStorage>) {
+    constructor(room: string, options: RoomConfig<TIO, TMetadata, TPresence, TStorage, TEvents>) {
         const {
             addons = [],
             authEndpoint,
@@ -204,6 +209,7 @@ export class PluvRoom<
             metadata,
             onAuthorizationFail,
             presence,
+            router,
             wsEndpoint,
         } = options;
 
@@ -231,6 +237,7 @@ export class PluvRoom<
             },
         };
 
+        this._router = router ?? (new PluvRouter({}) as PluvRouter<TIO, TPresence, TStorage, TEvents>);
         this._usersManager = new UsersManager<TIO, TPresence>({ initialPresence, presence });
         this._crdtManager = new CrdtManager<TStorage>({ initialStorage });
     }
@@ -244,23 +251,62 @@ export class PluvRoom<
     }
 
     public broadcast = new Proxy(
-        <TEvent extends keyof InferIOInput<TIO>>(event: TEvent, data: Id<InferIOInput<TIO>[TEvent]>): void => {
+        async <TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
+            event: TEvent,
+            data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
+        ): Promise<void> => {
             if (!this._state.webSocket) return;
             if (this._state.connection.state !== ConnectionState.Open) return;
 
             const type = event.toString();
 
-            this._sendMessage({ data, type });
+            const procedure = this._router._defs.events[type] as PluvProcedure<
+                TIO,
+                any,
+                any,
+                TPresence,
+                TStorage
+            > | null;
+
+            if (!procedure?.config.broadcast) {
+                this._sendMessage({ data, type });
+
+                return;
+            }
+
+            const myself = this._usersManager.myself;
+
+            if (!myself) return;
+
+            const parsed = procedure.config.input ? procedure.config.input.parse(data) : data;
+            const context: EventResolverContext<TIO, TPresence, TStorage> = {
+                doc: this._crdtManager.doc,
+                others: this._usersManager.getOthers(),
+                room: this.id,
+                user: myself,
+            };
+
+            const output = await (procedure.config.broadcast as EventResolver<TIO, any, any, TPresence, TStorage>)(
+                parsed,
+                context,
+            );
+
+            Object.entries(output).forEach(([_type, _data]) => {
+                this._sendMessage({ data: _data, type: _type });
+            });
         },
         {
             get(fn, prop) {
-                return (data: Id<InferIOInput<TIO>[any]>): void => {
-                    return fn(prop, data);
+                return async (data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[any]>): Promise<void> => {
+                    return await fn(prop, data);
                 };
             },
         },
-    ) as (<TEvent extends keyof InferIOInput<TIO>>(event: TEvent, data: Id<InferIOInput<TIO>[TEvent]>) => void) & {
-        [event in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[event]>) => void;
+    ) as (<TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
+        event: TEvent,
+        data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
+    ) => Promise<void>) & {
+        [event in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[event]>) => Promise<void>;
     };
 
     public canRedo = (): boolean => {
@@ -348,20 +394,23 @@ export class PluvRoom<
     }
 
     public event = new Proxy(
-        <TEvent extends keyof InferIOOutput<TIO>>(
+        <TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
             event: TEvent,
-            callback: EventNotifierSubscriptionCallback<TIO, TEvent>,
+            callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
         ): (() => void) => this._eventNotifier.subscribe(event, callback),
         {
             get(fn, prop) {
-                return (callback: EventNotifierSubscriptionCallback<TIO, any>): (() => void) => fn(prop, callback);
+                return (callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>): (() => void) =>
+                    fn(prop as any, callback);
             },
         },
-    ) as (<TEvent extends keyof InferIOOutput<TIO>>(
+    ) as (<TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
         event: TEvent,
-        callback: EventNotifierSubscriptionCallback<TIO, TEvent>,
+        callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, TEvent>,
     ) => () => void) & {
-        [event in keyof InferIOOutput<TIO>]: (callback: EventNotifierSubscriptionCallback<TIO, event>) => () => void;
+        [event in keyof InferIOOutput<MergeEvents<TEvents, TIO>>]: (
+            callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
+        ) => () => void;
     };
 
     public getConnection = (): WebSocketConnection => {
@@ -475,7 +524,10 @@ export class PluvRoom<
         this._stateNotifier.subjects["my-presence"].next(myPresence);
         !!myself && this._stateNotifier.subjects["myself"].next(myself);
 
-        this.broadcast("$UPDATE_PRESENCE" as keyof InferIOInput<TIO>, { presence: newPresence } as any);
+        this.broadcast(
+            "$UPDATE_PRESENCE" as keyof InferIOInput<MergeEvents<TEvents, TIO>>,
+            { presence: newPresence } as any,
+        );
     };
 
     private async _addToStorageStore(update: string): Promise<void> {

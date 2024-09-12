@@ -3,6 +3,7 @@ export type { BaseUser, EventMessage, EventRecord, IOEventMessage } from "@pluv/
 export { AbstractRoom } from "./AbstractRoom";
 export { AbstractStorageStore } from "./AbstractStorageStore";
 export { createClient } from "./createClient";
+export { ConnectionState } from "./enums";
 export { MockedRoom } from "./MockedRoom";
 export type { MockedRoomConfig, MockedRoomEvents } from "./MockedRoom";
 export { PluvClient } from "./PluvClient";
@@ -10,6 +11,5 @@ export type { CreateRoomOptions, PluvClientOptions } from "./PluvClient";
 export type { PluvProcedureConfig } from "./PluvProcedure";
 export { PluvRoom } from "./PluvRoom";
 export type { PluvRoomAddon, PluvRoomAddonInput, PluvRoomAddonResult, PluvRoomDebug } from "./PluvRoom";
-export type { PluvRouterEventConfig } from "./PluvRouter";
-export { ConnectionState } from "./types";
+export type { MergeEvents, PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 export type { UserInfo, WebSocketConnection, WebSocketState } from "./types";
