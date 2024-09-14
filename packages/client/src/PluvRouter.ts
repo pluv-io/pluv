@@ -1,5 +1,5 @@
 import type { CrdtType } from "@pluv/crdt";
-import type { IOLike, IORouterLike, JsonObject, ProcedureLike } from "@pluv/types";
+import type { Id, IOLike, IORouterLike, JsonObject, ProcedureLike } from "@pluv/types";
 import type { PluvProcedure } from "./PluvProcedure";
 
 export type PluvRouterEventConfig<
@@ -29,10 +29,15 @@ export type MergeEvents<
         ? IOLike<
               IAuthorize,
               {
-                  [P in keyof TClientEvents]: TClientEvents[P] extends ProcedureLike<any, infer IClientOutput>
-                      ? keyof IClientOutput extends keyof IServerEvents
-                          ? IServerEvents[keyof IClientOutput]
-                          : TClientEvents[P]
+                  [P in keyof TClientEvents]: TClientEvents[P] extends ProcedureLike<
+                      infer IClientInput,
+                      infer IClientOutput
+                  >
+                      ? {
+                            [K in keyof IClientOutput]: K extends keyof IServerEvents
+                                ? IServerEvents[K]
+                                : ProcedureLike<IClientInput, Id<Pick<IClientOutput, K>>>;
+                        }[keyof IClientOutput]
                       : never;
               } & IServerEvents
           >
