@@ -3,7 +3,7 @@ import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node-redis";
 
-const client = createClient<typeof ioServer>({
+const client = createClient({
     authEndpoint: ({ room }) => {
         const [roomName] = room.split("_");
 

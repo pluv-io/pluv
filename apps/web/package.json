@@ -15,7 +15,8 @@
         "lint": "next lint --fix",
         "prepare": "concurrently \"pnpm:build:demo\" \"pnpm:build:docs\"",
         "script": "dotenv -- ts-node -P tsconfig.script.json -T",
-        "start": "serve out"
+        "start": "serve out",
+        "tsc:check": "tsc --noEmit"
     },
     "files": [
         "components.ts",
