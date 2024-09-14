@@ -84,6 +84,7 @@ export class PluvClient<
             metadata: options.metadata,
             onAuthorizationFail: options.onAuthorizationFail,
             presence: this._presence,
+            router: options.router,
             wsEndpoint: this._wsEndpoint,
         } as RoomConfig<TIO, TMetadata, TPresence, TStorage, TEvents>);
 
