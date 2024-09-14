@@ -7,10 +7,8 @@ import type {
     IOLike,
     JsonObject,
     MaybePromise,
-    ProcedureLike,
 } from "@pluv/types";
 import type { ConnectionState } from "./enums";
-import type { PluvRouterEventConfig } from "./PluvRouter";
 
 export interface AuthorizationState<TIO extends IOLike> {
     token: string | null;
