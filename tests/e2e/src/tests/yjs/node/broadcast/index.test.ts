@@ -28,6 +28,8 @@ test.describe("Node Broadcast", () => {
                 secondPage.waitForSelector("#connection-id"),
             ]);
 
+            await waitMs(ms("0.25s"));
+
             await firstPage
                 .locator("#doubled-value")
                 .innerText()
