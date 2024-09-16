@@ -20,16 +20,8 @@ export const HomeIntroStep3Code: FC<HomeIntroStep3CodeProps> = ({ className }) =
                     import type { IOServer } from "./server";
 
                     // ---cut---
-                    const client = createClient<IOServer>({
-                      wsEndpoint: ({ room }) => \`wss://pluv.io/api/pluv/room/\${room}\`,
-                    });
-
-                    const { createRoomBundle } = createBundle(client);
-
-                    export const pluv = createRoomBundle({
-                      presence: z.object({
-                        selectionId: z.string().nullable(),
-                      }),
+                    const client = createClient({
+                      infer: (i) => ({ io: i<IOServer> }),
                       initialStorage: yjs.doc(() => ({
                         tasks: yjs.array([
                           { id: "TASK-4753", status: "todo", priority: "medium" },
@@ -37,7 +29,15 @@ export const HomeIntroStep3Code: FC<HomeIntroStep3CodeProps> = ({ className }) =
                           { id: "TASK-5720", status: "progress", priority: "high" },
                         ]),
                       })),
+                      presence: z.object({
+                        selectionId: z.string().nullable(),
+                      }),
+                      wsEndpoint: ({ room }) => \`wss://pluv.io/api/pluv/room/\${room}\`,
                     });
+
+                    const { createRoomBundle } = createBundle(client);
+
+                    export const pluv = createRoomBundle({});
                 `}
                 lang="tsx"
                 twoslashOptions={{

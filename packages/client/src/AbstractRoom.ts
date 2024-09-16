@@ -2,6 +2,7 @@ import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
 import type { IOLike, Id, InferIOInput, InferIOOutput, JsonObject } from "@pluv/types";
 import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
+import type { MergeEvents, PluvRouterEventConfig } from "./PluvRouter";
 import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import type { UpdateMyPresenceAction, UserInfo, WebSocketConnection } from "./types";
 
@@ -9,6 +10,7 @@ export abstract class AbstractRoom<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
 > {
     public readonly id: string;
 
@@ -18,9 +20,9 @@ export abstract class AbstractRoom<
 
     public abstract storageLoaded: boolean;
 
-    public abstract broadcast<TEvent extends keyof InferIOInput<TIO>>(
+    public abstract broadcast<TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
         event: TEvent,
-        data: Id<InferIOInput<TIO>[TEvent]>,
+        data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
     ): void;
 
     public abstract canRedo(): boolean;
@@ -29,9 +31,9 @@ export abstract class AbstractRoom<
 
     public abstract getDoc(): AbstractCrdtDoc<TStorage>;
 
-    public abstract event<TEvent extends keyof InferIOOutput<TIO>>(
+    public abstract event<TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
         event: TEvent,
-        callback: EventNotifierSubscriptionCallback<TIO, TEvent>,
+        callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, TEvent>,
     ): () => void;
 
     public abstract getConnection(): WebSocketConnection;

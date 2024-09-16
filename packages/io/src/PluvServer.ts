@@ -235,7 +235,7 @@ export class PluvServer<
         this._crdt = crdt;
         this._debug = debug;
         this._platform = platform;
-        this._router = (router ? this._baseRouter : PluvRouter.merge(this._baseRouter, router)) as PluvRouter<
+        this._router = (router ? PluvRouter.merge(this._baseRouter, router) : this._baseRouter) as PluvRouter<
             TPlatform,
             TAuthorize,
             TContext,

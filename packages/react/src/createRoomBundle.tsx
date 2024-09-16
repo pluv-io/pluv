@@ -1,18 +1,21 @@
 import type {
     AbstractRoom,
+    CreateRoomOptions,
+    MergeEvents,
     MockedRoomEvents,
     PluvClient,
     PluvRoom,
     PluvRoomAddon,
     PluvRoomDebug,
-    PluvRoomOptions,
+    PluvRouter,
+    PluvRouterEventConfig,
     UserInfo,
     WebSocketConnection,
 } from "@pluv/client";
 import { MockedRoom } from "@pluv/client";
 import type { AbstractCrdtDoc, AbstractCrdtDocFactory, CrdtType, InferCrdtJson } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type { IOEventMessage, IOLike, Id, InferIOInput, InferIOOutput, InputZodLike, JsonObject } from "@pluv/types";
+import type { IOEventMessage, IOLike, Id, InferIOInput, InferIOOutput, JsonObject } from "@pluv/types";
 import fastDeepEqual from "fast-deep-equal";
 import type { Dispatch, FC, ReactNode } from "react";
 import { createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
@@ -23,10 +26,11 @@ export type CreateRoomBundleOptions<
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
 > = {
     addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
     initialStorage?: AbstractCrdtDocFactory<TStorage>;
-    presence?: InputZodLike<TPresence>;
+    router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
 };
 
 type BaseRoomProviderProps<TPresence extends JsonObject, TStorage extends Record<string, CrdtType<any, any>>> = {
@@ -39,8 +43,9 @@ export type MockedRoomProviderProps<
     TIO extends IOLike,
     TPresence extends JsonObject,
     TStorage extends Record<string, CrdtType<any, any>>,
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
 > = BaseRoomProviderProps<TPresence, TStorage> & {
-    events?: MockedRoomEvents<TIO>;
+    events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
 };
 
 export type PluvRoomProviderProps<
@@ -79,16 +84,17 @@ export interface CreateRoomBundle<
     TMetadata extends JsonObject,
     TPresence extends JsonObject,
     TStorage extends Record<string, CrdtType<any, any>>,
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
 > {
     // components
     MockedRoomProvider: FC<MockedRoomProviderProps<TIO, TPresence, TStorage>>;
     PluvRoomProvider: FC<PluvRoomProviderProps<TIO, TMetadata, TPresence, TStorage>>;
 
     // proxies
-    event: EventProxy<TIO>;
+    event: EventProxy<MergeEvents<TEvents, TIO>>;
 
     // hooks
-    useBroadcast: () => BroadcastProxy<TIO>;
+    useBroadcast: () => BroadcastProxy<MergeEvents<TEvents, TIO>>;
     useCanRedo: () => boolean;
     useCanUndo: () => boolean;
     useConnection: <T extends unknown = WebSocketConnection>(
@@ -96,9 +102,9 @@ export interface CreateRoomBundle<
         options?: SubscriptionHookOptions<Id<T>>,
     ) => Id<T>;
     useDoc: () => AbstractCrdtDoc<TStorage>;
-    useEvent: <TType extends keyof InferIOOutput<TIO>>(
+    useEvent: <TType extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
         type: TType,
-        callback: (data: Id<IOEventMessage<TIO, TType>>) => void,
+        callback: (data: Id<IOEventMessage<MergeEvents<TEvents, TIO>, TType>>) => void,
     ) => void;
     useMyPresence: <T extends unknown = TPresence>(
         selector?: (myPresence: TPresence) => T,
@@ -128,7 +134,7 @@ export interface CreateRoomBundle<
     useUndo: () => () => void;
 }
 
-export type InferRoomStorage<TRoomBundle extends CreateRoomBundle<any, any, any, any>> =
+export type InferRoomStorage<TRoomBundle extends CreateRoomBundle<any, any, any, any, any>> =
     TRoomBundle extends CreateRoomBundle<any, any, any, infer IStorage> ? IStorage : never;
 
 export const createRoomBundle = <
@@ -136,10 +142,11 @@ export const createRoomBundle = <
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
 >(
-    client: PluvClient<TIO, TMetadata>,
-    options: CreateRoomBundleOptions<TIO, TMetadata, TPresence, TStorage>,
-): CreateRoomBundle<TIO, TMetadata, TPresence, TStorage> => {
+    client: PluvClient<TIO, TPresence, TStorage, TMetadata>,
+    options: CreateRoomBundleOptions<TIO, TMetadata, TPresence, TStorage, TEvents>,
+): CreateRoomBundle<TIO, TMetadata, TPresence, TStorage, TEvents> => {
     const _initialStorage = (options.initialStorage ?? noop.doc()) as AbstractCrdtDocFactory<TStorage>;
 
     /**
@@ -158,13 +165,12 @@ export const createRoomBundle = <
     const MockedRoomProvider = memo<MockedRoomProviderProps<TIO, TPresence, TStorage>>((props) => {
         const { children, events, initialPresence, initialStorage, room: _room } = props;
 
-        const [room] = useState<MockedRoom<TIO, TPresence, TStorage>>(() => {
-            return new MockedRoom<TIO, TPresence, TStorage>(_room, {
+        const [room] = useState<MockedRoom<TIO, TPresence, TStorage, TEvents>>(() => {
+            return new MockedRoom<TIO, TPresence, TStorage, TEvents>(_room, {
                 events,
                 initialPresence,
                 initialStorage:
                     typeof initialStorage === "function" ? _initialStorage.getFactory(initialStorage) : _initialStorage,
-                presence: options.presence,
             });
         });
 
@@ -183,17 +189,17 @@ export const createRoomBundle = <
         const rerender = useRerender();
         const { room: mockedRoom } = useContext(MockedRoomContext);
 
-        const [room] = useState<PluvRoom<TIO, TMetadata, TPresence, TStorage>>(() => {
-            return client.createRoom<TPresence, TStorage>(_room, {
+        const [room] = useState<PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents>>(() => {
+            return client.createRoom(_room, {
                 addons: options.addons,
                 debug,
                 initialPresence,
                 initialStorage:
                     typeof initialStorage === "function" ? _initialStorage.getFactory(initialStorage) : _initialStorage,
                 metadata,
-                presence: options.presence,
                 onAuthorizationFail,
-            } as PluvRoomOptions<TIO, TMetadata, TPresence, TStorage>);
+                router: options.router,
+            } as CreateRoomOptions<TIO, TPresence, TStorage, TMetadata, TEvents>);
         });
 
         useEffect(() => {
@@ -221,24 +227,31 @@ export const createRoomBundle = <
 
     const useRoom = () => useContext(PluvRoomContext);
 
-    const useBroadcast = (): BroadcastProxy<TIO> => {
+    const useBroadcast = (): BroadcastProxy<MergeEvents<TEvents, TIO>> => {
         const room = useRoom();
 
         const broadcast = useCallback(
-            <TEvent extends keyof InferIOInput<TIO>>(event: TEvent, data: Id<InferIOInput<TIO>[TEvent]>) => {
+            <TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
+                event: TEvent,
+                data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
+            ) => {
                 room.broadcast(event, data);
             },
             [room],
         );
 
-        return useMemo((): BroadcastProxy<TIO> => {
+        return useMemo((): BroadcastProxy<MergeEvents<TEvents, TIO>> => {
             return new Proxy(broadcast, {
                 get(fn, prop) {
-                    return (data: Id<InferIOInput<TIO>[keyof InferIOInput<TIO>]>): void => {
-                        return fn(prop as keyof InferIOInput<TIO>, data);
+                    return (
+                        data: Id<
+                            InferIOInput<MergeEvents<TEvents, TIO>>[keyof InferIOInput<MergeEvents<TEvents, TIO>>]
+                        >,
+                    ): void => {
+                        return fn(prop as keyof InferIOInput<MergeEvents<TEvents, TIO>>, data);
                     };
                 },
-            }) as BroadcastProxy<TIO>;
+            }) as BroadcastProxy<MergeEvents<TEvents, TIO>>;
         }, [broadcast]);
     };
 
@@ -298,9 +311,9 @@ export const createRoomBundle = <
         return room.getDoc();
     };
 
-    const useEvent = <TType extends keyof InferIOOutput<TIO>>(
+    const useEvent = <TType extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
         type: TType,
-        callback: (data: Id<IOEventMessage<TIO, TType>>) => void,
+        callback: (data: Id<IOEventMessage<MergeEvents<TEvents, TIO>, TType>>) => void,
     ): void => {
         const room = useRoom();
 
@@ -318,15 +331,19 @@ export const createRoomBundle = <
         {
             get(_, prop) {
                 const useProxyEvent = (
-                    callback: (data: Id<IOEventMessage<TIO, keyof InferIOOutput<TIO>>>) => void,
+                    callback: (
+                        data: Id<
+                            IOEventMessage<MergeEvents<TEvents, TIO>, keyof InferIOOutput<MergeEvents<TEvents, TIO>>>
+                        >,
+                    ) => void,
                 ): void => {
-                    return useEvent(prop as keyof InferIOOutput<TIO>, callback);
+                    return useEvent(prop as keyof InferIOOutput<MergeEvents<TEvents, TIO>>, callback);
                 };
 
                 return { useEvent: useProxyEvent };
             },
         },
-    ) as EventProxy<TIO>;
+    ) as EventProxy<MergeEvents<TEvents, TIO>>;
 
     const useMyPresence = <T extends unknown = TPresence>(
         selector = identity as (myPresence: TPresence) => T,

@@ -1,4 +1,4 @@
-import type { PluvClient } from "@pluv/client";
+import type { PluvClient, PluvRouterEventConfig } from "@pluv/client";
 import type { CrdtType } from "@pluv/crdt";
 import type { IOLike, JsonObject } from "@pluv/types";
 import type { FC, ReactNode } from "react";
@@ -10,22 +10,32 @@ export interface PluvProviderProps {
     children?: ReactNode;
 }
 
-export interface CreateBundle<TIO extends IOLike, TMetadata extends JsonObject> {
+export interface CreateBundle<
+    TIO extends IOLike,
+    TMetadata extends JsonObject,
+    TPresence extends JsonObject = {},
+    TStorage extends Record<string, CrdtType<any, any>> = {},
+> {
     // factories
-    createRoomBundle: <TPresence extends JsonObject = {}, TStorage extends Record<string, CrdtType<any, any>> = {}>(
-        options: CreateRoomBundleOptions<TIO, TMetadata, TPresence, TStorage>,
-    ) => CreateRoomBundle<TIO, TMetadata, TPresence, TStorage>;
+    createRoomBundle: <TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
+        options: CreateRoomBundleOptions<TIO, TMetadata, TPresence, TStorage, TEvents>,
+    ) => CreateRoomBundle<TIO, TMetadata, TPresence, TStorage, TEvents>;
 
     // components
     PluvProvider: FC<PluvProviderProps>;
 
     // hooks
-    useClient: () => PluvClient<TIO, TMetadata>;
+    useClient: () => PluvClient<TIO, TPresence, TStorage, TMetadata>;
 }
 
-export const createBundle = <TIO extends IOLike, TMetadata extends JsonObject>(
-    client: PluvClient<TIO, TMetadata>,
-): CreateBundle<TIO, TMetadata> => {
+export const createBundle = <
+    TIO extends IOLike,
+    TMetadata extends JsonObject = {},
+    TPresence extends JsonObject = {},
+    TStorage extends Record<string, CrdtType<any, any>> = {},
+>(
+    client: PluvClient<TIO, TPresence, TStorage, TMetadata>,
+): CreateBundle<TIO, TMetadata, TPresence, TStorage> => {
     /**
      * !HACK
      * @description We'll let the context error out if client is not provided,
@@ -33,7 +43,7 @@ export const createBundle = <TIO extends IOLike, TMetadata extends JsonObject>(
      * @author leedavidcs
      * @date October 27, 2022
      */
-    const PluvContext = createContext<PluvClient<TIO, TMetadata>>(null as any);
+    const PluvContext = createContext<PluvClient<TIO, TPresence, TStorage, TMetadata>>(null as any);
 
     const PluvProvider = memo<PluvProviderProps>((props) => {
         const { children } = props;
@@ -43,14 +53,11 @@ export const createBundle = <TIO extends IOLike, TMetadata extends JsonObject>(
 
     PluvProvider.displayName = "PluvProvider";
 
-    const useClient = (): PluvClient<TIO, TMetadata> => useContext(PluvContext);
+    const useClient = (): PluvClient<TIO, TPresence, TStorage, TMetadata> => useContext(PluvContext);
 
-    const createRoomBundle = <
-        TPresence extends JsonObject = {},
-        TStorage extends Record<string, CrdtType<any, any>> = {},
-    >(
-        options: CreateRoomBundleOptions<TIO, TMetadata, TPresence, TStorage>,
-    ): CreateRoomBundle<TIO, TMetadata, TPresence, TStorage> => _createRoomBundle(client, options);
+    const createRoomBundle = <TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
+        options: CreateRoomBundleOptions<TIO, TMetadata, TPresence, TStorage, TEvents>,
+    ): CreateRoomBundle<TIO, TMetadata, TPresence, TStorage, TEvents> => _createRoomBundle(client, options);
 
     return {
         createRoomBundle,

@@ -3,12 +3,24 @@ import { createBundle, createClient } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node-redis";
 
-const client = createClient<typeof ioServer>({
+const client = createClient({
     authEndpoint: ({ room }) => {
         const [roomName] = room.split("_");
 
         return `http://localhost:3103/api/authorize?roomName=${roomName}`;
     },
+    infer: (i) => ({ io: i<typeof ioServer> }),
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array([
+            yjs.object({
+                message: "hello",
+                name: "leedavidcs",
+            }),
+        ]),
+    })),
+    presence: z.object({
+        count: z.number(),
+    }),
     wsEndpoint: ({ room }) => {
         const [roomName, io] = room.split("_");
 
@@ -50,16 +62,4 @@ export const {
     useStorage,
     useTransact,
     useUndo,
-} = createRoomBundle({
-    initialStorage: yjs.doc(() => ({
-        messages: yjs.array([
-            yjs.object({
-                message: "hello",
-                name: "leedavidcs",
-            }),
-        ]),
-    })),
-    presence: z.object({
-        count: z.number(),
-    }),
-});
+} = createRoomBundle({});
