@@ -17,8 +17,8 @@ test.describe("Node Broadcast", () => {
             const secondPage = await openTestPage(testUrl);
 
             await Promise.all([
-                firstPage.waitForSelector("broadcast-room"),
-                secondPage.waitForSelector("broadcast-room"),
+                firstPage.waitForSelector("#broadcast-room"),
+                secondPage.waitForSelector("#broadcast-room"),
             ]);
 
             await waitMs(ms("0.25s"));
