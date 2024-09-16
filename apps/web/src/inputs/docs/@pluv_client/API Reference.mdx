@@ -84,7 +84,7 @@ const room = client.createRoom("my-example-room", {
      * @description Define your presence schema
      */
     presence: z.object({
-        selectionId: z.nullable(z.string()),
+        selectionId: z.string().nullable(),
     }),
     /**
      * @description Define the user's initial presence
