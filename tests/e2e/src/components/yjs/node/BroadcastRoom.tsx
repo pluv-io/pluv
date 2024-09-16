@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import { useState } from "react";
-import { event, useBroadcast } from "../../../pluv-io/yjs/node";
+import { event, useBroadcast, useConnection } from "../../../pluv-io/yjs/node";
 
 export type BroadcastRoomProps = Record<string, never>;
 
@@ -8,6 +8,8 @@ export const BroadcastRoom: FC<BroadcastRoomProps> = () => {
     const [doubledValue, setDoubledValue] = useState<number>(0);
     const [subtractedValue, setSubtractedValue] = useState<number>(0);
     const broadcast = useBroadcast();
+
+    const connectionId = useConnection((connection) => connection.id);
 
     event.doubledNumber.useEvent(({ data }) => {
         setDoubledValue(data.value);
@@ -20,6 +22,8 @@ export const BroadcastRoom: FC<BroadcastRoomProps> = () => {
     return (
         <div id="broadcast-room">
             <div>Broadcast Room</div>
+            <br />
+            {!!connectionId && <div id="connection-id">{connectionId}</div>}
             <br />
             <button
                 id="button-subtract-from-7"

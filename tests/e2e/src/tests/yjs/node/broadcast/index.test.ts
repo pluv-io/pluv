@@ -23,6 +23,11 @@ test.describe("Node Broadcast", () => {
 
             await waitMs(ms("0.25s"));
 
+            await Promise.all([
+                firstPage.waitForSelector("#connection-id"),
+                secondPage.waitForSelector("#connection-id"),
+            ]);
+
             await firstPage
                 .locator("#doubled-value")
                 .innerText()
