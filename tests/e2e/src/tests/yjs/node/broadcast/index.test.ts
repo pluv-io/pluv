@@ -24,25 +24,25 @@ test.describe("Node Broadcast", () => {
             await waitMs(ms("0.25s"));
 
             await firstPage
-                .locator("doubled-value")
+                .locator("#doubled-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(0));
 
             await secondPage
-                .locator("doubled-value")
+                .locator("#doubled-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(0));
 
             await firstPage
-                .locator("subtracted-value")
+                .locator("#subtracted-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(0));
 
             await secondPage
-                .locator("subtracted-value")
+                .locator("#subtracted-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(0));
@@ -51,25 +51,25 @@ test.describe("Node Broadcast", () => {
             await waitMs(ms("0.25s"));
 
             await firstPage
-                .locator("doubled-value")
+                .locator("#doubled-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(4));
 
             await secondPage
-                .locator("doubled-value")
+                .locator("#doubled-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(4));
 
             await firstPage
-                .locator("subtracted-value")
+                .locator("#subtracted-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(2));
 
             await secondPage
-                .locator("subtracted-value")
+                .locator("#subtracted-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(2));
@@ -78,25 +78,25 @@ test.describe("Node Broadcast", () => {
             await waitMs(ms("0.25s"));
 
             await firstPage
-                .locator("doubled-value")
+                .locator("#doubled-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(12));
 
             await secondPage
-                .locator("doubled-value")
+                .locator("#doubled-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(12));
 
             await firstPage
-                .locator("subtracted-value")
+                .locator("#subtracted-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(6));
 
             await secondPage
-                .locator("subtracted-value")
+                .locator("#subtracted-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(6));
@@ -105,25 +105,25 @@ test.describe("Node Broadcast", () => {
             await waitMs(ms("0.25s"));
 
             await firstPage
-                .locator("doubled-value")
+                .locator("#doubled-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(24));
 
             await secondPage
-                .locator("doubled-value")
+                .locator("#doubled-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(24));
 
             await firstPage
-                .locator("subtracted-value")
+                .locator("#subtracted-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(12));
 
             await secondPage
-                .locator("subtracted-value")
+                .locator("#subtracted-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
                 .then((value) => expect(value).toEqual(12));
