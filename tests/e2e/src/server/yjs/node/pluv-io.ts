@@ -21,12 +21,12 @@ export const io = createIO({
 });
 
 const router = io.router({
-    SEND_MESSAGE: io.procedure
+    sendMessage: io.procedure
         .input(z.object({ message: z.string() }))
-        .broadcast(({ message }) => ({ RECEIVE_MESSAGE: { message } })),
-    DOUBLE_NUMBER: io.procedure
+        .broadcast(({ message }) => ({ receiveMessage: { message } })),
+    doubleNumber: io.procedure
         .input(z.object({ value: z.number() }))
-        .self(({ value }) => ({ DOUBLED_VALUE: { value: value * 2 } })),
+        .self(({ value }) => ({ doubledNumber: { value: value * 2 } })),
 });
 
 export const ioServer = io.server({
