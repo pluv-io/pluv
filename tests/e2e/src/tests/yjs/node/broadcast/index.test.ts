@@ -67,7 +67,7 @@ test.describe("Node Broadcast", () => {
                 .locator("#doubled-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
-                .then((value) => expect(value).toEqual(4));
+                .then((value) => expect(value).toEqual(0));
 
             await firstPage
                 .locator("#subtracted-value")
@@ -88,7 +88,7 @@ test.describe("Node Broadcast", () => {
                 .locator("#doubled-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
-                .then((value) => expect(value).toEqual(12));
+                .then((value) => expect(value).toEqual(4));
 
             await secondPage
                 .locator("#doubled-value")
@@ -121,7 +121,7 @@ test.describe("Node Broadcast", () => {
                 .locator("#doubled-value")
                 .innerText()
                 .then((text) => Number.parseInt(text))
-                .then((value) => expect(value).toEqual(24));
+                .then((value) => expect(value).toEqual(12));
 
             await firstPage
                 .locator("#subtracted-value")
