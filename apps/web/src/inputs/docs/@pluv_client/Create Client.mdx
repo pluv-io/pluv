@@ -32,7 +32,7 @@ const client = createClient<AppPluvIO>({
     // Optional. Defaults to ({ room }) => `/api/pluv/room/${room}`
     wsEndpoint: ({ room }): string => {
         // Specify the ws endpoint to connect to 
-        return `http://localhost:3000/api/room?room=${room}`;
+        return `ws://localhost:3000/api/room?room=${room}`;
     },
 });
 ```
