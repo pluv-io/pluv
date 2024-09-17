@@ -42,7 +42,7 @@
 		"@tanstack/react-table": "^8.20.5",
 		"@types/common-tags": "^1.8.4",
 		"@types/ms": "^0.7.34",
-		"@types/react": "^18.3.5",
+		"@types/react": "^18.3.6",
 		"@types/react-dom": "^18.3.0",
 		"class-variance-authority": "^0.7.0",
 		"clsx": "^2.1.1",
