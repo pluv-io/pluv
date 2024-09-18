@@ -27,13 +27,8 @@ Assume you have storage defined like so:
 ```ts
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
-import type { io } from "../server/io";
 
-const client = createClient<typeof io>({ /* ... */ });
-
-export const { createRoomBundle } = createBundle(client);
-
-export const pluvRoom = createRoomBundle({
+const client = createClient({
     initialStorage: yjs.doc(() => ({
         messages: yjs.array([
             yjs.object({
@@ -42,7 +37,12 @@ export const pluvRoom = createRoomBundle({
             }),
         ]),
     })),
+    // ...
 });
+
+export const { createRoomBundle } = createBundle(client);
+
+export const pluvRoom = createRoomBundle({});
 ```
 
 To undo a storage mutation, you will need to wrap your mutation with a transaction.

@@ -29,19 +29,19 @@ import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 import type { AppPluvIO } from "backend/io";
 
-const client = createClient<AppPluvIO>({
-    wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
-});
-
-const { createRoomBundle } = createBundle(client);
-
-export const pluvRoom = createRoomBundle({
+const client = createClient({
+    infer: (i) => ({ io: i<AppPluvIO> }),
     // Set the initial storage value, and type here
     // Don't worry, we can set a different default value in the room component
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
+    wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
 });
+
+const { createRoomBundle } = createBundle(client);
+
+export const pluvRoom = createRoomBundle({});
 ```
 
 ## Setup PluvRoomProvider
@@ -51,7 +51,7 @@ Then, setup `PluvRoomProvider` with your new `initialStorage` if it is different
 ```tsx
 import { yjs } from "@pluv/crdt-yjs";
 import type { FC } from "react";
-import { pluvRoom } from "frontend/io";
+import { pluvRoom } from "./frontend/io";
 
 export const MyPage: FC = () => {
     return (

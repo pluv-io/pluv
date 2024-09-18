@@ -46,9 +46,12 @@ import { z } from "zod";
 // import your PluvIO instance from your backend codebase
 import { type AppPluvIO } from "backend/io";
 
-const client = clientClient<AppPluvIO>({
+const client = clientClient({
+    infer: (i) => ({ io: i<AppPluvIO> }),
     authEndpoint: () => "{{your auth endpoint}}",
     wsEndpoint: () => "{{your ws endpoint}}",
+    // Optional: Specify which CRDT you are using, as well as the initial storage
+    initialStorage: yjs.doc(() => ({})),
 });
 
 export const {
@@ -79,10 +82,7 @@ export const {
     useOthers,
     useRoom,
     useStorage,
-} = createRoomBundle({
-    // Optional: Specify which CRDT you are using, as well as the initial storage
-    initialStorage: yjs.doc(() => ({})),
-});
+} = createRoomBundle({});
 ```
 
 ## Next Steps

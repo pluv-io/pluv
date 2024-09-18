@@ -156,7 +156,12 @@ import { createBundle, createClient, y } from "@pluv/react";
 // Use a type-import to import only the type we want to use
 import type { AppPluvIO } from "server/io";
 
-const client = createClient<AppPluvIO>();
+const client = createClient({
+    infer: (i) => ({ io: i<AppPluvIO> }),
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array(["hello world!"]),
+    })),
+});
 
 export const {
     // factories
@@ -193,11 +198,7 @@ export const {
     useStorage,
     useTransact,
     useUndo,
-} = createRoomBundle({
-    initialStorage: yjs.doc(() => ({
-        messages: yjs.array(["hello world!"]),
-    })),
-});
+} = createRoomBundle({});
 ```
 
 ### Wrap with your pluv.io providers

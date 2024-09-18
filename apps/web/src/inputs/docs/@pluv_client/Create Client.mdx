@@ -28,7 +28,8 @@ import { createClient } from "@pluv/client";
 // Import the type from your PluvServer instance.
 import { type AppPluvIO } from "server/io";
 
-const client = createClient<AppPluvIO>({
+const client = createClient({
+    infer: (i) => ({ io: i<AppPluvIO> }),
     // Optional. Defaults to ({ room }) => `/api/pluv/room/${room}`
     wsEndpoint: ({ room }): string => {
         // Specify the ws endpoint to connect to 
