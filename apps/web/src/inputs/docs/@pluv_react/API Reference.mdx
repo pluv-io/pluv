@@ -57,27 +57,7 @@ export const {
     useStorage,
     useTransact,
     useUndo,
-} = createRoomBundle({
-    /**
-     * @optional
-     * @description Define the initial storage for the room, as well as the CRDT to use
-     */
-    initialStorage: yjs.doc(() => ({
-        messages: yjs.array([
-            yjs.object({
-                message: "hello",
-                name: "leedavidcs",
-            }),
-        ]),
-    })),
-    /**
-     * @optional
-     * @description Define your presence schema
-     */
-    presence: z.object({
-        count: z.number(),
-    }),
-});
+} = createRoomBundle({});
 ```
 
 ### PluvProvider
@@ -274,13 +254,17 @@ Returns `[myPresence: TPresence | null, updatePresence: Function]`
 Returns the current user's presence, and a function to update the user's presence. Using this hook rerenders the component based on a deep-equality check on the user's presence value. This hook accepts a selector to return a modified presence to reduce rerenders.
 
 ```tsx
-const { useMyPresence } = createRoomBundle({
-    // ...
+const client = createClient({
     presence: z.object({
         selectionId: z.nullable(z.string()),
         selectionColor: z.string(),
     }),
+    // ...
 });
+
+// ...
+
+const { useMyPresence } = createRoomBundle({});
 
 const [
     // the user's presence
@@ -377,11 +361,16 @@ initializing its storage.
 ```tsx
 import { yjs } from "@pluv/crdt-yjs";
 
-const { useStorage } = createRoomBundle({
+const client = createClient({
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello"]),
     })),
+    // ...
 });
+
+// ...
+
+const { useStorage } = createRoomBundle({});
 
 const [messages, sharedType] = useStorage("messages");
 

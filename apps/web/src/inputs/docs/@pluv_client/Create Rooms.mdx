@@ -14,22 +14,33 @@ To create a `PluvRoom`, you must first have a `PluvClient` defined. Refer to the
 ```ts
 // frontend/room.ts
 
+import { createClient } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
-import { client } from "./io";
+import type { ioServer } from "./server/pluv-io";
 
-const ROOM_NAME = "my-test-room";
-
-export const room = client.createRoom(ROOM_NAME, {
+export const client = createClient({
+    infer: (i) => ({ io: i<typeof ioServer> }),
+    /**
+     * Define the initial storage for rooms that are created.
+     * This can be overwritten in `createRoom`
+     */
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array<string>([]),
+    })),
     // Define your presence schema
     presence: z.object({
-        selectionId: z.nullable(z.string()),
+        selectionId: z.string().nullable(),
     }),
+    // ...
+});
+
+const room = client.createRoom("my-test-room", {
     // Define the user's initial presence value
     initialPresence: {
         selectionId: null,
     },
-    // Define the initial storage for the room
+    // Overwritten from client
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),

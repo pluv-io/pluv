@@ -16,18 +16,18 @@ import { createBundle, createClient } from "@pluv/react";
 import type { AppPluvIO } from "backend/io";
 import { z } from "zod";
 
-const client = createClient<AppPluvIO>({
+const client = createClient({
+    infer: (i) => ({ io: i<AppPluvIO> }),
+    // Optional: Define the validation schema for presence, using zod
+    presence: z.object({
+        selectionId: z.nullable(z.string()),
+    }),
     wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
 });
 
 const pluv = createBundle(client);
 
-export const pluvRoom = pluv.createRoomBundle({
-    // Define the validation schema for presence, using zod
-    presence: z.object({
-        selectionId: z.nullable(z.string()),
-    }),
-});
+export const pluvRoom = pluv.createRoomBundle({});
 ```
 
 ## Set initialPresence on PluvRoomProvider

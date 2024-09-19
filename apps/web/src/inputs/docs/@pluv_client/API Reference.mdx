@@ -21,11 +21,36 @@ If you've created a basic `PluvIO` backend without any auth, you can create a `P
 // frontend/io.ts
 
 import { createClient } from "@pluv/client";
+import type { ioServer } from "./server/pluv-io";
 
 const client = createClient({
+    /**
+     * Use this `infer` property to connect your ioServer type
+     * This is being used because of TypeScript limitations with partial
+     * inference
+     */
+    infer: (i) => ({ io: i<typeof ioServer> }),
+    /**
+     * Optional: Define the initial storage for rooms that are created.
+     * This can be overwritten in `createRoom`
+     */
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array<string>([]),
+    })),
+    /**
+     * Optional: Add this property if additional data is needed to be passed to
+     * the endpoints. 
+     */
+    metadata: z.object({
+        baseWsUrl: z.string(),
+    }),
+    // Optional: Define your presence schema
+    presence: z.object({
+        selectionId: z.string().nullable(),
+    }),
     // Defaults to ({ room }) => `/api/pluv/room/${room}`
     // This is the default from `createPluvHandler`.
-    wsEndpoint: ({ room }) => `/api/room?room=${room}`,
+    wsEndpoint: ({ metadata, room }) => `${metadata.baseWsUrl}/api/room?room=${room}`,
 });
 ```
 
@@ -37,8 +62,9 @@ If your `PluvIO` implements auth, you will need to specify an `authEndpoint` on 
 import { createClient } from "@pluv/client";
 
 const client = createClient({
-    wsEndpoint: ({ room }) => `/api/room?room=${room}`,
     authEndpoint: ({ room }) => `/api/room/auth?room=${room}`,
+    wsEndpoint: ({ room }) => `/api/room?room=${room}`,
+    // ...
 });
 ```
 
@@ -60,6 +86,7 @@ const client = createClient({
             body: JSON.stringify({ room }),
         },
     }),
+    // ...
 });
 ```
 
@@ -75,29 +102,46 @@ Create a `PluvRoom` that websockets can join and leave. The second argument is a
 
 ```ts
 // frontend/room.ts
+import { createClient } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
-import { client } from "./io.ts";
+import type { ioServer } from "./server/pluv-io";
 
-const room = client.createRoom("my-example-room", {
+export const client = createClient({
     /**
-     * @description Define your presence schema
+     * Optional: Define the initial storage for rooms that are created.
+     * This can be overwritten in `createRoom`
      */
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array<string>([]),
+    })),
+    /**
+     * Optional: Add this property if additional data is needed to be passed to
+     * the endpoints. 
+     */
+    metadata: z.object({
+        baseWsUrl: z.string(),
+    }),
+    // Optional: Define your presence schema
     presence: z.object({
         selectionId: z.string().nullable(),
     }),
-    /**
-     * @description Define the user's initial presence
-     */
+    // ...
+});
+
+const room = client.createRoom("my-example-room", {
+    // Define the user's initial presence
     initialPresence: {
         selectionId: null,
     },
-    /**
-     * @description Define the initial storage for the room
-     */
+    // Overwritten from client
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
+    // If your client specifies metadata
+    metadata: {
+        baseUrl: "ws://localhost:3000",
+    }
 });
 ```
 
@@ -111,11 +155,7 @@ Establishes a websocket connection with a room. If the `PluvClient` specifies an
 
 ```ts
 // frontend/room.ts
-import { client } from "./io.ts";
-
-const room = client.createRoom("my-example-room", {
-    // ...
-})
+const room = client.createRoom("my-example-room", { /* ... */})
 
 // Enter room by room name
 client.enter("my-example-room").then(() => {
@@ -134,9 +174,6 @@ Returns a `PluvRoom` instance or `null` if none is found
 
 ```ts
 // frontend/room.ts
-
-import { client } from "./io.ts";
-
 const room = client.getRoom("my-example-room");
 ```
 
@@ -148,9 +185,6 @@ Retrieves all active rooms under the current `PluvClient` instance.
 
 ```ts
 // frontend/room.ts
-
-import { client } from "./io.ts";
-
 const rooms = client.getRooms();
 ```
 
@@ -162,12 +196,7 @@ Disconnects from a `PluvRoom` and deletes the room on the `PluvClient`. If the r
 
 ```ts
 // frontend/room.ts
-
-import { client } from "./io.ts";
-
-const room = client.createRoom("my-example-room", {
-    // ...
-})
+const room = client.createRoom("my-example-room", { /* ... */})
 
 // Leave room by room name
 client.leave("my-example-room");
@@ -196,7 +225,6 @@ Broadcasts an event to all websockets connected to the room.
 // frontend/room.ts
 
 // The below 2 statements are equivalent
-
 room.broadcast("sendMessage", { message: "Hello world~!" });
 
 room.broadcast.sendMessage({ message: "Hello world~!" });
@@ -210,7 +238,6 @@ Checks whether calling [PluvRoom.redo](/docs/client/api-reference#PluvRoom.redo)
 
 ```ts
 // frontend/room.ts
-
 const canRedo: boolean = room.canRedo();
 ```
 
@@ -222,7 +249,6 @@ Checks whether calling [PluvRoom.undo](/docs/client/api-reference#PluvRoom.undo)
 
 ```ts
 // frontend/room.ts
-
 const canUndo: boolean = room.canUndo();
 ```
 
@@ -234,7 +260,6 @@ Connects to the room if not connected to already. If an `authEndpoint` is config
 
 ```ts
 // frontend/room.ts
-
 room.connect().then(() => {
     console.log(`Connected to room: ${room.id}`);
 });
@@ -343,14 +368,14 @@ Returns a `CrdtAbstractType` from `@pluv/crdt` that holds a CRDT shared type. Fo
 ```ts
 // frontend/room.ts
 import { yjs } from "@pluv/crdt-yjs";
-import { Array as YArray } from "yjs";
 import { z } from "zod";
-import { client } from "./io.ts";
+
+// const client = ...
 
 const room = client.createRoom("my-example-room", {
     // Define your presence schema
     presence: z.object({
-        selectionId: z.nullable(z.string()),
+        selectionId: z.string().nullable(),
     }),
     // Define the user's initial presence
     initialPresence: {
@@ -397,7 +422,6 @@ Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/client/ap
 
 ```ts
 // frontend/room.ts
-
 room.redo();
 ```
 
@@ -411,18 +435,15 @@ Subscribes to a given root-level value in the room's document storage. The data 
 // frontend/room.ts
 import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
-import { client } from "./io.ts";
+
+// const client = ...
 
 const room = client.createRoom("my-example-room", {
-    // Define your presence schema
-    presence: z.object({
-        selectionId: z.nullable(z.string()),
-    }),
     // Define the user's initial presence
     initialPresence: {
         selectionId: null,
     },
-    // Define the initial storage for the room
+    // Override initialStorage defined in createClient
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
@@ -527,7 +548,6 @@ You can specify a 2nd parameter to transact with a different transaction origin.
 
 ```ts
 // frontend/transact
-
 room.transact((tx) => {
     room.get("messages").push(["hello world!"]);
 
@@ -549,6 +569,5 @@ Undoes the last mutation that was applied via [PluvRoom.transact](/docs/client/a
 
 ```ts
 // frontend/room.ts
-
 room.undo();
 ```
