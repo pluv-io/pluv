@@ -26,7 +26,7 @@ import type { ioServer } from "./server/pluv-io";
 const client = createClient({
     /**
      * Use this `infer` property to connect your ioServer type
-     * This is being used because of TypeScript limitations with partial
+     * This is used because of TypeScript limitations with partial
      * inference
      */
     infer: (i) => ({ io: i<typeof ioServer> }),
@@ -38,8 +38,8 @@ const client = createClient({
         messages: yjs.array<string>([]),
     })),
     /**
-     * Optional: Add this property if additional data is needed to be passed to
-     * the endpoints. 
+     * Optional: Add this property if additional data is needed to be
+     * passed to endpoints. 
      */
     metadata: z.object({
         baseWsUrl: z.string(),
@@ -50,7 +50,9 @@ const client = createClient({
     }),
     // Defaults to ({ room }) => `/api/pluv/room/${room}`
     // This is the default from `createPluvHandler`.
-    wsEndpoint: ({ metadata, room }) => `${metadata.baseWsUrl}/api/room?room=${room}`,
+    wsEndpoint: ({ metadata, room }) => {
+        return `${metadata.baseWsUrl}/api/room?room=${room}`;
+    },
 });
 ```
 
@@ -116,8 +118,8 @@ export const client = createClient({
         messages: yjs.array<string>([]),
     })),
     /**
-     * Optional: Add this property if additional data is needed to be passed to
-     * the endpoints. 
+     * Optional: Add this property if additional data is needed to be
+     * passed to endpoints. 
      */
     metadata: z.object({
         baseWsUrl: z.string(),
@@ -373,11 +375,6 @@ import { z } from "zod";
 // const client = ...
 
 const room = client.createRoom("my-example-room", {
-    // Define your presence schema
-    presence: z.object({
-        selectionId: z.string().nullable(),
-    }),
-    // Define the user's initial presence
     initialPresence: {
         selectionId: null,
     },
