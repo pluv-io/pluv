@@ -1,5 +1,125 @@
 # @pluv/react
 
+## 0.27.0
+
+### Minor Changes
+
+- 19ed36c: Updated `createClient` and `createRoomBundle` object params to better support automatic type inference.
+
+  ```ts
+  // Before
+  import { createClient } from "@pluv/react";
+  import { yjs } from "@pluv/crdt-yjs";
+  import { z } from "zod";
+  import type { ioServer } from "./server/ioServer";
+
+  const client = createClient<typeof ioServer>({
+    authEndpoint: ({ room }) => "MY_AUTH_URL",
+    wsEndpoint: ({ room }) => "MY_WEBSOCKET_URL",
+  });
+
+  client.createRoom("my-example-room", {
+    presence: z.object({
+      selectionId: z.string().nullish(),
+    }),
+    initialPresence: {
+      selectionId: null,
+    },
+    initialStorage: yjs.doc(() => ({
+      messages: yjs.array<string>([]),
+    })),
+  });
+
+  // After
+
+  import { createBundle, createClient } from "@pluv/react";
+
+  const client = createClient({
+    authEndpoint: ({ room }) => "MY_AUTH_URL",
+    wsEndpoint: ({ room }) => "MY_WEBSOCKET_URL",
+    /**
+     * @description The ioServer type now needs to be inferred on this property
+     * instead of within the generic on `createClient`. This is because of
+     * limitations with TypeScript not yet supporting partial type-inference
+     * for generics. Ensure to no-loonger include any generics on `createClient`
+     */
+    infer: (i) => ({ io: i<typeof ioServer> }),
+    // Now moved to `createClient` from `PluvClient.createRoom`
+    presence: z.object({
+      selectionId: z.string().nullish(),
+    }),
+    /**
+     * @description Now added to `createClient` to specify defaults for all
+     * rooms, and to infer types for storage. This value will be overwritten by
+     * `PluvClient.createRoom`.
+     */
+    initialStorage: yjs.doc(() => ({
+      messages: yjs.array<string>([]),
+    })),
+  });
+
+  const { createRoomBundle } = createBundle(client);
+  const pluv = createRoomBundle({});
+  ```
+
+### Patch Changes
+
+- 19ed36c: Added client-side event router. This more-or-less mirrors the server-side event router. You can use both the server-side and client-side router simultaneously, but you should generally prefer only using one or the other.
+
+  ```ts
+  // Backend Server
+  import { createIO } from "@pluv/io";
+
+  const io = createIO({ /* ... */ });
+  const ioServer = io.server({
+      router: io.router({
+          multiply2: io.procedure
+              .input(z.object({ value: z.number() }))
+              .broadcast(({ value }) => ({
+                  multiplied2: { value: value * 2 },
+              })),
+      }),
+  });
+
+  // Frontend Client
+  import { createBundle createClient } from "@pluv/react";
+
+  const io = createClient({ /* ... */ });
+
+  const { createRoomBundle } = createBundle(io);
+  const pluv = createRoomBundle({
+      // ...
+      router: io.router({
+          add5: io.procedure
+              .input(z.object({ value: z.number() }))
+              .broadcast(({ value }) => ({
+                  /**
+                   * @description Because `ioServer` does not specify `added5`,
+                   * this will be forwarded to connected peers.
+                   */
+                  added5: { value: value + 5 },
+              })),
+          /**
+           * @description This is possible, but not recommended to do. Because
+           * `multiply2` is a procedure on `ioServer`, this will trigger the
+           * `multiply2` procedure on `ioServer`. Connected peers will not
+           * receive `multiply2`, but rather `multipled2`.
+           */
+          subtract5Multiply2: io.procedure
+              .input(z.object({ value: z.number() }))
+              .broadcast(({ value }) => ({
+                  multiply2: { value: value - 5 },
+              })),
+      }),
+  });
+  ```
+
+- Updated dependencies [19ed36c]
+- Updated dependencies [19ed36c]
+  - @pluv/client@0.27.0
+  - @pluv/crdt@0.27.0
+  - @pluv/types@0.27.0
+
 ## 0.26.0
 
 ### Minor Changes
