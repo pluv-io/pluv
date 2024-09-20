@@ -1,5 +1,12 @@
 # @pluv/addon-indexeddb
 
+## 0.28.0
+
+### Patch Changes
+
+- @pluv/client@0.28.0
+- @pluv/crdt@0.28.0
+
 ## 0.27.0
 
 ### Patch Changes
