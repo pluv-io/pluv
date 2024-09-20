@@ -101,23 +101,23 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
           import { z } from "zod";
 
           const client = createClient<typeof ioServer>({
-            wsEndpoint: ({ room }) => \`ws://pluv.io/api/room/\${room}\`
+            wsEndpoint: ({ room }) => \`ws://pluv.io/api/room/\${room}\`,
+            presence: z.object({
+              selection: z.nullable(z.string()),
+            }),
+            // This can be overwritten at the provider level
+            initialStorage: yjs.doc(() => ({
+              boxes: yjs.object({
+                first: yjs.object({ x: 0, y: 0 }),
+                second: yjs.object({ x: 0, y: 0 }),
+              }),
+            })),
           });
-
-          export const {
-            // factories
-            createRoomBundle,
-
-            // components
-            PluvProvider,
-
-            // hooks
-            useClient,
-          } = createBundle(client);
 
           export const {
             // components
             MockedRoomProvider,
+            PluvProvider,
             PluvRoomProvider,
 
             // utils
@@ -127,6 +127,7 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
             useBroadcast,
             useCanRedo,
             useCanUndo,
+            useClient,
             useConnection,
             useDoc,
             useEvent,
@@ -139,18 +140,7 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
             useStorage,
             useTransact,
             useUndo,
-          } = createRoomBundle({
-            presence: z.object({
-              selection: z.nullable(z.string()),
-            }),
-            // This can be overwritten at the provider level
-            initialStorage: yjs.doc(() => ({
-              boxes: yjs.object({
-                first: yjs.object({ x: 0, y: 0 }),
-                second: yjs.object({ x: 0, y: 0 }),
-              }),
-            })),
-          });
+          } = createBundle(client);
         `;
     }, []);
 

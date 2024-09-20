@@ -43,9 +43,7 @@ import { createBundle, createClient } from "@pluv/react";
 
 const client = createClient<typeof io>();
 
-const { createRoomBundle } = createBundle(client);
-
-const { useRoom } = createRoomBundle({
+const { useRoom } = createBundle(client, {
     // ... other configs here,
     // ...
     addons: [addonIndexedDB({ enabled: true })],

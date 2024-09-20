@@ -40,16 +40,14 @@ const client = createClient({
     // ...
 });
 
-export const { createRoomBundle } = createBundle(client);
-
-export const pluvRoom = createRoomBundle({});
+export const pluv = createBundle(client);
 ```
 
 To undo a storage mutation, you will need to wrap your mutation with a transaction.
 
 ```ts
-const transact = pluvRoom.useTransact();
-const [messages, sharedType] = pluvRoom.useStorage();
+const transact = pluv.useTransact();
+const [messages, sharedType] = pluv.useStorage();
 
 // We can undo this
 transact(() => {
@@ -68,8 +66,8 @@ sharedType.push(["world!"]);
 Then from anywhere within the `PluvRoomProvider`, you can undo your last transacted operation.
 
 ```ts
-const undo = pluvRoom.useUndo();
-const redo = pluvRoom.useRedo();
+const undo = pluv.useUndo();
+const redo = pluv.useRedo();
 
 undo();
 redo();

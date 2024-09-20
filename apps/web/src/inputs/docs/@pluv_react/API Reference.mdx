@@ -17,25 +17,21 @@ This is a re-export of [createClient](/docs/client/api-reference#createclient) f
 
 Returns a `CreateBundle` instance
 
-Creates a bundle to be able to access the `PluvClient` from a react hook.
-
-## CreateBundle
-
-This is the bundle returned from `createBundle`.
-
-### createRoomBundle
-
-Returns a `CreateRoomBundle` instance
-
-Creates a bundle to be able to access `PluvRoom` capabilities from various react hooks.
+Creates a bundle to be able to access the `PluvClient` and `PluvRoom` from various react hooks.
 
 ```ts
+import { createBundle createClient } from "@pluv/react";
 import { yjs } from "@pluv/crdt-yjs";
+
+const io = createClient({
+    // ...
+});
 
 // Destructured room bundle
 export const {
     // components
     MockedRoomProvider,
+    PluvProvider,
     PluvRoomProvider,
 
     // utils
@@ -45,6 +41,7 @@ export const {
     useBroadcast,
     useCanRedo,
     useCanUndo,
+    useClient,
     useConnection,
     useDoc,
     useEvent,
@@ -57,26 +54,12 @@ export const {
     useStorage,
     useTransact,
     useUndo,
-} = createRoomBundle({});
+} = createBundle(io);
 ```
 
-### PluvProvider
+## CreateBundle
 
-React provider component to allow the `PluvClient` created by `createClient` to be accessible in child components via `useClient`. This is identical to importing the created client, so this is primarily useful for dependency injection when testing.
-
-```tsx
-<PluvProvider>{children}</PluvProvider>
-```
-
-### useClient
-
-Returns `PluvClient`
-
-Returns the `PluvClient` that was created via `createClient`.
-
-## CreateRoomBundle
-
-This is the bundle returned from `createRoomBundle`.
+This is the bundle returned from `createBundle`.
 
 ### MockedRoomProvider
 
@@ -122,6 +105,14 @@ const MyComponent: FC = () => {
         </MockedRoomProvider>
     );
 };
+```
+
+### PluvProvider
+
+React provider component to allow the `PluvClient` created by `createClient` to be accessible in child components via `useClient`. This is identical to importing the created client, so this is primarily useful for dependency injection when testing.
+
+```tsx
+<PluvProvider>{children}</PluvProvider>
 ```
 
 ### PluvRoomProvider
@@ -221,6 +212,12 @@ Checks whether calling [PluvRoom.undo](/docs/react/api-reference#useUndo) will m
 const canUndo: boolean = useCanUndo();
 ```
 
+### useClient
+
+Returns `PluvClient`
+
+Returns the `PluvClient` that was created via `createClient`.
+
 ### useConnection
 
 Returns `WebSocketConnection`
@@ -233,6 +230,20 @@ const connection = useConnection();
 //        id: string | null;
 //        state: ConnectionState;
 //    }
+```
+
+### useDoc
+
+Returns `AbstractCrdtDoc`
+
+This returns an instance of the `AbstractCrdtDoc` that holds the underlying CRDT doc. For instance, when using `@pluv/crdt-yjs`, this will hold a [yjs](https://yjs.dev/) doc in its `value` property.
+
+```ts
+import { yjs } from "@pluv/crdt-yjs";
+import { Doc as YDoc } from "yjs";
+
+const doc: yjs.CrdtYjsDoc<any> = useDoc();
+const ydoc: YDoc = doc.value;
 ```
 
 ### useEvent

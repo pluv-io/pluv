@@ -22,7 +22,7 @@ const io = createIO({
 
 ## Set initialStorage
 
-Then set an `initialStorage` config on your `createRoomBundle` config.
+Then set an `initialStorage` config on your `createClient` config.
 
 ```ts
 import { yjs } from "@pluv/crdt-yjs";
@@ -39,30 +39,28 @@ const client = createClient({
     wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
 });
 
-const { createRoomBundle } = createBundle(client);
-
-export const pluvRoom = createRoomBundle({});
+export const pluv = createBundle(client);
 ```
 
 ## Setup PluvRoomProvider
 
-Then, setup `PluvRoomProvider` with your new `initialStorage` if it is different than your default set from `createRoomBundle`.
+Then, setup `PluvRoomProvider` with your new `initialStorage` if it is different than your default set from `createClient`.
 
 ```tsx
 import { yjs } from "@pluv/crdt-yjs";
 import type { FC } from "react";
-import { pluvRoom } from "./frontend/io";
+import { pluv } from "./frontend/io";
 
 export const MyPage: FC = () => {
     return (
-        <pluvRoom.PluvRoomProvider
+        <pluv.PluvRoomProvider
             room="my-room-id"
             initialStorage={() => ({
                 messages: yjs.array(),
             })}
         >
             <MyRoom />
-        </pluvRoom.PluvRoomProvider>
+        </pluv.PluvRoomProvider>
     );
 };
 ```
@@ -72,11 +70,11 @@ export const MyPage: FC = () => {
 We can then use [yjs shared-types](https://docs.yjs.dev/getting-started/working-with-shared-types) to leverage shared CRDTs between connected clients using `useStorage`.
 
 ```tsx
-import { pluvRoom } from "frontend/io";
+import { pluv } from "frontend/io";
 import { useCallback } from "react";
 
 // "messages" is a key from the root properties of `initialStorage`.
-const [messages, sharedType] = pluvRoom.useStorage("messages");
+const [messages, sharedType] = pluv.useStorage("messages");
 
 const addMessage = useCallback((message: string) => {
     sharedType?.push([message]);

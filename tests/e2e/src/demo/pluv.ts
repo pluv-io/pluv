@@ -9,6 +9,4 @@ const client = createClient({
     wsEndpoint: (room) => `ws://localhost:3000/api/room/${room}`,
 });
 
-export const { createRoomBundle } = createBundle(client);
-
-export const pluv = createRoomBundle({});
+export const pluv = createBundle(client);

@@ -27,27 +27,18 @@ const io = createClient({
 });
 
 export const {
-    // factories
-    createRoomBundle,
+    // proxies
+    event,
 
     // components
     PluvProvider,
-
-    // hooks
-    useClient,
-} = createBundle(io);
-
-export const {
-    // components
     PluvRoomProvider,
-
-    // proxies
-    event,
 
     // hooks
     useBroadcast,
     useCanRedo,
     useCanUndo,
+    useClient,
     useConnection,
     useEvent,
     useMyPresence,
@@ -59,7 +50,7 @@ export const {
     useStorage,
     useTransact,
     useUndo,
-} = createRoomBundle({
+} = createBundle(io, {
     addons: [
         addonIndexedDB({
             enabled: (room) => room.id === "e2e-node-storage-addon-indexeddb",

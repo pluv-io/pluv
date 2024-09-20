@@ -25,24 +25,18 @@ const client = createClient({
 });
 
 export const {
-    // factories
-    createRoomBundle,
+    // proxies
+    event,
 
     // components
     PluvProvider,
-
-    // hooks
-    useClient,
-} = createBundle(client);
-
-export const {
-    // components
     PluvRoomProvider,
 
     // hooks
     useBroadcast,
     useCanRedo,
     useCanUndo,
+    useClient,
     useConnection,
     useEvent,
     useMyPresence,
@@ -54,4 +48,4 @@ export const {
     useStorage,
     useTransact,
     useUndo,
-} = createRoomBundle({});
+} = createBundle(client);
