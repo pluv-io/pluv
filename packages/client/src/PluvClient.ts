@@ -53,6 +53,12 @@ export class PluvClient<
 
     private _rooms = new Map<string, PluvRoom<TIO, TMetadata, TPresence, TStorage, any>>();
 
+    public get _defs() {
+        return {
+            initialStorage: this._initialStorage,
+        };
+    }
+
     public get procedure(): PluvProcedure<TIO, {}, {}, TPresence, TStorage> {
         return new PluvProcedure<TIO, {}, {}, TPresence, TStorage>();
     }
