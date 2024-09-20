@@ -1,5 +1,17 @@
 # @pluv/react
 
+## 0.28.0
+
+### Minor Changes
+
+- 778b43e: Remove the `initialStorage` option from `createRoomBundle`. This has been moved to `createClient`.
+
+### Patch Changes
+
+- @pluv/client@0.28.0
+- @pluv/crdt@0.28.0
+- @pluv/types@0.28.0
+
 ## 0.27.0
 
 ### Minor Changes
