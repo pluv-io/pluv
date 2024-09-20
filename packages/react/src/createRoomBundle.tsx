@@ -13,8 +13,7 @@ import type {
     WebSocketConnection,
 } from "@pluv/client";
 import { MockedRoom } from "@pluv/client";
-import type { AbstractCrdtDoc, AbstractCrdtDocFactory, CrdtType, InferCrdtJson } from "@pluv/crdt";
-import { noop } from "@pluv/crdt";
+import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
 import type { IOEventMessage, IOLike, Id, InferIOInput, InferIOOutput, JsonObject } from "@pluv/types";
 import fastDeepEqual from "fast-deep-equal";
 import type { Dispatch, FC, ReactNode } from "react";
@@ -29,7 +28,6 @@ export type CreateRoomBundleOptions<
     TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
 > = {
     addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
-    initialStorage?: AbstractCrdtDocFactory<TStorage>;
     router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
 };
 
@@ -147,8 +145,6 @@ export const createRoomBundle = <
     client: PluvClient<TIO, TPresence, TStorage, TMetadata>,
     options: CreateRoomBundleOptions<TIO, TMetadata, TPresence, TStorage, TEvents>,
 ): CreateRoomBundle<TIO, TMetadata, TPresence, TStorage, TEvents> => {
-    const _initialStorage = (options.initialStorage ?? noop.doc()) as AbstractCrdtDocFactory<TStorage>;
-
     /**
      * !HACK
      * @description We'll let the context error out if the room is not provided,
@@ -170,7 +166,9 @@ export const createRoomBundle = <
                 events,
                 initialPresence,
                 initialStorage:
-                    typeof initialStorage === "function" ? _initialStorage.getFactory(initialStorage) : _initialStorage,
+                    typeof initialStorage === "function"
+                        ? client._defs.initialStorage?.getFactory(initialStorage)
+                        : client._defs.initialStorage,
             });
         });
 
@@ -195,7 +193,9 @@ export const createRoomBundle = <
                 debug,
                 initialPresence,
                 initialStorage:
-                    typeof initialStorage === "function" ? _initialStorage.getFactory(initialStorage) : _initialStorage,
+                    typeof initialStorage === "function"
+                        ? client._defs.initialStorage?.getFactory(initialStorage)
+                        : client._defs.initialStorage,
                 metadata,
                 onAuthorizationFail,
                 router: options.router,
