@@ -26,10 +26,10 @@
 		"@pluv/io": "workspace:^",
 		"@pluv/persistence-cloudflare-transactional-storage": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"path-to-regexp": "^7.1.0"
+		"path-to-regexp": "^8.1.0"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20240909.0",
+		"@cloudflare/workers-types": "^4.20240919.0",
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^8.57.0",
 		"eslint-config-pluv": "workspace:^",

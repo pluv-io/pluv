@@ -79,7 +79,7 @@ wsServer.on("connection", async (ws, req) => {
     if (!url) return ws.close(1011, "Invalid WebSocket endpoint");
 
     const parsed = Url.parse(url, true);
-    const matcher = match<{ rest: string[] }>("/api/room{/:rest}+");
+    const matcher = match<{ rest: string[] }>("/api/room/*rest");
     const matched = matcher(parsed.pathname!);
 
     if (!matched) return ws.close(1011, "Invalid WebSocket endpoint");
