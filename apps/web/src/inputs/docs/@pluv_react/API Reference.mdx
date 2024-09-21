@@ -63,7 +63,7 @@ This is the bundle returned from `createBundle`.
 
 ### MockedRoomProvider
 
-React provider component to mock `PluvRoomProvider`. Enables hooks from `CreateRoomBundle` while completely offline. This can be useful in [Storybook](https://storybook.js.org/) within a storybook decorator when mocking `PluvRoomProvider`.
+React provider component to mock `PluvRoomProvider`. Enables hooks from `CreateBundle` while completely offline. This can be useful in [Storybook](https://storybook.js.org/) within a storybook decorator when mocking `PluvRoomProvider`.
 
 ```tsx
 import { yjs } from "@pluv/crdt-yjs";
@@ -117,7 +117,7 @@ React provider component to allow the `PluvClient` created by `createClient` to 
 
 ### PluvRoomProvider
 
-React provider component to enable `CreateRoomBundle` hooks within child components. Mounting this component connects to a real-time room with other connected users. Unmounting this component will disconnect the room. See [Create Rooms](/docs/react/api-reference) for more details.
+React provider component to enable `CreateBundle` hooks within child components. Mounting this component connects to a real-time room with other connected users. Unmounting this component will disconnect the room. See [Create Rooms](/docs/react/api-reference) for more details.
 
 ```tsx
 import { yjs } from "@pluv/crdt-yjs";
@@ -265,7 +265,7 @@ Returns `[myPresence: TPresence | null, updatePresence: Function]`
 Returns the current user's presence, and a function to update the user's presence. Using this hook rerenders the component based on a deep-equality check on the user's presence value. This hook accepts a selector to return a modified presence to reduce rerenders.
 
 ```tsx
-const client = createClient({
+const io = createClient({
     presence: z.object({
         selectionId: z.nullable(z.string()),
         selectionColor: z.string(),
@@ -275,7 +275,7 @@ const client = createClient({
 
 // ...
 
-const { useMyPresence } = createRoomBundle({});
+const { useMyPresence } = createBundle(io);
 
 const [
     // the user's presence
@@ -372,7 +372,7 @@ initializing its storage.
 ```tsx
 import { yjs } from "@pluv/crdt-yjs";
 
-const client = createClient({
+const io = createClient({
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello"]),
     })),
@@ -381,7 +381,7 @@ const client = createClient({
 
 // ...
 
-const { useStorage } = createRoomBundle({});
+const { useStorage } = createBundle(io);
 
 const [messages, sharedType] = useStorage("messages");
 
