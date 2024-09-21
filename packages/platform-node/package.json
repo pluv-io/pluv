@@ -27,7 +27,7 @@
 		"@pluv/types": "workspace:^",
 		"@types/node": "^22.5.5",
 		"@types/ws": "^8.5.12",
-		"path-to-regexp": "^7.1.0"
+		"path-to-regexp": "^8.1.0"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
