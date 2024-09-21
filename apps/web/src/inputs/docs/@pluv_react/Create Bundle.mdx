@@ -55,18 +55,8 @@ const client = clientClient({
 });
 
 export const {
-    // factories
-    createRoomBundle,
-
     // components
     PluvProvider,
-
-    // hooks
-    useClient,
-} = createBundle(client);
-
-export const {
-    // components
     PluvRoomProvider,
 
     // utils
@@ -74,6 +64,7 @@ export const {
 
     // hooks
     useBroadcast,
+    useClient,
     useConnection,
     useEvent,
     useMyPresence,
@@ -82,7 +73,7 @@ export const {
     useOthers,
     useRoom,
     useStorage,
-} = createRoomBundle({});
+} = createBundle(client);
 ```
 
 ## Next Steps

@@ -35,9 +35,7 @@ export const HomeIntroStep3Code: FC<HomeIntroStep3CodeProps> = ({ className }) =
                       wsEndpoint: ({ room }) => \`wss://pluv.io/api/pluv/room/\${room}\`,
                     });
 
-                    const { createRoomBundle } = createBundle(client);
-
-                    export const pluv = createRoomBundle({});
+                    export const pluv = createBundle(client);
                 `}
                 lang="tsx"
                 twoslashOptions={{

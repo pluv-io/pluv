@@ -18,23 +18,14 @@ const client = createClient({
 });
 
 export const {
-    // factories
-    createRoomBundle,
-
-    // components
-    PluvProvider,
-
-    // hooks
-    useClient,
-} = createBundle(client);
-
-export const {
     // components
     MockedRoomProvider,
+    PluvProvider,
     PluvRoomProvider,
 
     // hooks
     useBroadcast,
+    useClient,
     useConnection,
     useEvent,
     useMyPresence,
@@ -44,4 +35,4 @@ export const {
     useRoom,
     useStorage,
     useTransact,
-} = createRoomBundle({});
+} = createBundle(client);
