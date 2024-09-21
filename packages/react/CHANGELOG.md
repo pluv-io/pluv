@@ -1,5 +1,87 @@
 # @pluv/react
 
+## 0.29.0
+
+### Minor Changes
+
+- 525aeae: **BREAKING**
+
+  Merge `createBundle` with `createRoomBundle`.
+
+  ```ts
+  // Before
+  const {
+    createRoomBundle,
+
+    // components
+    PluvProvider,
+
+    // hooks
+    useClient,
+  } = createBundle(client);
+
+  export const {
+    // components
+    MockedRoomProvider,
+    PluvRoomProvider,
+
+    // utils
+    event,
+
+    // hooks
+    useBroadcast,
+    useCanRedo,
+    useCanUndo,
+    useConnection,
+    useDoc,
+    useEvent,
+    useMyPresence,
+    useMyself,
+    useOther,
+    useOthers,
+    useRedo,
+    useRoom,
+    useStorage,
+    useTransact,
+    useUndo,
+  } = createRoomBundle({});
+
+  // After
+  const {
+    // components
+    MockedRoomProvider,
+    PluvProvider,
+    PluvRoomProvider,
+
+    // utils
+    event,
+
+    // hooks
+    useBroadcast,
+    useCanRedo,
+    useCanUndo,
+    useClient,
+    useConnection,
+    useDoc,
+    useEvent,
+    useMyPresence,
+    useMyself,
+    useOther,
+    useOthers,
+    useRedo,
+    useRoom,
+    useStorage,
+    useTransact,
+    useUndo,
+  } = createBundle(client);
+  ```
+
+### Patch Changes
+
+- @pluv/client@0.29.0
+- @pluv/crdt@0.29.0
+- @pluv/types@0.29.0
+
 ## 0.28.0
 
 ### Minor Changes
