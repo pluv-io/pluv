@@ -103,7 +103,7 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
           const client = createClient<typeof ioServer>({
             wsEndpoint: ({ room }) => \`ws://pluv.io/api/room/\${room}\`,
             presence: z.object({
-              selection: z.nullable(z.string()),
+              selection: z.string().nullable(),
             }),
             // This can be overwritten at the provider level
             initialStorage: yjs.doc(() => ({

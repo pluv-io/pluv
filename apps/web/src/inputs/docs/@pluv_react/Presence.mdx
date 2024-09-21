@@ -20,7 +20,7 @@ const client = createClient({
     infer: (i) => ({ io: i<AppPluvIO> }),
     // Optional: Define the validation schema for presence, using zod
     presence: z.object({
-        selectionId: z.nullable(z.string()),
+        selectionId: z.string().nullable(),
     }),
     wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
 });
