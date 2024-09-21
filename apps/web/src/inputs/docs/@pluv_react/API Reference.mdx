@@ -267,7 +267,7 @@ Returns the current user's presence, and a function to update the user's presenc
 ```tsx
 const io = createClient({
     presence: z.object({
-        selectionId: z.nullable(z.string()),
+        selectionId: z.string().nullable(),
         selectionColor: z.string(),
     }),
     // ...
