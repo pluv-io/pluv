@@ -23,7 +23,7 @@ If you've created a basic `PluvIO` backend without any auth, you can create a `P
 import { createClient } from "@pluv/client";
 import type { ioServer } from "./server/pluv-io";
 
-const client = createClient({
+const io = createClient({
     /**
      * Use this `infer` property to connect your ioServer type
      * This is used because of TypeScript limitations with partial
@@ -63,7 +63,7 @@ If your `PluvIO` implements auth, you will need to specify an `authEndpoint` on 
 ```ts
 import { createClient } from "@pluv/client";
 
-const client = createClient({
+const io = createClient({
     authEndpoint: ({ room }) => `/api/room/auth?room=${room}`,
     wsEndpoint: ({ room }) => `/api/room?room=${room}`,
     // ...
@@ -79,7 +79,7 @@ If you need to use a POST request or specify additional headers, you can return 
 
 import { createClient } from "@pluv/client";
 
-const client = createClient({
+const io = createClient({
     authEndpoint: ({ room }) => ({
         url: "/api/room/auth",
         // specify fetch options here
@@ -109,7 +109,7 @@ import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
 import type { ioServer } from "./server/pluv-io";
 
-export const client = createClient({
+export const io = createClient({
     /**
      * Optional: Define the initial storage for rooms that are created.
      * This can be overwritten in `createRoom`
@@ -131,7 +131,9 @@ export const client = createClient({
     // ...
 });
 
-const room = client.createRoom("my-example-room", {
+const router = io.router({ /* ... */ });
+
+const room = io.createRoom("my-example-room", {
     // Define the user's initial presence
     initialPresence: {
         selectionId: null,
@@ -143,7 +145,9 @@ const room = client.createRoom("my-example-room", {
     // If your client specifies metadata
     metadata: {
         baseUrl: "ws://localhost:3000",
-    }
+    },
+    // Optional: Define type-safe events to broadcast to connected peers
+    router,
 });
 ```
 
@@ -157,15 +161,15 @@ Establishes a websocket connection with a room. If the `PluvClient` specifies an
 
 ```ts
 // frontend/room.ts
-const room = client.createRoom("my-example-room", { /* ... */})
+const room = io.createRoom("my-example-room", { /* ... */})
 
 // Enter room by room name
-client.enter("my-example-room").then(() => {
+io.enter("my-example-room").then(() => {
     console.log("Connected to: my-example-room");
 });
 
 // Alternatively, you can pass the PluvRoom instance
-client.enter(room).then(() => {
+io.enter(room).then(() => {
     console.log("Connected to: my-example-room");
 });
 ```
@@ -176,7 +180,7 @@ Returns a `PluvRoom` instance or `null` if none is found
 
 ```ts
 // frontend/room.ts
-const room = client.getRoom("my-example-room");
+const room = io.getRoom("my-example-room");
 ```
 
 ### PluvClient.getRooms
@@ -187,7 +191,7 @@ Retrieves all active rooms under the current `PluvClient` instance.
 
 ```ts
 // frontend/room.ts
-const rooms = client.getRooms();
+const rooms = io.getRooms();
 ```
 
 ### PluvClient.leave
@@ -198,13 +202,63 @@ Disconnects from a `PluvRoom` and deletes the room on the `PluvClient`. If the r
 
 ```ts
 // frontend/room.ts
-const room = client.createRoom("my-example-room", { /* ... */})
+const room = io.createRoom("my-example-room", { /* ... */})
 
 // Leave room by room name
-client.leave("my-example-room");
+io.leave("my-example-room");
 
 // Alternatively, you can pass the PluvRoom instance
-client.leave(room);
+io.leave(room);
+```
+
+### PluvClient.procedure
+
+Creates a new type-safe event procedure to be broadcasted from `PluvClient`. See [Define Events](/docs/client/define-events) for more information.
+
+```ts
+import { createClient } from "@pluv/client";
+import { z } from "zod";
+
+const io = createClient({ /* ... */ });
+
+const sendMessage = io.procedure
+    .input(z.object({ message: z.string() }))
+    .broadcast(({ message }) => ({ receiveMessage: { message } }));
+
+const doubleValue = io.procedure
+    .input(z.object({ value: z.number() }))
+    .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
+
+const wave = io.procedure
+    .broadcast(() => ({ receiveMessage: { message: "Hello world!" } }));
+```
+
+### PluvClient.router
+
+Creates a new type-safe event procedure router to attach events and connect to a `PluvRoom` via `PluvRoom.createRoom`. See [Define Events](/docs/client/define-events) for more information.
+
+```ts
+import { createClient } from "@pluv/client";
+import { z } from "zod";
+
+const io = createClient({ /* ... */ });
+
+const sendMessage = io.procedure
+    .input(z.object({ message: z.string() }))
+    .broadcast(({ message }) => ({ receiveMessage: { message } }));
+
+const doubleValue = io.procedure
+    .input(z.object({ value: z.number() }))
+    .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
+
+const wave = io.procedure
+    .broadcast(() => ({ receiveMessage: { message: "Hello world!" } }));
+
+const router = io.router({
+    sendMessage,
+    doubleValue,
+    wave,
+});
 ```
 
 ## PluvRoom
@@ -372,9 +426,9 @@ Returns a `CrdtAbstractType` from `@pluv/crdt` that holds a CRDT shared type. Fo
 import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
 
-// const client = ...
+// const io = ...
 
-const room = client.createRoom("my-example-room", {
+const room = io.createRoom("my-example-room", {
     initialPresence: {
         selectionId: null,
     },
@@ -433,9 +487,9 @@ Subscribes to a given root-level value in the room's document storage. The data 
 import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
 
-// const client = ...
+// const io = ...
 
-const room = client.createRoom("my-example-room", {
+const room = io.createRoom("my-example-room", {
     // Define the user's initial presence
     initialPresence: {
         selectionId: null,
