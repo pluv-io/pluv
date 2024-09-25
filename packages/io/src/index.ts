@@ -22,6 +22,7 @@ export type {
     AbstractWebSocketConfig,
     AbstractWebSocketHandleErrorParams,
 } from "./AbstractWebSocket";
+export { authorize } from "./authorize";
 export type { AuthorizeModule, AuthorizeParams, JWT, JWTEncodeParams } from "./authorize";
 export { createIO } from "./createIO";
 export type { CreateIOParams } from "./createIO";
