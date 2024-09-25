@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.30.1
+
+### Patch Changes
+
+- b9c3633: Export the `authorize` utility from `@pluv/io`.
+  - @pluv/crdt@0.30.1
+  - @pluv/types@0.30.1
+
 ## 0.30.0
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @pluv/platform-pluv
 
+## 0.30.1
+
+### Patch Changes
+
+- 47784d5: Add missing `publicKey` param to `createIO`.
+- Updated dependencies [b9c3633]
+  - @pluv/io@0.30.1
+  - @pluv/crdt@0.30.1
+  - @pluv/types@0.30.1
+
 ## 0.30.0
 
 ### Minor Changes
