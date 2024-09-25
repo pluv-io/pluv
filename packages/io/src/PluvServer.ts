@@ -11,12 +11,7 @@ import type {
     Maybe,
 } from "@pluv/types";
 import colors from "kleur";
-import type {
-    AbstractPlatform,
-    InferPlatformContextType,
-    InferRoomContextType,
-    WebSocketRegistrationMode,
-} from "./AbstractPlatform";
+import type { AbstractPlatform, InferPlatformContextType, InferRoomContextType } from "./AbstractPlatform";
 import type { IORoomListeners } from "./IORoom";
 import { IORoom } from "./IORoom";
 import { PluvProcedure } from "./PluvProcedure";

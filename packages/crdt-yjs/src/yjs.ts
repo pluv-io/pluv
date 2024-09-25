@@ -7,3 +7,4 @@ export type { YjsType } from "./types";
 export { xmlElement } from "./xmlElement";
 export { xmlFragment } from "./xmlFragment";
 export { xmlText } from "./xmlText";
+export const kind = "yjs" as const;

@@ -1,8 +1,7 @@
-import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import type { BaseUser, IOAuthorize, JsonObject } from "@pluv/types";
 import type { AbstractPlatform, InferPlatformContextType } from "./AbstractPlatform";
 import { PluvIO } from "./PluvIO";
-import type { GetInitialStorageFn } from "./types";
+import { CrdtLibraryType } from "./types";
 
 export type CreateIOParams<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -12,7 +11,7 @@ export type CreateIOParams<
 > = {
     authorize?: IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferPlatformContextType<TPlatform>>;
     context?: TContext;
-    crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
+    crdt?: CrdtLibraryType;
     debug?: boolean;
     platform: TPlatform;
 };
