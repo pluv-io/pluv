@@ -1,14 +1,14 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type { BaseIOAuthorize, IOAuthorize, InferIOAuthorizeUser, JsonObject } from "@pluv/types";
-import type { AbstractPlatform, InferPlatformContextType, WebSocketRegistrationMode } from "./AbstractPlatform";
+import type { AbstractPlatform, InferPlatformContextType } from "./AbstractPlatform";
 import { PluvProcedure } from "./PluvProcedure";
 import type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import { PluvServer } from "./PluvServer";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
-import type { GetInitialStorageFn, PluvIOListeners } from "./types";
+import type { CrdtLibraryType, GetInitialStorageFn, PluvIOListeners } from "./types";
 import { __PLUV_VERSION } from "./version";
 
 export type PluvIOConfig<
@@ -18,7 +18,7 @@ export type PluvIOConfig<
 > = {
     authorize?: TAuthorize;
     context?: TContext;
-    crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
+    crdt?: CrdtLibraryType;
     debug?: boolean;
     platform: TPlatform;
 };

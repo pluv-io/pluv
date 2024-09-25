@@ -35,6 +35,8 @@ export type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 export { PluvServer } from "./PluvServer";
 export type { CreateRoomOptions, InferIORoom, PluvServerConfig } from "./PluvServer";
 export type {
+    CrdtLibraryType,
+    GetInitialStorageFn,
     IORoomListenerEvent,
     IORoomMessageEvent,
     PluvIOListeners,

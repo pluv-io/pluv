@@ -1,4 +1,4 @@
-import type { AbstractCrdtDoc } from "@pluv/crdt";
+import type { AbstractCrdtDoc, AbstractCrdtDocFactory } from "@pluv/crdt";
 import type {
     BaseIOAuthorize,
     EventRecord,
@@ -24,6 +24,11 @@ declare global {
     var console: {
         log: (...data: any[]) => void;
     };
+}
+
+export interface CrdtLibraryType {
+    doc: (value: any) => AbstractCrdtDocFactory<any>;
+    kind: "loro" | "yjs";
 }
 
 export type EventResolver<
