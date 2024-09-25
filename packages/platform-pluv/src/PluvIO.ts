@@ -19,6 +19,7 @@ export type PluvIOConfig<TUser extends BaseUser> = Partial<
     };
     basePath: string;
     getInitialStorage?: GetInitialStorageFn<PluvPlatform>;
+    publicKey: string;
     secretKey: string;
 };
 
@@ -27,6 +28,7 @@ export class PluvIO<TUser extends BaseUser> {
     private readonly _basePath: string;
     private readonly _getInitialStorage?: GetInitialStorageFn<PluvPlatform>;
     private readonly _listeners: Pick<PluvIOListeners<PluvPlatform, PluvAuthorize<TUser>, {}, {}>, "onRoomDeleted">;
+    private readonly _publicKey: string;
     private readonly _secretKey: string;
 
     public get fetch() {
@@ -70,7 +72,7 @@ export class PluvIO<TUser extends BaseUser> {
     });
 
     constructor(options: PluvIOConfig<TUser>) {
-        const { authorize, basePath, onRoomDeleted, getInitialStorage, secretKey } = options;
+        const { authorize, basePath, onRoomDeleted, getInitialStorage, publicKey, secretKey } = options;
 
         this._authorize = {
             required: true,
@@ -80,6 +82,7 @@ export class PluvIO<TUser extends BaseUser> {
         this._basePath = basePath;
         this._getInitialStorage = getInitialStorage;
         this._listeners = { onRoomDeleted: (event) => onRoomDeleted?.(event) };
+        this._publicKey = publicKey;
         this._secretKey = secretKey;
     }
 
@@ -91,6 +94,7 @@ export class PluvIO<TUser extends BaseUser> {
             body: JSON.stringify({
                 maxAge: params.maxAge ?? null,
                 room: params.room,
+                publicKey: this._publicKey,
                 secretKey: this._secretKey,
                 user: parsed,
             }),
