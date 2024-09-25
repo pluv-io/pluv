@@ -15,6 +15,7 @@ packages:
   - "packages/persistence-redis"
   - "packages/platform-cloudflare"
   - "packages/platform-node"
+  - "packages/platform-pluv"
   - "packages/pubsub-redis"
   - "packages/react"
   - "packages/tsconfig"
