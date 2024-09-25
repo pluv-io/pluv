@@ -147,6 +147,7 @@ export type RoomConfig<
         addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
         debug?: boolean | PluvRoomDebug<TIO>;
         onAuthorizationFail?: (error: Error) => void;
+        publicKey?: string;
         router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
     } & RoomEndpoints<TIO, TMetadata> &
         Pick<CrdtManagerOptions<TStorage>, "initialStorage"> &
@@ -163,17 +164,29 @@ export class PluvRoom<
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     readonly _endpoints: RoomEndpoints<TIO, TMetadata>;
 
-    private _crdtManager: CrdtManager<TStorage>;
-    private _crdtNotifier = new CrdtNotifier<TStorage>();
-    private _debug: boolean | PluvRoomDebug<TIO>;
-    private _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
-    private _intervals: IntervalIds = {
+    private readonly _crdtManager: CrdtManager<TStorage>;
+    private readonly _crdtNotifier = new CrdtNotifier<TStorage>();
+    private readonly _debug: boolean | PluvRoomDebug<TIO>;
+    private readonly _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
+    private readonly _intervals: IntervalIds = {
         heartbeat: null,
     };
-    private _listeners: InternalListeners;
-    private _metadata: TMetadata = {} as TMetadata;
-    private _otherNotifier = new OtherNotifier<TIO>();
-    private _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
+    private readonly _listeners: InternalListeners;
+    private readonly _metadata: TMetadata = {} as TMetadata;
+    private readonly _otherNotifier = new OtherNotifier<TIO>();
+    private readonly _publicKey: string | null = null;
+    private readonly _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
+    private readonly _stateNotifier = new StateNotifier<TIO, TPresence>();
+    private readonly _storageStore: AbstractStorageStore;
+    private readonly _subscriptions: InternalSubscriptions = {
+        observeCrdt: null,
+    };
+    private readonly _timeouts: TimeoutIds = {
+        pong: null,
+        reconnect: null,
+    };
+    private readonly _usersManager: UsersManager<TIO, TPresence>;
+
     private _state: WebSocketState<TIO> = {
         authorization: {
             token: null,
@@ -186,18 +199,8 @@ export class PluvRoom<
         },
         webSocket: null,
     };
-    private _stateNotifier = new StateNotifier<TIO, TPresence>();
-    private _storageStore: AbstractStorageStore;
-    private _subscriptions: InternalSubscriptions = {
-        observeCrdt: null,
-    };
-    private _timeouts: TimeoutIds = {
-        pong: null,
-        reconnect: null,
-    };
     private _windowListeners: WindowListeners | null = null;
     private _wsListeners: WebSocketListeners | null = null;
-    private _usersManager: UsersManager<TIO, TPresence>;
 
     constructor(room: string, options: RoomConfig<TIO, TMetadata, TPresence, TStorage, TEvents>) {
         const {
@@ -209,6 +212,7 @@ export class PluvRoom<
             metadata,
             onAuthorizationFail,
             presence,
+            publicKey,
             router,
             wsEndpoint,
         } = options;
@@ -226,7 +230,8 @@ export class PluvRoom<
         this._endpoints = { authEndpoint, wsEndpoint } as RoomEndpoints<TIO, TMetadata>;
         this._storageStore = storage;
 
-        if (!!metadata) this._metadata = metadata;
+        if (typeof metadata !== "undefined") this._metadata = metadata;
+        if (typeof publicKey === "string") this._publicKey = publicKey;
 
         this._listeners = {
             onAuthorizationFail: (error) => {
@@ -348,6 +353,7 @@ export class PluvRoom<
             authToken = await this._getAuthorization(this.id);
 
             authToken && url.searchParams.set("token", encodeURIComponent(authToken));
+            this._publicKey && url.searchParams.set("public_key", encodeURIComponent(this._publicKey));
 
             webSocket = new WebSocket(url.toString());
         } catch (err) {
