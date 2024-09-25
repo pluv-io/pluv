@@ -1,5 +1,13 @@
 # @pluv/crdt-yjs
 
+## 0.30.0
+
+### Patch Changes
+
+- 7246a9e: Added `CrdtLibraryType` so that `@pluv/crdt-yjs` and `@pluv/crdt-loro` export a new property `kind` containing an identifier for the crdt.
+  - @pluv/crdt@0.30.0
+  - @pluv/types@0.30.0
+
 ## 0.29.0
 
 ### Patch Changes

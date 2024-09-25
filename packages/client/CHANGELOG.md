@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.30.0
+
+### Patch Changes
+
+- cff933a: Add `publicKey` property to `createClient` for later usage ;)
+  - @pluv/crdt@0.30.0
+  - @pluv/types@0.30.0
+
 ## 0.29.0
 
 ### Patch Changes
