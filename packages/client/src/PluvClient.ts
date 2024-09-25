@@ -22,6 +22,7 @@ export type PluvClientOptions<
     initialStorage?: AbstractCrdtDocFactory<TStorage>;
     metadata?: InputZodLike<TMetadata>;
     presence?: InputZodLike<TPresence>;
+    publicKey?: string;
 };
 
 export type CreateRoomOptions<
@@ -45,13 +46,13 @@ export class PluvClient<
     TStorage extends Record<string, CrdtType<any, any>> = {},
     TMetadata extends JsonObject = {},
 > {
-    private _authEndpoint: AuthEndpoint<TMetadata> | undefined;
-    private _debug: boolean;
-    private _initialStorage?: AbstractCrdtDocFactory<TStorage>;
-    private _presence?: InputZodLike<TPresence>;
-    private _wsEndpoint: WsEndpoint<TMetadata> | undefined;
-
-    private _rooms = new Map<string, PluvRoom<TIO, TMetadata, TPresence, TStorage, any>>();
+    private readonly _authEndpoint: AuthEndpoint<TMetadata> | undefined;
+    private readonly _debug: boolean;
+    private readonly _initialStorage?: AbstractCrdtDocFactory<TStorage>;
+    private readonly _presence?: InputZodLike<TPresence>;
+    private readonly _publicKey: string | null = null;
+    private readonly _rooms = new Map<string, PluvRoom<TIO, TMetadata, TPresence, TStorage, any>>();
+    private readonly _wsEndpoint: WsEndpoint<TMetadata> | undefined;
 
     public get _defs() {
         return {
@@ -64,13 +65,15 @@ export class PluvClient<
     }
 
     constructor(options: PluvClientOptions<TIO, TPresence, TStorage, TMetadata>) {
-        const { authEndpoint, debug = false, initialStorage, presence, wsEndpoint } = options;
+        const { authEndpoint, debug = false, initialStorage, presence, publicKey, wsEndpoint } = options;
 
         this._authEndpoint = authEndpoint as AuthEndpoint<TMetadata>;
         this._debug = debug;
         this._initialStorage = initialStorage;
         this._presence = presence;
         this._wsEndpoint = wsEndpoint;
+
+        if (typeof publicKey === "string") this._publicKey = publicKey;
     }
 
     public createRoom = <TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
@@ -90,6 +93,7 @@ export class PluvClient<
             metadata: options.metadata,
             onAuthorizationFail: options.onAuthorizationFail,
             presence: this._presence,
+            publicKey: this._publicKey ?? undefined,
             router: options.router,
             wsEndpoint: this._wsEndpoint,
         } as RoomConfig<TIO, TMetadata, TPresence, TStorage, TEvents>);
