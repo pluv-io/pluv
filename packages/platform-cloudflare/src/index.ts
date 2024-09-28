@@ -1,4 +1,4 @@
-export type { CloudflarePlatformConfig } from "./CloudflarePlatform";
+export type { CloudflarePlatform, CloudflarePlatformConfig } from "./CloudflarePlatform";
 export { createPluvHandler } from "./createPluvHandler";
 export type {
     AuthorizeFunction,
