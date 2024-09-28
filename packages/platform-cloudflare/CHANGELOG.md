@@ -1,5 +1,14 @@
 # @pluv/platform-cloudflare
 
+## 0.30.2
+
+### Patch Changes
+
+- 6521b05: Export the types of `NodePlatform` and `CloudflarePlatform`.
+  - @pluv/io@0.30.2
+  - @pluv/persistence-cloudflare-transactional-storage@0.30.2
+  - @pluv/types@0.30.2
+
 ## 0.30.1
 
 ### Patch Changes
