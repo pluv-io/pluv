@@ -3,7 +3,7 @@ import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import type { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import { isValidElement } from "react";
-import { ShikiLanguage } from "../../utils/getShiki";
+import type { ShikiLanguage } from "../../utils/getShiki";
 import { ServerCodeBlock } from "../ServerCodeBlock";
 
 export type MdxPreProps = InferComponentProps<"pre">;
@@ -43,7 +43,7 @@ export const MdxPre: FC<MdxPreProps> = (props) => {
     const { children, className, style, ...restProps } = props;
 
     const contents = getChildrenText(children).trimEnd();
-    const language = (parseLanguage(className) ?? getChildrenLanguage(children) ?? "tsx") as ShikiLanguage;
+    const language = (parseLanguage(className) ?? getChildrenLanguage(children) ?? "text") as ShikiLanguage;
 
     return (
         <ServerCodeBlock

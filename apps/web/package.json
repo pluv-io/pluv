@@ -35,7 +35,7 @@
         "@pluv/react": "workspace:^",
         "@radix-ui/react-tooltip": "^1.1.2",
         "@seznam/compose-react-refs": "^1.0.6",
-        "@shikijs/twoslash": "^1.20.0",
+        "@shikijs/twoslash": "^1.17.7",
         "@tanstack/react-table": "^8.20.5",
         "@types/common-tags": "^1.8.4",
         "@types/mdx": "^2.0.13",
@@ -51,7 +51,7 @@
         "next": "^14.2.13",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
-        "shiki": "^1.20.0",
+        "shiki": "^1.17.7",
         "yjs": "^13.6.19",
         "zod": "^3.23.8"
     },
