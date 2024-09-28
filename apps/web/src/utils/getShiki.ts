@@ -1,6 +1,6 @@
 import type { HighlighterGeneric } from "shiki/core";
 
-export type ShikiLanguage = "bash" | "tsx" | "typescript";
+export type ShikiLanguage = "bash" | "text" | "tsx" | "typescript";
 export type ShikiTheme = "catppuccin-latte" | "catppuccin-macchiato";
 
 export const getShiki = async () => {

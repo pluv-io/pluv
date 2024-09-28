@@ -40,8 +40,8 @@
         "@types/common-tags": "^1.8.4",
         "@types/mdx": "^2.0.13",
         "@types/ms": "^0.7.34",
-        "@types/node": "^22.5.5",
-        "@types/react": "^18.3.8",
+        "@types/node": "^22.7.4",
+        "@types/react": "^18.3.10",
         "@types/react-dom": "^18.3.0",
         "@types/ws": "^8.5.12",
         "clsx": "^2.1.1",
@@ -56,7 +56,7 @@
         "zod": "^3.23.8"
     },
     "devDependencies": {
-        "@faker-js/faker": "^9.0.1",
+        "@faker-js/faker": "^9.0.3",
         "@mdx-js/loader": "^3.0.1",
         "@next/bundle-analyzer": "^14.2.13",
         "@next/mdx": "^14.2.13",
@@ -81,7 +81,7 @@
         "postcss": "^8.4.47",
         "remark-gfm": "^4.0.0",
         "serve": "^14.2.3",
-        "tailwindcss": "^3.4.12",
+        "tailwindcss": "^3.4.13",
         "ts-node": "^10.9.2",
         "typescript": "^5.6.2"
     }

@@ -27,11 +27,11 @@
     "devDependencies": {
         "@changesets/cli": "^2.27.8",
         "@pluv-internal/tailwind-config": "workspace:^",
-        "commitizen": "^4.3.0",
+        "commitizen": "^4.3.1",
         "cz-conventional-changelog": "^3.3.0",
         "eslint-config-pluv": "workspace:^",
         "prettier": "^3.3.3",
-        "tailwindcss": "^3.4.12",
+        "tailwindcss": "^3.4.13",
         "turbo": "^2.1.2"
     }
 }
