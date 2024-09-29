@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/crdt",
-	"version": "0.30.2",
+	"version": "0.31.0",
 	"description": "crdt base for @pluv/io",
 	"author": "leedavidcs",
 	"license": "MIT",
