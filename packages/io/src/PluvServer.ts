@@ -20,7 +20,7 @@ import { PluvRouter } from "./PluvRouter";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
 import { PING_TIMEOUT_MS } from "./constants";
-import type { GetInitialStorageFn, PluvIOListeners } from "./types";
+import type { GetInitialStorageFn, PluvContext, PluvIOListeners } from "./types";
 import { __PLUV_VERSION } from "./version";
 
 export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
@@ -31,11 +31,11 @@ export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
 export type PluvServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
-    TContext extends JsonObject = {},
+    TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
     authorize?: TAuthorize;
-    context?: TContext;
+    context?: PluvContext<TPlatform, TContext>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug?: boolean;
     getInitialStorage?: GetInitialStorageFn<TPlatform>;
@@ -46,7 +46,7 @@ export type PluvServerConfig<
 type BaseCreateRoomOptions<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
-    TContext extends JsonObject,
+    TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
     debug?: boolean;
@@ -55,7 +55,7 @@ type BaseCreateRoomOptions<
 export type CreateRoomOptions<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
-    TContext extends JsonObject,
+    TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = keyof InferRoomContextType<TPlatform> extends never
     ? [BaseCreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>] | []
@@ -64,7 +64,7 @@ export type CreateRoomOptions<
 export class PluvServer<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
-    TContext extends JsonObject = {},
+    TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IORouterLike<TEvents>
 {
@@ -188,7 +188,7 @@ export class PluvServer<
             return { $STORAGE_UPDATED: { state: encodedState } };
         }),
     });
-    private readonly _context: TContext = {} as TContext;
+    private readonly _context: PluvContext<TPlatform, TContext> = {} as PluvContext<TPlatform, TContext>;
     private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     private readonly _debug: boolean;
     private readonly _getInitialStorage: GetInitialStorageFn<TPlatform> | null = null;
@@ -261,15 +261,13 @@ export class PluvServer<
 
         if (!/^[a-z0-9]+[a-z0-9\-_]+[a-z0-9]+$/i.test(room)) throw new Error("Unsupported room name");
 
-        const roomContext = {
-            ...this._context,
-            ...platformRoomContext,
-        } as TContext & InferRoomContextType<TPlatform>;
+        const roomContext = platformRoomContext as InferRoomContextType<TPlatform>;
+        const context: TContext = typeof this._context === "function" ? this._context(roomContext) : this._context;
 
         const newRoom = new IORoom<TPlatform, TAuthorize, TContext, TEvents>(room, {
             ...(!!_meta ? { _meta } : {}),
             authorize: this._authorize ?? undefined,
-            context: roomContext,
+            context,
             crdt: this._crdt,
             debug: debug ?? this._debug,
             onDestroy: async (event) => {
@@ -286,6 +284,7 @@ export class PluvServer<
                 await Promise.resolve(this._getListeners().onRoomMessage(event));
             },
             platform: this._platform,
+            roomContext,
             router: this._router,
         });
 

@@ -184,8 +184,18 @@ import {
     createPluvHandler,
     platformCloudflare,
 } from "@pluv/platform-cloudflare";
+import { Database } from "./database";
 
-const io = createIO({ platform: platformCloudflare() });
+const io = createIO({
+    context: ({ env, state }) => ({
+        // Example of using context with Cloudflare
+        db: new Database(env.DATABASE_URL),
+
+        env,
+        state,
+    }),
+    platform: platformCloudflare(),
+});
 const ioServer = io.server();
 
 const Pluv = createPluvHandler({

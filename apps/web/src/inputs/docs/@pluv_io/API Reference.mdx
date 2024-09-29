@@ -18,7 +18,7 @@ import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
-import { db } from "./db";
+import { Database } from "./db";
 
 const io = createIO({
     // Optional: if provided, defines authorization for rooms created by io
@@ -36,6 +36,11 @@ const io = createIO({
             name: z.string(),
         }),
     },
+    // Optional: if provided, this context will be made available in event
+    // handlers and procedures
+    context: () => ({
+        db: new Database(process.env.DATABASE_URL),
+    }),
     // Optional. Specify to use Yjs CRDT for storage.
     // This is required only if/when you wish to use storage features.
     crdt: yjs,

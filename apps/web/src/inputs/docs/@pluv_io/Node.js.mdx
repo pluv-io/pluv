@@ -109,8 +109,14 @@ import cors from "cors";
 import express from "express";
 import Http from "http";
 import WS from "ws";
+import { Database } from "./database";
 
-const io = createIO({ platform: platformNode() });
+const io = createIO({
+    context: {
+        db: new Database(process.env.DATABASE_URL),
+    },
+    platform: platformNode(),
+});
 const ioServer = io.server();
 
 const app = express();

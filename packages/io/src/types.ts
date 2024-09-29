@@ -27,6 +27,10 @@ declare global {
     };
 }
 
+export type PluvContext<TPlatform extends AbstractPlatform, TContext extends Record<string, any>> =
+    | TContext
+    | ((params: InferRoomContextType<TPlatform>) => TContext);
+
 export interface CrdtLibraryType {
     doc: (value: any) => AbstractCrdtDocFactory<any>;
     kind: "loro" | "yjs";
@@ -104,7 +108,7 @@ export type MergeEventRecords<
 
 type GetInitialStorageEvent<TPlatform extends AbstractPlatform> = {
     room: string;
-} & InferRoomContextType<TPlatform>;
+};
 
 export type GetInitialStorageFn<TPlatform extends AbstractPlatform> = (
     event: GetInitialStorageEvent<TPlatform>,
@@ -113,7 +117,7 @@ export type GetInitialStorageFn<TPlatform extends AbstractPlatform> = (
 export interface PluvIOListeners<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
-    TContext extends JsonObject,
+    TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > {
     onRoomDeleted: (event: IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
@@ -124,10 +128,10 @@ export interface PluvIOListeners<
 export type IORoomListenerEvent<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
-    TContext extends JsonObject,
+    TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = {
-    context: TContext & InferRoomContextType<TPlatform>;
+    context: TContext;
     encodedState: string | null;
     room: string;
 };
@@ -135,7 +139,7 @@ export type IORoomListenerEvent<
 export type IORoomMessageEvent<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
-    TContext extends JsonObject,
+    TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents> & {
     message: InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>;
