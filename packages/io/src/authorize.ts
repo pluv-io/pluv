@@ -1,7 +1,7 @@
 import hkdf from "@panva/hkdf";
 import type { BaseUser } from "@pluv/types";
 import { EncryptJWT, jwtDecrypt } from "jose";
-import type { AbstractPlatform, InferPlatformContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
 
 const DEFAULT_MAX_AGE_MS = 60_000;
 
@@ -19,7 +19,7 @@ export type JWTEncodeParams<TUser extends BaseUser, TPlatform extends AbstractPl
     maxAge?: number;
     room: string;
     user: TUser;
-} & InferPlatformContextType<TPlatform>;
+} & InferInitContextType<TPlatform>;
 
 export interface AuthorizeParams {
     platform: AbstractPlatform;

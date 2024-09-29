@@ -52,9 +52,11 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
     const { authorize, binding, endpoint = "/api/pluv", modify, io } = config;
 
     const DurableObject = class implements DurableObject {
+        private _env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>;
         private _room: IORoom<CloudflarePlatform>;
 
         constructor(state: DurableObjectState, env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>) {
+            this._env = env;
             this._room = io.createRoom(state.id.toString(), { env, state });
         }
 
@@ -93,7 +95,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
             const { 0: client, 1: server } = new WebSocketPair();
             const token = new URL(request.url).searchParams.get("token");
 
-            await this._room.register(server, { token });
+            await this._room.register(server, { env: this._env, request, token });
 
             return new Response(null, { status: 101, webSocket: client });
         }
@@ -139,6 +141,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
                 env,
                 room: durableObjectId.toString(),
                 user,
+                request,
             });
 
             return new Response(token, {

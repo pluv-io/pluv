@@ -93,7 +93,7 @@ wsServer.on("connection", async (ws, req) => {
     const io = parsed.query?.io as string | undefined;
     const room = !io ? getRoom1(roomId) : getRoom2(roomId);
 
-    await room.register(ws, { token });
+    await room.register(ws, { req, token });
 });
 
 app.use(bodyParser.json());
@@ -112,6 +112,7 @@ app.get("/api/authorize", async (req, res) => {
 
     const id = Crypto.randomUUID();
     const token = await io1st.createToken({
+        req,
         room: roomId,
         user: { id, name: `user:${id}` },
     });

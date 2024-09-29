@@ -1,7 +1,7 @@
 import type { BaseUser, IOAuthorize, JsonObject } from "@pluv/types";
-import type { AbstractPlatform, InferPlatformContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
 import { PluvIO } from "./PluvIO";
-import { CrdtLibraryType } from "./types";
+import type { CrdtLibraryType } from "./types";
 
 export type CreateIOParams<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -9,7 +9,7 @@ export type CreateIOParams<
     TAuthorizeUser extends BaseUser = BaseUser,
     TAuthorizeRequired extends boolean = false,
 > = {
-    authorize?: IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferPlatformContextType<TPlatform>>;
+    authorize?: IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferInitContextType<TPlatform>>;
     context?: TContext;
     crdt?: CrdtLibraryType;
     debug?: boolean;
@@ -23,16 +23,12 @@ export const createIO = <
     TAuthorizeRequired extends boolean = false,
 >(
     params: CreateIOParams<TPlatform, TContext, TAuthorizeUser, TAuthorizeRequired>,
-): PluvIO<
-    TPlatform,
-    IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferPlatformContextType<TPlatform>>,
-    TContext
-> => {
+): PluvIO<TPlatform, IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferInitContextType<TPlatform>>, TContext> => {
     const { authorize, context, crdt, debug, platform } = params;
 
     return new PluvIO<
         TPlatform,
-        IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferPlatformContextType<TPlatform>>,
+        IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferInitContextType<TPlatform>>,
         TContext
     >({
         authorize,

@@ -11,7 +11,7 @@ import type {
     Maybe,
 } from "@pluv/types";
 import colors from "kleur";
-import type { AbstractPlatform, InferPlatformContextType, InferRoomContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferInitContextType, InferRoomContextType } from "./AbstractPlatform";
 import type { IORoomListeners } from "./IORoom";
 import { IORoom } from "./IORoom";
 import { PluvProcedure } from "./PluvProcedure";
@@ -30,7 +30,7 @@ export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
 
 export type PluvServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -45,7 +45,7 @@ export type PluvServerConfig<
 
 type BaseCreateRoomOptions<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
     TContext extends JsonObject,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -54,7 +54,7 @@ type BaseCreateRoomOptions<
 
 export type CreateRoomOptions<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
     TContext extends JsonObject,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = keyof InferRoomContextType<TPlatform> extends never
@@ -63,7 +63,7 @@ export type CreateRoomOptions<
 
 export class PluvServer<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IORouterLike<TEvents>

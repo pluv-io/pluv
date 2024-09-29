@@ -8,6 +8,7 @@ import type {
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
 import crypto from "node:crypto";
+import type { IncomingMessage } from "node:http";
 import { TextDecoder } from "node:util";
 import type { WebSocket } from "ws";
 import { NodeWebSocket } from "./NodeWebSocket";
@@ -17,7 +18,7 @@ export type NodePlatformConfig = { mode?: WebSocketRegistrationMode } & (
     | { persistence: AbstractPersistence; pubSub: AbstractPubSub }
 );
 
-export class NodePlatform extends AbstractPlatform<NodeWebSocket> {
+export class NodePlatform extends AbstractPlatform<NodeWebSocket, { req: IncomingMessage }, {}> {
     readonly _registrationMode: WebSocketRegistrationMode;
 
     constructor(config: NodePlatformConfig = {}) {
@@ -54,7 +55,7 @@ export class NodePlatform extends AbstractPlatform<NodeWebSocket> {
         return [];
     }
 
-    public initialize(config: AbstractPlatformConfig<{}, {}>): this {
+    public initialize(config: AbstractPlatformConfig<{}>): this {
         return new NodePlatform({
             context: config.context,
             mode: this._registrationMode,

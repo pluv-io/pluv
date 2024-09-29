@@ -1,7 +1,7 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type { BaseIOAuthorize, IOAuthorize, InferIOAuthorizeUser, JsonObject } from "@pluv/types";
-import type { AbstractPlatform, InferPlatformContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
 import { PluvProcedure } from "./PluvProcedure";
 import type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
@@ -13,7 +13,7 @@ import { __PLUV_VERSION } from "./version";
 
 export type PluvIOConfig<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
     TContext extends JsonObject,
 > = {
     authorize?: TAuthorize;
@@ -25,7 +25,7 @@ export type PluvIOConfig<
 
 export type ServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -35,7 +35,7 @@ export type ServerConfig<
 
 export class PluvIO<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferPlatformContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
 > {
     public readonly version: string = __PLUV_VERSION as any;

@@ -18,7 +18,12 @@ import type {
     Maybe,
 } from "@pluv/types";
 import colors from "kleur";
-import type { AbstractPlatform, InferPlatformWebSocketSource, InferRoomContextType } from "./AbstractPlatform";
+import type {
+    AbstractPlatform,
+    InferInitContextType,
+    InferPlatformWebSocketSource,
+    InferRoomContextType,
+} from "./AbstractPlatform";
 import { AbstractCloseEvent, AbstractErrorEvent, AbstractMessageEvent, AbstractWebSocket } from "./AbstractWebSocket";
 import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { authorize } from "./authorize";
@@ -42,7 +47,7 @@ interface BroadcastParams<TIO extends IORoom<any, any, any, any>> {
 
 export interface IORoomListeners<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
     TContext extends JsonObject,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > {
@@ -59,7 +64,7 @@ export type BroadcastProxy<TIO extends IORoom<any, any, any, any>> = (<TEvent ex
 
 export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends JsonObject = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -76,13 +81,13 @@ interface SendMessageSender {
     user: JsonObject | null;
 }
 
-export interface WebsocketRegisterOptions {
+export type WebsocketRegisterConfig<TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>> = {
     token?: string | null;
-}
+} & InferInitContextType<TPlatform>;
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IOLike<TAuthorize, TEvents>
@@ -234,9 +239,12 @@ export class IORoom<
 
     public async register(
         webSocket: InferPlatformWebSocketSource<TPlatform>,
-        options: WebsocketRegisterOptions = {},
+        ...options: keyof InferInitContextType<TPlatform> extends never
+            ? [{ token?: string }?]
+            : [WebsocketRegisterConfig<TPlatform>]
     ): Promise<void> {
-        const { token } = options;
+        const _options = (options[0] ?? {}) as WebsocketRegisterConfig<TPlatform>;
+        const token = _options.token ?? null;
 
         const sessionId = this._platform.getSessionId(webSocket);
         const sessionExists = typeof sessionId === "string" && this._sessions.has(sessionId);
@@ -248,8 +256,8 @@ export class IORoom<
             await this._initialized;
         }
 
-        const user = await this._getAuthorizedUser(token);
-        const ioAuthorize = this._getIOAuthorize();
+        const user = await this._getAuthorizedUser(token, _options);
+        const ioAuthorize = this._getIOAuthorize(_options);
         const isUnauthorized = !!ioAuthorize?.required && !user;
 
         // There is an attempt for multiple of the same identities. Probably malicious.
@@ -362,8 +370,11 @@ export class IORoom<
         return sessions.find((pluvWs) => pluvWs.webSocket === webSocket) ?? null;
     }
 
-    private async _getAuthorizedUser(token: Maybe<string>): Promise<InferIOAuthorizeUser<InferIOAuthorize<this>>> {
-        const ioAuthorize = this._getIOAuthorize();
+    private async _getAuthorizedUser(
+        token: Maybe<string>,
+        options: WebsocketRegisterConfig<TPlatform>,
+    ): Promise<InferIOAuthorizeUser<InferIOAuthorize<this>>> {
+        const ioAuthorize = this._getIOAuthorize(options);
 
         if (!ioAuthorize) return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
         if (!token) return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
@@ -406,9 +417,9 @@ export class IORoom<
         return doc;
     }
 
-    private _getIOAuthorize() {
+    private _getIOAuthorize(options: WebsocketRegisterConfig<TPlatform>) {
         if (typeof this._authorize === "function") {
-            return this._authorize(this._context);
+            return this._authorize(options);
         }
 
         return this._authorize as {

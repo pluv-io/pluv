@@ -13,19 +13,14 @@ export type InferPlatformWebSocketType<TPlatform extends AbstractPlatform> =
 export type InferPlatformWebSocketSource<TPlatform> =
     TPlatform extends AbstractPlatform<infer IAbstractWebSocket> ? InferWebSocketSource<IAbstractWebSocket> : never;
 
-export type InferPlatformContextType<TPlatform extends AbstractPlatform> =
-    TPlatform extends AbstractPlatform<any, infer IPlatformContext> ? IPlatformContext : never;
+export type InferInitContextType<TPlatform extends AbstractPlatform> =
+    TPlatform extends AbstractPlatform<any, infer IInitContext> ? IInitContext : never;
 
 export type InferRoomContextType<TPlatform extends AbstractPlatform> =
-    TPlatform extends AbstractPlatform<any, infer IPlatformContext, infer IRoomContext>
-        ? IPlatformContext & IRoomContext
-        : never;
+    TPlatform extends AbstractPlatform<any, any, infer IRoomContext> ? IRoomContext : never;
 
-export type AbstractPlatformConfig<
-    TPlatformContext extends Record<string, any> = {},
-    TRoomContext extends Record<string, any> = {},
-> = {
-    context?: TPlatformContext & TRoomContext;
+export type AbstractPlatformConfig<TRoomContext extends Record<string, any> = {}> = {
+    context?: TRoomContext;
     persistence?: AbstractPersistence;
     pubSub?: AbstractPubSub;
 };
@@ -36,10 +31,10 @@ export interface ConvertWebSocketConfig {
 
 export abstract class AbstractPlatform<
     TWebSocket extends AbstractWebSocket = AbstractWebSocket,
-    TPlatformContext extends Record<string, any> = {},
+    TInitContext extends Record<string, any> = {},
     TRoomContext extends Record<string, any> = {},
 > {
-    protected readonly _ioContext: TPlatformContext | undefined;
+    protected readonly _initContext: TInitContext | undefined;
     protected readonly _roomContext: TRoomContext | undefined;
 
     private _initialized: boolean = false;
@@ -49,11 +44,10 @@ export abstract class AbstractPlatform<
 
     public abstract readonly _registrationMode: WebSocketRegistrationMode;
 
-    constructor(config: AbstractPlatformConfig<TPlatformContext, TRoomContext> = {}) {
+    constructor(config: AbstractPlatformConfig<TRoomContext> = {}) {
         const { context, persistence, pubSub } = config;
 
         (this as any)._meta = (config as any)._meta;
-        context && (this._ioContext = context);
         context && (this._roomContext = context);
 
         this.persistence = persistence ?? new Persistence();
@@ -75,7 +69,7 @@ export abstract class AbstractPlatform<
 
     public abstract getWebSockets(): readonly InferWebSocketSource<TWebSocket>[];
 
-    public abstract initialize(config: AbstractPlatformConfig<TPlatformContext, TRoomContext>): this;
+    public abstract initialize(config: AbstractPlatformConfig<TRoomContext>): this;
 
     public abstract parseData(data: string | ArrayBuffer): Record<string, any>;
 

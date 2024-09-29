@@ -178,6 +178,7 @@ app.get("/api/authorize", async (req, res) => {
     // ... Implement your custom authorization here
 
     const token = await io.createToken({
+        req,
         room,
         user: {
             id: "abc123",

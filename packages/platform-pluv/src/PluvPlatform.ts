@@ -34,7 +34,7 @@ export class PluvPlatform extends AbstractPlatform {
         throw new Error("Not implemented");
     }
 
-    public initialize(config: AbstractPlatformConfig<{}, {}>): this {
+    public initialize(config: AbstractPlatformConfig<{}>): this {
         throw new Error("Not implemented");
     }
 

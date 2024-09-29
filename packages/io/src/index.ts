@@ -4,7 +4,7 @@ export { AbstractPlatform } from "./AbstractPlatform";
 export type {
     AbstractPlatformConfig,
     ConvertWebSocketConfig,
-    InferPlatformContextType,
+    InferInitContextType,
     InferPlatformWebSocketType,
     InferRoomContextType,
     WebSocketRegistrationMode,
