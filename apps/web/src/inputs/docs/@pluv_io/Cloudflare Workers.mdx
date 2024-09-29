@@ -198,7 +198,7 @@ const Pluv = createPluvHandler({
     // If your PluvIO instance defines authorization, add your authorization
     // logic here. Return a user if authorized, return null or throw an error
     // if not authorized.
-    authorize(request: Request, roomId: string): Promise<User> {
+    authorize({ env, request, room }): Promise<User> {
         return {
             id: "abc123",
             name: "leedavidcs"
