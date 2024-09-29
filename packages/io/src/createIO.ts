@@ -1,11 +1,11 @@
-import type { BaseUser, IOAuthorize, JsonObject } from "@pluv/types";
+import type { BaseUser, IOAuthorize } from "@pluv/types";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
 import { PluvIO } from "./PluvIO";
 import type { CrdtLibraryType } from "./types";
 
 export type CreateIOParams<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TContext extends JsonObject = {},
+    TContext extends Record<string, any> = {},
     TAuthorizeUser extends BaseUser = BaseUser,
     TAuthorizeRequired extends boolean = false,
 > = {
@@ -18,7 +18,7 @@ export type CreateIOParams<
 
 export const createIO = <
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TContext extends JsonObject = {},
+    TContext extends Record<string, any> = {},
     TAuthorizeUser extends BaseUser = BaseUser,
     TAuthorizeRequired extends boolean = false,
 >(

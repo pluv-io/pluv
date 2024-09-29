@@ -1,6 +1,6 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type { BaseIOAuthorize, IOAuthorize, InferIOAuthorizeUser, JsonObject } from "@pluv/types";
+import type { BaseIOAuthorize, IOAuthorize, InferIOAuthorizeUser } from "@pluv/types";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
 import { PluvProcedure } from "./PluvProcedure";
 import type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
@@ -8,16 +8,16 @@ import { PluvRouter } from "./PluvRouter";
 import { PluvServer } from "./PluvServer";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
-import type { CrdtLibraryType, GetInitialStorageFn, PluvIOListeners } from "./types";
+import type { CrdtLibraryType, GetInitialStorageFn, PluvContext, PluvIOListeners } from "./types";
 import { __PLUV_VERSION } from "./version";
 
 export type PluvIOConfig<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
-    TContext extends JsonObject,
+    TContext extends Record<string, any>,
 > = {
     authorize?: TAuthorize;
-    context?: TContext;
+    context?: PluvContext<TPlatform, TContext>;
     crdt?: CrdtLibraryType;
     debug?: boolean;
     platform: TPlatform;
@@ -26,7 +26,7 @@ export type PluvIOConfig<
 export type ServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
-    TContext extends JsonObject = {},
+    TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
     getInitialStorage?: GetInitialStorageFn<TPlatform>;
@@ -36,12 +36,12 @@ export type ServerConfig<
 export class PluvIO<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
-    TContext extends JsonObject = {},
+    TContext extends Record<string, any> = {},
 > {
     public readonly version: string = __PLUV_VERSION as any;
 
     private readonly _authorize: TAuthorize | null = null;
-    private readonly _context: TContext = {} as TContext;
+    private readonly _context: PluvContext<TPlatform, TContext> = {} as PluvContext<TPlatform, TContext>;
     private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     private readonly _debug: boolean;
     private readonly _platform: TPlatform;

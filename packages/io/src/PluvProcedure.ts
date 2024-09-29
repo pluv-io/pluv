@@ -5,7 +5,7 @@ import type { EventResolver, MergeEventRecords } from "./types";
 export interface PluvProcedureConfig<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
-    TContext extends JsonObject,
+    TContext extends Record<string, any>,
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
 > {
@@ -30,7 +30,7 @@ export interface PluvProcedureConfig<
 export class PluvProcedure<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
-    TContext extends JsonObject,
+    TContext extends Record<string, any>,
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
     TFilled extends "input" | "broadcast" | "self" | "sync" | "" = "",

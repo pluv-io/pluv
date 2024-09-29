@@ -48,7 +48,7 @@ interface BroadcastParams<TIO extends IORoom<any, any, any, any>> {
 export interface IORoomListeners<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
-    TContext extends JsonObject,
+    TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > {
     onDestroy: (event: IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
@@ -65,14 +65,15 @@ export type BroadcastProxy<TIO extends IORoom<any, any, any, any>> = (<TEvent ex
 export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
-    TContext extends JsonObject = {},
+    TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
     authorize?: TAuthorize;
-    context: TContext & InferRoomContextType<TPlatform>;
+    context: TContext;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug: boolean;
     platform: TPlatform;
+    roomContext: InferRoomContextType<TPlatform>;
     router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 };
 
@@ -98,7 +99,7 @@ export class IORoom<
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
     private readonly _authorize: TAuthorize | null = null;
-    private readonly _context: TContext & InferRoomContextType<TPlatform>;
+    private readonly _context: TContext;
     private readonly _debug: boolean;
     private readonly _docFactory: AbstractCrdtDocFactory<any>;
     private readonly _listeners: IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>;
@@ -151,6 +152,7 @@ export class IORoom<
             onDestroy,
             onMessage,
             platform,
+            roomContext,
             router,
         } = config as IORoomConfig<TPlatform, TAuthorize, TContext, TEvents> & { _meta?: any };
 
@@ -160,7 +162,7 @@ export class IORoom<
         this._debug = debug;
         this._docFactory = crdt.doc(() => ({}));
         this._router = router;
-        this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), context });
+        this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), context: roomContext });
 
         this._listeners = {
             onDestroy: (event) => onDestroy?.(event),
@@ -577,7 +579,7 @@ export class IORoom<
             ]);
 
             const doc = await this._doc;
-            const baseContext: EventResolverContext<TPlatform, TAuthorize, TContext> = {
+            const eventContext: EventResolverContext<TPlatform, TAuthorize, TContext> = {
                 context: this._context,
                 doc,
                 room: this.id,
@@ -633,16 +635,10 @@ export class IORoom<
                 return;
             }
 
-            const extendedContext: EventResolverContext<
-                TPlatform,
-                TAuthorize,
-                TContext & InferRoomContextType<TPlatform>
-            > = { ...baseContext, context: { ...this._context } };
-
             await Promise.all([
-                procedure.config.broadcast?.(inputs, extendedContext),
-                procedure.config.self?.(inputs, extendedContext),
-                procedure.config.sync?.(inputs, baseContext),
+                procedure.config.broadcast?.(inputs, eventContext),
+                procedure.config.self?.(inputs, eventContext),
+                procedure.config.sync?.(inputs, eventContext),
             ]).then(async ([broadcast, self, sync]) => {
                 const handleBroadcast = async () => {
                     if (!broadcast) return;
