@@ -124,7 +124,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform, a
 
         const room = getRoom(roomId);
 
-        await room.register(ws, { token });
+        await room.register(ws, { req, token });
 
         return { matched: true };
     };
@@ -169,7 +169,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform, a
 
             if (!user) throw new Error();
 
-            const token = await io.createToken({ room: roomId, user });
+            const token = await io.createToken({ req, room: roomId, user });
 
             res.writeHead(200, { "Content-Type": "text/plain" });
             return res.end(token);

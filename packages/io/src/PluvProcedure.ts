@@ -1,10 +1,10 @@
 import type { EventRecord, IOAuthorize, InputZodLike, JsonObject, ProcedureLike } from "@pluv/types";
-import type { AbstractPlatform, InferRoomContextType } from "./AbstractPlatform";
+import type { AbstractPlatform, InferInitContextType, InferRoomContextType } from "./AbstractPlatform";
 import type { EventResolver, MergeEventRecords } from "./types";
 
 export interface PluvProcedureConfig<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
     TContext extends JsonObject,
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
@@ -29,7 +29,7 @@ export interface PluvProcedureConfig<
 
 export class PluvProcedure<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
     TContext extends JsonObject,
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},

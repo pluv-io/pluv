@@ -13,6 +13,7 @@ import type {
 } from "@pluv/types";
 import type {
     AbstractPlatform,
+    InferInitContextType,
     InferPlatformWebSocketSource,
     InferPlatformWebSocketType,
     InferRoomContextType,
@@ -33,7 +34,7 @@ export interface CrdtLibraryType {
 
 export type EventResolver<
     TPlatform extends AbstractPlatform = AbstractPlatform,
-    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
@@ -41,7 +42,7 @@ export type EventResolver<
 
 export interface EventResolverContext<
     TPlatform extends AbstractPlatform = AbstractPlatform,
-    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
 > {
     context: TContext;
@@ -111,7 +112,7 @@ export type GetInitialStorageFn<TPlatform extends AbstractPlatform> = (
 
 export interface PluvIOListeners<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
     TContext extends JsonObject,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > {
@@ -122,7 +123,7 @@ export interface PluvIOListeners<
 
 export type IORoomListenerEvent<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
     TContext extends JsonObject,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = {
@@ -133,7 +134,7 @@ export type IORoomListenerEvent<
 
 export type IORoomMessageEvent<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferRoomContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
     TContext extends JsonObject,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents> & {

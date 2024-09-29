@@ -58,9 +58,12 @@ Creates a JWT for a user trying to connect to a room. This should be called with
 const token = await io.createToken({
     // If using @platform/node
     req: req as IncomingMessage,
+
     // If using @platform/cloudflare
     // This is the env from the Cloudflare worker handler's fetch function
     env: env as Env,
+    request: request as Request,
+
     // ...
     room: "my-example-room",
     user: {
