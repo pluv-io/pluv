@@ -1,5 +1,137 @@
 # @pluv/platform-node
 
+## 0.31.0
+
+### Minor Changes
+
+- b3c31d7: **BREAKING**
+
+  Fixed platform context types. This will require additional properties when registering a websocket and creating authorization tokens. See example below:
+
+  ```ts
+  // @pluv/platform-node example
+
+  import { platformNode } from "@pluv/platform-node";
+  import { createIO } from "@pluv/io";
+  import type { IncomingMessage } from "node:http";
+  import { z } from "zod";
+
+  const io = createIO({
+      // If using a function authorize parameter, `req` is now available as a param
+      authorize: ({ req }) => ({
+          required: true,
+          secret: "MY-CUSTOM-SECRET",
+          user: z.object({
+              id: z.string(),
+          }),
+      }),
+      platformNode(),
+  });
+
+  // Before
+  io.createToken({
+      room: "my-custom-room",
+      user: { id: "abc123" },
+  });
+
+  // After
+  io.createToken({
+      room: "my-custom-room",
+      user: { id: "abc123" },
+
+      // Previously not required, but now required
+      req: req as IncomingMessage,
+  });
+  ```
+
+  ```ts
+  // @pluv/platform-cloudflare example
+
+  import { platformCloudflare } from "@pluv/platform-cloudflare";
+  import { createIO } from "@pluv/io";
+  import { z } from "zod";
+
+  const io = createIO({
+      // If using a function authorize parameter, `env` and `request` are now available as params
+      authorize: ({ env, request }) => ({
+          required: true,
+          secret: "MY-CUSTOM-SECRET",
+          user: z.object({
+              id: z.string(),
+          }),
+      }),
+      platformCloudflare(),
+  });
+
+  // Before
+  io.createToken({
+      room: "my-custom-room",
+      user: { id: "abc123" },
+  });
+
+  // After
+  io.createToken({
+      room: "my-custom-room",
+      user: { id: "abc123" },
+
+      // Previously not required, but now required
+      env: env as Env,
+      request: request as Request,
+  });
+  ```
+
+- 0f98064: **BREAKING**
+
+  Update `authorize` params so that `roomId` is renamed to `room` and more platform-specific parameters are exposed. See example below:
+
+  ```ts
+  // @pluv/platform-cloudflare example
+  import { createPluvHandler } from "@pluv/platform-cloudflare";
+
+  // Before
+  createPluvHandler({
+    // ...
+    authorize: ({ roomId }) => {
+      // ...
+    },
+  });
+
+  // After
+  createPluvHandler({
+    // ...
+    authorize: ({ env, request, room }) => {
+      // ...
+    },
+  });
+  ```
+
+  ```ts
+  // @pluv/platform-node example
+  import { createPluvHandler } from "@pluv/platform-node";
+
+  // Before
+  createPluvHandler({
+    // ...
+    authorize: ({ roomId }) => {
+      // ...
+    },
+  });
+
+  // After
+  createPluvHandler({
+    // ...
+    authorize: ({ req, room }) => {
+      // ...
+    },
+  });
+  ```
+
+### Patch Changes
+
+- Updated dependencies [b3c31d7]
+  - @pluv/io@0.31.0
+  - @pluv/types@0.31.0
+
 ## 0.30.2
 
 ### Patch Changes
