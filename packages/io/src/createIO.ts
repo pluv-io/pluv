@@ -1,7 +1,7 @@
 import type { BaseUser, IOAuthorize } from "@pluv/types";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
 import { PluvIO } from "./PluvIO";
-import type { CrdtLibraryType } from "./types";
+import type { CrdtLibraryType, PluvContext } from "./types";
 
 export type CreateIOParams<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -10,7 +10,7 @@ export type CreateIOParams<
     TAuthorizeRequired extends boolean = false,
 > = {
     authorize?: IOAuthorize<TAuthorizeUser, TAuthorizeRequired, InferInitContextType<TPlatform>>;
-    context?: TContext;
+    context?: PluvContext<TPlatform, TContext>;
     crdt?: CrdtLibraryType;
     debug?: boolean;
     platform: TPlatform;

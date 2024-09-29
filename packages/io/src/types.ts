@@ -108,7 +108,7 @@ export type MergeEventRecords<
 
 type GetInitialStorageEvent<TPlatform extends AbstractPlatform> = {
     room: string;
-} & InferRoomContextType<TPlatform>;
+};
 
 export type GetInitialStorageFn<TPlatform extends AbstractPlatform> = (
     event: GetInitialStorageEvent<TPlatform>,
