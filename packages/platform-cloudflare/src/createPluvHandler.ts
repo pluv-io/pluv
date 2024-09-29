@@ -1,4 +1,4 @@
-import type { IORoom, PluvServer } from "@pluv/io";
+import type { InferInitContextType, IORoom, PluvServer } from "@pluv/io";
 import type {
     Id,
     InferIOAuthorize,
@@ -10,12 +10,11 @@ import type {
 import { match } from "path-to-regexp";
 import { CloudflarePlatform } from "./CloudflarePlatform";
 
-export interface AuthorizeFunctionContext {
-    request: Request<any, CfProperties<any>>;
-    roomId: string;
-}
-export type AuthorizeFunction<TPluvServer extends PluvServer<CloudflarePlatform, any, any, any>> = (
-    ctx: AuthorizeFunctionContext,
+export type AuthorizeFunctionContext<TPluvServer extends PluvServer<any, any, any, any>> = {
+    room: string;
+} & InferInitContextType<TPluvServer extends PluvServer<infer IPlatform, any, any, any> ? IPlatform : never>;
+export type AuthorizeFunction<TPluvServer extends PluvServer<any, any, any, any>> = (
+    ctx: AuthorizeFunctionContext<TPluvServer>,
 ) => MaybePromise<Maybe<InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>>>>;
 
 export type CreatePluvHandlerConfig<
@@ -120,9 +119,9 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
 
         if (!matched) return null;
 
-        const roomId = searchParams.get("room");
+        const room = searchParams.get("room");
 
-        if (!roomId) {
+        if (!room) {
             return new Response("Not found", {
                 headers: { "Content-Type": "text/plain" },
                 status: 404,
@@ -130,12 +129,12 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
         }
 
         try {
-            const user = await authorize({ request, roomId });
+            const user = await authorize({ env, request, room } as AuthorizeFunctionContext<TPluvServer>);
 
             if (!user) throw new Error();
 
             const namespace = getDurableObjectNamespace(env);
-            const durableObjectId = namespace.idFromName(roomId);
+            const durableObjectId = namespace.idFromName(room);
 
             const token = await io.createToken({
                 env,

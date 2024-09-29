@@ -1,4 +1,4 @@
-import type { PluvServer } from "@pluv/io";
+import type { InferInitContextType, PluvServer } from "@pluv/io";
 import type {
     InferIOAuthorize,
     InferIOAuthorizeRequired,
@@ -13,13 +13,12 @@ import type { WebSocket } from "ws";
 import { Server as WsServer } from "ws";
 import { NodePlatform } from "./NodePlatform";
 
-export interface AuthorizeFunctionContext {
-    req: IncomingMessage;
-    res: ServerResponse;
-    roomId: string;
-}
+export type AuthorizeFunctionContext<TPluvServer extends PluvServer<any, any, any, any>> = {
+    room: string;
+} & InferInitContextType<TPluvServer extends PluvServer<infer IPlatform, any, any, any> ? IPlatform : never>;
+
 export type AuthorizeFunction<TPluvServer extends PluvServer<NodePlatform, any, any, any>> = (
-    ctx: AuthorizeFunctionContext,
+    ctx: AuthorizeFunctionContext<TPluvServer>,
 ) => MaybePromise<Maybe<InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>>>>;
 
 export type CreatePluvHandlerConfig<TPluvServer extends PluvServer<NodePlatform, any, any, any>> = {
@@ -157,19 +156,19 @@ export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform, a
 
         if (!matched) return next?.() ?? null;
 
-        const roomId = parsed.query?.room || undefined;
+        const room = parsed.query?.room || undefined;
 
-        if (typeof roomId !== "string" || !roomId) {
+        if (typeof room !== "string" || !room) {
             res.writeHead(404, { "Content-Type": "text/plain" });
             return res.end("Room does not exist");
         }
 
         try {
-            const user = await authorize({ res, req, roomId });
+            const user = await authorize({ req, room } as AuthorizeFunctionContext<TPluvServer>);
 
             if (!user) throw new Error();
 
-            const token = await io.createToken({ req, room: roomId, user });
+            const token = await io.createToken({ req, room, user });
 
             res.writeHead(200, { "Content-Type": "text/plain" });
             return res.end(token);

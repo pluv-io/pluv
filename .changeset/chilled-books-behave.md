@@ -5,6 +5,8 @@
 "@pluv/io": minor
 ---
 
+**BREAKING**
+
 Fixed platform context types. This will require additional properties when registering a websocket and creating authorization tokens. See example below:
 
 ```ts
