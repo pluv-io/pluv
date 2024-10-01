@@ -89,7 +89,7 @@ export class PluvIO<TUser extends BaseUser> {
     public async createToken(params: JWTEncodeParams<TUser, PluvPlatform>): Promise<string> {
         const parsed = this._authorize.user.parse(params.user);
 
-        const res = await fetch("https://pluv.io/api/participant/authorize", {
+        const res = await fetch("https://pluv.io/api/room/token", {
             method: "post",
             body: JSON.stringify({
                 maxAge: params.maxAge ?? null,
