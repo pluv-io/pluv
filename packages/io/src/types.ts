@@ -18,7 +18,7 @@ import type {
     InferPlatformWebSocketType,
     InferRoomContextType,
 } from "./AbstractPlatform";
-import type { AbstractWebSocket } from "./AbstractWebSocket";
+import type { AbstractWebSocket, InferWebSocketSource } from "./AbstractWebSocket";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 
 declare global {
@@ -122,7 +122,7 @@ export interface PluvIOListeners<
 > {
     onRoomDeleted: (event: IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
     onRoomMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
-    onStorageUpdated: (event: IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
+    onStorageUpdated: (event: IOStorageUpdatedEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
 }
 
 export type IORoomListenerEvent<
@@ -144,6 +144,17 @@ export type IORoomMessageEvent<
 > = IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents> & {
     message: InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>;
     user?: InferIOAuthorizeUser<TAuthorize>;
+    webSocket?: InferPlatformWebSocketSource<TPlatform>;
+};
+
+export type IOStorageUpdatedEvent<
+    TPlatform extends AbstractPlatform<any>,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
+    TContext extends Record<string, any>,
+    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
+> = IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents> & {
+    user?: InferIOAuthorizeUser<TAuthorize>;
+    webSocket?: InferPlatformWebSocketSource<TPlatform>;
 };
 
 export type WebSocketType<TPlatform extends AbstractPlatform> =

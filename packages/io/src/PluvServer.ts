@@ -3,7 +3,7 @@ import { noop } from "@pluv/crdt";
 import type {
     BaseIOAuthorize,
     IOAuthorize,
-    IORouterLike,
+    IOLike,
     Id,
     InferIOAuthorize,
     InferIOAuthorizeUser,
@@ -66,7 +66,7 @@ export class PluvServer<
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> implements IORouterLike<TEvents>
+> implements IOLike<TAuthorize, TEvents>
 {
     public readonly version: string = __PLUV_VERSION as any;
 
@@ -120,7 +120,7 @@ export class PluvServer<
                     },
                 };
             })
-            .self(async (data, { context, doc, room }) => {
+            .self(async (data, { context, doc, room, session }) => {
                 const oldState = await this._platform.persistence.getStorageState(room);
                 const update = (data as any)?.update as Maybe<string>;
 
@@ -134,7 +134,13 @@ export class PluvServer<
 
                     await this._platform.persistence.setStorageState(room, encodedState);
 
-                    this._getListeners().onStorageUpdated({ context, encodedState, room });
+                    this._getListeners().onStorageUpdated({
+                        context,
+                        encodedState,
+                        room,
+                        user: session?.user,
+                        webSocket: session?.webSocket.webSocket,
+                    });
                 }
 
                 const state = (await this._platform.persistence.getStorageState(room)) ?? doc.getEncodedState();
