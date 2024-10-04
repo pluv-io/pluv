@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 0.32.2
+
+### Patch Changes
+
+- Updated dependencies [890d45b]
+  - @pluv/io@0.32.2
+  - @pluv/crdt@0.32.2
+  - @pluv/types@0.32.2
+
 ## 0.32.1
 
 ### Patch Changes
