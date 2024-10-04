@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.32.2
+
+### Patch Changes
+
+- 890d45b: Update `onRoomMessage` and `onStorageUpdated` events to include the WebSocket as part of the `event` parameter of those listeners.
+  - @pluv/crdt@0.32.2
+  - @pluv/types@0.32.2
+
 ## 0.32.1
 
 ### Patch Changes
