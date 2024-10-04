@@ -606,6 +606,7 @@ export class IORoom<
                 message: message as InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>,
                 room: this.id,
                 user: session.user,
+                webSocket: session.webSocket.webSocket,
             });
 
             const sessionId = session.id;

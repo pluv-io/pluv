@@ -40,6 +40,7 @@ export type {
     GetInitialStorageFn,
     IORoomListenerEvent,
     IORoomMessageEvent,
+    IOStorageUpdatedEvent,
     PluvIOListeners,
     WebSocketSerializedState,
     WebSocketSession,
