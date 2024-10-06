@@ -1,5 +1,5 @@
 import type { GetInitialStorageFn, JWTEncodeParams, PluvIOListeners } from "@pluv/io";
-import type { BaseUser, InputZodLike } from "@pluv/types";
+import type { BaseUser, IOLike, InputZodLike } from "@pluv/types";
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
 import type { PluvPlatform } from "./PluvPlatform";
@@ -23,13 +23,29 @@ export type PluvIOConfig<TUser extends BaseUser> = Partial<
     secretKey: string;
 };
 
-export class PluvIO<TUser extends BaseUser> {
+export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUser>, {}> {
     private readonly _authorize: PluvAuthorize<TUser>;
     private readonly _basePath: string;
     private readonly _getInitialStorage?: GetInitialStorageFn<PluvPlatform>;
     private readonly _listeners: Pick<PluvIOListeners<PluvPlatform, PluvAuthorize<TUser>, {}, {}>, "onRoomDeleted">;
     private readonly _publicKey: string;
     private readonly _secretKey: string;
+
+    /**
+     * @ignore
+     * @readonly
+     * @deprecated Internal use only. Changes to this will never be marked as breaking.
+     */
+    public get _defs() {
+        return {
+            authorize: this._authorize,
+            context: {},
+            events: {},
+            get platform() {
+                throw new Error("Invalid platform reference");
+            },
+        };
+    }
 
     public get fetch() {
         const app = new Hono().basePath(this._basePath).route("/", this._webhooks);
@@ -90,11 +106,12 @@ export class PluvIO<TUser extends BaseUser> {
         const parsed = this._authorize.user.parse(params.user);
 
         const res = await fetch("https://pluv.io/api/room/token", {
+            headers: { "content-type": "application/json" },
             method: "post",
             body: JSON.stringify({
                 maxAge: params.maxAge ?? null,
-                room: params.room,
                 publicKey: this._publicKey,
+                room: params.room,
                 secretKey: this._secretKey,
                 user: parsed,
             }),
