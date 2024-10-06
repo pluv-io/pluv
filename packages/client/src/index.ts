@@ -12,4 +12,6 @@ export type { PluvProcedureConfig } from "./PluvProcedure";
 export { PluvRoom } from "./PluvRoom";
 export type { PluvRoomAddon, PluvRoomAddonInput, PluvRoomAddonResult, PluvRoomDebug } from "./PluvRoom";
 export type { MergeEvents, PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
+export { register } from "./register";
+export type { RegisterParams } from "./register";
 export type { UserInfo, WebSocketConnection, WebSocketState } from "./types";
