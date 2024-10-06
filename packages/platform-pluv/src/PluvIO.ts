@@ -11,9 +11,21 @@ interface PluvAuthorize<TUser extends BaseUser> {
     user: InputZodLike<TUser>;
 }
 
+interface PluvIOEndpoints {
+    createToken: string;
+}
+
 export type PluvIOConfig<TUser extends BaseUser> = Partial<
     Pick<PluvIOListeners<PluvPlatform, PluvAuthorize<TUser>, {}, {}>, "onRoomDeleted">
 > & {
+    /**
+     * @ignore
+     * @readonly
+     * @deprecated Internal use only. Changes to this will never be marked as breaking.
+     */
+    _defs?: {
+        endpoints?: PluvIOEndpoints;
+    };
     authorize: {
         user: InputZodLike<TUser>;
     };
@@ -26,6 +38,7 @@ export type PluvIOConfig<TUser extends BaseUser> = Partial<
 export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUser>, {}> {
     private readonly _authorize: PluvAuthorize<TUser>;
     private readonly _basePath: string;
+    private readonly _endpoints: PluvIOEndpoints;
     private readonly _getInitialStorage?: GetInitialStorageFn<PluvPlatform>;
     private readonly _listeners: Pick<PluvIOListeners<PluvPlatform, PluvAuthorize<TUser>, {}, {}>, "onRoomDeleted">;
     private readonly _publicKey: string;
@@ -88,7 +101,7 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
     });
 
     constructor(options: PluvIOConfig<TUser>) {
-        const { authorize, basePath, onRoomDeleted, getInitialStorage, publicKey, secretKey } = options;
+        const { _defs, authorize, basePath, onRoomDeleted, getInitialStorage, publicKey, secretKey } = options;
 
         this._authorize = {
             required: true,
@@ -96,6 +109,10 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
             user: authorize.user,
         };
         this._basePath = basePath;
+        this._endpoints = {
+            createToken: "https://pluv.io/api/room/token",
+            ..._defs?.endpoints,
+        };
         this._getInitialStorage = getInitialStorage;
         this._listeners = { onRoomDeleted: (event) => onRoomDeleted?.(event) };
         this._publicKey = publicKey;
@@ -105,7 +122,7 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
     public async createToken(params: JWTEncodeParams<TUser, PluvPlatform>): Promise<string> {
         const parsed = this._authorize.user.parse(params.user);
 
-        const res = await fetch("https://pluv.io/api/room/token", {
+        const res = await fetch(this._endpoints.createToken, {
             headers: { "content-type": "application/json" },
             method: "post",
             body: JSON.stringify({
