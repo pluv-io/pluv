@@ -27,11 +27,11 @@
 		"@pluv/types": "workspace:^"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20240925.0",
+		"@cloudflare/workers-types": "^4.20241004.0",
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^8.57.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.3.0",
-		"typescript": "^5.6.2"
+		"typescript": "^5.6.3"
 	}
 }
