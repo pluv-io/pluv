@@ -1,5 +1,30 @@
 # @pluv/client
 
+## 0.32.3
+
+### Patch Changes
+
+- b18230f: Add `register` helper to improve client initialization when hosted on pluv.io.
+
+  ```ts
+  import { createClient, register } from "@pluv/client";
+  import type { ioServer } from "./server";
+
+  const client = createClient({
+    infer: (i) => ({ io: i<typeof ioServer> }),
+    // This includes `wsEndpoint` and therefore should no-longer be manually provided
+    ...register({
+      // `authEndpoint` and `publicKey` are now required
+      authEndpoint: ({ room }) =>
+        `${process.env.API_URL}/api/room?room=${room}`,
+      publicKey: "pk_...",
+    }),
+  });
+  ```
+
+  - @pluv/crdt@0.32.3
+  - @pluv/types@0.32.3
+
 ## 0.32.2
 
 ### Patch Changes
