@@ -191,6 +191,32 @@ export class IORoom<
         this._uninitialize = uninitialize;
     }
 
+    /**
+     * @description Closes a connection with the specified sessionId
+     * @param sessionId The session id of the connection to close
+     */
+    public async evict(sessionId: string): Promise<void> {
+        const session = this._sessions.get(sessionId);
+
+        if (session) session.state.quit = true;
+
+        await this._emitQuitters();
+    }
+
+    /**
+     * @description Closes all connections to this room, effectively destroying
+     * the room
+     */
+    public async evictAll(): Promise<void> {
+        const sessions = Array.from(this._sessions.values());
+
+        sessions.forEach((session) => {
+            session.state.quit = true;
+        });
+
+        await this._emitQuitters();
+    }
+
     public getSize(): number {
         const currentTime = new Date().getTime();
 
