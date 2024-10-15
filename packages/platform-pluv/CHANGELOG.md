@@ -1,5 +1,16 @@
 # @pluv/platform-pluv
 
+## 0.32.3
+
+### Patch Changes
+
+- cce989d: Added properties for internal use only.
+- 5a3114f: Fixed thrown error when calling `createToken`.
+- Updated dependencies [bb21274]
+  - @pluv/io@0.32.3
+  - @pluv/crdt@0.32.3
+  - @pluv/types@0.32.3
+
 ## 0.32.2
 
 ### Patch Changes

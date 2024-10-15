@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.32.3
+
+### Patch Changes
+
+- bb21274: Added the ability to evict (i.e. close) a connection to a room via `IORoom.evict` and `IORoom.evictAll`.
+  - @pluv/crdt@0.32.3
+  - @pluv/types@0.32.3
+
 ## 0.32.2
 
 ### Patch Changes
