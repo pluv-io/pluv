@@ -1,5 +1,15 @@
 # @pluv/react
 
+## 0.32.3
+
+### Patch Changes
+
+- 75e992f: Export `register` helper in `@pluv/react`.
+- Updated dependencies [b18230f]
+  - @pluv/client@0.32.3
+  - @pluv/crdt@0.32.3
+  - @pluv/types@0.32.3
+
 ## 0.32.2
 
 ### Patch Changes
