@@ -7,24 +7,36 @@ import type {
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
+import type { JsonPrimitive } from "@pluv/types";
 import crypto from "node:crypto";
 import type { IncomingMessage } from "node:http";
 import { TextDecoder } from "node:util";
 import type { WebSocket } from "ws";
 import { NodeWebSocket } from "./NodeWebSocket";
 
-export type NodePlatformConfig = { mode?: WebSocketRegistrationMode } & (
+export type NodePlatformRoomContext<TMeta extends Record<string, JsonPrimitive>> = keyof TMeta extends never
+    ? { meta?: undefined }
+    : { meta: TMeta };
+
+export type NodePlatformConfig<TMeta extends Record<string, JsonPrimitive>> = { mode?: WebSocketRegistrationMode } & (
     | { persistence?: undefined; pubSub?: undefined }
     | { persistence: AbstractPersistence; pubSub: AbstractPubSub }
-);
+) & { context?: NodePlatformRoomContext<TMeta> };
 
-export class NodePlatform extends AbstractPlatform<NodeWebSocket, { req: IncomingMessage }, {}> {
+export class NodePlatform<TMeta extends Record<string, JsonPrimitive> = {}> extends AbstractPlatform<
+    NodeWebSocket,
+    { req: IncomingMessage },
+    NodePlatformRoomContext<TMeta>
+> {
     readonly _registrationMode: WebSocketRegistrationMode;
 
-    constructor(config: NodePlatformConfig = {}) {
-        const { mode = "attached", persistence, pubSub } = config;
+    constructor(config: NodePlatformConfig<TMeta> = {}) {
+        const { context, mode = "attached", persistence, pubSub } = config;
 
-        super(persistence && pubSub ? { persistence, pubSub } : {});
+        super({
+            context,
+            ...(persistence && pubSub ? { persistence, pubSub } : {}),
+        });
 
         this._registrationMode = mode;
     }
@@ -55,13 +67,13 @@ export class NodePlatform extends AbstractPlatform<NodeWebSocket, { req: Incomin
         return [];
     }
 
-    public initialize(config: AbstractPlatformConfig<{}>): this {
+    public initialize(config: AbstractPlatformConfig<NodePlatformRoomContext<TMeta>>): this {
         return new NodePlatform({
             context: config.context,
             mode: this._registrationMode,
             persistence: this.persistence,
             pubSub: this.pubSub,
-        } as NodePlatformConfig)._initialize() as this;
+        } as NodePlatformConfig<TMeta>)._initialize() as this;
     }
 
     public parseData(data: string | ArrayBuffer): Record<string, any> {
