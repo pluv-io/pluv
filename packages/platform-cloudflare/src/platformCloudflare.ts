@@ -1,8 +1,12 @@
+import type { JsonPrimitive } from "@pluv/types";
 import type { CloudflarePlatformConfig } from "./CloudflarePlatform";
 import { CloudflarePlatform } from "./CloudflarePlatform";
 
-export const platformCloudflare = <TEnv extends Record<string, any> = {}>(
-    config: CloudflarePlatformConfig<TEnv> = {},
-): CloudflarePlatform<TEnv> => {
-    return new CloudflarePlatform<TEnv>(config);
+export const platformCloudflare = <
+    TEnv extends Record<string, any> = {},
+    TMeta extends Record<string, JsonPrimitive> = {},
+>(
+    config: CloudflarePlatformConfig<TEnv, TMeta> = {},
+): CloudflarePlatform<TEnv, TMeta> => {
+    return new CloudflarePlatform<TEnv, TMeta>(config);
 };

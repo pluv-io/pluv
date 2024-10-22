@@ -1,28 +1,39 @@
 import type {
     AbstractPlatformConfig,
     ConvertWebSocketConfig,
-    InferInitContextType,
     WebSocketRegistrationMode,
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
 import { PersistenceCloudflareTransactionalStorage } from "@pluv/persistence-cloudflare-transactional-storage";
+import type { JsonPrimitive } from "@pluv/types";
 import { CloudflareWebSocket } from "./CloudflareWebSocket";
 import { DEFAULT_REGISTRATION_MODE } from "./constants";
 
-export type CloudflarePlatformConfig<TEnv extends Record<string, any> = {}> = AbstractPlatformConfig<{
+export type CloudflarePlatformRoomContext<
+    TEnv extends Record<string, any>,
+    TMeta extends Record<string, JsonPrimitive>,
+> = {
     env: TEnv;
     state: DurableObjectState;
-}> & { mode?: WebSocketRegistrationMode };
+} & (keyof TMeta extends never ? { meta?: undefined } : { meta: TMeta });
 
-export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends AbstractPlatform<
+export type CloudflarePlatformConfig<
+    TEnv extends Record<string, any> = {},
+    TMeta extends Record<string, JsonPrimitive> = {},
+> = AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>> & { mode?: WebSocketRegistrationMode };
+
+export class CloudflarePlatform<
+    TEnv extends Record<string, any> = {},
+    TMeta extends Record<string, JsonPrimitive> = {},
+> extends AbstractPlatform<
     CloudflareWebSocket,
     { env: TEnv; request: Request },
-    { env: TEnv; state: DurableObjectState }
+    CloudflarePlatformRoomContext<TEnv, TMeta>
 > {
     readonly _registrationMode: WebSocketRegistrationMode;
 
-    constructor(config: CloudflarePlatformConfig<TEnv> = {}) {
+    constructor(config: CloudflarePlatformConfig<TEnv, TMeta>) {
         super({
             ...config,
             ...(config.context && config.mode === "detached"
@@ -92,15 +103,19 @@ export class CloudflarePlatform<TEnv extends Record<string, any> = {}> extends A
         return detachedState.getWebSockets() ?? [];
     }
 
-    public initialize(config: AbstractPlatformConfig<{ env: TEnv; state: DurableObjectState }>): this {
+    public initialize(config: AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>>): this {
         const context = config.context ?? { ...this._roomContext };
 
         if (!context.env || !context.state) {
             throw new Error("Could not derive platform context");
         }
 
-        return new CloudflarePlatform<TEnv>({
-            context: { env: context.env, state: context.state },
+        return new CloudflarePlatform<TEnv, TMeta>({
+            context: {
+                env: context.env,
+                meta: context.meta,
+                state: context.state,
+            } as CloudflarePlatformRoomContext<TEnv, TMeta>,
             mode: this._registrationMode,
             persistence: this.persistence,
             pubSub: this.pubSub,
