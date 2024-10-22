@@ -22,7 +22,7 @@
     ],
     "dependencies": {
         "@dnd-kit/core": "^6.1.0",
-        "@mdx-js/react": "^3.0.1",
+        "@mdx-js/react": "^3.1.0",
         "@pluv-apps/server-cloudflare": "workspace:^",
         "@pluv-internal/mdx-components": "workspace:^",
         "@pluv-internal/react-components": "workspace:^",
@@ -39,7 +39,7 @@
         "@types/common-tags": "^1.8.4",
         "@types/mdx": "^2.0.13",
         "@types/ms": "^0.7.34",
-        "@types/node": "^22.7.5",
+        "@types/node": "^22.7.8",
         "@types/react": "^18.3.11",
         "@types/react-dom": "^18.3.1",
         "@types/ws": "^8.5.12",
@@ -56,7 +56,7 @@
     },
     "devDependencies": {
         "@faker-js/faker": "^9.0.3",
-        "@mdx-js/loader": "^3.0.1",
+        "@mdx-js/loader": "^3.1.0",
         "@next/bundle-analyzer": "^14.2.15",
         "@next/mdx": "^14.2.15",
         "@pluv-internal/tailwind-config": "workspace:^",
@@ -79,8 +79,8 @@
         "nodemon": "^3.1.7",
         "postcss": "^8.4.47",
         "remark-gfm": "^4.0.0",
-        "serve": "^14.2.3",
-        "tailwindcss": "^3.4.13",
+        "serve": "^14.2.4",
+        "tailwindcss": "^3.4.14",
         "ts-node": "^10.9.2",
         "typescript": "^5.6.3"
     }
