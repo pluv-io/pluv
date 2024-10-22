@@ -6,26 +6,23 @@ import type {
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
 import { PersistenceCloudflareTransactionalStorage } from "@pluv/persistence-cloudflare-transactional-storage";
-import type { JsonPrimitive } from "@pluv/types";
+import type { Json } from "@pluv/types";
 import { CloudflareWebSocket } from "./CloudflareWebSocket";
 import { DEFAULT_REGISTRATION_MODE } from "./constants";
 
-export type CloudflarePlatformRoomContext<
-    TEnv extends Record<string, any>,
-    TMeta extends Record<string, JsonPrimitive>,
-> = {
+export type CloudflarePlatformRoomContext<TEnv extends Record<string, any>, TMeta extends Record<string, Json>> = {
     env: TEnv;
     state: DurableObjectState;
 } & (keyof TMeta extends never ? { meta?: undefined } : { meta: TMeta });
 
 export type CloudflarePlatformConfig<
     TEnv extends Record<string, any> = {},
-    TMeta extends Record<string, JsonPrimitive> = {},
+    TMeta extends Record<string, Json> = {},
 > = AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>> & { mode?: WebSocketRegistrationMode };
 
 export class CloudflarePlatform<
     TEnv extends Record<string, any> = {},
-    TMeta extends Record<string, JsonPrimitive> = {},
+    TMeta extends Record<string, Json> = {},
 > extends AbstractPlatform<
     CloudflareWebSocket,
     { env: TEnv; request: Request },

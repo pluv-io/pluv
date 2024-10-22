@@ -7,23 +7,23 @@ import type {
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
-import type { JsonPrimitive } from "@pluv/types";
+import type { Json } from "@pluv/types";
 import crypto from "node:crypto";
 import type { IncomingMessage } from "node:http";
 import { TextDecoder } from "node:util";
 import type { WebSocket } from "ws";
 import { NodeWebSocket } from "./NodeWebSocket";
 
-export type NodePlatformRoomContext<TMeta extends Record<string, JsonPrimitive>> = keyof TMeta extends never
+export type NodePlatformRoomContext<TMeta extends Record<string, Json>> = keyof TMeta extends never
     ? { meta?: undefined }
     : { meta: TMeta };
 
-export type NodePlatformConfig<TMeta extends Record<string, JsonPrimitive>> = { mode?: WebSocketRegistrationMode } & (
+export type NodePlatformConfig<TMeta extends Record<string, Json>> = { mode?: WebSocketRegistrationMode } & (
     | { persistence?: undefined; pubSub?: undefined }
     | { persistence: AbstractPersistence; pubSub: AbstractPubSub }
 ) & { context?: NodePlatformRoomContext<TMeta> };
 
-export class NodePlatform<TMeta extends Record<string, JsonPrimitive> = {}> extends AbstractPlatform<
+export class NodePlatform<TMeta extends Record<string, Json> = {}> extends AbstractPlatform<
     NodeWebSocket,
     { req: IncomingMessage },
     NodePlatformRoomContext<TMeta>
