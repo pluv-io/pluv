@@ -1,5 +1,14 @@
 # @pluv/platform-cloudflare
 
+## 0.32.5
+
+### Patch Changes
+
+- 98d7585: Update `meta` type on platform contexts to allow for nested json types.
+  - @pluv/io@0.32.5
+  - @pluv/persistence-cloudflare-transactional-storage@0.32.5
+  - @pluv/types@0.32.5
+
 ## 0.32.4
 
 ### Patch Changes
