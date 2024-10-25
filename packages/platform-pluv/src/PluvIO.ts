@@ -1,4 +1,4 @@
-import type { GetInitialStorageFn, JWTEncodeParams, PluvIOListeners } from "@pluv/io";
+import type { GetInitialStorageFn, JWTEncodeParams } from "@pluv/io";
 import type { BaseUser, IOLike, InputZodLike } from "@pluv/types";
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
@@ -15,9 +15,23 @@ interface PluvIOEndpoints {
     createToken: string;
 }
 
-export type PluvIOConfig<TUser extends BaseUser> = Partial<
-    Pick<PluvIOListeners<PluvPlatform, PluvAuthorize<TUser>, {}, {}>, "onRoomDeleted">
-> & {
+type RoomDeletedMessageEventData = {
+    encodedState: string | null;
+    room: string;
+};
+
+type StorageUpdatedEventData<TUser extends BaseUser> = {
+    encodedState: string | null;
+    room: string;
+    user: TUser;
+};
+
+type PluvIOListeners<TUser extends BaseUser> = {
+    onRoomDeleted: (event: RoomDeletedMessageEventData) => void;
+    onStorageUpdated: (event: StorageUpdatedEventData<TUser>) => void;
+};
+
+export type PluvIOConfig<TUser extends BaseUser> = Partial<PluvIOListeners<TUser>> & {
     /**
      * @ignore
      * @readonly
@@ -40,7 +54,7 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
     private readonly _basePath: string;
     private readonly _endpoints: PluvIOEndpoints;
     private readonly _getInitialStorage?: GetInitialStorageFn<PluvPlatform>;
-    private readonly _listeners: Pick<PluvIOListeners<PluvPlatform, PluvAuthorize<TUser>, {}, {}>, "onRoomDeleted">;
+    private readonly _listeners: PluvIOListeners<TUser>;
     private readonly _publicKey: string;
     private readonly _secretKey: string;
 
@@ -91,7 +105,7 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
                 const room = data.room;
                 const encodedState = data.storage;
 
-                await Promise.resolve(this._listeners.onRoomDeleted({ context: {}, encodedState, room }));
+                await Promise.resolve(this._listeners.onRoomDeleted({ encodedState, room }));
 
                 return c.json({ data: { room } }, 200);
             }
@@ -101,7 +115,8 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
     });
 
     constructor(options: PluvIOConfig<TUser>) {
-        const { _defs, authorize, basePath, onRoomDeleted, getInitialStorage, publicKey, secretKey } = options;
+        const { _defs, authorize, basePath, onRoomDeleted, onStorageUpdated, getInitialStorage, publicKey, secretKey } =
+            options;
 
         this._authorize = {
             required: true,
@@ -114,7 +129,10 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
             ..._defs?.endpoints,
         };
         this._getInitialStorage = getInitialStorage;
-        this._listeners = { onRoomDeleted: (event) => onRoomDeleted?.(event) };
+        this._listeners = {
+            onRoomDeleted: (event) => onRoomDeleted?.(event),
+            onStorageUpdated: (event) => onStorageUpdated?.(event),
+        };
         this._publicKey = publicKey;
         this._secretKey = secretKey;
     }
@@ -140,9 +158,7 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
 
         const token = await res.text().catch(() => null);
 
-        if (typeof token !== "string") {
-            throw new Error("Authorization failed");
-        }
+        if (typeof token !== "string") throw new Error("Authorization failed");
 
         return token;
     }
