@@ -18,7 +18,7 @@ import type {
     InferPlatformWebSocketType,
     InferRoomContextType,
 } from "./AbstractPlatform";
-import type { AbstractWebSocket, InferWebSocketSource } from "./AbstractWebSocket";
+import type { AbstractWebSocket } from "./AbstractWebSocket";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 
 declare global {
@@ -106,13 +106,11 @@ export type MergeEventRecords<
       >
     : Id<TRoot>;
 
-type GetInitialStorageEvent<TPlatform extends AbstractPlatform> = {
+export type GetInitialStorageEvent = {
     room: string;
 };
 
-export type GetInitialStorageFn<TPlatform extends AbstractPlatform> = (
-    event: GetInitialStorageEvent<TPlatform>,
-) => MaybePromise<Maybe<string>>;
+export type GetInitialStorageFn = (event: GetInitialStorageEvent) => MaybePromise<Maybe<string>>;
 
 export interface PluvIOListeners<
     TPlatform extends AbstractPlatform<any>,
@@ -120,17 +118,14 @@ export interface PluvIOListeners<
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > {
-    onRoomDeleted: (event: IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
+    onRoomDeleted: (event: IORoomListenerEvent<TContext>) => void;
     onRoomMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
-    onStorageUpdated: (event: IOStorageUpdatedEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
+    onStorageUpdated: (event: IOStorageUpdatedEvent<TPlatform, TAuthorize, TContext>) => void;
+    onUserConnected: (event: IOUserConnectedEvent<TPlatform, TAuthorize, TContext>) => void;
+    onUserDisconnected: (event: IOUserDisconnectedEvent<TPlatform, TAuthorize, TContext>) => void;
 }
 
-export type IORoomListenerEvent<
-    TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> = {
+export type IORoomListenerEvent<TContext extends Record<string, any>> = {
     context: TContext;
     encodedState: string | null;
     room: string;
@@ -141,7 +136,7 @@ export type IORoomMessageEvent<
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> = IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents> & {
+> = IORoomListenerEvent<TContext> & {
     message: InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>;
     user?: InferIOAuthorizeUser<TAuthorize>;
     webSocket?: InferPlatformWebSocketSource<TPlatform>;
@@ -151,10 +146,26 @@ export type IOStorageUpdatedEvent<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
     TContext extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> = IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents> & {
+> = IORoomListenerEvent<TContext> & {
     user?: InferIOAuthorizeUser<TAuthorize>;
     webSocket?: InferPlatformWebSocketSource<TPlatform>;
+};
+
+export type IOUserConnectedEvent<
+    TPlatform extends AbstractPlatform<any>,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
+    TContext extends Record<string, any>,
+> = IORoomListenerEvent<TContext> & {
+    user?: InferIOAuthorizeUser<TAuthorize>;
+    webSocket?: InferPlatformWebSocketSource<TPlatform>;
+};
+
+export type IOUserDisconnectedEvent<
+    TPlatform extends AbstractPlatform<any>,
+    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
+    TContext extends Record<string, any>,
+> = IORoomListenerEvent<TContext> & {
+    user?: InferIOAuthorizeUser<TAuthorize>;
 };
 
 export type WebSocketType<TPlatform extends AbstractPlatform> =
