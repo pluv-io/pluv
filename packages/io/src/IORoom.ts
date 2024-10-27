@@ -32,6 +32,8 @@ import type {
     EventResolverContext,
     IORoomListenerEvent,
     IORoomMessageEvent,
+    IOUserConnectedEvent,
+    IOUserDisconnectedEvent,
     WebSocketSession,
     WebSocketType,
 } from "./types";
@@ -51,8 +53,10 @@ export interface IORoomListeners<
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > {
-    onDestroy: (event: IORoomListenerEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
+    onDestroy: (event: IORoomListenerEvent<TContext>) => void;
     onMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
+    onUserConnected: (event: IOUserConnectedEvent<TPlatform, TAuthorize, TContext>) => void;
+    onUserDisconnected: (event: IOUserDisconnectedEvent<TPlatform, TAuthorize, TContext>) => void;
 }
 
 export type BroadcastProxy<TIO extends IORoom<any, any, any, any>> = (<TEvent extends keyof InferIOInput<TIO>>(
@@ -151,6 +155,8 @@ export class IORoom<
             debug,
             onDestroy,
             onMessage,
+            onUserConnected,
+            onUserDisconnected,
             platform,
             roomContext,
             router,
@@ -167,6 +173,8 @@ export class IORoom<
         this._listeners = {
             onDestroy: (event) => onDestroy?.(event),
             onMessage: (event) => onMessage?.(event),
+            onUserConnected: (event) => onUserConnected?.(event),
+            onUserDisconnected: (event) => onUserDisconnected?.(event),
         };
 
         if (authorize) this._authorize = authorize;
@@ -374,12 +382,53 @@ export class IORoom<
         const user = session.user;
 
         await this._sendSelfMessage({ type: "$REGISTERED", data: { sessionId } }, { sessionId, user });
+
+        try {
+            const doc = await this._doc;
+            const encodedState = doc.getEncodedState();
+
+            await Promise.resolve(
+                this._listeners.onUserConnected({
+                    context: this._context,
+                    encodedState,
+                    room: this.id,
+                    user,
+                    webSocket: pluvWs.webSocket,
+                }),
+            );
+        } catch {}
     }
 
     private _ensureDetached(): void {
         if (this._platform._registrationMode === "detached") return;
 
         throw new Error("Platform must use detached mode");
+    }
+
+    private async _exitWebsocket(webSocket: AbstractWebSocket<any>): Promise<void> {
+        const session = await webSocket.getSession();
+
+        await this._broadcast({
+            message: {
+                type: "$EXIT",
+                data: { sessionId: session.id },
+            },
+            senderId: session.id,
+        });
+
+        try {
+            const doc = await this._doc;
+            const encodedState = doc.getEncodedState();
+
+            await Promise.resolve(
+                this._listeners.onUserDisconnected({
+                    context: this._context,
+                    encodedState,
+                    room: this.id,
+                    user: session.user,
+                }),
+            );
+        } catch {}
     }
 
     private _getAbstractWs(webSocket: WebSocketType<TPlatform>): AbstractWebSocket | null {
@@ -535,12 +584,14 @@ export class IORoom<
                 doc.destroy();
                 this._doc = Promise.resolve(this._docFactory.getEmpty());
 
-                this._listeners.onDestroy({
-                    ...("_meta" in this._platform && !!this._platform._meta ? { _meta: this._platform._meta } : {}),
-                    context: this._context,
-                    encodedState,
-                    room: this.id,
-                });
+                await Promise.resolve(
+                    this._listeners.onDestroy({
+                        ...("_meta" in this._platform && !!this._platform._meta ? { _meta: this._platform._meta } : {}),
+                        context: this._context,
+                        encodedState,
+                        room: this.id,
+                    }),
+                );
 
                 this._uninitialize = null;
             };

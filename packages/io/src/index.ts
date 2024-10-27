@@ -41,6 +41,8 @@ export type {
     IORoomListenerEvent,
     IORoomMessageEvent,
     IOStorageUpdatedEvent,
+    IOUserConnectedEvent,
+    IOUserDisconnectedEvent,
     PluvIOListeners,
     WebSocketSerializedState,
     WebSocketSession,

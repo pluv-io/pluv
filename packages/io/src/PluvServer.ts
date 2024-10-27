@@ -38,7 +38,7 @@ export type PluvServerConfig<
     context?: PluvContext<TPlatform, TContext>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug?: boolean;
-    getInitialStorage?: GetInitialStorageFn<TPlatform>;
+    getInitialStorage?: GetInitialStorageFn;
     platform: TPlatform;
     router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 };
@@ -197,7 +197,7 @@ export class PluvServer<
     private readonly _context: PluvContext<TPlatform, TContext> = {} as PluvContext<TPlatform, TContext>;
     private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     private readonly _debug: boolean;
-    private readonly _getInitialStorage: GetInitialStorageFn<TPlatform> | null = null;
+    private readonly _getInitialStorage: GetInitialStorageFn | null = null;
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
@@ -229,6 +229,8 @@ export class PluvServer<
             onRoomDeleted,
             onRoomMessage,
             onStorageUpdated,
+            onUserConnected,
+            onUserDisconnected,
             platform,
             router = new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>({} as TEvents),
         } = options;
@@ -251,6 +253,8 @@ export class PluvServer<
             onRoomDeleted: (event) => onRoomDeleted?.(event),
             onRoomMessage: (event) => onRoomMessage?.(event),
             onStorageUpdated: (event) => onStorageUpdated?.(event),
+            onUserConnected: (event) => onUserConnected?.(event),
+            onUserDisconnected: (event) => onUserDisconnected?.(event),
         } as PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>;
     }
 
@@ -288,6 +292,12 @@ export class PluvServer<
             onMessage: async (event) => {
                 await Promise.resolve(onMessage?.(event));
                 await Promise.resolve(this._getListeners().onRoomMessage(event));
+            },
+            onUserConnected: async (event) => {
+                await Promise.resolve(this._getListeners().onUserConnected(event));
+            },
+            onUserDisconnected: async (event) => {
+                await Promise.resolve(this._getListeners().onUserDisconnected(event));
             },
             platform: this._platform,
             roomContext,

@@ -20,7 +20,13 @@ type RoomDeletedMessageEventData = {
     room: string;
 };
 
-type StorageUpdatedEventData<TUser extends BaseUser> = {
+type UserConnectedEventData<TUser extends BaseUser> = {
+    encodedState: string | null;
+    room: string;
+    user: TUser;
+};
+
+type UserDisconnectedEventData<TUser extends BaseUser> = {
     encodedState: string | null;
     room: string;
     user: TUser;
@@ -28,7 +34,8 @@ type StorageUpdatedEventData<TUser extends BaseUser> = {
 
 type PluvIOListeners<TUser extends BaseUser> = {
     onRoomDeleted: (event: RoomDeletedMessageEventData) => void;
-    onStorageUpdated: (event: StorageUpdatedEventData<TUser>) => void;
+    onUserConnected: (event: UserConnectedEventData<TUser>) => void;
+    onUserDisconnected: (event: UserDisconnectedEventData<TUser>) => void;
 };
 
 export type PluvIOConfig<TUser extends BaseUser> = Partial<PluvIOListeners<TUser>> & {
@@ -44,7 +51,7 @@ export type PluvIOConfig<TUser extends BaseUser> = Partial<PluvIOListeners<TUser
         user: InputZodLike<TUser>;
     };
     basePath: string;
-    getInitialStorage?: GetInitialStorageFn<PluvPlatform>;
+    getInitialStorage?: GetInitialStorageFn;
     publicKey: string;
     secretKey: string;
 };
@@ -53,7 +60,7 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
     private readonly _authorize: PluvAuthorize<TUser>;
     private readonly _basePath: string;
     private readonly _endpoints: PluvIOEndpoints;
-    private readonly _getInitialStorage?: GetInitialStorageFn<PluvPlatform>;
+    private readonly _getInitialStorage?: GetInitialStorageFn;
     private readonly _listeners: PluvIOListeners<TUser>;
     private readonly _publicKey: string;
     private readonly _secretKey: string;
@@ -115,8 +122,17 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
     });
 
     constructor(options: PluvIOConfig<TUser>) {
-        const { _defs, authorize, basePath, onRoomDeleted, onStorageUpdated, getInitialStorage, publicKey, secretKey } =
-            options;
+        const {
+            _defs,
+            authorize,
+            basePath,
+            getInitialStorage,
+            onRoomDeleted,
+            onUserConnected,
+            onUserDisconnected,
+            publicKey,
+            secretKey,
+        } = options;
 
         this._authorize = {
             required: true,
@@ -131,7 +147,8 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
         this._getInitialStorage = getInitialStorage;
         this._listeners = {
             onRoomDeleted: (event) => onRoomDeleted?.(event),
-            onStorageUpdated: (event) => onStorageUpdated?.(event),
+            onUserConnected: (event) => onUserConnected?.(event),
+            onUserDisconnected: (event) => onUserDisconnected?.(event),
         };
         this._publicKey = publicKey;
         this._secretKey = secretKey;

@@ -29,7 +29,7 @@ export type ServerConfig<
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
-    getInitialStorage?: GetInitialStorageFn<TPlatform>;
+    getInitialStorage?: GetInitialStorageFn;
     router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 };
 
