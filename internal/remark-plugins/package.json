@@ -16,14 +16,14 @@
 	},
 	"dependencies": {
 		"@types/unist": "^3.0.3",
-		"acorn": "^8.13.0",
+		"acorn": "^8.14.0",
 		"gray-matter": "^4.0.3",
 		"vfile": "^6.0.3"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"eslint-config-pluv": "workspace:^",
-		"tsup": "^8.3.0",
+		"tsup": "^8.3.5",
 		"typescript": "^5.6.3"
 	}
 }
