@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 0.32.7
+
+### Patch Changes
+
+- a9a1f7b: Export event schemas.
+  - @pluv/crdt@0.32.7
+  - @pluv/io@0.32.7
+  - @pluv/types@0.32.7
+
 ## 0.32.6
 
 ### Patch Changes
