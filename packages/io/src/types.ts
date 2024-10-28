@@ -106,11 +106,14 @@ export type MergeEventRecords<
       >
     : Id<TRoot>;
 
-export type GetInitialStorageEvent = {
+export type GetInitialStorageEvent<TContext extends Record<string, any>> = {
+    context: TContext;
     room: string;
 };
 
-export type GetInitialStorageFn = (event: GetInitialStorageEvent) => MaybePromise<Maybe<string>>;
+export type GetInitialStorageFn<TContext extends Record<string, any>> = (
+    event: GetInitialStorageEvent<TContext>,
+) => MaybePromise<Maybe<string>>;
 
 export interface PluvIOListeners<
     TPlatform extends AbstractPlatform<any>,

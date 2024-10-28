@@ -35,7 +35,7 @@ type UserDisconnectedEventData<TUser extends BaseUser> = {
 };
 
 type PluvIOListeners<TUser extends BaseUser> = {
-    getInitialStorage?: GetInitialStorageFn;
+    getInitialStorage?: GetInitialStorageFn<{}>;
     onRoomDeleted: (event: RoomDeletedMessageEventData) => void;
     onUserConnected: (event: UserConnectedEventData<TUser>) => void;
     onUserDisconnected: (event: UserDisconnectedEventData<TUser>) => void;
@@ -66,7 +66,7 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
     private readonly _authorize: PluvAuthorize<TUser>;
     private readonly _basePath: string;
     private readonly _endpoints: PluvIOEndpoints;
-    private readonly _getInitialStorage?: GetInitialStorageFn;
+    private readonly _getInitialStorage?: GetInitialStorageFn<{}>;
     private readonly _listeners: PluvIOListeners<TUser>;
     private readonly _publicKey: string;
     private readonly _secretKey: string;
@@ -124,7 +124,10 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
         switch (event) {
             case "initial-storage": {
                 const room = data.room;
-                const storage = typeof room === "string" ? ((await this._getInitialStorage?.({ room })) ?? null) : null;
+                const storage =
+                    typeof room === "string"
+                        ? ((await this._getInitialStorage?.({ context: {}, room })) ?? null)
+                        : null;
 
                 return c.json({ data: { storage } }, 200);
             }

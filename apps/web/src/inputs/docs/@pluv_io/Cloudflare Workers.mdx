@@ -53,7 +53,7 @@ export const io = createIO({
 
 export const ioServer = io.server({
     // Example of using Cloudflare's D1 database with drizzle-orm
-    getInitialStorage: async ({ env, room }) => {
+    getInitialStorage: async ({ context: { env }, room }) => {
         const db = drizzle(env.DB, { schema });
 
         const existingRoom = await db
