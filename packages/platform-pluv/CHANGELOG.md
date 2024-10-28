@@ -1,5 +1,62 @@
 # @pluv/platform-pluv
 
+## 0.32.6
+
+### Patch Changes
+
+- 25292d4: Fix event payload types to only contain serializable fields.
+- c0956e7: Add `onUserConnected` and `onUserDisconnected` events on `PluvServer`.
+
+  ```ts
+  import { createIO } from "@pluv/io";
+
+  const io = createIO({
+    /* ... */
+  });
+
+  const ioServer = io.server({
+    // ...
+    onUserConnected: (event) => {
+      // ...
+    },
+    onUserDisconnected: (event) => {
+      // ...
+    },
+  });
+  ```
+
+- fc83a44: Enable `onUserConnected` and `onUserDisconnected` event listeners.
+- be1488f: Validate webhook signatures via webhook secrets.
+
+  ```ts
+  import { createIO } from "@pluv/platform-pluv";
+
+  const io = createIO({
+    // ...
+    // If you provide a webhookSecret
+    webhookSecret: "whsec_...",
+
+    // The following properties will be made available to configure
+    getInitialStorage: (event) => {
+      /* ... */
+    },
+    onRoomDeleted: (event) => {
+      /* ... */
+    },
+    onUserConnected: (event) => {
+      /* ... */
+    },
+    onUserDisconnected: (event) => {
+      /* ... */
+    },
+  });
+  ```
+
+- Updated dependencies [c0956e7]
+  - @pluv/io@0.32.6
+  - @pluv/crdt@0.32.6
+  - @pluv/types@0.32.6
+
 ## 0.32.5
 
 ### Patch Changes

@@ -1,5 +1,32 @@
 # @pluv/io
 
+## 0.32.6
+
+### Patch Changes
+
+- c0956e7: Add `onUserConnected` and `onUserDisconnected` events on `PluvServer`.
+
+  ```ts
+  import { createIO } from "@pluv/io";
+
+  const io = createIO({
+    /* ... */
+  });
+
+  const ioServer = io.server({
+    // ...
+    onUserConnected: (event) => {
+      // ...
+    },
+    onUserDisconnected: (event) => {
+      // ...
+    },
+  });
+  ```
+
+  - @pluv/crdt@0.32.6
+  - @pluv/types@0.32.6
+
 ## 0.32.5
 
 ### Patch Changes
