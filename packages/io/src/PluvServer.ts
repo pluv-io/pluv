@@ -38,7 +38,7 @@ export type PluvServerConfig<
     context?: PluvContext<TPlatform, TContext>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug?: boolean;
-    getInitialStorage?: GetInitialStorageFn;
+    getInitialStorage?: GetInitialStorageFn<TContext>;
     platform: TPlatform;
     router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 };
@@ -125,7 +125,7 @@ export class PluvServer<
                 const update = (data as any)?.update as Maybe<string>;
 
                 const updates: readonly Maybe<string>[] = [
-                    oldState ? null : await this._getInitialStorage?.({ ...context, room }),
+                    oldState ? null : await this._getInitialStorage?.({ context, room }),
                     update,
                 ];
 
@@ -197,7 +197,7 @@ export class PluvServer<
     private readonly _context: PluvContext<TPlatform, TContext> = {} as PluvContext<TPlatform, TContext>;
     private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     private readonly _debug: boolean;
-    private readonly _getInitialStorage: GetInitialStorageFn | null = null;
+    private readonly _getInitialStorage: GetInitialStorageFn<TContext> | null = null;
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
