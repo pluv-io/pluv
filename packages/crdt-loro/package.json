@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/crdt-loro",
-	"version": "0.32.5",
+	"version": "0.32.6",
 	"description": "loro for @pluv/io",
 	"author": "leedavidcs",
 	"license": "MIT",

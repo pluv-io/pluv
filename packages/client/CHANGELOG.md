@@ -1,5 +1,12 @@
 # @pluv/client
 
+## 0.32.6
+
+### Patch Changes
+
+- @pluv/crdt@0.32.6
+- @pluv/types@0.32.6
+
 ## 0.32.5
 
 ### Patch Changes
