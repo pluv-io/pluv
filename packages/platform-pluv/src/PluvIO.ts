@@ -116,6 +116,20 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
 
                 return c.json({ data: { room } }, 200);
             }
+            case "user-connected": {
+                const room = data.room;
+                const encodedState = data.storage;
+                const user = data.user as TUser;
+
+                await Promise.resolve(this._listeners.onUserConnected({ encodedState, room, user }));
+            }
+            case "user-disconnected": {
+                const room = data.room;
+                const encodedState = data.storage;
+                const user = data.user as TUser;
+
+                await Promise.resolve(this._listeners.onUserDisconnected({ encodedState, room, user }));
+            }
             default:
                 return c.json({ data: { ok: true } }, 200);
         }
