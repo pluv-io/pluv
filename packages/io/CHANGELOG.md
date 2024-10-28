@@ -1,5 +1,33 @@
 # @pluv/io
 
+## 0.32.8
+
+### Patch Changes
+
+- e659f8a: Update `getInitialStorage` so that the context is made available on the `context` event property.
+
+  ```ts
+  import { createIO } from "@pluv/io";
+
+  // Before
+  const io = createIO({
+    getInitialStorage: ({ room, ...context }) => {
+      // ...
+    },
+  });
+
+  // After
+  const io = createIO({
+    // Context is now an explicit property on the event
+    getInitialStorage: ({ room, context }) => {
+      // ...
+    },
+  });
+  ```
+
+  - @pluv/crdt@0.32.8
+  - @pluv/types@0.32.8
+
 ## 0.32.7
 
 ### Patch Changes
