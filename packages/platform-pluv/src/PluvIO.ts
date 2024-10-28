@@ -2,8 +2,10 @@ import type { GetInitialStorageFn, JWTEncodeParams } from "@pluv/io";
 import type { BaseUser, IOLike, InputZodLike } from "@pluv/types";
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
+import { SIGNATURE_HEADER } from "./constants";
 import type { PluvPlatform } from "./PluvPlatform";
 import { ZodEvent } from "./schemas";
+import { verifyWebhook } from "./shared";
 
 interface PluvAuthorize<TUser extends BaseUser> {
     required: true;
@@ -33,12 +35,17 @@ type UserDisconnectedEventData<TUser extends BaseUser> = {
 };
 
 type PluvIOListeners<TUser extends BaseUser> = {
+    getInitialStorage?: GetInitialStorageFn;
     onRoomDeleted: (event: RoomDeletedMessageEventData) => void;
     onUserConnected: (event: UserConnectedEventData<TUser>) => void;
     onUserDisconnected: (event: UserDisconnectedEventData<TUser>) => void;
 };
 
-export type PluvIOConfig<TUser extends BaseUser> = Partial<PluvIOListeners<TUser>> & {
+type WebhooksConfig<TUser extends BaseUser> =
+    | ({ webhookSecret?: undefined } & { [P in keyof PluvIOListeners<TUser>]?: undefined })
+    | ({ webhookSecret: string } & Partial<PluvIOListeners<TUser>>);
+
+export type PluvIOConfig<TUser extends BaseUser> = WebhooksConfig<TUser> & {
     /**
      * @ignore
      * @readonly
@@ -51,7 +58,6 @@ export type PluvIOConfig<TUser extends BaseUser> = Partial<PluvIOListeners<TUser
         user: InputZodLike<TUser>;
     };
     basePath: string;
-    getInitialStorage?: GetInitialStorageFn;
     publicKey: string;
     secretKey: string;
 };
@@ -64,6 +70,7 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
     private readonly _listeners: PluvIOListeners<TUser>;
     private readonly _publicKey: string;
     private readonly _secretKey: string;
+    private readonly _webhookSecret?: string;
 
     /**
      * @ignore
@@ -94,8 +101,21 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
     }
 
     private _webhooks = new Hono().basePath("/").post("/event", async (c) => {
-        const body = await c.req.json();
-        const parsed = ZodEvent.safeParse(body);
+        const signature = c.req.header(SIGNATURE_HEADER);
+
+        if (!this._webhookSecret || !signature) return c.json({ error: "Unauthorized" }, 401);
+
+        const payload = await c.req.json();
+
+        const verified = await verifyWebhook({
+            payload,
+            signature,
+            secret: this._webhookSecret,
+        });
+
+        if (!verified) return c.json({ error: "Unauthorized" }, 401);
+
+        const parsed = ZodEvent.safeParse(payload);
 
         if (!parsed.success) return c.json({ data: { ok: true } }, 200);
 
@@ -146,6 +166,7 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
             onUserDisconnected,
             publicKey,
             secretKey,
+            webhookSecret,
         } = options;
 
         this._authorize = {
@@ -166,6 +187,7 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
         };
         this._publicKey = publicKey;
         this._secretKey = secretKey;
+        this._webhookSecret = webhookSecret;
     }
 
     public async createToken(params: JWTEncodeParams<TUser, PluvPlatform>): Promise<string> {
