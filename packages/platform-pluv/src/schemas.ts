@@ -15,4 +15,35 @@ const ZodEventRoomDeleted = z.object({
     }),
 });
 
-export const ZodEvent = z.discriminatedUnion("event", [ZodEventInitialStorage, ZodEventRoomDeleted]);
+const ZodEventUserConnected = z.object({
+    event: z.literal("user-connected"),
+    data: z.object({
+        room: z.string(),
+        storage: z.string().nullable(),
+        user: z
+            .object({
+                id: z.string(),
+            })
+            .passthrough(),
+    }),
+});
+
+const ZodEventUserDisconnected = z.object({
+    event: z.literal("user-disconnected"),
+    data: z.object({
+        room: z.string(),
+        storage: z.string().nullable(),
+        user: z
+            .object({
+                id: z.string(),
+            })
+            .passthrough(),
+    }),
+});
+
+export const ZodEvent = z.discriminatedUnion("event", [
+    ZodEventInitialStorage,
+    ZodEventRoomDeleted,
+    ZodEventUserConnected,
+    ZodEventUserDisconnected,
+]);
