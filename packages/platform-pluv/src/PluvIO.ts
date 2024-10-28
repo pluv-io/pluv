@@ -35,6 +35,7 @@ type UserDisconnectedEventData<TUser extends BaseUser> = {
 };
 
 type PluvIOListeners<TUser extends BaseUser> = {
+    getInitialStorage?: GetInitialStorageFn;
     onRoomDeleted: (event: RoomDeletedMessageEventData) => void;
     onUserConnected: (event: UserConnectedEventData<TUser>) => void;
     onUserDisconnected: (event: UserDisconnectedEventData<TUser>) => void;
@@ -57,7 +58,6 @@ export type PluvIOConfig<TUser extends BaseUser> = WebhooksConfig<TUser> & {
         user: InputZodLike<TUser>;
     };
     basePath: string;
-    getInitialStorage?: GetInitialStorageFn;
     publicKey: string;
     secretKey: string;
 };
