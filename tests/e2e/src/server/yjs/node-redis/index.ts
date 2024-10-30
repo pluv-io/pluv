@@ -107,7 +107,9 @@ app.get("/api/authorize", async (req, res) => {
     const roomId = req.query.roomName as string;
 
     if (!roomId) {
-        return res.json({ error: `Room does not exist: ${roomId}` }).status(404);
+        res.json({ error: `Room does not exist: ${roomId}` }).status(404);
+
+        return;
     }
 
     const id = Crypto.randomUUID();
@@ -117,11 +119,11 @@ app.get("/api/authorize", async (req, res) => {
         user: { id, name: `user:${id}` },
     });
 
-    return res.send(token).status(200);
+    res.send(token).status(200);
 });
 
 app.post("/api/room", (req, res) => {
-    return res.send(randomBytes(48).toString("hex")).status(200);
+    res.send(randomBytes(48).toString("hex")).status(200);
 });
 
 cluster.once("connect", () => {
