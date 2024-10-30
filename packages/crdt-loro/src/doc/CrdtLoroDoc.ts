@@ -3,7 +3,7 @@ import { AbstractCrdtDoc } from "@pluv/crdt";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import type { Container, LoroEventBatch } from "loro-crdt";
 import { LoroDoc, LoroList, LoroMap, LoroText, isContainer } from "loro-crdt";
-import type { LoroType } from "../types";
+import type ZZ{ LoroType } from "../types";
 
 export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> extends AbstractCrdtDoc<TStorage> {
     public value: LoroDoc = new LoroDoc();
@@ -160,8 +160,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
 
     public subscribe(listener: (params: DocSubscribeCallbackParams<TStorage>) => void): () => void {
         const fn = (event: LoroEventBatch) => {
-            const version = this.value.oplogVersion();
-            const update = fromUint8Array(this.value.export({ mode: "update", from: version }));
+            const update = fromUint8Array(this.value.export({ mode: "update" }));
 
             listener({
                 doc: this,
