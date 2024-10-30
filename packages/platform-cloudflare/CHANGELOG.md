@@ -1,5 +1,13 @@
 # @pluv/platform-cloudflare
 
+## 0.32.9
+
+### Patch Changes
+
+- @pluv/io@0.32.9
+- @pluv/persistence-cloudflare-transactional-storage@0.32.9
+- @pluv/types@0.32.9
+
 ## 0.32.8
 
 ### Patch Changes

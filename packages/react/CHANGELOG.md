@@ -1,5 +1,14 @@
 # @pluv/react
 
+## 0.32.9
+
+### Patch Changes
+
+- 89d004d: Fix event proxy types for client-side events.
+  - @pluv/client@0.32.9
+  - @pluv/crdt@0.32.9
+  - @pluv/types@0.32.9
+
 ## 0.32.8
 
 ### Patch Changes
