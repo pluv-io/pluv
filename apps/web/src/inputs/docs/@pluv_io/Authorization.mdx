@@ -73,7 +73,7 @@ app.get("/api/authorize", async (req, res) => {
         },
     });
 
-    return res.send(token).status(200);
+    res.send(token).status(200);
 });
 
 server.listen(PORT, () => {
@@ -186,7 +186,7 @@ app.get("/api/authorize", async (req, res) => {
         },
     });
 
-    return res.send(token).status(200);
+    res.send(token).status(200);
 });
 
 server.listen(PORT, () => {
