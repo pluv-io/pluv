@@ -1,5 +1,13 @@
 # @pluv/crdt-loro
 
+## 0.32.9
+
+### Patch Changes
+
+- cef5911: Bump `loro-crdt` from `0.16.12` to `1.0.8`.
+  - @pluv/crdt@0.32.9
+  - @pluv/types@0.32.9
+
 ## 0.32.8
 
 ### Patch Changes
