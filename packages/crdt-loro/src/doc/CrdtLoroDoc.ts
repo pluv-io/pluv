@@ -3,7 +3,7 @@ import { AbstractCrdtDoc } from "@pluv/crdt";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import type { Container, LoroEventBatch } from "loro-crdt";
 import { LoroDoc, LoroList, LoroMap, LoroText, isContainer } from "loro-crdt";
-import type ZZ{ LoroType } from "../types";
+import type { LoroType } from "../types";
 
 export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> extends AbstractCrdtDoc<TStorage> {
     public value: LoroDoc = new LoroDoc();
