@@ -18,7 +18,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@hookform/resolvers": "^3.9.0",
+		"@hookform/resolvers": "^3.9.1",
 		"@pluv-internal/react-hooks": "workspace:^",
 		"@pluv-internal/react-icons": "workspace:^",
 		"@pluv-internal/utils": "workspace:^",

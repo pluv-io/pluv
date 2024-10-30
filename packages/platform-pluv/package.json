@@ -26,8 +26,8 @@
 		"@pluv/crdt": "workspace:^",
 		"@pluv/io": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^22.8.1",
-		"hono": "^4.6.7",
+		"@types/node": "^22.8.4",
+		"hono": "^4.6.8",
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
