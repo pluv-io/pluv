@@ -170,24 +170,20 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
             });
         };
 
-        const subscriptionIds = Object.entries(this._storage).reduce((map, [key, crdtType]) => {
-            const container = crdtType as unknown as Container;
-            const subscriptionId = container.subscribe(fn);
+        const unsubcribeAll = Object.values(this._storage).reduce<() => void>(
+            (acc, crdtType) => {
+                const container = crdtType as unknown as Container;
+                const unsubscribe = container.subscribe(fn);
 
-            return map.set(key, subscriptionId);
-        }, new Map<string, number>());
+                return () => {
+                    acc();
+                    unsubscribe();
+                };
+            },
+            () => undefined,
+        );
 
-        return () => {
-            Array.from(subscriptionIds.entries()).forEach(([key, subscriptionId]) => {
-                const container = (this._storage[key] ?? null) as unknown as Container | null;
-
-                if (!container) {
-                    throw new Error("Storage could not be found");
-                }
-
-                container.unsubscribe(subscriptionId);
-            });
-        };
+        return unsubcribeAll;
     }
 
     /**
