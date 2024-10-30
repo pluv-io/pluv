@@ -146,7 +146,7 @@ export const createBundle = <
 >(
     client: PluvClient<TIO, TPresence, TStorage, TMetadata>,
     options: CreateBundleOptions<TIO, TMetadata, TPresence, TStorage, TEvents> = {},
-): CreateBundle<TIO, TMetadata, TPresence, TStorage> => {
+): CreateBundle<TIO, TMetadata, TPresence, TStorage, TEvents> => {
     /**
      * !HACK
      * @description We'll let the context error out if client is not provided,
