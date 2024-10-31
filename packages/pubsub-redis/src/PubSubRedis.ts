@@ -27,7 +27,7 @@ export class PubSubRedis extends AbstractPubSub {
         this._publisher = publisher;
         this._subscriber = subscriber;
 
-        this._subscriber.on("message", this._onMessage.bind(this));
+        (this._subscriber as Redis).on("message", this._onMessage.bind(this));
     }
 
     public async close(): Promise<"OK"[]> {
