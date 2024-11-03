@@ -100,7 +100,7 @@ export class PluvIO<TUser extends BaseUser> implements IOLike<PluvAuthorize<TUse
         return handle(app);
     }
 
-    private _webhooks = new Hono().basePath("/").post("/event", async (c) => {
+    private _webhooks = new Hono().basePath("/").post("/", async (c) => {
         const signature = c.req.header(SIGNATURE_HEADER);
 
         if (!this._webhookSecret || !signature) return c.json({ error: "Unauthorized" }, 401);
