@@ -124,7 +124,8 @@ export const generateStaticParams = () => {
     }));
 };
 
-export const generateMetadata = async ({ params }: LayoutProps, parent: ResolvingMetadata): Promise<Metadata> => {
+export const generateMetadata = async (props: LayoutProps, parent: ResolvingMetadata): Promise<Metadata> => {
+    const params = await props.params;
     const meta = await getMetaData(params);
 
     const parentMetaData = await parent;
@@ -156,10 +157,12 @@ export const generateMetadata = async ({ params }: LayoutProps, parent: Resolvin
 };
 
 export interface LayoutProps {
-    params: StaticParams;
+    params: Promise<StaticParams>;
 }
 
-const Layout: FC<LayoutProps> = async ({ params }) => {
+const Layout: FC<LayoutProps> = async (props) => {
+    const params = await props.params;
+
     const { docs, meta } = await getDocsProps(params);
 
     return (

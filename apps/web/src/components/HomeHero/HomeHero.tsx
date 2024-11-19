@@ -1,10 +1,8 @@
-import { Typist, TypistCursor } from "@pluv-internal/react-components/client";
 import { Button, NextLink, PageContainer } from "@pluv-internal/react-components/either";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import type { CSSProperties } from "react";
 import { memo } from "react";
-import { HomeDemo } from "../HomeDemo";
 
 export interface HomeHeroProps {
     className?: string;
