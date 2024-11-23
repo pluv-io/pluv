@@ -25,7 +25,7 @@
 	"dependencies": {
 		"@pluv/io": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^22.9.1",
+		"@types/node": "^22.9.3",
 		"@types/ws": "^8.5.13",
 		"path-to-regexp": "^8.2.0"
 	},
@@ -34,7 +34,7 @@
 		"eslint": "^8.57.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.3.5",
-		"typescript": "^5.6.3",
+		"typescript": "^5.7.2",
 		"ws": "^8.18.0"
 	},
 	"peerDependencies": {
