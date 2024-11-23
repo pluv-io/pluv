@@ -1,6 +1,5 @@
 import type { DocApplyEncodedStateParams, DocSubscribeCallbackParams, InferCrdtJson } from "@pluv/crdt";
 import { AbstractCrdtDoc } from "@pluv/crdt";
-import { fromUint8Array, toUint8Array } from "js-base64";
 import {
     AbstractType,
     UndoManager,
@@ -25,6 +24,8 @@ import { YjsXmlText } from "../xmlText/YjsXmlText";
 export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> extends AbstractCrdtDoc<TStorage> {
     public value: YDoc = new YDoc();
 
+    private _decoder = new TextDecoder();
+    private _encoder = new TextEncoder();
     private _storage: TStorage;
     private _undoManager: UndoManager | null = null;
 
@@ -99,7 +100,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
 
         if (update === null || typeof update === "undefined") return this;
 
-        const uint8Update = typeof update === "string" ? toUint8Array(update) : update;
+        const uint8Update = typeof update === "string" ? this._encoder.encode(update) : update;
 
         applyUpdate(this.value, uint8Update, origin);
 
@@ -150,7 +151,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
     }
 
     public getEncodedState(): string {
-        return fromUint8Array(encodeStateAsUpdate(this.value));
+        return this._decoder.decode(encodeStateAsUpdate(this.value));
     }
 
     public isEmpty(): boolean {
@@ -169,7 +170,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
                 doc: this,
                 local: origin === null || typeof origin === "undefined",
                 origin: origin ? String(origin) : null,
-                update: fromUint8Array(update),
+                update: this._decoder.decode(update),
             });
         };
 

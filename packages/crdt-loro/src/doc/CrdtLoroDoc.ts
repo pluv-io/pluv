@@ -1,6 +1,5 @@
 import type { DocApplyEncodedStateParams, DocSubscribeCallbackParams, InferCrdtJson } from "@pluv/crdt";
 import { AbstractCrdtDoc } from "@pluv/crdt";
-import { fromUint8Array, toUint8Array } from "js-base64";
 import type { Container, LoroEventBatch } from "loro-crdt";
 import { LoroDoc, LoroList, LoroMap, LoroText, isContainer } from "loro-crdt";
 import type { LoroType } from "../types";
@@ -8,6 +7,8 @@ import type { LoroType } from "../types";
 export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> extends AbstractCrdtDoc<TStorage> {
     public value: LoroDoc = new LoroDoc();
 
+    private _decoder = new TextDecoder();
+    private _encoder = new TextEncoder();
     private _storage: TStorage;
 
     constructor(value: TStorage = {} as TStorage) {
@@ -47,7 +48,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
     }
 
     public applyEncodedState(params: DocApplyEncodedStateParams): this {
-        const update = typeof params.update === "string" ? toUint8Array(params.update) : params.update;
+        const update = typeof params.update === "string" ? this._encoder.encode(params.update) : params.update;
 
         if (!update) return this;
 
@@ -61,13 +62,13 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
             if (!item) return acc;
 
             if (typeof item === "string") {
-                acc.push(toUint8Array(item));
+                acc.push(this._encoder.encode(item));
 
                 return acc;
             }
 
             if (typeof item === "object") {
-                const update = typeof item.update === "string" ? toUint8Array(item.update) : item.update;
+                const update = typeof item.update === "string" ? this._encoder.encode(item.update) : item.update;
 
                 if (!update) return acc;
 
@@ -123,7 +124,9 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
     }
 
     public getEncodedState(): string {
-        return fromUint8Array(this.value.export({ mode: "snapshot" }));
+        const data = this.value.export({ mode: "snapshot" });
+
+        return this._decoder.decode(data);
     }
 
     public toJson(): InferCrdtJson<TStorage>;
@@ -160,7 +163,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
 
     public subscribe(listener: (params: DocSubscribeCallbackParams<TStorage>) => void): () => void {
         const fn = (event: LoroEventBatch) => {
-            const update = fromUint8Array(this.value.export({ mode: "update" }));
+            const update = this._decoder.decode(this.value.export({ mode: "update" }));
 
             listener({
                 doc: this,
