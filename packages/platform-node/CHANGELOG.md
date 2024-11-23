@@ -1,5 +1,12 @@
 # @pluv/platform-node
 
+## 0.32.10
+
+### Patch Changes
+
+- @pluv/io@0.32.10
+- @pluv/types@0.32.10
+
 ## 0.32.9
 
 ### Patch Changes

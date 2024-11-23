@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 0.32.10
+
+### Patch Changes
+
+- f14b3be: Updated webhooks path to base path.
+  - @pluv/crdt@0.32.10
+  - @pluv/io@0.32.10
+  - @pluv/types@0.32.10
+
 ## 0.32.9
 
 ### Patch Changes

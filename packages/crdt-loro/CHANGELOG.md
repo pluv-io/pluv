@@ -1,5 +1,13 @@
 # @pluv/crdt-loro
 
+## 0.32.10
+
+### Patch Changes
+
+- f54d8ce: Update internal, deprecated `loro-crdt` methods.
+  - @pluv/crdt@0.32.10
+  - @pluv/types@0.32.10
+
 ## 0.32.9
 
 ### Patch Changes
