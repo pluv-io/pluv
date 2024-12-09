@@ -1,5 +1,17 @@
 # @pluv/crdt-loro
 
+## 0.33.0
+
+### Minor Changes
+
+- d99ac96: Require peer dependency loro-crdt@^1.0.0.
+
+### Patch Changes
+
+- f54d8ce: Update internal, deprecated `loro-crdt` methods.
+  - @pluv/crdt@0.33.0
+  - @pluv/types@0.33.0
+
 ## 0.32.9
 
 ### Patch Changes

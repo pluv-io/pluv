@@ -1,5 +1,11 @@
 # @pluv/crdt
 
+## 0.33.0
+
+### Patch Changes
+
+- @pluv/types@0.33.0
+
 ## 0.32.9
 
 ### Patch Changes
