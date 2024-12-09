@@ -27,7 +27,7 @@
 		"@pluv/io": "workspace:^",
 		"@pluv/types": "workspace:^",
 		"@types/node": "^22.10.1",
-		"hono": "link:latest@next/mdx@latest",
+		"hono": "^4.6.13",
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
