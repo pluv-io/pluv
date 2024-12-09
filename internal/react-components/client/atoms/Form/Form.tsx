@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactElement } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { ForwardedRef, forwardRef } from "react";
 import { FieldValues, FormProvider, FormProviderProps } from "react-hook-form";
@@ -29,6 +29,6 @@ export const Form = forwardRef<HTMLFormElement, FormProps<any>>((props, ref) => 
     );
 }) as (<TFieldValues extends FieldValues, TContext = any, TTransformedValues extends FieldValues = TFieldValues>(
     props: FormProps<TFieldValues, TContext, TTransformedValues>,
-) => JSX.Element) & { displayName?: string };
+) => ReactElement) & { displayName?: string };
 
 Form.displayName = "Form";
