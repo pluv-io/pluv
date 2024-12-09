@@ -1,9 +1,9 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import { forwardRef } from "react";
 
-export type InputProps = InferComponentProps<"input">;
+export type InputProps = ComponentProps<"input">;
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(({ className, type, ...props }, ref) => {
     return (

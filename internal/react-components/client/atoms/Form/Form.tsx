@@ -1,4 +1,4 @@
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { ForwardedRef, forwardRef } from "react";
 import { FieldValues, FormProvider, FormProviderProps } from "react-hook-form";
@@ -8,7 +8,7 @@ export type FormProps<
     TFieldValues extends FieldValues,
     TContext = any,
     TTransformedValues extends FieldValues = TFieldValues,
-> = InferComponentProps<"form"> & {
+> = ComponentProps<"form"> & {
     asChild?: boolean;
     disabled?: boolean;
     form: Omit<FormProviderProps<TFieldValues, TContext, TTransformedValues>, "children">;

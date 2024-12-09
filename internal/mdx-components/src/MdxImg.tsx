@@ -1,8 +1,8 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import NextImage from "next/image";
 import { forwardRef } from "react";
 
-export type MdxImgProps = InferComponentProps<"img">;
+export type MdxImgProps = ComponentProps<"img">;
 
 export const MdxImg = forwardRef<HTMLImageElement, MdxImgProps>((props, ref) => {
     const { alt = "", className, height, src, width, ...restProps } = props;

@@ -1,9 +1,9 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { forwardRef } from "react";
 import { MdxHeader } from "./MdxHeader";
 
-export type MdxH5Props = InferComponentProps<"h5">;
+export type MdxH5Props = ComponentProps<"h5">;
 
 export const MdxH5 = forwardRef<HTMLHeadingElement, MdxH5Props>((props, ref) => {
     const { className, ...restProps } = props;

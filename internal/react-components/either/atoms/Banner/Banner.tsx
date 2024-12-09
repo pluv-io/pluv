@@ -1,9 +1,9 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import { forwardRef } from "react";
 
-export type BannerProps = InferComponentProps<"div">;
+export type BannerProps = ComponentProps<"div">;
 
 export const Banner = forwardRef<HTMLDivElement, BannerProps>((props, ref) => {
     const { className, ...restProps } = props;

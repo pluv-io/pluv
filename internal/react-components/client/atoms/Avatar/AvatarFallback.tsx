@@ -1,10 +1,10 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import * as RadixAvatar from "@radix-ui/react-avatar";
 import type { ElementRef } from "react";
 import { forwardRef } from "react";
 
-export type AvatarFallbackProps = InferComponentProps<typeof RadixAvatar.Fallback>;
+export type AvatarFallbackProps = ComponentProps<typeof RadixAvatar.Fallback>;
 
 export const AvatarFallback = forwardRef<ElementRef<typeof RadixAvatar.Fallback>, AvatarFallbackProps>(
     ({ className, ...props }, ref) => {

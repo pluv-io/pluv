@@ -1,12 +1,12 @@
 import { CheckIcon } from "@pluv-internal/react-icons";
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import * as RadixSelect from "@radix-ui/react-select";
 import { oneLine } from "common-tags";
 import type { ElementRef } from "react";
 import { forwardRef } from "react";
 
-export type SelectItemProps = InferComponentProps<typeof RadixSelect.Item>;
+export type SelectItemProps = ComponentProps<typeof RadixSelect.Item>;
 
 export const SelectItem = forwardRef<ElementRef<typeof RadixSelect.Item>, SelectItemProps>((props, ref) => {
     const { className, children, ...restProps } = props;

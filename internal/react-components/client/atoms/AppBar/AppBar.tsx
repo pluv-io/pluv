@@ -1,5 +1,5 @@
 import { useWindowFocus } from "@pluv-internal/react-hooks";
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import { m, useScroll } from "framer-motion";
@@ -8,7 +8,7 @@ import { forwardRef, useEffect, useState } from "react";
 const SCROLL_THRESHOLD = 32;
 const SCROLL_PROGRESS_THRESHOLD = 0.95;
 
-export type AppBarProps = InferComponentProps<typeof m.div> & {
+export type AppBarProps = ComponentProps<typeof m.div> & {
     active?: boolean;
 };
 

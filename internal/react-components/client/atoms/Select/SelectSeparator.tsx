@@ -1,12 +1,12 @@
 import { ChevronUpDownIcon } from "@pluv-internal/react-icons";
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import * as RadixSelect from "@radix-ui/react-select";
 import { oneLine } from "common-tags";
 import type { ElementRef } from "react";
 import { forwardRef } from "react";
 
-export type SelectSeparatorProps = InferComponentProps<typeof RadixSelect.Separator>;
+export type SelectSeparatorProps = ComponentProps<typeof RadixSelect.Separator>;
 
 export const SelectSeparator = forwardRef<ElementRef<typeof RadixSelect.Separator>, SelectSeparatorProps>(
     (props, ref) => {

@@ -1,8 +1,8 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { forwardRef } from "react";
 
-export type MdxCodeProps = Omit<InferComponentProps<"code">, "ref">;
+export type MdxCodeProps = Omit<ComponentProps<"code">, "ref">;
 
 export const MdxCode = forwardRef<HTMLElement, MdxCodeProps>((props, ref) => {
     const { className, ...restProps } = props;

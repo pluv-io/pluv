@@ -1,4 +1,4 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import type { TransformerTwoslashOptions } from "@shikijs/twoslash";
 import { oneLine } from "common-tags";
@@ -6,7 +6,7 @@ import type { FC } from "react";
 import type { ShikiLanguage } from "../../utils/getShiki";
 import { getShiki } from "../../utils/getShiki";
 
-export type ServerCodeBlockProps = InferComponentProps<"div"> & {
+export type ServerCodeBlockProps = ComponentProps<"div"> & {
     code: string;
     lang: ShikiLanguage;
     twoslashOptions?: TransformerTwoslashOptions["twoslashOptions"];

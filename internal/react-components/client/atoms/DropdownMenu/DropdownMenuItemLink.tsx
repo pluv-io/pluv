@@ -1,4 +1,4 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import * as RadixDropdownMenu from "@radix-ui/react-dropdown-menu";
 import { oneLine } from "common-tags";
@@ -6,7 +6,7 @@ import NextLink from "next/link";
 import type { HTMLAttributeAnchorTarget, ReactNode } from "react";
 import { forwardRef } from "react";
 
-export type DropdownMenuItemLinkProps = Pick<InferComponentProps<typeof RadixDropdownMenu.Item>, "onSelect"> & {
+export type DropdownMenuItemLinkProps = Pick<ComponentProps<typeof RadixDropdownMenu.Item>, "onSelect"> & {
     children?: ReactNode;
     className?: string;
     disabled?: boolean;

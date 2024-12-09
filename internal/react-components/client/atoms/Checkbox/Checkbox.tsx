@@ -1,11 +1,11 @@
 import { CheckIcon } from "@pluv-internal/react-icons";
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import * as RadixCheckbox from "@radix-ui/react-checkbox";
 import { oneLine } from "common-tags";
 import { ElementRef, forwardRef } from "react";
 
-export type CheckboxProps = InferComponentProps<typeof RadixCheckbox.Root>;
+export type CheckboxProps = ComponentProps<typeof RadixCheckbox.Root>;
 
 export const Checkbox = forwardRef<ElementRef<typeof RadixCheckbox.Root>, CheckboxProps>(
     ({ className, ...props }, ref) => (

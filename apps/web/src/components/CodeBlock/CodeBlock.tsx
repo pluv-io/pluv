@@ -1,13 +1,13 @@
 "use client";
 
-import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
+import type { ComponentProps } from "react";
 import { forwardRef, useContext, useMemo } from "react";
-import { type ShikiLanguage } from "../../utils/getShiki";
+import type { ShikiLanguage } from "../../utils/getShiki";
 import { CodeBlockContext } from "./context";
 
-export type CodeBlockProps = InferComponentProps<"div"> & {
+export type CodeBlockProps = ComponentProps<"div"> & {
     code: string;
     lang: ShikiLanguage;
 };

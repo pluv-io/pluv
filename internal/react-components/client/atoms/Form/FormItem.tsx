@@ -1,9 +1,9 @@
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { forwardRef, useId } from "react";
 import { FormItemContext } from "./FormItemContext";
 
-export type FormItemProps = InferComponentProps<"div">;
+export type FormItemProps = ComponentProps<"div">;
 
 export const FormItem = forwardRef<HTMLDivElement, FormItemProps>(({ className, ...props }, ref) => {
     const id = useId();

@@ -1,11 +1,11 @@
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import * as RadixLabel from "@radix-ui/react-label";
 import { ElementRef, forwardRef } from "react";
 import { Label } from "../Label";
 import { useFormField } from "./useFormField";
 
-export type FormLabelProps = InferComponentProps<typeof RadixLabel.Root>;
+export type FormLabelProps = ComponentProps<typeof RadixLabel.Root>;
 
 export const FormLabel = forwardRef<ElementRef<typeof RadixLabel.Root>, FormLabelProps>(
     ({ className, ...props }, ref) => {

@@ -1,10 +1,10 @@
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import * as RadixSwitch from "@radix-ui/react-switch";
 import { oneLine } from "common-tags";
 import { ElementRef, forwardRef } from "react";
 
-export const Switch = forwardRef<ElementRef<typeof RadixSwitch.Root>, InferComponentProps<typeof RadixSwitch.Root>>(
+export const Switch = forwardRef<ElementRef<typeof RadixSwitch.Root>, ComponentProps<typeof RadixSwitch.Root>>(
     (props, ref) => {
         return (
             <RadixSwitch.Root

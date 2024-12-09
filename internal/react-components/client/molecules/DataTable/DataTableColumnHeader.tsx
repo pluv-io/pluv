@@ -1,12 +1,12 @@
 import { useRerender } from "@pluv-internal/react-hooks";
 import { ArrowDownIcon, ChevronUpDownIcon, EyeOffIcon } from "@pluv-internal/react-icons";
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import type { Column } from "@tanstack/react-table";
 import { Button } from "../../../either/atoms/Button";
 import { DropdownMenu } from "../../atoms/DropdownMenu";
 
-export type DataTableColumnHeaderProps<TData, TValue> = InferComponentProps<"div"> & {
+export type DataTableColumnHeaderProps<TData, TValue> = ComponentProps<"div"> & {
     column: Column<TData, TValue>;
     title: string;
 };

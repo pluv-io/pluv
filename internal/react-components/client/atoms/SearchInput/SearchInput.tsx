@@ -1,11 +1,11 @@
 import { SearchIcon, XCircleIcon } from "@pluv-internal/react-icons";
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import { forwardRef } from "react";
 import { Spinner } from "../../../either/atoms/Spinner";
 
-export type SearchInputProps = InferComponentProps<"input"> & {
+export type SearchInputProps = ComponentProps<"input"> & {
     isLoading?: boolean;
     onClear?: () => void;
 };

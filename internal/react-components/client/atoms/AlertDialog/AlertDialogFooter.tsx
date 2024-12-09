@@ -1,8 +1,8 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { forwardRef } from "react";
 
-export type AlertDialogFooterProps = InferComponentProps<"div">;
+export type AlertDialogFooterProps = ComponentProps<"div">;
 
 export const AlertDialogFooter = forwardRef<HTMLDivElement, AlertDialogFooterProps>(({ className, ...props }, ref) => {
     return (

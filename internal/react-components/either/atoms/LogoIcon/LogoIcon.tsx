@@ -1,7 +1,7 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { forwardRef } from "react";
 
-export type LogoIconProps = InferComponentProps<"svg">;
+export type LogoIconProps = ComponentProps<"svg">;
 
 export const LogoIcon = forwardRef<SVGSVGElement, LogoIconProps>((props, ref) => {
     return (

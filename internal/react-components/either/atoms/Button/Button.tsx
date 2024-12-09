@@ -1,4 +1,4 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { Slot } from "@radix-ui/react-slot";
 import type { VariantProps } from "class-variance-authority";
@@ -72,7 +72,7 @@ export const buttonVariants = cva(
     },
 );
 
-export type ButtonProps = InferComponentProps<"button"> & VariantProps<typeof buttonVariants> & { asChild?: boolean };
+export type ButtonProps = ComponentProps<"button"> & VariantProps<typeof buttonVariants> & { asChild?: boolean };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
     const { className, variant, size, asChild, ...restProps } = props;

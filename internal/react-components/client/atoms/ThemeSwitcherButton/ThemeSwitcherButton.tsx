@@ -1,11 +1,11 @@
 import { useNoSsr, useTheme } from "@pluv-internal/react-hooks";
 import { MonitorIcon, MoonIcon, SunIcon } from "@pluv-internal/react-icons";
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { forwardRef } from "react";
 import { Button } from "../../../either/atoms/Button";
 import { DropdownMenu } from "../DropdownMenu";
 
-export type ThemeSwitcherButtonProps = InferComponentProps<"button">;
+export type ThemeSwitcherButtonProps = ComponentProps<"button">;
 
 export const ThemeSwitcherButton = forwardRef<HTMLButtonElement, ThemeSwitcherButtonProps>((props, ref) => {
     const noSsr = useNoSsr();

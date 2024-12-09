@@ -1,8 +1,8 @@
-import { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
+import type { ComponentProps } from "react";
 import { forwardRef } from "react";
 
-export type CardProps = InferComponentProps<"div">;
+export type CardProps = ComponentProps<"div">;
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(({ className, ...props }, ref) => {
     return (

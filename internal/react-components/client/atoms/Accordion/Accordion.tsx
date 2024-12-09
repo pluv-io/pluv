@@ -1,11 +1,11 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import * as RadixAccordion from "@radix-ui/react-accordion";
 import { oneLine } from "common-tags";
 import type { ElementRef } from "react";
 import { forwardRef } from "react";
 
-export type AccordionProps = InferComponentProps<typeof RadixAccordion.Root>;
+export type AccordionProps = ComponentProps<typeof RadixAccordion.Root>;
 
 export const Accordion = forwardRef<ElementRef<typeof RadixAccordion.Root>, AccordionProps>(
     ({ className, ...props }, ref) => {

@@ -2,11 +2,11 @@
 
 import { Anchor } from "@pluv-internal/react-components/either";
 import { useNoSsr } from "@pluv-internal/react-hooks";
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { forwardRef } from "react";
 
-export type MdxAProps = Omit<InferComponentProps<"a">, "ref">;
+export type MdxAProps = Omit<ComponentProps<"a">, "ref">;
 
 export const MdxA = forwardRef<HTMLAnchorElement, MdxAProps>((props, ref) => {
     const { className, href, ...restProps } = props;
