@@ -1,10 +1,10 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { Slot } from "@radix-ui/react-slot";
 import { oneLine } from "common-tags";
 import { forwardRef } from "react";
 
-export type PillProps = InferComponentProps<"div"> & {
+export type PillProps = ComponentProps<"div"> & {
     asChild?: boolean;
 };
 

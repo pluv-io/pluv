@@ -1,10 +1,10 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import NextLink from "next/link";
 import { forwardRef } from "react";
 
-export type CommandStaticLinkProps = InferComponentProps<typeof NextLink>;
+export type CommandStaticLinkProps = ComponentProps<typeof NextLink>;
 
 export const CommandStaticLink = forwardRef<HTMLAnchorElement, CommandStaticLinkProps>(
     ({ as: _as, className, href, ...props }, ref) => {

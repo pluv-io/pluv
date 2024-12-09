@@ -1,11 +1,11 @@
 import { ChevronDownIcon } from "@pluv-internal/react-icons";
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import * as RadixSelect from "@radix-ui/react-select";
 import type { ElementRef } from "react";
 import { forwardRef } from "react";
 
-export type SelectScrollDownButtonProps = InferComponentProps<typeof RadixSelect.ScrollDownButton>;
+export type SelectScrollDownButtonProps = ComponentProps<typeof RadixSelect.ScrollDownButton>;
 
 export const SelectScrollDownButton = forwardRef<
     ElementRef<typeof RadixSelect.ScrollDownButton>,

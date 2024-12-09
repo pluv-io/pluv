@@ -1,9 +1,9 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
+import type { ComponentProps } from "react";
 import { forwardRef } from "react";
 
-export type TextAreaProps = InferComponentProps<"textarea">;
+export type TextAreaProps = ComponentProps<"textarea">;
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({ className, ...props }, ref) => {
     return (

@@ -1,9 +1,8 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
 import * as React from "react";
-import type { Ref, SVGProps } from "react";
+import type { ComponentProps, Ref, SVGProps } from "react";
 
 export type SvgIconComponent = typeof ArrowDownIcon;
-export type SvgIconComponentProps = InferComponentProps<SvgIconComponent>;
+export type SvgIconComponentProps = ComponentProps<SvgIconComponent>;
 
 export const ArrowDownIcon = React.memo(
     React.forwardRef((props: SVGProps<SVGSVGElement>, ref: Ref<SVGSVGElement>) => (

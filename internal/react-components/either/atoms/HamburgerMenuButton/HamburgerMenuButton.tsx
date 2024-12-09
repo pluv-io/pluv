@@ -1,10 +1,10 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import { FC } from "react";
 import { HamburgerMenuButtonBar } from "./HamburgerMenuButtonBar";
 
-export type HamburgerMenuButtonProps = InferComponentProps<"button"> & {
+export type HamburgerMenuButtonProps = ComponentProps<"button"> & {
     open?: boolean;
 };
 

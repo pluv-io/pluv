@@ -1,9 +1,9 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import { forwardRef } from "react";
 
-export type TableCellProps = InferComponentProps<"td">;
+export type TableCellProps = ComponentProps<"td">;
 
 export const TableCell = forwardRef<HTMLTableCellElement, TableCellProps>((props, ref) => {
     const { className, ...restProps } = props;

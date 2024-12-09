@@ -11,9 +11,9 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@types/react": "^18.3.12",
+		"@types/react": "^19.0.1",
 		"clsx": "^2.1.1",
-		"tailwind-merge": "^2.5.4"
+		"tailwind-merge": "^2.5.5"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",

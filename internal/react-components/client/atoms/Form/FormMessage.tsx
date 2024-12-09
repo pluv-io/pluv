@@ -1,9 +1,9 @@
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { forwardRef } from "react";
 import { useFormField } from "./useFormField";
 import { cn } from "@pluv-internal/utils";
 
-export type FormMessageProps = InferComponentProps<"p">;
+export type FormMessageProps = ComponentProps<"p">;
 
 export const FormMessage = forwardRef<HTMLParagraphElement, FormMessageProps>(
     ({ className, children, ...props }, ref) => {

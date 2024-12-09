@@ -1,9 +1,9 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import { forwardRef } from "react";
 
-export type CommandStaticGroupProps = InferComponentProps<"div">;
+export type CommandStaticGroupProps = ComponentProps<"div">;
 
 export const CommandStaticGroup = forwardRef<HTMLDivElement, CommandStaticGroupProps>(
     ({ className, ...props }, ref) => {

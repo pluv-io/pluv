@@ -1,8 +1,8 @@
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { forwardRef } from "react";
 
-export type CardDescriptionProps = InferComponentProps<"p">;
+export type CardDescriptionProps = ComponentProps<"p">;
 
 export const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionProps>(
     ({ className, ...props }, ref) => {

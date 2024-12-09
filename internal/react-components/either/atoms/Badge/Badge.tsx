@@ -1,4 +1,4 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import type { VariantProps } from "class-variance-authority";
 import { cva } from "class-variance-authority";
@@ -22,7 +22,7 @@ const badgeVariants = cva(
     },
 );
 
-export type BadgeProps = InferComponentProps<"div"> & VariantProps<typeof badgeVariants>;
+export type BadgeProps = ComponentProps<"div"> & VariantProps<typeof badgeVariants>;
 
 export const Badge = forwardRef<HTMLDivElement, BadgeProps>((props, ref) => {
     const { className, variant, ...restProps } = props;

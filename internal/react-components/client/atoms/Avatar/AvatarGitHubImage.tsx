@@ -1,11 +1,11 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import * as RadixAvatar from "@radix-ui/react-avatar";
 import NextImage from "next/image";
 import type { ElementRef } from "react";
 import { forwardRef } from "react";
 
-export type AvatarGitHubImageProps = InferComponentProps<typeof RadixAvatar.Image> & {
+export type AvatarGitHubImageProps = ComponentProps<typeof RadixAvatar.Image> & {
     alt: string;
     priority?: boolean;
     src: string;

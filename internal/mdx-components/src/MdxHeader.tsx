@@ -1,11 +1,11 @@
 import { Anchor } from "@pluv-internal/react-components/either";
 import { LinkIcon } from "@pluv-internal/react-icons";
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { oneLine } from "common-tags";
 import { forwardRef } from "react";
 import { cn } from "../../utils/src";
 
-export type MdxHeaderProps = InferComponentProps<"h1"> & {
+export type MdxHeaderProps = ComponentProps<"h1"> & {
     type?: "header" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 };
 

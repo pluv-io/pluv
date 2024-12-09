@@ -50,12 +50,11 @@ const generateComponents = () => {
             fs.appendFileSync(
                 `${componentPath}/index.tsx`,
                 `${stripIndents`
-					import type { InferComponentProps } from "@pluv-internal/typings";
 					import * as React from "react";
-					import type { Ref, SVGProps } from "react";
+					import type { ComponentProps, Ref, SVGProps } from "react";
 
 					export type SvgIconComponent = typeof ${componentName};
-					export type SvgIconComponentProps = InferComponentProps<SvgIconComponent>;
+					export type SvgIconComponentProps = ComponentProps<SvgIconComponent>;
 				`}\n\n`,
             );
         }

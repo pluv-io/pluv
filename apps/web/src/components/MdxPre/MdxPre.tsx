@@ -1,15 +1,14 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
-import type { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
+import type { ComponentProps, FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import { isValidElement } from "react";
 import type { ShikiLanguage } from "../../utils/getShiki";
 import { ServerCodeBlock } from "../ServerCodeBlock";
 
-export type MdxPreProps = InferComponentProps<"pre">;
+export type MdxPreProps = ComponentProps<"pre">;
 
 const hasChildren = (element: ReactNode): element is ReactElement<PropsWithChildren> => {
-    return isValidElement(element) && !!element.props.children;
+    return isValidElement(element) && !!(element.props as Record<string, any>).children;
 };
 
 const getChildrenText = (children: ReactNode): string => {
@@ -31,7 +30,7 @@ const parseLanguage = (className?: string): string | null => {
 const getChildrenLanguage = (children: ReactNode): string => {
     if (!isValidElement(children)) return "tsx";
 
-    const _language = parseLanguage(children.props.className);
+    const _language = parseLanguage((children.props as Record<string, any>).className);
 
     if (_language) return _language;
     if (!hasChildren(children)) return "tsx";
@@ -47,7 +46,7 @@ export const MdxPre: FC<MdxPreProps> = (props) => {
 
     return (
         <ServerCodeBlock
-            {...(restProps as InferComponentProps<"div">)}
+            {...(restProps as ComponentProps<"div">)}
             className={cn(
                 oneLine`
                     flex

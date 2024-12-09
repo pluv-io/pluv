@@ -1,9 +1,9 @@
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import { forwardRef } from "react";
 
-export type MdxBlockQuoteProps = Omit<InferComponentProps<"blockquote">, "ref">;
+export type MdxBlockQuoteProps = Omit<ComponentProps<"blockquote">, "ref">;
 
 export const MdxBlockQuote = forwardRef<HTMLQuoteElement, MdxBlockQuoteProps>((props, ref) => {
     const { className, ...restProps } = props;

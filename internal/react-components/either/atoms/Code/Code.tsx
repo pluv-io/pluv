@@ -1,9 +1,9 @@
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import { forwardRef } from "react";
 
-export const Code = forwardRef<HTMLElement, InferComponentProps<"code">>((props, ref) => {
+export const Code = forwardRef<HTMLElement, ComponentProps<"code">>((props, ref) => {
     return (
         <code
             {...props}

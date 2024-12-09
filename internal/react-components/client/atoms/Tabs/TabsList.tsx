@@ -1,11 +1,11 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import * as RadixTabs from "@radix-ui/react-tabs";
 import { oneLine } from "common-tags";
 import type { ElementRef } from "react";
 import { forwardRef } from "react";
 
-export type TabsListProps = InferComponentProps<typeof RadixTabs.List>;
+export type TabsListProps = ComponentProps<typeof RadixTabs.List>;
 
 export const TabsList = forwardRef<ElementRef<typeof RadixTabs.List>, TabsListProps>((props, ref) => {
     const { className, ...restProps } = props;

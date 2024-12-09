@@ -1,9 +1,9 @@
 import { CircleLoaderIcon } from "@pluv-internal/react-icons";
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { forwardRef } from "react";
 
-export type SpinnerProps = Omit<InferComponentProps<"svg">, "height" | "width"> & {
+export type SpinnerProps = Omit<ComponentProps<"svg">, "height" | "width"> & {
     height?: number;
     width?: number;
 };

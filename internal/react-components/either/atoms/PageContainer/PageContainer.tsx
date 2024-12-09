@@ -1,9 +1,9 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { Slot } from "@radix-ui/react-slot";
 import { forwardRef } from "react";
 
-export type PageContainerProps = InferComponentProps<"div"> & {
+export type PageContainerProps = ComponentProps<"div"> & {
     asChild?: boolean;
 };
 

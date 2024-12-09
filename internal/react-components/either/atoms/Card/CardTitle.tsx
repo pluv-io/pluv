@@ -1,8 +1,8 @@
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { forwardRef } from "react";
 
-export type CardTitleProps = InferComponentProps<"h1" | "h2" | "h3" | "h4" | "h5" | "h6"> & {
+export type CardTitleProps = ComponentProps<"h1" | "h2" | "h3" | "h4" | "h5" | "h6"> & {
     heading?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 };
 

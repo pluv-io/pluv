@@ -1,4 +1,4 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import * as RadixSelect from "@radix-ui/react-select";
 import { oneLine } from "common-tags";
@@ -7,7 +7,7 @@ import { forwardRef } from "react";
 import { SelectScrollDownButton } from "./SelectScrollDownButton";
 import { SelectScrollUpButton } from "./SelectScrollUpButton";
 
-export type SelectContentProps = InferComponentProps<typeof RadixSelect.Content>;
+export type SelectContentProps = ComponentProps<typeof RadixSelect.Content>;
 
 export const SelectContent = forwardRef<ElementRef<typeof RadixSelect.Content>, SelectContentProps>((props, ref) => {
     const { className, children, position = "popper", ...restProps } = props;

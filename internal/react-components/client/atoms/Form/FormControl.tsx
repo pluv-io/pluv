@@ -1,10 +1,10 @@
-import { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { ElementRef, forwardRef } from "react";
 import { useFormField } from "./useFormField";
 import { useFormContext } from "./useFormContext";
 
-export type FormControlProps = InferComponentProps<typeof Slot> & {
+export type FormControlProps = ComponentProps<typeof Slot> & {
     disabled?: boolean;
 };
 

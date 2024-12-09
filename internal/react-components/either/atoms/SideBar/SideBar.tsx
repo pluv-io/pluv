@@ -1,9 +1,9 @@
-import type { InferComponentProps } from "@pluv-internal/typings";
+import type { ComponentProps } from "react";
 import { cn } from "@pluv-internal/utils";
 import { oneLine } from "common-tags";
 import { forwardRef } from "react";
 
-export type SideBarProps = InferComponentProps<"aside">;
+export type SideBarProps = ComponentProps<"aside">;
 
 export const SideBar = forwardRef<HTMLElement, SideBarProps>((props, ref) => {
     const { className, ...restProps } = props;
