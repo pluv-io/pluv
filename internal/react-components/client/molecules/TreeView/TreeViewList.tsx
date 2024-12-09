@@ -109,15 +109,17 @@ export const TreeViewList: FC<TreeViewListProps> = ({
                 </button>
             </div>
             <m.ul
-                className={oneLine`
-                    mt-0.5
-                    flex
-                    flex-col
-                    items-stretch
-                    gap-0.5
-                    overflow-y-clip
-                    pl-3
-                `}
+                {...{
+                    className: oneLine`
+                        mt-0.5
+                        flex
+                        flex-col
+                        items-stretch
+                        gap-0.5
+                        overflow-y-clip
+                        pl-3
+                    `,
+                }}
                 animate={open ? "open" : "default"}
                 initial={false}
                 variants={{
