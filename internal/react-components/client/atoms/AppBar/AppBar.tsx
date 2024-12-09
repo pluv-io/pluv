@@ -8,9 +8,7 @@ import { forwardRef, useEffect, useState } from "react";
 const SCROLL_THRESHOLD = 32;
 const SCROLL_PROGRESS_THRESHOLD = 0.95;
 
-export type AppBarProps = ComponentProps<typeof m.div> & {
-    active?: boolean;
-};
+export type AppBarProps = ComponentProps<"div"> & ComponentProps<typeof m.div> & { active?: boolean };
 
 export const AppBar = forwardRef<HTMLDivElement, AppBarProps>((props, ref) => {
     const { active, className, ...restProps } = props;
@@ -40,20 +38,22 @@ export const AppBar = forwardRef<HTMLDivElement, AppBarProps>((props, ref) => {
         <m.div
             {...restProps}
             ref={ref}
-            className={cn(
-                oneLine`
-                    sticky
-                    inset-x-0
-                    top-0
-                    z-app-bar
-                    h-14
-                    border-b
-                    border-b-border
-                    px-4
-                    shadow-lg
-                `,
-                className,
-            )}
+            {...{
+                className: cn(
+                    oneLine`
+                        sticky
+                        inset-x-0
+                        top-0
+                        z-app-bar
+                        h-14
+                        border-b
+                        border-b-border
+                        px-4
+                        shadow-lg
+                    `,
+                    className,
+                ),
+            }}
             initial={false}
             animate={active ? "open" : isThreshold ? "scrolled" : "default"}
             variants={{
