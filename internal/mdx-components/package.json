@@ -19,9 +19,9 @@
 		"@types/common-tags": "^1.8.4",
 		"@types/mdx": "^2.0.13",
 		"@types/react": "^19.0.1",
-		"@types/react-dom": "^19.0.1",
+		"@types/react-dom": "^19.0.2",
 		"common-tags": "^1.8.2",
-		"next": "^15.0.4",
+		"next": "^15.1.0",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0"
 	},
