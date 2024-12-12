@@ -1,0 +1,67 @@
+# Creating Rooms
+
+Rooms are the channels that WebSockets can enter and leave (i.e. connect and disconnect). Events emitted by sockets in a room will be broadcasted only to other sockets within the same room.
+
+## Creating a PluvRoom
+
+To create a `PluvRoom`, you must first have a `PluvClient` defined. Refer to the [create client](/docs/client/create-client) documentation to do so.
+
+```ts
+// frontend/room.ts
+
+import { createClient } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
+import { z } from "zod";
+import type { ioServer } from "./server/pluv-io";
+
+export const client = createClient({
+    infer: (i) => ({ io: i<typeof ioServer> }),
+    /**
+     * Define the initial storage for rooms that are created.
+     * This can be overwritten in `createRoom`
+     */
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array<string>([]),
+    })),
+    // Define your presence schema
+    presence: z.object({
+        selectionId: z.string().nullable(),
+    }),
+    // ...
+});
+
+const room = client.createRoom("my-test-room", {
+    // Define the user's initial presence value
+    initialPresence: {
+        selectionId: null,
+    },
+    // Overwritten from client
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array(["hello world!"]),
+    })),
+});
+```
+
+## Connect to your PluvRoom
+
+```ts
+import { client } from "./io";
+
+// connect by room name
+await client.enter(ROOM_NAME);
+
+// or connect by room instance
+await client.enter(room);
+```
+
+## Leave your PluvRoom
+
+```ts
+import { client } from "./io";
+
+// leave by room name
+client.leave(ROOM_NAME);
+
+// or leave by room instance
+client.leave(room);
+```
