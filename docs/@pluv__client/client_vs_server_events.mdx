@@ -1,3 +1,8 @@
+---
+title: "Client vs Server Events"
+description: "Understanding the difference between client and server custom events, and when to prefer which"
+---
+
 # Client vs Server Events
 
 In pluv.io, you can define type-safe custom events both on the client and server. Both client and server event procedures represent a message that a user has sent to be transformed before being emitted to connected peers. If a procedure does not exist to capture a received message, that message will be forwarded as-is to the next receiver of the message. i.e. if a client procedure does not exist, the message is forwarded to the server procedure. If that does not exist, then the message is forwarded to connected peers.
