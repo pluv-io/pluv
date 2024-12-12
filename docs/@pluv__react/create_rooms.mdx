@@ -1,0 +1,23 @@
+# Create Rooms
+
+Rooms are the channels that WebSockets can enter and leave (i.e. connect and disconnect). Events emitted by sockets in a room will be broadcasted only to other sockets within the same room.
+
+## Create and connect to a PluvRoom
+
+Create and connect to a `PluvRoom` by mounting a `PluvRoomProvider` from your `@pluv/react` bundle. When this provider is mounted, all of the hooks from the `createBundle` output will become usable in the child react tree, and the user joins the room as an active WebSocket connection. When the component unmounts, the user leaves the room.
+
+> **Note**
+> You may not have multiple PluvRoomProvider components mounted at the same time with the same `room` attribute within your app.
+
+```tsx
+import type { FC } from "react";
+import { pluv } from "./frontend/io";
+
+export const MyPage: FC = () => {
+    return (
+        <pluv.PluvRoomProvider room="my-room-id">
+            <MyRoom />
+        </pluv.PluvRoomProvider>
+    );
+};
+```

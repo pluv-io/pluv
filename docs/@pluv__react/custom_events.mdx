@@ -1,0 +1,34 @@
+# Custom Events
+
+Define custom events on your backend `PluvServer` instance. Then send and receive custom websocket events in a type-safe way with `@pluv/react`.
+
+## Define custom events
+
+To get started, define custom events in your backend `@pluv/io` instance (see [Define Events](/docs/io/define-events) to get started).
+
+## Use custom events
+
+Then, assuming you've already setup your React.js bundle and providers, listen and broadcast your custom events using `useBroadcast` and `useEvent` from your react bundle.
+
+```ts
+import { pluvRoom } from "frontend/io";
+import { useCallback } from "react";
+
+pluvRoom.event.receiveMessage.useEvent(({ data }) => {
+    console.log(data.message);
+});
+
+pluvRoom.event.receiveValue.useEvent(({ data }) => {
+    console.log(data.value);
+});
+
+const broadcast = pluvRoom.useBroadcast();
+
+const sendMessage = useCallback((message: string): void => {
+    broadcast.sendMessage({ message });
+}, [broadcast]);
+
+const doubleValue = useCallback((value: number): void => {
+    broadcast.doubleValue({ value });
+}, [broadcast]);
+```

@@ -1,0 +1,73 @@
+# History
+
+`@pluv/react` comes with hooks to manipulate history that are built on top of the CRDT library you are using.
+
+* For Yjs (`@pluv/crdt-yjs`), it is built on top of the [UndoManager](https://docs.yjs.dev/api/undo-manager).
+* For Loro (`@pluv/crdt-loro`), this feature is not yet supported.
+
+This will allow users to apply undos and redos to Pluv storage mutations.
+
+## Relevant Hooks
+
+* [useCanRedo](/docs/react/api-reference#useCanRedo)
+* [useCanUndo](/docs/react/api-reference#useCanUndo)
+* [useRedo](/docs/react/api-reference#useRedo)
+* [useTransact](/docs/react/api-reference#useTransact)
+* [useUndo](/docs/react/api-reference#useUndo)
+
+## Undoing a storage mutation
+
+Assume you have storage defined like so:
+
+```ts
+import { yjs } from "@pluv/crdt-yjs";
+import { createBundle, createClient } from "@pluv/react";
+
+const client = createClient({
+    initialStorage: yjs.doc(() => ({
+        messages: yjs.array([
+            yjs.object({
+                message: "hello",
+                name: "leedavidcs",
+            }),
+        ]),
+    })),
+    // ...
+});
+
+export const pluv = createBundle(client);
+```
+
+To undo a storage mutation, you will need to wrap your mutation with a transaction.
+
+```ts
+const transact = pluv.useTransact();
+const [messages, sharedType] = pluv.useStorage();
+
+// We can undo this
+transact(() => {
+    sharedType.push(["world!"]);
+});
+
+// We can also access all shared types to undo like this
+transact((tx) => {
+    tx.messages.push(["world!"]);
+});
+
+// We cannot undo this
+sharedType.push(["world!"]);
+```
+
+Then from anywhere within the `PluvRoomProvider`, you can undo your last transacted operation.
+
+```ts
+const undo = pluv.useUndo();
+const redo = pluv.useRedo();
+
+undo();
+redo();
+```
+
+## References
+
+* [Yjs UndoManager](https://docs.yjs.dev/api/undo-manager)

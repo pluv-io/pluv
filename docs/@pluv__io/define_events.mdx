@@ -1,0 +1,48 @@
+# Define Events
+
+In pluv.io, you can define custom events with an input validation schema and a function, and have them be automatically type-safe without having to manage your own types.
+
+## Usage example
+
+```ts
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { z } from "zod";
+
+const io = createIO({ platform: platformNode() });
+
+// Create your custom events as procedures
+const sendMessage = io.procedure
+    .input(z.object({ message: z.string() }))
+    .broadcast(({ message }) => ({
+        receiveMessage: { message },
+    }));
+
+const doubleValue = io.procedure
+    .input(z.object({ value: z.number() }))
+    .broadcast(({ value }) => ({
+        receiveValue: { value: value * 2 },
+    }));
+
+const wave = io.procedure
+    .broadcast(() => ({
+        receiveMessage: { message: "Hello world!" },
+    }));
+
+// Then add the procedures to your router
+const router = io.router({
+    sendMessage,
+    doubleValue,
+    wave,
+});
+
+// Lastly, add the router to your server, so that it can begin accepting custom events
+const server = io.server({ router });
+
+// Export the io type instance of the io itself
+export type AppPluvIO = typeof server;
+```
+
+## Next steps
+
+* [Use custom events](/docs/react/custom-events)

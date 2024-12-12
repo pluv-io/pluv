@@ -1,0 +1,44 @@
+# Loading Storage
+
+Listen to when a room is deleted so that when the same room is re-created, users can resume from the same storage as where they left off.
+
+## Add listeners
+
+```ts
+// server/io.ts
+
+import { yjs } from "@pluv/crdt-yjs";
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { db } from "./db";
+
+export const io = createIO({
+    // Specify which CRDT to use here
+    crdt: yjs,
+    platform: platformNode(),
+});
+
+export const ioServer = io.server({
+    // Load storage for a newly created room.
+    getInitialStorage: async ({ room }) => {
+        const existingRoom = await db.room.findUnique({ where: { room } });
+
+        return existingRoom?.encodedState ?? null;
+    },
+    // Before the room is destroyed, persist the state to a database
+    // to load when the room is re-created.
+    onRoomDeleted: async ({ encodedState, room }) => {
+        await db.room.upsert({
+            where: { room },
+            create: { encodedState, room },
+            update: { encodedState },
+        });
+    },
+    // It is unnecessary to save the storage state in this listener.
+    // If a room already exists, users will load the currently active
+    // storage before the storage from initialStorage.
+    onStorageUpdated: ({ encodedState, room }) => {
+        console.log(room, encodedState);
+    },
+});
+```

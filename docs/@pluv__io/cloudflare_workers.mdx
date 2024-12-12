@@ -1,0 +1,246 @@
+# Cloudflare Workers
+
+pluv.io supports building real-time APIs with [Cloudflare Workers](https://workers.cloudflare.com/) through their [Durable Objects API](https://developers.cloudflare.com/workers/runtime-apis/durable-objects/). You can define your handler and your DurableObject manually if you need more control, but if you'd like to get started quickly, check out [createPluvHandler](/docs/io/cloudflare-workers#createPluvHandler).
+
+## Using with Cloudflare Workers (manual)
+
+Let's step through how we'd put together a real-time API for Cloudflare Workers. The examples below assumes a basic understanding of Cloudflare Workers and Durable Objects.
+
+### Install dependencies
+
+```bash
+# For the server
+npm install @pluv/io @pluv/platform-cloudflare
+
+# Server peer-dependencies
+npm install zod
+```
+
+### Create PluvIO instance
+
+Define an io (websocket client) instance on the server codebase:
+
+```ts
+// server/io.ts
+
+import { createIO } from "@pluv/io";
+import { platformCloudflare } from "@pluv/platform-cloudflare";
+import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/d1";
+import { schema } from "./schema";
+
+export type Env = {
+    DB: D1Database;
+};
+
+export const io = createIO({
+    platform: platformCloudflare<Env>({
+        /**
+         * Specify whether WebSocket event listeners should be "attached" to
+         * or "detached" from the WebSocket upon registration.
+         * 
+         * Event listeners should be "detached" to use Cloudflare's WebSocket
+         * hibernation.
+         */
+        mode: "detached", // @default = "detached"
+    }),
+});
+
+export const ioServer = io.server({
+    // Example of using Cloudflare's D1 database with drizzle-orm
+    getInitialStorage: async ({ context: { env }, room }) => {
+        const db = drizzle(env.DB, { schema });
+
+        const existingRoom = await db
+            .select({ encodedState: schema.rooms.encodedState })
+            .from(schema.rooms)
+            .where(eq(schema.rooms.name, room))
+            .get();
+
+        return existingRoom?.encodedState ?? null;
+    },
+    onRoomDeleted: async ({ encodedState, env, room }) => {
+        const db = drizzle(env.DB, { schema });
+
+        await db
+            .insert(schema.rooms)
+            .values({
+                name: room,
+                encodedState,
+            })
+            .onConflictDoUpdate({
+                target: schema.rooms.name,
+                set: { encodedState },
+            })
+            .run();
+    },
+});
+
+// Export the ioServer type, so that this can be type-imported on the
+// frontend
+export type AppPluvIO = typeof ioServer
+```
+
+### Attach to a RoomDurableObject
+
+Next, create a `RoomDurableObject` and attach our new `PluvServer` to the `RoomDurableObject`:
+
+```ts
+// server/RoomDurableObject.ts
+
+import { type InferIORoom } from "@pluv/io";
+import { AppPluvIO, Env, ioServer } from "./io";
+
+export class RoomDurableObject implements DurableObject {
+    private _room: IORoom<CloudflarePlatform>;
+
+    constructor(state: DurableObjectState, env: Env) {
+        this._room = ioServer.createRoom(state.id.toString(), { env, state });
+    }
+
+    // Only needed if using "detached" mode (i.e. hibernation)
+    public async webSocketClose(ws: WebSocket, code: number, reason: string): Promise<void> {
+        const handler = this._room.onClose(ws);
+
+        await handler({ code, reason });
+    }
+
+    // Only needed if using "detached" mode (i.e. hibernation)
+    public async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
+        const handler = this._room.onError(ws);
+        const eventError = error instanceof Error ? error : new Error("Internal Error");
+
+        await handler({ error: eventError, message: eventError.message });
+    }
+
+    // Only needed if using "detached" mode (i.e. hibernation)
+    public async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
+        const handler = this._room.onMessage(ws);
+
+        await handler({ data: message });
+    }
+
+    async fetch(request: Request) {
+        if (request.headers.get("Upgrade") !== "websocket") {
+            return new Response("Expected WebSocket", { status: 400 });
+        }
+
+        const { 0: client, 1: server } = new WebSocketPair();
+
+        // Only needed if you have configured authentication
+        const token = new URL(request.url).searchParams.get("token");
+
+        await this._room.register(
+            server,
+            // Only needed if you have configured authentication
+            { token },
+        );
+
+        return new Response(null, { status: 101, webSocket: client });
+    }
+}
+```
+
+### Forward request to RoomDurableObject
+
+Lastly, integrate your `RoomDurableObject` with your Cloudflare Worker's default handler:
+
+```ts
+// server/index.ts
+
+const parseRoomId = (url: string): string => {
+    /* get room from req.url */
+};
+
+const handler = {
+    async fetch(req: Request, env: Env): Promise<Response> {
+        const roomId = parseRoomId(req.url);
+        // In wrangler.toml:
+        // [durable_objects]
+        // bindings = [{ name = "rooms", class_name = "RoomDurableObject" }]
+        const durableObjectId = env.rooms.idFromString(roomId);
+
+        const room = env.rooms.get(durableObjectId);
+
+        return room.fetch(request);
+    },
+};
+
+export default handler;
+```
+
+## createPluvHandler
+
+If you don't need to modify your DurableObject or Cloudflare Worker handler too specifically, [@pluv/platform-cloudflare](https://www.npmjs.com/package/@pluv/platform-cloudflare) also provides a function `createPluvHandler` to create a DurableObject and handler for you automatically.
+
+```ts
+import { createIO } from "@pluv/io";
+import {
+    createPluvHandler,
+    platformCloudflare,
+} from "@pluv/platform-cloudflare";
+import { Database } from "./database";
+
+const io = createIO({
+    context: ({ env, state }) => ({
+        // Example of using context with Cloudflare
+        db: new Database(env.DATABASE_URL),
+
+        env,
+        state,
+    }),
+    platform: platformCloudflare(),
+});
+const ioServer = io.server();
+
+const Pluv = createPluvHandler({
+    // Your PluvServer instance
+    io: ioServer,
+    // Your durable object binding, defined in wrangler.toml
+    binding: "rooms",
+    // Optional: Specify the base path from which endpoints are defined
+    endpoint: "/api/pluv", // default
+    // If your PluvIO instance defines authorization, add your authorization
+    // logic here. Return a user if authorized, return null or throw an error
+    // if not authorized.
+    authorize({ env, request, room }): Promise<User> {
+        return {
+            id: "abc123",
+            name: "leedavidcs"
+        };
+    },
+    // Optional: If you want to modify your response before it is returned
+    modify: (request, response) => {
+        if (request.headers.get("Upgrade") === "websocket") return response;
+
+        // Add custom headers if you want
+        response.headers.append("access-control-allow-origin", "*");
+
+        return response;
+    },
+});
+
+// Export your Cloudflare Worker DurableObject with your own custom name
+// Then in wrangler.toml:
+// [durable_objects]
+// bindings = [{ name = "rooms", class_name = "RoomDurableObject" }]
+export const RoomDurableObject = Pluv.DurableObject;
+
+// Export your Cloudflare Worker handler
+export default Pluv.handler;
+
+// Alternatively, define your own custom handler
+export default {
+    async fetch(request: Request, env: Env): Promise<Response> {
+        const response = await Pluv.fetch(request, env);
+
+        // matched with the Pluv handler, return response
+        if (response) return response;
+
+        // didn't match with Pluv handler, add your own worker logic
+        // ...
+
+        return new Response("Not found", { status: 404 });
+    }
+};
+```
