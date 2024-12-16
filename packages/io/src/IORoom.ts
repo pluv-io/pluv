@@ -320,7 +320,7 @@ export class IORoom<
 
         await this._platform.persistence.addUser(this.id, pluvWs.sessionId, user ?? {});
 
-        if (this._platform._registrationMode === "attached") {
+        if (this._platform._config.registrationMode === "attached") {
             const onClose = this._onClose(pluvWs).bind(this);
             const onMessage = this._onMessage(pluvWs).bind(this);
 
@@ -394,7 +394,7 @@ export class IORoom<
     }
 
     private _ensureDetached(): void {
-        if (this._platform._registrationMode === "detached") return;
+        if (this._platform._config.registrationMode === "detached") return;
 
         throw new Error("Platform must use detached mode");
     }

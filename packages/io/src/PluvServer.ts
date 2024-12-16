@@ -201,6 +201,12 @@ export class PluvServer<
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
+    public get fetch() {
+        if (!this._platform._fetch) throw new Error(`\`${this._platform._name}\` does not support \`fetch\``);
+
+        return this._platform._fetch;
+    }
+
     /**
      * @ignore
      * @readonly
@@ -235,6 +241,8 @@ export class PluvServer<
             router = new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>({} as TEvents),
         } = options;
 
+        platform.validateConfig(options);
+
         this._crdt = crdt;
         this._debug = debug;
         this._platform = platform;
@@ -268,6 +276,10 @@ export class PluvServer<
             TContext,
             TEvents
         >[0] & { _meta?: any };
+
+        if (this._platform._config.handleMode !== "io") {
+            throw new Error(`\`createRoom\' is unsupported for \`${this._platform._name}\``);
+        }
 
         if (!/^[a-z0-9]+[a-z0-9\-_]+[a-z0-9]+$/i.test(room)) throw new Error("Unsupported room name");
 
@@ -315,6 +327,14 @@ export class PluvServer<
         if (!this._authorize) {
             throw new Error("IO does not specify authorize during initialization.");
         }
+
+        /**
+         * !HACK
+         * @description Allow the platform to overwrite this behavior as needed. This is introduced
+         * to support platformPluv
+         * @date December 15, 2024
+         */
+        if (this._platform._createToken) return await this._platform._createToken(params);
 
         const ioAuthorize =
             typeof this._authorize === "function" ? this._authorize(params) : (this._authorize as { secret: string });

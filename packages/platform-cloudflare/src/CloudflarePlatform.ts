@@ -26,9 +26,15 @@ export class CloudflarePlatform<
 > extends AbstractPlatform<
     CloudflareWebSocket,
     { env: TEnv; request: Request },
-    CloudflarePlatformRoomContext<TEnv, TMeta>
+    CloudflarePlatformRoomContext<TEnv, TMeta>,
+    {
+        handleMode: "io";
+        registrationMode: WebSocketRegistrationMode;
+        listeners: {};
+    }
 > {
-    readonly _registrationMode: WebSocketRegistrationMode;
+    public readonly _config;
+    public readonly _name = "platformCloudflare";
 
     constructor(config: CloudflarePlatformConfig<TEnv, TMeta>) {
         super({
@@ -38,7 +44,11 @@ export class CloudflarePlatform<
                 : {}),
         });
 
-        this._registrationMode = config.mode ?? DEFAULT_REGISTRATION_MODE;
+        this._config = {
+            handleMode: "io" as const,
+            registrationMode: config.mode ?? DEFAULT_REGISTRATION_MODE,
+            listeners: {},
+        };
 
         const detachedState = this._getDetachedState();
 
@@ -113,7 +123,7 @@ export class CloudflarePlatform<
                 meta: context.meta,
                 state: context.state,
             } as CloudflarePlatformRoomContext<TEnv, TMeta>,
-            mode: this._registrationMode,
+            mode: this._config.registrationMode,
             persistence: this.persistence,
             pubSub: this.pubSub,
         })._initialize() as this;
@@ -138,7 +148,7 @@ export class CloudflarePlatform<
     }
 
     private _getDetachedState(): DurableObjectState | null {
-        if (this._registrationMode !== "detached") return null;
+        if (this._config.registrationMode !== "detached") return null;
 
         return this._roomContext?.state ?? null;
     }

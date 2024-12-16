@@ -115,18 +115,45 @@ export type GetInitialStorageFn<TContext extends Record<string, any>> = (
     event: GetInitialStorageEvent<TContext>,
 ) => MaybePromise<Maybe<string>>;
 
-export interface PluvIOListeners<
-    TPlatform extends AbstractPlatform<any>,
+export type HandleMode = "io" | "fetch";
+export type WebSocketRegistrationMode = "attached" | "detached";
+
+export interface PlatformConfig {
+    handleMode: HandleMode;
+    registrationMode: WebSocketRegistrationMode;
+    listeners: {
+        onRoomDeleted?: boolean;
+        onRoomMessage?: boolean;
+        onStorageUpdated?: boolean;
+        onUserConnected?: boolean;
+        onUserDisconnected?: boolean;
+    };
+}
+
+export type PluvIOListeners<
+    TPlatform extends AbstractPlatform<any, any, any, any>,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> {
-    onRoomDeleted: (event: IORoomListenerEvent<TContext>) => void;
-    onRoomMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
-    onStorageUpdated: (event: IOStorageUpdatedEvent<TPlatform, TAuthorize, TContext>) => void;
-    onUserConnected: (event: IOUserConnectedEvent<TPlatform, TAuthorize, TContext>) => void;
-    onUserDisconnected: (event: IOUserDisconnectedEvent<TPlatform, TAuthorize, TContext>) => void;
-}
+> = Pick<
+    {
+        onRoomDeleted: (event: IORoomListenerEvent<TContext>) => void;
+        onRoomMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
+        onStorageUpdated: (event: IOStorageUpdatedEvent<TPlatform, TAuthorize, TContext>) => void;
+        onUserConnected: (event: IOUserConnectedEvent<TPlatform, TAuthorize, TContext>) => void;
+        onUserDisconnected: (event: IOUserDisconnectedEvent<TPlatform, TAuthorize, TContext>) => void;
+    },
+    InferPlatformListeners<TPlatform>
+>;
+
+export type InferPlatformConfig<TPlatform extends AbstractPlatform<any, any, any, any>> =
+    TPlatform extends AbstractPlatform<any, any, any, infer IConfig> ? IConfig : never;
+
+export type InferPlatformListeners<TPlatform extends AbstractPlatform<any, any, any, any>> = keyof {
+    [P in keyof PlatformConfig["listeners"]]: InferPlatformConfig<TPlatform>["listeners"][P] extends true | undefined
+        ? true
+        : never;
+};
 
 export type IORoomListenerEvent<TContext extends Record<string, any>> = {
     context: TContext;

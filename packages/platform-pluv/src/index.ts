@@ -1,4 +1,8 @@
-export { createIO } from "./createIO";
-export type { PluvIO, PluvIOConfig } from "./PluvIO";
-export type { PluvPlatform } from "./PluvPlatform";
-export { ZodEvent } from "./schemas";
+export { platformPluv } from "./platformPluv";
+export { PluvPlatform } from "./PluvPlatform";
+export type {
+    PluvIOEndpoints,
+    RoomDeletedMessageEventData,
+    UserConnectedEventData,
+    UserDisconnectedEventData,
+} from "./types";
