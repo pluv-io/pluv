@@ -22,7 +22,7 @@
         "@pluv-internal/typings": "workspace:^",
         "@pluv/crdt-yjs": "workspace:^",
         "@pluv/react": "workspace:^",
-        "@tanstack/react-table": "^8.20.5",
+        "@tanstack/react-table": "^8.20.6",
         "@types/common-tags": "^1.8.4",
         "@types/ms": "^0.7.34",
         "@types/react": "^19.0.1",
