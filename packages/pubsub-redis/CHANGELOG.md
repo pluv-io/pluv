@@ -1,5 +1,12 @@
 # @pluv/pubsub-redis
 
+## 0.33.1
+
+### Patch Changes
+
+- Updated dependencies [0c920ea]
+  - @pluv/io@0.33.1
+
 ## 0.33.0
 
 ### Patch Changes

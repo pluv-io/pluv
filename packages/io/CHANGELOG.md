@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.33.1
+
+### Patch Changes
+
+- 0c920ea: Fix the `onUserDisconnected` event not triggering.
+  - @pluv/crdt@0.33.1
+  - @pluv/types@0.33.1
+
 ## 0.33.0
 
 ### Patch Changes
