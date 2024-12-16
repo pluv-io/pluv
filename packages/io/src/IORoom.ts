@@ -364,13 +364,7 @@ export class IORoom<
         });
 
         const promises = quitters.map(async (quitter) => {
-            await this._broadcast({
-                message: {
-                    type: "$EXIT",
-                    data: { sessionId: quitter.sessionId },
-                },
-                senderId: quitter.sessionId,
-            });
+            await this._exitWebsocket(quitter);
         });
 
         await Promise.all(promises);
@@ -619,13 +613,7 @@ export class IORoom<
             this._sessions.delete(webSocket.sessionId);
 
             this._platform.persistence.deleteUser(this.id, webSocket.sessionId).finally(async () => {
-                await this._broadcast({
-                    message: {
-                        type: "$EXIT",
-                        data: { sessionId: webSocket.sessionId },
-                    },
-                    senderId: webSocket.sessionId,
-                });
+                await this._exitWebsocket(webSocket);
 
                 const size = this.getSize();
 
