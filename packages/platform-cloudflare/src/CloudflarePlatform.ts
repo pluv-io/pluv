@@ -28,9 +28,19 @@ export class CloudflarePlatform<
     { env: TEnv; request: Request },
     CloudflarePlatformRoomContext<TEnv, TMeta>,
     {
+        authorize: {
+            required: true;
+        };
         handleMode: "io";
+        requireAuth: false;
         registrationMode: WebSocketRegistrationMode;
-        listeners: {};
+        listeners: {
+            onRoomDeleted: true;
+            onRoomMessage: true;
+            onStorageUpdated: true;
+            onUserConnected: true;
+            onUserDisconnected: true;
+        };
     }
 > {
     public readonly _config;
@@ -45,9 +55,20 @@ export class CloudflarePlatform<
         });
 
         this._config = {
+            authorize: {
+                required: true as const,
+                secret: true as const,
+            },
             handleMode: "io" as const,
             registrationMode: config.mode ?? DEFAULT_REGISTRATION_MODE,
-            listeners: {},
+            requireAuth: false as const,
+            listeners: {
+                onRoomDeleted: true as const,
+                onRoomMessage: true as const,
+                onStorageUpdated: true as const,
+                onUserConnected: true as const,
+                onUserDisconnected: true as const,
+            },
         };
 
         const detachedState = this._getDetachedState();

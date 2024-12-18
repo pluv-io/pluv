@@ -34,6 +34,8 @@ import type {
     IORoomMessageEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
+    PluvIOAuthorize,
+    ResolvedPluvIOAuthorize,
     WebSocketSession,
     WebSocketType,
 } from "./types";
@@ -49,7 +51,7 @@ interface BroadcastParams<TIO extends IORoom<any, any, any, any>> {
 
 export interface IORoomListeners<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>>,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > {
@@ -68,7 +70,7 @@ export type BroadcastProxy<TIO extends IORoom<any, any, any, any>> = (<TEvent ex
 
 export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>> = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -92,7 +94,7 @@ export type WebsocketRegisterConfig<TPlatform extends AbstractPlatform<any> = Ab
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>> = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IOLike<TAuthorize, TEvents>
@@ -450,6 +452,8 @@ export class IORoom<
         if (!ioAuthorize) return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
         if (!token) return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
 
+        if (!ioAuthorize.secret) throw new Error("`authorize` was specified without a valid secret");
+
         const payload = await authorize({
             platform: this._platform,
             secret: ioAuthorize.secret,
@@ -488,16 +492,14 @@ export class IORoom<
         return doc;
     }
 
-    private _getIOAuthorize(options: WebsocketRegisterConfig<TPlatform>) {
+    private _getIOAuthorize(
+        options: WebsocketRegisterConfig<TPlatform>,
+    ): ResolvedPluvIOAuthorize<any, any, any> | null {
         if (typeof this._authorize === "function") {
             return this._authorize(options);
         }
 
-        return this._authorize as {
-            required: any;
-            secret: string;
-            user: InputZodLike<any>;
-        } | null;
+        return this._authorize as ResolvedPluvIOAuthorize<any, any, any> | null;
     }
 
     private _getProcedure(

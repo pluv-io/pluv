@@ -28,9 +28,20 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
     { req: IncomingMessage },
     NodePlatformRoomContext<TMeta>,
     {
+        authorize: {
+            required: true;
+            secret: true;
+        };
         handleMode: "io";
+        requireAuth: false;
         registrationMode: WebSocketRegistrationMode;
-        listeners: {};
+        listeners: {
+            onRoomDeleted: true;
+            onRoomMessage: true;
+            onStorageUpdated: true;
+            onUserConnected: true;
+            onUserDisconnected: true;
+        };
     }
 > {
     public readonly _config;
@@ -45,9 +56,20 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
         });
 
         this._config = {
+            authorize: {
+                required: true as const,
+                secret: true as const,
+            },
             handleMode: "io" as const,
             registrationMode: mode,
-            listeners: {},
+            requireAuth: false as const,
+            listeners: {
+                onRoomDeleted: true as const,
+                onRoomMessage: true as const,
+                onStorageUpdated: true as const,
+                onUserConnected: true as const,
+                onUserDisconnected: true as const,
+            },
         };
     }
 

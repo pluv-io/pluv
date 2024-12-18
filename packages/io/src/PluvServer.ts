@@ -1,18 +1,9 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type {
-    BaseIOAuthorize,
-    IOAuthorize,
-    IOLike,
-    Id,
-    InferIOAuthorize,
-    InferIOAuthorizeUser,
-    JsonObject,
-    Maybe,
-} from "@pluv/types";
+import type { IOLike, Id, InferIOAuthorize, InferIOAuthorizeUser, JsonObject, Maybe } from "@pluv/types";
 import colors from "kleur";
 import type { AbstractPlatform, InferInitContextType, InferRoomContextType } from "./AbstractPlatform";
-import type { IORoomListeners } from "./IORoom";
+import type { IORoomListeners, WebsocketRegisterConfig } from "./IORoom";
 import { IORoom } from "./IORoom";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouterEventConfig } from "./PluvRouter";
@@ -20,7 +11,14 @@ import { PluvRouter } from "./PluvRouter";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
 import { PING_TIMEOUT_MS } from "./constants";
-import type { GetInitialStorageFn, PluvContext, PluvIOListeners } from "./types";
+import type {
+    BasePluvIOListeners,
+    GetInitialStorageFn,
+    PluvContext,
+    PluvIOAuthorize,
+    PluvIOListeners,
+    ResolvedPluvIOAuthorize,
+} from "./types";
 import { __PLUV_VERSION } from "./version";
 
 export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
@@ -30,7 +28,7 @@ export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
 
 export type PluvServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>> = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -45,7 +43,7 @@ export type PluvServerConfig<
 
 type BaseCreateRoomOptions<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>>,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -54,7 +52,7 @@ type BaseCreateRoomOptions<
 
 export type CreateRoomOptions<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>>,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = keyof InferRoomContextType<TPlatform> extends never
@@ -63,7 +61,7 @@ export type CreateRoomOptions<
 
 export class PluvServer<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>> = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IOLike<TAuthorize, TEvents>
@@ -232,14 +230,13 @@ export class PluvServer<
             crdt = noop,
             debug = false,
             getInitialStorage,
-            onRoomDeleted,
-            onRoomMessage,
-            onStorageUpdated,
-            onUserConnected,
-            onUserDisconnected,
+
             platform,
             router = new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>({} as TEvents),
         } = options;
+
+        const { onRoomDeleted, onRoomMessage, onStorageUpdated, onUserConnected, onUserDisconnected } =
+            options as Partial<BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>>;
 
         platform.validateConfig(options);
 
@@ -263,7 +260,7 @@ export class PluvServer<
             onStorageUpdated: (event) => onStorageUpdated?.(event),
             onUserConnected: (event) => onUserConnected?.(event),
             onUserDisconnected: (event) => onUserDisconnected?.(event),
-        } as PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>;
+        } as BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>;
     }
 
     public createRoom(
@@ -336,18 +333,25 @@ export class PluvServer<
          */
         if (this._platform._createToken) return await this._platform._createToken(params);
 
-        const ioAuthorize =
-            typeof this._authorize === "function" ? this._authorize(params) : (this._authorize as { secret: string });
+        const ioAuthorize = this._getIOAuthorize(params);
+        const secret = ioAuthorize?.secret ?? null;
 
-        const secret = ioAuthorize.secret;
+        if (!secret) throw new Error("`authorize` was specified without a valid secret");
 
-        return await authorize({
-            platform: this._platform,
-            secret,
-        }).encode(params);
+        return await authorize({ platform: this._platform, secret }).encode(params);
     }
 
-    private _getListeners(): PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents> {
+    private _getIOAuthorize(
+        options: WebsocketRegisterConfig<TPlatform>,
+    ): ResolvedPluvIOAuthorize<any, any, any> | null {
+        if (typeof this._authorize === "function") {
+            return this._authorize(options);
+        }
+
+        return this._authorize as ResolvedPluvIOAuthorize<any, any, any> | null;
+    }
+
+    private _getListeners(): BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents> {
         return (this as any)._listeners;
     }
 

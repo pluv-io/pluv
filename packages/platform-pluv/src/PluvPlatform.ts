@@ -6,7 +6,7 @@ import type {
     JWTEncodeParams,
     WebSocketSerializedState,
 } from "@pluv/io";
-import { AbstractPlatform } from "@pluv/io";
+import { AbstractPlatform, authorize } from "@pluv/io";
 import { Hono } from "hono";
 import { SIGNATURE_HEADER } from "./constants";
 import { ZodEvent } from "./schemas";
@@ -33,20 +33,36 @@ export class PluvPlatform extends AbstractPlatform<
     {},
     {},
     {
+        authorize: {
+            required: false;
+            secret: false;
+        };
         handleMode: "fetch";
         registrationMode: "attached";
+        requireAuth: true;
         listeners: {
+            onRoomDeleted: true;
             onRoomMessage: false;
             onStorageUpdated: false;
+            onUserConnected: true;
+            onUserDisconnected: true;
         };
     }
 > {
     public readonly _config = {
+        authorize: {
+            required: false as const,
+            secret: false as const,
+        },
         handleMode: "fetch" as const,
         registrationMode: "attached" as const,
+        requireAuth: true as const,
         listeners: {
+            onRoomDeleted: true as const,
             onRoomMessage: false as const,
             onStorageUpdated: false as const,
+            onUserConnected: true as const,
+            onUserDisconnected: true as const,
         },
     };
     public readonly _name = "platformPluv";
@@ -149,6 +165,9 @@ export class PluvPlatform extends AbstractPlatform<
         if (!config.authorize) throw new Error("Config `authorize` must be provided to `platformPluv`");
         if (!!config.onRoomMessage) throw new Error("Config `onRoomMessage` is not supported on `platformPluv`");
         if (!!config.onStorageUpdated) throw new Error("Config `onStorageUpdated` is not supported on `platformPluv`");
+        if (config.authorize.required === false) {
+            throw new Error("Config `authorize.required` is not allowed to be false on `platformPluv`");
+        }
 
         /**
          * !HACK
