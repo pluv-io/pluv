@@ -1,11 +1,10 @@
 import type { AbstractPersistence } from "./AbstractPersistence";
 import type { AbstractPubSub } from "./AbstractPubSub";
 import type { AbstractWebSocket, InferWebSocketSource } from "./AbstractWebSocket";
+import type { JWTEncodeParams } from "./authorize";
 import { Persistence } from "./Persistence";
 import { PubSub } from "./PubSub";
-import type { WebSocketSerializedState } from "./types";
-
-export type WebSocketRegistrationMode = "attached" | "detached";
+import type { PlatformConfig, WebSocketSerializedState } from "./types";
 
 export type InferPlatformWebSocketType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<infer IAbstractWebSocket> ? IAbstractWebSocket : never;
@@ -33,6 +32,7 @@ export abstract class AbstractPlatform<
     TWebSocket extends AbstractWebSocket = AbstractWebSocket,
     TInitContext extends Record<string, any> = {},
     TRoomContext extends Record<string, any> = {},
+    TConfig extends PlatformConfig = PlatformConfig,
 > {
     protected readonly _initContext: TInitContext | undefined;
     protected readonly _roomContext: TRoomContext | undefined;
@@ -42,7 +42,10 @@ export abstract class AbstractPlatform<
     public persistence: AbstractPersistence;
     public pubSub: AbstractPubSub;
 
-    public abstract readonly _registrationMode: WebSocketRegistrationMode;
+    public readonly _createToken?: (params: JWTEncodeParams<any, any>) => Promise<string>;
+    public _fetch?: (req: any) => Promise<any>;
+    public abstract readonly _config: TConfig;
+    public abstract readonly _name: string;
 
     constructor(config: AbstractPlatformConfig<TRoomContext> = {}) {
         const { context, persistence, pubSub } = config;
@@ -76,6 +79,8 @@ export abstract class AbstractPlatform<
     public abstract randomUUID(): string;
 
     public abstract setSerializedState(webSocket: AbstractWebSocket, state: WebSocketSerializedState): void;
+
+    public validateConfig(config: any): void {}
 
     protected _initialize(): this {
         if (this._initialized) throw new Error("Platform is already initialized");

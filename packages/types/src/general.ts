@@ -44,6 +44,10 @@ export type DeepWriteable<T> = {
     -readonly [P in keyof T]: DeepWriteable<T[P]>;
 };
 
+export type UndefinedProps<T extends Record<string, any>, K extends keyof T = keyof T> = Id<
+    { [P in K]?: undefined } & { [P in Exclude<keyof T, K>]: T[P] }
+>;
+
 export type OptionalProps<T extends Record<string, any>, K extends keyof T = keyof T> = Omit<T, K> &
     Partial<Pick<T, K>>;
 

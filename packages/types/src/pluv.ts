@@ -23,8 +23,8 @@ export interface BaseClientEventRecord {
 export type BaseClientMessage = InferEventMessage<BaseClientEventRecord>;
 
 export interface BaseIOAuthorize {
-    required: false;
-    secret: string;
+    required?: false;
+    secret?: string;
     user: InputZodLike<BaseUser>;
 }
 
@@ -106,13 +106,13 @@ export type IOAuthorize<
     TContext extends Record<string, unknown> = {},
 > =
     | {
-          required: TRequired;
-          secret: string;
+          required?: TRequired;
+          secret?: string;
           user: InputZodLike<TUser>;
       }
     | ((context: TContext) => {
-          required: TRequired;
-          secret: string;
+          required?: TRequired;
+          secret?: string;
           user: InputZodLike<TUser>;
       });
 

@@ -30,6 +30,7 @@
         "@pluv-internal/react-icons": "workspace:^",
         "@pluv-internal/remark-plugins": "workspace:^",
         "@pluv/crdt-yjs": "workspace:^",
+        "@pluv/io": "workspace:^",
         "@pluv/platform-pluv": "workspace:^",
         "@pluv/react": "workspace:^",
         "@radix-ui/react-tooltip": "^1.1.5",

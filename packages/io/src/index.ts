@@ -7,7 +7,6 @@ export type {
     InferInitContextType,
     InferPlatformWebSocketType,
     InferRoomContextType,
-    WebSocketRegistrationMode,
 } from "./AbstractPlatform";
 export { AbstractPubSub } from "./AbstractPubSub";
 export type { IOPubSubEventMessage } from "./AbstractPubSub";
@@ -38,12 +37,15 @@ export type { CreateRoomOptions, InferIORoom, PluvServerConfig } from "./PluvSer
 export type {
     CrdtLibraryType,
     GetInitialStorageFn,
+    HandleMode,
     IORoomListenerEvent,
     IORoomMessageEvent,
     IOStorageUpdatedEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
+    PlatformConfig,
     PluvIOListeners,
+    WebSocketRegistrationMode,
     WebSocketSerializedState,
     WebSocketSession,
 } from "./types";

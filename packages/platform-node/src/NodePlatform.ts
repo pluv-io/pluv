@@ -26,9 +26,26 @@ export type NodePlatformConfig<TMeta extends Record<string, Json>> = { mode?: We
 export class NodePlatform<TMeta extends Record<string, Json> = {}> extends AbstractPlatform<
     NodeWebSocket,
     { req: IncomingMessage },
-    NodePlatformRoomContext<TMeta>
+    NodePlatformRoomContext<TMeta>,
+    {
+        authorize: {
+            required: true;
+            secret: true;
+        };
+        handleMode: "io";
+        requireAuth: false;
+        registrationMode: WebSocketRegistrationMode;
+        listeners: {
+            onRoomDeleted: true;
+            onRoomMessage: true;
+            onStorageUpdated: true;
+            onUserConnected: true;
+            onUserDisconnected: true;
+        };
+    }
 > {
-    readonly _registrationMode: WebSocketRegistrationMode;
+    public readonly _config;
+    public readonly _name = "platformNode";
 
     constructor(config: NodePlatformConfig<TMeta> = {}) {
         const { context, mode = "attached", persistence, pubSub } = config;
@@ -38,7 +55,22 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
             ...(persistence && pubSub ? { persistence, pubSub } : {}),
         });
 
-        this._registrationMode = mode;
+        this._config = {
+            authorize: {
+                required: true as const,
+                secret: true as const,
+            },
+            handleMode: "io" as const,
+            registrationMode: mode,
+            requireAuth: false as const,
+            listeners: {
+                onRoomDeleted: true as const,
+                onRoomMessage: true as const,
+                onStorageUpdated: true as const,
+                onUserConnected: true as const,
+                onUserDisconnected: true as const,
+            },
+        };
     }
 
     public acceptWebSocket(webSocket: NodeWebSocket): Promise<void> {
@@ -70,7 +102,7 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
     public initialize(config: AbstractPlatformConfig<NodePlatformRoomContext<TMeta>>): this {
         return new NodePlatform({
             context: config.context,
-            mode: this._registrationMode,
+            mode: this._config.registrationMode,
             persistence: this.persistence,
             pubSub: this.pubSub,
         } as NodePlatformConfig<TMeta>)._initialize() as this;
