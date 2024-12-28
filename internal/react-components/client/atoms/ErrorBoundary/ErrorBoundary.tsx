@@ -1,6 +1,6 @@
 import type { Maybe } from "@pluv-internal/typings";
-import type { Component, ComponentType, ErrorInfo, FC, ReactElement, ReactNode, RefObject } from "react";
-import { useContext } from "react";
+import type { ComponentType, ErrorInfo, FC, ReactElement, ReactNode, RefObject } from "react";
+import { Component, useContext } from "react";
 import { withForwardRef } from "../../../higher-order";
 import { ErrorBoundaryContext } from "./context";
 
