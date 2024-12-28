@@ -1,5 +1,6 @@
 import type { Maybe } from "@pluv-internal/typings";
-import { Component, ComponentType, ErrorInfo, FC, MutableRefObject, ReactElement, useContext } from "react";
+import type { Component, ComponentType, ErrorInfo, FC, ReactElement, ReactNode, RefObject } from "react";
+import { useContext } from "react";
 import { withForwardRef } from "../../../higher-order";
 import { ErrorBoundaryContext } from "./context";
 
@@ -27,7 +28,7 @@ export interface ErrorBoundaryProps {
     fallback?: Maybe<ComponentType<ErrorBoundaryFallbackProps>>;
     onError?: (error: Error) => void;
     onReset?: () => void;
-    innerRef?: MutableRefObject<ErrorBoundaryRef>;
+    innerRef?: RefObject<ErrorBoundaryRef>;
 }
 
 interface ErrorBoundaryState {
@@ -70,7 +71,7 @@ class _ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         this.setState({ error: null });
     };
 
-    private renderChild() {
+    private renderChild(): ReactNode {
         const { children, fallback: FallbackComponent } = this.props;
         const { error } = this.state;
 
@@ -85,7 +86,7 @@ class _ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             error,
             fallback,
             reset: this.reset,
-        });
+        }) as ReactNode;
     }
 
     render() {
