@@ -1,5 +1,19 @@
 # @pluv/platform-cloudflare
 
+## 0.34.0
+
+### Minor Changes
+
+- 70af3b2: Updated `@pluv/io` to have a `handleMode` internally that determines if connections are handled by the `PluvServer` or by the platform itself (i.e. outside of the `PluvServer`). The internals of `@pluv/platform-node` and `@pluv/platform-cloudflare` have been updated with the required changes for this.
+
+### Patch Changes
+
+- Updated dependencies [0c920ea]
+- Updated dependencies [70af3b2]
+  - @pluv/io@0.34.0
+  - @pluv/persistence-cloudflare-transactional-storage@0.34.0
+  - @pluv/types@0.34.0
+
 ## 0.33.0
 
 ### Patch Changes
