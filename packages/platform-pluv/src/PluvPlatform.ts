@@ -6,7 +6,7 @@ import type {
     JWTEncodeParams,
     WebSocketSerializedState,
 } from "@pluv/io";
-import { AbstractPlatform, authorize } from "@pluv/io";
+import { AbstractPlatform } from "@pluv/io";
 import { Hono } from "hono";
 import { SIGNATURE_HEADER } from "./constants";
 import { ZodEvent } from "./schemas";
