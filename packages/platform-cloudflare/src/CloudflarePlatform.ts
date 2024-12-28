@@ -26,9 +26,25 @@ export class CloudflarePlatform<
 > extends AbstractPlatform<
     CloudflareWebSocket,
     { env: TEnv; request: Request },
-    CloudflarePlatformRoomContext<TEnv, TMeta>
+    CloudflarePlatformRoomContext<TEnv, TMeta>,
+    {
+        authorize: {
+            required: true;
+        };
+        handleMode: "io";
+        requireAuth: false;
+        registrationMode: WebSocketRegistrationMode;
+        listeners: {
+            onRoomDeleted: true;
+            onRoomMessage: true;
+            onStorageUpdated: true;
+            onUserConnected: true;
+            onUserDisconnected: true;
+        };
+    }
 > {
-    readonly _registrationMode: WebSocketRegistrationMode;
+    public readonly _config;
+    public readonly _name = "platformCloudflare";
 
     constructor(config: CloudflarePlatformConfig<TEnv, TMeta>) {
         super({
@@ -38,7 +54,22 @@ export class CloudflarePlatform<
                 : {}),
         });
 
-        this._registrationMode = config.mode ?? DEFAULT_REGISTRATION_MODE;
+        this._config = {
+            authorize: {
+                required: true as const,
+                secret: true as const,
+            },
+            handleMode: "io" as const,
+            registrationMode: config.mode ?? DEFAULT_REGISTRATION_MODE,
+            requireAuth: false as const,
+            listeners: {
+                onRoomDeleted: true as const,
+                onRoomMessage: true as const,
+                onStorageUpdated: true as const,
+                onUserConnected: true as const,
+                onUserDisconnected: true as const,
+            },
+        };
 
         const detachedState = this._getDetachedState();
 
@@ -113,7 +144,7 @@ export class CloudflarePlatform<
                 meta: context.meta,
                 state: context.state,
             } as CloudflarePlatformRoomContext<TEnv, TMeta>,
-            mode: this._registrationMode,
+            mode: this._config.registrationMode,
             persistence: this.persistence,
             pubSub: this.pubSub,
         })._initialize() as this;
@@ -138,7 +169,7 @@ export class CloudflarePlatform<
     }
 
     private _getDetachedState(): DurableObjectState | null {
-        if (this._registrationMode !== "detached") return null;
+        if (this._config.registrationMode !== "detached") return null;
 
         return this._roomContext?.state ?? null;
     }
