@@ -33,7 +33,7 @@
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^8.57.1",
 		"eslint-config-pluv": "workspace:^",
-		"ioredis": "^5.4.1",
+		"ioredis": "^5.4.2",
 		"tsup": "^8.3.5",
 		"typescript": "^5.7.2"
 	}
