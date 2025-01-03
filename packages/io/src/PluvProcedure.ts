@@ -1,6 +1,6 @@
 import type { EventRecord, IOAuthorize, InputZodLike, JsonObject, ProcedureLike } from "@pluv/types";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
-import type { EventResolver, MergeEventRecords } from "./types";
+import type { EventResolver, EventResolverKind, MergeEventRecords } from "./types";
 
 export interface PluvProcedureConfig<
     TPlatform extends AbstractPlatform<any>,
@@ -9,10 +9,10 @@ export interface PluvProcedureConfig<
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
 > {
-    broadcast?: EventResolver<TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null;
+    broadcast?: EventResolver<"broadcast", TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null;
     input?: InputZodLike<TInput>;
-    self?: EventResolver<TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null;
-    sync?: EventResolver<TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null;
+    self?: EventResolver<"self", TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null;
+    sync?: EventResolver<"sync", TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null;
 }
 
 export class PluvProcedure<
@@ -23,10 +23,11 @@ export class PluvProcedure<
     TOutput extends EventRecord<string, any> = {},
     TFilled extends "input" | "broadcast" | "self" | "sync" | "" = "",
 > {
-    private _broadcast: EventResolver<TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null = null;
+    private _broadcast: EventResolver<"broadcast", TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null =
+        null;
     private _input: InputZodLike<TInput> | null = null;
-    private _self: EventResolver<TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null = null;
-    private _sync: EventResolver<TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null = null;
+    private _self: EventResolver<"self", TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null = null;
+    private _sync: EventResolver<"sync", TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null = null;
 
     public get config(): ProcedureLike<TInput, TOutput>["config"] {
         return {
@@ -48,7 +49,7 @@ export class PluvProcedure<
     }
 
     public broadcast<TResult extends EventRecord<string, any> = {}>(
-        resolver: EventResolver<TPlatform, TAuthorize, TContext, TInput, TResult>,
+        resolver: EventResolver<"broadcast", TPlatform, TAuthorize, TContext, TInput, TResult>,
     ): Omit<
         PluvProcedure<
             TPlatform,
@@ -84,7 +85,7 @@ export class PluvProcedure<
     }
 
     public self<TResult extends EventRecord<string, any> = {}>(
-        resolver: EventResolver<TPlatform, TAuthorize, TContext, TInput, TResult>,
+        resolver: EventResolver<"self", TPlatform, TAuthorize, TContext, TInput, TResult>,
     ): Omit<
         PluvProcedure<
             TPlatform,
@@ -114,7 +115,7 @@ export class PluvProcedure<
     }
 
     public sync<TResult extends EventRecord<string, any> = {}>(
-        resolver: EventResolver<TPlatform, TAuthorize, TContext, TInput, TResult>,
+        resolver: EventResolver<"sync", TPlatform, TAuthorize, TContext, TInput, TResult>,
     ): Omit<
         PluvProcedure<
             TPlatform,
@@ -143,7 +144,7 @@ export class PluvProcedure<
         });
     }
 
-    private _resolver(): EventResolver<TPlatform, TAuthorize, TContext, TInput, TOutput> {
+    private _resolver(): EventResolver<EventResolverKind, TPlatform, TAuthorize, TContext, TInput, TOutput> {
         return (data, context) => {
             return {
                 ...this._broadcast?.(data, context),

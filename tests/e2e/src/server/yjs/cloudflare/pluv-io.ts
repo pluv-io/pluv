@@ -22,7 +22,7 @@ export const io = createIO({
 const router = io.router({
     SEND_MESSAGE: io.procedure
         .input(z.object({ message: z.string() }))
-        .broadcast(({ message }) => ({ RECEIVE_MESSAGE: { message } })),
+        .broadcast(({ message }, ctx) => ({ RECEIVE_MESSAGE: { message: ctx.session.user } })),
 });
 
 export const ioServer = io.server({ router });

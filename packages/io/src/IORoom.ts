@@ -1,10 +1,8 @@
 import type { AbstractCrdtDoc, AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type {
-    BaseIOAuthorize,
     BaseIOEventRecord,
     EventMessage,
-    IOAuthorize,
     IOEventMessage,
     IOLike,
     Id,
@@ -13,7 +11,6 @@ import type {
     InferIOAuthorize,
     InferIOAuthorizeUser,
     InferIOInput,
-    InputZodLike,
     JsonObject,
     Maybe,
 } from "@pluv/types";
@@ -24,12 +21,14 @@ import type {
     InferPlatformWebSocketSource,
     InferRoomContextType,
 } from "./AbstractPlatform";
-import { AbstractCloseEvent, AbstractErrorEvent, AbstractMessageEvent, AbstractWebSocket } from "./AbstractWebSocket";
+import type { AbstractCloseEvent, AbstractErrorEvent, AbstractMessageEvent } from "./AbstractWebSocket";
+import { AbstractWebSocket } from "./AbstractWebSocket";
 import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { authorize } from "./authorize";
 import { PING_TIMEOUT_MS } from "./constants";
 import type {
     EventResolverContext,
+    EventResolverKind,
     IORoomListenerEvent,
     IORoomMessageEvent,
     IOUserConnectedEvent,
@@ -646,7 +645,7 @@ export class IORoom<
             ]);
 
             const doc = await this._doc;
-            const eventContext: EventResolverContext<TPlatform, TAuthorize, TContext> = {
+            const eventContext: EventResolverContext<EventResolverKind, TPlatform, TAuthorize, TContext> = {
                 context: this._context,
                 doc,
                 room: this.id,
@@ -831,7 +830,7 @@ export class IORoom<
         if (!sender) return;
 
         const doc = await this._doc;
-        const context: EventResolverContext<TPlatform, TAuthorize, TContext> = {
+        const context: EventResolverContext<"sync", TPlatform, TAuthorize, TContext> = {
             context: this._context,
             doc,
             room: this.id,

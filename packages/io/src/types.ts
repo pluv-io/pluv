@@ -40,15 +40,22 @@ export interface CrdtLibraryType {
     kind: "loro" | "yjs";
 }
 
+export type EventResolverKind = "broadcast" | "self" | "sync";
+
 export type EventResolver<
+    TKind extends EventResolverKind = EventResolverKind,
     TPlatform extends AbstractPlatform = AbstractPlatform,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
-> = (data: TInput, context: EventResolverContext<TPlatform, TAuthorize, TContext>) => MaybePromise<TOutput | void>;
+> = (
+    data: TInput,
+    context: EventResolverContext<TKind, TPlatform, TAuthorize, TContext>,
+) => MaybePromise<TOutput | void>;
 
 export interface EventResolverContext<
+    TKind extends EventResolverKind = EventResolverKind,
     TPlatform extends AbstractPlatform = AbstractPlatform,
     TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
     TContext extends Record<string, any> = {},
@@ -56,19 +63,7 @@ export interface EventResolverContext<
     context: TContext;
     doc: AbstractCrdtDoc<any>;
     room: string;
-    /**
-     * !HACK
-     * @description Session should only not exist when invoking the event as a
-     * "sync" event on another machine where the session doesn't exist. There must
-     * be a better way to handle this, but going to make this nullable for ease
-     * for now.
-     *
-     * `session` should not be referenced most of the time anyhow (outside of
-     * internal to this library).
-     * @author leedavidcs
-     * @date December 25, 2022
-     */
-    session: WebSocketSession<TAuthorize> | null;
+    session: TKind extends "sync" ? WebSocketSession<TAuthorize> | null : WebSocketSession<TAuthorize>;
     sessions: readonly WebSocketSession<TAuthorize>[];
 }
 
