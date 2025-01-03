@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.34.1
+
+### Patch Changes
+
+- d639427: Narrow type `EventResolverContext` so that `session` is only null on `sync` event types.
+  - @pluv/crdt@0.34.1
+  - @pluv/types@0.34.1
+
 ## 0.34.0
 
 ### Minor Changes
