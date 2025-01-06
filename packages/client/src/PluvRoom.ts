@@ -6,7 +6,6 @@ import type {
     IOLike,
     Id,
     InferIOAuthorize,
-    InferIOAuthorizeRequired,
     InferIOAuthorizeUser,
     InferIOInput,
     InferIOOutput,
@@ -103,9 +102,7 @@ type FetchOptions = { url: string; options?: RequestInit };
 
 export type RoomEndpoints<TIO extends IOLike, TMetadata extends JsonObject> = {
     wsEndpoint?: WsEndpoint<TMetadata>;
-} & (InferIOAuthorizeRequired<InferIOAuthorize<TIO>> extends true
-    ? { authEndpoint: AuthEndpoint<TMetadata> }
-    : { authEndpoint?: undefined });
+} & (InferIOAuthorize<TIO> extends null ? { authEndpoint?: undefined } : { authEndpoint: AuthEndpoint<TMetadata> });
 
 interface InternalListeners {
     onAuthorizationFail: (error: Error) => void;
@@ -156,7 +153,7 @@ export type RoomConfig<
 >;
 
 export class PluvRoom<
-    TIO extends IOLike,
+    TIO extends IOLike<any, any>,
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
@@ -823,7 +820,7 @@ export class PluvRoom<
         this._updateState((oldState) => {
             oldState.connection.count += 1;
             oldState.connection.id = connectionId;
-            oldState.authorization.user = user;
+            oldState.authorization.user = user ?? null;
 
             return oldState;
         });

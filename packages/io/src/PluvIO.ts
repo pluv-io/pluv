@@ -1,7 +1,8 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type { IOAuthorize, InferIOAuthorizeUser, InputZodLike } from "@pluv/types";
+import type { IOAuthorize, InferIOAuthorizeUser } from "@pluv/types";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
+import { WebsocketRegisterConfig } from "./IORoom";
 import { PluvProcedure } from "./PluvProcedure";
 import type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
@@ -11,31 +12,28 @@ import { authorize } from "./authorize";
 import type {
     CrdtLibraryType,
     GetInitialStorageFn,
-    InferPlatformConfig,
     PluvContext,
     PluvIOAuthorize,
     PluvIOListeners,
     ResolvedPluvIOAuthorize,
 } from "./types";
 import { __PLUV_VERSION } from "./version";
-import { WebsocketRegisterConfig } from "./IORoom";
 
 export type PluvIOConfig<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
 > = {
+    authorize?: TAuthorize;
     context?: PluvContext<TPlatform, TContext>;
     crdt?: CrdtLibraryType;
     debug?: boolean;
     platform: TPlatform;
-} & (InferPlatformConfig<TPlatform>["requireAuth"] extends true
-    ? { authorize: TAuthorize }
-    : { authorize?: TAuthorize });
+};
 
 export type ServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>> = any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -45,12 +43,12 @@ export type ServerConfig<
 
 export class PluvIO<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>> = any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
     TContext extends Record<string, any> = {},
 > {
     public readonly version: string = __PLUV_VERSION as any;
 
-    private readonly _authorize: TAuthorize | null = null;
+    private readonly _authorize: TAuthorize = null as TAuthorize;
     private readonly _context: PluvContext<TPlatform, TContext> = {} as PluvContext<TPlatform, TContext>;
     private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     private readonly _debug: boolean;
@@ -79,7 +77,7 @@ export class PluvIO<
 
         if (!secret) throw new Error("`authorize` was specified without a valid secret");
 
-        return await authorize({ platform: this._platform, secret }).encode(params);
+        return await authorize({ platform: this._platform, secret }).encode(params as JWTEncodeParams<any, TPlatform>);
     }
 
     public mergeRouters<TRouters extends PluvRouter<TPlatform, TAuthorize, TContext, any>[]>(
@@ -107,13 +105,11 @@ export class PluvIO<
         });
     }
 
-    private _getIOAuthorize(
-        options: WebsocketRegisterConfig<TPlatform>,
-    ): ResolvedPluvIOAuthorize<any, any, any> | null {
+    private _getIOAuthorize(options: WebsocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
         if (typeof this._authorize === "function") {
             return this._authorize(options);
         }
 
-        return this._authorize as ResolvedPluvIOAuthorize<any, any, any> | null;
+        return this._authorize as ResolvedPluvIOAuthorize<any, any> | null;
     }
 }

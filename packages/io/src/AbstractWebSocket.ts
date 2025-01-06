@@ -100,7 +100,7 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
 
     public abstract terminate(): void;
 
-    public async getSession<TAuthorize extends IOAuthorize<any, any, any>>(): Promise<WebSocketSession<TAuthorize>> {
+    public async getSession<TAuthorize extends IOAuthorize<any, any> | null>(): Promise<WebSocketSession<TAuthorize>> {
         const sessionId = this.sessionId;
         const state = this.state;
         const room = state.room;
@@ -122,12 +122,13 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
 
         const message = error instanceof Error ? error.message : "Unexpected error";
         const stack: string | null = error instanceof Error ? (error.stack ?? null) : null;
+        const connectionId = (session?.id ?? null) as string;
 
         return this.sendMessage({
-            connectionId: session?.id ?? null,
+            connectionId,
             data: { message, stack },
             room,
-            type: "$ERROR",
+            type: "$ERROR" as const,
             user: session?.user ?? null,
         });
     }

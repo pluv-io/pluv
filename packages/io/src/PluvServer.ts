@@ -28,7 +28,7 @@ export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
 
 export type PluvServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>> = any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -43,7 +43,7 @@ export type PluvServerConfig<
 
 type BaseCreateRoomOptions<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>>,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -52,7 +52,7 @@ type BaseCreateRoomOptions<
 
 export type CreateRoomOptions<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>>,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = keyof InferRoomContextType<TPlatform> extends never
@@ -61,14 +61,14 @@ export type CreateRoomOptions<
 
 export class PluvServer<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>> = any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IOLike<TAuthorize, TEvents>
 {
     public readonly version: string = __PLUV_VERSION as any;
 
-    private readonly _authorize: TAuthorize | null = null;
+    private readonly _authorize: TAuthorize = null as TAuthorize;
     private readonly _baseRouter: PluvRouter<TPlatform, TAuthorize, TContext, {}> = new PluvRouter({
         $GET_OTHERS: this._procedure.sync((data, { room, session, sessions }) => {
             const currentTime = new Date().getTime();
@@ -85,7 +85,7 @@ export class PluvServer<
                     [connectionId: string]: {
                         connectionId: string;
                         room: string | null;
-                        user: JsonObject;
+                        user: JsonObject | null;
                     };
                 }>(
                     (acc, { id, presence, user }) => ({
@@ -216,6 +216,11 @@ export class PluvServer<
             context: this._context,
             events: this._router._defs.events,
             platform: this._platform,
+        } as {
+            authorize: TAuthorize;
+            context: TContext;
+            events: TEvents;
+            platform: TPlatform;
         };
     }
 
@@ -338,17 +343,15 @@ export class PluvServer<
 
         if (!secret) throw new Error("`authorize` was specified without a valid secret");
 
-        return await authorize({ platform: this._platform, secret }).encode(params);
+        return await authorize({ platform: this._platform, secret }).encode(params as JWTEncodeParams<any, TPlatform>);
     }
 
-    private _getIOAuthorize(
-        options: WebsocketRegisterConfig<TPlatform>,
-    ): ResolvedPluvIOAuthorize<any, any, any> | null {
+    private _getIOAuthorize(options: WebsocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
         if (typeof this._authorize === "function") {
             return this._authorize(options);
         }
 
-        return this._authorize as ResolvedPluvIOAuthorize<any, any, any> | null;
+        return this._authorize as ResolvedPluvIOAuthorize<any, any> | null;
     }
 
     private _getListeners(): BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents> {

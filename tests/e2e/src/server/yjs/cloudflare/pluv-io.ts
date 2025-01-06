@@ -7,7 +7,6 @@ const PLUV_AUTH_SECRET = "secret123";
 
 export const io = createIO({
     authorize: {
-        required: true,
         secret: PLUV_AUTH_SECRET,
         user: z.object({
             id: z.string(),
@@ -22,7 +21,7 @@ export const io = createIO({
 const router = io.router({
     SEND_MESSAGE: io.procedure
         .input(z.object({ message: z.string() }))
-        .broadcast(({ message }) => ({ RECEIVE_MESSAGE: { message } })),
+        .broadcast(({ message }, ctx) => ({ RECEIVE_MESSAGE: { message: ctx.session.user } })),
 });
 
 export const ioServer = io.server({ router });

@@ -8,7 +8,6 @@ const PLUV_AUTH_SECRET = "secret123";
 
 export const io = createIO({
     authorize: {
-        required: true,
         secret: PLUV_AUTH_SECRET,
         user: z.object({
             id: z.string(),

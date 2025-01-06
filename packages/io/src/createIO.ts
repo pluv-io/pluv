@@ -1,4 +1,3 @@
-import type { BaseUser } from "@pluv/types";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
 import { PluvIO } from "./PluvIO";
 import type { CrdtLibraryType, PluvContext, PluvIOAuthorize } from "./types";
@@ -6,10 +5,9 @@ import type { CrdtLibraryType, PluvContext, PluvIOAuthorize } from "./types";
 export type CreateIOParams<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TContext extends Record<string, any> = {},
-    TAuthorizeUser extends BaseUser = BaseUser,
-    TAuthorizeRequired extends boolean = false,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = null,
 > = {
-    authorize?: PluvIOAuthorize<TPlatform, TAuthorizeUser, TAuthorizeRequired, InferInitContextType<TPlatform>>;
+    authorize?: TAuthorize;
     context?: PluvContext<TPlatform, TContext>;
     crdt?: CrdtLibraryType;
     debug?: boolean;
@@ -19,28 +17,14 @@ export type CreateIOParams<
 export const createIO = <
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TContext extends Record<string, any> = {},
-    TAuthorizeUser extends BaseUser = BaseUser,
-    TAuthorizeRequired extends boolean = false,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = null,
 >(
-    params: CreateIOParams<TPlatform, TContext, TAuthorizeUser, TAuthorizeRequired>,
-): PluvIO<
-    TPlatform,
-    PluvIOAuthorize<TPlatform, TAuthorizeUser, TAuthorizeRequired, InferInitContextType<TPlatform>>,
-    TContext
-> => {
+    params: CreateIOParams<TPlatform, TContext, TAuthorize>,
+): PluvIO<TPlatform, TAuthorize, TContext> => {
     const { authorize, context, crdt, debug, platform } = params;
 
-    return new PluvIO<
-        TPlatform,
-        PluvIOAuthorize<TPlatform, TAuthorizeUser, TAuthorizeRequired, InferInitContextType<TPlatform>>,
-        TContext
-    >({
-        authorize: authorize as PluvIOAuthorize<
-            TPlatform,
-            TAuthorizeUser,
-            TAuthorizeRequired,
-            InferInitContextType<TPlatform>
-        >,
+    return new PluvIO<TPlatform, TAuthorize, TContext>({
+        authorize,
         context,
         crdt,
         debug,

@@ -34,7 +34,6 @@ export class PluvPlatform extends AbstractPlatform<
     {},
     {
         authorize: {
-            required: false;
             secret: false;
         };
         handleMode: "fetch";
@@ -51,7 +50,6 @@ export class PluvPlatform extends AbstractPlatform<
 > {
     public readonly _config = {
         authorize: {
-            required: false as const,
             secret: false as const,
         },
         handleMode: "fetch" as const,

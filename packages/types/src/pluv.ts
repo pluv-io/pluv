@@ -22,13 +22,7 @@ export interface BaseClientEventRecord {
 
 export type BaseClientMessage = InferEventMessage<BaseClientEventRecord>;
 
-export interface BaseIOAuthorize {
-    required?: false;
-    secret?: string;
-    user: InputZodLike<BaseUser>;
-}
-
-export interface BaseIOAuthorizeEventRecord<TAuthorize extends IOAuthorize<any, any, any>> {
+export interface BaseIOAuthorizeEventRecord<TAuthorize extends IOAuthorize<any, any>> {
     $OTHERS_RECEIVED: {
         others: {
             [connectionId: string]: {
@@ -46,29 +40,28 @@ export interface BaseIOAuthorizeEventRecord<TAuthorize extends IOAuthorize<any, 
     };
 }
 
-export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any, any>> =
-    BaseIOAuthorizeEventRecord<TAuthorize> & {
-        $ERROR: {
-            message: string;
-            stack?: string | null;
-        };
-        $EXIT: {
-            sessionId: string;
-        };
-        $PONG: {};
-        $PRESENCE_UPDATED: {
-            presence: JsonObject;
-        };
-        $REGISTERED: {
-            sessionId: string;
-        };
-        $STORAGE_RECEIVED: {
-            state: string;
-        };
-        $STORAGE_UPDATED: {
-            state: string;
-        };
+export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = BaseIOAuthorizeEventRecord<TAuthorize> & {
+    $ERROR: {
+        message: string;
+        stack?: string | null;
     };
+    $EXIT: {
+        sessionId: string;
+    };
+    $PONG: {};
+    $PRESENCE_UPDATED: {
+        presence: JsonObject;
+    };
+    $REGISTERED: {
+        sessionId: string;
+    };
+    $STORAGE_RECEIVED: {
+        state: string;
+    };
+    $STORAGE_UPDATED: {
+        state: string;
+    };
+};
 
 export interface EventMessage<TEvent extends string, TData extends JsonObject = {}> {
     data: TData;
@@ -83,53 +76,30 @@ export type GetEventMessage<T extends EventRecord<string, any>, TEvent extends k
     ? EventMessage<TEvent, T[TEvent]>
     : never;
 
-export type InferIOAuthorize<TIO extends IOLike> = TIO extends IOLike<infer IAuthorize> ? IAuthorize : never;
+export type InferIOAuthorize<TIO extends IOLike<any, any>> = TIO extends IOLike<infer IAuthorize> ? IAuthorize : never;
 
-export type InferIOAuthorizeRequired<TAuthorize extends IOAuthorize<any, any, any>> =
-    TAuthorize extends IOAuthorize<any, infer IRequired> ? IRequired : never;
-
-export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any, any>> =
-    TAuthorize extends IOAuthorize<infer IUser, infer IRequired>
-        ? IRequired extends true
-            ? IUser
-            : IUser | null
-        : never;
+export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any> | null> =
+    TAuthorize extends IOAuthorize<infer IUser> ? IUser : null;
 
 export type InputZodLike<TData extends JsonObject> = {
     _input: TData;
     parse: (data: unknown) => TData;
 };
 
-export type IOAuthorize<
-    TUser extends BaseUser = any,
-    TRequired extends boolean = false,
-    TContext extends Record<string, unknown> = {},
-> =
+export type IOAuthorize<TUser extends BaseUser = any, TContext extends Record<string, unknown> = {}> =
     | {
-          required?: TRequired;
           secret?: string;
           user: InputZodLike<TUser>;
       }
     | ((context: TContext) => {
-          required?: TRequired;
           secret?: string;
           user: InputZodLike<TUser>;
       });
 
-export type IOAuthorizeEventMessage<TIO extends IOLike> =
-    InferIOAuthorizeRequired<InferIOAuthorize<TIO>> extends false
-        ? IOAuthorizeOptionalEventMessage<TIO>
-        : IOAuthorizeRequiredEventMessage<TIO>;
-
-export interface IOAuthorizeOptionalEventMessage<TIO extends IOLike> {
-    connectionId: string | null;
-    user: InferIOAuthorizeUser<InferIOAuthorize<TIO>> | null;
-}
-
-export type IOAuthorizeRequiredEventMessage<TIO extends IOLike> = NonNilProps<
-    IOAuthorizeOptionalEventMessage<TIO>,
-    "connectionId" | "user"
->;
+export type IOAuthorizeEventMessage<TIO extends IOLike> = {
+    connectionId: string;
+    user: InferIOAuthorizeUser<InferIOAuthorize<TIO>>;
+};
 
 export type ProcedureLike<TInput extends JsonObject = {}, TOutput extends EventRecord<string, any> = {}> = {
     config: {
@@ -148,11 +118,11 @@ export interface IORouterLike<TEvents extends Record<string, ProcedureLike<any, 
 }
 
 export interface IOLike<
-    TAuthorize extends IOAuthorize<any, any, any> = IOAuthorize<any, any, any>,
+    TAuthorize extends IOAuthorize<any, any> | null = null,
     TEvents extends Record<string, ProcedureLike<any, any>> = {},
 > extends IORouterLike<TEvents> {
     _defs: {
-        authorize: TAuthorize | null;
+        authorize: TAuthorize;
         events: TEvents;
     };
 }
@@ -184,6 +154,6 @@ export type IOEventMessage<
 > = Id<
     { room: string } & InferEventMessage<InferIOOutput<TIO>, TEvent> &
         (InferEventMessage<InferIOOutput<TIO>, TEvent>["type"] extends "$ERROR"
-            ? IOAuthorizeOptionalEventMessage<TIO>
+            ? Partial<IOAuthorizeEventMessage<TIO>>
             : IOAuthorizeEventMessage<TIO>)
 >;

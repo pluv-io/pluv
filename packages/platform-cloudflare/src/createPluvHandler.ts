@@ -1,12 +1,5 @@
 import type { InferInitContextType, IORoom, PluvServer } from "@pluv/io";
-import type {
-    Id,
-    InferIOAuthorize,
-    InferIOAuthorizeRequired,
-    InferIOAuthorizeUser,
-    Maybe,
-    MaybePromise,
-} from "@pluv/types";
+import type { Id, InferIOAuthorize, InferIOAuthorizeUser, Maybe, MaybePromise } from "@pluv/types";
 import { match } from "path-to-regexp";
 import { CloudflarePlatform } from "./CloudflarePlatform";
 
@@ -25,9 +18,9 @@ export type CreatePluvHandlerConfig<
     endpoint?: string;
     modify?: (request: Request, response: Response, env: TEnv) => MaybePromise<Response>;
     io: TPluvServer;
-} & (InferIOAuthorizeRequired<InferIOAuthorize<TPluvServer>> extends true
-    ? { authorize: AuthorizeFunction<TPluvServer> }
-    : { authorize?: undefined });
+} & (InferIOAuthorize<TPluvServer> extends null
+    ? { authorize?: undefined }
+    : { authorize: AuthorizeFunction<TPluvServer> });
 
 export type PluvHandlerFetch<TEnv extends Record<string, any> = {}> = (
     request: Request,
@@ -139,7 +132,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
             const token = await io.createToken({
                 env,
                 room: durableObjectId.toString(),
-                user,
+                user: user as any,
                 request,
             });
 
