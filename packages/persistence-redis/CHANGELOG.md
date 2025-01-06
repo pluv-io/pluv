@@ -1,5 +1,13 @@
 # @pluv/persistence-redis
 
+## 0.35.0
+
+### Patch Changes
+
+- Updated dependencies [c9073ad]
+  - @pluv/io@0.35.0
+  - @pluv/types@0.35.0
+
 ## 0.34.1
 
 ### Patch Changes
