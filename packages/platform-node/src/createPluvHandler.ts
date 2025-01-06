@@ -1,11 +1,5 @@
 import type { InferInitContextType, PluvServer } from "@pluv/io";
-import type {
-    InferIOAuthorize,
-    InferIOAuthorizeRequired,
-    InferIOAuthorizeUser,
-    Maybe,
-    MaybePromise,
-} from "@pluv/types";
+import type { InferIOAuthorize, InferIOAuthorizeUser, Maybe, MaybePromise } from "@pluv/types";
 import type { Server as HttpServer, IncomingMessage, ServerResponse } from "node:http";
 import Url from "node:url";
 import { match } from "path-to-regexp";
@@ -25,9 +19,9 @@ export type CreatePluvHandlerConfig<TPluvServer extends PluvServer<NodePlatform,
     endpoint?: string;
     io: TPluvServer;
     server: HttpServer;
-} & (InferIOAuthorizeRequired<InferIOAuthorize<TPluvServer>> extends true
-    ? { authorize: AuthorizeFunction<TPluvServer> }
-    : { authorize?: undefined });
+} & (InferIOAuthorize<TPluvServer> extends null
+    ? { authorize?: undefined }
+    : { authorize: AuthorizeFunction<TPluvServer> });
 
 const handle = (ws: WebSocket) => ({
     invalidEndpoint: () => {
@@ -168,7 +162,11 @@ export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform, a
 
             if (!user) throw new Error();
 
-            const token = await io.createToken({ req, room, user });
+            const token = await io.createToken({
+                req,
+                room,
+                user: user as any,
+            });
 
             res.writeHead(200, { "Content-Type": "text/plain" });
             return res.end(token);

@@ -1,6 +1,5 @@
 import type { AbstractCrdtDoc, AbstractCrdtDocFactory } from "@pluv/crdt";
 import type {
-    BaseIOAuthorize,
     BaseUser,
     EventRecord,
     IOAuthorize,
@@ -12,7 +11,6 @@ import type {
     JsonObject,
     Maybe,
     MaybePromise,
-    Spread,
     UndefinedProps,
 } from "@pluv/types";
 import type {
@@ -45,7 +43,7 @@ export type EventResolverKind = "broadcast" | "self" | "sync";
 export type EventResolver<
     TKind extends EventResolverKind = EventResolverKind,
     TPlatform extends AbstractPlatform = AbstractPlatform,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>> | null = null,
     TContext extends Record<string, any> = {},
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
@@ -57,7 +55,7 @@ export type EventResolver<
 export interface EventResolverContext<
     TKind extends EventResolverKind = EventResolverKind,
     TPlatform extends AbstractPlatform = AbstractPlatform,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>> = BaseIOAuthorize,
+    TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>> | null = null,
     TContext extends Record<string, any> = {},
 > {
     context: TContext;
@@ -83,12 +81,11 @@ export interface WebSocketSerializedState {
     timers: WebSocketSessionTimers;
 }
 
-export type WebSocketSession<TAuthorize extends IOAuthorize<any, any, any> = BaseIOAuthorize> =
-    WebSocketSerializedState & {
-        id: string;
-        user: InferIOAuthorizeUser<TAuthorize>;
-        webSocket: AbstractWebSocket;
-    };
+export type WebSocketSession<TAuthorize extends IOAuthorize<any, any> | null = null> = WebSocketSerializedState & {
+    id: string;
+    user: InferIOAuthorizeUser<TAuthorize>;
+    webSocket: AbstractWebSocket;
+};
 
 export type MergeEventRecords<
     TEventRecords extends EventRecord<string, any>[],
@@ -119,7 +116,6 @@ export type WebSocketRegistrationMode = "attached" | "detached";
 
 export interface PlatformConfig {
     authorize: {
-        required?: boolean;
         secret?: boolean;
     };
     requireAuth?: boolean;
@@ -137,8 +133,7 @@ export interface PlatformConfig {
 export type ResolvedPluvIOAuthorize<
     TPlatform extends AbstractPlatform<any, any, any, any>,
     TUser extends BaseUser = any,
-    TRequired extends boolean = false,
-> = { user: InputZodLike<TUser>; required?: TRequired } & UndefinedProps<
+> = { user: InputZodLike<TUser> } & UndefinedProps<
     { secret?: string },
     Exclude<"secret", InferPlatformAuthorizeProperties<TPlatform>>
 >;
@@ -146,15 +141,12 @@ export type ResolvedPluvIOAuthorize<
 export type PluvIOAuthorize<
     TPlatform extends AbstractPlatform<any, any, any, any>,
     TUser extends BaseUser = any,
-    TRequired extends boolean = false,
     TContext extends Record<string, unknown> = {},
-> =
-    | ResolvedPluvIOAuthorize<TPlatform, TUser, TRequired>
-    | ((context: TContext) => ResolvedPluvIOAuthorize<TPlatform, TUser, TRequired>);
+> = ResolvedPluvIOAuthorize<TPlatform, TUser> | ((context: TContext) => ResolvedPluvIOAuthorize<TPlatform, TUser>);
 
 export type BasePluvIOListeners<
     TPlatform extends AbstractPlatform<any, any, any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>>,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = {
@@ -167,7 +159,7 @@ export type BasePluvIOListeners<
 
 export type PluvIOListeners<
     TPlatform extends AbstractPlatform<any, any, any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>>,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = UndefinedProps<
@@ -198,7 +190,7 @@ export type IORoomListenerEvent<TContext extends Record<string, any>> = {
 
 export type IORoomMessageEvent<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>>,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = IORoomListenerEvent<TContext> & {
@@ -209,7 +201,7 @@ export type IORoomMessageEvent<
 
 export type IOStorageUpdatedEvent<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
 > = IORoomListenerEvent<TContext> & {
     user?: InferIOAuthorizeUser<TAuthorize>;
@@ -218,7 +210,7 @@ export type IOStorageUpdatedEvent<
 
 export type IOUserConnectedEvent<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
 > = IORoomListenerEvent<TContext> & {
     user?: InferIOAuthorizeUser<TAuthorize>;
@@ -227,7 +219,7 @@ export type IOUserConnectedEvent<
 
 export type IOUserDisconnectedEvent<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, any, InferInitContextType<TPlatform>>,
+    TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
 > = IORoomListenerEvent<TContext> & {
     user?: InferIOAuthorizeUser<TAuthorize>;

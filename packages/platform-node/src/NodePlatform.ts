@@ -29,7 +29,6 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
     NodePlatformRoomContext<TMeta>,
     {
         authorize: {
-            required: true;
             secret: true;
         };
         handleMode: "io";
@@ -57,7 +56,6 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
 
         this._config = {
             authorize: {
-                required: true as const,
                 secret: true as const,
             },
             handleMode: "io" as const,

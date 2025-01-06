@@ -50,7 +50,7 @@ interface BroadcastParams<TIO extends IORoom<any, any, any, any>> {
 
 export interface IORoomListeners<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>>,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > {
@@ -69,7 +69,7 @@ export type BroadcastProxy<TIO extends IORoom<any, any, any, any>> = (<TEvent ex
 
 export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>> = any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -93,7 +93,7 @@ export type WebsocketRegisterConfig<TPlatform extends AbstractPlatform<any> = Ab
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, any, InferInitContextType<TPlatform>> = any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = null,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IOLike<TAuthorize, TEvents>
@@ -103,7 +103,7 @@ export class IORoom<
     private _doc: Promise<AbstractCrdtDoc<any>>;
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
-    private readonly _authorize: TAuthorize | null = null;
+    private readonly _authorize: TAuthorize = null as TAuthorize;
     private readonly _context: TContext;
     private readonly _debug: boolean;
     private readonly _docFactory: AbstractCrdtDocFactory<any>;
@@ -123,6 +123,11 @@ export class IORoom<
             context: this._context,
             events: this._router._defs.events,
             platform: this._platform,
+        } as {
+            authorize: TAuthorize;
+            context: TContext;
+            events: TEvents;
+            platform: TPlatform;
         };
     }
 
@@ -295,7 +300,7 @@ export class IORoom<
 
         const user = await this._getAuthorizedUser(token, _options);
         const ioAuthorize = this._getIOAuthorize(_options);
-        const isUnauthorized = !!ioAuthorize?.required && !user;
+        const isUnauthorized = !!ioAuthorize && !user;
 
         // There is an attempt for multiple of the same identities. Probably malicious.
         const isTokenInUse: boolean =
@@ -345,6 +350,8 @@ export class IORoom<
         const sender = senderId ? (this._sessions.get(senderId) ?? null) : null;
         const session = (await sender?.getSession()) ?? null;
         const user = session?.user ?? null;
+
+        if (typeof senderId !== "string") return;
 
         this._platform.pubSub.publish(this.id, {
             connectionId: senderId ?? null,
@@ -491,14 +498,12 @@ export class IORoom<
         return doc;
     }
 
-    private _getIOAuthorize(
-        options: WebsocketRegisterConfig<TPlatform>,
-    ): ResolvedPluvIOAuthorize<any, any, any> | null {
+    private _getIOAuthorize(options: WebsocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
         if (typeof this._authorize === "function") {
             return this._authorize(options);
         }
 
-        return this._authorize as ResolvedPluvIOAuthorize<any, any, any> | null;
+        return this._authorize as ResolvedPluvIOAuthorize<any, any> | null;
     }
 
     private _getProcedure(
@@ -782,6 +787,8 @@ export class IORoom<
         const connectionId = sender?.sessionId ?? null;
         const room = this.id;
 
+        if (typeof connectionId !== "string") return;
+
         const webSockets =
             sessionIds?.reduce((dict, id) => {
                 const pluvWs = this._sessions.get(id);
@@ -829,6 +836,10 @@ export class IORoom<
     ): Promise<void> {
         if (!sender) return;
 
+        const connectionId = sender.sessionId;
+
+        if (typeof connectionId !== "string") return;
+
         const doc = await this._doc;
         const context: EventResolverContext<"sync", TPlatform, TAuthorize, TContext> = {
             context: this._context,
@@ -857,7 +868,7 @@ export class IORoom<
                 const data = output[type] ?? {};
 
                 this._platform.pubSub.publish(this.id, {
-                    connectionId: sender.sessionId,
+                    connectionId,
                     data,
                     options: { type: "self" },
                     room: this.id,

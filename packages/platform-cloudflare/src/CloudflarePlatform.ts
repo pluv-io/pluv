@@ -29,7 +29,7 @@ export class CloudflarePlatform<
     CloudflarePlatformRoomContext<TEnv, TMeta>,
     {
         authorize: {
-            required: true;
+            secret: true;
         };
         handleMode: "io";
         requireAuth: false;
@@ -56,7 +56,6 @@ export class CloudflarePlatform<
 
         this._config = {
             authorize: {
-                required: true as const,
                 secret: true as const,
             },
             handleMode: "io" as const,
