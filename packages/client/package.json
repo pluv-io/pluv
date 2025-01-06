@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/client",
-	"version": "0.34.1",
+	"version": "0.35.0",
 	"description": "@pluv/io frontend client",
 	"author": "leedavidcs",
 	"license": "MIT",

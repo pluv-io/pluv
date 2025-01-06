@@ -1,5 +1,53 @@
 # @pluv/io
 
+## 0.35.0
+
+### Minor Changes
+
+- c9073ad: **BREAKING**
+
+  Removed the `required` property on the `authorize` config when creating a `PluvIO` instance. When `authorize` is provided, the session will be required to be authorized.
+
+  ```ts
+  // Before
+  import { z } from "zod";
+
+  const io = createIO({
+    // ...
+    authorize: {
+      // Previously required: true to force all users to authorize
+      required: true,
+      user: z.object({
+        id: z.string(),
+        name: z.string(),
+      }),
+      secret: "sk_...",
+    },
+    // ...
+  });
+
+  // After
+
+  const io = createIO({
+    // ...
+    authorize: {
+      // No more `required` property. Now automatically applied always if
+      // `authorize` prop is provided to `createIO`
+      user: z.object({
+        id: z.string(),
+        name: z.string(),
+      }),
+      secret: "sk_...",
+    },
+    // ...
+  });
+  ```
+
+### Patch Changes
+
+- @pluv/crdt@0.35.0
+- @pluv/types@0.35.0
+
 ## 0.34.1
 
 ### Patch Changes
