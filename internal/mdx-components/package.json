@@ -18,10 +18,10 @@
 		"@pluv-internal/utils": "workspace:^",
 		"@types/common-tags": "^1.8.4",
 		"@types/mdx": "^2.0.13",
-		"@types/react": "^19.0.2",
+		"@types/react": "^19.0.3",
 		"@types/react-dom": "^19.0.2",
 		"common-tags": "^1.8.2",
-		"next": "^15.1.3",
+		"next": "^15.1.4",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0"
 	},
