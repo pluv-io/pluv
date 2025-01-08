@@ -11,7 +11,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@types/react": "^19.0.2",
+		"@types/react": "^19.0.3",
 		"clsx": "^2.1.1",
 		"tailwind-merge": "^2.6.0"
 	},
