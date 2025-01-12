@@ -34,11 +34,11 @@
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"@types/react": "^19.0.3",
+		"@types/react": "^19.0.4",
 		"eslint": "^8.57.1",
 		"eslint-config-pluv": "workspace:^",
 		"react": "^19.0.0",
 		"tsup": "^8.3.5",
-		"typescript": "^5.7.2"
+		"typescript": "^5.7.3"
 	}
 }

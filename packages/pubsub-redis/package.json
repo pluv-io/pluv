@@ -35,6 +35,6 @@
 		"eslint-config-pluv": "workspace:^",
 		"ioredis": "^5.4.2",
 		"tsup": "^8.3.5",
-		"typescript": "^5.7.2"
+		"typescript": "^5.7.3"
 	}
 }
