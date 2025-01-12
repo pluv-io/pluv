@@ -89,7 +89,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
             return this;
         }
 
-        this.value.importUpdateBatch(_updates);
+        this.value.importBatch(_updates);
 
         return this;
     }
