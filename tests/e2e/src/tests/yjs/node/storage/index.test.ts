@@ -222,7 +222,7 @@ test.describe("Node Storage", () => {
                 .then((text) => expect(text).toEqual(`Can Redo: false`));
 
             await firstPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("1.25s"));
 
             await firstPage
                 .locator("#can-undo")
@@ -237,7 +237,7 @@ test.describe("Node Storage", () => {
             const secondPage = await openTestPage(testUrl);
 
             await secondPage.waitForSelector("#storage");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("1.25s"));
 
             await secondPage
                 .locator("#storage")
@@ -256,7 +256,7 @@ test.describe("Node Storage", () => {
                 .then((text) => expect(text).toEqual(`Can Redo: false`));
 
             await secondPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("1.25s"));
 
             await secondPage
                 .locator("#can-undo")
@@ -275,7 +275,7 @@ test.describe("Node Storage", () => {
                 .then((messages) => expect(messages.length).toEqual(3));
 
             await firstPage.click("#button-undo");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("1.25s"));
 
             await firstPage
                 .locator("#storage")
@@ -294,7 +294,7 @@ test.describe("Node Storage", () => {
                 .then((text) => expect(text).toEqual(`Can Redo: true`));
 
             await firstPage.click("#button-undo");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("1.25s"));
 
             await firstPage
                 .locator("#can-undo")
@@ -307,7 +307,7 @@ test.describe("Node Storage", () => {
                 .then((text) => expect(text).toEqual(`Can Redo: true`));
 
             await firstPage.click("#button-redo");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("1.25s"));
 
             await firstPage
                 .locator("#can-undo")
@@ -326,10 +326,10 @@ test.describe("Node Storage", () => {
                 .then((messages) => expect(messages.length).toEqual(3));
 
             await secondPage.click("#button-undo");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("1.25s"));
 
             await firstPage.click("#button-undo");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("1.25s"));
 
             await secondPage
                 .locator("#storage")
