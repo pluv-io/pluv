@@ -1,14 +1,15 @@
 import type { DocApplyEncodedStateParams, DocSubscribeCallbackParams, InferCrdtJson } from "@pluv/crdt";
 import { AbstractCrdtDoc } from "@pluv/crdt";
 import { fromUint8Array, toUint8Array } from "js-base64";
-import type { Container, LoroEventBatch } from "loro-crdt";
-import { LoroDoc, LoroList, LoroMap, LoroText, isContainer } from "loro-crdt";
+import type { Container } from "loro-crdt";
+import { LoroDoc, LoroEventBatch, LoroList, LoroMap, LoroText, UndoManager, isContainer } from "loro-crdt";
 import type { LoroType } from "../types";
 
 export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> extends AbstractCrdtDoc<TStorage> {
     public value: LoroDoc = new LoroDoc();
 
     private _storage: TStorage;
+    private _undoManager: UndoManager | null = null;
 
     constructor(value: TStorage = {} as TStorage) {
         super();
@@ -94,20 +95,16 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
         return this;
     }
 
-    /**
-     * TODO
-     * @description This method is not yet supported for loro
-     */
     public canRedo(): boolean {
-        return false;
+        if (!this._undoManager) return false;
+
+        return this._undoManager.canRedo();
     }
 
-    /**
-     * TODO
-     * @description This method is not yet supported for loro
-     */
     public canUndo(): boolean {
-        return false;
+        if (!this._undoManager) return false;
+
+        return this._undoManager.canUndo();
     }
 
     public destroy(): void {
@@ -150,12 +147,10 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
         return !serialized || !Object.keys(serialized).length;
     }
 
-    /**
-     * TODO
-     * @description This method is not yet supported for loro
-     */
     public redo(): this {
-        throw new Error("This is not yet supported");
+        this._undoManager?.redo();
+
+        return this;
     }
 
     public subscribe(listener: (params: DocSubscribeCallbackParams<TStorage>) => void): () => void {
@@ -186,17 +181,25 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
         return unsubcribeAll;
     }
 
-    /**
-     * TODO
-     * @description This method doesn't do anything yet.
-     */
     public track(): this {
+        if (this._undoManager) {
+            this._undoManager.clear();
+            this._undoManager.free();
+
+            this._undoManager = null;
+        }
+
+        this._undoManager = new UndoManager(this.value, {
+            maxUndoSteps: 100,
+            mergeInterval: 1_000, // 1_000ms,
+        });
+
         return this;
     }
 
     /**
-     * TODO
-     * @description This method doesn't do anything yet. The callback will still be executed.
+     * @description Unlike Yjs, this method is required to be called after each loro operation.
+     * @date January 12, 2025
      */
     public transact(fn: () => void): this {
         fn();
@@ -206,11 +209,9 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
         return this;
     }
 
-    /**
-     * TODO
-     * @description This method is not yet supported for loro
-     */
     public undo(): this {
-        throw new Error("This is not yet supported");
+        this._undoManager?.undo();
+
+        return this;
     }
 }
