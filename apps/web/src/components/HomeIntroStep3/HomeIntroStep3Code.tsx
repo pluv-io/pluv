@@ -55,7 +55,7 @@ export const HomeIntroStep3Code: FC<HomeIntroStep3CodeProps> = ({ className }) =
                                     })),
                             });
 
-                            const ioServer = io.server({ router });
+                            export const ioServer = io.server({ router });
                         `,
                     },
                     shouldGetHoverInfo: () => false,

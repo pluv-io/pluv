@@ -51,7 +51,7 @@ export const HomeIntroStep4Code: FC<HomeIntroStep4CodeProps> = ({ className }) =
                                 })),
                             });
 
-                            const ioServer = io.server({ router });
+                            export const ioServer = io.server({ router });
                         `,
                         "client.ts": codeBlock`
                             import { yjs } from "@pluv/crdt-yjs";
