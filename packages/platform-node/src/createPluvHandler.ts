@@ -1,5 +1,5 @@
 import type { InferInitContextType, PluvServer } from "@pluv/io";
-import type { InferIOAuthorize, InferIOAuthorizeUser, Maybe, MaybePromise } from "@pluv/types";
+import type { BaseUser, InferIOAuthorize, InferIOAuthorizeUser, Maybe, MaybePromise } from "@pluv/types";
 import type { Server as HttpServer, IncomingMessage, ServerResponse } from "node:http";
 import Url from "node:url";
 import { match } from "path-to-regexp";
@@ -11,17 +11,17 @@ export type AuthorizeFunctionContext<TPluvServer extends PluvServer<any, any, an
     room: string;
 } & InferInitContextType<TPluvServer extends PluvServer<infer IPlatform, any, any, any> ? IPlatform : never>;
 
-export type AuthorizeFunction<TPluvServer extends PluvServer<NodePlatform, any, any, any>> = (
+export type AuthorizeFunction<TPluvServer extends PluvServer<any, any, any, any>> = (
     ctx: AuthorizeFunctionContext<TPluvServer>,
 ) => MaybePromise<Maybe<InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>>>>;
 
-export type CreatePluvHandlerConfig<TPluvServer extends PluvServer<NodePlatform, any, any, any>> = {
+export type CreatePluvHandlerConfig<TPluvServer extends PluvServer<any, any, any, any>> = {
     endpoint?: string;
     io: TPluvServer;
     server: HttpServer;
-} & (InferIOAuthorize<TPluvServer> extends null
-    ? { authorize?: undefined }
-    : { authorize: AuthorizeFunction<TPluvServer> });
+} & (InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>> extends BaseUser
+    ? { authorize: AuthorizeFunction<TPluvServer> }
+    : { authorize?: undefined });
 
 const handle = (ws: WebSocket) => ({
     invalidEndpoint: () => {

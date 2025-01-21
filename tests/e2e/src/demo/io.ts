@@ -5,7 +5,6 @@ import { z } from "zod";
 
 export const io = createIO({
     authorize: {
-        required: true,
         secret: process.env.PLUV_AUTH_SECRET!,
         user: z.object({
             id: z.string(),

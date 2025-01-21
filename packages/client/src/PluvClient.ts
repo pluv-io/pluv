@@ -7,12 +7,12 @@ import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import type { identity } from "./utils";
 
-export type InferCallback<TIO extends IOLike> = (i: typeof identity) => {
+export type InferCallback<TIO extends IOLike<any, any>> = (i: typeof identity) => {
     io: (io: TIO) => TIO;
 };
 
 export type PluvClientOptions<
-    TIO extends IOLike,
+    TIO extends IOLike<any, any>,
     TPresence extends JsonObject,
     TStorage extends Record<string, CrdtType<any, any>>,
     TMetadata extends JsonObject,

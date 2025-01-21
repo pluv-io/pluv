@@ -48,8 +48,6 @@ export const HomeIntroStep2Code: FC<HomeIntroStep2CodeProps> = ({ className }) =
                             });
 
                             export const ioServer = io.server({ router });
-
-                            export type IOServer = typeof ioServer;
                         `,
                     },
                     shouldGetHoverInfo: () => false,

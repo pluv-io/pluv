@@ -23,10 +23,6 @@ import { Database } from "./db";
 const io = createIO({
     // Optional: if provided, defines authorization for rooms created by io
     authorize: {
-        // If required is false, users can authenticate for a room to
-        // attach an identity to their presence. Otherwise they will be
-        // anonymous.
-        required: true,
         // The secret for generating your JWT
         secret: process.env.PLUV_AUTH_SECRET!,
         // The shape of your user object. `id` must always be required.

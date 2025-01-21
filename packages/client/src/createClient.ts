@@ -4,7 +4,7 @@ import type { PluvClientOptions } from "./PluvClient";
 import { PluvClient } from "./PluvClient";
 
 export const createClient = <
-    TIO extends IOLike = IOLike,
+    TIO extends IOLike<any, any>,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
     TMetadata extends JsonObject = {},

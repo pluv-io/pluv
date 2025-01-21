@@ -21,7 +21,6 @@ const config = {
     output: "export",
     experimental: {
         externalDir: true,
-        serverComponentsExternalPackages: ["@shikijs/twoslash"],
         /**
          * !HACK
          * @description This is to resolve ERR_REQUIRE_ESM outlined in this github issue comment
@@ -30,6 +29,7 @@ const config = {
          */
         optimizePackageImports: ["shiki"],
     },
+    serverExternalPackages: ["@shikijs/twoslash"],
     images: {
         deviceSizes: [320, 420, 768, 1024, 1200],
         domains: [],

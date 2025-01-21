@@ -33,8 +33,6 @@ export const HomeIntroStep1Code: FC<HomeIntroStep1CodeProps> = ({ className }) =
                     });
 
                     export const ioServer = io.server({ router });
-
-                    export type IOServer = typeof ioServer;
                 `}
                 lang="tsx"
                 twoslashOptions={{
