@@ -5,6 +5,9 @@ import type { Container } from "loro-crdt";
 import { LoroDoc, LoroEventBatch, LoroList, LoroMap, LoroText, UndoManager, isContainer } from "loro-crdt";
 import type { LoroType } from "../types";
 
+const MAX_UNDO_STEPS = 100;
+const MERGE_INTERVAL_MS = 1_000;
+
 export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> extends AbstractCrdtDoc<TStorage> {
     public value: LoroDoc = new LoroDoc();
 
@@ -190,8 +193,8 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
         }
 
         this._undoManager = new UndoManager(this.value, {
-            maxUndoSteps: 100,
-            mergeInterval: 1_000, // 1_000ms,
+            maxUndoSteps: MAX_UNDO_STEPS,
+            mergeInterval: MERGE_INTERVAL_MS,
         });
 
         return this;
