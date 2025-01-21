@@ -163,9 +163,6 @@ export class PluvPlatform extends AbstractPlatform<
         if (!config.authorize) throw new Error("Config `authorize` must be provided to `platformPluv`");
         if (!!config.onRoomMessage) throw new Error("Config `onRoomMessage` is not supported on `platformPluv`");
         if (!!config.onStorageUpdated) throw new Error("Config `onStorageUpdated` is not supported on `platformPluv`");
-        if (!!config.authorize.required) {
-            throw new Error("Config `authorize.required` is not allowed to be false on `platformPluv`");
-        }
 
         /**
          * !HACK
