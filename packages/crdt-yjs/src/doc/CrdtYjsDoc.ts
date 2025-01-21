@@ -22,6 +22,8 @@ import type { YjsType } from "../types";
 import { YjsXmlElement } from "../xmlElement/YjsXmlElement";
 import { YjsXmlText } from "../xmlText/YjsXmlText";
 
+const MERGE_INTERVAL_MS = 1_000;
+
 export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> extends AbstractCrdtDoc<TStorage> {
     public value: YDoc = new YDoc();
 
@@ -205,7 +207,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
             return this;
         }
 
-        this._undoManager = new UndoManager(sharedTypes, { captureTimeout: 0 });
+        this._undoManager = new UndoManager(sharedTypes, { captureTimeout: MERGE_INTERVAL_MS });
 
         return this;
     }
