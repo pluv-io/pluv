@@ -11,17 +11,17 @@ export type AuthorizeFunctionContext<TPluvServer extends PluvServer<any, any, an
     room: string;
 } & InferInitContextType<TPluvServer extends PluvServer<infer IPlatform, any, any, any> ? IPlatform : never>;
 
-export type AuthorizeFunction<TPluvServer extends PluvServer<NodePlatform, any, any, any>> = (
+export type AuthorizeFunction<TPluvServer extends PluvServer<any, any, any, any>> = (
     ctx: AuthorizeFunctionContext<TPluvServer>,
 ) => MaybePromise<Maybe<InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>>>>;
 
-export type CreatePluvHandlerConfig<TPluvServer extends PluvServer<NodePlatform, any, any, any>> = {
+export type CreatePluvHandlerConfig<TPluvServer extends PluvServer<any, any, any, any>> = {
     endpoint?: string;
     io: TPluvServer;
     server: HttpServer;
-} & (InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>> extends BaseUser | null
-    ? { authorize?: undefined }
-    : { authorize: AuthorizeFunction<TPluvServer> });
+} & (InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>> extends BaseUser
+    ? { authorize: AuthorizeFunction<TPluvServer> }
+    : { authorize?: undefined });
 
 const handle = (ws: WebSocket) => ({
     invalidEndpoint: () => {

@@ -11,16 +11,16 @@ export type AuthorizeFunction<TPluvServer extends PluvServer<any, any, any, any>
 ) => MaybePromise<Maybe<InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>>>>;
 
 export type CreatePluvHandlerConfig<
-    TPluvServer extends PluvServer<CloudflarePlatform, any, any, any>,
+    TPluvServer extends PluvServer<any, any, any, any>,
     TEnv extends Record<string, any>,
 > = {
     binding: string;
     endpoint?: string;
     modify?: (request: Request, response: Response, env: TEnv) => MaybePromise<Response>;
     io: TPluvServer;
-} & (InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>> extends BaseUser | null
-    ? { authorize?: undefined }
-    : { authorize: AuthorizeFunction<TPluvServer> });
+} & (InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>> extends BaseUser
+    ? { authorize: AuthorizeFunction<TPluvServer> }
+    : { authorize?: undefined });
 
 export type PluvHandlerFetch<TEnv extends Record<string, any> = {}> = (
     request: Request,
