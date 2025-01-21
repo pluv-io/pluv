@@ -140,9 +140,9 @@ export type ResolvedPluvIOAuthorize<
 
 export type PluvIOAuthorize<
     TPlatform extends AbstractPlatform<any, any, any, any>,
-    TUser extends BaseUser = any,
+    TUser extends BaseUser | null = any,
     TContext extends Record<string, unknown> = {},
-> = ResolvedPluvIOAuthorize<TPlatform, TUser> | ((context: TContext) => ResolvedPluvIOAuthorize<TPlatform, TUser>);
+> = (context: TContext) => TUser extends BaseUser ? ResolvedPluvIOAuthorize<TPlatform, TUser> : null;
 
 export type BasePluvIOListeners<
     TPlatform extends AbstractPlatform<any, any, any, any>,

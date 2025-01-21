@@ -79,22 +79,26 @@ export type GetEventMessage<T extends EventRecord<string, any>, TEvent extends k
 export type InferIOAuthorize<TIO extends IOLike<any, any>> = TIO extends IOLike<infer IAuthorize> ? IAuthorize : never;
 
 export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any> | null> =
-    TAuthorize extends IOAuthorize<infer IUser> ? IUser : null;
+    TAuthorize extends IOAuthorize<infer IUser, any> ? IUser : null;
 
 export type InputZodLike<TData extends JsonObject> = {
     _input: TData;
     parse: (data: unknown) => TData;
 };
 
-export type IOAuthorize<TUser extends BaseUser = any, TContext extends Record<string, unknown> = {}> =
-    | {
-          secret?: string;
-          user: InputZodLike<TUser>;
-      }
-    | ((context: TContext) => {
-          secret?: string;
-          user: InputZodLike<TUser>;
-      });
+export type IOAuthorize<TUser extends BaseUser | null = any, TContext extends Record<string, unknown> = {}> =
+    | (TUser extends BaseUser
+          ? {
+                secret?: string;
+                user: InputZodLike<TUser>;
+            }
+          : null)
+    | ((context: TContext) => TUser extends BaseUser
+          ? {
+                secret?: string;
+                user: TUser extends BaseUser ? InputZodLike<TUser> : null;
+            }
+          : null);
 
 export type IOAuthorizeEventMessage<TIO extends IOLike> = {
     connectionId: string;
