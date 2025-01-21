@@ -1,5 +1,13 @@
 # @pluv/crdt-yjs
 
+## 0.35.1
+
+### Patch Changes
+
+- 820898c: Increase undo/redo merge interval from 0s to 1s.
+  - @pluv/crdt@0.35.1
+  - @pluv/types@0.35.1
+
 ## 0.35.0
 
 ### Patch Changes
