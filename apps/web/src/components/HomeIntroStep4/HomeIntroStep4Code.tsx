@@ -52,18 +52,16 @@ export const HomeIntroStep4Code: FC<HomeIntroStep4CodeProps> = ({ className }) =
                             });
 
                             const ioServer = io.server({ router });
-
-                            export type IOServer = typeof ioServer;
                         `,
                         "client.ts": codeBlock`
                             import { yjs } from "@pluv/crdt-yjs";
                             import { createBundle, createClient } from "@pluv/react";
                             import { z } from "zod";
-                            import type { IOServer } from "./server";
+                            import type { ioServer } from "./server";
         
                             // ---cut---
                             const client = createClient({
-                              infer: (i) => ({ io: i<<IOServer> }),
+                              infer: (i) => ({ io: i<<typeof ioServer> }),
                               initialStorage: yjs.doc(() => ({
                                 tasks: yjs.array([
                                   { id: "TASK-4753", status: "todo", priority: "medium" },
