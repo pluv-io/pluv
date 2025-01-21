@@ -22,10 +22,6 @@ import { z } from "zod";
 
 export const io = createIO({
     authorize: {
-        // If required is false, users can authenticate for a room to
-        // attach an identity to their presence. Otherwise they will be
-        // anonymous.
-        required: true,
         // The secret for generating your JWT
         secret: process.env.PLUV_AUTH_SECRET!,
         // The shape of your user object. `id` must always be required.
