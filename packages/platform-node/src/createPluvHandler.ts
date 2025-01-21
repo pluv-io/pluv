@@ -1,5 +1,5 @@
 import type { InferInitContextType, PluvServer } from "@pluv/io";
-import type { InferIOAuthorize, InferIOAuthorizeUser, Maybe, MaybePromise } from "@pluv/types";
+import type { BaseUser, InferIOAuthorize, InferIOAuthorizeUser, Maybe, MaybePromise } from "@pluv/types";
 import type { Server as HttpServer, IncomingMessage, ServerResponse } from "node:http";
 import Url from "node:url";
 import { match } from "path-to-regexp";
@@ -19,7 +19,7 @@ export type CreatePluvHandlerConfig<TPluvServer extends PluvServer<NodePlatform,
     endpoint?: string;
     io: TPluvServer;
     server: HttpServer;
-} & (InferIOAuthorize<TPluvServer> extends null
+} & (InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>> extends BaseUser | null
     ? { authorize?: undefined }
     : { authorize: AuthorizeFunction<TPluvServer> });
 

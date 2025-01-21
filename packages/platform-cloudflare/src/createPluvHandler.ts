@@ -1,5 +1,5 @@
 import type { InferInitContextType, IORoom, PluvServer } from "@pluv/io";
-import type { Id, InferIOAuthorize, InferIOAuthorizeUser, Maybe, MaybePromise } from "@pluv/types";
+import type { BaseUser, Id, InferIOAuthorize, InferIOAuthorizeUser, Maybe, MaybePromise } from "@pluv/types";
 import { match } from "path-to-regexp";
 import { CloudflarePlatform } from "./CloudflarePlatform";
 
@@ -18,7 +18,7 @@ export type CreatePluvHandlerConfig<
     endpoint?: string;
     modify?: (request: Request, response: Response, env: TEnv) => MaybePromise<Response>;
     io: TPluvServer;
-} & (InferIOAuthorize<TPluvServer> extends null
+} & (InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>> extends BaseUser | null
     ? { authorize?: undefined }
     : { authorize: AuthorizeFunction<TPluvServer> });
 
