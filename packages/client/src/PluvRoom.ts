@@ -1,6 +1,7 @@
 import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
+    BaseUser,
     EventMessage,
     IOEventMessage,
     IOLike,
@@ -102,7 +103,9 @@ type FetchOptions = { url: string; options?: RequestInit };
 
 export type RoomEndpoints<TIO extends IOLike, TMetadata extends JsonObject> = {
     wsEndpoint?: WsEndpoint<TMetadata>;
-} & (InferIOAuthorize<TIO> extends null ? { authEndpoint?: undefined } : { authEndpoint: AuthEndpoint<TMetadata> });
+} & (InferIOAuthorizeUser<InferIOAuthorize<TIO>> extends BaseUser | null
+    ? { authEndpoint?: undefined }
+    : { authEndpoint: AuthEndpoint<TMetadata>; test?: InferIOAuthorizeUser<InferIOAuthorize<TIO>> });
 
 interface InternalListeners {
     onAuthorizationFail: (error: Error) => void;

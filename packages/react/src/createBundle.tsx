@@ -138,7 +138,7 @@ export type CreateBundleOptions<
 };
 
 export const createBundle = <
-    TIO extends IOLike,
+    TIO extends IOLike<any, any> = any,
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
