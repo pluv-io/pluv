@@ -1,5 +1,14 @@
 # @pluv/io
 
+## 0.35.2
+
+### Patch Changes
+
+- 81cb692: Fixed type inference of the `authorize` option in `createIO` when used as a function.
+- Updated dependencies [81cb692]
+  - @pluv/types@0.35.2
+  - @pluv/crdt@0.35.2
+
 ## 0.35.1
 
 ### Patch Changes
