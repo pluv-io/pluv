@@ -1,5 +1,14 @@
 # @pluv/crdt-loro
 
+## 0.35.1
+
+### Patch Changes
+
+- 9822786: Added missing `Tree` and `MovableList` types.
+- 3cd6571: Added support for undo/redo for `@pluv/crdt-loro`.
+  - @pluv/crdt@0.35.1
+  - @pluv/types@0.35.1
+
 ## 0.35.0
 
 ### Patch Changes
