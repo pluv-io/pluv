@@ -104,7 +104,7 @@ type FetchOptions = { url: string; options?: RequestInit };
 export type RoomEndpoints<TIO extends IOLike, TMetadata extends JsonObject> = {
     wsEndpoint?: WsEndpoint<TMetadata>;
 } & (InferIOAuthorizeUser<InferIOAuthorize<TIO>> extends BaseUser
-    ? { authEndpoint: AuthEndpoint<TMetadata>; test?: InferIOAuthorizeUser<InferIOAuthorize<TIO>> }
+    ? { authEndpoint: AuthEndpoint<TMetadata> }
     : { authEndpoint?: undefined });
 
 interface InternalListeners {
