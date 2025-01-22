@@ -1,5 +1,15 @@
 # @pluv/platform-pluv
 
+## 0.35.2
+
+### Patch Changes
+
+- 47ab053: Remove unused check for `authorize.required` for `@pluv/platform-pluv`.
+- Updated dependencies [81cb692]
+  - @pluv/types@0.35.2
+  - @pluv/io@0.35.2
+  - @pluv/crdt@0.35.2
+
 ## 0.35.1
 
 ### Patch Changes
