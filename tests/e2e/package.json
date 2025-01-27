@@ -63,15 +63,15 @@
 		"zod": "^3.24.1"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20250121.0",
+		"@cloudflare/workers-types": "^4.20250124.3",
 		"@playwright/test": "^1.50.0",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^9.1.2",
 		"eslint-config-pluv": "workspace:^",
-		"miniflare": "^3.20241230.2",
+		"miniflare": "^3.20250124.0",
 		"prisma": "^6.2.1",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.7.3",
-		"wrangler": "^3.105.0"
+		"wrangler": "^3.105.1"
 	}
 }
