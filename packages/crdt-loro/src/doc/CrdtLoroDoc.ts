@@ -2,7 +2,7 @@ import type { DocApplyEncodedStateParams, DocSubscribeCallbackParams, InferCrdtJ
 import { AbstractCrdtDoc } from "@pluv/crdt";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import type { Container } from "loro-crdt";
-import { LoroDoc, LoroEventBatch, LoroList, LoroMap, LoroText, UndoManager, isContainer } from "loro-crdt";
+import { LoroCounter, LoroDoc, LoroEventBatch, LoroList, LoroMap, LoroText, UndoManager, isContainer } from "loro-crdt";
 import type { LoroType } from "../types";
 
 const MAX_UNDO_STEPS = 100;
@@ -132,7 +132,11 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
         if (typeof type === "string") {
             const container = this._storage[type] as unknown as Container;
 
-            return container instanceof LoroText ? container.toString() : container.toJSON!();
+            return container instanceof LoroText
+                ? container.toString()
+                : container instanceof LoroCounter
+                  ? container.value
+                  : container.toJSON!();
         }
 
         return Object.entries(this._storage).reduce(
