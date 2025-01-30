@@ -1,5 +1,13 @@
 # @pluv/crdt-loro
 
+## 0.35.3
+
+### Patch Changes
+
+- 7c8e7ef: Upgraded `loro-crdt` from `1.3.1` to `1.3.2`.
+  - @pluv/crdt@0.35.3
+  - @pluv/types@0.35.3
+
 ## 0.35.2
 
 ### Patch Changes
