@@ -20,9 +20,7 @@ const options = program
 
 const port = parseInt(`${options.port}`, 10);
 
-if (Number.isNaN(port)) {
-    throw new Error("Port is not a number");
-}
+if (Number.isNaN(port)) throw new Error("Port is not a number");
 
 const app = express();
 const server = Http.createServer(app);
