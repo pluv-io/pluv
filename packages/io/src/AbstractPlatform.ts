@@ -43,7 +43,7 @@ export abstract class AbstractPlatform<
     public pubSub: AbstractPubSub;
 
     public readonly _createToken?: (params: JWTEncodeParams<any, any>) => Promise<string>;
-    public _fetch?: (req: any) => Promise<any>;
+    public _fetch?: (...args: any[]) => Promise<any>;
     public abstract readonly _config: TConfig;
     public abstract readonly _name: string;
 
