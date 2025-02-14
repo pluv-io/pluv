@@ -55,34 +55,32 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
         public async webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean): Promise<void> {
             if (io._defs.platform._config.registrationMode !== "detached") return;
 
-            const handler = this._room.onClose(ws);
+            const onCloseHandler = this._room.onClose(ws);
 
-            await handler({ code, reason });
+            await onCloseHandler({ code, reason });
         }
 
         public async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
             if (io._defs.platform._config.registrationMode !== "detached") return;
 
-            const handler = this._room.onError(ws);
+            const onErrorHandler = this._room.onError(ws);
             const eventError = error instanceof Error ? error : new Error("Internal Error");
 
-            await handler({ error: eventError, message: eventError.message });
+            await onErrorHandler({ error: eventError, message: eventError.message });
         }
 
         public async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
             if (io._defs.platform._config.registrationMode !== "detached") return;
 
-            const handler = this._room.onMessage(ws);
+            const onMessageHandler = this._room.onMessage(ws);
 
-            await handler({ data: message });
+            await onMessageHandler({ data: message });
         }
 
         async fetch(request: Request<any, CfProperties<any>>): Promise<Response> {
             const isWSRequest = request.headers.get("Upgrade") === "websocket";
 
-            if (!isWSRequest) {
-                return new Response("Expected websocket", { status: 400 });
-            }
+            if (!isWSRequest) return new Response("Expected websocket", { status: 400 });
 
             const { 0: client, 1: server } = new WebSocketPair();
             const token = new URL(request.url).searchParams.get("token");
@@ -171,7 +169,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
         return room.fetch(request);
     };
 
-    const fetch: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = async (request, env) => {
+    const handlerFetch: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = async (request, env) => {
         return [authHandler, roomHandler].reduce(async (promise, current) => {
             return await promise.then(async (value) => value ?? (await current(request, env)));
         }, Promise.resolve<Response | null>(null));
@@ -180,7 +178,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
     const handler: ExportedHandler<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = {
         fetch: async (request, env) => {
             const response =
-                (await fetch(request, env)) ??
+                (await handlerFetch(request, env)) ??
                 new Response("Not Found", {
                     headers: { "Content-Type": "text/plain" },
                     status: 404,
@@ -190,5 +188,5 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
         },
     };
 
-    return { fetch, DurableObject, handler };
+    return { fetch: handlerFetch, DurableObject, handler };
 };
