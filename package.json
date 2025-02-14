@@ -30,8 +30,8 @@
         "commitizen": "^4.3.1",
         "cz-conventional-changelog": "^3.3.0",
         "eslint-config-pluv": "workspace:^",
-        "prettier": "^3.5.0",
+        "prettier": "^3.5.1",
         "tailwindcss": "^3.4.17",
-        "turbo": "^2.4.0"
+        "turbo": "^2.4.2"
     }
 }
