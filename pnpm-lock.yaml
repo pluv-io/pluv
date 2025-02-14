@@ -1352,6 +1352,9 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      eslint:
+        specifier: ^8.57.1
+        version: 8.57.1
       eslint-config-pluv:
         specifier: workspace:^
         version: link:../eslint-config-pluv
