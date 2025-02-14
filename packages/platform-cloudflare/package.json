@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/platform-cloudflare",
-	"version": "0.35.3",
+	"version": "0.35.4",
 	"description": "@pluv/io adapter for cloudflare workers",
 	"author": "leedavidcs",
 	"license": "MIT",

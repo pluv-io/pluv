@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/persistence-redis",
-	"version": "0.35.3",
+	"version": "0.35.4",
 	"description": "@pluv/io crdt storage persistence for node.js",
 	"author": "leedavidcs",
 	"license": "MIT",
