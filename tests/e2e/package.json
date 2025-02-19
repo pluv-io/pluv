@@ -36,15 +36,15 @@
 		"@pluv/pubsub-redis": "workspace:^",
 		"@pluv/react": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@prisma/client": "^6.3.1",
+		"@prisma/client": "^6.4.0",
 		"@types/body-parser": "^1.19.5",
 		"@types/common-tags": "^1.8.4",
 		"@types/cors": "^2.8.17",
 		"@types/express": "^5.0.0",
 		"@types/ms": "^2.1.0",
 		"@types/node": "^22.13.4",
-		"@types/react": "^19.0.8",
-		"@types/react-dom": "^19.0.3",
+		"@types/react": "^19.0.10",
+		"@types/react-dom": "^19.0.4",
 		"@types/ws": "^8.5.14",
 		"body-parser": "^1.20.3",
 		"commander": "^13.1.0",
@@ -63,15 +63,15 @@
 		"zod": "^3.24.2"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20250204.0",
+		"@cloudflare/workers-types": "^4.20250214.0",
 		"@playwright/test": "^1.50.1",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^9.1.2",
 		"eslint-config-pluv": "workspace:^",
-		"miniflare": "^3.20250204.1",
-		"prisma": "^6.3.1",
+		"miniflare": "^3.20250214.0",
+		"prisma": "^6.4.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.7.3",
-		"wrangler": "^3.109.1"
+		"wrangler": "^3.109.2"
 	}
 }

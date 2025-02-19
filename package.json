@@ -25,7 +25,7 @@
         "version-packages": "changeset version"
     },
     "devDependencies": {
-        "@changesets/cli": "^2.27.12",
+        "@changesets/cli": "^2.28.0",
         "@pluv-internal/tailwind-config": "workspace:^",
         "commitizen": "^4.3.1",
         "cz-conventional-changelog": "^3.3.0",
@@ -33,5 +33,16 @@
         "prettier": "^3.5.1",
         "tailwindcss": "^3.4.17",
         "turbo": "^2.4.2"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "@prisma/client",
+            "@prisma/engines",
+            "core-js-pure",
+            "esbuild",
+            "prisma",
+            "sharp",
+            "workerd"
+        ]
     }
 }
