@@ -39,7 +39,7 @@ export type MockedRoomProviderProps<
 };
 
 export type PluvRoomProviderProps<
-    TIO extends IOLike,
+    TIO extends IOLike<any, any>,
     TMetadata extends JsonObject,
     TPresence extends JsonObject,
     TStorage extends Record<string, CrdtType<any, any>>,

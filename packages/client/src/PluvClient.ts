@@ -1,15 +1,11 @@
 import type { AbstractCrdtDocFactory, CrdtType } from "@pluv/crdt";
 import type { InputZodLike, IOLike, JsonObject } from "@pluv/types";
+import type { InferCallback } from "./infer";
 import { PluvProcedure } from "./PluvProcedure";
 import type { AuthEndpoint, PluvRoomAddon, PluvRoomDebug, RoomConfig, RoomEndpoints, WsEndpoint } from "./PluvRoom";
 import { PluvRoom } from "./PluvRoom";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
-import type { identity } from "./utils";
-
-export type InferCallback<TIO extends IOLike<any, any>> = (i: typeof identity) => {
-    io: (io: TIO) => TIO;
-};
 
 export type PluvClientOptions<
     TIO extends IOLike<any, any>,
@@ -18,15 +14,15 @@ export type PluvClientOptions<
     TMetadata extends JsonObject,
 > = RoomEndpoints<TIO, TMetadata> & {
     debug?: boolean;
-    infer: InferCallback<TIO>;
     initialStorage?: AbstractCrdtDocFactory<TStorage>;
     metadata?: InputZodLike<TMetadata>;
     presence?: InputZodLike<TPresence>;
     publicKey?: string;
+    types: InferCallback<TIO>;
 };
 
 export type CreateRoomOptions<
-    TIO extends IOLike,
+    TIO extends IOLike<any, any>,
     TPresence extends JsonObject,
     TStorage extends Record<string, CrdtType<any, any>>,
     TMetadata extends JsonObject,
@@ -41,7 +37,7 @@ export type CreateRoomOptions<
 } & (keyof TMetadata extends never ? { metadata?: undefined } : { metadata: TMetadata });
 
 export class PluvClient<
-    TIO extends IOLike = IOLike,
+    TIO extends IOLike<any, any>,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
     TMetadata extends JsonObject = {},
