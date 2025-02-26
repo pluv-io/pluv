@@ -107,7 +107,7 @@ const router = io.router({
 });
 
 // Lastly, add the router to your server, so that it can begin accepting custom events
-const ioServer = io.server({ router });
+export const ioServer = io.server({ router });
 ```
 
 ### Integrate PluvIO with ws
@@ -152,15 +152,17 @@ Now that the io instance is setup on the backend, we can setup the frontend clie
 // frontend/io.ts
 
 import { yjs } from "@pluv/crdt-yjs";
-import { createBundle, createClient, y } from "@pluv/react";
+import { createClient, infer } from "@pluv/client";
+import { createBundle, y } from "@pluv/react";
 // Use a type-import to import only the type we want to use
-import type { AppPluvIO } from "server/io";
+import type { ioServer } from "server/io";
 
+const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = createClient({
-    infer: (i) => ({ io: i<AppPluvIO> }),
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
+    types,
 });
 
 export const {

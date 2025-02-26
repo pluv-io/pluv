@@ -247,6 +247,9 @@ importers:
       '@pluv-internal/remark-plugins':
         specifier: workspace:^
         version: link:../../internal/remark-plugins
+      '@pluv/client':
+        specifier: workspace:^
+        version: link:../../packages/client
       '@pluv/crdt-yjs':
         specifier: workspace:^
         version: link:../../packages/crdt-yjs

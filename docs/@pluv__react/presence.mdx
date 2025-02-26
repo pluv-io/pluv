@@ -12,16 +12,18 @@ Presence is a per-connection state that allows users to track what other users a
 To get started with presence for pluv.io, first set a `presence` config on your `createClient` config.
 
 ```ts
-import { createBundle, createClient } from "@pluv/react";
-import type { AppPluvIO } from "backend/io";
+import { createClient, infer } from "@pluv/client";
+import { createBundle } from "@pluv/react";
+import type { ioServer } from "./backend/io";
 import { z } from "zod";
 
+const types = infer((i) => ({ io: i<typeof iServer> }));
 const client = createClient({
-    infer: (i) => ({ io: i<AppPluvIO> }),
     // Optional: Define the validation schema for presence, using zod
     presence: z.object({
         selectionId: z.string().nullable(),
     }),
+    types,
     wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
 });
 

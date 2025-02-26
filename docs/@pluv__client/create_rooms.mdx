@@ -14,13 +14,13 @@ To create a `PluvRoom`, you must first have a `PluvClient` defined. Refer to the
 ```ts
 // frontend/room.ts
 
-import { createClient } from "@pluv/client";
+import { createClient, infer } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
 import type { ioServer } from "./server/pluv-io";
 
+const types = infer((i) => ({ io: i<typeof ioServer> }));
 export const client = createClient({
-    infer: (i) => ({ io: i<typeof ioServer> }),
     /**
      * Define the initial storage for rooms that are created.
      * This can be overwritten in `createRoom`
@@ -32,6 +32,7 @@ export const client = createClient({
     presence: z.object({
         selectionId: z.string().nullable(),
     }),
+    types,
     // ...
 });
 

@@ -1,15 +1,16 @@
+import { createClient, infer } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
-import { createBundle, createClient } from "@pluv/react";
+import { createBundle } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node-redis";
 
+const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = createClient({
     authEndpoint: ({ room }) => {
         const [roomName] = room.split("_");
 
         return `http://localhost:3103/api/authorize?roomName=${roomName}`;
     },
-    infer: (i) => ({ io: i<typeof ioServer> }),
     initialStorage: yjs.doc(() => ({
         messages: yjs.array([
             yjs.object({
@@ -21,6 +22,7 @@ const client = createClient({
     presence: z.object({
         count: z.number(),
     }),
+    types,
     wsEndpoint: ({ room }) => {
         const [roomName, io] = room.split("_");
 

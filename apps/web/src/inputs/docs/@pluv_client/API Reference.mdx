@@ -20,16 +20,17 @@ If you've created a basic `PluvIO` backend without any auth, you can create a `P
 ```ts
 // frontend/io.ts
 
-import { createClient } from "@pluv/client";
+import { createClient, infer } from "@pluv/client";
 import type { ioServer } from "./server/pluv-io";
 
+/**
+ * Use this `infer` function to connect your ioServer type
+ * This is used because of TypeScript limitations with partial
+ * inference
+ */
+const types = infer((i) => ({ io: i<typeof ioServer> }));
 const io = createClient({
-    /**
-     * Use this `infer` property to connect your ioServer type
-     * This is used because of TypeScript limitations with partial
-     * inference
-     */
-    infer: (i) => ({ io: i<typeof ioServer> }),
+
     /**
      * Optional: Define the initial storage for rooms that are created.
      * This can be overwritten in `createRoom`
@@ -48,6 +49,7 @@ const io = createClient({
     presence: z.object({
         selectionId: z.string().nullable(),
     }),
+    types,
     // Defaults to ({ room }) => `/api/pluv/room/${room}`
     // This is the default from `createPluvHandler`.
     wsEndpoint: ({ metadata, room }) => {

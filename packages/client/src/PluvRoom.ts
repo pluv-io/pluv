@@ -101,7 +101,7 @@ export type WsEndpoint<TMetadata extends JsonObject> = string | ((params: Endpoi
 
 type FetchOptions = { url: string; options?: RequestInit };
 
-export type RoomEndpoints<TIO extends IOLike, TMetadata extends JsonObject> = {
+export type RoomEndpoints<TIO extends IOLike<any, any>, TMetadata extends JsonObject> = {
     wsEndpoint?: WsEndpoint<TMetadata>;
 } & (InferIOAuthorizeUser<InferIOAuthorize<TIO>> extends BaseUser
     ? { authEndpoint: AuthEndpoint<TMetadata> }

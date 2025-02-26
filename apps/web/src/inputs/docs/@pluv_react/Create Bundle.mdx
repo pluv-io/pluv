@@ -40,14 +40,16 @@ Then, import your `PluvIO` type to the frontend, and create your type-safe React
 ```ts
 // frontend/io.ts
 
+import { createClient, infer } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
-import { createBundle, createClient } from "@pluv/react";
+import { createBundle } from "@pluv/react";
 import { z } from "zod";
 // import your PluvIO instance from your backend codebase
 import { type AppPluvIO } from "backend/io";
 
+const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = clientClient({
-    infer: (i) => ({ io: i<AppPluvIO> }),
+    types,
     authEndpoint: () => "{{your auth endpoint}}",
     wsEndpoint: () => "{{your ws endpoint}}",
     // Optional: Specify which CRDT you are using, as well as the initial storage
