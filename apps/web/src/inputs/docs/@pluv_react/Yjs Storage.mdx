@@ -26,16 +26,18 @@ Then set an `initialStorage` config on your `createClient` config.
 
 ```ts
 import { yjs } from "@pluv/crdt-yjs";
+import { createClient, infer } from "@pluv/client";
 import { createBundle, createClient } from "@pluv/react";
 import type { AppPluvIO } from "backend/io";
 
+const types = infer((i) => ({ io: i<AppPluvIO> }));
 const client = createClient({
-    infer: (i) => ({ io: i<AppPluvIO> }),
     // Set the initial storage value, and type here
     // Don't worry, we can set a different default value in the room component
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
+    types,
     wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
 });
 

@@ -27,10 +27,8 @@ export const io = createIO({
     platform: platformNode(),
 });
 
-const server = io.server();
-
-// Export the ioServer type, so that this can be type-imported on the frontend
-export type AppPluvIO = typeof ioServer;
+// Export the ioServer, so that this can be type-imported on the frontend
+export const ioServer = io.server();
 ```
 
 ## Create a Pluv React bundle
@@ -41,17 +39,19 @@ Then, import your `PluvIO` type to the frontend, and create your type-safe React
 // frontend/io.ts
 
 import { yjs } from "@pluv/crdt-yjs";
-import { createBundle, createClient } from "@pluv/react";
+import { createClient, infer } from "@pluv/client";
+import { createBundle } from "@pluv/react";
 import { z } from "zod";
-// import your PluvIO instance from your backend codebase
-import { type AppPluvIO } from "backend/io";
+// import your ioServer type from your backend codebase
+import type { ioServer } from "./backend/io";
 
+const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = clientClient({
-    infer: (i) => ({ io: i<AppPluvIO> }),
     authEndpoint: () => "{{your auth endpoint}}",
     wsEndpoint: () => "{{your ws endpoint}}",
     // Optional: Specify which CRDT you are using, as well as the initial storage
     initialStorage: yjs.doc(() => ({})),
+    types,
 });
 
 export const {

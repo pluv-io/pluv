@@ -83,11 +83,13 @@ export const ioServer = io.server({
 Client procedures are created from the `PluvClient` instance created from `createClient`. Below is an example of their usage:
 
 ```ts
-import { createClient } from "@pluv/client";
+import { createClient, infer } from "@pluv/client";
 import type { ioServer } from "./backend/pluv-io";
 
+const types = infer((i) => ({ io: i<typeof ioServer> }));
+
 const io = createClient({
-    infer: (i) => ({ io: i<typeof ioServer> }),
+    types,
 });
 
 // Basic example of a procedure, that works like a server procedure

@@ -14,7 +14,7 @@ To get started with yjs for pluv.io, first specify which CRDT you intend to use 
 ```ts
 import { yjs } from "@pluv/crdt-yjs";
 
-const io = createIO({
+export const io = createIO({
     // ...
     crdt: yjs,
 });
@@ -25,17 +25,19 @@ const io = createIO({
 Then set an `initialStorage` config on your `createClient` config.
 
 ```ts
+import { createClient, infer } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
-import { createBundle, createClient } from "@pluv/react";
-import type { AppPluvIO } from "backend/io";
+import { createBundle } from "@pluv/react";
+import type { ioServer } from "./backend/io";
 
+const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = createClient({
-    infer: (i) => ({ io: i<AppPluvIO> }),
     // Set the initial storage value, and type here
     // Don't worry, we can set a different default value in the room component
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
+    types,
     wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
 });
 

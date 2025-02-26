@@ -24,12 +24,13 @@ npm install @pluv/client
 ```ts
 // frontend/io.ts
 
-import { createClient } from "@pluv/client";
+import { createClient, infer } from "@pluv/client";
 // Import the type from your PluvServer instance.
 import { type AppPluvIO } from "server/io";
 
+const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = createClient({
-    infer: (i) => ({ io: i<AppPluvIO> }),
+    types,
     // Optional. Defaults to ({ room }) => `/api/pluv/room/${room}`
     wsEndpoint: ({ room }): string => {
         // Specify the ws endpoint to connect to 
