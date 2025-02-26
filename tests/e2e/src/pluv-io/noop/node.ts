@@ -2,7 +2,7 @@ import { addonIndexedDB } from "@pluv/addon-indexeddb";
 import { createClient, infer } from "@pluv/client";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
-import { ioServer } from "../../server/noop/node";
+import type { ioServer } from "../../server/noop/node";
 
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = createClient({

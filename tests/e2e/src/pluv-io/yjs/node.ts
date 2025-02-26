@@ -3,7 +3,7 @@ import { createClient, infer } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
-import { ioServer } from "../../server/yjs/node";
+import type { ioServer } from "../../server/yjs/node";
 
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const io = createClient({
