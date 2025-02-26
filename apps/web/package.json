@@ -29,6 +29,7 @@
         "@pluv-internal/react-hooks": "workspace:^",
         "@pluv-internal/react-icons": "workspace:^",
         "@pluv-internal/remark-plugins": "workspace:^",
+        "@pluv/client": "workspace:^",
         "@pluv/crdt-yjs": "workspace:^",
         "@pluv/io": "workspace:^",
         "@pluv/platform-pluv": "workspace:^",
