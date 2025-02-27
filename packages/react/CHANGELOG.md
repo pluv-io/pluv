@@ -1,5 +1,31 @@
 # @pluv/react
 
+## 0.36.0
+
+### Minor Changes
+
+- 2a84951: **BREAKING**
+
+  Removed re-exports of `@pluv/client` and `@pluv/crdt` parts from `@pluv/react`.
+
+  ```ts
+  // Before
+
+  import { createBundle, createClient } from "@pluv/react";
+
+  // After
+
+  import { createClient } from "@pluv/client";
+  import { createBundle } from "@pluv/react";
+  ```
+
+### Patch Changes
+
+- Updated dependencies [4518b6d]
+  - @pluv/client@0.36.0
+  - @pluv/crdt@0.36.0
+  - @pluv/types@0.36.0
+
 ## 0.35.4
 
 ### Patch Changes
