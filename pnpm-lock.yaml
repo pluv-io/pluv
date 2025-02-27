@@ -1106,8 +1106,8 @@ importers:
         specifier: workspace:^
         version: link:../types
       jose:
-        specifier: ^5.10.0
-        version: 5.10.0
+        specifier: ^6.0.8
+        version: 6.0.8
       kleur:
         specifier: ^4.1.5
         version: 4.1.5
@@ -6699,8 +6699,8 @@ packages:
     resolution: {integrity: sha512-rg9zJN+G4n2nfJl5MW3BMygZX56zKPNVEYYqq7adpmMh4Jn2QNEwhvQlFy6jPVdcod7txZtKHWnyZiA3a0zP7A==}
     hasBin: true
 
-  jose@5.10.0:
-    resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
+  jose@6.0.8:
+    resolution: {integrity: sha512-EyUPtOKyTYq+iMOszO42eobQllaIjJnwkZ2U93aJzNyPibCy7CEvT9UQnaCVB51IAd49gbNdCew1c0LcLTCB2g==}
 
   joycon@3.1.1:
     resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
@@ -15243,7 +15243,7 @@ snapshots:
   jiti@2.4.2:
     optional: true
 
-  jose@5.10.0: {}
+  jose@6.0.8: {}
 
   joycon@3.1.1: {}
 
