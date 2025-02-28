@@ -43,7 +43,7 @@
 		"@types/cors": "^2.8.17",
 		"@types/express": "^5.0.0",
 		"@types/ms": "^2.1.0",
-		"@types/node": "^22.13.5",
+		"@types/node": "^22.13.7",
 		"@types/react": "^19.0.10",
 		"@types/react-dom": "^19.0.4",
 		"@types/ws": "^8.5.14",
@@ -73,7 +73,7 @@
 		"miniflare": "^3.20250214.1",
 		"prisma": "^6.4.1",
 		"ts-node": "^10.9.2",
-		"typescript": "^5.7.3",
+		"typescript": "^5.8.2",
 		"wrangler": "^3.111.0"
 	}
 }
