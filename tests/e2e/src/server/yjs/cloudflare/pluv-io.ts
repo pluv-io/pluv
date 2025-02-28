@@ -5,18 +5,19 @@ import { z } from "zod";
 
 const PLUV_AUTH_SECRET = "secret123";
 
-export const io = createIO({
-    authorize: {
-        secret: PLUV_AUTH_SECRET,
-        user: z.object({
-            id: z.string(),
-            name: z.string(),
-        }),
-    },
-    crdt: yjs,
-    debug: true,
-    platform: platformCloudflare(),
-});
+export const io = createIO(
+    platformCloudflare({
+        authorize: {
+            secret: PLUV_AUTH_SECRET,
+            user: z.object({
+                id: z.string(),
+                name: z.string(),
+            }),
+        },
+        crdt: yjs,
+        debug: true,
+    }),
+);
 
 const router = io.router({
     SEND_MESSAGE: io.procedure

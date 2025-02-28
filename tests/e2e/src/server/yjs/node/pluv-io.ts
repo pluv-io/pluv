@@ -6,18 +6,19 @@ import { prisma } from "../../../prisma";
 
 const PLUV_AUTH_SECRET = "secret123";
 
-export const io = createIO({
-    authorize: {
-        secret: PLUV_AUTH_SECRET,
-        user: z.object({
-            id: z.string(),
-            name: z.string(),
-        }),
-    },
-    crdt: yjs,
-    debug: true,
-    platform: platformNode(),
-});
+export const io = createIO(
+    platformNode({
+        authorize: {
+            secret: PLUV_AUTH_SECRET,
+            user: z.object({
+                id: z.string(),
+                name: z.string(),
+            }),
+        },
+        crdt: yjs,
+        debug: true,
+    }),
+);
 
 const router = io.router({
     sendMessage: io.procedure

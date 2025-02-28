@@ -11,6 +11,7 @@
     "deploy:prod": "wrangler deploy --config ./wrangler-prod.toml",
     "dev": "wrangler --config ./wrangler-dev.toml dev --port 8787",
     "dryrun:dev": "wrangler deploy --dry-run --config ./wrangler-dev.toml",
+    "lint": "eslint src/**/*.ts* --fix",
     "wrangler": "wrangler"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.2",
+    "eslint": "^8.57.1",
     "eslint-config-pluv": "workspace:^",
     "rollup": "^4.34.8",
     "rollup-plugin-node-globals": "^1.4.0",
