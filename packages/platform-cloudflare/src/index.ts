@@ -10,3 +10,4 @@ export type {
 export { infer } from "./infer";
 export type { InferCallback } from "./infer";
 export { platformCloudflare } from "./platformCloudflare";
+export type { PlatformCloudflareCreateIOParams } from "./platformCloudflare";
