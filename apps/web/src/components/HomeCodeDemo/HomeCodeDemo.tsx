@@ -152,10 +152,11 @@ export const HomeCodeDemo = memo<HomeCodeDemoProps>((props) => {
           import { z } from "zod";
 
           // Create @pluv/io websocket manager for Node.js
-          export const io = createIO({
-            crdt: yjs,
-            platform: platformNode(),
-          });
+          export const io = createIO(
+            platformNode({
+              crdt: yjs,
+            })
+          );
 
           export const ioServer = io.server();
         `;

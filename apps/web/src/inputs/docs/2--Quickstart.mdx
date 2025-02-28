@@ -55,11 +55,12 @@ import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 
-export const io = createIO({
-    // Optional: Only if you require CRDT features
-    crdt: yjs,
-    platform: platformNode(),
-});
+export const io = createIO(
+    platformNode({
+        // Optional: Only if you require CRDT features
+        crdt: yjs,
+    })
+);
 
 const ioServer = io.server();
 
@@ -81,11 +82,12 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-export const io = createIO({
-    // Optional: Only if you require CRDT features
-    crdt: yjs,
-    platform: platformNode(),
-});
+export const io = createIO(
+    platformNode({
+        // Optional: Only if you require CRDT features
+        crdt: yjs,
+    })
+);
 
 // Create your custom events as procedures
 const sendMessage = io.procedure

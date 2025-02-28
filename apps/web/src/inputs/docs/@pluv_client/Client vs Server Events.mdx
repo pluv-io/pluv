@@ -27,11 +27,12 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { db } from "./db";
 
-const io = createIO({
-    // Provide a context object that can be accessed from any of the event procedures
-    context: { db },
-    platform: platformNode(),
-});
+const io = createIO(
+    platformNode({
+        // Provide a context object that can be accessed from any of the event procedures
+        context: { db },
+    })
+);
 
 // You can define events as procedures that can exist in separate or the same file.
 const sendHelloWorld = io.procedure

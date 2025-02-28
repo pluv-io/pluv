@@ -53,7 +53,7 @@ export const HomeIntroStep5Code: FC<HomeIntroStep5CodeProps> = ({ className }) =
                             import { platformNode } from "@pluv/platform-node";
                             import { z } from "zod";
 
-                            const io = createIO({ platform: platformNode() });
+                            const io = createIO(platformNode());
 
                             const router = io.router({
                               sendGreeting: io.procedure

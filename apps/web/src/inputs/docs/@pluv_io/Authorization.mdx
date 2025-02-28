@@ -20,19 +20,20 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-export const io = createIO({
-    authorize: {
-        // The secret for generating your JWT
-        secret: process.env.PLUV_AUTH_SECRET!,
-        // The shape of your user object. `id` must always be required.
-        user: z.object({
-            id: z.string(),
-            // Here is an additional field we wish to add.
-            name: z.string(),
-        }),
-    },
-    platform: platformNode(),
-});
+export const io = createIO(
+    platformNode({
+        authorize: {
+            // The secret for generating your JWT
+            secret: process.env.PLUV_AUTH_SECRET!,
+            // The shape of your user object. `id` must always be required.
+            user: z.object({
+                id: z.string(),
+                // Here is an additional field we wish to add.
+                name: z.string(),
+            }),
+        },
+    })
+);
 
 export const ioServer = io.server();
 

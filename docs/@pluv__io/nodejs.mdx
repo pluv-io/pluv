@@ -31,7 +31,7 @@ Define an io (websocket client) instance on the server codebase:
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 
-export const io = createIO({ platform: platformNode() });
+export const io = createIO(platformNode());
 
 export const ioServer = io.server();
 
@@ -111,12 +111,13 @@ import Http from "http";
 import WS from "ws";
 import { Database } from "./database";
 
-const io = createIO({
-    context: {
-        db: new Database(process.env.DATABASE_URL),
-    },
-    platform: platformNode(),
-});
+const io = createIO(
+    platformNode({
+        context: {
+            db: new Database(process.env.DATABASE_URL),
+        },
+    })
+);
 const ioServer = io.server();
 
 const app = express();
