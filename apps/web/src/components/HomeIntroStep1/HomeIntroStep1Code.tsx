@@ -19,7 +19,7 @@ export const HomeIntroStep1Code: FC<HomeIntroStep1CodeProps> = ({ className }) =
                     import { z } from "zod";
 
                     // ---cut---
-                    const io = createIO({ platform: platformNode() });
+                    const io = createIO(platformNode());
 
                     const router = io.router({
                       sendGreeting: io.procedure

@@ -21,7 +21,7 @@ export type NodePlatformRoomContext<TMeta extends Record<string, Json>> = keyof 
 export type NodePlatformConfig<TMeta extends Record<string, Json>> = { mode?: WebSocketRegistrationMode } & (
     | { persistence?: undefined; pubSub?: undefined }
     | { persistence: AbstractPersistence; pubSub: AbstractPubSub }
-) & { context?: NodePlatformRoomContext<TMeta> };
+) & { roomContext?: NodePlatformRoomContext<TMeta> };
 
 export class NodePlatform<TMeta extends Record<string, Json> = {}> extends AbstractPlatform<
     NodeWebSocket,
@@ -47,10 +47,10 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
     public readonly _name = "platformNode";
 
     constructor(config: NodePlatformConfig<TMeta> = {}) {
-        const { context, mode = "attached", persistence, pubSub } = config;
+        const { roomContext, mode = "attached", persistence, pubSub } = config;
 
         super({
-            context,
+            roomContext,
             ...(persistence && pubSub ? { persistence, pubSub } : {}),
         });
 
@@ -99,7 +99,7 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
 
     public initialize(config: AbstractPlatformConfig<NodePlatformRoomContext<TMeta>>): this {
         return new NodePlatform({
-            context: config.context,
+            roomContext: config.roomContext,
             mode: this._config.registrationMode,
             persistence: this.persistence,
             pubSub: this.pubSub,

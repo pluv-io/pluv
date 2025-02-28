@@ -42,15 +42,15 @@ const redis = new Redis({
     /* redis config here */
 });
 
-export const io = createIO({
-    platform: platformNode({
+export const io = createIO(
+    platformNode({
         persistence: new PersistenceRedis({ client: redis }),
         pubSub: new PubSubRedis({
             publisher: redis,
             subscriber: redis,
         }),
-    }),
-});
+    })
+);
 ```
 
 ## Available Libraries

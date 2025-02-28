@@ -44,6 +44,8 @@ export type {
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
     PlatformConfig,
+    PluvContext,
+    PluvIOAuthorize,
     PluvIOListeners,
     WebSocketRegistrationMode,
     WebSocketSerializedState,

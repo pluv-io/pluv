@@ -19,9 +19,9 @@ export type InferRoomContextType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<any, any, infer IRoomContext> ? IRoomContext : never;
 
 export type AbstractPlatformConfig<TRoomContext extends Record<string, any> = {}> = {
-    context?: TRoomContext;
     persistence?: AbstractPersistence;
     pubSub?: AbstractPubSub;
+    roomContext?: TRoomContext;
 };
 
 export interface ConvertWebSocketConfig {
@@ -48,10 +48,10 @@ export abstract class AbstractPlatform<
     public abstract readonly _name: string;
 
     constructor(config: AbstractPlatformConfig<TRoomContext> = {}) {
-        const { context, persistence, pubSub } = config;
+        const { roomContext, persistence, pubSub } = config;
 
         (this as any)._meta = (config as any)._meta;
-        context && (this._roomContext = context);
+        roomContext && (this._roomContext = roomContext);
 
         this.persistence = persistence ?? new Persistence();
         this.pubSub = pubSub ?? new PubSub();

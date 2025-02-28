@@ -18,14 +18,15 @@ import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 
-export const io = createIO({
-    /**
-     * @optional
-     * @description This is required if you intend to use storage. Specify crdt to use for storage
-     */
-    crdt: yjs,
-    platform: platformNode(),
-});
+export const io = createIO(
+    platformNode({
+        /**
+         * @optional
+         * @description This is required if you intend to use storage. Specify crdt to use for storage
+         */
+        crdt: yjs,
+    })
+);
 
 const server = io.server();
 

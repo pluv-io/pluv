@@ -29,7 +29,7 @@ Define an io (websocket client) instance on the server codebase:
 // server/io.ts
 
 import { createIO } from "@pluv/io";
-import { platformCloudflare } from "@pluv/platform-cloudflare";
+import { infer, platformCloudflare } from "@pluv/platform-cloudflare";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { schema } from "./schema";
@@ -38,8 +38,10 @@ export type Env = {
     DB: D1Database;
 };
 
-export const io = createIO({
-    platform: platformCloudflare<Env>({
+// Infer the types of your Cloudflare Env
+const types = infer((i) => ({ env: i<Env> }));
+export const io = createIO(
+    platformCloudflare({
         /**
          * Specify whether WebSocket event listeners should be "attached" to
          * or "detached" from the WebSocket upon registration.
@@ -48,8 +50,9 @@ export const io = createIO({
          * hibernation.
          */
         mode: "detached", // @default = "detached"
-    }),
-});
+        types,
+    })
+);
 
 export const ioServer = io.server({
     // Example of using Cloudflare's D1 database with drizzle-orm
@@ -186,16 +189,17 @@ import {
 } from "@pluv/platform-cloudflare";
 import { Database } from "./database";
 
-const io = createIO({
-    context: ({ env, state }) => ({
-        // Example of using context with Cloudflare
-        db: new Database(env.DATABASE_URL),
+const io = createIO(
+    platformCloudflare({
+        context: ({ env, state }) => ({
+            // Example of using context with Cloudflare
+            db: new Database(env.DATABASE_URL),
 
-        env,
-        state,
-    }),
-    platform: platformCloudflare(),
-});
+            env,
+            state,
+        }),
+    })
+);
 const ioServer = io.server();
 
 const Pluv = createPluvHandler({

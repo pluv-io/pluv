@@ -18,29 +18,30 @@ import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 import { Database } from "./db";
 
-const io = createIO({
-    // Optional: if provided, defines authorization for rooms created by io
-    authorize: {
-        // The secret for generating your JWT
-        secret: process.env.PLUV_AUTH_SECRET!,
-        // The shape of your user object. `id` must always be required.
-        user: z.object({
-            id: z.string(),
-            // Here is an additional field we wish to add.
-            name: z.string(),
-        }),
-    },
-    // Optional: if provided, this context will be made available in event
-    // handlers and procedures
-    context: () => ({
-        db: new Database(process.env.DATABASE_URL),
-    }),
-    // Optional. Specify to use Yjs CRDT for storage.
-    // This is required only if/when you wish to use storage features.
-    crdt: yjs,
+const io = createIO(
     // Enable @pluv/io for Node.js
-    platform: platformNode(),
-});
+    platformNode({
+        // Optional: if provided, defines authorization for rooms created by io
+        authorize: {
+            // The secret for generating your JWT
+            secret: process.env.PLUV_AUTH_SECRET!,
+            // The shape of your user object. `id` must always be required.
+            user: z.object({
+                id: z.string(),
+                // Here is an additional field we wish to add.
+                name: z.string(),
+            }),
+        },
+        // Optional: if provided, this context will be made available in event
+        // handlers and procedures
+        context: () => ({
+            db: new Database(process.env.DATABASE_URL),
+        }),
+        // Optional. Specify to use Yjs CRDT for storage.
+        // This is required only if/when you wish to use storage features.
+        crdt: yjs,
+    })
+);
 ```
 
 ## PluvIO
@@ -81,7 +82,7 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO({ platform: platformNode() });
+const io = createIO(platformNode());
 
 const sendMessage = io.procedure
     .input(z.object({ message: z.string() }))
@@ -104,7 +105,7 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO({ platform: platformNode() });
+const io = createIO(platformNode());
 
 const sendMessage = io.procedure
     .input(z.object({ message: z.string() }))
@@ -133,7 +134,7 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO({ platform: platformNode() });
+const io = createIO(platformNode());
 const router = io.router({ /* ... */ });
 
 const server = io.server({

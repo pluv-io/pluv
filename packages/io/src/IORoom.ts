@@ -174,7 +174,7 @@ export class IORoom<
         this._debug = debug;
         this._docFactory = crdt.doc(() => ({}));
         this._router = router;
-        this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), context: roomContext });
+        this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), roomContext });
 
         this._listeners = {
             onDestroy: (event) => onDestroy?.(event),

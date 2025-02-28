@@ -49,8 +49,8 @@ export class CloudflarePlatform<
     constructor(config: CloudflarePlatformConfig<TEnv, TMeta>) {
         super({
             ...config,
-            ...(config.context && config.mode === "detached"
-                ? { persistence: new PersistenceCloudflareTransactionalStorage(config.context) }
+            ...(config.roomContext && config.mode === "detached"
+                ? { persistence: new PersistenceCloudflareTransactionalStorage(config.roomContext) }
                 : {}),
         });
 
@@ -131,17 +131,17 @@ export class CloudflarePlatform<
     }
 
     public initialize(config: AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>>): this {
-        const context = config.context ?? { ...this._roomContext };
+        const roomContext = config.roomContext ?? { ...this._roomContext };
 
-        if (!context.env || !context.state) {
-            throw new Error("Could not derive platform context");
+        if (!roomContext.env || !roomContext.state) {
+            throw new Error("Could not derive platform roomContext");
         }
 
         return new CloudflarePlatform<TEnv, TMeta>({
-            context: {
-                env: context.env,
-                meta: context.meta,
-                state: context.state,
+            roomContext: {
+                env: roomContext.env,
+                meta: roomContext.meta,
+                state: roomContext.state,
             } as CloudflarePlatformRoomContext<TEnv, TMeta>,
             mode: this._config.registrationMode,
             persistence: this.persistence,
