@@ -15,7 +15,7 @@
 		"prisma": "prisma",
 		"playwright": "playwright",
 		"start": "next start",
-		"test": "playwright test",
+		"test": "pnpm tsc:check && playwright test",
 		"test:noop:node": "playwright test ./src/tests/noop/node/**/*",
 		"test:loro:node": "playwright test ./src/tests/loro/node/**/*",
 		"test:yjs:cloudflare": "wrangler deploy --dry-run && playwright test ./src/tests/yjs/cloudflare/**/*",
