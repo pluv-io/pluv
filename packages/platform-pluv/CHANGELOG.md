@@ -1,5 +1,57 @@
 # @pluv/platform-pluv
 
+## 0.37.0
+
+### Minor Changes
+
+- 5165be0: **BREAKING**
+
+  Updated the `platformPluv` function to return an entire `createIO` input object. Now `createIO` must be called with `platformPluv`'s return value as an input.
+
+  ```ts
+  // Before
+
+  import { createIO } from "@pluv/io";
+  import { platformPluv } from "@pluv/platform-pluv";
+
+  export const io = createIO({
+    authorize: {
+      // ...
+    },
+    context: {
+      // ...
+    },
+    platform: platformPluv({
+      // ...
+    }),
+    // ...
+  });
+
+  // After
+
+  import { createIO } from "@pluv/io";
+  import { platformPluv } from "@pluv/platform-pluv";
+
+  export const io = createIO(
+    platformPluv({
+      authorize: {
+        // ...
+      },
+      context: {
+        // ...
+      },
+    }),
+  );
+  ```
+
+### Patch Changes
+
+- 9b74abb: Improved type inference when calling `PluvIO.server` to not include options that are always undefined (i.e. are not allowed by the specified platform).
+- Updated dependencies [9b74abb]
+  - @pluv/io@0.37.0
+  - @pluv/crdt@0.37.0
+  - @pluv/types@0.37.0
+
 ## 0.36.0
 
 ### Patch Changes
