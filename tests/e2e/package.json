@@ -34,6 +34,7 @@
 		"@pluv/persistence-redis": "workspace:^",
 		"@pluv/platform-cloudflare": "workspace:^",
 		"@pluv/platform-node": "workspace:^",
+		"@pluv/platform-pluv": "workspace:^",
 		"@pluv/pubsub-redis": "workspace:^",
 		"@pluv/react": "workspace:^",
 		"@pluv/types": "workspace:^",
