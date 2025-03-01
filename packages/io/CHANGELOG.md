@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.37.0
+
+### Patch Changes
+
+- 9b74abb: Improved type inference when calling `PluvIO.server` to not include options that are always undefined (i.e. are not allowed by the specified platform).
+  - @pluv/crdt@0.37.0
+  - @pluv/types@0.37.0
+
 ## 0.36.0
 
 ### Patch Changes
