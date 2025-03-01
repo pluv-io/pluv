@@ -41,6 +41,7 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
             onUserConnected: true;
             onUserDisconnected: true;
         };
+        router: true;
     }
 > {
     public readonly _config;
@@ -68,6 +69,7 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
                 onUserConnected: true as const,
                 onUserDisconnected: true as const,
             },
+            router: true as const,
         };
     }
 

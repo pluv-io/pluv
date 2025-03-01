@@ -46,6 +46,7 @@ export class PluvPlatform extends AbstractPlatform<
             onUserConnected: true;
             onUserDisconnected: true;
         };
+        router: false;
     }
 > {
     public readonly _config = {
@@ -62,6 +63,7 @@ export class PluvPlatform extends AbstractPlatform<
             onUserConnected: true as const,
             onUserDisconnected: true as const,
         },
+        router: false as const,
     };
     public readonly _name = "platformPluv";
 

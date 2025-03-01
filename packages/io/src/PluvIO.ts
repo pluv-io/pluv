@@ -6,7 +6,7 @@ import { WebsocketRegisterConfig } from "./IORoom";
 import { PluvProcedure } from "./PluvProcedure";
 import type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
-import { PluvServer } from "./PluvServer";
+import { PluvServer, PluvServerConfig } from "./PluvServer";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
 import type {
@@ -15,6 +15,7 @@ import type {
     PluvContext,
     PluvIOAuthorize,
     PluvIOListeners,
+    PluvIORouter,
     ResolvedPluvIOAuthorize,
 } from "./types";
 import { __PLUV_VERSION } from "./version";
@@ -31,14 +32,30 @@ export type PluvIOConfig<
     platform: TPlatform;
 };
 
+type ResolvedServerConfig<
+    TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
+    TContext extends Record<string, any> = {},
+    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
+> = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> &
+    PluvIORouter<TPlatform, TAuthorize, TContext, TEvents> & {
+        getInitialStorage?: GetInitialStorageFn<TContext>;
+    };
+
 export type ServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
-    getInitialStorage?: GetInitialStorageFn<TContext>;
-    router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
+> = {
+    [P in keyof ResolvedServerConfig<TPlatform, TAuthorize, TContext, TEvents> as ResolvedServerConfig<
+        TPlatform,
+        TAuthorize,
+        TContext,
+        TEvents
+    >[P] extends undefined
+        ? never
+        : P]: ResolvedServerConfig<TPlatform, TAuthorize, TContext, TEvents>[P];
 };
 
 export class PluvIO<
@@ -93,7 +110,12 @@ export class PluvIO<
     }
 
     public server<TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>>(
-        config: ServerConfig<TPlatform, TAuthorize, TContext, TEvents> = {},
+        config: ServerConfig<TPlatform, TAuthorize, TContext, TEvents> = {} as ServerConfig<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TEvents
+        >,
     ): PluvServer<TPlatform, TAuthorize, TContext, TEvents> {
         return new PluvServer<TPlatform, TAuthorize, TContext, TEvents>({
             ...config,
@@ -102,7 +124,7 @@ export class PluvIO<
             crdt: this._crdt,
             debug: this._debug,
             platform: this._platform,
-        });
+        } as PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>);
     }
 
     private _getIOAuthorize(options: WebsocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {

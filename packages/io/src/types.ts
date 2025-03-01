@@ -21,7 +21,7 @@ import type {
     InferRoomContextType,
 } from "./AbstractPlatform";
 import type { AbstractWebSocket } from "./AbstractWebSocket";
-import type { PluvRouterEventConfig } from "./PluvRouter";
+import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 
 declare global {
     var console: {
@@ -128,6 +128,7 @@ export interface PlatformConfig {
         onUserConnected?: boolean;
         onUserDisconnected?: boolean;
     };
+    router?: boolean;
 }
 
 export type ResolvedPluvIOAuthorize<
@@ -169,6 +170,16 @@ export type PluvIOListeners<
     Exclude<keyof BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>, InferPlatformListeners<TPlatform>>
 >;
 
+export type PluvIORouter<
+    TPlatform extends AbstractPlatform<any, any, any, any>,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
+    TContext extends Record<string, any>,
+    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
+> =
+    InferPlatformRouter<TPlatform> extends true
+        ? { router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents> }
+        : { router?: undefined };
+
 export type InferPlatformConfig<TPlatform extends AbstractPlatform<any, any, any, any>> =
     TPlatform extends AbstractPlatform<any, any, any, infer IConfig> ? IConfig : never;
 
@@ -183,6 +194,9 @@ export type InferPlatformListeners<TPlatform extends AbstractPlatform<any, any, 
         ? P
         : never]: true;
 };
+
+export type InferPlatformRouter<TPlatform extends AbstractPlatform<any, any, any, any>> =
+    InferPlatformConfig<TPlatform>["router"];
 
 export type IORoomListenerEvent<TContext extends Record<string, any>> = {
     context: TContext;

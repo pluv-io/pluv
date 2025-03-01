@@ -41,6 +41,7 @@ export class CloudflarePlatform<
             onUserConnected: true;
             onUserDisconnected: true;
         };
+        router: true;
     }
 > {
     public readonly _config;
@@ -68,6 +69,7 @@ export class CloudflarePlatform<
                 onUserConnected: true as const,
                 onUserDisconnected: true as const,
             },
+            router: true as const,
         };
 
         const detachedState = this._getDetachedState();
