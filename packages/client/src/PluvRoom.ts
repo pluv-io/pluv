@@ -35,6 +35,7 @@ import type {
     EventResolver,
     EventResolverContext,
     InternalSubscriptions,
+    PublicKey,
     UpdateMyPresenceAction,
     UserInfo,
     WebSocketConnection,
@@ -147,7 +148,7 @@ export type RoomConfig<
         addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
         debug?: boolean | PluvRoomDebug<TIO>;
         onAuthorizationFail?: (error: Error) => void;
-        publicKey?: string;
+        publicKey?: PublicKey<TMetadata>;
         router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
     } & RoomEndpoints<TIO, TMetadata> &
         Pick<CrdtManagerOptions<TStorage>, "initialStorage"> &
@@ -174,7 +175,7 @@ export class PluvRoom<
     private readonly _listeners: InternalListeners;
     private readonly _metadata: TMetadata = {} as TMetadata;
     private readonly _otherNotifier = new OtherNotifier<TIO>();
-    private readonly _publicKey: string | null = null;
+    private readonly _publicKey: PublicKey<TMetadata> | null = null;
     private readonly _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
     private readonly _stateNotifier = new StateNotifier<TIO, TPresence>();
     private readonly _storageStore: AbstractStorageStore;
@@ -231,7 +232,7 @@ export class PluvRoom<
         this._storageStore = storage;
 
         if (typeof metadata !== "undefined") this._metadata = metadata;
-        if (typeof publicKey === "string") this._publicKey = publicKey;
+        if (!!publicKey) this._publicKey = publicKey;
 
         this._listeners = {
             onAuthorizationFail: (error) => {
@@ -350,10 +351,12 @@ export class PluvRoom<
         let webSocket: WebSocket;
 
         try {
+            const publicKey = this._getPublicKey();
+
             authToken = await this._getAuthorization(this.id);
 
             authToken && url.searchParams.set("token", encodeURIComponent(authToken));
-            this._publicKey && url.searchParams.set("public_key", encodeURIComponent(this._publicKey));
+            publicKey && url.searchParams.set("public_key", encodeURIComponent(publicKey));
 
             webSocket = new WebSocket(url.toString());
         } catch (err) {
@@ -732,6 +735,13 @@ export class PluvRoom<
         } catch (err) {
             throw new Error(err instanceof Error ? err.message : "Room is unauthorized");
         }
+    }
+
+    private _getPublicKey(): string | null {
+        if (!this._publicKey) return null;
+        if (typeof this._publicKey === "string") return this._publicKey;
+
+        return this._publicKey({ metadata: this._metadata });
     }
 
     private _getWsEndpoint(room: string): string {
