@@ -1,5 +1,12 @@
 # @pluv/persistence-redis
 
+## 0.37.1
+
+### Patch Changes
+
+- @pluv/io@0.37.1
+- @pluv/types@0.37.1
+
 ## 0.37.0
 
 ### Patch Changes
