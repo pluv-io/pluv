@@ -53,6 +53,11 @@ export type MergeEventRecords<
       >
     : Id<TRoot>;
 
+export interface PublicKeyParams<TMetadata extends JsonObject> {
+    metadata: TMetadata;
+}
+export type PublicKey<TMetadata extends JsonObject> = string | ((params: PublicKeyParams<TMetadata>) => string);
+
 export type UpdateMyPresenceAction<TPresence extends JsonObject> =
     | Partial<TPresence>
     | ((oldPresence: TPresence | null) => Partial<TPresence>);

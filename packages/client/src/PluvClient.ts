@@ -6,6 +6,7 @@ import type { AuthEndpoint, PluvRoomAddon, PluvRoomDebug, RoomConfig, RoomEndpoi
 import { PluvRoom } from "./PluvRoom";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
+import type { PublicKey } from "./types";
 
 export type PluvClientOptions<
     TIO extends IOLike<any, any>,
@@ -17,7 +18,7 @@ export type PluvClientOptions<
     initialStorage?: AbstractCrdtDocFactory<TStorage>;
     metadata?: InputZodLike<TMetadata>;
     presence?: InputZodLike<TPresence>;
-    publicKey?: string;
+    publicKey?: PublicKey<TMetadata>;
     types: InferCallback<TIO>;
 };
 
