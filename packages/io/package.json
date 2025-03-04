@@ -29,7 +29,7 @@
 		"@pluv/types": "workspace:^",
 		"jose": "^5.10.0",
 		"kleur": "^4.1.5",
-		"wonka": "^6.3.4"
+		"wonka": "^6.3.5"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
