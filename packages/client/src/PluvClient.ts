@@ -46,6 +46,7 @@ export class PluvClient<
     private readonly _authEndpoint: AuthEndpoint<TMetadata> | undefined;
     private readonly _debug: boolean;
     private readonly _initialStorage?: AbstractCrdtDocFactory<TStorage>;
+    private readonly _metadata?: InputZodLike<TMetadata>;
     private readonly _presence?: InputZodLike<TPresence>;
     private readonly _publicKey: string | null = null;
     private readonly _rooms = new Map<string, PluvRoom<TIO, TMetadata, TPresence, TStorage, any>>();
@@ -62,11 +63,12 @@ export class PluvClient<
     }
 
     constructor(options: PluvClientOptions<TIO, TPresence, TStorage, TMetadata>) {
-        const { authEndpoint, debug = false, initialStorage, presence, publicKey, wsEndpoint } = options;
+        const { authEndpoint, debug = false, initialStorage, metadata, presence, publicKey, wsEndpoint } = options;
 
         this._authEndpoint = authEndpoint as AuthEndpoint<TMetadata>;
         this._debug = debug;
         this._initialStorage = initialStorage;
+        this._metadata = metadata;
         this._presence = presence;
         this._wsEndpoint = wsEndpoint;
 
@@ -81,13 +83,15 @@ export class PluvClient<
 
         if (oldRoom) return oldRoom;
 
+        const metadata = this._metadata ? this._metadata.parse(options.metadata) : options.metadata;
+
         const newRoom = new PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents>(room, {
             addons: options.addons,
             authEndpoint: this._authEndpoint,
             debug: options.debug,
             initialPresence: options.initialPresence,
             initialStorage: this._initialStorage,
-            metadata: options.metadata,
+            metadata,
             onAuthorizationFail: options.onAuthorizationFail,
             presence: this._presence,
             publicKey: this._publicKey ?? undefined,
