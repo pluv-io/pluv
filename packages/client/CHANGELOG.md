@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.37.2
+
+### Patch Changes
+
+- 11920af: Updated the default `wsEndpoint` for `PluvClient` when `publicKey` is provided to be correct.
+  - @pluv/crdt@0.37.2
+  - @pluv/types@0.37.2
+
 ## 0.37.1
 
 ### Patch Changes
