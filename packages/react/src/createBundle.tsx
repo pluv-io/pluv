@@ -246,7 +246,13 @@ export const createBundle = <
 
     const useClient = (): PluvClient<TIO, TPresence, TStorage, TMetadata> => useContext(PluvContext);
 
-    const useRoom = () => useContext(PluvRoomContext);
+    const useRoom = () => {
+        const room = useContext(PluvRoomContext);
+
+        if (!room) throw new Error("Room could not be found. Component must be wrapped with PluvRoomProvider");
+
+        return room;
+    };
 
     const useBroadcast = (): BroadcastProxy<MergeEvents<TEvents, TIO>> => {
         const room = useRoom();
