@@ -48,7 +48,7 @@ export class PluvClient<
     private readonly _initialStorage?: AbstractCrdtDocFactory<TStorage>;
     private readonly _metadata?: InputZodLike<TMetadata>;
     private readonly _presence?: InputZodLike<TPresence>;
-    private readonly _publicKey: string | null = null;
+    private readonly _publicKey: PublicKey<TMetadata> | null = null;
     private readonly _rooms = new Map<string, PluvRoom<TIO, TMetadata, TPresence, TStorage, any>>();
     private readonly _wsEndpoint: WsEndpoint<TMetadata> | undefined;
 
@@ -72,7 +72,7 @@ export class PluvClient<
         this._presence = presence;
         this._wsEndpoint = wsEndpoint;
 
-        if (typeof publicKey === "string") this._publicKey = publicKey;
+        if (!!publicKey) this._publicKey = publicKey;
     }
 
     public createRoom = <TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
