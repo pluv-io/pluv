@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.37.3
+
+### Patch Changes
+
+- 9ae837b: Add missing schema validation for room metadata.
+  - @pluv/crdt@0.37.3
+  - @pluv/types@0.37.3
+
 ## 0.37.2
 
 ### Patch Changes

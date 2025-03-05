@@ -1,5 +1,15 @@
 # @pluv/react
 
+## 0.37.3
+
+### Patch Changes
+
+- dff89ff: Added an error message for when `createBundle` functions are used outside of `PluvRoomProvider`.
+- Updated dependencies [9ae837b]
+  - @pluv/client@0.37.3
+  - @pluv/crdt@0.37.3
+  - @pluv/types@0.37.3
+
 ## 0.37.2
 
 ### Patch Changes
