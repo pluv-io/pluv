@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.37.4
+
+### Patch Changes
+
+- a9c3d17: Fix `publicKey` not being properly set on `PluvClient` when `publicKey` is a function.
+  - @pluv/crdt@0.37.4
+  - @pluv/types@0.37.4
+
 ## 0.37.3
 
 ### Patch Changes
