@@ -43,7 +43,18 @@ export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
 
         if (!state) throw new Error("Could not get websocket state");
 
-        return state;
+        const currentPing = state.timers.ping;
+        const lastPing = this._platform.getLastPing(this);
+
+        if (!lastPing) return state;
+        if (currentPing >= lastPing) return state;
+
+        const newState: WebSocketSerializedState = {
+            ...state,
+            timers: { ...state.timers, ping: lastPing },
+        };
+
+        return this._platform.setSerializedState(this, newState);
     }
 
     public set state(state: WebSocketSerializedState) {

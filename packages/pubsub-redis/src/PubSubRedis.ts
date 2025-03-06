@@ -46,15 +46,15 @@ export class PubSubRedis extends AbstractPubSub {
         await this._publisher.publish(roomName, JSON.stringify(payload));
     }
 
-    public subscribe(roomName: string, onMessage: (message: IOPubSubEventMessage<any>) => void): Promise<number> {
+    public async subscribe(roomName: string, onMessage: (message: IOPubSubEventMessage<any>) => void): Promise<number> {
         const id = this._currentSubscriptionId++;
         const refs = this._subscriptionsRefs.get(roomName) ?? [];
 
         this._subscriptions.set(id, [roomName, onMessage]);
         this._subscriptionsRefs.set(roomName, [...refs, id]);
-        this._subscriber.subscribe(roomName);
+        await this._subscriber.subscribe(roomName);
 
-        return Promise.resolve(id);
+        return id;
     }
 
     public unsubscribe(subscriptionId: number): void {

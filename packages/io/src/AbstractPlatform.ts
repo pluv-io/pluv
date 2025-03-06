@@ -78,7 +78,10 @@ export abstract class AbstractPlatform<
 
     public abstract randomUUID(): string;
 
-    public abstract setSerializedState(webSocket: AbstractWebSocket, state: WebSocketSerializedState): void;
+    public abstract setSerializedState(
+        webSocket: AbstractWebSocket,
+        state: WebSocketSerializedState,
+    ): WebSocketSerializedState;
 
     public validateConfig(config: any): void {}
 

@@ -1,11 +1,23 @@
 import { yjs } from "@pluv/crdt-yjs";
 import type { FC } from "react";
-import { useCanRedo, useCanUndo, useRedo, useStorage, useTransact, useUndo } from "../../../pluv-io/yjs/cloudflare";
+import {
+    useCanRedo,
+    useCanUndo,
+    useMyself,
+    useOthers,
+    useRedo,
+    useStorage,
+    useTransact,
+    useUndo,
+} from "../../../pluv-io/yjs/cloudflare";
 
 export type StorageRoomProps = Record<string, never>;
 
 export const StorageRoom: FC<StorageRoomProps> = () => {
     const [messages, sharedType] = useStorage("messages");
+
+    const myself = useMyself((myself) => myself.connectionId);
+    const others = useOthers((others) => others.map((other) => other.connectionId));
 
     const canUndo = useCanUndo();
     const canRedo = useCanRedo();
@@ -17,6 +29,13 @@ export const StorageRoom: FC<StorageRoomProps> = () => {
     return (
         <div id="storage-room">
             <div>Storage Room</div>
+            <br />
+            <ul>
+                <li>Myself: {myself}</li>
+                {others.map((other, i) => (
+                    <li key={i}>Other: {other}</li>
+                ))}
+            </ul>
             <br />
             <div>
                 <button

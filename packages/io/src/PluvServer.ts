@@ -151,13 +151,13 @@ export class PluvServer<
             const currentTime = new Date().getTime();
             const prevState = session.webSocket.state;
 
-            session.webSocket.state = {
+            this._platform.setSerializedState(session.webSocket, {
                 ...prevState,
                 timers: {
                     ...prevState.timers,
                     ping: currentTime,
                 },
-            };
+            });
 
             return { $PONG: {} };
         }),
@@ -281,7 +281,7 @@ export class PluvServer<
         >[0] & { _meta?: any };
 
         if (this._platform._config.handleMode !== "io") {
-            throw new Error(`\`createRoom\' is unsupported for \`${this._platform._name}\``);
+            throw new Error(`\`createRoom\` is unsupported for \`${this._platform._name}\``);
         }
 
         if (!/^[a-z0-9]+[a-z0-9\-_]+[a-z0-9]+$/i.test(room)) throw new Error("Unsupported room name");

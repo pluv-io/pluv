@@ -534,7 +534,7 @@ export class IORoom<
 
     private _initialize() {
         const promise = (async () => {
-            this._logDebug(`${colors.blue(`Initializing room ${this.id}:`)}`);
+            this._logDebug(`${colors.blue(`Initializing room: ${this.id}`)}`);
 
             if (!!this._uninitialize) {
                 const uninitialize = (await this._uninitialize).bind(this);
@@ -546,6 +546,8 @@ export class IORoom<
             const pubSubId = await this._platform.pubSub.subscribe(
                 this.id,
                 async ({ options = {}, ...message }): Promise<void> => {
+                    await promise;
+
                     const sender: SendMessageSender = {
                         sessionId: message.connectionId,
                         user: message.user,
