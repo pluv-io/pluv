@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.37.5
+
+### Patch Changes
+
+- 9a9ecee: Fixed an issue where hibernated Cloudflare Worker websockets were not updating their last ping timer and causing them to be disconnected after some time.
+  - @pluv/crdt@0.37.5
+  - @pluv/types@0.37.5
+
 ## 0.37.4
 
 ### Patch Changes
