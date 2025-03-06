@@ -96,7 +96,7 @@ export class CloudflarePlatform<
     public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): CloudflareWebSocket {
         const { room } = config;
 
-        return new CloudflareWebSocket(webSocket, { persistence: this.persistence, room });
+        return new CloudflareWebSocket(webSocket, { persistence: this.persistence, platform: this, room });
     }
 
     public getLastPing(webSocket: CloudflareWebSocket): number | null {
@@ -129,15 +129,15 @@ export class CloudflarePlatform<
 
         if (!detachedState) return [];
 
-        return detachedState.getWebSockets() ?? [];
+        const webSockets = detachedState.getWebSockets() ?? [];
+
+        return webSockets;
     }
 
     public initialize(config: AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>>): this {
         const roomContext = config.roomContext ?? { ...this._roomContext };
 
-        if (!roomContext.env || !roomContext.state) {
-            throw new Error("Could not derive platform roomContext");
-        }
+        if (!roomContext.env || !roomContext.state) throw new Error("Could not derive platform roomContext");
 
         return new CloudflarePlatform<TEnv, TMeta>({
             roomContext: {
@@ -163,15 +163,22 @@ export class CloudflarePlatform<
         return crypto.randomUUID();
     }
 
-    public setSerializedState(webSocket: CloudflareWebSocket, state: WebSocketSerializedState): void {
+    public setSerializedState(
+        webSocket: CloudflareWebSocket,
+        state: WebSocketSerializedState,
+    ): WebSocketSerializedState {
         const deserialized = webSocket.webSocket.deserializeAttachment() ?? {};
 
         webSocket.webSocket.serializeAttachment({ ...deserialized, state });
+
+        return state;
     }
 
     private _getDetachedState(): DurableObjectState | null {
         if (this._config.registrationMode !== "detached") return null;
 
-        return this._roomContext?.state ?? null;
+        const detachedState = this._roomContext?.state ?? null;
+
+        return detachedState;
     }
 }

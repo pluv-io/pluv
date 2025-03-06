@@ -157,7 +157,7 @@ export class PluvPlatform extends AbstractPlatform<
         throw new Error("Not implemented");
     }
 
-    public setSerializedState(webSocket: AbstractWebSocket, state: WebSocketSerializedState): void {
+    public setSerializedState(webSocket: AbstractWebSocket, state: WebSocketSerializedState): WebSocketSerializedState {
         throw new Error("Not implemented");
     }
 

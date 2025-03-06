@@ -80,7 +80,7 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
     public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): NodeWebSocket {
         const { room } = config;
 
-        return new NodeWebSocket(webSocket, { persistence: this.persistence, room });
+        return new NodeWebSocket(webSocket, { persistence: this.persistence, platform: this, room });
     }
 
     public getLastPing(webSocket: NodeWebSocket): number | null {
@@ -120,7 +120,9 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
         return crypto.randomUUID();
     }
 
-    public setSerializedState(webSocket: NodeWebSocket, state: WebSocketSerializedState): void {
-        return;
+    public setSerializedState(webSocket: NodeWebSocket, state: WebSocketSerializedState): WebSocketSerializedState {
+        webSocket.state = state;
+
+        return webSocket.state;
     }
 }

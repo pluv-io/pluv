@@ -7,6 +7,7 @@ import type {
     MaybePromise,
 } from "@pluv/types";
 import type { AbstractPersistence } from "./AbstractPersistence";
+import type { AbstractPlatform } from "./AbstractPlatform";
 import type { WebSocketSerializedState, WebSocketSession } from "./types";
 
 export type AbstractEvent = {};
@@ -49,6 +50,7 @@ export type InferWebSocketSource<TAbstractWebSocket extends AbstractWebSocket> =
 
 export interface AbstractWebSocketConfig {
     persistence: AbstractPersistence;
+    platform: AbstractPlatform<any>;
     room: string;
 }
 
@@ -68,6 +70,8 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
 
     private _user: BaseUser | null = null;
 
+    protected readonly _platform: AbstractPlatform<this>;
+
     public abstract set presence(presence: JsonObject | null);
     public abstract get readyState(): 0 | 1 | 2 | 3;
     public abstract get sessionId(): string;
@@ -75,9 +79,10 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
     public abstract set state(state: WebSocketSerializedState);
 
     constructor(webSocket: TWebSocket, config: AbstractWebSocketConfig) {
-        const { persistence, room } = config;
+        const { persistence, platform, room } = config;
 
         this.persistence = persistence;
+        this._platform = platform;
         this.room = room;
         this.webSocket = webSocket;
     }
