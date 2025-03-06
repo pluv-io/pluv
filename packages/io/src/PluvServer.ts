@@ -237,7 +237,6 @@ export class PluvServer<
             crdt = noop,
             debug = false,
             getInitialStorage,
-
             platform,
             router = new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>({} as TEvents),
         } = options;

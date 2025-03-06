@@ -499,9 +499,7 @@ export class IORoom<
     }
 
     private _getIOAuthorize(options: WebsocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
-        if (typeof this._authorize === "function") {
-            return this._authorize(options);
-        }
+        if (typeof this._authorize === "function") return this._authorize(options);
 
         return this._authorize as ResolvedPluvIOAuthorize<any, any> | null;
     }
