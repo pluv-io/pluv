@@ -66,15 +66,15 @@
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20250303.0",
-		"@playwright/test": "^1.50.1",
+		"@playwright/test": "^1.51.0",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^9.1.2",
 		"eslint": "^8.57.1",
 		"eslint-config-pluv": "workspace:^",
-		"miniflare": "^3.20250214.2",
+		"miniflare": "^3.20250224.0",
 		"prisma": "^6.4.1",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.8.2",
-		"wrangler": "^3.112.0"
+		"wrangler": "^3.114.0"
 	}
 }
