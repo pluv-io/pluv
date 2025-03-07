@@ -398,7 +398,9 @@ export class IORoom<
                     webSocket: pluvWs.webSocket,
                 }),
             );
-        } catch {}
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     private _ensureDetached(): void {
@@ -430,7 +432,9 @@ export class IORoom<
                     user: session.user,
                 }),
             );
-        } catch {}
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     private _getAbstractWs(webSocket: WebSocketType<TPlatform>): AbstractWebSocket | null {
