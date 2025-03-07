@@ -1,5 +1,5 @@
 {
 	"extends": "@pluv/tsconfig/library.json",
-	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+	"include": ["next-env.d.ts", "src/*.ts"],
 	"exclude": ["node_modules"]
 }

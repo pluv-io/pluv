@@ -25,6 +25,7 @@ import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 
 declare global {
     var console: {
+        error: (...data: any[]) => void;
         log: (...data: any[]) => void;
     };
 }
