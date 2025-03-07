@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.37.6
+
+### Patch Changes
+
+- 3a874f1: Now logs errors to the console when errors on encountered on the `onUserConnected` and `onUserDisconnected` events.
+  - @pluv/crdt@0.37.6
+  - @pluv/types@0.37.6
+
 ## 0.37.5
 
 ### Patch Changes
