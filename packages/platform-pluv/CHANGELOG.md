@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 0.37.7
+
+### Patch Changes
+
+- c874f25: Fixed webhook signature verification.
+  - @pluv/crdt@0.37.7
+  - @pluv/io@0.37.7
+  - @pluv/types@0.37.7
+
 ## 0.37.6
 
 ### Patch Changes
