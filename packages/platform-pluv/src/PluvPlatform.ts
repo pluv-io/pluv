@@ -7,6 +7,7 @@ import type {
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
+import stringify from "fast-json-stable-stringify";
 import { Hono } from "hono";
 import { SIGNATURE_HEADER } from "./constants";
 import { ZodEvent } from "./schemas";
@@ -189,7 +190,7 @@ export class PluvPlatform extends AbstractPlatform<
         const payload = await c.req.json();
 
         const verified = await verifyWebhook({
-            payload,
+            payload: stringify(payload),
             signature,
             secret: this._webhookSecret,
         });
