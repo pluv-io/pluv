@@ -29,7 +29,7 @@
 		"@pluv-internal/tailwind-config": "workspace:^",
 		"@pluv-internal/typings": "workspace:^",
 		"@pluv/tsconfig": "workspace:^",
-		"autoprefixer": "^10.4.20",
+		"autoprefixer": "^10.4.21",
 		"eslint": "^8.57.1",
 		"eslint-config-pluv": "workspace:^",
 		"postcss": "^8.5.3",
