@@ -301,7 +301,7 @@ export class MockedRoom<
             const origin = event.origin ?? null;
 
             if (!this._crdtManager) return;
-            if (origin === "$STORAGE_UPDATED") return;
+            if (origin === "$storageUpdated") return;
 
             const sharedTypes = this._crdtManager.doc.get();
 

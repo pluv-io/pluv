@@ -383,7 +383,7 @@ export class IORoom<
         const sessionId = session.id;
         const user = session.user;
 
-        await this._sendSelfMessage({ type: "$REGISTERED", data: { sessionId } }, { sessionId, user });
+        await this._sendSelfMessage({ type: "$registered", data: { sessionId } }, { sessionId, user });
 
         try {
             const doc = await this._doc;
@@ -414,7 +414,7 @@ export class IORoom<
 
         await this._broadcast({
             message: {
-                type: "$EXIT",
+                type: "$exit",
                 data: { sessionId: session.id },
             },
             senderId: session.id,
@@ -821,7 +821,7 @@ export class IORoom<
         const pluvWs = this._sessions.get(senderId);
 
         if (!pluvWs) return;
-        if (message.type === "$PONG") await this._emitQuitters();
+        if (message.type === "$pong") await this._emitQuitters();
 
         const session = await pluvWs.getSession();
         const user = session.user ?? null;

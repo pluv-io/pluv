@@ -133,7 +133,7 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
             connectionId,
             data: { message, stack },
             room,
-            type: "$ERROR" as const,
+            type: "$error" as const,
             user: session?.user ?? null,
         });
     }

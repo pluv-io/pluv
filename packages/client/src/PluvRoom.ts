@@ -47,8 +47,8 @@ const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
 const HEARTBEAT_INTERVAL_MS = 10_000;
 const PONG_TIMEOUT_MS = 2_000;
 const RECONNECT_TIMEOUT_MS = 30_000;
-const ORIGIN_INITIALIZED = "$INITIALIZED";
-const ORIGIN_STORAGE_UPDATED = "$STORAGE_UPDATED";
+const ORIGIN_INITIALIZED = "$initialized";
+const ORIGIN_STORAGE_UPDATED = "$storageUpdated";
 
 export const DEFAULT_PLUV_CLIENT_ADDON = <
     TIO extends IOLike = IOLike,
@@ -534,7 +534,7 @@ export class PluvRoom<
         !!myself && this._stateNotifier.subjects["myself"].next(myself);
 
         this.broadcast(
-            "$UPDATE_PRESENCE" as keyof InferIOInput<MergeEvents<TEvents, TIO>>,
+            "$updatePresence" as keyof InferIOInput<MergeEvents<TEvents, TIO>>,
             { presence: newPresence } as any,
         );
     };
@@ -778,7 +778,7 @@ export class PluvRoom<
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
-        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$PRESENCE_UPDATED"];
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$presenceUpdated"];
 
         this._usersManager.patchPresence(connectionId, data.presence as TPresence);
 
@@ -804,7 +804,7 @@ export class PluvRoom<
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
-        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$OTHERS_RECEIVED"];
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$othersReceived"];
 
         Object.keys(data.others).forEach((connectionId) => {
             const { presence, user } = data.others[connectionId];
@@ -849,7 +849,7 @@ export class PluvRoom<
         const update = this._state.connection.count > 1 ? (this._crdtManager.doc.getEncodedState() ?? null) : null;
 
         this._sendMessage({
-            type: "$INITIALIZE_SESSION",
+            type: "$initializeSession",
             data: { presence, update },
         });
     }
@@ -861,7 +861,7 @@ export class PluvRoom<
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
-        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$STORAGE_RECEIVED"];
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$storageReceived"];
 
         this._crdtManager.initialize({
             onInitialized: async (update) => {
@@ -884,7 +884,7 @@ export class PluvRoom<
         const update = this._crdtManager.doc.getEncodedState();
 
         this._sendMessage({
-            type: "$UPDATE_STORAGE",
+            type: "$updateStorage",
             data: { origin: ORIGIN_INITIALIZED, update },
         });
     }
@@ -933,12 +933,12 @@ export class PluvRoom<
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
         if (!this._usersManager.myself) return;
 
-        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$USER_JOINED"];
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$userJoined"];
 
         const myself = this._usersManager.myself;
 
         if (myself.connectionId === connectionId) {
-            this._sendMessage({ type: "$GET_OTHERS", data: {} });
+            this._sendMessage({ type: "$getOthers", data: {} });
         }
 
         this._usersManager.setUser(connectionId, data.user, data.presence as TPresence);
@@ -960,7 +960,7 @@ export class PluvRoom<
          * consistent way.
          * @date July 8, 2024
          */
-        this._sendMessage('{"type":"$PING","data":{}}');
+        this._sendMessage('{"type":"$ping","data":{}}');
     }
 
     private _logDebug(...data: any[]): void {
@@ -990,7 +990,7 @@ export class PluvRoom<
             if (this._state.webSocket.readyState !== WebSocket.OPEN) return;
 
             this._sendMessage({
-                type: "$UPDATE_STORAGE",
+                type: "$updateStorage",
                 data: { origin, update: event.update },
             });
         });
@@ -1058,35 +1058,35 @@ export class PluvRoom<
         this._eventNotifier.subject(message.type as keyof InferIOOutput<TIO>).next(message as any);
 
         switch (message.type) {
-            case "$EXIT": {
+            case "$exit": {
                 this._handleExit(message);
                 return;
             }
-            case "$OTHERS_RECEIVED": {
+            case "$othersReceived": {
                 this._handleReceiveOthers(message);
                 return;
             }
-            case "$PONG": {
+            case "$pong": {
                 this._clearTimeout(this._timeouts.pong);
                 return;
             }
-            case "$PRESENCE_UPDATED": {
+            case "$presenceUpdated": {
                 this._handlePresenceUpdatedMessage(message);
                 return;
             }
-            case "$REGISTERED": {
+            case "$registered": {
                 this._handleRegisteredMessage(message);
                 return;
             }
-            case "$STORAGE_RECEIVED": {
+            case "$storageReceived": {
                 this._handleStorageReceivedMessage(message);
                 return;
             }
-            case "$STORAGE_UPDATED": {
+            case "$storageUpdated": {
                 this._handleStorageUpdatedMessage(message);
                 return;
             }
-            case "$USER_JOINED": {
+            case "$userJoined": {
                 this._handleUserJoinedMessage(message);
                 return;
             }
