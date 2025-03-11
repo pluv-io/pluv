@@ -70,7 +70,7 @@ export class PluvServer<
 
     private readonly _authorize: TAuthorize = null as TAuthorize;
     private readonly _baseRouter: PluvRouter<TPlatform, TAuthorize, TContext, {}> = new PluvRouter({
-        $GET_OTHERS: this._procedure.sync((data, { room, session, sessions }) => {
+        $getOthers: this._procedure.sync((data, { room, session, sessions }) => {
             const currentTime = new Date().getTime();
 
             const others = sessions
@@ -100,9 +100,9 @@ export class PluvServer<
                     {},
                 );
 
-            return { $OTHERS_RECEIVED: { others } };
+            return { $othersReceived: { others } };
         }),
-        $INITIALIZE_SESSION: this._procedure
+        $initializeSession: this._procedure
             .broadcast((data, { session }) => {
                 const presence = (data as any)?.presence;
 
@@ -111,7 +111,7 @@ export class PluvServer<
                 session.presence = presence;
 
                 return {
-                    $USER_JOINED: {
+                    $userJoined: {
                         connectionId: session.id,
                         user: session.user,
                         presence,
@@ -143,9 +143,9 @@ export class PluvServer<
 
                 const state = (await this._platform.persistence.getStorageState(room)) ?? doc.getEncodedState();
 
-                return { $STORAGE_RECEIVED: { state } };
+                return { $storageReceived: { state } };
             }),
-        $PING: this._procedure.self((data, { session }) => {
+        $ping: this._procedure.self((data, { session }) => {
             if (!session) return {};
 
             const currentTime = new Date().getTime();
@@ -159,9 +159,9 @@ export class PluvServer<
                 },
             });
 
-            return { $PONG: {} };
+            return { $pong: {} };
         }),
-        $UPDATE_PRESENCE: this._procedure.broadcast((data, { session }) => {
+        $updatePresence: this._procedure.broadcast((data, { session }) => {
             const presence = (data as any)?.presence;
 
             if (!session) return {};
@@ -170,13 +170,13 @@ export class PluvServer<
 
             session.webSocket.presence = updated;
 
-            return { $PRESENCE_UPDATED: { presence: updated } };
+            return { $presenceUpdated: { presence: updated } };
         }),
-        $UPDATE_STORAGE: this._procedure.broadcast((data, { context, doc, room }) => {
+        $updateStorage: this._procedure.broadcast((data, { context, doc, room }) => {
             const origin = (data as any)?.origin as Maybe<string>;
             const update: string | null = (data as any)?.update ?? null;
 
-            if (origin === "$INITIALIZED" && Object.keys(doc.toJson()).length) return {};
+            if (origin === "$initialized" && Object.keys(doc.toJson()).length) return {};
 
             const updated = update === null ? doc : doc.applyEncodedState({ update });
             const encodedState = updated.getEncodedState();
@@ -189,7 +189,7 @@ export class PluvServer<
                 });
             });
 
-            return { $STORAGE_UPDATED: { state: encodedState } };
+            return { $storageUpdated: { state: encodedState } };
         }),
     });
     private readonly _context: PluvContext<TPlatform, TContext> = {} as PluvContext<TPlatform, TContext>;

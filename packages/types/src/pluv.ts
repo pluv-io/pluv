@@ -5,16 +5,16 @@ export type BaseUser = {
 };
 
 export interface BaseClientEventRecord {
-    $GET_OTHERS: {};
-    $INITIALIZE_SESSION: {
+    $getOthers: {};
+    $initializeSession: {
         presence: JsonObject;
         update: string | null;
     };
-    $PING: {};
-    $UPDATE_PRESENCE: {
+    $ping: {};
+    $updatePresence: {
         presence: JsonObject;
     };
-    $UPDATE_STORAGE: {
+    $updateStorage: {
         origin: string | null;
         update: string;
     };
@@ -23,7 +23,7 @@ export interface BaseClientEventRecord {
 export type BaseClientMessage = InferEventMessage<BaseClientEventRecord>;
 
 export interface BaseIOAuthorizeEventRecord<TAuthorize extends IOAuthorize<any, any>> {
-    $OTHERS_RECEIVED: {
+    $othersReceived: {
         others: {
             [connectionId: string]: {
                 connectionId: string;
@@ -33,7 +33,7 @@ export interface BaseIOAuthorizeEventRecord<TAuthorize extends IOAuthorize<any, 
             };
         };
     };
-    $USER_JOINED: {
+    $userJoined: {
         connectionId: string;
         user: NonNullable<Id<InferIOAuthorizeUser<TAuthorize>>>;
         presence: JsonObject;
@@ -41,24 +41,24 @@ export interface BaseIOAuthorizeEventRecord<TAuthorize extends IOAuthorize<any, 
 }
 
 export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = BaseIOAuthorizeEventRecord<TAuthorize> & {
-    $ERROR: {
+    $error: {
         message: string;
         stack?: string | null;
     };
-    $EXIT: {
+    $exit: {
         sessionId: string;
     };
-    $PONG: {};
-    $PRESENCE_UPDATED: {
+    $pong: {};
+    $presenceUpdated: {
         presence: JsonObject;
     };
-    $REGISTERED: {
+    $registered: {
         sessionId: string;
     };
-    $STORAGE_RECEIVED: {
+    $storageReceived: {
         state: string;
     };
-    $STORAGE_UPDATED: {
+    $storageUpdated: {
         state: string;
     };
 };
@@ -157,7 +157,7 @@ export type IOEventMessage<
     TEvent extends keyof InferIOOutput<TIO> = keyof InferIOOutput<TIO>,
 > = Id<
     { room: string } & InferEventMessage<InferIOOutput<TIO>, TEvent> &
-        (InferEventMessage<InferIOOutput<TIO>, TEvent>["type"] extends "$ERROR"
+        (InferEventMessage<InferIOOutput<TIO>, TEvent>["type"] extends "$error"
             ? Partial<IOAuthorizeEventMessage<TIO>>
             : IOAuthorizeEventMessage<TIO>)
 >;
