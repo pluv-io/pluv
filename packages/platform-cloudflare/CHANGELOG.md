@@ -1,5 +1,14 @@
 # @pluv/platform-cloudflare
 
+## 0.38.0
+
+### Patch Changes
+
+- Updated dependencies [f4ceca3]
+  - @pluv/types@0.38.0
+  - @pluv/io@0.38.0
+  - @pluv/persistence-cloudflare-transactional-storage@0.38.0
+
 ## 0.37.7
 
 ### Patch Changes

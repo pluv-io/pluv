@@ -1,5 +1,11 @@
 # @pluv/types
 
+## 0.38.0
+
+### Minor Changes
+
+- f4ceca3: Updated internal event names to follow a new naming convention.
+
 ## 0.37.7
 
 ## 0.37.6

@@ -1,5 +1,12 @@
 # @pluv/pubsub-redis
 
+## 0.38.0
+
+### Patch Changes
+
+- Updated dependencies [f4ceca3]
+  - @pluv/io@0.38.0
+
 ## 0.37.7
 
 ### Patch Changes
