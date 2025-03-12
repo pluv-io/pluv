@@ -1,5 +1,12 @@
 # @pluv/io
 
+## 0.38.1
+
+### Patch Changes
+
+- @pluv/crdt@0.38.1
+- @pluv/types@0.38.1
+
 ## 0.38.0
 
 ### Minor Changes
