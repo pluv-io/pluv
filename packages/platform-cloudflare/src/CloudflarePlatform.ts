@@ -77,7 +77,7 @@ export class CloudflarePlatform<
         if (!detachedState) return;
 
         detachedState.setWebSocketAutoResponse(
-            new WebSocketRequestResponsePair('{"type":"$PING","data":{}}', JSON.stringify({ type: "$PONG", data: {} })),
+            new WebSocketRequestResponsePair('{"type":"$ping","data":{}}', JSON.stringify({ type: "$pong", data: {} })),
         );
     }
 
