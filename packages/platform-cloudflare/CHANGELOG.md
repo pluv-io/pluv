@@ -1,5 +1,14 @@
 # @pluv/platform-cloudflare
 
+## 0.38.1
+
+### Patch Changes
+
+- 702fbd2: Fix sending and receiving the wrong heartbeat websocket events for Cloudflare websocket hibernation.
+  - @pluv/io@0.38.1
+  - @pluv/persistence-cloudflare-transactional-storage@0.38.1
+  - @pluv/types@0.38.1
+
 ## 0.38.0
 
 ### Patch Changes
