@@ -106,6 +106,12 @@ export class PluvIO<
     public router<TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>>(
         events: TEvents,
     ): PluvRouter<TPlatform, TAuthorize, TContext, TEvents> {
+        const invalidName = Object.keys(events).find((name) => name.includes("$"));
+
+        if (typeof invalidName === "string") {
+            throw new Error(`Invalid event name. Event names must not contain $: "${invalidName}"`);
+        }
+
         return new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>(events);
     }
 
@@ -125,13 +131,5 @@ export class PluvIO<
             debug: this._debug,
             platform: this._platform,
         } as PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>);
-    }
-
-    private _getIOAuthorize(options: WebsocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
-        if (typeof this._authorize === "function") {
-            return this._authorize(options);
-        }
-
-        return this._authorize as ResolvedPluvIOAuthorize<any, any> | null;
     }
 }

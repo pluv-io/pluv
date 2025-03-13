@@ -147,6 +147,12 @@ export class PluvClient<
     public router<TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
         events: TEvents,
     ): PluvRouter<TIO, TPresence, TStorage, TEvents> {
+        const invalidName = Object.keys(events).find((name) => name.includes("$"));
+
+        if (typeof invalidName === "string") {
+            throw new Error(`Invalid event name. Event names must not contain $: "${invalidName}"`);
+        }
+
         return new PluvRouter<TIO, TPresence, TStorage, TEvents>(events);
     }
 
