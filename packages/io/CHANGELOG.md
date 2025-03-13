@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.38.3
+
+### Patch Changes
+
+- 8346273: Disallow the `# @pluv/io character in router event names.
+  - @pluv/crdt@0.38.3
+  - @pluv/types@0.38.3
+
 ## 0.38.2
 
 ### Patch Changes
