@@ -132,4 +132,12 @@ export class PluvIO<
             platform: this._platform,
         } as PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>);
     }
+
+    private _getIOAuthorize(options: WebsocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
+        if (typeof this._authorize === "function") {
+            return this._authorize(options);
+        }
+
+        return this._authorize as ResolvedPluvIOAuthorize<any, any> | null;
+    }
 }
