@@ -32,6 +32,14 @@ export class PluvRouter<
     readonly _defs: { events: TEvents } = { events: {} as TEvents };
 
     constructor(events: TEvents) {
+        const invalidName = Object.keys(events).find((name) => !this._isValidEventName(name));
+
+        if (typeof invalidName === "string") {
+            throw new Error(
+                `Invalid event name. Event names must be formatted as valid JavaScript variable names: "${invalidName}"`,
+            );
+        }
+
         this._defs = { events };
     }
 
@@ -41,5 +49,9 @@ export class PluvRouter<
         const events = Object.assign(Object.create(null), ...routers.map((router) => router._defs.events));
 
         return new PluvRouter<any, any, any, any>(events) as MergedRouter<TRouters>;
+    }
+
+    private _isValidEventName(name: string): boolean {
+        return /^[a-z_$][a-z0-9_$]*$/gi.test(name);
     }
 }
