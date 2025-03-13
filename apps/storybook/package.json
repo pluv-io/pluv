@@ -34,11 +34,11 @@
         "react-dom": "^19.0.0"
     },
     "devDependencies": {
-        "@babel/core": "^7.26.9",
+        "@babel/core": "^7.26.10",
         "@babel/preset-env": "^7.26.9",
         "@babel/preset-react": "^7.26.3",
-        "@next/bundle-analyzer": "^15.2.1",
-        "@next/mdx": "^15.2.1",
+        "@next/bundle-analyzer": "^15.2.2",
+        "@next/mdx": "^15.2.2",
         "@pluv-internal/remark-plugins": "workspace:^",
         "@pluv-internal/tailwind-config": "workspace:^",
         "@pluv-internal/typings": "workspace:^",
