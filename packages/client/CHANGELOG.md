@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.38.2
+
+### Patch Changes
+
+- de35f0b: Require `PluvRouter` event names to be formatted as valid JavaScript variable names.
+  - @pluv/crdt@0.38.2
+  - @pluv/types@0.38.2
+
 ## 0.38.1
 
 ### Patch Changes
