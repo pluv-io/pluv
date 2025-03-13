@@ -106,6 +106,12 @@ export class PluvIO<
     public router<TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>>(
         events: TEvents,
     ): PluvRouter<TPlatform, TAuthorize, TContext, TEvents> {
+        const invalidName = Object.keys(events).find((name) => name.includes("$"));
+
+        if (typeof invalidName === "string") {
+            throw new Error(`Invalid event name. Event names must not contain $: "${invalidName}"`);
+        }
+
         return new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>(events);
     }
 
