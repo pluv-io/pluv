@@ -21,12 +21,12 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250310.0",
+    "@cloudflare/workers-types": "^4.20250313.0",
     "@pluv/tsconfig": "workspace:^",
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-dynamic-import-vars": "^2.1.5",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.2",
     "eslint": "^8.57.1",
@@ -35,6 +35,6 @@
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-polyfills": "^0.2.1",
     "typescript": "^5.8.2",
-    "wrangler": "^3.114.0"
+    "wrangler": "^4.0.0"
   }
 }
