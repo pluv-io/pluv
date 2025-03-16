@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 0.38.6
+
+### Patch Changes
+
+- 07fbeef: Fix `TypeError` on event handler invocations.
+  - @pluv/crdt@0.38.6
+  - @pluv/io@0.38.6
+  - @pluv/types@0.38.6
+
 ## 0.38.5
 
 ### Patch Changes
