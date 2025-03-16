@@ -16,7 +16,7 @@ export type PlatformPluvCreateIOParams<
 
 export const platformPluv = <TContext extends Record<string, any> = {}, TUser extends BaseUser = BaseUser>(
     config: PlatformPluvCreateIOParams<TContext, TUser>,
-): CreateIOParams<PluvPlatform, TContext, TUser> => {
+): CreateIOParams<PluvPlatform<TContext, TUser>, TContext, TUser> => {
     const { authorize, context, crdt, debug } = config;
 
     return {
@@ -24,6 +24,6 @@ export const platformPluv = <TContext extends Record<string, any> = {}, TUser ex
         context,
         crdt,
         debug,
-        platform: new PluvPlatform(config),
+        platform: new PluvPlatform<TContext, TUser>(config),
     };
 };
