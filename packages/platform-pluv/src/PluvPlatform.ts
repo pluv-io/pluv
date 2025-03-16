@@ -9,7 +9,7 @@ import type {
 import { AbstractPlatform } from "@pluv/io";
 import stringify from "fast-json-stable-stringify";
 import { Hono } from "hono";
-import { SIGNATURE_HEADER } from "./constants";
+import { SIGNATURE_ALGORITHM, SIGNATURE_HEADER } from "./constants";
 import { ZodEvent } from "./schemas";
 import { verifyWebhook } from "./shared";
 import type { PluvIOEndpoints, PluvIOListeners } from "./types";
@@ -183,9 +183,11 @@ export class PluvPlatform extends AbstractPlatform<
     }
 
     private _webhooks = new Hono().basePath("/").post("/", async (c) => {
-        const signature = c.req.header(SIGNATURE_HEADER);
+        const [algorithm, signature] = c.req.header(SIGNATURE_HEADER)?.split("=") ?? [];
 
-        if (!this._webhookSecret || !signature) return c.json({ error: "Unauthorized" }, 401);
+        if (!this._webhookSecret) return c.json({ error: "Unauthorized" }, 401);
+        if (algorithm !== SIGNATURE_ALGORITHM) return c.json({ error: "Unauthorized" }, 401);
+        if (!signature) return c.json({ error: "Unauthorized" }, 401);
 
         const payload = await c.req.json();
 
