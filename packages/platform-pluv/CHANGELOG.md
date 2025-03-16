@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 0.38.4
+
+### Patch Changes
+
+- 15399b7: Fix webhook signature validation.
+  - @pluv/crdt@0.38.4
+  - @pluv/io@0.38.4
+  - @pluv/types@0.38.4
+
 ## 0.38.3
 
 ### Patch Changes
