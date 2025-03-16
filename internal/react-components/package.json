@@ -45,7 +45,7 @@
 		"@types/react-dom": "^19.0.4",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
-		"cmdk": "^1.0.4",
+		"cmdk": "^1.1.1",
 		"common-tags": "^1.8.2",
 		"framer-motion": "^12.5.0",
 		"ms": "^2.1.3",
