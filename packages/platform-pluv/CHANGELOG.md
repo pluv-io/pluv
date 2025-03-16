@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 0.38.5
+
+### Patch Changes
+
+- 77df696: Fixed platform event contexts being undefined.
+  - @pluv/crdt@0.38.5
+  - @pluv/io@0.38.5
+  - @pluv/types@0.38.5
+
 ## 0.38.4
 
 ### Patch Changes
