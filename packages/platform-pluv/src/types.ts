@@ -1,29 +1,24 @@
-import type { GetInitialStorageFn } from "@pluv/io";
+import type {
+    BaseUser,
+    GetInitialStorageFn,
+    IORoomListenerEvent,
+    IOUserConnectedEvent,
+    IOUserDisconnectedEvent,
+} from "@pluv/io";
+import type { InputZodLike } from "@pluv/types";
+import type { PluvPlatform } from "./PluvPlatform";
 
 export interface PluvIOEndpoints {
     createToken: string;
 }
 
-export type RoomDeletedMessageEventData = {
-    encodedState: string | null;
-    room: string;
-};
-
-export type UserConnectedEventData = {
-    encodedState: string | null;
-    room: string;
-    user: any;
-};
-
-export type UserDisconnectedEventData = {
-    encodedState: string | null;
-    room: string;
-    user: any;
-};
-
-export type PluvIOListeners = {
-    getInitialStorage?: GetInitialStorageFn<{}>;
-    onRoomDeleted: (event: RoomDeletedMessageEventData) => void;
-    onUserConnected: (event: UserConnectedEventData) => void;
-    onUserDisconnected: (event: UserDisconnectedEventData) => void;
+export type PluvIOListeners<TContext extends Record<string, any> = {}, TUser extends BaseUser = BaseUser> = {
+    getInitialStorage?: GetInitialStorageFn<TContext>;
+    onRoomDeleted: (event: IORoomListenerEvent<TContext>) => void;
+    onUserConnected: (
+        event: IOUserConnectedEvent<PluvPlatform<TContext>, { user: InputZodLike<TUser> }, TContext>,
+    ) => void;
+    onUserDisconnected: (
+        event: IOUserDisconnectedEvent<PluvPlatform<TContext>, { user: InputZodLike<TUser> }, TContext>,
+    ) => void;
 };

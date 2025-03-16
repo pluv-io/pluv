@@ -199,7 +199,7 @@ export class PluvServer<
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
-    public get fetch(): NonNullable<typeof this._platform._fetch> {
+    public get fetch(): (...args: any[]) => Promise<any> {
         return ((...args: any[]): Promise<any> => {
             if (!this._platform._fetch) throw new Error(`\`${this._platform._name}\` does not support \`fetch\``);
 

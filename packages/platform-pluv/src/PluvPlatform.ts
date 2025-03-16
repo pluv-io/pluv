@@ -1,6 +1,7 @@
 import type {
     AbstractPlatformConfig,
     AbstractWebSocket,
+    BaseUser,
     ConvertWebSocketConfig,
     GetInitialStorageFn,
     JWTEncodeParams,
@@ -8,13 +9,15 @@ import type {
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
 import stringify from "fast-json-stable-stringify";
+import type { Context } from "hono";
 import { Hono } from "hono";
+import type { BlankEnv, BlankInput } from "hono/types";
 import { SIGNATURE_ALGORITHM, SIGNATURE_HEADER } from "./constants";
 import { ZodEvent } from "./schemas";
 import { verifyWebhook } from "./shared";
 import type { PluvIOEndpoints, PluvIOListeners } from "./types";
 
-export interface PluvPlatformConfig {
+export interface PluvPlatformConfig<TContext extends Record<string, any> = {}> {
     /**
      * @ignore
      * @readonly
@@ -24,12 +27,16 @@ export interface PluvPlatformConfig {
         endpoints?: PluvIOEndpoints;
     };
     basePath: string;
+    context?: TContext;
     publicKey: string;
     secretKey: string;
     webhookSecret?: string;
 }
 
-export class PluvPlatform extends AbstractPlatform<
+export class PluvPlatform<
+    TContext extends Record<string, any> = {},
+    TUser extends BaseUser = BaseUser,
+> extends AbstractPlatform<
     any,
     {},
     {},
@@ -68,8 +75,10 @@ export class PluvPlatform extends AbstractPlatform<
     };
     public readonly _name = "platformPluv";
 
+    private readonly _app: Hono;
     private _authorize: any;
     private readonly _basePath: string;
+    private readonly _context: any;
     private readonly _endpoints: PluvIOEndpoints;
     private _getInitialStorage?: GetInitialStorageFn<{}>;
     private _listeners?: PluvIOListeners;
@@ -106,9 +115,10 @@ export class PluvPlatform extends AbstractPlatform<
     constructor(params: PluvPlatformConfig) {
         super();
 
-        const { _defs, basePath, publicKey, secretKey, webhookSecret } = params;
+        const { _defs, context, basePath, publicKey, secretKey, webhookSecret } = params;
 
         this._basePath = basePath;
+        this._context = typeof context === "function" ? context(this._roomContext) : context;
         this._endpoints = {
             createToken: "https://pluv.io/api/room/token",
             ..._defs?.endpoints,
@@ -117,9 +127,8 @@ export class PluvPlatform extends AbstractPlatform<
         this._secretKey = secretKey;
         this._webhookSecret = webhookSecret;
 
-        this._fetch = new Hono().basePath(this._basePath).route("/", this._webhooks).fetch as (
-            req: any,
-        ) => Promise<any>;
+        this._app = new Hono().basePath(this._basePath).route("/", this._webhooksRouter);
+        this._fetch = this._app.fetch as (req: any) => Promise<any>;
     }
 
     public acceptWebSocket(webSocket: AbstractWebSocket): Promise<void> {
@@ -182,7 +191,7 @@ export class PluvPlatform extends AbstractPlatform<
         };
     }
 
-    private _webhooks = new Hono().basePath("/").post("/", async (c) => {
+    private _webhooksRouter = new Hono().basePath("/").post("/", async (c: Context<BlankEnv, "/", BlankInput>) => {
         const [algorithm, signature] = c.req.header(SIGNATURE_HEADER)?.split("=") ?? [];
 
         if (!this._webhookSecret) return c.json({ error: "Unauthorized" }, 401);
@@ -205,13 +214,13 @@ export class PluvPlatform extends AbstractPlatform<
 
         const { event, data } = parsed.data;
 
+        const context = this._context;
+
         switch (event) {
             case "initial-storage": {
                 const room = data.room;
                 const storage =
-                    typeof room === "string"
-                        ? ((await this._getInitialStorage?.({ context: {}, room })) ?? null)
-                        : null;
+                    typeof room === "string" ? ((await this._getInitialStorage?.({ context, room })) ?? null) : null;
 
                 return c.json({ data: { storage } }, 200);
             }
@@ -219,7 +228,7 @@ export class PluvPlatform extends AbstractPlatform<
                 const room = data.room;
                 const encodedState = data.storage;
 
-                await Promise.resolve(this._listeners?.onRoomDeleted({ encodedState, room }));
+                await Promise.resolve(this._listeners?.onRoomDeleted({ context, encodedState, room }));
 
                 return c.json({ data: { room } }, 200);
             }
@@ -228,14 +237,14 @@ export class PluvPlatform extends AbstractPlatform<
                 const encodedState = data.storage;
                 const user = data.user as any;
 
-                await Promise.resolve(this._listeners?.onUserConnected({ encodedState, room, user }));
+                await Promise.resolve(this._listeners?.onUserConnected({ context, encodedState, room, user }));
             }
             case "user-disconnected": {
                 const room = data.room;
                 const encodedState = data.storage;
                 const user = data.user as any;
 
-                await Promise.resolve(this._listeners?.onUserDisconnected({ encodedState, room, user }));
+                await Promise.resolve(this._listeners?.onUserDisconnected({ context, encodedState, room, user }));
             }
             default:
                 return c.json({ data: { ok: true } }, 200);
