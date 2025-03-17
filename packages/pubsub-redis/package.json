@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/pubsub-redis",
-	"version": "0.38.7",
+	"version": "0.38.8",
 	"description": "@pluv/io redis pubsub",
 	"author": "leedavidcs",
 	"license": "MIT",

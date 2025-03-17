@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 0.38.8
+
+### Patch Changes
+
+- a39343b: Fix the `onUserDisconnected` event triggering when `onUserConnected` event triggers.
+  - @pluv/crdt@0.38.8
+  - @pluv/io@0.38.8
+  - @pluv/types@0.38.8
+
 ## 0.38.7
 
 ### Patch Changes
