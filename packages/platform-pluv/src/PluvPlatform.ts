@@ -238,6 +238,8 @@ export class PluvPlatform<
                 const user = data.user as any;
 
                 await Promise.resolve(this._listeners?.onUserConnected({ context, encodedState, room, user }));
+
+                return c.json({ data: { ok: true } }, 200);
             }
             case "user-disconnected": {
                 const room = data.room;
@@ -245,6 +247,8 @@ export class PluvPlatform<
                 const user = data.user as any;
 
                 await Promise.resolve(this._listeners?.onUserDisconnected({ context, encodedState, room, user }));
+
+                return c.json({ data: { ok: true } }, 200);
             }
             default:
                 return c.json({ data: { ok: true } }, 200);
