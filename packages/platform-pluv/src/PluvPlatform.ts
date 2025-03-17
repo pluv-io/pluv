@@ -185,9 +185,9 @@ export class PluvPlatform<
         this._authorize = config.authorize;
         this._getInitialStorage = config.getInitialStorage;
         this._listeners = {
-            onRoomDeleted: (event) => config.onRoomDeleted(event),
-            onUserConnected: (event) => config.onUserConnected(event),
-            onUserDisconnected: (event) => config.onUserDisconnected(event),
+            onRoomDeleted: (event) => config.onRoomDeleted?.(event),
+            onUserConnected: (event) => config.onUserConnected?.(event),
+            onUserDisconnected: (event) => config.onUserDisconnected?.(event),
         };
     }
 
