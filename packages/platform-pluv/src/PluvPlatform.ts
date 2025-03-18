@@ -210,48 +210,56 @@ export class PluvPlatform<
 
         const parsed = ZodEvent.safeParse(payload);
 
-        if (!parsed.success) return c.json({ data: { ok: true } }, 200);
+        if (!parsed.success) return c.json({ data: { ok: false, error: "Invalid request" } }, 400);
 
         const { event, data } = parsed.data;
 
         const context = this._context;
 
-        switch (event) {
-            case "initial-storage": {
-                const room = data.room;
-                const storage =
-                    typeof room === "string" ? ((await this._getInitialStorage?.({ context, room })) ?? null) : null;
+        try {
+            switch (event) {
+                case "initial-storage": {
+                    const room = data.room;
+                    const storage =
+                        typeof room === "string"
+                            ? ((await this._getInitialStorage?.({ context, room })) ?? null)
+                            : null;
 
-                return c.json({ data: { storage } }, 200);
+                    return c.json({ data: { ok: true, room, storage } }, 200);
+                }
+                case "room-deleted": {
+                    const room = data.room;
+                    const encodedState = data.storage;
+
+                    await Promise.resolve(this._listeners?.onRoomDeleted({ context, encodedState, room }));
+
+                    return c.json({ data: { ok: true, room } }, 200);
+                }
+                case "user-connected": {
+                    const room = data.room;
+                    const encodedState = data.storage;
+                    const user = data.user as any;
+
+                    await Promise.resolve(this._listeners?.onUserConnected({ context, encodedState, room, user }));
+
+                    return c.json({ data: { ok: true, room } }, 200);
+                }
+                case "user-disconnected": {
+                    const room = data.room;
+                    const encodedState = data.storage;
+                    const user = data.user as any;
+
+                    await Promise.resolve(this._listeners?.onUserDisconnected({ context, encodedState, room, user }));
+
+                    return c.json({ data: { ok: true, room } }, 200);
+                }
+                default:
+                    return c.json({ data: { ok: false, error: "Unknown event" } }, 400);
             }
-            case "room-deleted": {
-                const room = data.room;
-                const encodedState = data.storage;
+        } catch (err) {
+            if (err instanceof Error) return c.json({ data: { ok: false, error: err.message } });
 
-                await Promise.resolve(this._listeners?.onRoomDeleted({ context, encodedState, room }));
-
-                return c.json({ data: { room } }, 200);
-            }
-            case "user-connected": {
-                const room = data.room;
-                const encodedState = data.storage;
-                const user = data.user as any;
-
-                await Promise.resolve(this._listeners?.onUserConnected({ context, encodedState, room, user }));
-
-                return c.json({ data: { ok: true } }, 200);
-            }
-            case "user-disconnected": {
-                const room = data.room;
-                const encodedState = data.storage;
-                const user = data.user as any;
-
-                await Promise.resolve(this._listeners?.onUserDisconnected({ context, encodedState, room, user }));
-
-                return c.json({ data: { ok: true } }, 200);
-            }
-            default:
-                return c.json({ data: { ok: true } }, 200);
+            return c.json({ data: { ok: false, error: "Unexpected error" } });
         }
     });
 }
