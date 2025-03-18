@@ -194,9 +194,9 @@ export class PluvPlatform<
     private _webhooksRouter = new Hono().basePath("/").post("/", async (c: Context<BlankEnv, "/", BlankInput>) => {
         const [algorithm, signature] = c.req.header(SIGNATURE_HEADER)?.split("=") ?? [];
 
-        if (!this._webhookSecret) return c.json({ error: "Unauthorized" }, 401);
-        if (algorithm !== SIGNATURE_ALGORITHM) return c.json({ error: "Unauthorized" }, 401);
-        if (!signature) return c.json({ error: "Unauthorized" }, 401);
+        if (!this._webhookSecret) return c.json({ error: { message: "Unauthorized" } }, 401);
+        if (algorithm !== SIGNATURE_ALGORITHM) return c.json({ error: { message: "Unauthorized" } }, 401);
+        if (!signature) return c.json({ error: { message: "Unauthorized" } }, 401);
 
         const payload = await c.req.json();
 
@@ -206,11 +206,11 @@ export class PluvPlatform<
             secret: this._webhookSecret,
         });
 
-        if (!verified) return c.json({ error: "Unauthorized" }, 401);
+        if (!verified) return c.json({ error: { message: "Unauthorized" } }, 401);
 
         const parsed = ZodEvent.safeParse(payload);
 
-        if (!parsed.success) return c.json({ data: { ok: false, error: "Invalid request" } }, 400);
+        if (!parsed.success) return c.json({ data: { ok: false, error: { message: "Invalid request" } } }, 400);
 
         const { event, data } = parsed.data;
 
@@ -254,12 +254,12 @@ export class PluvPlatform<
                     return c.json({ data: { ok: true, room } }, 200);
                 }
                 default:
-                    return c.json({ data: { ok: false, error: "Unknown event" } }, 400);
+                    return c.json({ data: { ok: false, error: { message: "Unknown event" } } }, 400);
             }
         } catch (err) {
-            if (err instanceof Error) return c.json({ data: { ok: false, error: err.message } });
+            if (err instanceof Error) return c.json({ data: { ok: false, error: { message: err.message } } });
 
-            return c.json({ data: { ok: false, error: "Unexpected error" } });
+            return c.json({ data: { ok: false, error: { message: "Unexpected error" } } });
         }
     });
 }
