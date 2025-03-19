@@ -14,7 +14,7 @@ import { Hono } from "hono";
 import type { BlankEnv, BlankInput } from "hono/types";
 import { SIGNATURE_ALGORITHM, SIGNATURE_HEADER } from "./constants";
 import { ZodEvent } from "./schemas";
-import { verifyWebhook } from "./shared";
+import { createErrorResponse, createSuccessResponse, HttpError, verifyWebhook } from "./shared";
 import type { PluvIOEndpoints, PluvIOListeners } from "./types";
 
 export interface PluvPlatformConfig<TContext extends Record<string, any> = {}> {
@@ -194,29 +194,29 @@ export class PluvPlatform<
     private _webhooksRouter = new Hono().basePath("/").post("/", async (c: Context<BlankEnv, "/", BlankInput>) => {
         const [algorithm, signature] = c.req.header(SIGNATURE_HEADER)?.split("=") ?? [];
 
-        if (!this._webhookSecret) return c.json({ error: { message: "Unauthorized" } }, 401);
-        if (algorithm !== SIGNATURE_ALGORITHM) return c.json({ error: { message: "Unauthorized" } }, 401);
-        if (!signature) return c.json({ error: { message: "Unauthorized" } }, 401);
-
-        const payload = await c.req.json();
-
-        const verified = await verifyWebhook({
-            payload: stringify(payload),
-            signature,
-            secret: this._webhookSecret,
-        });
-
-        if (!verified) return c.json({ error: { message: "Unauthorized" } }, 401);
-
-        const parsed = ZodEvent.safeParse(payload);
-
-        if (!parsed.success) return c.json({ data: { ok: false, error: { message: "Invalid request" } } }, 400);
-
-        const { event, data } = parsed.data;
-
-        const context = this._context;
-
         try {
+            if (!this._webhookSecret) throw new HttpError("Unauthorized", 401);
+            if (algorithm !== SIGNATURE_ALGORITHM) throw new HttpError("Unauthorized", 401);
+            if (!signature) throw new HttpError("Unauthorized", 401);
+
+            const payload = await c.req.json();
+
+            const verified = await verifyWebhook({
+                payload: stringify(payload),
+                signature,
+                secret: this._webhookSecret,
+            });
+
+            if (!verified) throw new HttpError("Unauthorized", 401);
+
+            const parsed = ZodEvent.safeParse(payload);
+
+            if (!parsed.success) throw new HttpError("Invalid request", 400);
+
+            const { event, data } = parsed.data;
+
+            const context = this._context;
+
             switch (event) {
                 case "initial-storage": {
                     const room = data.room;
@@ -225,7 +225,7 @@ export class PluvPlatform<
                             ? ((await this._getInitialStorage?.({ context, room })) ?? null)
                             : null;
 
-                    return c.json({ data: { ok: true, room, storage } }, 200);
+                    return createSuccessResponse(c, { event, room, storage });
                 }
                 case "room-deleted": {
                     const room = data.room;
@@ -233,7 +233,7 @@ export class PluvPlatform<
 
                     await Promise.resolve(this._listeners?.onRoomDeleted({ context, encodedState, room }));
 
-                    return c.json({ data: { ok: true, room } }, 200);
+                    return createSuccessResponse(c, { event, room });
                 }
                 case "user-connected": {
                     const room = data.room;
@@ -242,7 +242,7 @@ export class PluvPlatform<
 
                     await Promise.resolve(this._listeners?.onUserConnected({ context, encodedState, room, user }));
 
-                    return c.json({ data: { ok: true, room } }, 200);
+                    return createSuccessResponse(c, { event, room });
                 }
                 case "user-disconnected": {
                     const room = data.room;
@@ -251,15 +251,17 @@ export class PluvPlatform<
 
                     await Promise.resolve(this._listeners?.onUserDisconnected({ context, encodedState, room, user }));
 
-                    return c.json({ data: { ok: true, room } }, 200);
+                    return createSuccessResponse(c, { event, room });
                 }
-                default:
-                    return c.json({ data: { ok: false, error: { message: "Unknown event" } } }, 400);
+                default: {
+                    throw new HttpError("Unknown event", 400);
+                }
             }
-        } catch (err) {
-            if (err instanceof Error) return c.json({ data: { ok: false, error: { message: err.message } } });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Unexpected error";
+            const status = error instanceof HttpError ? error.status : 500;
 
-            return c.json({ data: { ok: false, error: { message: "Unexpected error" } } });
+            return createErrorResponse(c, { message }, status);
         }
     });
 }
