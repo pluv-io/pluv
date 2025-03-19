@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 0.38.9
+
+### Patch Changes
+
+- 9b3af07: Updated internal event handlers to return more meaningful status codes and room identifiers.
+  - @pluv/crdt@0.38.9
+  - @pluv/io@0.38.9
+  - @pluv/types@0.38.9
+
 ## 0.38.8
 
 ### Patch Changes
