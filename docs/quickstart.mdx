@@ -18,6 +18,7 @@ Learn how to quickly setup and get started with @pluv/io.
 | React-bindings for @pluv/client                         | Client   | npm install @pluv/react               |
 | Adapter for Node.js runtime                             | Server   | npm install @pluv/platform-node ws    |
 | Adapter for Cloudflare Workers runtime                  | Server   | npm install @pluv/platform-cloudflare |
+| Adapter for running on the pluv.io network              | Server   | npm install @pluv/platform-pluv       |
 | yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs yjs        |
 | loro CRDT                                               | Both     | npm install @pluv/crdt-loro loro-crdt |
 
@@ -29,15 +30,18 @@ Here is an example installation for [npm](https://www.npmjs.com/), assuming you 
 # For the server
 npm install @pluv/io @pluv/platform-node
 # Server peer-dependencies
-npm install ws zod
+npm install ws
 
 # For the client
 npm install @pluv/react
 # Client peer-dependencies
-npm install react react-dom zod
+npm install react react-dom zod @types/react @types/react-dom
 
-# If you want to use storage features, install your preferred CRDT
+# If you want to use storage features, install your preferred CRDT (yjs or loro)
 npm install @pluv/crdt-yjs yjs
+
+# Client + server peer dependencies
+npm install zod
 ```
 
 ## Defining a backend PluvIO instance
