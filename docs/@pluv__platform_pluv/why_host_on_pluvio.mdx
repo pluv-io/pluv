@@ -1,0 +1,46 @@
+---
+title: "Why Host on pluv.io"
+description: "Reasons for why you should host realtime on the pluv.io edge network"
+---
+
+# Why Host on pluv.io
+
+While [@pluv/io](https://www.npmjs.com/package/@pluv/io) is designed for self-hosting first on both [Node.js](https://nodejs.org/) and [Cloudflare Worker](https://workers.cloudflare.com/) runtimes, [pluv.io](/) also offers a managed, hosted service via the [@pluv/platform-pluv](https://www.npmjs.com/package/@pluv/io) library.
+
+## Why choose the pluv.io network
+
+Oddly enough, we actually recommend self-hosting pluv.io yourselves over using the pluv.io network, as it has been designed to be self-hosted easily. Still, below are some reasons why you may want to choose the pluv.io network instead:
+
+### Fully-hosted solution
+
+As pluv.io is a fully-hosted, managed solution, you no longer have to manage nor monitor your own WebSocket servers so you can focus on building for your users.
+
+### Scale and performance
+
+Built on top of [Cloudflare Workers](https://workers.cloudflare.com/) via the [@pluv/platform-cloudflare](https://www.npmjs.com/package/@pluv/platform-cloudflare) package, your project can create as many rooms as needed on a globally distributed edge network.
+
+### Usage monitoring
+
+Gain insights on how your users use your app by [creating custom events](/docs/react/custom-events) and monitoring how often each get called.
+
+### No vendor lock-in
+
+Switch to self-hosting pluv.io anytime; `@pluv/platform-pluv` does not introduce any platform-specific APIs, allowing you to migrate off the pluv.io network with minimal code changes.
+
+### Support ongoing development
+
+pluv.io is open-source and non VC-funded. Help support ongoing development by letting pluv.io host your realtime servers on your behalf.
+
+## Why not the pluv.io network
+
+### Typesafe server events
+
+Due to limitations of Cloudflare Worker [Durable Objects](https://www.cloudflare.com/developer-platform/products/durable-objects/), typesafe server events are not supported when using `@pluv/platform-pluv`. This feature requires control of the deployed server, which means pluv.io must be self-hosted to use these.
+
+### Per-message server event listener
+
+When using `@pluv/platform-pluv`, server event listeners work via webhooks. In order not to flood your server with too many requests, `onRoomMessage` is only supported when `@pluv/io` is self-hosted.
+
+### Simple self-hosting
+
+Take control of your own WebSocket server to achieve even more customizability at a lower cost. Hosting `@pluv/io` is incredibly simple, as it was designed for self-hosting first with instructions for [Node.js](/docs/platform-node/hosting-on-nodejs) and [Cloudflare](/docs/platform-cloudflare/hosting-on-cloudflare).
