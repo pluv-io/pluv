@@ -49,6 +49,10 @@ To connect to the pluv.io network, you will need to create a secret key. Both th
 
 <img width="80%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/master/assets/create_api_keys.png" alt="Create project from the sidebar" loading="lazy" />
 
+### Project Webhooks
+
+On `@pluv/platform-pluv`, server event listeners (i.e. `getInitialStorage`, `onRoomDeleted`, `onUserConnected` and `onUserDisconnected`) are webhooks that requite a webhook secret key to use. To create this, navigate to the **Webhooks** page, from the sidebar of the project dashboard, and click on the **Create webhook** button. Note that the endpoint must be publicly accessable (i.e. not localhost), so we recommend using [Ngrok](https://ngrok.com/) or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) for testing.
+
 ## Setting up pluv.io on Next.js
 
 Let's step through how we'd put together a real-time API for Next.js and connect to the pluv.io end-to-end.
