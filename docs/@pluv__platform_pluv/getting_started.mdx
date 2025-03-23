@@ -18,7 +18,7 @@ Here is the example installation for [npm](https://www.npmjs.com/).
 npm install @pluv/io @pluv/platform-pluv
 
 # For the client
-npm install @pluv/react
+npm install @pluv/client @pluv/react
 # Client peer-dependencies
 npm install react react-dom zod @types/react @types/react-dom
 
@@ -47,11 +47,17 @@ When creating a project, you can set the project's CRDT to either use [yjs](http
 
 To connect to the pluv.io network, you will need to create a secret key. Both the secret and publishable keys must be copied and saved as environment variables for your app.
 
-<img width="80%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/master/assets/create_api_keys.png" alt="Create project from the sidebar" loading="lazy" />
+<img width="80%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/master/assets/create_api_keys.png" alt="Create api key" loading="lazy" />
 
 ### Project Webhooks
 
-On `@pluv/platform-pluv`, server event listeners (i.e. `getInitialStorage`, `onRoomDeleted`, `onUserConnected` and `onUserDisconnected`) are webhooks that requite a webhook secret key to use. To create this, navigate to the **Webhooks** page, from the sidebar of the project dashboard, and click on the **Create webhook** button. Note that the endpoint must be publicly accessable (i.e. not localhost), so we recommend using [Ngrok](https://ngrok.com/) or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) for testing.
+On `@pluv/platform-pluv`, server event listeners (i.e. `getInitialStorage`, `onRoomDeleted`, `onUserConnected` and `onUserDisconnected`) are webhooks that requite a webhook secret key to use. To create this, navigate to the **Webhooks** page, from the sidebar of the project dashboard, and click on the **Create webhook** button. This webhook secret key must be copied and saved as an environment variable for your app.
+
+<img width="80%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/master/assets/create_webhook_dashboard.png" alt="Create webhook dashboard" loading="lazy" />
+
+Note that the endpoint must be publicly accessable (i.e. not localhost), so we recommend using [Ngrok](https://ngrok.com/) or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) for testing.
+
+<img width="48%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/master/assets/create_webhook_dialog.png" alt="Create webhook dialog" loading="lazy" />
 
 ## Setting up pluv.io on Next.js
 
@@ -59,8 +65,10 @@ Let's step through how we'd put together a real-time API for Next.js and connect
 
 ### Defining a backend [PluvIO](/docs/io#PluvIO) instance
 
+Similar to how `@pluv/io` is initialized for Node.js and Cloudflare, `@pluv/platform-pluv` is passed into `createIO`, but with parameters for `publicKey`, `secretKey`, `webhookSecret` and `basePath`.
+
 ```ts
-// backend/io.ts
+// backend/pluv.ts
 
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
@@ -103,17 +111,75 @@ export const io = createIO(
 export const ioServer = io.server();
 ```
 
-### Setting up server events
+### Setting up authorization
+
+For `@pluv/platform-pluv` specifically, authorization is required unlike in the other platforms where it is optional. Setting this up is not any different between the other platforms. See [Authorization](/docs/io/authorization) for more detailed documentation.
 
 ```ts
-// backend/io.ts
+// app/api/auth/pluv/route.ts
+
+import { ioServer } from "./backend/pluv";
+
+// Example stub, possibly to get the current user from cookies
+import { getSession } from "./backend/auth";
+
+export const GET = async (request: Request) => {
+    const url = new URL(request.url);
+
+    const { session } = await getSession(request);
+
+    if (!session) {
+        // If authorization fails, return any non-200 status code
+        return new Response(
+            JSON.stringify({ error: "Unauthorized" }),
+            { status: 401 },
+        );
+    }
+
+    const room = url.searchParams.get("room");
+
+    // ... Implement your custom authorization here
+
+    const token = await ioServer.createToken({
+        room,
+        user: {
+            id: session.user.id,
+            user: session.user.name,
+        },
+    });
+
+    // If authorization succeeds, return the token as a text response with a
+    // 200 status code
+    return new Response(token, { status: 200 });
+};
+```
+
+### Enabling up server events
+
+In order to enable server event handlers on the `PluvServer`, `webhookSecret` must be provided to `createIO` and the `PluvServer.fetch` function must be set-up at the `basePath` endpoint.
+
+```ts
+// app/api/pluv/route.ts
+
+import { ioServer } from "./backend/pluv";
+
+export const GET = ioServer.fetch;
+export const POST = ioServer.fetch;
+```
+
+The example below consists of all 4 event handlers that are supported for `@pluv/platform-pluv`.
+
+```ts
+// backend/pluv.ts
 
 // ...
 
 export const ioServer = io.server({
+    // Optional: This handler is called when a room is created
     getInitialStorage: async ({ context, room }) => {
         const { db } = context;
 
+        // Mock example mirroring drizzle-orm
         const encodedState = await db
             .select({ encodedState: room.encodedState })
             .where(eq(room.name, room))
@@ -122,9 +188,12 @@ export const ioServer = io.server({
 
         return encodedState;
     },
+    // Optional: This handler is called when a room is destroyed.
+    // Rooms are destroyed when they are empty (i.e. no more active connections)
     onRoomDeleted: async ({ context, encodedState, room }) => {
         const { db } = context;
 
+        // Mock example mirroring drizzle-orm
         const roomId = const existing = await db
             .select()
             .where(eq(room.name, room))
@@ -144,11 +213,60 @@ export const ioServer = io.server({
             .where(eq(room.id, roomId))
             .set({ encodedState });
     },
+    // Optional: This handler is called after a new connection is established
     onUserConnected: async ({ context, encodedState, room, user }) => {
         // ...
     },
+    // Optional: This handler is called after a connection is closed
     onUserDisconnected: async ({ context, encodedState, room, user }) => {
         // ...
     },
 });
+```
+
+### Create the client bundle
+
+```ts
+// frontend/pluv.ts
+
+"use client";
+
+import { createClient } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
+import { createBundle, infer } from "@pluv/react";
+
+// Use a type-import, since this will be used on the frontend
+import type { ioServer } from "./backend/pluv";
+
+// Create `types` outside of `createClient` due to TypeScript inference
+// limitations
+const types = infer((i) => ({ io: i<typeof ioServer> }));
+
+// Note that the `wsEndpoint` param is omitted when using `@pluv/platform-pluv`
+export const client = createClient({
+    types,
+    // Wherever your auth endpoint was
+    authEndpoint: ({ room }) => `/api/auth/pluv?room=${room}`,
+    publicKey: process.env.PLUV_PUBLISHABLE_KEY!,
+});
+
+// Destructure the bundle, as the app router will not allow accessing
+// properties of objects within server components (e.g. you are unable to write
+// pluv.PluvRoomProvider in a layout that is a server component)
+export const {
+    PluvProvider,
+    PluvRoomProvider,
+
+    useStorage,
+    useMyself,
+    useOthers,
+    useRoom,
+    useTransact,
+
+    // ... Other values as needed
+
+    // Alternatively for things that will only be used in client components
+    // (i.e. not server components)
+    ...pluv,
+} = createBundle(client);
 ```
