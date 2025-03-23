@@ -54,7 +54,7 @@ import { io } from "./io";
 const PORT = 3000;
 
 const app = express();
-const server = Http.createServer();
+const server = Http.createServer(app);
 
 app.get("/api/authorize", async (req, res) => {
     const room = req.query.room as string;
@@ -133,7 +133,7 @@ import { io, ioServer } from "./io";
 const PORT = 3000;
 
 const app = express();
-const server = Http.createServer();
+const server = Http.createServer(app);
 const wsServer = new WebSocket.Server({ server });
 
 const parseRoomId = (url: string): string => {

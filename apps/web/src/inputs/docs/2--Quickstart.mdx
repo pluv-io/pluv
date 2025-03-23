@@ -129,7 +129,7 @@ import { ioServer } from "./io";
 const PORT = 3000;
 
 const app = express();
-const server = Http.createServer();
+const server = Http.createServer(app);
 
 const Pluv = createPluvHandler({
     io: ioServer,
