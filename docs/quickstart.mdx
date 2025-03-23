@@ -33,7 +33,7 @@ npm install @pluv/io @pluv/platform-node
 npm install ws
 
 # For the client
-npm install @pluv/react
+npm install @pluv/client @pluv/react
 # Client peer-dependencies
 npm install react react-dom zod @types/react @types/react-dom
 
@@ -133,7 +133,7 @@ import { ioServer } from "./io";
 const PORT = 3000;
 
 const app = express();
-const server = Http.createServer();
+const server = Http.createServer(app);
 
 const Pluv = createPluvHandler({
     io: ioServer,

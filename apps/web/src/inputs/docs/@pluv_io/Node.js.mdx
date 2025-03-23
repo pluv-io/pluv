@@ -55,7 +55,7 @@ import { ioServer } from "./io";
 const PORT = 3000;
 
 const app = express();
-const server = Http.createServer();
+const server = Http.createServer(app);
 const wsServer = new WebSocket.Server({ server });
 
 const parseRoomId = (url: string): string => {

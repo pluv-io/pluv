@@ -36,8 +36,6 @@ export const io = createIO(
 );
 
 export const ioServer = io.server();
-
-export type AppPluvIO = typeof ioServer;
 ```
 
 ## Setup an authorization endpoint
@@ -49,19 +47,19 @@ To add custom authorization, you'll need to define an http endpoint to return a 
 
 import express from "express";
 import Http from "http";
-import { io } from "./io";
+import { ioServer } from "./io";
 
 const PORT = 3000;
 
 const app = express();
-const server = Http.createServer();
+const server = Http.createServer(app);
 
 app.get("/api/authorize", async (req, res) => {
     const room = req.query.room as string;
 
     // ... Implement your custom authorization here
 
-    const token = await io.createToken({
+    const token = await ioServer.createToken({
         req,
         room,
         user: {
@@ -86,9 +84,9 @@ Now that we have your endpoint defined, connect your frontend client to your aut
 // frontend/io.ts
 
 import { createClient } from "@pluv/react";
-import type { AppPluvIO } from "server/io";
+import type { ioServer } from "server/io";
 
-const client = createClient<AppPluvIO>({
+const client = createClient<typeof ioServer>({
     // Specify your auth endpoint here
     // Set to `true` if you have authorization on your io instance, and you
     // want to use the default of (room) => `/api/pluv/authorize?room=${room}`
@@ -104,9 +102,9 @@ const client = createClient<AppPluvIO>({
 // frontend/io.ts
 
 import { createClient } from "@pluv/react";
-import type { AppPluvIO } from "server/io";
+import type { ioServer } from "server/io";
 
-const client = createClient<AppPluvIO>({
+const client = createClient<typeof ioServer>({
     authEndpoint: ({ room }) => ({
         url: "/api/authorize",
         // You can use fetch options as well like so
@@ -133,7 +131,7 @@ import { io, ioServer } from "./io";
 const PORT = 3000;
 
 const app = express();
-const server = Http.createServer();
+const server = Http.createServer(app);
 const wsServer = new WebSocket.Server({ server });
 
 const parseRoomId = (url: string): string => {
