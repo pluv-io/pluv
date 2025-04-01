@@ -13,8 +13,8 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@types/react": "^19.0.11",
-		"react": "^19.0.0"
+		"@types/react": "^19.0.12",
+		"react": "^19.1.0"
 	},
 	"devDependencies": {
 		"@pluv-internal/typings": "workspace:^",
@@ -26,7 +26,7 @@
 		"@types/common-tags": "^1.8.4",
 		"@types/fs-extra": "^11.0.4",
 		"@types/glob": "^8.1.0",
-		"@types/node": "^22.13.10",
+		"@types/node": "^22.13.15",
 		"common-tags": "^1.8.2",
 		"dotenv-cli": "^8.0.0",
 		"eslint": "^8.57.1",
