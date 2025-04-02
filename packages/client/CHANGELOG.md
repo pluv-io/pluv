@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.38.10
+
+### Patch Changes
+
+- cadd963: Update the user's presence locally only via `PluvRoom.updateMyPresence` (i.e. do not update the user's own presence from WebSocket messages) to avoid update delays. This should fix some cases of "jitter" depending on network latecy.
+  - @pluv/crdt@0.38.10
+  - @pluv/types@0.38.10
+
 ## 0.38.9
 
 ### Patch Changes
