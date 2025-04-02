@@ -785,12 +785,14 @@ export class PluvRoom<
         const myPresence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
 
-        if (myself?.connectionId === connectionId) {
-            this._stateNotifier.subjects["my-presence"].next(myPresence);
-            this._stateNotifier.subjects["myself"].next(myself);
-
-            return;
-        }
+        /**
+         * !HACK
+         * @description We're going to have the user's own presence be patched only via local calls
+         * to this.updateMyPresence. So we'll not update the user's presence in this handler to
+         * avoid weird update delays to the user's own presence.
+         * @date April 2, 2025
+         */
+        if (myself?.connectionId === connectionId) return;
 
         const other = this._usersManager.getOther(connectionId);
         const others = this._usersManager.getOthers();
