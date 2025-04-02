@@ -8,7 +8,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@types/react": "^19.0.12",
+		"@types/react": "^19.1.0",
 		"react": "^19.1.0"
 	},
 	"devDependencies": {
