@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.38.11
+
+### Patch Changes
+
+- 5ac1aba: Fix the default `wsEndpoint` parameter (for when `@pluv/platform-pluv` is being used).
+  - @pluv/crdt@0.38.11
+  - @pluv/types@0.38.11
+
 ## 0.38.10
 
 ### Patch Changes
