@@ -747,7 +747,7 @@ export class PluvRoom<
     private _getWsEndpoint(room: string): string {
         switch (typeof this._endpoints.wsEndpoint) {
             case "undefined":
-                return !!this._getPublicKey() ? `https://rooms.pluv.io/${room}` : `/api/pluv/room/${room}`;
+                return !!this._getPublicKey() ? `wss://rooms.pluv.io/api/room/${room}` : `/api/pluv/room/${room}`;
             case "string":
                 return this._endpoints.wsEndpoint;
             default:
