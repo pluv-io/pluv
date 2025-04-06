@@ -21,7 +21,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250402.0",
+    "@cloudflare/workers-types": "^4.20250406.0",
     "@pluv/tsconfig": "workspace:^",
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-dynamic-import-vars": "^2.1.5",
@@ -34,7 +34,7 @@
     "rollup": "^4.39.0",
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-polyfills": "^0.2.1",
-    "typescript": "^5.8.2",
-    "wrangler": "^4.7.0"
+    "typescript": "^5.8.3",
+    "wrangler": "^4.7.2"
   }
 }
