@@ -50,6 +50,14 @@ const RECONNECT_TIMEOUT_MS = 30_000;
 const ORIGIN_INITIALIZED = "$initialized";
 const ORIGIN_STORAGE_UPDATED = "$storageUpdated";
 
+declare global {
+    var process: {
+        env: {
+            [key: string]: string | undefined;
+        };
+    };
+}
+
 export const DEFAULT_PLUV_CLIENT_ADDON = <
     TIO extends IOLike = IOLike,
     TMetadata extends JsonObject = {},
