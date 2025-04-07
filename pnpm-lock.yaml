@@ -49,8 +49,8 @@ importers:
         version: 3.24.2
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^4.20250406.0
-        version: 4.20250406.0
+        specifier: ^4.20250407.0
+        version: 4.20250407.0
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../../packages/tsconfig
@@ -92,7 +92,7 @@ importers:
         version: 5.8.3
       wrangler:
         specifier: ^4.7.2
-        version: 4.7.2(@cloudflare/workers-types@4.20250406.0)
+        version: 4.7.2(@cloudflare/workers-types@4.20250407.0)
 
   apps/storybook:
     dependencies:
@@ -1014,8 +1014,8 @@ importers:
         specifier: workspace:^
         version: link:../eslint-config-pluv
       loro-crdt:
-        specifier: ^1.5.0
-        version: 1.5.0
+        specifier: ^1.5.1
+        version: 1.5.1
       tsup:
         specifier: ^8.4.0
         version: 8.4.0(jiti@2.4.2)(postcss@8.5.3)(typescript@5.8.3)(yaml@2.7.0)
@@ -1147,8 +1147,8 @@ importers:
         version: link:../types
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^4.20250406.0
-        version: 4.20250406.0
+        specifier: ^4.20250407.0
+        version: 4.20250407.0
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
@@ -1212,8 +1212,8 @@ importers:
         version: 8.2.0
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^4.20250406.0
-        version: 4.20250406.0
+        specifier: ^4.20250407.0
+        version: 4.20250407.0
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
@@ -1482,8 +1482,8 @@ importers:
         specifier: ^5.6.0
         version: 5.6.0
       loro-crdt:
-        specifier: ^1.5.0
-        version: 1.5.0
+        specifier: ^1.5.1
+        version: 1.5.1
       ms:
         specifier: ^2.1.3
         version: 2.1.3
@@ -1510,8 +1510,8 @@ importers:
         version: 3.24.2
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^4.20250406.0
-        version: 4.20250406.0
+        specifier: ^4.20250407.0
+        version: 4.20250407.0
       '@playwright/test':
         specifier: ^1.51.1
         version: 1.51.1
@@ -1541,7 +1541,7 @@ importers:
         version: 5.8.3
       wrangler:
         specifier: ^4.7.2
-        version: 4.7.2(@cloudflare/workers-types@4.20250406.0)
+        version: 4.7.2(@cloudflare/workers-types@4.20250407.0)
 
 packages:
 
@@ -2265,8 +2265,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@cloudflare/workers-types@4.20250406.0':
-    resolution: {integrity: sha512-E42GP9oZFNOoykucfN9H9qaG3IeID6VMHc2zGjVuDYT2G55uESe56tstuGFYYwjMm36QeNob+ZryyiE92idFYA==}
+  '@cloudflare/workers-types@4.20250407.0':
+    resolution: {integrity: sha512-M6cB247uy32VzM/P4NpRSHNNTcPgTn+s31wBV7gD14hkA07jMGBYlEcAv1LOghLNGZ5AEvYxLxQCVSvkF7HNIw==}
 
   '@commitlint/config-validator@19.5.0':
     resolution: {integrity: sha512-CHtj92H5rdhKt17RmgALhfQt95VayrUo2tSqY9g2w+laAXyk7K/Ef6uPm9tn5qSIwSmrLjKaXK9eiNuxmQrDBw==}
@@ -7005,8 +7005,8 @@ packages:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
 
-  loro-crdt@1.5.0:
-    resolution: {integrity: sha512-Dgf1Ad1JgDWav2rfv6Hkj1vCqiyYEdaCs3UZBkZlOyVtkgky5kzWP2yjqL1lprxYcye/4GitF6P8gDGQRYU/xw==}
+  loro-crdt@1.5.1:
+    resolution: {integrity: sha512-Q7KEuzx/nS/pr8+pjyaz5xBxR7eUGAn42keoQ3j3JmgSW1APgWyjLFUbiahBjNm16+HQrde8By/0jCker7XBYQ==}
 
   loupe@3.1.3:
     resolution: {integrity: sha512-kkIp7XSkP78ZxJEsSxW3712C6teJVoeHHwgo9zJ380de7IYyJ2ISlxojcH2pC5OFLewESmnRi/+XCDIEEVyoug==}
@@ -10520,7 +10520,7 @@ snapshots:
   '@cloudflare/workerd-windows-64@1.20250404.0':
     optional: true
 
-  '@cloudflare/workers-types@4.20250406.0': {}
+  '@cloudflare/workers-types@4.20250407.0': {}
 
   '@commitlint/config-validator@19.5.0':
     dependencies:
@@ -15643,7 +15643,7 @@ snapshots:
     dependencies:
       js-tokens: 4.0.0
 
-  loro-crdt@1.5.0: {}
+  loro-crdt@1.5.1: {}
 
   loupe@3.1.3: {}
 
@@ -18590,7 +18590,7 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20250404.0
       '@cloudflare/workerd-windows-64': 1.20250404.0
 
-  wrangler@4.7.2(@cloudflare/workers-types@4.20250406.0):
+  wrangler@4.7.2(@cloudflare/workers-types@4.20250407.0):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@cloudflare/unenv-preset': 2.3.1(unenv@2.0.0-rc.15)(workerd@1.20250404.0)
@@ -18601,7 +18601,7 @@ snapshots:
       unenv: 2.0.0-rc.15
       workerd: 1.20250404.0
     optionalDependencies:
-      '@cloudflare/workers-types': 4.20250406.0
+      '@cloudflare/workers-types': 4.20250407.0
       fsevents: 2.3.3
       sharp: 0.33.5
     transitivePeerDependencies:
