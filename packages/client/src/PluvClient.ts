@@ -78,7 +78,7 @@ export class PluvClient<
     public createRoom = <TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
         room: string,
         options: CreateRoomOptions<TIO, TPresence, TStorage, TMetadata, TEvents>,
-    ): PluvRoom<TIO, TMetadata, TPresence, TStorage> => {
+    ): PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents> => {
         const oldRoom = this.getRoom(room);
 
         if (oldRoom) return oldRoom;

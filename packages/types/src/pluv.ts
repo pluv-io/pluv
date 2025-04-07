@@ -153,7 +153,7 @@ export type InferEventMessage<TEvents = EventRecord<string, any>, TEvent extends
         : never;
 
 export type IOEventMessage<
-    TIO extends IOLike<any>,
+    TIO extends IOLike<any, any>,
     TEvent extends keyof InferIOOutput<TIO> = keyof InferIOOutput<TIO>,
 > = Id<
     { room: string } & InferEventMessage<InferIOOutput<TIO>, TEvent> &
