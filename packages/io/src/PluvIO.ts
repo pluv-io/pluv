@@ -115,7 +115,7 @@ export class PluvIO<
         return new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>(events);
     }
 
-    public server<TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>>(
+    public server<TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {}>(
         config: ServerConfig<TPlatform, TAuthorize, TContext, TEvents> = {} as ServerConfig<
             TPlatform,
             TAuthorize,
