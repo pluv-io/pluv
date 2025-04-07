@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.38.12
+
+### Patch Changes
+
+- b617726: Fix broken type narrowing for `PluvRoom.event` and `PluvRoom.broadcast`.
+  - @pluv/crdt@0.38.12
+  - @pluv/types@0.38.12
+
 ## 0.38.11
 
 ### Patch Changes
