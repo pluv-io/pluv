@@ -61,14 +61,6 @@ export const DEFAULT_PLUV_CLIENT_ADDON = <
     storage: new StorageStore(input.room.id),
 });
 
-declare global {
-    var process: {
-        env: {
-            [key: string]: string | undefined;
-        };
-    };
-}
-
 interface WindowListeners {
     onNavigatorOnline: () => void;
     onVisibilityChange: () => void;
@@ -237,7 +229,10 @@ export class PluvRoom<
         this._listeners = {
             onAuthorizationFail: (error) => {
                 this._clearTimeout(this._timeouts.reconnect);
-                this._timeouts.reconnect = setTimeout(this._reconnect.bind(this), RECONNECT_TIMEOUT_MS);
+                this._timeouts.reconnect = setTimeout(
+                    this._reconnect.bind(this),
+                    RECONNECT_TIMEOUT_MS,
+                ) as unknown as number;
 
                 onAuthorizationFail?.(error);
             },
@@ -312,7 +307,9 @@ export class PluvRoom<
         event: TEvent,
         data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
     ) => Promise<void>) & {
-        [event in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[event]>) => Promise<void>;
+        [PEvent in keyof InferIOInput<MergeEvents<TEvents, TIO>>]: (
+            data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[PEvent]>,
+        ) => Promise<void>;
     };
 
     public canRedo = (): boolean => {
@@ -417,8 +414,8 @@ export class PluvRoom<
         event: TEvent,
         callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, TEvent>,
     ) => () => void) & {
-        [event in keyof InferIOOutput<MergeEvents<TEvents, TIO>>]: (
-            callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
+        [PEvent in keyof InferIOOutput<MergeEvents<TEvents, TIO>>]: (
+            callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, PEvent>,
         ) => () => void;
     };
 
@@ -954,7 +951,7 @@ export class PluvRoom<
 
     private _heartbeat(): void {
         this._clearTimeout(this._timeouts.pong);
-        this._timeouts.pong = setTimeout(this._reconnect.bind(this), PONG_TIMEOUT_MS);
+        this._timeouts.pong = setTimeout(this._reconnect.bind(this), PONG_TIMEOUT_MS) as unknown as number;
 
         /**
          * !HACK
@@ -967,7 +964,7 @@ export class PluvRoom<
 
     private _logDebug(...data: any[]): void {
         // eslint-disable-next-line turbo/no-undeclared-env-vars
-        if (process?.env?.NODE_ENV === "production") return;
+        if ((process as unknown as any)?.env?.NODE_ENV === "production") return;
 
         this._debug && console.log(...data);
     }
@@ -1108,7 +1105,7 @@ export class PluvRoom<
         });
 
         this._clearInterval(this._intervals.heartbeat);
-        this._intervals.heartbeat = setInterval(this._heartbeat.bind(this), HEARTBEAT_INTERVAL_MS);
+        this._intervals.heartbeat = setInterval(this._heartbeat.bind(this), HEARTBEAT_INTERVAL_MS) as unknown as number;
     }
 
     private async _onNavigatorOnline(): Promise<void> {
