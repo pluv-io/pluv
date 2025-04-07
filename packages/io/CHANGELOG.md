@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.38.13
+
+### Patch Changes
+
+- 809afd3: Fix generic type default for router events.
+  - @pluv/crdt@0.38.13
+  - @pluv/types@0.38.13
+
 ## 0.38.12
 
 ### Patch Changes
