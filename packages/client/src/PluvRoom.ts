@@ -785,9 +785,6 @@ export class PluvRoom<
 
         const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$presenceUpdated"];
 
-        this._usersManager.patchPresence(connectionId, data.presence as TPresence);
-
-        const myPresence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
 
         /**
@@ -798,6 +795,8 @@ export class PluvRoom<
          * @date April 2, 2025
          */
         if (myself?.connectionId === connectionId) return;
+
+        this._usersManager.patchPresence(connectionId, data.presence as TPresence);
 
         const other = this._usersManager.getOther(connectionId);
         const others = this._usersManager.getOthers();
