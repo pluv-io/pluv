@@ -71,10 +71,10 @@
 		"concurrently": "^9.1.2",
 		"eslint": "^8.57.1",
 		"eslint-config-pluv": "workspace:^",
-		"miniflare": "^4.20250404.0",
+		"miniflare": "^4.20250405.0",
 		"prisma": "^6.5.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.8.3",
-		"wrangler": "^4.7.2"
+		"wrangler": "^4.8.0"
 	}
 }
