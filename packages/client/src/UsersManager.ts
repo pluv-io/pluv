@@ -52,13 +52,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
 
     public patchPresence(connectionId: string, patch: Partial<TPresence>): void {
         if (this._myself?.connectionId === connectionId) {
-            const presence = {
-                ...this._myPresence,
-                ...patch,
-            } as TPresence;
-
-            this._myself.presence = presence;
-            this._myPresence = presence;
+            this.updateMyPresence(patch);
 
             return;
         }
@@ -135,8 +129,8 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
     /**
      * @description This method need not care about being connected.
      */
-    public updateMyPresence(presence: Partial<TPresence>): void {
-        this._myPresence = { ...this._myPresence, ...presence };
+    public updateMyPresence(patch: Partial<TPresence>): void {
+        this._myPresence = { ...this._myPresence, ...patch };
 
         if (!this._myself) return;
 
