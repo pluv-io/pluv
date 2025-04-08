@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.38.14
+
+### Patch Changes
+
+- 886a1f9: Fix cases where the user's own presence was getting updated excessively, and without re-triggering subscriptions.
+  - @pluv/crdt@0.38.14
+  - @pluv/types@0.38.14
+
 ## 0.38.13
 
 ### Patch Changes
