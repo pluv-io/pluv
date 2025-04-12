@@ -2,6 +2,8 @@
 	"name": "@pluv-tests/e2e",
 	"version": "0.0.0",
 	"main": "./index.js",
+	"sideEffects": false,
+	"private": true,
 	"scripts": {
 		"dev": "concurrently \"pnpm:dev:client\" \"pnpm:dev:noop:server:node\" \"pnpm:dev:yjs:server:cloudflare\" \"pnpm:dev:yjs:server:node\" \"pnpm:dev:yjs:server:node-redis\"",
 		"dev:client": "next dev --port 3100",
@@ -23,9 +25,7 @@
 		"test:yjs:node-redis": "playwright test ./src/tests/yjs/node-redis/**/*",
 		"tsc:check": "tsc --noEmit"
 	},
-	"private": true,
 	"dependencies": {
-		"@pluv-internal/react-hooks": "workspace:^",
 		"@pluv/addon-indexeddb": "workspace:^",
 		"@pluv/client": "workspace:^",
 		"@pluv/crdt-loro": "workspace:^",

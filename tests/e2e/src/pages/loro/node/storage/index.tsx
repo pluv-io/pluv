@@ -1,8 +1,8 @@
-import { useNoSsr } from "@pluv-internal/react-hooks";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { StorageRoom } from "../../../../components/loro/node";
+import { useNoSsr } from "../../../../hooks/useNoSsr";
 import { PluvRoomProvider } from "../../../../pluv-io/loro/node";
 
 export const Page: NextPage = () => {

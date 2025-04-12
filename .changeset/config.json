@@ -9,7 +9,6 @@
   "updateInternalDependencies": "patch",
   "ignore": [
     "@pluv-apps/*",
-    "@pluv-internal/*",
     "@pluv-tests/*"
   ]
 }
