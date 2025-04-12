@@ -8,7 +8,7 @@ module.exports = {
             presets: [require.resolve("next/babel")],
         },
     },
-    plugins: ["prettier", "tailwindcss"],
+    plugins: ["prettier"],
     rules: {
         "@next/next/no-html-link-for-pages": "off",
         "prettier/prettier": ["warn", { printWidth: 120, tabWidth: 4 }],
