@@ -1,8 +1,4 @@
 packages:
-  - "apps/server-cloudflare"
-  - "apps/storybook"
-  - "apps/web"
-
   - "packages/addon-indexeddb"
   - "packages/cli"
   - "packages/client"
@@ -20,15 +16,5 @@ packages:
   - "packages/react"
   - "packages/tsconfig"
   - "packages/types"
-
-  - "internal/cloudflare-utils"
-  - "internal/mdx-components"
-  - "internal/react-components"
-  - "internal/react-hooks"
-  - "internal/react-icons"
-  - "internal/remark-plugins"
-  - "internal/tailwind-config"
-  - "internal/typings"
-  - "internal/utils"
 
   - "tests/e2e"
