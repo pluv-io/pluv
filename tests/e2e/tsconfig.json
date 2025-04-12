@@ -7,7 +7,6 @@
         "declaration": false,
         "declarationMap": false,
         "paths": {
-            "@pluv-internal/react-hooks": ["../../internal/react-hooks/src"],
             "@pluv/addon-indexeddb": ["../../packages/addon-indexeddb/dist"],
 			"@pluv/client": ["../../packages/client/dist"],
             "@pluv/crdt-yjs": ["../../packages/crdt-yjs/dist"],
