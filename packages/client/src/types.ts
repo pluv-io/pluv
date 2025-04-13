@@ -79,3 +79,7 @@ export interface WebSocketState<TIO extends IOLike> {
     connection: WebSocketConnection;
     webSocket: WebSocket | null;
 }
+
+export type WithMetadata<TMetadata extends JsonObject = {}> = keyof TMetadata extends never
+    ? { metadata?: undefined }
+    : { metadata: TMetadata };
