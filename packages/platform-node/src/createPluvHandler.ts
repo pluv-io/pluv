@@ -25,17 +25,17 @@ export type CreatePluvHandlerConfig<TPluvServer extends PluvServer<any, any, any
 
 const handle = (ws: WebSocket) => ({
     invalidEndpoint: () => {
-        ws.close(1011, "Invalid WebSocket endpoint");
+        ws.close(1003, "Invalid WebSocket endpoint");
 
         return { matched: false };
     },
     invalidRoom: () => {
-        ws.close(1011, "Invalid room name");
+        ws.close(1003, "Invalid room name");
 
         return { matched: true };
     },
     invalidToken: () => {
-        ws.close(1011, "Invalid authentication token");
+        ws.close(1003, "Invalid authentication token");
 
         return { matched: true };
     },
