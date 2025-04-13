@@ -663,6 +663,7 @@ export class IORoom<
             };
 
             if (pluvWs.state.quit) {
+                this._exitWebsocket(pluvWs).catch(() => null);
                 pluvWs.close(1011, "WebSocket broken.");
 
                 return;
