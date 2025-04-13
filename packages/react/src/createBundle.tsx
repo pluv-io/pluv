@@ -165,9 +165,7 @@ export const createBundle = <
      */
     const PluvRoomContext = createContext<AbstractRoom<TIO, TPresence, TStorage>>(null as any);
 
-    const MockedRoomContext = createContext<{
-        room: AbstractRoom<TIO, TPresence, TStorage> | null;
-    }>({ room: null });
+    const MockedRoomContext = createContext<AbstractRoom<TIO, TPresence, TStorage> | null>(null);
 
     const MockedRoomProvider = memo<MockedRoomProviderProps<TIO, TPresence, TStorage>>((props) => {
         const { children, events, initialPresence, initialStorage, room: _room } = props;
@@ -184,7 +182,7 @@ export const createBundle = <
         });
 
         return (
-            <MockedRoomContext.Provider value={{ room }}>
+            <MockedRoomContext.Provider value={room}>
                 <PluvRoomContext.Provider value={room}>{children}</PluvRoomContext.Provider>
             </MockedRoomContext.Provider>
         );
@@ -196,7 +194,7 @@ export const createBundle = <
         const { children, debug, initialPresence, initialStorage, metadata, onAuthorizationFail, room: _room } = props;
 
         const rerender = useRerender();
-        const { room: mockedRoom } = useContext(MockedRoomContext);
+        const mockedRoom = useContext(MockedRoomContext);
 
         const [room] = useState<PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents>>(() => {
             return client.createRoom(_room, {
