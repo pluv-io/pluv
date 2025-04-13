@@ -100,7 +100,7 @@ export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
         this.webSocket.send(message);
     }
 
-    public terminate(): void {
-        return this.webSocket.close(1011, "Terminated");
+    public terminate(code: number = 1011): void {
+        return this.webSocket.close(code, "Terminated");
     }
 }

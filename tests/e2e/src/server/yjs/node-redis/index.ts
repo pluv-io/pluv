@@ -77,18 +77,18 @@ const getRoom2 = (roomId: string): ReturnType<typeof ioServer2nd.createRoom> => 
 wsServer.on("connection", async (ws, req) => {
     const url = req.url;
 
-    if (!url) return ws.close(1011, "Invalid WebSocket endpoint");
+    if (!url) return ws.close(1003, "Invalid WebSocket endpoint");
 
     const parsed = Url.parse(url, true);
     const matcher = match<{ rest: string[] }>("/api/room/*rest");
     const matched = matcher(parsed.pathname!);
 
-    if (!matched) return ws.close(1011, "Invalid WebSocket endpoint");
+    if (!matched) return ws.close(1003, "Invalid WebSocket endpoint");
 
     const { rest } = matched.params;
     const [roomId] = rest;
 
-    if (!roomId) return ws.close(1011, "Invalid room name");
+    if (!roomId) return ws.close(1003, "Invalid room name");
 
     const token = parsed.query?.token as string | undefined;
     const io = parsed.query?.io as string | undefined;
