@@ -5,6 +5,17 @@ import eslintPluginPrettier from "eslint-plugin-prettier";
 import turboPlugin from "eslint-plugin-turbo";
 import tsEslint from "typescript-eslint";
 
+export const overrides = {
+  // Override specific rules
+  rules: {
+    "@typescript-eslint/no-empty-object-type": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unnecessary-type-constraint": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "no-extra-boolean-cast": "off",
+  },
+};
+
 /**
  * A shared ESLint configuration for the repository.
  *
@@ -27,15 +38,6 @@ export const config = [
       "prettier/prettier": ["warn", { printWidth: 120, tabWidth: 4 }],
     },
   },
-  {
-    // Override specific rules
-    rules: {
-      "@typescript-eslint/no-empty-object-type": "off",
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unnecessary-type-constraint": "off",
-      "@typescript-eslint/no-unused-vars": "off",
-      "no-extra-boolean-cast": "off",
-    },
-  },
+  overrides,
   { ignores: ["dist/**"] },
 ];
