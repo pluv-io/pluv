@@ -1,5 +1,73 @@
 # @pluv/client
 
+## 0.39.0
+
+### Minor Changes
+
+- e6ddddc: **BREAKING** Moved the `metadata` parameter from the constructor of `PluvRoom` to `PluvClient.connect`. The `metadata` parameter from the constructor of `PluvRoom` is now the validation schema for `metadata` passed through from `PluvClient`.
+
+  This should not be breaking for most users, as the recommended way to enter a room has always been via `PluvClient.enter(room)` (i.e. these are mostly internal-only changes).
+
+  ```ts
+  // Before
+  const room = new Room("my-room", { metadata: { hello: "world" } });
+
+  await room.connect();
+
+  // After
+  const room = new Room("my-room", {
+    metadata: z.object({ hello: z.string() }),
+  });
+
+  await room.connect({ metadata: { hello: "world" } });
+  ```
+
+- e6ddddc: **BREAKING** Moved the `metadata` parameter from `PluvClient.createRoom` to `PluvClient.enter`.
+
+  ```ts
+  // Before
+  const room = client.createRoom({
+    // ...
+    metadata: { hello: "world" },
+    // ...
+  });
+
+  client.enter(room);
+
+  // After
+  const room = client.createRoom({
+    // ...
+  });
+
+  client.enter(room, { metadata });
+  ```
+
+### Patch Changes
+
+- e6ddddc: Improved handling of polling-reconnects to `PluvRoom` after the websocket closes (depending on the close event's code).
+- 2cfb68d: Add the ability to configure the reconnect timeout (in milliseconds) for a `PluvRoom`, and lowered the default reconnect timeout from 30s to 5s. Values will be automatically clamped to between 1s and 60s.
+
+  ```ts
+  // Both of these are valid
+  const room = client.createRoom("my-room", {
+    // Set timeout to a fixed 10s
+    reconnectTimeoutMs: 10_000,
+  });
+
+  const room = client.createRoom("my-room", {
+    /**
+     * `attempts` is the count of failed reconnect attempts, starting from 0 on the first attempt.
+     * The returned value will be how long until the next attempt.
+     */
+    reconnectTimeoutMs: ({ attempts }) => {
+      return 10_000 + 1_000 * Math.pow(2, attempts);
+    },
+  });
+  ```
+
+  - @pluv/crdt@0.39.0
+  - @pluv/types@0.39.0
+
 ## 0.38.14
 
 ### Patch Changes
