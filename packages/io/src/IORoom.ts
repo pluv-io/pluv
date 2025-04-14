@@ -237,7 +237,6 @@ export class IORoom<
         /**
          * @description Doing this instead of .size because some sessions
          * in the map can be considered as "omitted".
-         * @author leedavidcs
          * @date December 21, 2022
          */
         return Array.from(this._sessions.values()).reduce((count, pluvWs) => {

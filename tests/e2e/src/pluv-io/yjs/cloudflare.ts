@@ -13,7 +13,7 @@ const client = createClient({
         messages: yjs.array([
             yjs.object({
                 message: "hello",
-                name: "leedavidcs",
+                name: "pluvrt",
             }),
         ]),
     })),
