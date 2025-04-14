@@ -13,7 +13,7 @@ const client = createClient({
         messages: loro.list([
             loro.object({
                 message: "hello",
-                name: "leedavidcs",
+                name: "pluvrt",
             }),
         ]),
     })),

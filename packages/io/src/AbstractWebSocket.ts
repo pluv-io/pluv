@@ -94,7 +94,6 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
      * method, because the implementing class might have to transform the
      * listener, and removing the same listener might be complicated as a
      * result.
-     * @author leedavidcs
      * @date August 28, 2022
      */
     public abstract addEventListener<TType extends EventType>(type: TType, handler: AbstractListener<TType>): void;

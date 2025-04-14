@@ -1084,7 +1084,6 @@ export class PluvRoom<
     /**
      * TODO
      * @description Handle websocket errors in a meaningful way, should they occur
-     * @author leedavidcs
      * @date August 19, 2022
      */
     private _onError(): void {}
@@ -1193,7 +1192,6 @@ export class PluvRoom<
         /**
          * !HACK
          * @description We'll only handle stringified JSONs for now
-         * @author leedavidcs
          * @date August 9, 2022
          */
         if (typeof message.data !== "string") return null;

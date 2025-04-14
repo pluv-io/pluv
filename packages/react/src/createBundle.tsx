@@ -162,7 +162,6 @@ export const createBundle = <
      * !HACK
      * @description We'll let the context error out if client is not provided,
      * and let the users deal with it.
-     * @author leedavidcs
      * @date October 27, 2022
      */
     const PluvContext = createContext<PluvClient<TIO, TPresence, TStorage, TMetadata>>(null as any);
@@ -171,7 +170,6 @@ export const createBundle = <
      * !HACK
      * @description We'll let the context error out if the room is not provided,
      * and let the users deal with it.
-     * @author leedavidcs
      * @date November 11, 2022
      */
     const PluvRoomContext = createContext<AbstractRoom<TIO, TPresence, TStorage>>(null as any);
