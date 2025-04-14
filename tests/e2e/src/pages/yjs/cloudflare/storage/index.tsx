@@ -37,7 +37,7 @@ export const Page: NextPage = () => {
             </button>
             <div>roomId: {roomId}</div>
             {enabled && (
-                <PluvRoomProvider debug initialPresence={{ count: 0 }} room={roomId}>
+                <PluvRoomProvider debug initialPresence={{ count: 0 }} metadata={{}} room={roomId}>
                     <StorageRoom />
                 </PluvRoomProvider>
             )}

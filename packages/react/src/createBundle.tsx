@@ -218,7 +218,7 @@ export const createBundle = <
         const resolvedMeta = useDeepAsyncMemo(async () => {
             const resolved = await Promise.resolve(typeof metadata === "function" ? metadata() : metadata);
 
-            return !!room.metadata ? room.metadata.parse(metadata) : resolved;
+            return !!room.metadata ? room.metadata.parse(resolved) : resolved;
         });
 
         const [room] = useState<PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents>>(() => {
