@@ -5,7 +5,6 @@
   "author": "leedavidcs",
   "license": "MIT",
   "type": "module",
-  "private": true,
   "homepage": "https://github.com/pluv-io/pluv",
   "exports": {
     "./base": "./base.js",
@@ -15,6 +14,9 @@
     "type": "git",
     "url": "git+https://github.com/pluv-io/pluv.git",
     "directory": "packages/eslint-config-pluv"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
