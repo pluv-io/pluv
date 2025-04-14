@@ -1,5 +1,6 @@
 import type { InferInitContextType, IORoom, PluvServer } from "@pluv/io";
 import type { BaseUser, Id, InferIOAuthorize, InferIOAuthorizeUser, Maybe, MaybePromise } from "@pluv/types";
+import { DurableObject as BaseDurableObject } from "cloudflare:workers";
 import { match } from "path-to-regexp";
 import { CloudflarePlatform } from "./CloudflarePlatform";
 
@@ -43,12 +44,12 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
 ): CreatePluvHandlerResult<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> => {
     const { authorize, binding, endpoint = "/api/pluv", modify, io } = config;
 
-    const DurableObject = class implements DurableObject {
-        private _env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>;
+    const DurableObject = class extends BaseDurableObject<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> {
         private _room: IORoom<CloudflarePlatform>;
 
         constructor(state: DurableObjectState, env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>) {
-            this._env = env;
+            super(state, env);
+
             this._room = io.createRoom(state.id.toString(), { env, state });
         }
 
@@ -85,7 +86,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
             const { 0: client, 1: server } = new WebSocketPair();
             const token = new URL(request.url).searchParams.get("token");
 
-            await this._room.register(server, { env: this._env, request, token });
+            await this._room.register(server, { env: this.env, request, token });
 
             return new Response(null, { status: 101, webSocket: client });
         }
