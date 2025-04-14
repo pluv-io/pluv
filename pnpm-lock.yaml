@@ -257,9 +257,6 @@ importers:
       eslint-config-prettier:
         specifier: ^10.1.2
         version: 10.1.2(eslint@9.24.0(jiti@2.4.2))
-      eslint-config-turbo:
-        specifier: ^2.5.0
-        version: 2.5.0(eslint@9.24.0(jiti@2.4.2))(turbo@2.5.0)
       eslint-plugin-only-warn:
         specifier: ^1.1.0
         version: 1.1.0
@@ -272,6 +269,9 @@ importers:
       eslint-plugin-react-hooks:
         specifier: ^5.2.0
         version: 5.2.0(eslint@9.24.0(jiti@2.4.2))
+      eslint-plugin-turbo:
+        specifier: ^2.5.0
+        version: 2.5.0(eslint@9.24.0(jiti@2.4.2))(turbo@2.5.0)
       globals:
         specifier: ^16.0.0
         version: 16.0.0
@@ -2799,12 +2799,6 @@ packages:
     hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
-
-  eslint-config-turbo@2.5.0:
-    resolution: {integrity: sha512-QJvZBEWDWQx1JyQCr0uwf4aQYhDSAGoHBdx+cPtpPzNEjZw16Ig8BglXxHZBh3I8/fI1U53cLgXwvb28BUZhPA==}
-    peerDependencies:
-      eslint: '>6.6.0'
-      turbo: '>2.0.0'
 
   eslint-plugin-only-warn@1.1.0:
     resolution: {integrity: sha512-2tktqUAT+Q3hCAU0iSf4xAN1k9zOpjK5WO8104mB0rT/dGhOa09582HN5HlbxNbPRZ0THV7nLGvzugcNOSjzfA==}
@@ -6764,12 +6758,6 @@ snapshots:
   eslint-config-prettier@10.1.2(eslint@9.24.0(jiti@2.4.2)):
     dependencies:
       eslint: 9.24.0(jiti@2.4.2)
-
-  eslint-config-turbo@2.5.0(eslint@9.24.0(jiti@2.4.2))(turbo@2.5.0):
-    dependencies:
-      eslint: 9.24.0(jiti@2.4.2)
-      eslint-plugin-turbo: 2.5.0(eslint@9.24.0(jiti@2.4.2))(turbo@2.5.0)
-      turbo: 2.5.0
 
   eslint-plugin-only-warn@1.1.0: {}
 

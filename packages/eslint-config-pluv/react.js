@@ -11,7 +11,7 @@ import { config as baseConfig } from "./base.js";
  *
  * @type {import("eslint").Linter.Config}
  * */
-export const nextJsConfig = [
+export const reactConfig = [
   ...baseConfig,
   js.configs.recommended,
   eslintConfigPrettier,
