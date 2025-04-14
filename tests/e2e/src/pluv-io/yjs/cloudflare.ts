@@ -6,8 +6,8 @@ import type { ioServer } from "../../server/yjs/cloudflare";
 
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = createClient({
-    authEndpoint: ({ room }) => {
-        return `http://localhost:3101/api/pluv/authorize?room=${room}`;
+    authEndpoint: ({ metadata, room }) => {
+        return `${metadata.authEndpoint}/api/pluv/authorize?room=${room}`;
     },
     initialStorage: yjs.doc(() => ({
         messages: yjs.array([
@@ -17,6 +17,9 @@ const client = createClient({
             }),
         ]),
     })),
+    metadata: z.object({
+        authEndpoint: z.string().default("http://localhost:3101"),
+    }),
     presence: z.object({
         count: z.number(),
     }),

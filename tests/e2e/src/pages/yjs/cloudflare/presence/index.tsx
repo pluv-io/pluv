@@ -37,7 +37,14 @@ export const Page: NextPage = () => {
             </button>
             <div>roomId: {roomId}</div>
             {enabled && (
-                <PluvRoomProvider debug initialPresence={{ count: 0 }} room={roomId}>
+                <PluvRoomProvider
+                    debug
+                    initialPresence={{ count: 0 }}
+                    metadata={() => ({
+                        authEndpoint: "http://localhost:3101",
+                    })}
+                    room={roomId}
+                >
                     <PresenceRoom />
                 </PluvRoomProvider>
             )}
