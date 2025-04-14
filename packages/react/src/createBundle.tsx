@@ -270,16 +270,10 @@ export const createBundle = <
             const resolved = resolvedMeta.value as TMetadata;
 
             queue.push(
-                client
-                    .enter(room, ...([{ metadata: resolved }] as EnterRoomParams<TMetadata>))
-                    .catch(async (error) => {
-                        console.error(error);
-
-                        await client.leave(room);
-                    })
-                    .catch(async (error) => {
-                        console.error(error);
-                    }),
+                client.enter(room, ...([{ metadata: resolved }] as EnterRoomParams<TMetadata>)).catch(async (error) => {
+                    console.error(error);
+                    await leaveRoom();
+                }),
             );
 
             return () => {
