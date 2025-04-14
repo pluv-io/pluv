@@ -1,5 +1,14 @@
 # @pluv/react
 
+## 0.39.1
+
+### Patch Changes
+
+- 36606b4: Fix `PluvRoomProvider` never connecting when `metadata` is a function.
+  - @pluv/client@0.39.1
+  - @pluv/crdt@0.39.1
+  - @pluv/types@0.39.1
+
 ## 0.39.0
 
 ### Minor Changes
