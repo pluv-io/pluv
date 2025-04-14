@@ -104,7 +104,17 @@ export const useDeepAsyncMemo = <T>(
         return () => {
             isMountedRef.current = false;
         };
-    }, [factory, isEqual]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        /**
+         * !HACK
+         * @description We're only going to use the `isEqual` function to determine if this hook
+         * should re-run. This is basically our hook's version of a dependency array
+         * @date April 13, 2025
+         */
+        // factory,
+        isEqual,
+    ]);
 
     return state;
 };
