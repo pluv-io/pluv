@@ -1,6 +1,7 @@
 import type {
     AbstractRoom,
     CreateRoomOptions,
+    EnterRoomParams,
     MergeEvents,
     MockedRoomEvents,
     PluvClient,
@@ -13,11 +14,18 @@ import type {
 } from "@pluv/client";
 import { MockedRoom, PluvRoom } from "@pluv/client";
 import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
-import type { Id, InferIOInput, InferIOOutput, IOEventMessage, IOLike, JsonObject } from "@pluv/types";
+import type { Id, InferIOInput, InferIOOutput, IOEventMessage, IOLike, JsonObject, MaybePromise } from "@pluv/types";
 import fastDeepEqual from "fast-deep-equal";
 import type { Dispatch, FC, ReactNode } from "react";
 import { createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { identity, shallowArrayEqual, useRerender, useSyncExternalStoreWithSelector } from "./internal";
+import {
+    identity,
+    shallowArrayEqual,
+    useAsyncQueue,
+    useDeepAsyncMemo,
+    useRerender,
+    useSyncExternalStoreWithSelector,
+} from "./internal";
 
 export interface PluvProviderProps {
     children?: ReactNode;
@@ -38,15 +46,18 @@ export type MockedRoomProviderProps<
     events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
 };
 
+export type MetadataGetter<TMetadata extends JsonObject> = TMetadata | (() => MaybePromise<TMetadata>);
+
 export type PluvRoomProviderProps<
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject,
     TPresence extends JsonObject,
     TStorage extends Record<string, CrdtType<any, any>>,
 > = BaseRoomProviderProps<TPresence, TStorage> & {
+    connect?: boolean;
     debug?: boolean | PluvRoomDebug<TIO>;
     onAuthorizationFail?: (error: Error) => void;
-} & (keyof TMetadata extends never ? { metadata?: undefined } : { metadata: TMetadata });
+} & (keyof TMetadata extends never ? { metadata?: undefined } : { metadata: MetadataGetter<TMetadata> });
 
 export interface SubscriptionHookOptions<T extends unknown> {
     isEqual?: (a: T, b: T) => boolean;
@@ -191,10 +202,26 @@ export const createBundle = <
     MockedRoomProvider.displayName = "MockedRoomProvider";
 
     const PluvRoomProvider = memo<PluvRoomProviderProps<TIO, TMetadata, TPresence, TStorage>>((props) => {
-        const { children, debug, initialPresence, initialStorage, metadata, onAuthorizationFail, room: _room } = props;
+        const {
+            children,
+            connect = true,
+            debug,
+            initialPresence,
+            initialStorage,
+            metadata,
+            onAuthorizationFail,
+            room: _room,
+        } = props;
 
+        const queue = useAsyncQueue();
         const rerender = useRerender();
         const mockedRoom = useContext(MockedRoomContext);
+
+        const resolvedMeta = useDeepAsyncMemo(async () => {
+            const resolved = await Promise.resolve(typeof metadata === "function" ? metadata() : metadata);
+
+            return !!room.metadata ? room.metadata.parse(metadata) : resolved;
+        });
 
         const [room] = useState<PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents>>(() => {
             return client.createRoom(_room, {
@@ -222,12 +249,43 @@ export const createBundle = <
         }, [rerender, room]);
 
         useEffect(() => {
-            client.enter(room);
+            const leaveRoom = async (): Promise<void> => {
+                await queue.push(
+                    client.leave(room).catch((error) => {
+                        console.error(error);
+                    }),
+                );
+            };
+
+            if (!connect) {
+                leaveRoom();
+                return;
+            }
+
+            if (!resolvedMeta.isInitialized) {
+                leaveRoom();
+                return;
+            }
+
+            const resolved = resolvedMeta.value as TMetadata;
+
+            queue.push(
+                client
+                    .enter(room, ...([{ metadata: resolved }] as EnterRoomParams<TMetadata>))
+                    .catch(async (error) => {
+                        console.error(error);
+
+                        await client.leave(room);
+                    })
+                    .catch(async (error) => {
+                        console.error(error);
+                    }),
+            );
 
             return () => {
-                client.leave(room);
+                leaveRoom();
             };
-        }, [room]);
+        }, [connect, queue, resolvedMeta.isInitialized, resolvedMeta.value, room]);
 
         return <PluvRoomContext.Provider value={mockedRoom ?? room}>{children}</PluvRoomContext.Provider>;
     });

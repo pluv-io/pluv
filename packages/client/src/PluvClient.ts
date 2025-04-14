@@ -2,11 +2,19 @@ import type { AbstractCrdtDocFactory, CrdtType } from "@pluv/crdt";
 import type { InputZodLike, IOLike, JsonObject } from "@pluv/types";
 import type { InferCallback } from "./infer";
 import { PluvProcedure } from "./PluvProcedure";
-import type { AuthEndpoint, PluvRoomAddon, PluvRoomDebug, RoomConfig, RoomEndpoints, WsEndpoint } from "./PluvRoom";
+import type {
+    AuthEndpoint,
+    RoomConnectParams,
+    PluvRoomAddon,
+    PluvRoomDebug,
+    RoomConfig,
+    RoomEndpoints,
+    WsEndpoint,
+} from "./PluvRoom";
 import { PluvRoom } from "./PluvRoom";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
-import type { PublicKey } from "./types";
+import type { PublicKey, WithMetadata } from "./types";
 
 export type PluvClientOptions<
     TIO extends IOLike<any, any>,
@@ -35,7 +43,11 @@ export type CreateRoomOptions<
     initialStorage?: AbstractCrdtDocFactory<TStorage>;
     onAuthorizationFail?: (error: Error) => void;
     router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
-} & (keyof TMetadata extends never ? { metadata?: undefined } : { metadata: TMetadata });
+};
+
+export type EnterRoomParams<TMetadata extends JsonObject = {}> = keyof TMetadata extends never
+    ? []
+    : [WithMetadata<TMetadata>];
 
 export class PluvClient<
     TIO extends IOLike<any, any>,
@@ -43,10 +55,11 @@ export class PluvClient<
     TStorage extends Record<string, CrdtType<any, any>> = {},
     TMetadata extends JsonObject = {},
 > {
+    public readonly metadata?: InputZodLike<TMetadata>;
+
     private readonly _authEndpoint: AuthEndpoint<TMetadata> | undefined;
     private readonly _debug: boolean;
     private readonly _initialStorage?: AbstractCrdtDocFactory<TStorage>;
-    private readonly _metadata?: InputZodLike<TMetadata>;
     private readonly _presence?: InputZodLike<TPresence>;
     private readonly _publicKey: PublicKey<TMetadata> | null = null;
     private readonly _rooms = new Map<string, PluvRoom<TIO, TMetadata, TPresence, TStorage, any>>();
@@ -65,10 +78,11 @@ export class PluvClient<
     constructor(options: PluvClientOptions<TIO, TPresence, TStorage, TMetadata>) {
         const { authEndpoint, debug = false, initialStorage, metadata, presence, publicKey, wsEndpoint } = options;
 
+        this.metadata = metadata;
+
         this._authEndpoint = authEndpoint as AuthEndpoint<TMetadata>;
         this._debug = debug;
         this._initialStorage = initialStorage;
-        this._metadata = metadata;
         this._presence = presence;
         this._wsEndpoint = wsEndpoint;
 
@@ -83,15 +97,13 @@ export class PluvClient<
 
         if (oldRoom) return oldRoom;
 
-        const metadata = this._metadata ? this._metadata.parse(options.metadata) : options.metadata;
-
         const newRoom = new PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents>(room, {
             addons: options.addons,
             authEndpoint: this._authEndpoint,
             debug: options.debug,
             initialPresence: options.initialPresence,
             initialStorage: this._initialStorage,
-            metadata,
+            metadata: this.metadata,
             onAuthorizationFail: options.onAuthorizationFail,
             presence: this._presence,
             publicKey: this._publicKey ?? undefined,
@@ -107,15 +119,15 @@ export class PluvClient<
     };
 
     public enter = async (
-        room: string | PluvRoom<TIO, any, any, any>,
+        room: string | PluvRoom<TIO, TMetadata, any, any, any>,
+        ...args: EnterRoomParams<TMetadata>
     ): Promise<PluvRoom<TIO, TMetadata, TPresence, TStorage, any>> => {
         const toEnter = typeof room === "string" ? this.getRoom(room) : room;
 
         if (!toEnter) throw new Error(`Could not find room: ${room}.`);
 
         this._rooms.set(toEnter.id, toEnter);
-
-        await toEnter.connect();
+        await toEnter.connect(...args);
 
         this._logDebug(`Entered room: ${room}`);
 

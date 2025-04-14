@@ -9,6 +9,7 @@ import type {
     MaybePromise,
 } from "@pluv/types";
 import type { ConnectionState } from "./enums";
+import type { PluvClient } from "./PluvClient";
 
 export interface AuthorizationState<TIO extends IOLike> {
     token: string | null;
@@ -33,6 +34,9 @@ export interface EventResolverContext<
     room: string;
     user: UserInfo<TIO, TPresence>;
 }
+
+export type InferMetadata<TClient extends PluvClient<any, any, any, any>> =
+    TClient extends PluvClient<any, any, any, infer IMetadata> ? IMetadata : never;
 
 export interface InternalSubscriptions {
     observeCrdt: (() => void) | null;
@@ -79,3 +83,7 @@ export interface WebSocketState<TIO extends IOLike> {
     connection: WebSocketConnection;
     webSocket: WebSocket | null;
 }
+
+export type WithMetadata<TMetadata extends JsonObject = {}> = keyof TMetadata extends never
+    ? { metadata?: undefined }
+    : { metadata: TMetadata };

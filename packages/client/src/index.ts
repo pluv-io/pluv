@@ -9,11 +9,18 @@ export type { InferCallback } from "./infer";
 export { MockedRoom } from "./MockedRoom";
 export type { MockedRoomConfig, MockedRoomEvents } from "./MockedRoom";
 export { PluvClient } from "./PluvClient";
-export type { CreateRoomOptions, PluvClientOptions } from "./PluvClient";
+export type { CreateRoomOptions, EnterRoomParams, PluvClientOptions } from "./PluvClient";
 export type { PluvProcedureConfig } from "./PluvProcedure";
 export { PluvRoom } from "./PluvRoom";
-export type { PluvRoomAddon, PluvRoomAddonInput, PluvRoomAddonResult, PluvRoomDebug, RoomEndpoints } from "./PluvRoom";
+export type {
+    PluvRoomAddon,
+    PluvRoomAddonInput,
+    PluvRoomAddonResult,
+    PluvRoomDebug,
+    RoomConnectParams,
+    RoomEndpoints,
+} from "./PluvRoom";
 export type { MergeEvents, PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 export { register } from "./register";
 export type { RegisterParams } from "./register";
-export type { PublicKey, PublicKeyParams, UserInfo, WebSocketConnection, WebSocketState } from "./types";
+export type { InferMetadata, PublicKey, PublicKeyParams, UserInfo, WebSocketConnection, WebSocketState } from "./types";

@@ -10,6 +10,7 @@ import type {
     InferIOAuthorizeUser,
     InferIOInput,
     InferIOOutput,
+    InputZodLike,
     JsonObject,
 } from "@pluv/types";
 import { AbstractRoom } from "./AbstractRoom";
@@ -40,6 +41,7 @@ import type {
     UserInfo,
     WebSocketConnection,
     WebSocketState,
+    WithMetadata,
 } from "./types";
 import { debounce } from "./utils";
 
@@ -69,7 +71,11 @@ export const DEFAULT_PLUV_CLIENT_ADDON = <
     storage: new StorageStore(input.room.id),
 });
 
+interface CloseWsOptions {
+    connectionState?: ConnectionState;
+}
 interface WindowListeners {
+    onNavigatorOffline: () => void;
     onNavigatorOnline: () => void;
     onVisibilityChange: () => void;
 }
@@ -137,6 +143,14 @@ export type PluvRoomDebug<TIO extends IOLike> = Id<{
     input: readonly (keyof InferIOInput<TIO>)[];
 }>;
 
+type GetPublickKeyParams<TMetadata extends JsonObject = {}> = WithMetadata<TMetadata>;
+type GetAuthEndpointParams<TMetadata extends JsonObject = {}> = WithMetadata<TMetadata>;
+type GetWsEndpointParams<TMetadata extends JsonObject = {}> = WithMetadata<TMetadata>;
+
+export type RoomConnectParams<TMetadata extends JsonObject = {}> = keyof TMetadata extends never
+    ? []
+    : [WithMetadata<TMetadata>];
+
 export type RoomConfig<
     TIO extends IOLike,
     TMetadata extends JsonObject = {},
@@ -148,12 +162,12 @@ export type RoomConfig<
         addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
         debug?: boolean | PluvRoomDebug<TIO>;
         onAuthorizationFail?: (error: Error) => void;
+        metadata?: InputZodLike<TMetadata>;
         publicKey?: PublicKey<TMetadata>;
         router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
     } & RoomEndpoints<TIO, TMetadata> &
         Pick<CrdtManagerOptions<TStorage>, "initialStorage"> &
-        UsersManagerConfig<TPresence> &
-        (keyof TMetadata extends never ? { metadata?: undefined } : { metadata: TMetadata })
+        UsersManagerConfig<TPresence>
 >;
 
 export class PluvRoom<
@@ -165,6 +179,8 @@ export class PluvRoom<
 > extends AbstractRoom<TIO, TPresence, TStorage> {
     readonly _endpoints: RoomEndpoints<TIO, TMetadata>;
 
+    public readonly metadata?: InputZodLike<TMetadata>;
+
     private readonly _crdtManager: CrdtManager<TStorage>;
     private readonly _crdtNotifier = new CrdtNotifier<TStorage>();
     private readonly _debug: boolean | PluvRoomDebug<TIO>;
@@ -173,7 +189,6 @@ export class PluvRoom<
         heartbeat: null,
     };
     private readonly _listeners: InternalListeners;
-    private readonly _metadata: TMetadata = {} as TMetadata;
     private readonly _otherNotifier = new OtherNotifier<TIO>();
     private readonly _publicKey: PublicKey<TMetadata> | null = null;
     private readonly _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
@@ -188,6 +203,7 @@ export class PluvRoom<
     };
     private readonly _usersManager: UsersManager<TIO, TPresence>;
 
+    private _lastMetadata: TMetadata | null = null;
     private _state: WebSocketState<TIO> = {
         authorization: {
             token: null,
@@ -227,21 +243,16 @@ export class PluvRoom<
             ...addon({ room: this }),
         };
 
+        this.metadata = metadata;
+
         this._debug = debug;
         this._endpoints = { authEndpoint, wsEndpoint } as RoomEndpoints<TIO, TMetadata>;
         this._storageStore = storage;
 
-        if (typeof metadata !== "undefined") this._metadata = metadata;
         if (!!publicKey) this._publicKey = publicKey;
 
         this._listeners = {
             onAuthorizationFail: (error) => {
-                this._clearTimeout(this._timeouts.reconnect);
-                this._timeouts.reconnect = setTimeout(
-                    this._reconnect.bind(this),
-                    RECONNECT_TIMEOUT_MS,
-                ) as unknown as number;
-
                 onAuthorizationFail?.(error);
             },
         };
@@ -328,10 +339,13 @@ export class PluvRoom<
         return !!this._crdtManager.doc.canUndo();
     };
 
-    public async connect(): Promise<void> {
-        if (!this._endpoints.wsEndpoint) {
-            throw new Error("Must provide an wsEndpoint.");
-        }
+    public async connect(...args: RoomConnectParams<TMetadata>): Promise<void> {
+        const params = (args[0] ?? {}) as WithMetadata<TMetadata>;
+        const metadata = params.metadata as TMetadata;
+
+        this._setMetadata(metadata);
+
+        if (!this._endpoints.wsEndpoint) throw new Error("Must provide a wsEndpoint.");
 
         const canConnect = [ConnectionState.Closed, ConnectionState.Untouched].some(
             (state) => this._state.connection.state === state,
@@ -340,7 +354,6 @@ export class PluvRoom<
         if (!canConnect) return;
 
         this._clearTimeout(this._timeouts.reconnect);
-
         this._updateState((oldState) => {
             oldState.connection.state = ConnectionState.Connecting;
 
@@ -350,15 +363,15 @@ export class PluvRoom<
         await this._storageStore.initialize();
         await this._applyStorageStore();
 
-        const url = new URL(this._getWsEndpoint(this.id));
+        const url = new URL(this._getWsEndpoint(this.id, params));
 
         let authToken: string | null = null;
         let webSocket: WebSocket;
 
         try {
-            const publicKey = this._getPublicKey();
+            const publicKey = this._getPublicKey(params);
 
-            authToken = await this._getAuthorization(this.id);
+            authToken = await this._getAuthorization(this.id, params);
 
             authToken && url.searchParams.set("token", encodeURIComponent(authToken));
             publicKey && url.searchParams.set("public_key", encodeURIComponent(publicKey));
@@ -366,8 +379,8 @@ export class PluvRoom<
             webSocket = new WebSocket(url.toString());
         } catch (err) {
             await this._storageStore.destroy();
-
-            this._onAuthorizationFail(err);
+            this._pollReconnect();
+            await Promise.resolve(this._onAuthorizationFail(err));
 
             return;
         }
@@ -384,10 +397,7 @@ export class PluvRoom<
     }
 
     public async disconnect(): Promise<void> {
-        if (!this._endpoints.wsEndpoint) {
-            throw new Error("Must provide an wsEndpoint.");
-        }
-
+        if (!this._endpoints.wsEndpoint) throw new Error("Must provide a wsEndpoint.");
         if (!this._state.webSocket) return;
 
         const canDisconnect = [ConnectionState.Connecting, ConnectionState.Open].some(
@@ -396,14 +406,19 @@ export class PluvRoom<
 
         if (!canDisconnect) return;
 
-        this._clearInterval(this._intervals.heartbeat);
-
         this._closeWs();
+        this._clearInterval(this._intervals.heartbeat);
+        this._clearTimeout(this._timeouts.reconnect);
+        this._updateState((oldState) => {
+            oldState.authorization.token = null;
+            oldState.connection.state = ConnectionState.Closed;
+            oldState.webSocket = null;
+
+            return oldState;
+        });
 
         await this._storageStore.destroy();
-
         this._crdtManager.destroy();
-
         this._stateNotifier.subjects["my-presence"].next(null);
     }
 
@@ -571,10 +586,12 @@ export class PluvRoom<
         if (typeof document === "undefined") return;
 
         this._windowListeners = {
+            onNavigatorOffline: this._onNavigatorOffline.bind(this),
             onNavigatorOnline: this._onNavigatorOnline.bind(this),
             onVisibilityChange: this._onVisibilityChange.bind(this),
         };
 
+        window.addEventListener("offline", this._windowListeners.onNavigatorOffline);
         window.addEventListener("online", this._windowListeners.onNavigatorOnline);
         document.addEventListener("visibilitychange", this._windowListeners.onVisibilityChange);
     }
@@ -608,26 +625,17 @@ export class PluvRoom<
     }
 
     private _closeWs(): void {
-        if (!this._state.webSocket) return;
-
         this._subscriptions.observeCrdt?.();
 
+        this._clearInterval(this._intervals.heartbeat);
         this._clearTimeout(this._timeouts.pong);
-        this._clearTimeout(this._timeouts.reconnect);
-
         this._detachWindowListeners();
-
         this._usersManager.removeMyself();
         this._usersManager.removeUsers();
         this._otherNotifier.clear();
         this._stateNotifier.subjects.myself.next(null);
         this._stateNotifier.subjects.others.next([]);
-
-        const canClose = [WebSocket.CONNECTING, WebSocket.OPEN].some(
-            (readyState) => readyState === this._state.webSocket?.readyState,
-        );
-
-        if (canClose) this._state.webSocket.close();
+        this._state.webSocket?.close();
 
         this._detachWsListeners();
     }
@@ -700,7 +708,9 @@ export class PluvRoom<
         );
     };
 
-    private _getAuthFetchOptions(room: string): FetchOptions | null {
+    private _getAuthFetchOptions(room: string, params: GetAuthEndpointParams<TMetadata>): FetchOptions | null {
+        const metadata = params.metadata as TMetadata;
+
         if (typeof this._endpoints.authEndpoint === "undefined") return null;
 
         if (this._endpoints.authEndpoint === true) {
@@ -717,23 +727,20 @@ export class PluvRoom<
             };
         }
 
-        const result = this._endpoints.authEndpoint({ metadata: this._metadata, room });
+        const result = this._endpoints.authEndpoint({ metadata, room });
 
         return typeof result === "string" ? { url: result, options: {} } : result;
     }
 
-    private async _getAuthorization(room: string): Promise<string | null> {
-        const fetchOptions = this._getAuthFetchOptions(room);
+    private async _getAuthorization(room: string, params: GetAuthEndpointParams<TMetadata>): Promise<string | null> {
+        const fetchOptions = this._getAuthFetchOptions(room, params);
 
         if (!fetchOptions) return null;
 
         const { url, options } = fetchOptions;
-
         const res = await fetch(url, options);
 
-        if (!res.ok || res.status !== 200) {
-            throw new Error("Room is unauthorized");
-        }
+        if (!res.ok || res.status !== 200) throw new Error("Room is unauthorized");
 
         try {
             return await res.text().then((text) => text.trim());
@@ -742,21 +749,25 @@ export class PluvRoom<
         }
     }
 
-    private _getPublicKey(): string | null {
+    private _getPublicKey(params: GetPublickKeyParams<TMetadata>): string | null {
+        const metadata = params.metadata as TMetadata;
+
         if (!this._publicKey) return null;
         if (typeof this._publicKey === "string") return this._publicKey;
 
-        return this._publicKey({ metadata: this._metadata });
+        return this._publicKey({ metadata });
     }
 
-    private _getWsEndpoint(room: string): string {
+    private _getWsEndpoint(room: string, params: GetWsEndpointParams<TMetadata>): string {
+        const metadata = params.metadata as TMetadata;
+
         switch (typeof this._endpoints.wsEndpoint) {
             case "undefined":
-                return !!this._getPublicKey() ? `wss://rooms.pluv.io/api/room/${room}` : `/api/pluv/room/${room}`;
+                return !!this._getPublicKey(params) ? `wss://rooms.pluv.io/api/room/${room}` : `/api/pluv/room/${room}`;
             case "string":
                 return this._endpoints.wsEndpoint;
             default:
-                return this._endpoints.wsEndpoint({ metadata: this._metadata, room });
+                return this._endpoints.wsEndpoint({ metadata, room });
         }
     }
 
@@ -1016,25 +1027,33 @@ export class PluvRoom<
         });
     }
 
-    /**
-     * TODO
-     * @description Determine if ws was closed with a code for closing without retries.
-     * Otherwise, attempt to retry again with incremental backoff
-     * @author leedavidcs
-     * @date August 19, 2022
-     */
     private async _onClose(event: CloseEvent): Promise<void> {
         this._logDebug("WebSocket closed");
         !!event.reason && this._logDebug(event.reason);
 
-        this._clearInterval(this._intervals.heartbeat);
-        this._clearTimeout(this._timeouts.pong);
+        const shouldRetry = [
+            // Going away: Client/server is shutting down or navigating
+            1001,
+            // Abnormal closure: Usually network error
+            1006,
+            // Internal error: may be a larger problem, but try reconnecting for now
+            1011,
+            // Service restart: Server restarted
+            1012,
+            // Try again later: server overloaded
+            1013,
+            // Bad gateway
+            1014,
+        ].some((okToRetryCode) => event.code === okToRetryCode);
 
-        this._stateNotifier.subjects["myself"].next(null);
+        this._closeWs();
+
+        if (!shouldRetry) this._clearTimeout(this._timeouts.reconnect);
+        else this._pollReconnect();
 
         this._updateState((oldState) => {
             oldState.authorization.token = null;
-            oldState.connection.state = ConnectionState.Closed;
+            oldState.connection.state = shouldRetry ? ConnectionState.Unavailable : ConnectionState.Closed;
             oldState.webSocket = null;
 
             return oldState;
@@ -1115,10 +1134,18 @@ export class PluvRoom<
         this._intervals.heartbeat = setInterval(this._heartbeat.bind(this), HEARTBEAT_INTERVAL_MS) as unknown as number;
     }
 
+    private async _onNavigatorOffline(): Promise<void> {
+        if (this._state.connection.state === ConnectionState.Closed) return;
+
+        this._updateState((oldState) => {
+            oldState.connection.state = ConnectionState.Unavailable;
+
+            return oldState;
+        });
+    }
+
     private async _onNavigatorOnline(): Promise<void> {
-        if (this._state.connection.state !== ConnectionState.Unavailable) {
-            return;
-        }
+        if (this._state.connection.state !== ConnectionState.Unavailable) return;
 
         await this._reconnect();
     }
@@ -1163,6 +1190,11 @@ export class PluvRoom<
         }
     }
 
+    private _pollReconnect(): void {
+        this._clearTimeout(this._timeouts.reconnect);
+        this._timeouts.reconnect = setTimeout(this._reconnect.bind(this), RECONNECT_TIMEOUT_MS) as unknown as number;
+    }
+
     private async _reconnect(): Promise<void> {
         if (!this._endpoints.wsEndpoint) {
             throw new Error("Must provide an wsEndpoint.");
@@ -1172,15 +1204,10 @@ export class PluvRoom<
 
         this._closeWs();
 
-        this._updateState((oldState) => {
-            oldState.authorization.token = null;
-            oldState.connection.state = ConnectionState.Closed;
-            oldState.webSocket = null;
+        const metadata = this._lastMetadata;
+        const params = (typeof metadata === "undefined" ? [] : [{ metadata }]) as RoomConnectParams<TMetadata>;
 
-            return oldState;
-        });
-
-        await this.connect();
+        await this.connect(...params);
     }
 
     private _sendMessage(data: string): void;
@@ -1213,6 +1240,10 @@ export class PluvRoom<
         const message = typeof data === "string" ? data : JSON.stringify(data);
 
         webSocket.send(message);
+    }
+
+    private _setMetadata(metadata: TMetadata): TMetadata {
+        return this.metadata ? this.metadata.parse(metadata) : metadata;
     }
 
     private _updateState(updater: (oldState: WebSocketState<TIO>) => WebSocketState<TIO>): WebSocketState<TIO> {
