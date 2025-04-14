@@ -8,7 +8,7 @@ import { useCallback, useMemo, useRef } from "react";
 export const useAsyncQueue = () => {
     const queueRef = useRef<Promise<void>>(Promise.resolve(undefined));
 
-    const push = useCallback(async (promise: Promise<void>) => {
+    const push = useCallback(async (promise: Promise<any>) => {
         queueRef.current = queueRef.current.then(async () => await promise);
 
         return await queueRef.current;

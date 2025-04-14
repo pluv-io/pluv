@@ -18,7 +18,14 @@ import type { Id, InferIOInput, InferIOOutput, IOEventMessage, IOLike, JsonObjec
 import fastDeepEqual from "fast-deep-equal";
 import type { Dispatch, FC, ReactNode } from "react";
 import { createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { identity, shallowArrayEqual, useAsyncQueue, useRerender, useSyncExternalStoreWithSelector } from "./internal";
+import {
+    identity,
+    shallowArrayEqual,
+    useAsyncQueue,
+    useDeepAsyncMemo,
+    useRerender,
+    useSyncExternalStoreWithSelector,
+} from "./internal";
 
 export interface PluvProviderProps {
     children?: ReactNode;
@@ -210,6 +217,12 @@ export const createBundle = <
         const rerender = useRerender();
         const mockedRoom = useContext(MockedRoomContext);
 
+        const resolvedMeta = useDeepAsyncMemo(async () => {
+            const resolved = await Promise.resolve(typeof metadata === "function" ? metadata() : metadata);
+
+            return !!room.metadata ? room.metadata.parse(metadata) : resolved;
+        });
+
         const [room] = useState<PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents>>(() => {
             return client.createRoom(_room, {
                 addons: options.addons,
@@ -225,14 +238,6 @@ export const createBundle = <
             } as CreateRoomOptions<TIO, TPresence, TStorage, TMetadata, TEvents>);
         });
 
-        const getMetadata = useCallback(async (): Promise<TMetadata | undefined> => {
-            if (typeof metadata === "undefined") return undefined;
-
-            const resolved = await Promise.resolve(typeof metadata === "function" ? metadata() : metadata);
-
-            return !!room.metadata ? room.metadata.parse(metadata) : resolved;
-        }, [metadata, room.metadata]);
-
         useEffect(() => {
             const unsubscribe = room.subscribe("connection", () => {
                 rerender();
@@ -244,21 +249,29 @@ export const createBundle = <
         }, [rerender, room]);
 
         useEffect(() => {
-            if (!connect) {
-                queue.push(
+            const leaveRoom = async (): Promise<void> => {
+                await queue.push(
                     client.leave(room).catch((error) => {
                         console.error(error);
                     }),
                 );
+            };
 
+            if (!connect) {
+                leaveRoom();
                 return;
             }
 
+            if (!resolvedMeta.isInitialized) {
+                leaveRoom();
+                return;
+            }
+
+            const resolved = resolvedMeta.value as TMetadata;
+
             queue.push(
-                getMetadata()
-                    .then(async (parsed) => {
-                        await client.enter(room, ...([{ metadata: parsed }] as EnterRoomParams<TMetadata>));
-                    })
+                client
+                    .enter(room, ...([{ metadata: resolved }] as EnterRoomParams<TMetadata>))
                     .catch(async (error) => {
                         console.error(error);
 
@@ -270,13 +283,9 @@ export const createBundle = <
             );
 
             return () => {
-                queue.push(
-                    client.leave(room).catch((error) => {
-                        console.error(error);
-                    }),
-                );
+                leaveRoom();
             };
-        }, [connect, getMetadata, metadata, queue, room]);
+        }, [connect, queue, resolvedMeta.isInitialized, resolvedMeta.value, room]);
 
         return <PluvRoomContext.Provider value={mockedRoom ?? room}>{children}</PluvRoomContext.Provider>;
     });
