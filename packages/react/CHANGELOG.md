@@ -1,5 +1,50 @@
 # @pluv/react
 
+## 0.39.0
+
+### Minor Changes
+
+- ca160f5: **BREAKING** Update the context value of `MockedRoomContext` to mirror the same shape as `PluvRoomContext`. i.e. the value of `MockedRoomContext` is now the room itself, rather than an object containing the room. This should not be breaking in most cases. If you happen to be using `useContext(MockedRoomContext)`, those will need to be updated as shown below:
+
+  ```tsx
+  // Before
+  const { room } = useContext(MockedRoomContext);
+
+  // After
+  const room = useContext(MockedRoomContext);
+  ```
+
+### Patch Changes
+
+- e6ddddc: Fixed potential race conditions between connecting and disconnecting between re-renders of `PluvRoomProvider`.
+- e6ddddc: (Internal) Update how `PluvRoomProvider` handles the `metadata` prop internally to be updated to how `PluvClient` now handles this (i.e. moved to `PluvClient.enter`, from `PluvClient.createRoom`).
+- e6ddddc: Add support for a passing either a function or object for the `metadata` prop on `PluvRoomProvider`. When a function is used, the `metadata` will be gotten at the moment of connection (internally this is a `useEffect`, so browser APIs can be used such as `document`, `window` and `localStorage`).
+
+  ```tsx
+  // Both of these work
+  <PluvRoomProvider metadata={{ hello: "world" }}>
+      {children}
+  </PluvRoomProvider>
+
+  <PluvRoomProvider
+      metadata={() => {
+          const value = localStorage.get(MY_LOCALSTORAGE_KEY);
+
+          return { hello: value };
+      }}
+  >
+      {children}
+  </PluvRoomProvider>
+  ```
+
+- Updated dependencies [e6ddddc]
+- Updated dependencies [e6ddddc]
+- Updated dependencies [2cfb68d]
+- Updated dependencies [e6ddddc]
+  - @pluv/client@0.39.0
+  - @pluv/crdt@0.39.0
+  - @pluv/types@0.39.0
+
 ## 0.38.14
 
 ### Patch Changes

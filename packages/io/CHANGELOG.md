@@ -1,5 +1,14 @@
 # @pluv/io
 
+## 0.39.0
+
+### Patch Changes
+
+- fe6e239: Broadcast the quitting user when the server receives an abnormal message event from a session that was marked as having quit.
+- 737d508: Fix not always fully running clean-up effects on the `IORoom` after websocket sessions are closed.
+  - @pluv/crdt@0.39.0
+  - @pluv/types@0.39.0
+
 ## 0.38.14
 
 ### Patch Changes
