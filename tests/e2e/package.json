@@ -5,6 +5,7 @@
 	"sideEffects": false,
 	"private": true,
 	"scripts": {
+		"cf:typegen": "wrangler types ./cf.d.ts",
 		"dev": "concurrently \"pnpm:dev:client\" \"pnpm:dev:noop:server:node\" \"pnpm:dev:yjs:server:cloudflare\" \"pnpm:dev:yjs:server:node\" \"pnpm:dev:yjs:server:node-redis\"",
 		"dev:client": "next dev --port 3100",
 		"dev:loro:server:node": "ts-node --project ./src/server/loro/node/tsconfig.json ./src/server/loro/node --port 3112",
@@ -23,7 +24,8 @@
 		"test:yjs:cloudflare": "wrangler deploy --dry-run && playwright test ./src/tests/yjs/cloudflare/**/*",
 		"test:yjs:node": "prisma migrate reset --force && playwright test ./src/tests/yjs/node/**/*",
 		"test:yjs:node-redis": "playwright test ./src/tests/yjs/node-redis/**/*",
-		"tsc:check": "tsc --noEmit"
+		"tsc:check": "tsc --noEmit",
+		"wrangler": "wrangler"
 	},
 	"dependencies": {
 		"@pluv/addon-indexeddb": "workspace:^",
@@ -65,7 +67,6 @@
 		"zod": "^3.24.2"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20250414.0",
 		"@playwright/test": "^1.51.1",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^9.1.2",

@@ -694,9 +694,6 @@ importers:
         specifier: ^3.24.2
         version: 3.24.2
     devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20250414.0
-        version: 4.20250414.0
       '@playwright/test':
         specifier: ^1.51.1
         version: 1.51.1

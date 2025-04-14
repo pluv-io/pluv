@@ -1,6 +1,6 @@
 {
     "extends": "@pluv/tsconfig/nextjs.json",
-    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+    "include": ["cf.d.ts", "next-env.d.ts", "**/*.ts", "**/*.tsx"],
     "exclude": [ "node_modules"],
     "compilerOptions": {
         "baseUrl": ".",
@@ -15,6 +15,6 @@
 			"@pluv/react": ["../../packages/react/dist"],
 			"@pluv/types": ["../../packages/types/dist"],
 			"ws": ["./node_modules/@types/ws"]
-		}
+		},
     }
 }
