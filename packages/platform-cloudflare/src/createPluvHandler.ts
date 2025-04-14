@@ -30,7 +30,7 @@ export type PluvHandlerFetch<TEnv extends Record<string, any> = {}> = (
 
 export interface CreatePluvHandlerResult<TEnv extends Record<string, any> = {}> {
     DurableObject: {
-        new (state: DurableObjectState, env: TEnv): DurableObject;
+        new (state: DurableObjectState, env: TEnv): BaseDurableObject<TEnv>;
     };
     fetch: PluvHandlerFetch<TEnv>;
     handler: ExportedHandler<TEnv>;
