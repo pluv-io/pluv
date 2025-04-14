@@ -24,6 +24,7 @@ import type { AbstractWebSocket } from "./AbstractWebSocket";
 import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 
 declare global {
+    // eslint-disable-next-line no-var
     var console: {
         error: (...data: any[]) => void;
         log: (...data: any[]) => void;

@@ -358,6 +358,6 @@ export class PluvServer<
     }
 
     private _logDebug(...data: any[]): void {
-        this._debug && console.log(...data);
+        if (this._debug) console.log(...data);
     }
 }

@@ -8,7 +8,7 @@ export class YjsXmlFragment extends YXmlFragment implements YjsType<YXmlFragment
     constructor(value: (YXmlElement | YXmlText)[] | readonly (YXmlElement | YXmlText)[]) {
         super();
 
-        !!value.length && this.insert(0, value as (YXmlElement | YXmlText)[]);
+        if (!!value.length) this.insert(0, value as (YXmlElement | YXmlText)[]);
 
         this.initialValue = value;
     }
