@@ -12,7 +12,7 @@
 		"dev:yjs:server:cloudflare": "wrangler dev --port 3101",
 		"dev:yjs:server:node": "ts-node --project ./src/server/yjs/node/tsconfig.json ./src/server/yjs/node -- --port 3102",
 		"dev:yjs:server:node-redis": "ts-node --project ./src/server/yjs/node-redis/tsconfig.json ./src/server/yjs/node-redis -- --port 3103",
-		"lint": "eslint src/**/*.ts* --fix",
+		"lint": "eslint src/**/*.ts* --fix --max-warnings 0",
 		"migrate:dev": "prisma migrate dev",
 		"prisma": "prisma",
 		"playwright": "playwright",
