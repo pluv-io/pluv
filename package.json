@@ -28,7 +28,6 @@
         "@changesets/cli": "^2.29.0",
         "commitizen": "^4.3.1",
         "cz-conventional-changelog": "^3.3.0",
-        "eslint-config-pluv": "workspace:^",
         "prettier": "^3.5.3",
         "turbo": "^2.5.0"
     },
@@ -39,7 +38,6 @@
             "core-js-pure",
             "esbuild",
             "prisma",
-            "sharp",
             "workerd"
         ]
     }

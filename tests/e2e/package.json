@@ -69,7 +69,7 @@
 		"@playwright/test": "^1.51.1",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^9.1.2",
-		"eslint": "^8.57.1",
+		"eslint": "^9.24.0",
 		"eslint-config-pluv": "workspace:^",
 		"miniflare": "^4.20250409.0",
 		"prisma": "^6.5.0",

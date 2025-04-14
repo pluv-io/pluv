@@ -32,7 +32,7 @@
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^8.57.1",
+		"eslint": "^9.24.0",
 		"eslint-config-pluv": "workspace:^",
 		"loro-crdt": "^1.5.3",
 		"tsup": "^8.4.0",

@@ -32,7 +32,7 @@
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^8.57.1",
+		"eslint": "^9.24.0",
 		"eslint-config-pluv": "workspace:^",
 		"ioredis": "^5.6.1",
 		"tsup": "^8.4.0",
