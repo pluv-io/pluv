@@ -4,9 +4,9 @@ import type { InferCallback } from "./infer";
 import { PluvProcedure } from "./PluvProcedure";
 import type {
     AuthEndpoint,
-    RoomConnectParams,
     PluvRoomAddon,
     PluvRoomDebug,
+    ReconnectTimeoutMs,
     RoomConfig,
     RoomEndpoints,
     WsEndpoint,
@@ -42,6 +42,7 @@ export type CreateRoomOptions<
     initialPresence?: TPresence;
     initialStorage?: AbstractCrdtDocFactory<TStorage>;
     onAuthorizationFail?: (error: Error) => void;
+    reconnectTimeoutMs?: ReconnectTimeoutMs;
     router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
 };
 
@@ -107,6 +108,7 @@ export class PluvClient<
             onAuthorizationFail: options.onAuthorizationFail,
             presence: this._presence,
             publicKey: this._publicKey ?? undefined,
+            reconnectTimeoutMs: options.reconnectTimeoutMs,
             router: options.router,
             wsEndpoint: this._wsEndpoint,
         } as RoomConfig<TIO, TMetadata, TPresence, TStorage, TEvents>);

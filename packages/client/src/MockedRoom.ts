@@ -59,6 +59,7 @@ export class MockedRoom<
             user: null,
         },
         connection: {
+            attempts: 0,
             count: 1,
             id: null,
             state: ConnectionState.Untouched,
