@@ -1,5 +1,14 @@
 # @pluv/platform-cloudflare
 
+## 0.40.1
+
+### Patch Changes
+
+- 99019a3: Fix return type to return the correct DurableObject type from `createPluvHandler`.
+  - @pluv/io@0.40.1
+  - @pluv/persistence-cloudflare-transactional-storage@0.40.1
+  - @pluv/types@0.40.1
+
 ## 0.40.0
 
 ### Minor Changes
