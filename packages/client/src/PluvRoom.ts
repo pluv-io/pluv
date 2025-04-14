@@ -48,7 +48,7 @@ import { debounce } from "./utils";
 const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
 const HEARTBEAT_INTERVAL_MS = 10_000;
 const PONG_TIMEOUT_MS = 2_000;
-const RECONNECT_TIMEOUT_MS = 30_000;
+const RECONNECT_TIMEOUT_MS = 5_000;
 const ORIGIN_INITIALIZED = "$initialized";
 const ORIGIN_STORAGE_UPDATED = "$storageUpdated";
 
@@ -151,6 +151,11 @@ export type RoomConnectParams<TMetadata extends JsonObject = {}> = keyof TMetada
     ? []
     : [WithMetadata<TMetadata>];
 
+export interface ReconnectTimeoutMsParams {
+    attempts: number;
+}
+export type ReconnectTimeoutMs = number | ((params: ReconnectTimeoutMsParams) => number);
+
 export type RoomConfig<
     TIO extends IOLike,
     TMetadata extends JsonObject = {},
@@ -164,6 +169,7 @@ export type RoomConfig<
         onAuthorizationFail?: (error: Error) => void;
         metadata?: InputZodLike<TMetadata>;
         publicKey?: PublicKey<TMetadata>;
+        reconnectTimeoutMs?: ReconnectTimeoutMs;
         router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
     } & RoomEndpoints<TIO, TMetadata> &
         Pick<CrdtManagerOptions<TStorage>, "initialStorage"> &
@@ -191,6 +197,7 @@ export class PluvRoom<
     private readonly _listeners: InternalListeners;
     private readonly _otherNotifier = new OtherNotifier<TIO>();
     private readonly _publicKey: PublicKey<TMetadata> | null = null;
+    private readonly _reconnectTimeoutMs: ReconnectTimeoutMs;
     private readonly _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
     private readonly _stateNotifier = new StateNotifier<TIO, TPresence>();
     private readonly _storageStore: AbstractStorageStore;
@@ -210,6 +217,7 @@ export class PluvRoom<
             user: null,
         },
         connection: {
+            attempts: 0,
             count: 0,
             id: null,
             state: ConnectionState.Untouched,
@@ -230,6 +238,7 @@ export class PluvRoom<
             onAuthorizationFail,
             presence,
             publicKey,
+            reconnectTimeoutMs = RECONNECT_TIMEOUT_MS,
             router,
             wsEndpoint,
         } = options;
@@ -247,6 +256,7 @@ export class PluvRoom<
 
         this._debug = debug;
         this._endpoints = { authEndpoint, wsEndpoint } as RoomEndpoints<TIO, TMetadata>;
+        this._reconnectTimeoutMs = reconnectTimeoutMs;
         this._storageStore = storage;
 
         if (!!publicKey) this._publicKey = publicKey;
@@ -378,6 +388,12 @@ export class PluvRoom<
 
             webSocket = new WebSocket(url.toString());
         } catch (err) {
+            this._updateState((oldState) => {
+                oldState.connection.attempts += 1;
+
+                return oldState;
+            });
+
             await this._storageStore.destroy();
             this._pollReconnect();
             await Promise.resolve(this._onAuthorizationFail(err));
@@ -386,6 +402,7 @@ export class PluvRoom<
         }
 
         this._updateState((oldState) => {
+            oldState.connection.attempts = 0;
             oldState.authorization.token = authToken;
             oldState.webSocket = webSocket;
 
@@ -1192,7 +1209,13 @@ export class PluvRoom<
 
     private _pollReconnect(): void {
         this._clearTimeout(this._timeouts.reconnect);
-        this._timeouts.reconnect = setTimeout(this._reconnect.bind(this), RECONNECT_TIMEOUT_MS) as unknown as number;
+
+        const timeoutMs =
+            typeof this._reconnectTimeoutMs === "number"
+                ? this._reconnectTimeoutMs
+                : this._reconnectTimeoutMs({ attempts: this._state.connection.attempts });
+
+        this._timeouts.reconnect = setTimeout(this._reconnect.bind(this), timeoutMs) as unknown as number;
     }
 
     private async _reconnect(): Promise<void> {
