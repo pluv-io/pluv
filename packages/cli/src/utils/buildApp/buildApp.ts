@@ -31,10 +31,7 @@ const saveChunk = (outDir: string, chunk: OutputChunk | OutputAsset) => {
 };
 
 const getEnv = (
-    env: Record<string, string> | string = path.resolve(
-        process.cwd(),
-        "./.env",
-    ),
+    env: Record<string, string> | string = path.resolve(process.cwd(), "./.env"),
 ): Record<string, string> => {
     if (typeof env !== "string") return env;
 
@@ -57,9 +54,7 @@ export const buildApp = async (options: BuildAppOptions) => {
     const outDir = path.resolve(process.cwd(), options.outDir);
     const outFile = path.resolve(outDir, "./index.js");
 
-    const replaceEnv = Object.entries(getEnv(env)).reduce<
-        Record<string, string>
-    >(
+    const replaceEnv = Object.entries(getEnv(env)).reduce<Record<string, string>>(
         (acc, [key, value]) => ({
             ...acc,
             [`process.env.${key}`]: JSON.stringify(value),
