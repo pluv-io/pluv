@@ -1,5 +1,17 @@
 # @pluv/platform-cloudflare
 
+## 0.40.0
+
+### Minor Changes
+
+- f53c6cb: **BREAKING** The `DurableObject` from `createPluvHandler` now properly extends `DuableObject` from `cloudflare:workers`. `@pluv/platform-pluv` is also now only ESM. This may break some Cloudflare Workers if on an older compatibility date.
+
+### Patch Changes
+
+- @pluv/io@0.40.0
+- @pluv/persistence-cloudflare-transactional-storage@0.40.0
+- @pluv/types@0.40.0
+
 ## 0.39.1
 
 ### Patch Changes
