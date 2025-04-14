@@ -10,14 +10,13 @@
 		"url": "git+https://github.com/pluv-io/pluv.git",
 		"directory": "packages/platform-cloudflare"
 	},
-	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
-	"types": "./dist/index.d.ts",
+	"types": "./dist/index.d.mts",
 	"publishConfig": {
 		"access": "public"
 	},
 	"scripts": {
-		"build": "tsup src/index.ts --format esm,cjs --dts",
+		"build": "tsup src/index.ts",
 		"dev": "tsup src/index.ts --format esm,cjs --watch --dts",
 		"lint": "eslint src/**/*.ts* --fix --max-warnings 0",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
