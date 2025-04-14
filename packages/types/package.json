@@ -18,12 +18,12 @@
 	"scripts": {
 		"build": "tsup src/index.ts --format esm,cjs --dts",
 		"dev": "tsup src/index.ts --format esm,cjs --watch --dts",
-		"lint": "eslint src/**/*.ts* --fix",
+		"lint": "eslint src/**/*.ts* --fix --max-warnings 0",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^8.57.1",
+		"eslint": "^9.24.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.4.0",
 		"typescript": "^5.8.3"

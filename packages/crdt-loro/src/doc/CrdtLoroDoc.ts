@@ -22,7 +22,8 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
                 const container = this.value.getList(key);
 
                 node.toArray().forEach((item, i) => {
-                    isContainer(item) ? container.insertContainer(i, item) : container.insert(i, item);
+                    if (isContainer(item)) container.insertContainer(i, item);
+                    else container.insert(i, item);
                 });
 
                 return { ...acc, [key]: container };
@@ -32,7 +33,8 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
                 const container = this.value.getMap(key);
 
                 container.entries().forEach(([key, item]) => {
-                    isContainer(item) ? container.setContainer(key, item) : container.set(key, item);
+                    if (isContainer(item)) container.setContainer(key, item);
+                    else container.set(key, item);
                 });
 
                 return { ...acc, [key]: container };
@@ -88,7 +90,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
         if (_updates.length === 1) {
             const update = _updates[0] ?? null;
 
-            update && this.value.import(update);
+            if (!!update) this.value.import(update);
 
             return this;
         }

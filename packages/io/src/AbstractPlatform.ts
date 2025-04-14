@@ -51,7 +51,7 @@ export abstract class AbstractPlatform<
         const { roomContext, persistence, pubSub } = config;
 
         (this as any)._meta = (config as any)._meta;
-        roomContext && (this._roomContext = roomContext);
+        if (!!roomContext) this._roomContext = roomContext;
 
         this.persistence = persistence ?? new Persistence();
         this.pubSub = pubSub ?? new PubSub();

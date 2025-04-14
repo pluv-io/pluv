@@ -37,7 +37,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
             if (node instanceof YjsArray) {
                 const yArray = this.value.getArray(key);
 
-                !!node.initialValue?.length && yArray.insert(0, node.initialValue?.slice(0));
+                if (!!node.initialValue?.length) yArray.insert(0, node.initialValue?.slice(0));
 
                 return { ...acc, [key]: yArray };
             }
@@ -65,7 +65,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
             if (node instanceof YjsText) {
                 const yText = this.value.getText(key);
 
-                typeof node.initialValue === "string" && yText.insert(0, node.initialValue);
+                if (typeof node.initialValue === "string") yText.insert(0, node.initialValue);
 
                 return { ...acc, [key]: yText };
             }
@@ -73,7 +73,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
             if (node instanceof YjsXmlElement) {
                 const yXmlElement = this.value.getXmlElement(key);
 
-                !!node.initialValue?.length && yXmlElement.insert(0, node.initialValue?.slice(0));
+                if (!!node.initialValue?.length) yXmlElement.insert(0, node.initialValue?.slice(0));
 
                 return { ...acc, [key]: yXmlElement };
             }
@@ -81,7 +81,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
             if (node instanceof YXmlFragment) {
                 const yXmlFragment = this.value.getXmlFragment(key);
 
-                !!node.initialValue?.length && yXmlFragment.insert(0, node.initialValue?.slice(0));
+                if (!!node.initialValue?.length) yXmlFragment.insert(0, node.initialValue?.slice(0));
 
                 return { ...acc, [key]: yXmlFragment };
             }

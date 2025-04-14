@@ -9,6 +9,7 @@ export const getCrypto = (): webcrypto.Crypto => {
     if (typeof require === "function") {
         // In Node.js
         // Node 15+ supports `crypto.webcrypto`
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         return require("node:crypto").webcrypto as webcrypto.Crypto;
     }
 

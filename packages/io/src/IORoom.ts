@@ -621,7 +621,7 @@ export class IORoom<
     }
 
     private _logDebug(...data: any[]): void {
-        this._debug && console.log(...data);
+        if (this._debug) console.log(...data);
     }
 
     private _onClose(webSocket: AbstractWebSocket): () => Promise<void> {

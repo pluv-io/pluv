@@ -19,7 +19,7 @@
 	"scripts": {
 		"build": "tsup src/index.ts --format esm,cjs --dts --external react",
 		"dev": "tsup src/index.ts --format esm,cjs --watch --dts",
-		"lint": "eslint src/**/*.ts* --fix",
+		"lint": "eslint src/**/*.ts* --fix --max-warnings 0",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
 	"dependencies": {
@@ -35,7 +35,7 @@
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"@types/react": "^19.1.1",
-		"eslint": "^8.57.1",
+		"eslint": "^9.24.0",
 		"eslint-config-pluv": "workspace:^",
 		"react": "^19.1.0",
 		"tsup": "^8.4.0",
