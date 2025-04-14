@@ -57,12 +57,6 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
         });
     }
 
-    public async getSize(room: string): Promise<number> {
-        const storage = await this._state.storage.list({ prefix: USER_PREFIX });
-
-        return storage.size;
-    }
-
     public async getStorageState(room: string): Promise<string | null> {
         const storage = await this._state.storage.get<string>(this._getStorageKey(room));
 
@@ -81,6 +75,12 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
         });
 
         return Array.from(storage.values()) as (JsonObject | null)[];
+    }
+
+    public async getUsersSize(room: string): Promise<number> {
+        const storage = await this._state.storage.list({ prefix: USER_PREFIX });
+
+        return storage.size;
     }
 
     public async setStorageState(room: string, state: string): Promise<void> {

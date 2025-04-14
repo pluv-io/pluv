@@ -2,7 +2,7 @@ import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type { IOAuthorize, InferIOAuthorizeUser } from "@pluv/types";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
-import { WebsocketRegisterConfig } from "./IORoom";
+import type { WebSocketRegisterConfig } from "./IORoom";
 import { PluvProcedure } from "./PluvProcedure";
 import type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
@@ -133,7 +133,7 @@ export class PluvIO<
         } as PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>);
     }
 
-    private _getIOAuthorize(options: WebsocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
+    private _getIOAuthorize(options: WebSocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
         if (typeof this._authorize === "function") {
             return this._authorize(options);
         }

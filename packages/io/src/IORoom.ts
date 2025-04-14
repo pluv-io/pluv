@@ -87,7 +87,7 @@ interface SendMessageSender {
     user: JsonObject | null;
 }
 
-export type WebsocketRegisterConfig<TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>> = {
+export type WebSocketRegisterConfig<TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>> = {
     token?: string | null;
 } & InferInitContextType<TPlatform>;
 
@@ -283,11 +283,10 @@ export class IORoom<
         webSocket: InferPlatformWebSocketSource<TPlatform>,
         ...options: keyof InferInitContextType<TPlatform> extends never
             ? [{ token?: string }?]
-            : [WebsocketRegisterConfig<TPlatform>]
+            : [WebSocketRegisterConfig<TPlatform>]
     ): Promise<void> {
-        const _options = (options[0] ?? {}) as WebsocketRegisterConfig<TPlatform>;
+        const _options = (options[0] ?? {}) as WebSocketRegisterConfig<TPlatform>;
         const token = _options.token ?? null;
-
         const sessionId = this._platform.getSessionId(webSocket);
         const sessionExists = typeof sessionId === "string" && this._sessions.has(sessionId);
 
@@ -361,21 +360,64 @@ export class IORoom<
         });
     }
 
+    private async _closeWebSockets(webSockets: readonly AbstractWebSocket[]): Promise<void> {
+        const closeWebSocket = async (webSocket: AbstractWebSocket): Promise<void> => {
+            webSocket.state = { ...webSocket.state, quit: true };
+
+            const sessionId = webSocket.sessionId;
+
+            this._logDebug(`${colors.blue(`Unregistering connection for room ${this.id}:`)} ${sessionId}`);
+            this._sessions.delete(sessionId);
+
+            await this._platform.persistence.deleteUser(this.id, sessionId).catch(() => null);
+            await this._broadcast({
+                message: { type: "$exit", data: { sessionId } },
+                senderId: sessionId,
+            });
+
+            try {
+                const [session, doc] = await Promise.all([webSocket.getSession(), this._doc]);
+                const encodedState = doc.getEncodedState();
+
+                await Promise.resolve(
+                    this._listeners.onUserDisconnected({
+                        context: this._context,
+                        encodedState,
+                        room: this.id,
+                        user: session.user,
+                    }),
+                );
+            } catch (error) {
+                console.error(error);
+            }
+
+            this._logDebug(`${colors.blue(`Unregistered connection for room ${this.id}:`)} ${webSocket.sessionId}`);
+        };
+
+        const promises = webSockets.map(async (webSocket) => {
+            await closeWebSocket(webSocket).catch(() => null);
+        });
+
+        await Promise.all(promises).catch(() => null);
+
+        const size = this.getSize();
+
+        this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
+
+        if (!!size) return;
+        if (!this._uninitialize) return;
+
+        const uninitialize = (await this._uninitialize).bind(this);
+        await uninitialize();
+    }
+
     private async _emitQuitters(): Promise<void> {
         const currentTime = new Date().getTime();
         const quitters = Array.from(this._sessions.values()).filter(
             (pluvWs) => pluvWs.state.quit || currentTime - pluvWs.state.timers.ping > PING_TIMEOUT_MS,
         );
 
-        quitters.forEach((pluvWs) => {
-            this._sessions.delete(pluvWs.sessionId);
-        });
-
-        const promises = quitters.map(async (quitter) => {
-            await this._exitWebsocket(quitter);
-        });
-
-        await Promise.all(promises);
+        this._closeWebSockets(quitters);
     }
 
     private async _emitRegistered(pluvWs: AbstractWebSocket): Promise<void> {
@@ -409,34 +451,6 @@ export class IORoom<
         throw new Error("Platform must use detached mode");
     }
 
-    private async _exitWebsocket(webSocket: AbstractWebSocket<any>): Promise<void> {
-        const session = await webSocket.getSession();
-
-        await this._broadcast({
-            message: {
-                type: "$exit",
-                data: { sessionId: session.id },
-            },
-            senderId: session.id,
-        });
-
-        try {
-            const doc = await this._doc;
-            const encodedState = doc.getEncodedState();
-
-            await Promise.resolve(
-                this._listeners.onUserDisconnected({
-                    context: this._context,
-                    encodedState,
-                    room: this.id,
-                    user: session.user,
-                }),
-            );
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
     private _getAbstractWs(webSocket: WebSocketType<TPlatform>): AbstractWebSocket | null {
         if ((webSocket as unknown as any) instanceof AbstractWebSocket) return webSocket;
 
@@ -455,7 +469,7 @@ export class IORoom<
 
     private async _getAuthorizedUser(
         token: Maybe<string>,
-        options: WebsocketRegisterConfig<TPlatform>,
+        options: WebSocketRegisterConfig<TPlatform>,
     ): Promise<InferIOAuthorizeUser<InferIOAuthorize<this>>> {
         const ioAuthorize = this._getIOAuthorize(options);
 
@@ -502,7 +516,7 @@ export class IORoom<
         return doc;
     }
 
-    private _getIOAuthorize(options: WebsocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
+    private _getIOAuthorize(options: WebSocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
         if (typeof this._authorize === "function") return this._authorize(options);
 
         return this._authorize as ResolvedPluvIOAuthorize<any, any> | null;
@@ -560,12 +574,10 @@ export class IORoom<
                     switch (options.type) {
                         case "self": {
                             await this._sendSelfMessage(message, sender);
-
                             return;
                         }
                         case "sync": {
                             await this._sendSyncMessage(message, sender);
-
                             return;
                         }
                         case "broadcast":
@@ -616,27 +628,7 @@ export class IORoom<
     private _onClose(webSocket: AbstractWebSocket): () => Promise<void> {
         return async (): Promise<void> => {
             if (!(await this._initialized)) return;
-
-            webSocket.state = { ...webSocket.state, quit: true };
-
-            this._logDebug(`${colors.blue(`Unregistering connection for room ${this.id}:`)} ${webSocket.sessionId}`);
-            this._sessions.delete(webSocket.sessionId);
-
-            this._platform.persistence.deleteUser(this.id, webSocket.sessionId).finally(async () => {
-                await this._exitWebsocket(webSocket);
-
-                const size = this.getSize();
-
-                this._logDebug(`${colors.blue(`Unregistered connection for room ${this.id}:`)} ${webSocket.sessionId}`);
-                this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
-
-                if (size) return;
-
-                if (this._uninitialize) {
-                    const uninitialize = (await this._uninitialize).bind(this);
-                    await uninitialize();
-                }
-            });
+            await this._closeWebSockets([webSocket]);
         };
     }
 
@@ -663,7 +655,7 @@ export class IORoom<
             };
 
             if (pluvWs.state.quit) {
-                this._exitWebsocket(pluvWs).catch(() => null);
+                await this._closeWebSockets([pluvWs]).catch(() => null);
                 pluvWs.close(1011, "WebSocket broken.");
 
                 return;

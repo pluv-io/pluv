@@ -3,7 +3,7 @@ import { noop } from "@pluv/crdt";
 import type { IOLike, Id, InferIOAuthorize, InferIOAuthorizeUser, JsonObject, Maybe } from "@pluv/types";
 import colors from "kleur";
 import type { AbstractPlatform, InferInitContextType, InferRoomContextType } from "./AbstractPlatform";
-import type { IORoomListeners, WebsocketRegisterConfig } from "./IORoom";
+import type { IORoomListeners, WebSocketRegisterConfig } from "./IORoom";
 import { IORoom } from "./IORoom";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouterEventConfig } from "./PluvRouter";
@@ -347,10 +347,8 @@ export class PluvServer<
         return await authorize({ platform: this._platform, secret }).encode(params as JWTEncodeParams<any, TPlatform>);
     }
 
-    private _getIOAuthorize(options: WebsocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
-        if (typeof this._authorize === "function") {
-            return this._authorize(options);
-        }
+    private _getIOAuthorize(options: WebSocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
+        if (typeof this._authorize === "function") return this._authorize(options);
 
         return this._authorize as ResolvedPluvIOAuthorize<any, any> | null;
     }
