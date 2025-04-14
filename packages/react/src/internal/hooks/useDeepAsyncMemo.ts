@@ -70,6 +70,7 @@ export const useDeepAsyncMemo = <T>(
                     setState((prev) => {
                         return {
                             ...prev,
+                            isInitialized: true,
                             isLoading: false,
                         } as UseDeepAsyncMemoResult<T>;
                     });
