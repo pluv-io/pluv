@@ -48,7 +48,11 @@ import { debounce } from "./utils";
 const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
 const HEARTBEAT_INTERVAL_MS = 10_000;
 const PONG_TIMEOUT_MS = 2_000;
+
 const RECONNECT_TIMEOUT_MS = 5_000;
+const MIN_RECONNECT_TIMEOUT_MS = 1_000;
+const MAX_RECONNECT_TIMEOUT_MS = 60_000;
+
 const ORIGIN_INITIALIZED = "$initialized";
 const ORIGIN_STORAGE_UPDATED = "$storageUpdated";
 
@@ -1214,8 +1218,9 @@ export class PluvRoom<
             typeof this._reconnectTimeoutMs === "number"
                 ? this._reconnectTimeoutMs
                 : this._reconnectTimeoutMs({ attempts: this._state.connection.attempts });
+        const clampedMs = Math.max(Math.min(MIN_RECONNECT_TIMEOUT_MS, timeoutMs), MAX_RECONNECT_TIMEOUT_MS);
 
-        this._timeouts.reconnect = setTimeout(this._reconnect.bind(this), timeoutMs) as unknown as number;
+        this._timeouts.reconnect = setTimeout(this._reconnect.bind(this), clampedMs) as unknown as number;
     }
 
     private async _reconnect(): Promise<void> {
