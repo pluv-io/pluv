@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.40.2
+
+### Patch Changes
+
+- 6fbc2fe: Update `PluvClient.createRoom` so that the 2nd parameter is optional.
+  - @pluv/crdt@0.40.2
+  - @pluv/types@0.40.2
+
 ## 0.40.1
 
 ### Patch Changes
