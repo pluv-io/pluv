@@ -24,7 +24,7 @@
 	"scripts": {
 		"build": "tsc",
 		"dev": "pnpm build && pnpm link --global",
-		"lint": "eslint src/**/*.ts* --fix --max-warnings 0",
+		"lint": "eslint \"src/**/*.ts*\" --fix --max-warnings 0",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
 		"start": "node ./dist/index.js"
 	},

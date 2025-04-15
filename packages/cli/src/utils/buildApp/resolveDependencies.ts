@@ -23,19 +23,12 @@ const crawlDependencies = (program: Program): readonly string[] => {
 
         if (!sourceText) return;
 
-        const sourceFile = ts.createSourceFile(
-            filePath,
-            sourceText,
-            ts.ScriptTarget.ESNext,
-            true,
-        );
+        const sourceFile = ts.createSourceFile(filePath, sourceText, ts.ScriptTarget.ESNext, true);
 
         ts.forEachChild(sourceFile, (node) => {
             if (!ts.isImportDeclaration(node)) return;
 
-            const moduleName = node.moduleSpecifier
-                .getText()
-                .replace(/(^("|'|`))|(("|'|`)$)/g, "");
+            const moduleName = node.moduleSpecifier.getText().replace(/(^("|'|`))|(("|'|`)$)/g, "");
 
             const { resolvedModule } = ts.resolveModuleName(
                 moduleName,
@@ -73,9 +66,7 @@ const getTsConfigPath = () => {
     return tsConfigPath;
 };
 
-export const resolveDependencies = (
-    params: ResolveDependenciesParams,
-): readonly string[] => {
+export const resolveDependencies = (params: ResolveDependenciesParams): readonly string[] => {
     const { input } = params;
 
     const tsConfigPath = getTsConfigPath();

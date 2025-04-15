@@ -57,6 +57,7 @@ const ORIGIN_INITIALIZED = "$initialized";
 const ORIGIN_STORAGE_UPDATED = "$storageUpdated";
 
 declare global {
+    // eslint-disable-next-line no-var
     var process: {
         env: {
             [key: string]: string | undefined;
@@ -387,8 +388,8 @@ export class PluvRoom<
 
             authToken = await this._getAuthorization(this.id, params);
 
-            authToken && url.searchParams.set("token", encodeURIComponent(authToken));
-            publicKey && url.searchParams.set("public_key", encodeURIComponent(publicKey));
+            if (authToken) url.searchParams.set("token", encodeURIComponent(authToken));
+            if (publicKey) url.searchParams.set("public_key", encodeURIComponent(publicKey));
 
             webSocket = new WebSocket(url.toString());
         } catch (err) {
@@ -572,7 +573,7 @@ export class PluvRoom<
         const myself = this._usersManager.myself ?? null;
 
         this._stateNotifier.subjects["my-presence"].next(myPresence);
-        !!myself && this._stateNotifier.subjects["myself"].next(myself);
+        if (!!myself) this._stateNotifier.subjects["myself"].next(myself);
 
         this.broadcast(
             "$updatePresence" as keyof InferIOInput<MergeEvents<TEvents, TIO>>,
@@ -851,7 +852,7 @@ export class PluvRoom<
 
             const other = this._usersManager.getOther(connectionId);
 
-            !!presence && this._usersManager.patchPresence(connectionId, presence as TPresence);
+            if (!!presence) this._usersManager.patchPresence(connectionId, presence as TPresence);
 
             this._otherNotifier.subject(connectionId).next(other);
         });
@@ -1002,10 +1003,8 @@ export class PluvRoom<
     }
 
     private _logDebug(...data: any[]): void {
-        // eslint-disable-next-line turbo/no-undeclared-env-vars
         if ((process as unknown as any)?.env?.NODE_ENV === "production") return;
-
-        this._debug && console.log(...data);
+        if (this._debug) console.log(...data);
     }
 
     private _observeCrdt(): void {
@@ -1050,7 +1049,7 @@ export class PluvRoom<
 
     private async _onClose(event: CloseEvent): Promise<void> {
         this._logDebug("WebSocket closed");
-        !!event.reason && this._logDebug(event.reason);
+        if (!!event.reason) this._logDebug(event.reason);
 
         const shouldRetry = [
             // Going away: Client/server is shutting down or navigating
