@@ -4,7 +4,7 @@ import { createBundle } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node";
 
-const types = infer((i) => ({ io: i<typeof ioServer> }))
+const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = createClient({
     authEndpoint: ({ room }) => {
         return `http://localhost:3112/api/pluv/authorize?room=${room}`;
