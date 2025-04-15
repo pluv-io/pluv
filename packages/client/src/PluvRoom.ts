@@ -1066,11 +1066,6 @@ export class PluvRoom<
             1014,
         ].some((okToRetryCode) => event.code === okToRetryCode);
 
-        this._closeWs();
-
-        if (!shouldRetry) this._clearTimeout(this._timeouts.reconnect);
-        else this._pollReconnect();
-
         this._updateState((oldState) => {
             oldState.authorization.token = null;
             oldState.connection.state = shouldRetry ? ConnectionState.Unavailable : ConnectionState.Closed;
@@ -1078,6 +1073,14 @@ export class PluvRoom<
 
             return oldState;
         });
+
+        if (shouldRetry) {
+            await this._reconnect();
+            return;
+        }
+
+        this._closeWs();
+        this._clearTimeout(this._timeouts.reconnect);
     }
 
     /**
