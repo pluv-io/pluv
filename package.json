@@ -20,7 +20,8 @@
         "services:start": "docker compose up -d",
         "services:stop": "docker compose down",
         "test": "turbo run test",
-        "test:packages": "turbo run test --filter=@pluv-tests/e2e...",
+        "test:e2e": "turbo run test --filter=@pluv-tests/e2e...",
+        "test:types": "turbo run test --filter=@pluv-tests/types...",
         "turbo": "turbo",
         "version-packages": "changeset version"
     },

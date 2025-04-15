@@ -1,0 +1,10 @@
+{
+	"extends": "@pluv/tsconfig/library.json",
+	"include": ["src/**/*.test.ts"],
+	"exclude": ["node_modules"],
+	"compilerOptions": {
+		"noEmit": true,
+		"strict": true,
+		"types": ["@cloudflare/workers-types"]
+	}
+}

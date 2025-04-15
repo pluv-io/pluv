@@ -53,7 +53,7 @@ jobs:
         run: pnpm dlx playwright install chromium
 
       - name: Test
-        run: pnpm test:packages
+        run: pnpm test:e2e
 
       - uses: actions/upload-artifact@v4
         if: always()
