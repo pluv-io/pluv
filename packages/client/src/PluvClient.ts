@@ -92,7 +92,7 @@ export class PluvClient<
 
     public createRoom = <TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
         room: string,
-        options: CreateRoomOptions<TIO, TPresence, TStorage, TMetadata, TEvents>,
+        options: CreateRoomOptions<TIO, TPresence, TStorage, TMetadata, TEvents> = {},
     ): PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents> => {
         const oldRoom = this.getRoom(room);
 
@@ -171,9 +171,8 @@ export class PluvClient<
     }
 
     private _logDebug(...data: any[]): void {
-        // eslint-disable-next-line turbo/no-undeclared-env-vars
         if (process?.env?.NODE_ENV === "production") return;
 
-        this._debug && console.log(...data);
+        if (this._debug) console.log(...data);
     }
 }
