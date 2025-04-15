@@ -82,9 +82,8 @@ export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any> | null
     TAuthorize extends IOAuthorize<infer IUser, any> ? IUser : null;
 
 export type InputZodLike<TData extends JsonObject> = {
-    _input: TData;
     parse: (data: unknown) => TData;
-};
+} & ({ _input: TData } | { _zod: { input: TData } });
 
 export type IOAuthorize<TUser extends BaseUser | null = any, TContext extends Record<string, unknown> = {}> =
     | (TUser extends BaseUser
