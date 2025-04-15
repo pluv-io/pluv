@@ -648,6 +648,9 @@ importers:
       '@types/ws':
         specifier: ^8.18.1
         version: 8.18.1
+      '@zod/mini':
+        specifier: 4.0.0-beta.0
+        version: 4.0.0-beta.0
       body-parser:
         specifier: ^2.2.0
         version: 2.2.0
@@ -721,6 +724,100 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.14.1)(typescript@5.8.3)
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+      wrangler:
+        specifier: ^4.10.0
+        version: 4.10.0(@cloudflare/workers-types@4.20250414.0)
+
+  tests/types:
+    dependencies:
+      '@pluv/addon-indexeddb':
+        specifier: workspace:^
+        version: link:../../packages/addon-indexeddb
+      '@pluv/client':
+        specifier: workspace:^
+        version: link:../../packages/client
+      '@pluv/crdt-loro':
+        specifier: workspace:^
+        version: link:../../packages/crdt-loro
+      '@pluv/crdt-yjs':
+        specifier: workspace:^
+        version: link:../../packages/crdt-yjs
+      '@pluv/io':
+        specifier: workspace:^
+        version: link:../../packages/io
+      '@pluv/persistence-redis':
+        specifier: workspace:^
+        version: link:../../packages/persistence-redis
+      '@pluv/platform-cloudflare':
+        specifier: workspace:^
+        version: link:../../packages/platform-cloudflare
+      '@pluv/platform-node':
+        specifier: workspace:^
+        version: link:../../packages/platform-node
+      '@pluv/platform-pluv':
+        specifier: workspace:^
+        version: link:../../packages/platform-pluv
+      '@pluv/pubsub-redis':
+        specifier: workspace:^
+        version: link:../../packages/pubsub-redis
+      '@pluv/react':
+        specifier: workspace:^
+        version: link:../../packages/react
+      '@pluv/types':
+        specifier: workspace:^
+        version: link:../../packages/types
+      '@types/node':
+        specifier: ^22.14.1
+        version: 22.14.1
+      '@types/react':
+        specifier: ^19.1.1
+        version: 19.1.1
+      '@types/react-dom':
+        specifier: ^19.1.2
+        version: 19.1.2(@types/react@19.1.1)
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
+      '@zod/mini':
+        specifier: 4.0.0-beta.0
+        version: 4.0.0-beta.0
+      loro-crdt:
+        specifier: ^1.5.3
+        version: 1.5.3
+      react:
+        specifier: ^19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.1.0(react@19.1.0)
+      ws:
+        specifier: ^8.18.1
+        version: 8.18.1
+      yjs:
+        specifier: ^13.6.24
+        version: 13.6.24
+      zod:
+        specifier: ^3.24.2
+        version: 3.24.2
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20250414.0
+        version: 4.20250414.0
+      '@pluv/tsconfig':
+        specifier: workspace:^
+        version: link:../../packages/tsconfig
+      eslint:
+        specifier: ^9.24.0
+        version: 9.24.0(jiti@2.4.2)
+      eslint-config-pluv:
+        specifier: workspace:^
+        version: link:../../packages/eslint-config-pluv
+      expect-type:
+        specifier: ^1.2.1
+        version: 1.2.1
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -2182,6 +2279,12 @@ packages:
     resolution: {integrity: sha512-oj82UQEi0fcYmpQpVISEOUM/icPNJiRh+E6svAtwNP58QpAQnnFigEoeGADm8H7t2bolxSb7+kRYzykbBdA47w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@zod/core@0.1.0':
+    resolution: {integrity: sha512-hSXsufqjH7u8DiJPT0KY1rFWIhjkdXGM8MhMLwzaeOMhxMA4bzjWLQwSoAToJunUTVrpmfdo4dUFzNaU219+VQ==}
+
+  '@zod/mini@4.0.0-beta.0':
+    resolution: {integrity: sha512-ux1pJYQJO0S/uAldc0KGKiBFvqPpQqfC8vXbBJ3tDrcWCCa6/QBQPexZFn/cHscTxA/SnEJEAxa7qGTwPQC5Tg==}
+
   accepts@2.0.0:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
     engines: {node: '>= 0.6'}
@@ -2904,6 +3007,10 @@ packages:
   expand-tilde@2.0.2:
     resolution: {integrity: sha512-A5EmesHW6rfnZ9ysHQjPdJRni0SRar0tjtG5MNtm9n5TUvsYU8oozprtRD4AqHxcZWWlVuAmQo2nWKfN9oyjTw==}
     engines: {node: '>=0.10.0'}
+
+  expect-type@1.2.1:
+    resolution: {integrity: sha512-/kP8CAwxzLVEeFrMm4kMmy4CCDlpipyA7MYLVrdJIkV0fYF0UaigQHRsxHiuY/GEea+bh4KSv3TIlgr+2UL6bw==}
+    engines: {node: '>=12.0.0'}
 
   express@5.1.0:
     resolution: {integrity: sha512-DT9ck5YIRU+8GYzzU5kT3eHGA5iL+1Zd0EutOmTE9Dtk+Tvuzd23VBU+ec7HPNSTxXYO55gPV/hq4pSBJDjFpA==}
@@ -6022,6 +6129,12 @@ snapshots:
       '@typescript-eslint/types': 8.30.0
       eslint-visitor-keys: 4.2.0
 
+  '@zod/core@0.1.0': {}
+
+  '@zod/mini@4.0.0-beta.0':
+    dependencies:
+      '@zod/core': 0.1.0
+
   accepts@2.0.0:
     dependencies:
       mime-types: 3.0.1
@@ -6899,6 +7012,8 @@ snapshots:
   expand-tilde@2.0.2:
     dependencies:
       homedir-polyfill: 1.0.3
+
+  expect-type@1.2.1: {}
 
   express@5.1.0:
     dependencies:

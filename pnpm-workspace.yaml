@@ -18,3 +18,4 @@ packages:
   - "packages/types"
 
   - "tests/e2e"
+  - "tests/types"

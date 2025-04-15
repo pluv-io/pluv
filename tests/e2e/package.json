@@ -48,6 +48,7 @@
 		"@types/react": "^19.1.1",
 		"@types/react-dom": "^19.1.2",
 		"@types/ws": "^8.18.1",
+		"@zod/mini": "4.0.0-beta.0",
 		"body-parser": "^2.2.0",
 		"commander": "^13.1.0",
 		"common-tags": "^1.8.2",
