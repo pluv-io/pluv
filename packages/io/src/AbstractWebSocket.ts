@@ -54,7 +54,7 @@ export interface AbstractWebSocketConfig {
     room: string;
 }
 
-export abstract class AbstractWebSocket<TWebSocket = any> {
+export abstract class AbstractWebSocket<TWebSocket = any, TAuthorize extends IOAuthorize<any, any> | null = null> {
     /** The connection is not yet open. */
     public readonly CONNECTING = 0;
     /** The connection is open and ready to communicate. */
@@ -68,15 +68,15 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
     public readonly room: string;
     public readonly webSocket: TWebSocket;
 
-    private _user: BaseUser | null = null;
-
     protected readonly _platform: AbstractPlatform<this>;
 
     public abstract set presence(presence: JsonObject | null);
     public abstract get readyState(): 0 | 1 | 2 | 3;
+    public abstract get session(): WebSocketSession<TAuthorize>;
     public abstract get sessionId(): string;
     public abstract get state(): WebSocketSerializedState;
     public abstract set state(state: WebSocketSerializedState);
+    public abstract set user(user: InferIOAuthorizeUser<TAuthorize>);
 
     constructor(webSocket: TWebSocket, config: AbstractWebSocketConfig) {
         const { persistence, platform, room } = config;
@@ -103,23 +103,6 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
     public abstract send(message: ArrayBuffer | ArrayBufferView | string): void;
 
     public abstract terminate(): void;
-
-    public async getSession<TAuthorize extends IOAuthorize<any, any> | null>(): Promise<WebSocketSession<TAuthorize>> {
-        const sessionId = this.sessionId;
-        const state = this.state;
-        const room = state.room;
-
-        const user = this._user ?? (await this.persistence.getUser(room, sessionId));
-
-        this._user = user as BaseUser;
-
-        return {
-            ...state,
-            id: sessionId,
-            user: user as InferIOAuthorizeUser<TAuthorize>,
-            webSocket: this,
-        };
-    }
 
     public handleError(params: AbstractWebSocketHandleErrorParams): void {
         const { error, message: _message, room, session } = params;

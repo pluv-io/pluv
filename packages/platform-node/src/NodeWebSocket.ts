@@ -6,9 +6,10 @@ import type {
     AbstractMessageEvent,
     AbstractWebSocketConfig,
     WebSocketSerializedState,
+    WebSocketSession,
 } from "@pluv/io";
 import { AbstractWebSocket } from "@pluv/io";
-import type { JsonObject } from "@pluv/types";
+import type { InferIOAuthorizeUser, IOAuthorize, JsonObject } from "@pluv/types";
 import crypto from "node:crypto";
 import type { WebSocket } from "ws";
 
@@ -20,9 +21,12 @@ export interface NodeWebSocketEventMap {
 
 export type NodeWebSocketConfig = AbstractWebSocketConfig;
 
-export class NodeWebSocket extends AbstractWebSocket<WebSocket> {
+export class NodeWebSocket<
+    TAuthorize extends IOAuthorize<any, any> | null = null,
+> extends AbstractWebSocket<WebSocket> {
     private _sessionId: string;
     private _state: WebSocketSerializedState;
+    private _user: InferIOAuthorizeUser<TAuthorize> = null as InferIOAuthorizeUser<TAuthorize>;
 
     public set presence(presence: JsonObject | null) {
         this._state.presence = presence;
@@ -30,6 +34,19 @@ export class NodeWebSocket extends AbstractWebSocket<WebSocket> {
 
     public get readyState(): 0 | 1 | 2 | 3 {
         return this.webSocket.readyState;
+    }
+
+    public get session(): WebSocketSession<TAuthorize> {
+        const sessionId = this._sessionId;
+        const state = this._state;
+        const user = this._user;
+
+        return {
+            ...state,
+            id: sessionId,
+            user,
+            webSocket: this,
+        };
     }
 
     public get sessionId(): string {
@@ -42,6 +59,10 @@ export class NodeWebSocket extends AbstractWebSocket<WebSocket> {
 
     public set state(state: WebSocketSerializedState) {
         this._state = state;
+    }
+
+    public set user(user: InferIOAuthorizeUser<TAuthorize>) {
+        this._user = user;
     }
 
     constructor(webSocket: WebSocket, config: NodeWebSocketConfig) {

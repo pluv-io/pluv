@@ -38,6 +38,7 @@ import type {
     WebSocketSession,
     WebSocketType,
 } from "./types";
+import { BaseUser } from "@pluv/types";
 
 type BroadcastMessage<TIO extends IORoom<any, any, any, any>> =
     | InferEventMessage<InferIOInput<TIO>>
@@ -110,7 +111,7 @@ export class IORoom<
     private readonly _listeners: IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>;
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
-    private readonly _sessions = new Map<string, AbstractWebSocket>();
+    private readonly _sessions = new Map<string, AbstractWebSocket<any, TAuthorize>>();
 
     /**
      * @ignore
@@ -286,10 +287,18 @@ export class IORoom<
     ): Promise<void> {
         const _options = (options[0] ?? {}) as WebSocketRegisterConfig<TPlatform>;
         const token = _options.token ?? null;
+
+        /**
+         * TODO
+         * @description Update the sessionId strategy so that the userId can be used to retrieve
+         * the session in O(1) time if authorized.
+         * @date April 15, 2025
+         */
         const sessionId = this._platform.getSessionId(webSocket);
         const sessionExists = typeof sessionId === "string" && this._sessions.has(sessionId);
 
         if (sessionExists) return;
+
         if (!(await this._initialized)) {
             this._initialize();
 
@@ -300,18 +309,31 @@ export class IORoom<
         const ioAuthorize = this._getIOAuthorize(_options);
         const isUnauthorized = !!ioAuthorize && !user;
 
+        const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
+
+        if (isUnauthorized) {
+            this._logDebug(`${colors.blue("Authorization failed for connection:")} ${pluvWs.sessionId}`);
+
+            pluvWs.handleError({ error: new Error("Not authorized"), room: this.id });
+            pluvWs.close(3000, "WebSocket unauthorized.");
+
+            return;
+        }
+
+        /**
+         * TODO
+         * @description If we find a token that's in use, assume that its a reconnect attempt. Exit
+         * the existing connection, and replace with the new connection.
+         */
         // There is an attempt for multiple of the same identities. Probably malicious.
         const isTokenInUse: boolean =
-            !!user &&
-            (await this._getSessions().then((sessions) => sessions.some((session) => session.user?.id === user.id)));
-
-        const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
+            !!user && this._getSessions().some((session) => session.user?.id === (user as BaseUser).id);
 
         this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
 
         await this._platform.acceptWebSocket(pluvWs);
 
-        if (isUnauthorized || isTokenInUse) {
+        if (isTokenInUse) {
             this._logDebug(`${colors.blue("Authorization failed for connection:")} ${pluvWs.sessionId}`);
 
             pluvWs.handleError({ error: new Error("Not authorized"), room: this.id });
@@ -322,6 +344,7 @@ export class IORoom<
 
         this._sessions.set(pluvWs.sessionId, pluvWs);
 
+        pluvWs.user = user;
         await this._platform.persistence.addUser(this.id, pluvWs.sessionId, user ?? {});
 
         if (this._platform._config.registrationMode === "attached") {
@@ -346,7 +369,7 @@ export class IORoom<
         const { message, senderId } = params;
 
         const sender = senderId ? (this._sessions.get(senderId) ?? null) : null;
-        const session = (await sender?.getSession()) ?? null;
+        const session = sender?.session ?? null;
         const user = session?.user ?? null;
 
         if (typeof senderId !== "string") return;
@@ -359,8 +382,8 @@ export class IORoom<
         });
     }
 
-    private async _closeWebSockets(webSockets: readonly AbstractWebSocket[]): Promise<void> {
-        const closeWebSocket = async (webSocket: AbstractWebSocket): Promise<void> => {
+    private async _closeWebSockets(webSockets: readonly AbstractWebSocket<any, TAuthorize>[]): Promise<void> {
+        const closeWebSocket = async (webSocket: AbstractWebSocket<any, TAuthorize>): Promise<void> => {
             webSocket.state = { ...webSocket.state, quit: true };
 
             const sessionId = webSocket.sessionId;
@@ -375,7 +398,8 @@ export class IORoom<
             });
 
             try {
-                const [session, doc] = await Promise.all([webSocket.getSession(), this._doc]);
+                const doc = await this._doc;
+                const session = webSocket.session;
                 const encodedState = doc.getEncodedState();
 
                 await Promise.resolve(
@@ -419,8 +443,8 @@ export class IORoom<
         this._closeWebSockets(quitters);
     }
 
-    private async _emitRegistered(pluvWs: AbstractWebSocket): Promise<void> {
-        const session = await pluvWs.getSession();
+    private async _emitRegistered(pluvWs: AbstractWebSocket<any, TAuthorize>): Promise<void> {
+        const session = pluvWs.session;
         const sessionId = session.id;
         const user = session.user;
 
@@ -450,7 +474,7 @@ export class IORoom<
         throw new Error("Platform must use detached mode");
     }
 
-    private _getAbstractWs(webSocket: WebSocketType<TPlatform>): AbstractWebSocket | null {
+    private _getAbstractWs(webSocket: WebSocketType<TPlatform>): AbstractWebSocket<any, TAuthorize> | null {
         if ((webSocket as unknown as any) instanceof AbstractWebSocket) return webSocket;
 
         const sessionId = this._platform.getSessionId(webSocket);
@@ -469,7 +493,7 @@ export class IORoom<
     private async _getAuthorizedUser(
         token: Maybe<string>,
         options: WebSocketRegisterConfig<TPlatform>,
-    ): Promise<InferIOAuthorizeUser<InferIOAuthorize<this>>> {
+    ): Promise<InferIOAuthorizeUser<TAuthorize>> {
         const ioAuthorize = this._getIOAuthorize(options);
 
         if (!ioAuthorize) return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
@@ -535,18 +559,18 @@ export class IORoom<
         return procedure.config.input ? procedure.config.input.parse(message.data) : message.data;
     }
 
-    private async _getSession(webSocket: WebSocketType<TPlatform>): Promise<WebSocketSession<TAuthorize>> {
+    private _getSession(webSocket: WebSocketType<TPlatform>): WebSocketSession<TAuthorize> {
         const pluvWs = this._getAbstractWs(webSocket);
 
         if (!pluvWs) throw new Error("Session could not be found");
 
-        return await pluvWs.getSession<TAuthorize>();
+        return pluvWs.session;
     }
 
-    private async _getSessions() {
-        const promises = Array.from(this._sessions.values()).map(async (pluvWs) => await pluvWs.getSession());
+    private _getSessions() {
+        const sessions = Array.from(this._sessions.values()).map((pluvWs) => pluvWs.session);
 
-        return await Promise.all(promises);
+        return sessions;
     }
 
     private _initialize() {
@@ -624,14 +648,14 @@ export class IORoom<
         if (this._debug) console.log(...data);
     }
 
-    private _onClose(webSocket: AbstractWebSocket): () => Promise<void> {
+    private _onClose(webSocket: AbstractWebSocket<any, TAuthorize>): () => Promise<void> {
         return async (): Promise<void> => {
             if (!(await this._initialized)) return;
             await this._closeWebSockets([webSocket]);
         };
     }
 
-    private _onMessage(webSocket: AbstractWebSocket): (event: AbstractMessageEvent) => Promise<void> {
+    private _onMessage(webSocket: AbstractWebSocket<any, TAuthorize>): (event: AbstractMessageEvent) => Promise<void> {
         return async (event: AbstractMessageEvent): Promise<void> => {
             if (!(await this._initialized)) return;
 
@@ -768,7 +792,10 @@ export class IORoom<
         }
     }
 
-    private async _sendMessage(pluvWs: AbstractWebSocket<any>, message: IOEventMessage<any>): Promise<void> {
+    private async _sendMessage(
+        pluvWs: AbstractWebSocket<any, TAuthorize>,
+        message: IOEventMessage<any>,
+    ): Promise<void> {
         if (!(await this._initialized)) return;
 
         await Promise.resolve(pluvWs.sendMessage(message));
@@ -790,10 +817,10 @@ export class IORoom<
                 const pluvWs = this._sessions.get(id);
 
                 return pluvWs ? dict.set(id, pluvWs) : dict;
-            }, new Map<string, AbstractWebSocket>()) ?? this._sessions;
+            }, new Map<string, AbstractWebSocket<any, TAuthorize>>()) ?? this._sessions;
 
         const promises = Array.from(webSockets.values()).map(async (pluvWs) => {
-            const session = await pluvWs.getSession();
+            const session = pluvWs.session;
             const user = session.user ?? null;
 
             this._sendMessage(pluvWs, { connectionId, data, room, type, user });
@@ -815,7 +842,7 @@ export class IORoom<
         if (!pluvWs) return;
         if (message.type === "$pong") await this._emitQuitters();
 
-        const session = await pluvWs.getSession();
+        const session = pluvWs.session;
         const user = session.user ?? null;
 
         this._sendMessage(pluvWs, {

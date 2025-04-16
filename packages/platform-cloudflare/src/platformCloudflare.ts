@@ -1,5 +1,5 @@
 import type { CreateIOParams, InferInitContextType, PluvContext, PluvIOAuthorize } from "@pluv/io";
-import type { BaseUser, Id, Json } from "@pluv/types";
+import type { BaseUser, Id, IOAuthorize, Json } from "@pluv/types";
 import type { CloudflarePlatformConfig } from "./CloudflarePlatform";
 import { CloudflarePlatform } from "./CloudflarePlatform";
 import type { InferCallback } from "./infer";
@@ -11,13 +11,16 @@ export type PlatformCloudflareCreateIOParams<
     TUser extends BaseUser | null = null,
 > = Id<
     CloudflarePlatformConfig<TEnv, TMeta> &
-        Omit<CreateIOParams<CloudflarePlatform<TEnv, TMeta>, TContext, TUser>, "authorize" | "context" | "platform"> & {
+        Omit<
+            CreateIOParams<CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>, TContext, TUser>,
+            "authorize" | "context" | "platform"
+        > & {
             authorize?: PluvIOAuthorize<
-                CloudflarePlatform<TEnv, TMeta>,
+                CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>,
                 TUser,
-                InferInitContextType<CloudflarePlatform<TEnv, TMeta>>
+                InferInitContextType<CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>>
             >;
-            context?: PluvContext<CloudflarePlatform<TEnv, TMeta>, TContext>;
+            context?: PluvContext<CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>, TContext>;
             types?: InferCallback<TEnv, TMeta>;
         }
 >;
@@ -29,7 +32,7 @@ export const platformCloudflare = <
     TUser extends BaseUser | null = null,
 >(
     config: PlatformCloudflareCreateIOParams<TEnv, TMeta, TContext, TUser> = {},
-): CreateIOParams<CloudflarePlatform<TEnv, TMeta>, TContext, TUser> => {
+): CreateIOParams<CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>, TContext, TUser> => {
     const { authorize, context, crdt, debug } = config;
 
     return {
@@ -37,6 +40,6 @@ export const platformCloudflare = <
         context,
         crdt,
         debug,
-        platform: new CloudflarePlatform<TEnv, TMeta>(config),
+        platform: new CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>(config),
     };
 };

@@ -29,7 +29,7 @@ export interface ConvertWebSocketConfig {
 }
 
 export abstract class AbstractPlatform<
-    TWebSocket extends AbstractWebSocket = AbstractWebSocket,
+    TWebSocket extends AbstractWebSocket<any, any> = AbstractWebSocket<any, any>,
     TInitContext extends Record<string, any> = {},
     TRoomContext extends Record<string, any> = {},
     TConfig extends PlatformConfig = PlatformConfig,
@@ -62,9 +62,9 @@ export abstract class AbstractPlatform<
     public abstract convertWebSocket(
         webSocket: InferWebSocketSource<TWebSocket>,
         config: ConvertWebSocketConfig,
-    ): AbstractWebSocket;
+    ): AbstractWebSocket<any, any>;
 
-    public abstract getLastPing(webSocket: AbstractWebSocket): number | null;
+    public abstract getLastPing(webSocket: AbstractWebSocket<any, any>): number | null;
 
     public abstract getSerializedState(webSocket: InferWebSocketSource<TWebSocket>): WebSocketSerializedState | null;
 

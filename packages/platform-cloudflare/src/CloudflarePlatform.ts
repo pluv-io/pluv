@@ -6,7 +6,7 @@ import type {
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
 import { PersistenceCloudflareTransactionalStorage } from "@pluv/persistence-cloudflare-transactional-storage";
-import type { Json } from "@pluv/types";
+import type { IOAuthorize, Json } from "@pluv/types";
 import { CloudflareWebSocket } from "./CloudflareWebSocket";
 import { DEFAULT_REGISTRATION_MODE } from "./constants";
 
@@ -21,10 +21,11 @@ export type CloudflarePlatformConfig<
 > = AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>> & { mode?: WebSocketRegistrationMode };
 
 export class CloudflarePlatform<
+    TAuthorize extends IOAuthorize<any, any> | null = null,
     TEnv extends Record<string, any> = {},
     TMeta extends Record<string, Json> = {},
 > extends AbstractPlatform<
-    CloudflareWebSocket,
+    CloudflareWebSocket<TAuthorize>,
     { env: TEnv; request: Request },
     CloudflarePlatformRoomContext<TEnv, TMeta>,
     {
@@ -81,7 +82,7 @@ export class CloudflarePlatform<
         );
     }
 
-    public async acceptWebSocket(webSocket: CloudflareWebSocket): Promise<void> {
+    public async acceptWebSocket(webSocket: CloudflareWebSocket<TAuthorize>): Promise<void> {
         const detachedState = this._getDetachedState();
 
         if (!detachedState) {
@@ -93,13 +94,13 @@ export class CloudflarePlatform<
         detachedState.acceptWebSocket(webSocket.webSocket);
     }
 
-    public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): CloudflareWebSocket {
+    public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): CloudflareWebSocket<TAuthorize> {
         const { room } = config;
 
-        return new CloudflareWebSocket(webSocket, { persistence: this.persistence, platform: this, room });
+        return new CloudflareWebSocket<TAuthorize>(webSocket, { persistence: this.persistence, platform: this, room });
     }
 
-    public getLastPing(webSocket: CloudflareWebSocket): number | null {
+    public getLastPing(webSocket: CloudflareWebSocket<TAuthorize>): number | null {
         const detachedState = this._getDetachedState();
 
         if (!detachedState) return null;
@@ -139,7 +140,7 @@ export class CloudflarePlatform<
 
         if (!roomContext.env || !roomContext.state) throw new Error("Could not derive platform roomContext");
 
-        return new CloudflarePlatform<TEnv, TMeta>({
+        return new CloudflarePlatform<TAuthorize, TEnv, TMeta>({
             roomContext: {
                 env: roomContext.env,
                 meta: roomContext.meta,
@@ -164,7 +165,7 @@ export class CloudflarePlatform<
     }
 
     public setSerializedState(
-        webSocket: CloudflareWebSocket,
+        webSocket: CloudflareWebSocket<TAuthorize>,
         state: WebSocketSerializedState,
     ): WebSocketSerializedState {
         const deserialized = webSocket.webSocket.deserializeAttachment() ?? {};

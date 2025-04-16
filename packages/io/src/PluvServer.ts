@@ -27,7 +27,7 @@ export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
         : never;
 
 export type PluvServerConfig<
-    TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
+    TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
     TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
@@ -42,7 +42,7 @@ export type PluvServerConfig<
 };
 
 type BaseCreateRoomOptions<
-    TPlatform extends AbstractPlatform<any>,
+    TPlatform extends AbstractPlatform<any, any>,
     TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
@@ -51,7 +51,7 @@ type BaseCreateRoomOptions<
 };
 
 export type CreateRoomOptions<
-    TPlatform extends AbstractPlatform<any>,
+    TPlatform extends AbstractPlatform<any, any>,
     TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
@@ -60,7 +60,7 @@ export type CreateRoomOptions<
     : [Id<BaseCreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents> & InferRoomContextType<TPlatform>>];
 
 export class PluvServer<
-    TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
+    TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
     TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
@@ -337,7 +337,7 @@ export class PluvServer<
          * to support platformPluv
          * @date December 15, 2024
          */
-        if (this._platform._createToken) return await this._platform._createToken(params);
+        if (this._platform._createToken) return await this._platform._createToken(params as any);
 
         const ioAuthorize = this._getIOAuthorize(params);
         const secret = ioAuthorize?.secret ?? null;

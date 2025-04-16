@@ -55,7 +55,7 @@ export interface CreatePluvHandlerResult {
     wsHandler: WebSocketHandler;
 }
 
-export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform, any, any, any>>(
+export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform<any>, any, any, any>>(
     config: CreatePluvHandlerConfig<TPluvServer>,
 ): CreatePluvHandlerResult => {
     const { authorize, endpoint = "/api/pluv", io, server } = config;

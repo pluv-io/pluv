@@ -15,20 +15,20 @@ export interface JWT<TUser extends BaseUser> {
     user: TUser;
 }
 
-export type JWTEncodeParams<TUser extends BaseUser | null, TPlatform extends AbstractPlatform> = {
+export type JWTEncodeParams<TUser extends BaseUser | null, TPlatform extends AbstractPlatform<any, any>> = {
     maxAge?: number;
     room: string;
     user: TUser extends BaseUser ? TUser : "Error: Cannot create token without authorization!";
 } & InferInitContextType<TPlatform>;
 
 export interface AuthorizeParams {
-    platform: AbstractPlatform;
+    platform: AbstractPlatform<any, any>;
     secret: string;
 }
 
 export interface AuthorizeModule {
     decode: <TUser extends BaseUser>(jwt: string) => Promise<TUser | null>;
-    encode: <TUser extends BaseUser, TPlatform extends AbstractPlatform>(
+    encode: <TUser extends BaseUser, TPlatform extends AbstractPlatform<any, any>>(
         params: JWTEncodeParams<TUser, TPlatform>,
     ) => Promise<string>;
 }
@@ -38,7 +38,7 @@ const now = () => (Date.now() / 1_000) | 0;
 export const authorize = (params: AuthorizeParams) => {
     const { platform, secret } = params;
 
-    const encode = async <TUser extends BaseUser, TPlatform extends AbstractPlatform>(
+    const encode = async <TUser extends BaseUser, TPlatform extends AbstractPlatform<any, any>>(
         encodeParams: JWTEncodeParams<TUser, TPlatform>,
     ): Promise<string> => {
         const { maxAge = DEFAULT_MAX_AGE_MS, room, user } = encodeParams;
