@@ -5,7 +5,7 @@ import type {
     WebSocketSerializedState,
     WebSocketSession,
 } from "@pluv/io";
-import { AbstractWebSocket } from "@pluv/io";
+import { AbstractWebSocket, utils } from "@pluv/io";
 import type { InferIOAuthorizeUser, IOAuthorize, JsonObject } from "@pluv/types";
 
 export interface CloudflareWebSocketEventMap {
@@ -51,7 +51,14 @@ export class CloudflareWebSocket<TAuthorize extends IOAuthorize<any, any> | null
 
     public get sessionId(): string {
         const deserialized = this.webSocket.deserializeAttachment() ?? {};
-        const sessionId = deserialized.sessionId ?? crypto.randomUUID();
+        const userId = (deserialized.user ?? null)?.id ?? null;
+        const sessionId =
+            deserialized.sessionId ??
+            (!!userId
+                ? // pluv user
+                  utils.getUserConnectionId(userId)
+                : // pluv (no user)
+                  `p_${crypto.randomUUID()}`);
 
         if (typeof deserialized.sessionId !== "string") {
             this.webSocket.serializeAttachment({ ...deserialized, sessionId });
