@@ -216,4 +216,71 @@ test.describe("Cloudflare Presence", () => {
             await secondPage.close();
         },
     );
+
+    test(
+        oneLine`
+            connect 1 ->
+            connect 2 ->
+            verify others on 1 + 2 ->
+            connect 1 again ->
+            verify others on 1 + 2
+        `,
+        async () => {
+            const testUrl = `${TEST_URL}?room=e2e-presence-repeat-user`;
+
+            const firstPage = await openTestPage(`${testUrl}?user_id=user_1`);
+            const secondPage = await openTestPage(`${testUrl}?user_id=user_2`);
+
+            await Promise.all([
+                firstPage.waitForSelector("#presence-room"),
+                secondPage.waitForSelector("#presence-room"),
+            ]);
+
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(1));
+
+            await secondPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(1));
+
+            const thirdPage = await openTestPage(`${testUrl}?user_id=user_1`);
+
+            await Promise.all([
+                firstPage.waitForSelector("#presence-room"),
+                secondPage.waitForSelector("#presence-room"),
+                thirdPage.waitForSelector("#presence-room"),
+            ]);
+
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(1));
+
+            await secondPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(1));
+
+            await thirdPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(1));
+
+            await firstPage.close();
+            await secondPage.close();
+            await thirdPage.close();
+        },
+    );
 });
