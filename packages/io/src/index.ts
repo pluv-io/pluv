@@ -51,4 +51,3 @@ export type {
     WebSocketSerializedState,
     WebSocketSession,
 } from "./types";
-export * as utils from "./utils";
