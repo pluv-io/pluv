@@ -301,7 +301,6 @@ export class IORoom<
 
         if (!(await this._initialized)) {
             this._initialize();
-
             await this._initialized;
         }
 
@@ -313,7 +312,6 @@ export class IORoom<
 
         if (isUnauthorized) {
             this._logDebug(`${colors.blue("Authorization failed for connection:")} ${pluvWs.sessionId}`);
-
             pluvWs.handleError({ error: new Error("Not authorized"), room: this.id });
             pluvWs.close(3000, "WebSocket unauthorized.");
 

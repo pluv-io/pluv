@@ -8,7 +8,7 @@ import type {
     WebSocketSerializedState,
     WebSocketSession,
 } from "@pluv/io";
-import { AbstractWebSocket } from "@pluv/io";
+import { AbstractWebSocket, utils } from "@pluv/io";
 import type { InferIOAuthorizeUser, IOAuthorize, JsonObject } from "@pluv/types";
 import crypto from "node:crypto";
 import type { WebSocket } from "ws";
@@ -24,7 +24,7 @@ export type NodeWebSocketConfig = AbstractWebSocketConfig;
 export class NodeWebSocket<
     TAuthorize extends IOAuthorize<any, any> | null = null,
 > extends AbstractWebSocket<WebSocket> {
-    private _sessionId: string;
+    private _sessionId: string | null = null;
     private _state: WebSocketSerializedState;
     private _user: InferIOAuthorizeUser<TAuthorize> = null as InferIOAuthorizeUser<TAuthorize>;
 
@@ -37,7 +37,7 @@ export class NodeWebSocket<
     }
 
     public get session(): WebSocketSession<TAuthorize> {
-        const sessionId = this._sessionId;
+        const sessionId = this.sessionId;
         const state = this._state;
         const user = this._user;
 
@@ -50,7 +50,20 @@ export class NodeWebSocket<
     }
 
     public get sessionId(): string {
-        return this._sessionId;
+        if (this._sessionId) return this._sessionId;
+
+        const userId = (this._user?.id ?? null) as string | null;
+        const sessionId =
+            this._sessionId ??
+            (!!userId
+                ? // pluv user
+                  utils.getUserConnectionId(userId)
+                : // pluv (no user)
+                  `p_${crypto.randomUUID()}`);
+
+        this._sessionId = sessionId;
+
+        return sessionId;
     }
 
     public get state(): WebSocketSerializedState {
@@ -70,7 +83,6 @@ export class NodeWebSocket<
 
         super(webSocket, config);
 
-        this._sessionId = crypto.randomUUID();
         this._state = {
             presence: null,
             quit: false,
