@@ -311,7 +311,7 @@ export class IORoom<
         const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
 
         if (isUnauthorized) {
-            this._logDebug(`${colors.blue("Authorization failed for connection:")} ${pluvWs.sessionId}`);
+            this._logDebug(`${colors.blue("Authorization failed for connection")}`);
             pluvWs.handleError({ error: new Error("Not authorized"), room: this.id });
             pluvWs.close(3000, "WebSocket unauthorized.");
 
@@ -327,12 +327,12 @@ export class IORoom<
         const isTokenInUse: boolean =
             !!user && this._getSessions().some((session) => session.user?.id === (user as BaseUser).id);
 
-        this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
+        this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)}`);
 
         await this._platform.acceptWebSocket(pluvWs);
 
         if (isTokenInUse) {
-            this._logDebug(`${colors.blue("Authorization failed for connection:")} ${pluvWs.sessionId}`);
+            this._logDebug(`${colors.blue("Authorization failed for connection")}`);
 
             pluvWs.handleError({ error: new Error("Not authorized"), room: this.id });
             pluvWs.close(3000, "WebSocket unauthorized.");
@@ -340,9 +340,9 @@ export class IORoom<
             return;
         }
 
+        pluvWs.user = user;
         this._sessions.set(pluvWs.sessionId, pluvWs);
 
-        pluvWs.user = user;
         await this._platform.persistence.addUser(this.id, pluvWs.sessionId, user ?? {});
 
         if (this._platform._config.registrationMode === "attached") {

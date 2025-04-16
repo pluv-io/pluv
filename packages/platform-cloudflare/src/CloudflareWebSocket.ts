@@ -112,7 +112,6 @@ export class CloudflareWebSocket<TAuthorize extends IOAuthorize<any, any> | null
         };
 
         webSocket.serializeAttachment({
-            sessionId: this.sessionId,
             state,
             ...webSocket.deserializeAttachment(),
         });
