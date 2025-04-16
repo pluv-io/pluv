@@ -52,14 +52,7 @@ export class NodeWebSocket<
     public get sessionId(): string {
         if (this._sessionId) return this._sessionId;
 
-        const userId = (this._user?.id ?? null) as string | null;
-        const sessionId =
-            this._sessionId ??
-            (!!userId
-                ? // pluv user
-                  utils.getUserConnectionId(userId)
-                : // pluv (no user)
-                  `p_${crypto.randomUUID()}`);
+        const sessionId = this._sessionId ?? `p_${crypto.randomUUID()}`;
 
         this._sessionId = sessionId;
 
