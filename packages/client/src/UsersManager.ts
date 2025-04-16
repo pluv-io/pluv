@@ -155,21 +155,27 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
         user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>,
         presence?: TPresence,
     ): void {
-        const clientId = this._idMap.get(connectionId) ?? null;
         const myClientId = !!this._myself ? this.getClientId(this._myself) : null;
+        const userInfo: UserInfo<TIO, TPresence> = {
+            connectionId,
+            presence: presence ?? this._initialPresence,
+            user,
+        };
+        const clientId = this.getClientId(userInfo);
 
-        if (!clientId) return;
         if (myClientId === clientId) return;
 
         const other = this._others.get(clientId);
 
-        if (other) return;
+        /**
+         * !HACK
+         * @description Don't override the other user, so that we ensure the user's presence isn't
+         * overwritten by whatever incoming connection.
+         * @date April 16, 2025
+         */
+        if (!!other) return;
 
-        this._others.set(clientId, {
-            connectionId,
-            presence: presence ?? this._initialPresence,
-            user,
-        });
+        this._others.set(clientId, userInfo);
     }
 
     /**
