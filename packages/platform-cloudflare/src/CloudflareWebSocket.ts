@@ -51,14 +51,7 @@ export class CloudflareWebSocket<TAuthorize extends IOAuthorize<any, any> | null
 
     public get sessionId(): string {
         const deserialized = this.webSocket.deserializeAttachment() ?? {};
-        const userId = (deserialized.user ?? null)?.id ?? null;
-        const sessionId =
-            deserialized.sessionId ??
-            (!!userId
-                ? // pluv user
-                  utils.getUserConnectionId(userId)
-                : // pluv (no user)
-                  `p_${crypto.randomUUID()}`);
+        const sessionId = deserialized.sessionId ?? `p_${crypto.randomUUID()}`;
 
         if (typeof deserialized.sessionId !== "string") {
             this.webSocket.serializeAttachment({ ...deserialized, sessionId });
