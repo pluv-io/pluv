@@ -318,31 +318,12 @@ export class IORoom<
             return;
         }
 
-        /**
-         * TODO
-         * @description If we find a token that's in use, assume that its a reconnect attempt. Exit
-         * the existing connection, and replace with the new connection.
-         */
-        // There is an attempt for multiple of the same identities. Probably malicious.
-        const isTokenInUse: boolean =
-            !!user && this._getSessions().some((session) => session.user?.id === (user as BaseUser).id);
+        if (!!user) pluvWs.user = user;
 
-        this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)}`);
+        this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
 
         await this._platform.acceptWebSocket(pluvWs);
-
-        if (isTokenInUse) {
-            this._logDebug(`${colors.blue("Authorization failed for connection")}`);
-
-            pluvWs.handleError({ error: new Error("Not authorized"), room: this.id });
-            pluvWs.close(3000, "WebSocket unauthorized.");
-
-            return;
-        }
-
-        pluvWs.user = user;
         this._sessions.set(pluvWs.sessionId, pluvWs);
-
         await this._platform.persistence.addUser(this.id, pluvWs.sessionId, user ?? {});
 
         if (this._platform._config.registrationMode === "attached") {
