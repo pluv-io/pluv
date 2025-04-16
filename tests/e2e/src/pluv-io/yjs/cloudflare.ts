@@ -7,7 +7,17 @@ import type { ioServer } from "../../server/yjs/cloudflare";
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = createClient({
     authEndpoint: ({ metadata, room }) => {
-        return `${metadata.authEndpoint}/api/pluv/authorize?room=${room}`;
+        const url = new URL(`${metadata.authEndpoint}/api/pluv/authorize`);
+
+        url.searchParams.set("room", room);
+
+        if (typeof window !== "undefined") {
+            const userId = new URL(window.location.href).searchParams.get("user_id");
+
+            if (!!userId) url.searchParams.set("user_id", userId);
+        }
+
+        return url.toString();
     },
     initialStorage: yjs.doc(() => ({
         messages: yjs.array([
