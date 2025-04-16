@@ -4,7 +4,14 @@ import { ioServer } from "./pluv-io";
 export type { ioServer } from "./pluv-io";
 
 const Pluv = createPluvHandler({
-    authorize: () => {
+    authorize: ({ env, request, room }) => {
+        if (room.endsWith("repeat-user")) {
+            const url = new URL(request.url);
+            const id = url.searchParams.get("user_id") ?? crypto.randomUUID();
+
+            return { id, name: `user:${id}` };
+        }
+
         const id = crypto.randomUUID();
 
         return { id, name: `user:${id}` };
