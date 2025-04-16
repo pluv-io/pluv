@@ -7,7 +7,7 @@ import type {
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
-import type { Json } from "@pluv/types";
+import type { IOAuthorize, Json } from "@pluv/types";
 import crypto from "node:crypto";
 import type { IncomingMessage } from "node:http";
 import { TextDecoder } from "node:util";
@@ -23,8 +23,11 @@ export type NodePlatformConfig<TMeta extends Record<string, Json>> = { mode?: We
     | { persistence: AbstractPersistence; pubSub: AbstractPubSub }
 ) & { roomContext?: NodePlatformRoomContext<TMeta> };
 
-export class NodePlatform<TMeta extends Record<string, Json> = {}> extends AbstractPlatform<
-    NodeWebSocket,
+export class NodePlatform<
+    TAuthorize extends IOAuthorize<any, any> | null = null,
+    TMeta extends Record<string, Json> = {},
+> extends AbstractPlatform<
+    NodeWebSocket<TAuthorize>,
     { req: IncomingMessage },
     NodePlatformRoomContext<TMeta>,
     {
@@ -73,17 +76,17 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
         };
     }
 
-    public acceptWebSocket(webSocket: NodeWebSocket): Promise<void> {
+    public acceptWebSocket(webSocket: NodeWebSocket<TAuthorize>): Promise<void> {
         return Promise.resolve(undefined);
     }
 
-    public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): NodeWebSocket {
+    public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): NodeWebSocket<TAuthorize> {
         const { room } = config;
 
-        return new NodeWebSocket(webSocket, { persistence: this.persistence, platform: this, room });
+        return new NodeWebSocket<TAuthorize>(webSocket, { persistence: this.persistence, platform: this, room });
     }
 
-    public getLastPing(webSocket: NodeWebSocket): number | null {
+    public getLastPing(webSocket: NodeWebSocket<TAuthorize>): number | null {
         return null;
     }
 
@@ -120,7 +123,10 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
         return crypto.randomUUID();
     }
 
-    public setSerializedState(webSocket: NodeWebSocket, state: WebSocketSerializedState): WebSocketSerializedState {
+    public setSerializedState(
+        webSocket: NodeWebSocket<TAuthorize>,
+        state: WebSocketSerializedState,
+    ): WebSocketSerializedState {
         webSocket.state = state;
 
         return webSocket.state;

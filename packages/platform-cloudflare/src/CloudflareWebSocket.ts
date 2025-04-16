@@ -1,6 +1,12 @@
-import type { AbstractEventMap, AbstractListener, AbstractWebSocketConfig, WebSocketSerializedState } from "@pluv/io";
+import type {
+    AbstractEventMap,
+    AbstractListener,
+    AbstractWebSocketConfig,
+    WebSocketSerializedState,
+    WebSocketSession,
+} from "@pluv/io";
 import { AbstractWebSocket } from "@pluv/io";
-import type { JsonObject } from "@pluv/types";
+import type { InferIOAuthorizeUser, IOAuthorize, JsonObject } from "@pluv/types";
 
 export interface CloudflareWebSocketEventMap {
     close: CloseEvent;
@@ -11,7 +17,10 @@ export interface CloudflareWebSocketEventMap {
 
 export type CloudflareWebSocketConfig = AbstractWebSocketConfig;
 
-export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
+export class CloudflareWebSocket<TAuthorize extends IOAuthorize<any, any> | null = null> extends AbstractWebSocket<
+    WebSocket,
+    TAuthorize
+> {
     public set presence(presence: JsonObject | null) {
         const deserialized = this.webSocket.deserializeAttachment();
         const state = deserialized.state;
@@ -24,6 +33,20 @@ export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
 
     public get readyState(): 0 | 1 | 2 | 3 {
         return this.webSocket.readyState as 0 | 1 | 2 | 3;
+    }
+
+    public get session(): WebSocketSession<TAuthorize> {
+        const deserialized = this.webSocket.deserializeAttachment();
+        const sessionId = deserialized.sessionId as string;
+        const state = this.state;
+        const user = (deserialized.user ?? null) as InferIOAuthorizeUser<TAuthorize>;
+
+        return {
+            ...state,
+            id: sessionId,
+            user,
+            webSocket: this,
+        };
     }
 
     public get sessionId(): string {
@@ -61,6 +84,12 @@ export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
         const deserialized = this.webSocket.deserializeAttachment();
 
         this.webSocket.serializeAttachment({ ...deserialized, state });
+    }
+
+    public set user(user: InferIOAuthorizeUser<TAuthorize>) {
+        const deserialized = this.webSocket.deserializeAttachment();
+
+        this.webSocket.serializeAttachment({ ...deserialized, user });
     }
 
     constructor(webSocket: WebSocket, config: CloudflareWebSocketConfig) {

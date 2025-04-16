@@ -36,16 +36,16 @@ export interface CreatePluvHandlerResult<TEnv extends Record<string, any> = {}> 
     handler: ExportedHandler<TEnv>;
 }
 
-type InferCloudflarePluvHandlerEnv<TPluvServer extends PluvServer<CloudflarePlatform, any, any, any>> =
-    TPluvServer extends PluvServer<CloudflarePlatform<infer IEnv>, any, any, any> ? IEnv : {};
+type InferCloudflarePluvHandlerEnv<TPluvServer extends PluvServer<CloudflarePlatform<any, any>, any, any, any>> =
+    TPluvServer extends PluvServer<CloudflarePlatform<any, infer IEnv>, any, any, any> ? IEnv : {};
 
-export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatform, any, any, any>>(
+export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatform<any, any>, any, any, any>>(
     config: CreatePluvHandlerConfig<TPluvServer, Id<InferCloudflarePluvHandlerEnv<TPluvServer>>>,
 ): CreatePluvHandlerResult<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> => {
     const { authorize, binding, endpoint = "/api/pluv", modify, io } = config;
 
     const DurableObject = class extends BaseDurableObject<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> {
-        private _room: IORoom<CloudflarePlatform>;
+        private _room: IORoom<CloudflarePlatform<any, any>>;
 
         constructor(state: DurableObjectState, env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>) {
             super(state, env);
