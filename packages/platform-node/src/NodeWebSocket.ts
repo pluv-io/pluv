@@ -8,7 +8,7 @@ import type {
     WebSocketSerializedState,
     WebSocketSession,
 } from "@pluv/io";
-import { AbstractWebSocket, utils } from "@pluv/io";
+import { AbstractWebSocket } from "@pluv/io";
 import type { InferIOAuthorizeUser, IOAuthorize, JsonObject } from "@pluv/types";
 import crypto from "node:crypto";
 import type { WebSocket } from "ws";
@@ -76,11 +76,12 @@ export class NodeWebSocket<
 
         super(webSocket, config);
 
+        const currentTime = new Date().getTime();
         this._state = {
             presence: null,
             quit: false,
             room,
-            timers: { ping: new Date().getTime() },
+            timers: { ping: currentTime, presence: currentTime },
         };
     }
 

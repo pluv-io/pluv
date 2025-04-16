@@ -170,6 +170,17 @@ export class PluvServer<
 
             session.webSocket.presence = updated;
 
+            const currentTime = new Date().getTime();
+            const prevState = session.webSocket.state;
+
+            this._platform.setSerializedState(session.webSocket, {
+                ...prevState,
+                timers: {
+                    ...prevState.timers,
+                    presence: currentTime,
+                },
+            });
+
             return { $presenceUpdated: { presence: updated } };
         }),
         $updateStorage: this._procedure.broadcast((data, { context, doc, room }) => {
