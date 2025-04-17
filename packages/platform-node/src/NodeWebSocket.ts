@@ -76,12 +76,14 @@ export class NodeWebSocket<
 
         super(webSocket, config);
 
-        const currentTime = new Date().getTime();
         this._state = {
             presence: null,
             quit: false,
             room,
-            timers: { ping: currentTime, presence: currentTime },
+            timers: {
+                ping: new Date().getTime(),
+                presence: null,
+            },
         };
     }
 

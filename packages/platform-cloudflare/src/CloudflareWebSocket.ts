@@ -97,12 +97,14 @@ export class CloudflareWebSocket<TAuthorize extends IOAuthorize<any, any> | null
 
         super(webSocket, config);
 
-        const currentTime = new Date().getTime();
         const state: WebSocketSerializedState = {
             presence: null,
             quit: false,
             room,
-            timers: { ping: currentTime, presence: currentTime },
+            timers: {
+                ping: new Date().getTime(),
+                presence: null,
+            },
         };
 
         webSocket.serializeAttachment({
