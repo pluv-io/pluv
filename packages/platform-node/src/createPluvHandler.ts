@@ -4,7 +4,7 @@ import type { Server as HttpServer, IncomingMessage, ServerResponse } from "node
 import Url from "node:url";
 import { match } from "path-to-regexp";
 import type { WebSocket } from "ws";
-import { Server as WsServer } from "ws";
+import { WebSocketServer } from "ws";
 import { NodePlatform } from "./NodePlatform";
 
 export type AuthorizeFunctionContext<TPluvServer extends PluvServer<any, any, any, any>> = {
@@ -50,7 +50,7 @@ export interface WebSocketHandlerResult {
 export type WebSocketHandler = (ws: WebSocket, req: IncomingMessage) => Promise<WebSocketHandlerResult>;
 
 export interface CreatePluvHandlerResult {
-    createWsServer: () => WsServer;
+    createWsServer: () => WebSocketServer;
     handler: RequestHandler;
     wsHandler: WebSocketHandler;
 }
@@ -64,7 +64,7 @@ export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform<an
         throw new Error("Cannot use createPluvHandler in detached mode for Node.js");
     }
 
-    const wsServer = new WsServer({ server });
+    const wsServer = new WebSocketServer({ server });
     const rooms = new Map<string, ReturnType<typeof io.createRoom>>();
 
     const getRoom = (roomId: string): ReturnType<typeof io.createRoom> => {

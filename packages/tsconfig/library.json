@@ -6,7 +6,8 @@
 		"lib": ["esnext"],
 		"module": "esnext",
 		"target": "es6",
-		"isolatedModules": true
+		"isolatedModules": true,
+		"moduleResolution": "bundler"
 	},
 	"include": ["src"],
 	"exclude": ["node_modules"]
