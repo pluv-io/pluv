@@ -28,8 +28,8 @@
 		"@pluv/types": "workspace:^",
 		"@types/node": "^22.14.1",
 		"fast-json-stable-stringify": "^2.1.0",
-		"hono": "^4.7.6",
-		"zod": "^3.24.2"
+		"hono": "^4.7.7",
+		"zod": "^3.24.3"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
