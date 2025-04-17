@@ -194,6 +194,11 @@ export class IORoom<
 
         if (authorize) this._authorize = authorize;
 
+        /**
+         * @description Everything below this line relates to waking up from hibernation.
+         * @see https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-hibernation-api
+         * @date April 17, 2025
+         */
         const webSockets = this._platform.getWebSockets() as readonly InferPlatformWebSocketSource<TPlatform>[];
 
         webSockets.forEach((webSocket) => {
