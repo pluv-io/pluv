@@ -206,6 +206,10 @@ export class IORoom<
             const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
 
             this._sessions.set(sessionId, pluvWs);
+
+            const userId = pluvWs.session.user?.id;
+
+            if (!!userId) this._addUserSession(userId, sessionId);
         });
 
         const { doc, uninitialize } = this._initialize();
