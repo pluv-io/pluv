@@ -88,12 +88,13 @@ export class PluvServer<
                         user: JsonObject | null;
                     };
                 }>(
-                    (acc, { id, presence, user }) => ({
+                    (acc, { id, presence, timers, user }) => ({
                         ...acc,
                         [id]: {
                             connectionId: id,
                             presence,
                             room,
+                            timers: { presence: timers.presence },
                             user,
                         },
                     }),
@@ -105,6 +106,7 @@ export class PluvServer<
         $initializeSession: this._procedure
             .broadcast((data, { session }) => {
                 const presence = (data as any)?.presence;
+                const timers = session.timers;
 
                 if (!session) return {};
 
@@ -115,6 +117,7 @@ export class PluvServer<
                         connectionId: session.id,
                         user: session.user,
                         presence,
+                        timers: { presence: timers.presence },
                     },
                 };
             })
@@ -161,16 +164,22 @@ export class PluvServer<
 
             return { $pong: {} };
         }),
-        $updatePresence: this._procedure.broadcast((data, { session }) => {
+        $updatePresence: this._procedure.broadcast((data, context) => {
             const presence = (data as any)?.presence;
+            const { session } = context;
 
             if (!session) return {};
 
             const updated = Object.assign(Object.create(null), session.presence, presence);
 
-            session.webSocket.presence = updated;
+            context.presence = updated;
 
-            return { $presenceUpdated: { presence: updated } };
+            return {
+                $presenceUpdated: {
+                    presence: updated,
+                    timers: { presence: session.timers.presence },
+                },
+            };
         }),
         $updateStorage: this._procedure.broadcast((data, { context, doc, room }) => {
             const origin = (data as any)?.origin as Maybe<string>;

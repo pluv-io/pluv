@@ -51,7 +51,7 @@ export class MockedRoom<
     private _crdtNotifier = new CrdtNotifier<TStorage>();
     private _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
     private _events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
-    private _otherNotifier = new OtherNotifier<TIO>();
+    private _otherNotifier = new OtherNotifier<TIO, TPresence>();
     private _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
     private _state: WebSocketState<TIO> = {
         authorization: {
@@ -226,8 +226,15 @@ export class MockedRoom<
         return this._crdtManager.doc.toJson(type);
     }
 
-    public other = (connectionId: string, callback: OtherNotifierSubscriptionCallback<TIO>): (() => void) => {
-        return this._otherNotifier.subscribe(connectionId, callback);
+    public other = (
+        connectionId: string,
+        callback: OtherNotifierSubscriptionCallback<TIO, TPresence>,
+    ): (() => void) => {
+        const clientId = this._usersManager.getClientId(connectionId);
+
+        if (!clientId) return () => undefined;
+
+        return this._otherNotifier.subscribe(clientId, callback);
     };
 
     public redo = (): void => {

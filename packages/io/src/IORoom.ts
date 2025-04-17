@@ -35,6 +35,7 @@ import type {
     IOUserDisconnectedEvent,
     PluvIOAuthorize,
     ResolvedPluvIOAuthorize,
+    WebSocketSerializedState,
     WebSocketSession,
     WebSocketType,
 } from "./types";
@@ -88,6 +89,12 @@ interface SendMessageSender {
     user: JsonObject | null;
 }
 
+interface PatchPresenceParams {
+    presence: JsonObject | null;
+    sessionId: string;
+    timer?: number | null;
+}
+
 export type WebSocketRegisterConfig<TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>> = {
     token?: string | null;
 } & InferInitContextType<TPlatform>;
@@ -111,7 +118,8 @@ export class IORoom<
     private readonly _listeners: IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>;
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
-    private readonly _sessions = new Map<string, AbstractWebSocket<any, TAuthorize>>();
+    private readonly _sessions = new Map<[sessionId: string][0], AbstractWebSocket<any, TAuthorize>>();
+    private readonly _userSessionss = new Map<[userId: string][0], Set<[sessionId: string][0]>>();
 
     /**
      * @ignore
@@ -186,6 +194,11 @@ export class IORoom<
 
         if (authorize) this._authorize = authorize;
 
+        /**
+         * @description Everything below this line relates to waking up from hibernation.
+         * @see https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-hibernation-api
+         * @date April 17, 2025
+         */
         const webSockets = this._platform.getWebSockets() as readonly InferPlatformWebSocketSource<TPlatform>[];
 
         webSockets.forEach((webSocket) => {
@@ -198,6 +211,10 @@ export class IORoom<
             const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
 
             this._sessions.set(sessionId, pluvWs);
+
+            const userId = pluvWs.session.user?.id;
+
+            if (!!userId) this._addUserSession(userId, sessionId);
         });
 
         const { doc, uninitialize } = this._initialize();
@@ -304,10 +321,9 @@ export class IORoom<
             await this._initialized;
         }
 
-        const user = await this._getAuthorizedUser(token, _options);
+        const user: BaseUser | null = await this._getAuthorizedUser(token, _options);
         const ioAuthorize = this._getIOAuthorize(_options);
         const isUnauthorized = !!ioAuthorize && !user;
-
         const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
 
         if (isUnauthorized) {
@@ -318,31 +334,24 @@ export class IORoom<
             return;
         }
 
-        /**
-         * TODO
-         * @description If we find a token that's in use, assume that its a reconnect attempt. Exit
-         * the existing connection, and replace with the new connection.
-         */
-        // There is an attempt for multiple of the same identities. Probably malicious.
-        const isTokenInUse: boolean =
-            !!user && this._getSessions().some((session) => session.user?.id === (user as BaseUser).id);
+        if (!!user) {
+            const latest = this._getLatestPresence(user.id);
+            const prevState = pluvWs.state;
 
-        this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)}`);
+            pluvWs.user = user;
 
-        await this._platform.acceptWebSocket(pluvWs);
-
-        if (isTokenInUse) {
-            this._logDebug(`${colors.blue("Authorization failed for connection")}`);
-
-            pluvWs.handleError({ error: new Error("Not authorized"), room: this.id });
-            pluvWs.close(3000, "WebSocket unauthorized.");
-
-            return;
+            this._platform.setSerializedState(pluvWs, {
+                ...prevState,
+                presence: latest.presence,
+                timers: { ...prevState.timers, presence: latest.timer },
+            });
+            this._addUserSession(user.id, pluvWs.sessionId);
         }
 
-        pluvWs.user = user;
-        this._sessions.set(pluvWs.sessionId, pluvWs);
+        this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
 
+        await this._platform.acceptWebSocket(pluvWs);
+        this._sessions.set(pluvWs.sessionId, pluvWs);
         await this._platform.persistence.addUser(this.id, pluvWs.sessionId, user ?? {});
 
         if (this._platform._config.registrationMode === "attached") {
@@ -356,11 +365,19 @@ export class IORoom<
 
         await this._emitRegistered(pluvWs);
 
-        this._logDebug(`${colors.blue(`Registered connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
-
         const size = this.getSize();
 
+        this._logDebug(`${colors.blue(`Registered connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
         this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
+    }
+
+    private _addUserSession(userId: string, sessionId: string): Set<[sessionId: string][0]> {
+        const set = this._userSessionss.get(userId) ?? new Set<string>();
+        const updated = set.add(sessionId);
+
+        this._userSessionss.set(userId, updated);
+
+        return updated;
     }
 
     private async _broadcast(params: BroadcastParams<this>): Promise<void> {
@@ -395,9 +412,13 @@ export class IORoom<
                 senderId: sessionId,
             });
 
+            const session = webSocket.session;
+            const user = session.user;
+
+            if (!!user) this._removeUserSession(user.id, sessionId);
+
             try {
                 const doc = await this._doc;
-                const session = webSocket.session;
                 const encodedState = doc.getEncodedState();
 
                 await Promise.resolve(
@@ -405,7 +426,7 @@ export class IORoom<
                         context: this._context,
                         encodedState,
                         room: this.id,
-                        user: session.user,
+                        user,
                     }),
                 );
             } catch (error) {
@@ -444,9 +465,20 @@ export class IORoom<
     private async _emitRegistered(pluvWs: AbstractWebSocket<any, TAuthorize>): Promise<void> {
         const session = pluvWs.session;
         const sessionId = session.id;
+        const presence = session.presence;
         const user = session.user;
 
-        await this._sendSelfMessage({ type: "$registered", data: { sessionId } }, { sessionId, user });
+        await this._sendSelfMessage(
+            {
+                type: "$registered",
+                data: {
+                    presence,
+                    sessionId,
+                    timers: { presence: session.timers.presence },
+                },
+            },
+            { sessionId, user },
+        );
 
         try {
             const doc = await this._doc;
@@ -541,6 +573,36 @@ export class IORoom<
         if (typeof this._authorize === "function") return this._authorize(options);
 
         return this._authorize as ResolvedPluvIOAuthorize<any, any> | null;
+    }
+
+    private _getLatestPresence(userId: string): { timer: number | null; presence: JsonObject | null } {
+        if (!this._authorize) return { timer: null, presence: null };
+
+        const sessionIds = Array.from(this._userSessionss.get(userId)?.values() ?? []);
+
+        if (!sessionIds.length) return { timer: null, presence: null };
+
+        return sessionIds.reduce(
+            (state, sessionId) => {
+                const pluvWs = this._sessions.get(sessionId) ?? null;
+
+                if (!pluvWs) return state;
+
+                const session = pluvWs.session;
+                const presence = session.presence;
+                const timer = session.timers.presence;
+
+                if (session.user?.id !== userId) return state;
+                if (typeof state.timer !== "number") return { presence, timer };
+                if (typeof timer !== "number") return state;
+
+                return timer > state.timer ? { presence, timer } : state;
+            },
+            { presence: null, timer: null } as {
+                presence: JsonObject | null;
+                timer: number | null;
+            },
+        );
     }
 
     private _getProcedure(
@@ -661,18 +723,31 @@ export class IORoom<
 
             if (!pluvWs) throw new Error("Could not get session");
 
-            const [session, sessions] = await Promise.all([
-                this._getSession(pluvWs as WebSocketType<TPlatform>),
-                this._getSessions(),
-            ]);
+            const session = this._getSession(pluvWs as WebSocketType<TPlatform>);
+            const sessions = this._getSessions();
+
+            const setPresence = (params: PatchPresenceParams): void => {
+                this._setPresence.bind(this)(params);
+            };
 
             const doc = await this._doc;
             const eventContext: EventResolverContext<EventResolverKind, TPlatform, TAuthorize, TContext> = {
                 context: this._context,
                 doc,
+                get presence() {
+                    return session.presence as JsonObject | null;
+                },
+                set presence(presence: JsonObject | null) {
+                    const sessionId = this.session?.id;
+
+                    if (!sessionId) return;
+
+                    setPresence({ presence, sessionId, timer: this.time });
+                },
                 room: this.id,
                 session,
                 sessions,
+                time: new Date().getTime(),
             };
 
             if (pluvWs.state.quit) {
@@ -790,6 +865,54 @@ export class IORoom<
         }
     }
 
+    private _setPresence(params: PatchPresenceParams): void {
+        const { presence, sessionId, timer: _timer } = params;
+
+        const timer = _timer ?? new Date().getTime();
+        const pluvWs = this._sessions.get(sessionId) ?? null;
+
+        if (!pluvWs) return;
+
+        const wsSession = pluvWs.session;
+        const user = wsSession.user as BaseUser | null;
+
+        const sessionIds = user
+            ? new Set<string>([...(this._userSessionss.get(user.id) ?? []), sessionId])
+            : new Set([sessionId]);
+
+        sessionIds.forEach((sId) => {
+            const pWs = this._sessions.get(sId);
+            const session = pWs?.session;
+
+            if (!session) return;
+
+            const prevState = session.webSocket.state;
+
+            this._platform.setSerializedState(session.webSocket, {
+                ...prevState,
+                presence,
+                timers: {
+                    ...prevState.timers,
+                    presence: timer,
+                },
+            });
+        });
+    }
+
+    private _removeUserSession(userId: string, sessionId: string): Set<[sessionId: string][0]> | null {
+        const set = this._userSessionss.get(userId);
+
+        if (!set) return null;
+
+        set.delete(sessionId);
+
+        if (!!set.size) return set;
+
+        this._userSessionss.delete(userId);
+
+        return set;
+    }
+
     private async _sendMessage(
         pluvWs: AbstractWebSocket<any, TAuthorize>,
         message: IOEventMessage<any>,
@@ -865,9 +988,16 @@ export class IORoom<
         const context: EventResolverContext<"sync", TPlatform, TAuthorize, TContext> = {
             context: this._context,
             doc,
+            get presence() {
+                return null;
+            },
+            set presence(presence: JsonObject | null) {
+                return;
+            },
             room: this.id,
             session: null,
-            sessions: await this._getSessions(),
+            sessions: this._getSessions(),
+            time: new Date().getTime(),
         };
 
         const resolver = this._getProcedure(message)?.config.sync;

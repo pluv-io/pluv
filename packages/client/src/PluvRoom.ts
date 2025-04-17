@@ -12,6 +12,7 @@ import type {
     InferIOOutput,
     InputZodLike,
     JsonObject,
+    OptionalProps,
 } from "@pluv/types";
 import { AbstractRoom } from "./AbstractRoom";
 import type { AbstractStorageStore } from "./AbstractStorageStore";
@@ -200,7 +201,7 @@ export class PluvRoom<
         heartbeat: null,
     };
     private readonly _listeners: InternalListeners;
-    private readonly _otherNotifier = new OtherNotifier<TIO>();
+    private readonly _otherNotifier = new OtherNotifier<TIO, TPresence>();
     private readonly _publicKey: PublicKey<TMetadata> | null = null;
     private readonly _reconnectTimeoutMs: ReconnectTimeoutMs;
     private readonly _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
@@ -511,8 +512,15 @@ export class PluvRoom<
         return this._crdtManager.doc.toJson(type);
     }
 
-    public other = (connectionId: string, callback: OtherNotifierSubscriptionCallback<TIO>): (() => void) => {
-        return this._otherNotifier.subscribe(connectionId, callback);
+    public other = (
+        connectionId: string,
+        callback: OtherNotifierSubscriptionCallback<TIO, TPresence>,
+    ): (() => void) => {
+        const clientId = this._usersManager.getClientId(connectionId);
+
+        if (!clientId) return () => undefined;
+
+        return this._otherNotifier.subscribe(clientId, callback);
     };
 
     public redo = (): void => {
@@ -573,7 +581,7 @@ export class PluvRoom<
         const myself = this._usersManager.myself ?? null;
 
         this._stateNotifier.subjects["my-presence"].next(myPresence);
-        if (!!myself) this._stateNotifier.subjects["myself"].next(myself);
+        if (!!myself) this._stateNotifier.subjects.myself.next(myself);
 
         this.broadcast(
             "$updatePresence" as keyof InferIOInput<MergeEvents<TEvents, TIO>>,
@@ -653,7 +661,7 @@ export class PluvRoom<
         this._clearTimeout(this._timeouts.pong);
         this._detachWindowListeners();
         this._usersManager.removeMyself();
-        this._usersManager.removeUsers();
+        this._usersManager.clearConnections();
         this._otherNotifier.clear();
         this._stateNotifier.subjects.myself.next(null);
         this._stateNotifier.subjects.others.next([]);
@@ -800,13 +808,19 @@ export class PluvRoom<
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
-        this._usersManager.removeUser(connectionId);
-
+        const clientId = this._usersManager.getClientId(connectionId);
+        const deleted = this._usersManager.deleteConnection(connectionId);
         const others = this._usersManager.getOthers();
 
         this._stateNotifier.subjects.others.next(others);
-        this._otherNotifier.subject(connectionId).next(null);
-        this._otherNotifier.subjects.delete(connectionId);
+
+        /**
+         * @description A single user can have multiple connections. So we're checking that there
+         * isn't a remaining connection before choosing to delete that user for other connected
+         * participants.
+         * @date April 16, 2025
+         */
+        if (!deleted?.remaining && !!clientId) this._otherNotifier.delete(clientId);
     }
 
     private _handlePresenceUpdatedMessage(message: IOEventMessage<TIO>): void {
@@ -817,7 +831,6 @@ export class PluvRoom<
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
         const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$presenceUpdated"];
-
         const myself = this._usersManager.myself ?? null;
 
         /**
@@ -825,17 +838,30 @@ export class PluvRoom<
          * @description We're going to have the user's own presence be patched only via local calls
          * to this.updateMyPresence. So we'll not update the user's presence in this handler to
          * avoid weird update delays to the user's own presence.
+         *
+         * However, we will patch the user's own presence if the user has updated their own
+         * presence via another connection that is not this one (e.g. if the user has opened
+         * another connection in another browser tab/window somewhere).
          * @date April 2, 2025
          */
         if (myself?.connectionId === connectionId) return;
 
-        this._usersManager.patchPresence(connectionId, data.presence as TPresence);
+        const updated = this._usersManager.patchPresence(connectionId, data.presence as TPresence);
+        const myClientId = !!myself ? this._usersManager.getClientId(myself) : null;
+        const clientId = this._usersManager.getClientId(connectionId);
+
+        if (!!clientId && myClientId === clientId) {
+            this._stateNotifier.subjects["my-presence"].next(updated);
+            this._stateNotifier.subjects.myself.next(this._usersManager.myself);
+
+            return;
+        }
 
         const other = this._usersManager.getOther(connectionId);
         const others = this._usersManager.getOthers();
 
-        this._otherNotifier.subject(connectionId).next(other);
-        this._stateNotifier.subjects["others"].next(others);
+        if (!!clientId) this._otherNotifier.subject(clientId).next(other);
+        this._stateNotifier.subjects.others.next(others);
     }
 
     private _handleReceiveOthers(message: IOEventMessage<TIO>): void {
@@ -848,26 +874,35 @@ export class PluvRoom<
         Object.keys(data.others).forEach((connectionId) => {
             const { presence, user } = data.others[connectionId];
 
-            this._usersManager.setUser(connectionId, user);
-
-            const other = this._usersManager.getOther(connectionId);
+            const result = this._usersManager.addConnection({
+                connectionId,
+                presence: (presence ?? undefined) as TPresence,
+                user,
+            });
 
             if (!!presence) this._usersManager.patchPresence(connectionId, presence as TPresence);
+            if (result.isMyself) return;
 
-            this._otherNotifier.subject(connectionId).next(other);
+            const clientId = result.clientId;
+            const other = this._usersManager.getOther(connectionId);
+
+            this._otherNotifier.subject(clientId).next(other);
         });
 
         const others = this._usersManager.getOthers();
 
-        this._stateNotifier.subjects["others"].next(others);
+        this._stateNotifier.subjects.others.next(others);
     }
 
     private _handleRegisteredMessage(message: IOEventMessage<TIO>): void {
-        const { connectionId, user } = message;
+        const { connectionId } = message;
+        const user = message.user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>;
 
         if (!connectionId) return;
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
+
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$registered"];
 
         this._updateState((oldState) => {
             oldState.connection.count += 1;
@@ -877,13 +912,18 @@ export class PluvRoom<
             return oldState;
         });
 
-        this._usersManager.setMyself(connectionId, user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>);
+        const userInfo: OptionalProps<UserInfo<TIO, TPresence>, "presence"> = {
+            connectionId,
+            presence: (data.presence as TPresence | null) ?? undefined,
+            user,
+        };
+        this._usersManager.setMyself(userInfo);
 
         const presence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
 
         this._stateNotifier.subjects["my-presence"].next(presence);
-        this._stateNotifier.subjects["myself"].next(myself);
+        this._stateNotifier.subjects.myself.next(myself);
 
         const update = this._state.connection.count > 1 ? (this._crdtManager.doc.getEncodedState() ?? null) : null;
 
@@ -973,20 +1013,25 @@ export class PluvRoom<
         if (!this._usersManager.myself) return;
 
         const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$userJoined"];
-
         const myself = this._usersManager.myself;
 
         if (myself.connectionId === connectionId) {
             this._sendMessage({ type: "$getOthers", data: {} });
+            return;
         }
 
-        this._usersManager.setUser(connectionId, data.user, data.presence as TPresence);
+        const result = this._usersManager.addConnection({
+            connectionId,
+            presence: data.presence as TPresence,
+            user: data.user,
+        });
 
+        const clientId = result?.clientId ?? null;
         const other = this._usersManager.getOther(connectionId);
         const others = this._usersManager.getOthers();
 
-        this._otherNotifier.subject(connectionId).next(other);
-        this._stateNotifier.subjects["others"].next(others);
+        if (!!clientId) this._otherNotifier.subject(clientId).next(other);
+        this._stateNotifier.subjects.others.next(others);
     }
 
     private _heartbeat(): void {

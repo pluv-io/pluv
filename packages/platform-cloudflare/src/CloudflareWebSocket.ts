@@ -5,7 +5,7 @@ import type {
     WebSocketSerializedState,
     WebSocketSession,
 } from "@pluv/io";
-import { AbstractWebSocket, utils } from "@pluv/io";
+import { AbstractWebSocket } from "@pluv/io";
 import type { InferIOAuthorizeUser, IOAuthorize, JsonObject } from "@pluv/types";
 
 export interface CloudflareWebSocketEventMap {
@@ -101,7 +101,10 @@ export class CloudflareWebSocket<TAuthorize extends IOAuthorize<any, any> | null
             presence: null,
             quit: false,
             room,
-            timers: { ping: new Date().getTime() },
+            timers: {
+                ping: new Date().getTime(),
+                presence: null,
+            },
         };
 
         webSocket.serializeAttachment({

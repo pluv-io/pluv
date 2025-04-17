@@ -1,39 +1,42 @@
-import type { Id, IOLike } from "@pluv/types";
+import type { Id, IOLike, JsonObject } from "@pluv/types";
 import type { Subject } from "wonka";
 import { makeSubject, subscribe } from "wonka";
 import type { UserInfo } from "./types";
 
-export type OtherNotifierSubscriptionCallback<TIO extends IOLike> = (value: Id<UserInfo<TIO>> | null) => void;
+export type OtherNotifierSubscriptionCallback<TIO extends IOLike, TPresence extends JsonObject> = (
+    value: Id<UserInfo<TIO, TPresence>> | null,
+) => void;
 
-export class OtherNotifier<TIO extends IOLike> {
-    public subjects = new Map<string, Subject<Id<UserInfo<TIO>> | null>>();
+export class OtherNotifier<TIO extends IOLike, TPresence extends JsonObject = {}> {
+    private _subjects = new Map<[clientId: string][0], Subject<Id<UserInfo<TIO, TPresence>> | null>>();
 
     public clear(): void {
-        const connectionIds = Array.from(this.subjects.keys());
-
-        connectionIds.forEach((connectionId) => {
-            this.subject(connectionId).next(null);
-            this.subjects.delete(connectionId);
+        this._subjects.forEach((subject) => {
+            subject.next(null);
         });
+
+        this._subjects.clear();
     }
 
-    public subject<TEvent extends string>(name: TEvent): Subject<Id<UserInfo<TIO>> | null> {
-        const subject = this.subjects.get(name);
+    public delete(clientId: string): void {
+        this.subject(clientId).next(null);
+        this._subjects.delete(clientId);
+    }
+
+    public subject(clientId: string): Subject<Id<UserInfo<TIO, TPresence>> | null> {
+        const subject = this._subjects.get(clientId);
 
         if (subject) return subject;
 
-        const newSubject = makeSubject<Id<UserInfo<TIO>>>();
+        const newSubject = makeSubject<Id<UserInfo<TIO, TPresence>>>();
 
-        this.subjects.set(name, newSubject);
+        this._subjects.set(clientId, newSubject);
 
         return newSubject;
     }
 
-    public subscribe<TEvent extends string>(
-        name: TEvent,
-        callback: OtherNotifierSubscriptionCallback<TIO>,
-    ): () => void {
-        const source = this.subject(name).source;
+    public subscribe(clientId: string, callback: OtherNotifierSubscriptionCallback<TIO, TPresence>): () => void {
+        const source = this.subject(clientId).source;
 
         return subscribe(callback)(source).unsubscribe;
     }

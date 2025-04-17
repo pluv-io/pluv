@@ -1,4 +1,4 @@
-import type { Id, JsonObject, MaybePromise, NonNilProps, UnionToIntersection } from "./general";
+import type { Id, JsonObject, MaybePromise, UnionToIntersection } from "./general";
 
 export type BaseUser = {
     id: string;
@@ -29,14 +29,16 @@ export interface BaseIOAuthorizeEventRecord<TAuthorize extends IOAuthorize<any, 
                 connectionId: string;
                 presence: JsonObject | null;
                 room: string | null;
+                timers: { presence: number | null };
                 user: Id<InferIOAuthorizeUser<TAuthorize>>;
             };
         };
     };
     $userJoined: {
         connectionId: string;
-        user: NonNullable<Id<InferIOAuthorizeUser<TAuthorize>>>;
         presence: JsonObject;
+        timers: { presence: number | null };
+        user: NonNullable<Id<InferIOAuthorizeUser<TAuthorize>>>;
     };
 }
 
@@ -51,9 +53,12 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = BaseIO
     $pong: {};
     $presenceUpdated: {
         presence: JsonObject;
+        timers: { presence: number | null };
     };
     $registered: {
+        presence: JsonObject | null;
         sessionId: string;
+        timers: { presence: number | null };
     };
     $storageReceived: {
         state: string;
