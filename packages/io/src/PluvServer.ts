@@ -1,6 +1,6 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type { IOLike, Id, InferIOAuthorize, InferIOAuthorizeUser, JsonObject, Maybe } from "@pluv/types";
+import type { BaseUser, IOLike, Id, InferIOAuthorize, InferIOAuthorizeUser, JsonObject, Maybe } from "@pluv/types";
 import colors from "kleur";
 import type { AbstractPlatform, InferInitContextType, InferRoomContextType } from "./AbstractPlatform";
 import type { IORoomListeners, WebSocketRegisterConfig } from "./IORoom";
@@ -10,7 +10,7 @@ import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
-import { PING_TIMEOUT_MS } from "./constants";
+import { MAX_USER_SIZE_BYTES, PING_TIMEOUT_MS } from "./constants";
 import type {
     BasePluvIOListeners,
     GetInitialStorageFn,
@@ -340,6 +340,18 @@ export class PluvServer<
             throw new Error("IO does not specify authorize during initialization.");
         }
 
+        const ioAuthorize = this._getIOAuthorize(params);
+        const user = params.user as BaseUser;
+        const parsed = !!ioAuthorize ? ioAuthorize.user.parse(user) : user;
+
+        const bytes = new TextEncoder().encode(JSON.stringify(parsed)).length;
+
+        if (bytes > MAX_USER_SIZE_BYTES) {
+            throw new Error(
+                `createToken called with large payload. User must be at most 512 bytes. Current size: ${bytes.toLocaleString()}`,
+            );
+        }
+
         /**
          * !HACK
          * @description Allow the platform to overwrite this behavior as needed. This is introduced
@@ -348,7 +360,6 @@ export class PluvServer<
          */
         if (this._platform._createToken) return await this._platform._createToken(params as any);
 
-        const ioAuthorize = this._getIOAuthorize(params);
         const secret = ioAuthorize?.secret ?? null;
 
         if (!secret) throw new Error("`authorize` was specified without a valid secret");
