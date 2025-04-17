@@ -195,12 +195,10 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
     }
 
     public setMyself(userInfo: OptionalProps<UserInfo<TIO, TPresence>, "presence">): void {
-        this._myself = {
-            ...userInfo,
-            presence: this._initialPresence,
-        };
+        const presence = userInfo.presence ?? this._initialPresence;
 
-        this._myPresence = this._initialPresence;
+        this._myself = { ...userInfo, presence };
+        this._myPresence = presence;
     }
 
     public setPresence(connectionId: string, presence: TPresence): void {

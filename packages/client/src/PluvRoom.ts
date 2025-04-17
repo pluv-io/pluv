@@ -898,6 +898,8 @@ export class PluvRoom<
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$registered"];
+
         this._updateState((oldState) => {
             oldState.connection.count += 1;
             oldState.connection.id = connectionId;
@@ -908,6 +910,7 @@ export class PluvRoom<
 
         const userInfo: OptionalProps<UserInfo<TIO, TPresence>, "presence"> = {
             connectionId,
+            presence: (data.presence as TPresence | null) ?? undefined,
             user,
         };
         this._usersManager.setMyself(userInfo);

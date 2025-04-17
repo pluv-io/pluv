@@ -56,6 +56,7 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = BaseIO
         timers: { presence: number | null };
     };
     $registered: {
+        presence: JsonObject | null;
         sessionId: string;
         timers: { presence: number | null };
     };

@@ -35,6 +35,7 @@ import type {
     IOUserDisconnectedEvent,
     PluvIOAuthorize,
     ResolvedPluvIOAuthorize,
+    WebSocketSerializedState,
     WebSocketSession,
     WebSocketType,
 } from "./types";
@@ -304,7 +305,7 @@ export class IORoom<
             await this._initialized;
         }
 
-        const user = await this._getAuthorizedUser(token, _options);
+        const user: BaseUser | null = await this._getAuthorizedUser(token, _options);
         const ioAuthorize = this._getIOAuthorize(_options);
         const isUnauthorized = !!ioAuthorize && !user;
 
@@ -318,7 +319,18 @@ export class IORoom<
             return;
         }
 
-        if (!!user) pluvWs.user = user;
+        if (!!user) {
+            const latest = this._getLatestPresence(user.id);
+            const prevState = pluvWs.state;
+
+            pluvWs.user = user;
+
+            this._platform.setSerializedState(pluvWs, {
+                ...prevState,
+                presence: latest.presence,
+                timers: { ...prevState.timers, presence: latest.timer },
+            });
+        }
 
         this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
 
@@ -425,12 +437,14 @@ export class IORoom<
     private async _emitRegistered(pluvWs: AbstractWebSocket<any, TAuthorize>): Promise<void> {
         const session = pluvWs.session;
         const sessionId = session.id;
+        const presence = session.presence;
         const user = session.user;
 
         await this._sendSelfMessage(
             {
                 type: "$registered",
                 data: {
+                    presence,
                     sessionId,
                     timers: { presence: session.timers.presence },
                 },
@@ -531,6 +545,46 @@ export class IORoom<
         if (typeof this._authorize === "function") return this._authorize(options);
 
         return this._authorize as ResolvedPluvIOAuthorize<any, any> | null;
+    }
+
+    private _getLatestPresence(userId: string): { timer: number | null; presence: JsonObject | null } {
+        if (!this._authorize) return { timer: null, presence: null };
+
+        /**
+         * !HACK
+         * @description Use reduce to map and filter at the same time for performance
+         * @date April 16, 2025
+         */
+        const sessions = Array.from(this._sessions.values()).reduce((acc, pluvWs) => {
+            const session = pluvWs.session;
+
+            /**
+             * !HACK
+             * @description Mutable push for performance
+             * @date April 16, 2025
+             */
+            if (session.user?.id === userId) acc.push(session);
+
+            return acc;
+        }, [] as WebSocketSession<TAuthorize>[]);
+
+        return Array.from(this._sessions.values()).reduce(
+            (state, pluvWs) => {
+                const session = pluvWs.session;
+                const presence = session.presence;
+                const timer = session.timers.presence;
+
+                if (session.user?.id !== userId) return state;
+                if (typeof state.timer !== "number") return { presence, timer };
+                if (typeof timer !== "number") return state;
+
+                return timer > state.timer ? { presence, timer } : state;
+            },
+            { presence: null, timer: null } as {
+                presence: JsonObject | null;
+                timer: number | null;
+            },
+        );
     }
 
     private _getProcedure(
