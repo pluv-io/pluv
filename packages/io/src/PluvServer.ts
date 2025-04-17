@@ -184,7 +184,12 @@ export class PluvServer<
                 },
             });
 
-            return { $presenceUpdated: { presence: updated } };
+            return {
+                $presenceUpdated: {
+                    presence: updated,
+                    timers: { presence: session.timers.presence },
+                },
+            };
         }),
         $updateStorage: this._procedure.broadcast((data, { context, doc, room }) => {
             const origin = (data as any)?.origin as Maybe<string>;

@@ -53,6 +53,7 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = BaseIO
     $pong: {};
     $presenceUpdated: {
         presence: JsonObject;
+        timers: { presence: number };
     };
     $registered: {
         sessionId: string;
