@@ -2,6 +2,7 @@ import type { AbstractCrdtDoc, AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
+    BaseUser,
     EventMessage,
     IOEventMessage,
     IOLike,
@@ -35,11 +36,9 @@ import type {
     IOUserDisconnectedEvent,
     PluvIOAuthorize,
     ResolvedPluvIOAuthorize,
-    WebSocketSerializedState,
     WebSocketSession,
     WebSocketType,
 } from "./types";
-import { BaseUser } from "@pluv/types";
 
 type BroadcastMessage<TIO extends IORoom<any, any, any, any>> =
     | InferEventMessage<InferIOInput<TIO>>
