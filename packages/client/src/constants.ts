@@ -1,0 +1,1 @@
+export const MAX_PRESENCE_SIZE_BYTES = 512;

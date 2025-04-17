@@ -1,4 +1,5 @@
 import type { InputZodLike, IOLike, JsonObject, OptionalProps } from "@pluv/types";
+import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import type { UserInfo } from "./types";
 
 export type Presence = Record<string, unknown>;
@@ -240,13 +241,22 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
      * @description This method need not care about being connected.
      */
     public updateMyPresence(patch: Partial<TPresence>): TPresence {
-        this._myPresence = { ...this._myPresence, ...patch };
+        const updated = { ...this._myPresence, ...patch };
+        const bytes = new TextEncoder().encode(JSON.stringify(updated)).length;
 
-        if (!this._myself) return this._myPresence;
+        if (bytes > MAX_PRESENCE_SIZE_BYTES) {
+            throw new Error(
+                `Large presence. Presence must be at most 512 bytes. Current size: ${bytes.toLocaleString()}`,
+            );
+        }
 
-        this._myself.presence = this._myPresence;
+        this._myPresence = updated;
 
-        return this._myPresence;
+        if (!this._myself) return updated;
+
+        this._myself.presence = updated;
+
+        return updated;
     }
 
     private _deleteConnectionId(connectionId: string): void {
