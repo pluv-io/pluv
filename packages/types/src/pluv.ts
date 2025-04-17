@@ -29,14 +29,16 @@ export interface BaseIOAuthorizeEventRecord<TAuthorize extends IOAuthorize<any, 
                 connectionId: string;
                 presence: JsonObject | null;
                 room: string | null;
+                timers: { presence: number };
                 user: Id<InferIOAuthorizeUser<TAuthorize>>;
             };
         };
     };
     $userJoined: {
         connectionId: string;
-        user: NonNullable<Id<InferIOAuthorizeUser<TAuthorize>>>;
         presence: JsonObject;
+        timers: { presence: number };
+        user: NonNullable<Id<InferIOAuthorizeUser<TAuthorize>>>;
     };
 }
 
