@@ -10,7 +10,7 @@ import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
-import { MAX_USER_SIZE_BYTES, PING_TIMEOUT_MS } from "./constants";
+import { MAX_PRESENCE_SIZE_BYTES, MAX_USER_SIZE_BYTES, PING_TIMEOUT_MS } from "./constants";
 import type {
     BasePluvIOListeners,
     GetInitialStorageFn,
@@ -171,6 +171,13 @@ export class PluvServer<
             if (!session) return {};
 
             const updated = Object.assign(Object.create(null), session.presence, presence);
+            const bytes = new TextEncoder().encode(JSON.stringify(updated)).length;
+
+            if (bytes > MAX_PRESENCE_SIZE_BYTES) {
+                throw new Error(
+                    `Large presence. Presence must be at most 512 bytes. Current size: ${bytes.toLocaleString()}`,
+                );
+            }
 
             context.presence = updated;
 
