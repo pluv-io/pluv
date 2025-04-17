@@ -1,12 +1,4 @@
-import type {
-    Id,
-    InferIOAuthorize,
-    InferIOAuthorizeUser,
-    InputZodLike,
-    IOLike,
-    JsonObject,
-    OptionalProps,
-} from "@pluv/types";
+import type { InputZodLike, IOLike, JsonObject, OptionalProps } from "@pluv/types";
 import type { UserInfo } from "./types";
 
 export type Presence = Record<string, unknown>;
@@ -19,6 +11,7 @@ export type UsersManagerConfig<TPresence extends JsonObject = {}> = {
 export type AddConnectionResult<TIO extends IOLike, TPresence extends JsonObject = {}> = {
     clientId: string;
     data: UserInfo<TIO, TPresence>;
+    isMyself: boolean;
     remaining: number;
 };
 
@@ -65,7 +58,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
 
     public addConnection(
         userInfo: OptionalProps<UserInfo<TIO, TPresence>, "presence">,
-    ): AddConnectionResult<TIO, TPresence> | null {
+    ): AddConnectionResult<TIO, TPresence> {
         const data: UserInfo<TIO, TPresence> = {
             ...userInfo,
             presence: userInfo.presence ?? this._initialPresence,
@@ -73,11 +66,20 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
 
         const myClientId = !!this._myself ? this.getClientId(this._myself) : null;
         const clientId = this.getClientId(data);
+        const remaining = this._setConnectionId(userInfo.connectionId, clientId).size;
 
-        if (myClientId === clientId) return null;
+        if (myClientId === clientId) {
+            const result: AddConnectionResult<TIO, TPresence> = {
+                clientId,
+                data,
+                isMyself: true,
+                remaining,
+            };
+
+            return result;
+        }
 
         const other = this._others.get(clientId);
-        const remaining = this._setConnectionId(userInfo.connectionId, clientId).size;
 
         /**
          * !HACK
@@ -90,6 +92,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
         const result: AddConnectionResult<TIO, TPresence> = {
             clientId,
             data,
+            isMyself: false,
             remaining,
         };
 
@@ -97,6 +100,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
     }
 
     public clearConnections(): void {
+        this.removeMyself();
         this._others.clear();
         this._idMap.fromClientId.clear();
         this._idMap.fromConnectionId.clear();
@@ -170,35 +174,44 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
         return Array.from(this._others.values());
     }
 
-    public patchPresence(connectionId: string, patch: Partial<TPresence>): void {
+    public patchPresence(connectionId: string, patch: Partial<TPresence>): TPresence | null {
         const clientId = this.getClientId(connectionId);
         const myClientId = !!this._myself ? this.getClientId(this._myself) : null;
 
-        if (!clientId) return;
-        if (myClientId === clientId) {
-            this.updateMyPresence(patch);
-            return;
-        }
+        if (!clientId) return null;
+        if (myClientId === clientId) return this.updateMyPresence(patch);
 
         const other = this._others.get(clientId);
 
-        if (!other) return;
+        if (!other) return null;
 
         const presence = { ...other.presence, ...patch } as TPresence;
         const validated = this._presence ? this._presence.parse(presence) : presence;
 
         this._others.set(clientId, { ...other, presence: validated });
+
+        return validated;
     }
 
     public removeMyself(): void {
+        if (!this._myself) return;
+
+        const connectionId = this._myself.connectionId;
+
+        this._deleteConnectionId(connectionId);
         this._myself = null;
     }
 
     public setMyself(userInfo: OptionalProps<UserInfo<TIO, TPresence>, "presence">): void {
+        const connectionId = userInfo.connectionId;
         const presence = userInfo.presence ?? this._initialPresence;
 
         this._myself = { ...userInfo, presence };
         this._myPresence = presence;
+
+        const clientId = this.getClientId(this._myself);
+
+        this._setConnectionId(connectionId, clientId);
     }
 
     public setPresence(connectionId: string, presence: TPresence): void {
@@ -226,16 +239,18 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
     /**
      * @description This method need not care about being connected.
      */
-    public updateMyPresence(patch: Partial<TPresence>): void {
+    public updateMyPresence(patch: Partial<TPresence>): TPresence {
         this._myPresence = { ...this._myPresence, ...patch };
 
-        if (!this._myself) return;
+        if (!this._myself) return this._myPresence;
 
         this._myself.presence = this._myPresence;
+
+        return this._myPresence;
     }
 
     private _deleteConnectionId(connectionId: string): void {
-        const clientId = this._idMap.fromConnectionId.get(connectionId) ?? null;
+        const clientId = this.getClientId(connectionId);
 
         this._idMap.fromConnectionId.delete(connectionId);
 

@@ -581,7 +581,7 @@ export class PluvRoom<
         const myself = this._usersManager.myself ?? null;
 
         this._stateNotifier.subjects["my-presence"].next(myPresence);
-        if (!!myself) this._stateNotifier.subjects["myself"].next(myself);
+        if (!!myself) this._stateNotifier.subjects.myself.next(myself);
 
         this.broadcast(
             "$updatePresence" as keyof InferIOInput<MergeEvents<TEvents, TIO>>,
@@ -831,7 +831,6 @@ export class PluvRoom<
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
         const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$presenceUpdated"];
-
         const myself = this._usersManager.myself ?? null;
 
         /**
@@ -839,18 +838,30 @@ export class PluvRoom<
          * @description We're going to have the user's own presence be patched only via local calls
          * to this.updateMyPresence. So we'll not update the user's presence in this handler to
          * avoid weird update delays to the user's own presence.
+         *
+         * However, we will patch the user's own presence if the user has updated their own
+         * presence via another connection that is not this one (e.g. if the user has opened
+         * another connection in another browser tab/window somewhere).
          * @date April 2, 2025
          */
         if (myself?.connectionId === connectionId) return;
 
-        this._usersManager.patchPresence(connectionId, data.presence as TPresence);
+        const updated = this._usersManager.patchPresence(connectionId, data.presence as TPresence);
+        const myClientId = !!myself ? this._usersManager.getClientId(myself) : null;
+        const clientId = this._usersManager.getClientId(connectionId);
+
+        if (!!clientId && myClientId === clientId) {
+            this._stateNotifier.subjects["my-presence"].next(updated);
+            this._stateNotifier.subjects.myself.next(this._usersManager.myself);
+
+            return;
+        }
 
         const other = this._usersManager.getOther(connectionId);
         const others = this._usersManager.getOthers();
-        const clientId = this._usersManager.getClientId(connectionId);
 
         if (!!clientId) this._otherNotifier.subject(clientId).next(other);
-        this._stateNotifier.subjects["others"].next(others);
+        this._stateNotifier.subjects.others.next(others);
     }
 
     private _handleReceiveOthers(message: IOEventMessage<TIO>): void {
@@ -870,14 +881,7 @@ export class PluvRoom<
             });
 
             if (!!presence) this._usersManager.patchPresence(connectionId, presence as TPresence);
-
-            /**
-             * !HACK
-             * @description If this is null, then the user that was added was myself. We'll skip on
-             * updating others, as myself should not be in others.
-             * @date April 16, 2025
-             */
-            if (!result) return;
+            if (result.isMyself) return;
 
             const clientId = result.clientId;
             const other = this._usersManager.getOther(connectionId);
@@ -887,7 +891,7 @@ export class PluvRoom<
 
         const others = this._usersManager.getOthers();
 
-        this._stateNotifier.subjects["others"].next(others);
+        this._stateNotifier.subjects.others.next(others);
     }
 
     private _handleRegisteredMessage(message: IOEventMessage<TIO>): void {
@@ -919,7 +923,7 @@ export class PluvRoom<
         const myself = this._usersManager.myself ?? null;
 
         this._stateNotifier.subjects["my-presence"].next(presence);
-        this._stateNotifier.subjects["myself"].next(myself);
+        this._stateNotifier.subjects.myself.next(myself);
 
         const update = this._state.connection.count > 1 ? (this._crdtManager.doc.getEncodedState() ?? null) : null;
 
@@ -1027,7 +1031,7 @@ export class PluvRoom<
         const others = this._usersManager.getOthers();
 
         if (!!clientId) this._otherNotifier.subject(clientId).next(other);
-        this._stateNotifier.subjects["others"].next(others);
+        this._stateNotifier.subjects.others.next(others);
     }
 
     private _heartbeat(): void {
