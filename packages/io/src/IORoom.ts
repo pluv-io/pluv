@@ -89,6 +89,12 @@ interface SendMessageSender {
     user: JsonObject | null;
 }
 
+interface PatchPresenceParams {
+    presence: JsonObject | null;
+    sessionId: string;
+    timer?: number | null;
+}
+
 export type WebSocketRegisterConfig<TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>> = {
     token?: string | null;
 } & InferInitContextType<TPlatform>;
@@ -708,18 +714,31 @@ export class IORoom<
 
             if (!pluvWs) throw new Error("Could not get session");
 
-            const [session, sessions] = await Promise.all([
-                this._getSession(pluvWs as WebSocketType<TPlatform>),
-                this._getSessions(),
-            ]);
+            const session = this._getSession(pluvWs as WebSocketType<TPlatform>);
+            const sessions = this._getSessions();
+
+            const setPresence = (params: PatchPresenceParams): void => {
+                this._setPresence.bind(this)(params);
+            };
 
             const doc = await this._doc;
             const eventContext: EventResolverContext<EventResolverKind, TPlatform, TAuthorize, TContext> = {
                 context: this._context,
                 doc,
+                get presence() {
+                    return session.presence as JsonObject | null;
+                },
+                set presence(presence: JsonObject | null) {
+                    const sessionId = this.session?.id;
+
+                    if (!sessionId) return;
+
+                    setPresence({ presence, sessionId, timer: this.time });
+                },
                 room: this.id,
                 session,
                 sessions,
+                time: new Date().getTime(),
             };
 
             if (pluvWs.state.quit) {
@@ -837,6 +856,40 @@ export class IORoom<
         }
     }
 
+    private _setPresence(params: PatchPresenceParams): void {
+        const { presence, sessionId, timer: _timer } = params;
+
+        const timer = _timer ?? new Date().getTime();
+        const pluvWs = this._sessions.get(sessionId) ?? null;
+
+        if (!pluvWs) return;
+
+        const wsSession = pluvWs.session;
+        const user = wsSession.user as BaseUser | null;
+
+        const sessionIds = user
+            ? new Set<string>([...(this._userSessionss.get(user.id) ?? []), sessionId])
+            : new Set([sessionId]);
+
+        sessionIds.forEach((sId) => {
+            const pWs = this._sessions.get(sId);
+            const session = pWs?.session;
+
+            if (!session) return;
+
+            const prevState = session.webSocket.state;
+
+            this._platform.setSerializedState(session.webSocket, {
+                ...prevState,
+                presence,
+                timers: {
+                    ...prevState.timers,
+                    presence: timer,
+                },
+            });
+        });
+    }
+
     private _removeUserSession(userId: string, sessionId: string): Set<[sessionId: string][0]> | null {
         const set = this._userSessionss.get(userId);
 
@@ -926,9 +979,16 @@ export class IORoom<
         const context: EventResolverContext<"sync", TPlatform, TAuthorize, TContext> = {
             context: this._context,
             doc,
+            get presence() {
+                return null;
+            },
+            set presence(presence: JsonObject | null) {
+                return;
+            },
             room: this.id,
             session: null,
-            sessions: await this._getSessions(),
+            sessions: this._getSessions(),
+            time: new Date().getTime(),
         };
 
         const resolver = this._getProcedure(message)?.config.sync;

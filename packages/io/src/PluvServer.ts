@@ -164,25 +164,15 @@ export class PluvServer<
 
             return { $pong: {} };
         }),
-        $updatePresence: this._procedure.broadcast((data, { session }) => {
+        $updatePresence: this._procedure.broadcast((data, context) => {
             const presence = (data as any)?.presence;
+            const { session } = context;
 
             if (!session) return {};
 
             const updated = Object.assign(Object.create(null), session.presence, presence);
 
-            session.webSocket.presence = updated;
-
-            const currentTime = new Date().getTime();
-            const prevState = session.webSocket.state;
-
-            this._platform.setSerializedState(session.webSocket, {
-                ...prevState,
-                timers: {
-                    ...prevState.timers,
-                    presence: currentTime,
-                },
-            });
+            context.presence = updated;
 
             return {
                 $presenceUpdated: {

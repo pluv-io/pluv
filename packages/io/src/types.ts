@@ -62,9 +62,11 @@ export interface EventResolverContext<
 > {
     context: TContext;
     doc: AbstractCrdtDoc<any>;
+    presence: JsonObject | null;
     room: string;
     session: TKind extends "sync" ? WebSocketSession<TAuthorize> | null : WebSocketSession<TAuthorize>;
     sessions: readonly WebSocketSession<TAuthorize>[];
+    time: number;
 }
 
 export type SendMessageOptions =
