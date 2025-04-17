@@ -13,7 +13,7 @@ import type { PluvClient } from "./PluvClient";
 
 export interface AuthorizationState<TIO extends IOLike> {
     token: string | null;
-    user: InferIOAuthorizeUser<InferIOAuthorize<TIO>> | null;
+    user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>> | null;
 }
 
 export type EventResolver<

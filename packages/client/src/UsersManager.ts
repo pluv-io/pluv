@@ -194,11 +194,10 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
         this._myself = null;
     }
 
-    public setMyself(connectionId: string, user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>): void {
+    public setMyself(userInfo: OptionalProps<UserInfo<TIO, TPresence>, "presence">): void {
         this._myself = {
-            connectionId,
+            ...userInfo,
             presence: this._initialPresence,
-            user,
         };
 
         this._myPresence = this._initialPresence;

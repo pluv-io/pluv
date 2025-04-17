@@ -12,6 +12,7 @@ import type {
     InferIOOutput,
     InputZodLike,
     JsonObject,
+    OptionalProps,
 } from "@pluv/types";
 import { AbstractRoom } from "./AbstractRoom";
 import type { AbstractStorageStore } from "./AbstractStorageStore";
@@ -890,7 +891,8 @@ export class PluvRoom<
     }
 
     private _handleRegisteredMessage(message: IOEventMessage<TIO>): void {
-        const { connectionId, user } = message;
+        const { connectionId } = message;
+        const user = message.user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>;
 
         if (!connectionId) return;
         // Should not reach here
@@ -904,7 +906,11 @@ export class PluvRoom<
             return oldState;
         });
 
-        this._usersManager.setMyself(connectionId, user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>);
+        const userInfo: OptionalProps<UserInfo<TIO, TPresence>, "presence"> = {
+            connectionId,
+            user,
+        };
+        this._usersManager.setMyself(userInfo);
 
         const presence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
