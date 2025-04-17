@@ -112,7 +112,8 @@ export class IORoom<
     private readonly _listeners: IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>;
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
-    private readonly _sessions = new Map<string, AbstractWebSocket<any, TAuthorize>>();
+    private readonly _sessions = new Map<[sessionId: string][0], AbstractWebSocket<any, TAuthorize>>();
+    private readonly _userSessionss = new Map<[userId: string][0], Set<[sessionId: string][0]>>();
 
     /**
      * @ignore
@@ -308,7 +309,6 @@ export class IORoom<
         const user: BaseUser | null = await this._getAuthorizedUser(token, _options);
         const ioAuthorize = this._getIOAuthorize(_options);
         const isUnauthorized = !!ioAuthorize && !user;
-
         const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
 
         if (isUnauthorized) {
@@ -330,6 +330,7 @@ export class IORoom<
                 presence: latest.presence,
                 timers: { ...prevState.timers, presence: latest.timer },
             });
+            this._addUserSession(user.id, pluvWs.sessionId);
         }
 
         this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
@@ -349,11 +350,19 @@ export class IORoom<
 
         await this._emitRegistered(pluvWs);
 
-        this._logDebug(`${colors.blue(`Registered connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
-
         const size = this.getSize();
 
+        this._logDebug(`${colors.blue(`Registered connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
         this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
+    }
+
+    private _addUserSession(userId: string, sessionId: string): Set<[sessionId: string][0]> {
+        const set = this._userSessionss.get(userId) ?? new Set<string>();
+        const updated = set.add(sessionId);
+
+        this._userSessionss.set(userId, updated);
+
+        return updated;
     }
 
     private async _broadcast(params: BroadcastParams<this>): Promise<void> {
@@ -388,9 +397,13 @@ export class IORoom<
                 senderId: sessionId,
             });
 
+            const session = webSocket.session;
+            const user = session.user;
+
+            if (!!user) this._removeUserSession(user.id, sessionId);
+
             try {
                 const doc = await this._doc;
-                const session = webSocket.session;
                 const encodedState = doc.getEncodedState();
 
                 await Promise.resolve(
@@ -398,7 +411,7 @@ export class IORoom<
                         context: this._context,
                         encodedState,
                         room: this.id,
-                        user: session.user,
+                        user,
                     }),
                 );
             } catch (error) {
@@ -832,6 +845,20 @@ export class IORoom<
         } catch {
             return null;
         }
+    }
+
+    private _removeUserSession(userId: string, sessionId: string): Set<[sessionId: string][0]> | null {
+        const set = this._userSessionss.get(userId);
+
+        if (!set) return null;
+
+        set.delete(sessionId);
+
+        if (!!set.size) return set;
+
+        this._userSessionss.delete(userId);
+
+        return set;
     }
 
     private async _sendMessage(
