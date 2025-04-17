@@ -200,7 +200,7 @@ export class PluvRoom<
         heartbeat: null,
     };
     private readonly _listeners: InternalListeners;
-    private readonly _otherNotifier = new OtherNotifier<TIO>();
+    private readonly _otherNotifier = new OtherNotifier<TIO, TPresence>();
     private readonly _publicKey: PublicKey<TMetadata> | null = null;
     private readonly _reconnectTimeoutMs: ReconnectTimeoutMs;
     private readonly _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
@@ -511,8 +511,15 @@ export class PluvRoom<
         return this._crdtManager.doc.toJson(type);
     }
 
-    public other = (connectionId: string, callback: OtherNotifierSubscriptionCallback<TIO>): (() => void) => {
-        return this._otherNotifier.subscribe(connectionId, callback);
+    public other = (
+        connectionId: string,
+        callback: OtherNotifierSubscriptionCallback<TIO, TPresence>,
+    ): (() => void) => {
+        const clientId = this._usersManager.getClientId(connectionId);
+
+        if (!clientId) return () => undefined;
+
+        return this._otherNotifier.subscribe(clientId, callback);
     };
 
     public redo = (): void => {
@@ -653,7 +660,7 @@ export class PluvRoom<
         this._clearTimeout(this._timeouts.pong);
         this._detachWindowListeners();
         this._usersManager.removeMyself();
-        this._usersManager.removeUsers();
+        this._usersManager.clearConnections();
         this._otherNotifier.clear();
         this._stateNotifier.subjects.myself.next(null);
         this._stateNotifier.subjects.others.next([]);
@@ -800,13 +807,19 @@ export class PluvRoom<
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
-        this._usersManager.removeUser(connectionId);
-
+        const clientId = this._usersManager.getClientId(connectionId);
+        const deleted = this._usersManager.deleteConnection(connectionId);
         const others = this._usersManager.getOthers();
 
         this._stateNotifier.subjects.others.next(others);
-        this._otherNotifier.subject(connectionId).next(null);
-        this._otherNotifier.subjects.delete(connectionId);
+
+        /**
+         * @description A single user can have multiple connections. So we're checking that there
+         * isn't a remaining connection before choosing to delete that user for other connected
+         * participants.
+         * @date April 16, 2025
+         */
+        if (!deleted?.remaining && !!clientId) this._otherNotifier.delete(clientId);
     }
 
     private _handlePresenceUpdatedMessage(message: IOEventMessage<TIO>): void {
@@ -833,8 +846,9 @@ export class PluvRoom<
 
         const other = this._usersManager.getOther(connectionId);
         const others = this._usersManager.getOthers();
+        const clientId = this._usersManager.getClientId(connectionId);
 
-        this._otherNotifier.subject(connectionId).next(other);
+        if (!!clientId) this._otherNotifier.subject(clientId).next(other);
         this._stateNotifier.subjects["others"].next(others);
     }
 
@@ -848,13 +862,26 @@ export class PluvRoom<
         Object.keys(data.others).forEach((connectionId) => {
             const { presence, user } = data.others[connectionId];
 
-            this._usersManager.setUser(connectionId, user);
-
-            const other = this._usersManager.getOther(connectionId);
+            const result = this._usersManager.addConnection({
+                connectionId,
+                presence: (presence ?? undefined) as TPresence,
+                user,
+            });
 
             if (!!presence) this._usersManager.patchPresence(connectionId, presence as TPresence);
 
-            this._otherNotifier.subject(connectionId).next(other);
+            /**
+             * !HACK
+             * @description If this is null, then the user that was added was myself. We'll skip on
+             * updating others, as myself should not be in others.
+             * @date April 16, 2025
+             */
+            if (!result) return;
+
+            const clientId = result.clientId;
+            const other = this._usersManager.getOther(connectionId);
+
+            this._otherNotifier.subject(clientId).next(other);
         });
 
         const others = this._usersManager.getOthers();
@@ -973,19 +1000,24 @@ export class PluvRoom<
         if (!this._usersManager.myself) return;
 
         const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$userJoined"];
-
         const myself = this._usersManager.myself;
 
         if (myself.connectionId === connectionId) {
             this._sendMessage({ type: "$getOthers", data: {} });
+            return;
         }
 
-        this._usersManager.setUser(connectionId, data.user, data.presence as TPresence);
+        const result = this._usersManager.addConnection({
+            connectionId,
+            presence: data.presence as TPresence,
+            user: data.user,
+        });
 
+        const clientId = result?.clientId ?? null;
         const other = this._usersManager.getOther(connectionId);
         const others = this._usersManager.getOthers();
 
-        this._otherNotifier.subject(connectionId).next(other);
+        if (!!clientId) this._otherNotifier.subject(clientId).next(other);
         this._stateNotifier.subjects["others"].next(others);
     }
 

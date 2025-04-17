@@ -51,7 +51,10 @@ export abstract class AbstractRoom<
     public abstract getStorageJson(): InferCrdtJson<TStorage> | null;
     public abstract getStorageJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]> | null;
 
-    public abstract other(connectionId: string, callback: OtherNotifierSubscriptionCallback<TIO>): () => void;
+    public abstract other(
+        connectionId: string,
+        callback: OtherNotifierSubscriptionCallback<TIO, TPresence>,
+    ): () => void;
 
     public abstract redo(): void;
 
