@@ -427,7 +427,16 @@ export class IORoom<
         const sessionId = session.id;
         const user = session.user;
 
-        await this._sendSelfMessage({ type: "$registered", data: { sessionId } }, { sessionId, user });
+        await this._sendSelfMessage(
+            {
+                type: "$registered",
+                data: {
+                    sessionId,
+                    timers: { presence: session.timers.presence },
+                },
+            },
+            { sessionId, user },
+        );
 
         try {
             const doc = await this._doc;
