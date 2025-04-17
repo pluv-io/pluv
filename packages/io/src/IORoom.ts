@@ -563,26 +563,16 @@ export class IORoom<
     private _getLatestPresence(userId: string): { timer: number | null; presence: JsonObject | null } {
         if (!this._authorize) return { timer: null, presence: null };
 
-        /**
-         * !HACK
-         * @description Use reduce to map and filter at the same time for performance
-         * @date April 16, 2025
-         */
-        const sessions = Array.from(this._sessions.values()).reduce((acc, pluvWs) => {
-            const session = pluvWs.session;
+        const sessionIds = Array.from(this._userSessionss.get(userId)?.values() ?? []);
 
-            /**
-             * !HACK
-             * @description Mutable push for performance
-             * @date April 16, 2025
-             */
-            if (session.user?.id === userId) acc.push(session);
+        if (!sessionIds.length) return { timer: null, presence: null };
 
-            return acc;
-        }, [] as WebSocketSession<TAuthorize>[]);
+        return sessionIds.reduce(
+            (state, sessionId) => {
+                const pluvWs = this._sessions.get(sessionId) ?? null;
 
-        return Array.from(this._sessions.values()).reduce(
-            (state, pluvWs) => {
+                if (!pluvWs) return state;
+
                 const session = pluvWs.session;
                 const presence = session.presence;
                 const timer = session.timers.presence;
