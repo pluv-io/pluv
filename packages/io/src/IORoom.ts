@@ -26,7 +26,7 @@ import type { AbstractCloseEvent, AbstractErrorEvent, AbstractMessageEvent } fro
 import { AbstractWebSocket } from "./AbstractWebSocket";
 import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { authorize } from "./authorize";
-import { PING_TIMEOUT_MS } from "./constants";
+import { GARBAGE_COLLECT_INTERVAL_MS, PING_TIMEOUT_MS } from "./constants";
 import type {
     EventResolverContext,
     EventResolverKind,
@@ -108,6 +108,7 @@ export class IORoom<
     public readonly id: string;
 
     private _doc: Promise<AbstractCrdtDoc<any>>;
+    private _lastGarbageCollectMs: number = -1 * (GARBAGE_COLLECT_INTERVAL_MS + 1);
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
     private readonly _authorize: TAuthorize = null as TAuthorize;
@@ -246,6 +247,15 @@ export class IORoom<
         });
 
         await this._emitQuitters();
+    }
+
+    /**
+     * @description The IORoom will garbage collect occasionally as connections ping/pong the
+     * server
+     */
+    public async garbageCollect(): Promise<void> {
+        this._lastGarbageCollectMs = Date.now();
+        this._emitQuitters();
     }
 
     public getSize(): number {
@@ -733,6 +743,9 @@ export class IORoom<
             const eventContext: EventResolverContext<EventResolverKind, TPlatform, TAuthorize, TContext> = {
                 context: this._context,
                 doc,
+                garbageCollect: async () => {
+                    await this.garbageCollect();
+                },
                 get presence() {
                     return session.presence as JsonObject | null;
                 },
@@ -807,24 +820,24 @@ export class IORoom<
                 const handleBroadcast = async () => {
                     if (!broadcast) return;
 
-                    await Promise.all(
-                        Object.entries(broadcast).map(async ([type, data]: any) => {
-                            await this._broadcast({
-                                message: { data, type },
-                                senderId: sessionId,
-                            });
-                        }),
-                    );
+                    const messages = Object.entries(broadcast).map(async ([type, data]: any) => {
+                        await this._broadcast({
+                            message: { data, type },
+                            senderId: sessionId,
+                        });
+                    });
+
+                    await Promise.all(messages);
                 };
 
                 const handleSelf = async () => {
                     if (!self) return;
 
-                    await Promise.all(
-                        Object.entries(self).map(async ([type, data]) => {
-                            await this._sendSelfMessage({ data, type }, { sessionId, user });
-                        }),
-                    );
+                    const messages = Object.entries(self).map(async ([type, data]) => {
+                        await this._sendSelfMessage({ data, type }, { sessionId, user });
+                    });
+
+                    await Promise.all(messages);
                 };
 
                 const handleSync = async () => {
@@ -838,11 +851,11 @@ export class IORoom<
                         ...message,
                     });
 
-                    await Promise.all(
-                        Object.entries(sync).map(async ([type, data]) => {
-                            await this._sendSelfMessage({ data, type }, { sessionId, user });
-                        }),
-                    );
+                    const messages = Object.entries(sync).map(async ([type, data]) => {
+                        await this._sendSelfMessage({ data, type }, { sessionId, user });
+                    });
+
+                    await Promise.all(messages);
                 };
 
                 await Promise.all([handleBroadcast(), handleSelf(), handleSync()]);
@@ -960,7 +973,20 @@ export class IORoom<
         const pluvWs = this._sessions.get(senderId);
 
         if (!pluvWs) return;
-        if (message.type === "$pong") await this._emitQuitters();
+
+        /**
+         * @description Note that this will not fire for Cloudflare's hibernatable websockets
+         * because the server will auto-respond with the $pong event without calling any
+         * functions.
+         * @date April 18, 2025
+         */
+        if (message.type === "$pong") {
+            const elapsedMs = Date.now() - this._lastGarbageCollectMs;
+
+            if (elapsedMs > GARBAGE_COLLECT_INTERVAL_MS) {
+                await this.garbageCollect();
+            }
+        }
 
         const session = pluvWs.session;
         const user = session.user ?? null;
@@ -987,6 +1013,9 @@ export class IORoom<
         const context: EventResolverContext<"sync", TPlatform, TAuthorize, TContext> = {
             context: this._context,
             doc,
+            garbageCollect: async () => {
+                await this.garbageCollect();
+            },
             get presence() {
                 return null;
             },

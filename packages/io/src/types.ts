@@ -54,6 +54,7 @@ export interface EventResolverContext<
 > {
     context: TContext;
     doc: AbstractCrdtDoc<any>;
+    garbageCollect: () => Promise<void>;
     presence: JsonObject | null;
     room: string;
     session: TKind extends "sync" ? WebSocketSession<TAuthorize> | null : WebSocketSession<TAuthorize>;
