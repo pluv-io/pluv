@@ -30,7 +30,7 @@ class RoomDurableObject extends DurableObject {
         const alarm = await this.storage.getAlarm();
 
         // Start running the garbage collection interval
-        if (alarm !== null) await this.storage.setAlarm(Date.now() + 60_000);
+        if (alarm !== null) this.storage.setAlarm(Date.now() + 60_000);
 
         await this._room.register(server, { env: this.env, request });
 
