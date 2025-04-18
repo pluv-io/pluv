@@ -27,10 +27,10 @@ class RoomDurableObject extends DurableObject {
     async fetch(request: Request): Promise<Response> {
         // ... WebSocket validation and pair creation here
 
-        const alarm = await this.storage.getAlarm();
+        const alarm = await this.ctx.storage.getAlarm();
 
         // Start running the garbage collection interval
-        if (alarm !== null) await this.storage.setAlarm(Date.now() + 60_000);
+        if (alarm !== null) await this.ctx.storage.setAlarm(Date.now() + 60_000);
 
         await this._room.register(server, { env: this.env, request });
 
@@ -41,7 +41,7 @@ class RoomDurableObject extends DurableObject {
         await this._room.garbageCollect();
 
         // Garbage collect every 1 minute
-        await this.storage.setAlarm(Date.now() + 60_000);
+        await this.ctx.storage.setAlarm(Date.now() + 60_000);
     }
 }
 ```
