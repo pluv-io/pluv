@@ -1,5 +1,20 @@
 # @pluv/platform-node
 
+## 0.41.0
+
+### Patch Changes
+
+- d53bbdb: Fixed the return type of `createWsServer` from `createPluvHandler` to be `ws.WebSocketServer` instead of `ws.Server`.
+- Updated dependencies [73adf21]
+- Updated dependencies [f02a430]
+- Updated dependencies [0b908b3]
+- Updated dependencies [6422f3b]
+- Updated dependencies [555b88d]
+- Updated dependencies [a663c65]
+- Updated dependencies [555b88d]
+  - @pluv/io@0.41.0
+  - @pluv/types@0.41.0
+
 ## 0.40.2
 
 ### Patch Changes
