@@ -5,18 +5,6 @@ import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { z } from "@zod/mini";
 import { expectTypeOf } from "expect-type";
 
-const platform = platformCloudflare({
-    authorize: {
-        secret: "",
-        user: z.object({
-            id: z.string(),
-        }),
-    },
-    context: ({ env, meta, state }) => ({ env, meta, state }),
-});
-
-const context = platform.context;
-
 const io = createIO(
     platformCloudflare({
         authorize: {
