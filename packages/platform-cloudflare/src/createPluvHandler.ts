@@ -3,6 +3,7 @@ import type { BaseUser, Id, InferIOAuthorize, InferIOAuthorizeUser, Maybe, Maybe
 import { DurableObject as BaseDurableObject } from "cloudflare:workers";
 import { match } from "path-to-regexp";
 import { CloudflarePlatform } from "./CloudflarePlatform";
+import { GARBAGE_COLLECT_INTERVAL_MS } from "./constants";
 
 export type AuthorizeFunctionContext<TPluvServer extends PluvServer<any, any, any, any>> = {
     room: string;
@@ -86,9 +87,17 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
             const { 0: client, 1: server } = new WebSocketPair();
             const token = new URL(request.url).searchParams.get("token");
 
+            const alarm = await this.ctx.storage.getAlarm();
+            if (alarm !== null) await this.ctx.storage.setAlarm(Date.now() + GARBAGE_COLLECT_INTERVAL_MS);
+
             await this._room.register(server, { env: this.env, request, token });
 
             return new Response(null, { status: 101, webSocket: client });
+        }
+
+        public async alarm(alarmInfo?: AlarmInvocationInfo): Promise<void> {
+            await this._room.garbageCollect();
+            await this.ctx.storage.setAlarm(Date.now() + GARBAGE_COLLECT_INTERVAL_MS);
         }
     };
 
