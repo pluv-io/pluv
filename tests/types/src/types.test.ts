@@ -5,6 +5,18 @@ import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { z } from "@zod/mini";
 import { expectTypeOf } from "expect-type";
 
+const platform = platformCloudflare({
+    authorize: {
+        secret: "",
+        user: z.object({
+            id: z.string(),
+        }),
+    },
+    context: ({ env, meta, state }) => ({ env, meta, state }),
+});
+
+const context = platform.context;
+
 const io = createIO(
     platformCloudflare({
         authorize: {
@@ -13,6 +25,7 @@ const io = createIO(
                 id: z.string(),
             }),
         },
+        context: ({ env, meta, state }) => ({ env, meta, state }),
     }),
 );
 
@@ -28,7 +41,16 @@ const router = io.router({
         })),
 });
 
-const ioServer = io.server({ router });
+const ioServer = io.server({
+    router,
+    onRoomDeleted: async ({ context }) => {
+        expectTypeOf<typeof context>().toEqualTypeOf<{
+            env: {};
+            meta: undefined;
+            state: DurableObjectState;
+        }>();
+    },
+});
 
 const types = clientInfer((i) => ({ io: i<typeof ioServer> }));
 const client = createClient({
