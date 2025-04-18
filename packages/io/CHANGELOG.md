@@ -1,5 +1,67 @@
 # @pluv/io
 
+## 0.41.0
+
+### Minor Changes
+
+- 73adf21: **BREAKING** The `user` that is provided to `PluvServer.createToken` is now limited to be at most 512 bytes. If the `user` is any larger, `PluvServer.createToken` will now throw an error.
+- f02a430: **BREAKING** Updated the way `user` is stored and read from the websocket, so now `user` is persisted in-memory rather than from persistent storage (improves performance and lowers cost in some cases). This change primarily affects pluv platforms, which are intended for internal use only, and therefore should be mostly non-breaking.
+- 0b908b3: **BREAKING** User's presence is now limited to be at most 512 bytes. If the presence is any larger, the `PluvServer` will now throw an error.
+- 555b88d: Users can now have multiple simultaneous connections. Previously, if a user tried to open a connection to a room while already being connected to the room, the new connection would be blocked. Now, when the user opens another connection, the new connection will be opened and initialized with their latest presence.
+
+  Users can only have 1 identity and 1 presence, which means that all presence updates will sync across all of that user's connections. This means that even when a user opens multiple connections, they will only appear once in `others`.
+
+### Patch Changes
+
+- 6422f3b: In certain edge-cases, WebSocket connections can silently die in all runtimes, causing connected clients to see the presence of other connections that aren't connected anymore.
+
+  The `IORoom` now automatically garbage collects dead websockets that haven't been pinged in a long time. Garbage collection happens on WebSocket ping/pong messages every 60 seconds.
+
+  However, garbage collection does not automatically happen for Cloudflare Worker Durable Objects using websocket hiberation because ping/pong messages happen outside of the Durable Object's compute. Therefore `IORoom` now provides a method `garbageCollect` that can be called manually to clear any dead websockets whenever the user chooses.
+
+  For example, within a Cloudflare Worker Durable Object, an [alarm](https://developers.cloudflare.com/durable-objects/api/alarms/) can be set to periodically run garbage collection for you:
+
+  ```ts
+  import { InferIORoom } from "@pluv/io";
+
+  class RoomDurableObject extends DurableObject {
+    private _room: InferIORoom<typeof ioServer>;
+
+    constructor(state: DurableObjectState, env: Env) {
+      super(state, env);
+
+      this._room = io.createRoom(state.id.toString(), { env, state });
+    }
+
+    // ... WebSocket handlers here
+
+    async fetch(request: Request): Promise<Response> {
+      // ... WebSocket validation and pair creation here
+
+      const alarm = await this.ctx.storage.getAlarm();
+
+      // Start running the garbage collection interval
+      if (alarm !== null) await this.ctx.storage.setAlarm(Date.now() + 60_000);
+
+      await this._room.register(server, { env: this.env, request });
+
+      // ... Return response
+    }
+
+    async alarm(): Promise<void> {
+      await this._room.garbageCollect();
+
+      // Garbage collect every 1 minute
+      await this.ctx.storage.setAlarm(Date.now() + 60_000);
+    }
+  }
+  ```
+
+- a663c65: Update websocket session connection ids to be deterministic based on the user's id if authorization is configured (i.e. connection id will now just be the user's id with a prefix).
+- 555b88d: Added a new field `presence` to the server's event resolver context to view the message sender's currently known presence.
+  - @pluv/crdt@0.41.0
+  - @pluv/types@0.41.0
+
 ## 0.40.2
 
 ### Patch Changes

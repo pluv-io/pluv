@@ -1,5 +1,21 @@
 # @pluv/client
 
+## 0.41.0
+
+### Minor Changes
+
+- 41aa439: **BREAKING** User's presence is now limited to be at most 512 bytes. If the presence is any larger, the `PluvRoom` will now throw an error.
+- 555b88d: Users can now have multiple simultaneous connections. Previously, if a user tried to open a connection to a room while already being connected to the room, the new connection would be blocked. Now, when the user opens another connection, the new connection will be opened and initialized with their latest presence.
+
+  Users can only have 1 identity and 1 presence, which means that all presence updates will sync across all of that user's connections. This means that even when a user opens multiple connections, they will only appear once in `others`.
+
+### Patch Changes
+
+- eb2d903: `PluvRoom` attempts to reconnect immediately after receiving a `close` event, instead of waiting for the reconnect timer. After failing the initial reconnect will the reconnects poll on the timer.
+- 555b88d: Fixed the `presence` type of `other` and `others` to equal the inferred presence type.
+  - @pluv/crdt@0.41.0
+  - @pluv/types@0.41.0
+
 ## 0.40.2
 
 ### Patch Changes

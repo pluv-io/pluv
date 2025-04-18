@@ -1,6 +1,6 @@
 {
   "name": "eslint-config-pluv",
-  "version": "0.40.2",
+  "version": "0.41.0",
   "description": "@pluv/io eslint config",
   "author": "leedavidcs",
   "license": "MIT",
