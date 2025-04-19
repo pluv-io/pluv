@@ -19,7 +19,7 @@ export type PlatformNodeCreateIOParams<
                 TUser,
                 InferInitContextType<NodePlatform<IOAuthorize<TUser, TContext>, TMeta>>
             >;
-            context?: PluvContext<NodePlatform<IOAuthorize<TUser, TContext>, TMeta>, TContext>;
+            context?: PluvContext<NodePlatform<IOAuthorize<TUser, any>, TMeta>, TContext>;
             types?: InferCallback<TMeta>;
         }
 >;
