@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.41.2
+
+### Patch Changes
+
+- 37956d3: When presence is received for a user that is not currently being tracked, `PluvRoom` now automatically updates `others` to include the connection of the received presence.
+  - @pluv/crdt@0.41.2
+  - @pluv/types@0.41.2
+
 ## 0.41.1
 
 ### Patch Changes
