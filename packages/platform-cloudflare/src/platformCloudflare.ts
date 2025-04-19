@@ -20,7 +20,7 @@ export type PlatformCloudflareCreateIOParams<
                 TUser,
                 InferInitContextType<CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>>
             >;
-            context?: PluvContext<CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>, TContext>;
+            context?: PluvContext<CloudflarePlatform<IOAuthorize<TUser, any>, TEnv, TMeta>, TContext>;
             types?: InferCallback<TEnv, TMeta>;
         }
 >;
