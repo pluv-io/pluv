@@ -1,5 +1,14 @@
 # @pluv/platform-cloudflare
 
+## 0.41.1
+
+### Patch Changes
+
+- 9e61e10: Fix inferred context type.
+  - @pluv/io@0.41.1
+  - @pluv/persistence-cloudflare-transactional-storage@0.41.1
+  - @pluv/types@0.41.1
+
 ## 0.41.0
 
 ### Patch Changes
