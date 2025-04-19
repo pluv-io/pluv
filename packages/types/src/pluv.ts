@@ -22,7 +22,14 @@ export interface BaseClientEventRecord {
 
 export type BaseClientMessage = InferEventMessage<BaseClientEventRecord>;
 
-export interface BaseIOAuthorizeEventRecord<TAuthorize extends IOAuthorize<any, any>> {
+export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = {
+    $error: {
+        message: string;
+        stack?: string | null;
+    };
+    $exit: {
+        sessionId: string;
+    };
     $othersReceived: {
         others: {
             [connectionId: string]: {
@@ -33,22 +40,6 @@ export interface BaseIOAuthorizeEventRecord<TAuthorize extends IOAuthorize<any, 
                 user: Id<InferIOAuthorizeUser<TAuthorize>>;
             };
         };
-    };
-    $userJoined: {
-        connectionId: string;
-        presence: JsonObject;
-        timers: { presence: number | null };
-        user: NonNullable<Id<InferIOAuthorizeUser<TAuthorize>>>;
-    };
-}
-
-export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = BaseIOAuthorizeEventRecord<TAuthorize> & {
-    $error: {
-        message: string;
-        stack?: string | null;
-    };
-    $exit: {
-        sessionId: string;
     };
     $pong: {};
     $presenceUpdated: {
@@ -65,6 +56,12 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = BaseIO
     };
     $storageUpdated: {
         state: string;
+    };
+    $userJoined: {
+        connectionId: string;
+        presence: JsonObject;
+        timers: { presence: number | null };
+        user: NonNullable<Id<InferIOAuthorizeUser<TAuthorize>>>;
     };
 };
 

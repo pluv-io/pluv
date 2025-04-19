@@ -71,7 +71,7 @@ export class PluvServer<
     private readonly _authorize: TAuthorize = null as TAuthorize;
     private readonly _baseRouter: PluvRouter<TPlatform, TAuthorize, TContext, {}> = new PluvRouter({
         $getOthers: this._procedure.sync((data, { room, session, sessions }) => {
-            const currentTime = new Date().getTime();
+            const currentTime = Date.now();
 
             const others = sessions
                 .filter((wsSession) => {
