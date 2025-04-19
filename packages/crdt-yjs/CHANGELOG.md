@@ -1,5 +1,12 @@
 # @pluv/crdt-yjs
 
+## 0.41.2
+
+### Patch Changes
+
+- @pluv/crdt@0.41.2
+- @pluv/types@0.41.2
+
 ## 0.41.1
 
 ### Patch Changes
