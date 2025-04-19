@@ -28,7 +28,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
         fromClientId: new Map<[clientId: string][0], Set<[connectionId: string][0]>>(),
     };
 
-    private _initialPresence: TPresence;
+    public readonly initialPresence: TPresence;
     /**
      * @description This presence can be updated while the user is not
      * connected.
@@ -44,7 +44,8 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
     constructor(config: UsersManagerConfig<TPresence>) {
         const { initialPresence, presence = null } = config;
 
-        this._initialPresence = initialPresence as TPresence;
+        this.initialPresence = initialPresence as TPresence;
+
         this._myPresence = initialPresence as TPresence;
         this._presence = presence;
     }
@@ -62,7 +63,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
     ): AddConnectionResult<TIO, TPresence> {
         const data: UserInfo<TIO, TPresence> = {
             ...userInfo,
-            presence: userInfo.presence ?? this._initialPresence,
+            presence: userInfo.presence ?? this.initialPresence,
         };
 
         const myClientId = !!this._myself ? this.getClientId(this._myself) : null;
@@ -205,7 +206,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
 
     public setMyself(userInfo: OptionalProps<UserInfo<TIO, TPresence>, "presence">): void {
         const connectionId = userInfo.connectionId;
-        const presence = userInfo.presence ?? this._initialPresence;
+        const presence = userInfo.presence ?? this.initialPresence;
 
         this._myself = { ...userInfo, presence };
         this._myPresence = presence;

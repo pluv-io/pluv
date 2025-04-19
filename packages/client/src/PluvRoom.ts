@@ -77,9 +77,6 @@ export const DEFAULT_PLUV_CLIENT_ADDON = <
     storage: new StorageStore(input.room.id),
 });
 
-interface CloseWsOptions {
-    connectionState?: ConnectionState;
-}
 interface WindowListeners {
     onNavigatorOffline: () => void;
     onNavigatorOnline: () => void;
@@ -857,10 +854,28 @@ export class PluvRoom<
             return;
         }
 
-        const other = this._usersManager.getOther(connectionId);
+        if (!!clientId) {
+            const other = this._usersManager.getOther(connectionId);
+
+            this._otherNotifier.subject(clientId).next(other);
+        } else {
+            /**
+             * !HACK
+             * @description User could not be found. Add the connection to keep others up-to-date
+             * @date April 19, 2025
+             */
+            const added = this._usersManager.addConnection({
+                connectionId,
+                presence: { ...this._usersManager.initialPresence, ...data.presence } as TPresence,
+                user: message.user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>,
+            });
+            const other = this._usersManager.getOther(connectionId);
+
+            this._otherNotifier.subject(added.clientId).next(other);
+        }
+
         const others = this._usersManager.getOthers();
 
-        if (!!clientId) this._otherNotifier.subject(clientId).next(other);
         this._stateNotifier.subjects.others.next(others);
     }
 
@@ -1020,17 +1035,16 @@ export class PluvRoom<
             return;
         }
 
-        const result = this._usersManager.addConnection({
+        const added = this._usersManager.addConnection({
             connectionId,
             presence: data.presence as TPresence,
             user: data.user,
         });
 
-        const clientId = result?.clientId ?? null;
         const other = this._usersManager.getOther(connectionId);
         const others = this._usersManager.getOthers();
 
-        if (!!clientId) this._otherNotifier.subject(clientId).next(other);
+        this._otherNotifier.subject(added.clientId).next(other);
         this._stateNotifier.subjects.others.next(others);
     }
 
