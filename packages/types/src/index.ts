@@ -18,7 +18,6 @@ export type {
 export type {
     BaseClientEventRecord,
     BaseClientMessage,
-    BaseIOAuthorizeEventRecord,
     BaseIOEventRecord,
     BaseUser,
     EventMessage,
