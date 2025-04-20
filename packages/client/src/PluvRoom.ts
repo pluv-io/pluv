@@ -843,11 +843,12 @@ export class PluvRoom<
          */
         if (myself?.connectionId === connectionId) return;
 
-        const updated = this._usersManager.patchPresence(connectionId, data.presence as TPresence);
         const myClientId = !!myself ? this._usersManager.getClientId(myself) : null;
         const clientId = this._usersManager.getClientId(connectionId);
 
         if (!!clientId && myClientId === clientId) {
+            const updated = this._usersManager.patchPresence(connectionId, data.presence as TPresence);
+
             this._stateNotifier.subjects["my-presence"].next(updated);
             this._stateNotifier.subjects.myself.next(this._usersManager.myself);
 
@@ -1236,15 +1237,17 @@ export class PluvRoom<
         if (document.visibilityState !== "visible") return;
 
         switch (this._state.connection.state) {
-            case ConnectionState.Open:
+            case ConnectionState.Open: {
                 this._clearInterval(this._intervals.heartbeat);
                 setInterval(this._heartbeat.bind(this), HEARTBEAT_INTERVAL_MS);
 
                 return;
-            case ConnectionState.Unavailable:
+            }
+            case ConnectionState.Unavailable: {
                 await this._reconnect();
 
                 return;
+            }
             default:
         }
     }

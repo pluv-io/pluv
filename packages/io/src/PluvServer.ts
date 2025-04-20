@@ -20,6 +20,7 @@ import type {
     ResolvedPluvIOAuthorize,
 } from "./types";
 import { __PLUV_VERSION } from "./version";
+import { pickBy } from "./utils";
 
 export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
     TServer extends PluvServer<infer IPlatform, infer IAuthorize, infer IContext, infer IEvents>
@@ -170,7 +171,8 @@ export class PluvServer<
 
             if (!session) return {};
 
-            const updated = Object.assign(Object.create(null), session.presence, presence);
+            const cleaned = pickBy(presence, (value) => typeof value !== "undefined");
+            const updated = Object.assign(Object.create(null), session.presence, cleaned);
             const bytes = new TextEncoder().encode(JSON.stringify(updated)).length;
 
             if (bytes > MAX_PRESENCE_SIZE_BYTES) {
