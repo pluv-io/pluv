@@ -843,12 +843,11 @@ export class PluvRoom<
          */
         if (myself?.connectionId === connectionId) return;
 
+        const updated = this._usersManager.patchPresence(connectionId, data.presence as TPresence);
         const myClientId = !!myself ? this._usersManager.getClientId(myself) : null;
         const clientId = this._usersManager.getClientId(connectionId);
 
         if (!!clientId && myClientId === clientId) {
-            const updated = this._usersManager.patchPresence(connectionId, data.presence as TPresence);
-
             this._stateNotifier.subjects["my-presence"].next(updated);
             this._stateNotifier.subjects.myself.next(this._usersManager.myself);
 
