@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.41.3
+
+### Patch Changes
+
+- 49051c0: Fix presence keys becoming lost, causing presence objects to be partial and failing schema validation.
+  - @pluv/crdt@0.41.3
+  - @pluv/types@0.41.3
+
 ## 0.41.2
 
 ### Patch Changes
