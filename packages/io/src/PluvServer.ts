@@ -19,8 +19,8 @@ import type {
     PluvIOListeners,
     ResolvedPluvIOAuthorize,
 } from "./types";
-import { __PLUV_VERSION } from "./version";
 import { pickBy } from "./utils";
+import { __PLUV_VERSION } from "./version";
 
 export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
     TServer extends PluvServer<infer IPlatform, infer IAuthorize, infer IContext, infer IEvents>

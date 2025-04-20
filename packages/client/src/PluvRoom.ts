@@ -867,7 +867,7 @@ export class PluvRoom<
              */
             const added = this._usersManager.addConnection({
                 connectionId,
-                presence: { ...this._usersManager.initialPresence, ...data.presence } as TPresence,
+                presence: data.presence as TPresence,
                 user: message.user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>,
             });
             const other = this._usersManager.getOther(connectionId);
@@ -892,7 +892,7 @@ export class PluvRoom<
 
             const result = this._usersManager.addConnection({
                 connectionId,
-                presence: (presence ?? undefined) as TPresence,
+                presence: presence as TPresence,
                 user,
             });
 
