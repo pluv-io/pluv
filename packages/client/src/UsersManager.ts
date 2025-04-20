@@ -1,6 +1,7 @@
 import type { InputZodLike, IOLike, JsonObject, OptionalProps } from "@pluv/types";
 import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import type { UserInfo } from "./types";
+import { pickBy } from "./utils";
 
 export type Presence = Record<string, unknown>;
 
@@ -61,10 +62,14 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
     public addConnection(
         userInfo: OptionalProps<UserInfo<TIO, TPresence>, "presence">,
     ): AddConnectionResult<TIO, TPresence> {
-        const data: UserInfo<TIO, TPresence> = {
-            ...userInfo,
-            presence: userInfo.presence ?? this.initialPresence,
-        };
+        /**
+         * @description Ensure that the presence is complete, so that it does not fail schema
+         * validation
+         * @date April 20, 2025
+         */
+        const cleaned = pickBy(userInfo.presence ?? {}, (value) => typeof value !== "undefined");
+        const presence = { ...this.initialPresence, ...cleaned };
+        const data: UserInfo<TIO, TPresence> = { ...userInfo, presence };
 
         const myClientId = !!this._myself ? this.getClientId(this._myself) : null;
         const clientId = this.getClientId(data);
@@ -187,7 +192,9 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
 
         if (!other) return null;
 
-        const presence = { ...other.presence, ...patch } as TPresence;
+        const cleanedPatch = pickBy(patch ?? {}, (value) => typeof value !== "undefined");
+        const cleanedPresence = pickBy(other.presence ?? {}, (value) => typeof value !== "undefined");
+        const presence = { ...this.initialPresence, ...cleanedPresence, ...cleanedPatch } as TPresence;
         const validated = this._presence ? this._presence.parse(presence) : presence;
 
         this._others.set(clientId, { ...other, presence: validated });
@@ -239,10 +246,14 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
     }
 
     /**
-     * @description This method need not care about being connected.
+     * @description This method need not care about being connected. This is because a user should
+     * be able to view and update their own presence without being online
+     * @date April 20, 2025
      */
     public updateMyPresence(patch: Partial<TPresence>): TPresence {
-        const updated = { ...this._myPresence, ...patch };
+        const cleanedPatch = pickBy(patch, (value) => typeof value !== "undefined");
+        const cleanedPresence = pickBy(this._myPresence, (value) => typeof value !== "undefined");
+        const updated = { ...this.initialPresence, ...cleanedPresence, ...cleanedPatch } as TPresence;
         const bytes = new TextEncoder().encode(JSON.stringify(updated)).length;
 
         if (bytes > MAX_PRESENCE_SIZE_BYTES) {
