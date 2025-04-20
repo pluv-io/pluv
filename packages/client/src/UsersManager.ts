@@ -192,7 +192,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
 
         if (!other) return null;
 
-        const cleanedPatch = pickBy(patch, (value) => typeof value !== "undefined");
+        const cleanedPatch = pickBy(patch ?? {}, (value) => typeof value !== "undefined");
         const cleanedPresence = pickBy(other.presence ?? {}, (value) => typeof value !== "undefined");
         const presence = { ...this.initialPresence, ...cleanedPresence, ...cleanedPatch } as TPresence;
         const validated = this._presence ? this._presence.parse(presence) : presence;

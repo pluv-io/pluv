@@ -171,8 +171,8 @@ export class PluvServer<
 
             if (!session) return {};
 
-            const cleaned = pickBy(presence, (value) => typeof value !== "undefined");
-            const updated = Object.assign(Object.create(null), session.presence, cleaned);
+            const cleanedPatch = pickBy(presence ?? {}, (value) => typeof value !== "undefined");
+            const updated = Object.assign(Object.create(null), session.presence, cleanedPatch);
             const bytes = new TextEncoder().encode(JSON.stringify(updated)).length;
 
             if (bytes > MAX_PRESENCE_SIZE_BYTES) {
