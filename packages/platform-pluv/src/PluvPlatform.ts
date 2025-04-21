@@ -130,7 +130,7 @@ export class PluvPlatform<
 
         this._basePath = basePath;
         this._context = typeof context === "function" ? context(this._roomContext) : context;
-        this._endpoints = _defs?.endpoints ?? { createToken: "https://pluv.io/api/room/token" };
+        this._endpoints = _defs?.endpoints ?? { createToken: "https://rooms.pluv.io/api/room/token" };
         this._publicKey = publicKey;
         this._secretKey = secretKey;
         this._webhookSecret = webhookSecret;
