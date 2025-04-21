@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.41.5
+
+### Patch Changes
+
+- b3b7b30: Fix error being thrown about missing wsEndpoint when a public key is provided.
+  - @pluv/crdt@0.41.5
+  - @pluv/types@0.41.5
+
 ## 0.41.4
 
 ### Patch Changes
