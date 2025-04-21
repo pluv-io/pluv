@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/io",
-	"version": "0.41.3",
+	"version": "0.41.4",
 	"description": "@pluv/io server-side websocket manager",
 	"author": "leedavidcs",
 	"license": "MIT",

@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 0.41.4
+
+### Patch Changes
+
+- 8857e8e: Added the ability to use functions to return public keys, secret keys and webhook secrets for `@pluv/platform-pluv`.
+  - @pluv/crdt@0.41.4
+  - @pluv/io@0.41.4
+  - @pluv/types@0.41.4
+
 ## 0.41.3
 
 ### Patch Changes
