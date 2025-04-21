@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.41.6
+
+### Patch Changes
+
+- 71642fa: Fix error about missing wsEndpoint.
+  - @pluv/crdt@0.41.6
+  - @pluv/types@0.41.6
+
 ## 0.41.5
 
 ### Patch Changes
