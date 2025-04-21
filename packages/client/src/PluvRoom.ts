@@ -416,7 +416,6 @@ export class PluvRoom<
     }
 
     public async disconnect(): Promise<void> {
-        if (!this._endpoints.wsEndpoint) throw new Error("Must provide a wsEndpoint.");
         if (!this._state.webSocket) return;
 
         const canDisconnect = [ConnectionState.Connecting, ConnectionState.Open].some(
@@ -1284,10 +1283,6 @@ export class PluvRoom<
     }
 
     private async _reconnect(): Promise<void> {
-        if (!this._endpoints.wsEndpoint) {
-            throw new Error("Must provide an wsEndpoint.");
-        }
-
         if (!this._state.webSocket) return;
 
         this._closeWs();
