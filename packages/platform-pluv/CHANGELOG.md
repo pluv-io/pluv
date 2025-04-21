@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 0.41.7
+
+### Patch Changes
+
+- c698c24: Update hidden endpoints parameter to be provided as a function.
+  - @pluv/crdt@0.41.7
+  - @pluv/io@0.41.7
+  - @pluv/types@0.41.7
+
 ## 0.41.6
 
 ### Patch Changes
