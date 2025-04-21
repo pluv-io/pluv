@@ -29,7 +29,7 @@ export interface PluvPlatformConfig<TContext extends Record<string, any> = {}> {
      * @deprecated Internal use only. Changes to this will never be marked as breaking.
      */
     _defs?: {
-        endpoints?: PluvIOEndpoints;
+        endpoints?: PluvIOEndpoints | (() => MaybePromise<PluvIOEndpoints>);
     };
     basePath: string;
     context?: TContext;
@@ -84,7 +84,7 @@ export class PluvPlatform<
     private _authorize: any;
     private readonly _basePath: string;
     private readonly _context: any;
-    private readonly _endpoints: PluvIOEndpoints;
+    private readonly _endpoints: PluvIOEndpoints | (() => MaybePromise<PluvIOEndpoints>);
     private _getInitialStorage?: GetInitialStorageFn<{}>;
     private _listeners?: PluvIOListeners;
     private readonly _publicKey: PublicKey;
@@ -94,12 +94,13 @@ export class PluvPlatform<
     public _createToken = async (params: JWTEncodeParams<any, any>): Promise<string> => {
         const parsed = this._authorize.user.parse(params.user);
 
-        const [publicKey, secretKey] = await Promise.all([
+        const [endpoints, publicKey, secretKey] = await Promise.all([
+            typeof this._endpoints === "object" ? this._endpoints : this._endpoints(),
             typeof this._publicKey === "string" ? this._publicKey : this._publicKey(),
             typeof this._secretKey === "string" ? this._secretKey : this._secretKey(),
         ]);
 
-        const res = await fetch(this._endpoints.createToken, {
+        const res = await fetch(endpoints.createToken, {
             headers: { "content-type": "application/json" },
             method: "post",
             body: JSON.stringify({
@@ -129,10 +130,7 @@ export class PluvPlatform<
 
         this._basePath = basePath;
         this._context = typeof context === "function" ? context(this._roomContext) : context;
-        this._endpoints = {
-            createToken: "https://pluv.io/api/room/token",
-            ..._defs?.endpoints,
-        };
+        this._endpoints = _defs?.endpoints ?? { createToken: "https://pluv.io/api/room/token" };
         this._publicKey = publicKey;
         this._secretKey = secretKey;
         this._webhookSecret = webhookSecret;
