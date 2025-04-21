@@ -8,6 +8,7 @@ import type {
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
+import type { MaybePromise } from "@pluv/types";
 import stringify from "fast-json-stable-stringify";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -16,6 +17,10 @@ import { SIGNATURE_ALGORITHM, SIGNATURE_HEADER } from "./constants";
 import { ZodEvent } from "./schemas";
 import { createErrorResponse, createSuccessResponse, HttpError, verifyWebhook } from "./shared";
 import type { PluvIOEndpoints, PluvIOListeners } from "./types";
+
+export type PublicKey = string | (() => MaybePromise<string>);
+export type SecretKey = string | (() => MaybePromise<string>);
+export type WebhookSecret = string | (() => MaybePromise<string>);
 
 export interface PluvPlatformConfig<TContext extends Record<string, any> = {}> {
     /**
@@ -28,9 +33,9 @@ export interface PluvPlatformConfig<TContext extends Record<string, any> = {}> {
     };
     basePath: string;
     context?: TContext;
-    publicKey: string;
-    secretKey: string;
-    webhookSecret?: string;
+    publicKey: PublicKey;
+    secretKey: SecretKey;
+    webhookSecret?: WebhookSecret;
 }
 
 export class PluvPlatform<
@@ -82,21 +87,26 @@ export class PluvPlatform<
     private readonly _endpoints: PluvIOEndpoints;
     private _getInitialStorage?: GetInitialStorageFn<{}>;
     private _listeners?: PluvIOListeners;
-    private readonly _publicKey: string;
-    private readonly _secretKey: string;
-    private readonly _webhookSecret?: string;
+    private readonly _publicKey: PublicKey;
+    private readonly _secretKey: SecretKey;
+    private readonly _webhookSecret?: WebhookSecret;
 
     public _createToken = async (params: JWTEncodeParams<any, any>): Promise<string> => {
         const parsed = this._authorize.user.parse(params.user);
+
+        const [publicKey, secretKey] = await Promise.all([
+            typeof this._publicKey === "string" ? this._publicKey : this._publicKey(),
+            typeof this._secretKey === "string" ? this._secretKey : this._secretKey(),
+        ]);
 
         const res = await fetch(this._endpoints.createToken, {
             headers: { "content-type": "application/json" },
             method: "post",
             body: JSON.stringify({
                 maxAge: params.maxAge ?? null,
-                publicKey: this._publicKey,
+                publicKey,
                 room: params.room,
-                secretKey: this._secretKey,
+                secretKey,
                 user: parsed,
             }),
         }).catch(() => null);
@@ -199,12 +209,15 @@ export class PluvPlatform<
             if (algorithm !== SIGNATURE_ALGORITHM) throw new HttpError("Unauthorized", 401);
             if (!signature) throw new HttpError("Unauthorized", 401);
 
-            const payload = await c.req.json();
+            const [payload, webhookSecret] = await Promise.all([
+                c.req.json(),
+                typeof this._webhookSecret === "string" ? this._webhookSecret : await this._webhookSecret(),
+            ]);
 
             const verified = await verifyWebhook({
                 payload: stringify(payload),
                 signature,
-                secret: this._webhookSecret,
+                secret: webhookSecret,
             });
 
             if (!verified) throw new HttpError("Unauthorized", 401);
@@ -214,7 +227,6 @@ export class PluvPlatform<
             if (!parsed.success) throw new HttpError("Invalid request", 400);
 
             const { event, data } = parsed.data;
-
             const context = this._context;
 
             switch (event) {
