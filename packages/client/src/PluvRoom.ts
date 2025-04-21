@@ -358,8 +358,6 @@ export class PluvRoom<
 
         this._setMetadata(metadata);
 
-        if (!this._endpoints.wsEndpoint) throw new Error("Must provide a wsEndpoint.");
-
         const canConnect = [ConnectionState.Closed, ConnectionState.Untouched].some(
             (state) => this._state.connection.state === state,
         );
@@ -376,7 +374,8 @@ export class PluvRoom<
         await this._storageStore.initialize();
         await this._applyStorageStore();
 
-        const url = new URL(this._getWsEndpoint(this.id, params));
+        const wsEndpoint = this._getWsEndpoint(this.id, params);
+        const url = new URL(wsEndpoint);
 
         let authToken: string | null = null;
         let webSocket: WebSocket;
