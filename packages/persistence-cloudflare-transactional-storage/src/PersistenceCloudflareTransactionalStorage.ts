@@ -270,7 +270,7 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
                         data TEXT NOT NULL,
                         room TEXT NOT NULL
                     );
-                    CREATE INDEX ${SQLITE_USER_TABLE}_room ON ${SQLITE_USER_TABLE}(room);
+                    CREATE INDEX IF NOT EXISTS ${SQLITE_USER_TABLE}_room ON ${SQLITE_USER_TABLE}(room);
                 `);
             }
 
