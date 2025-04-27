@@ -13,7 +13,7 @@ test.describe("Cloudflare Presence", () => {
             verify others on 1 + 2
         `,
         async () => {
-            const testUrl = `${TEST_URL}?room=e2e-presence-1`;
+            const testUrl = `${TEST_URL}?room=kv-e2e-presence-1`;
 
             const firstPage = await openTestPage(testUrl);
             const secondPage = await openTestPage(testUrl);
@@ -51,7 +51,7 @@ test.describe("Cloudflare Presence", () => {
             verify presence 1 on 2
         `,
         async () => {
-            const testUrl = `${TEST_URL}?room=e2e-presence-2`;
+            const testUrl = `${TEST_URL}?room=kv-e2e-presence-2`;
 
             const firstPage = await openTestPage(testUrl);
             const secondPage = await openTestPage(testUrl);
@@ -101,7 +101,7 @@ test.describe("Cloudflare Presence", () => {
             verify presence 1 on 2
         `,
         async () => {
-            const testUrl = `${TEST_URL}?room=e2e-presence-3`;
+            const testUrl = `${TEST_URL}?room=kv-e2e-presence-3`;
 
             const firstPage = await openTestPage(testUrl);
 
@@ -156,7 +156,7 @@ test.describe("Cloudflare Presence", () => {
             verify others on 1 + 2
         `,
         async () => {
-            const testUrl = `${TEST_URL}?room=e2e-presence-4`;
+            const testUrl = `${TEST_URL}?room=kv-e2e-presence-4`;
 
             const firstPage = await openTestPage(testUrl);
             const secondPage = await openTestPage(testUrl);
@@ -226,7 +226,7 @@ test.describe("Cloudflare Presence", () => {
             verify others on 1 + 2
         `,
         async () => {
-            const testUrl = `${TEST_URL}?room=e2e-presence-repeat-user`;
+            const testUrl = `${TEST_URL}?room=kv-e2e-presence-repeat-user`;
 
             const firstPage = await openTestPage(`${testUrl}&user_id=user_1`);
             const secondPage = await openTestPage(`${testUrl}&user_id=user_2`);

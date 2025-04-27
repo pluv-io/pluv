@@ -1,0 +1,19 @@
+{
+	"name": "pluv-e2e-test",
+	"main": "src/server/yjs/cloudflare/index.ts",
+	"compatibility_date": "2025-04-27",
+	"durable_objects": {
+		"bindings": [
+			{ "name": "rooms_kv", "class_name": "RoomKVDurableObject" },
+			{ "name": "rooms_sqlite", "class_name": "RoomSQLiteDurableObject" }
+		]
+	},
+	"migrations": [
+		{ "tag": "v1", "new_classes": ["RoomDurableObject"] },
+		{ 
+			"tag": "v2",
+			"renamed_classes": [{ "from": "RoomDurableObject", "to": "RoomKVDurableObject" }],
+			"new_sqlite_classes": ["RoomSQLiteDurableObject"]
+		}
+	]
+}

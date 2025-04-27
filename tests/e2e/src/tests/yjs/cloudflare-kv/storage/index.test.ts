@@ -12,7 +12,7 @@ test.describe("Cloudflare Storage", () => {
 			verify storage on 1
 		`,
         async () => {
-            const testUrl = `${TEST_URL}?room=e2e-storage-1`;
+            const testUrl = `${TEST_URL}?room=kv-e2e-storage-1`;
 
             const firstPage = await openTestPage(testUrl);
 
@@ -40,7 +40,7 @@ test.describe("Cloudflare Storage", () => {
             verify storage on 1 + 2
         `,
         async () => {
-            const testUrl = `${TEST_URL}?room=e2e-storage-2`;
+            const testUrl = `${TEST_URL}?room=kv-e2e-storage-2`;
 
             const firstPage = await openTestPage(testUrl);
             const secondPage = await openTestPage(testUrl);
@@ -112,7 +112,7 @@ test.describe("Cloudflare Storage", () => {
             verify storage on 1 + 2
         `,
         async () => {
-            const testUrl = `${TEST_URL}?room=e2e-storage-3`;
+            const testUrl = `${TEST_URL}?room=kv-e2e-storage-3`;
 
             const firstPage = await openTestPage(testUrl);
 
@@ -173,7 +173,7 @@ test.describe("Cloudflare Storage", () => {
             undo, redo, canUndo, canRedo modifies storage correctly
         `,
         async () => {
-            const testUrl = `${TEST_URL}?room=e2e-node-storage-undo-redo`;
+            const testUrl = `${TEST_URL}?room=kv-e2e-node-storage-undo-redo`;
 
             const firstPage = await openTestPage(testUrl);
 

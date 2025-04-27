@@ -1,6 +1,7 @@
 {
 	"extends": "@pluv/tsconfig/wrangler.json",
 	"include": [
+		"../../../../cf.d.ts",
 		"**/*.ts",
 		"**/*.tsx"
 	],

@@ -2,9 +2,9 @@ import { createClient, infer } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
-import type { ioServer } from "../../server/yjs/cloudflare";
+import type { ioServerSqlite } from "../../server/yjs/cloudflare";
 
-const types = infer((i) => ({ io: i<typeof ioServer> }));
+const types = infer((i) => ({ io: i<typeof ioServerSqlite> }));
 const client = createClient({
     authEndpoint: ({ metadata, room }) => {
         const url = new URL(`${metadata.authEndpoint}/api/pluv/authorize`);

@@ -2,6 +2,7 @@ import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { z } from "zod";
+import { PersistenceCloudflareTransactionalStorage } from "@pluv/persistence-cloudflare-transactional-storage";
 
 const PLUV_AUTH_SECRET = "secret123";
 
@@ -16,6 +17,7 @@ export const io = createIO(
         },
         crdt: yjs,
         debug: true,
+        persistence: new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" }),
     }),
 );
 
