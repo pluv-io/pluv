@@ -52,7 +52,7 @@ export class CloudflarePlatform<
         super({
             ...config,
             ...(config.roomContext && config.mode === "detached"
-                ? { persistence: new PersistenceCloudflareTransactionalStorage({ mode: "kv" }) }
+                ? { persistence: new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" }) }
                 : {}),
         });
 
