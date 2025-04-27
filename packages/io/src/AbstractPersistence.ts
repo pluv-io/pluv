@@ -17,5 +17,7 @@ export abstract class AbstractPersistence {
 
     public abstract getUsersSize(room: string): Promise<number>;
 
+    public abstract initialize(roomContext: any): AbstractPersistence;
+
     public abstract setStorageState(room: string, state: string): Promise<void>;
 }

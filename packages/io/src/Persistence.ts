@@ -65,6 +65,14 @@ export class Persistence extends AbstractPersistence {
         return Promise.resolve(Array.from(users.values()));
     }
 
+    public async getUsersSize(room: string): Promise<number> {
+        return this._users.size;
+    }
+
+    public initialize(roomContext: any): this {
+        return this;
+    }
+
     public setStorageState(room: string, state: string): Promise<void> {
         this._storages.set(room, state);
 

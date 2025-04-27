@@ -5,6 +5,7 @@
 	"sideEffects": false,
 	"private": true,
 	"scripts": {
+		"cf:typegen": "wrangler types --env-interface CloudflareEnv ./cf.d.ts",
 		"dev": "concurrently \"pnpm:dev:client\" \"pnpm:dev:noop:server:node\" \"pnpm:dev:yjs:server:cloudflare\" \"pnpm:dev:yjs:server:node\" \"pnpm:dev:yjs:server:node-redis\"",
 		"dev:client": "next dev --port 3100",
 		"dev:loro:server:node": "ts-node --project ./src/server/loro/node/tsconfig.json ./src/server/loro/node --port 3112",
@@ -20,7 +21,8 @@
 		"test": "pnpm tsc:check && playwright test",
 		"test:noop:node": "playwright test ./src/tests/noop/node/**/*",
 		"test:loro:node": "playwright test ./src/tests/loro/node/**/*",
-		"test:yjs:cloudflare": "wrangler deploy --dry-run && playwright test ./src/tests/yjs/cloudflare/**/*",
+		"test:yjs:cloudflare-kv": "wrangler deploy --dry-run && playwright test ./src/tests/yjs/cloudflare-kv/**/*",
+		"test:yjs:cloudflare-sqlite": "wrangler deploy --dry-run && playwright test ./src/tests/yjs/cloudflare-sqlite/**/*",
 		"test:yjs:node": "prisma migrate reset --force && playwright test ./src/tests/yjs/node/**/*",
 		"test:yjs:node-redis": "playwright test ./src/tests/yjs/node-redis/**/*",
 		"tsc:check": "tsc --noEmit"
@@ -31,6 +33,7 @@
 		"@pluv/crdt-loro": "workspace:^",
 		"@pluv/crdt-yjs": "workspace:^",
 		"@pluv/io": "workspace:^",
+		"@pluv/persistence-cloudflare-transactional-storage": "workspace:^",
 		"@pluv/persistence-redis": "workspace:^",
 		"@pluv/platform-cloudflare": "workspace:^",
 		"@pluv/platform-node": "workspace:^",
@@ -54,6 +57,7 @@
 		"common-tags": "^1.8.2",
 		"cors": "^2.8.5",
 		"express": "^5.1.0",
+		"hono": "^4.7.7",
 		"ioredis": "^5.6.1",
 		"loro-crdt": "^1.5.4",
 		"ms": "^2.1.3",

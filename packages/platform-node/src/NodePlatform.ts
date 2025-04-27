@@ -106,7 +106,7 @@ export class NodePlatform<
         return new NodePlatform({
             roomContext: config.roomContext,
             mode: this._config.registrationMode,
-            persistence: this.persistence,
+            persistence: this.persistence.initialize(config.roomContext),
             pubSub: this.pubSub,
         } as NodePlatformConfig<TMeta>)._initialize() as this;
     }

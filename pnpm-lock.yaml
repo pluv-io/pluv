@@ -597,6 +597,9 @@ importers:
       '@pluv/io':
         specifier: workspace:^
         version: link:../../packages/io
+      '@pluv/persistence-cloudflare-transactional-storage':
+        specifier: workspace:^
+        version: link:../../packages/persistence-cloudflare-transactional-storage
       '@pluv/persistence-redis':
         specifier: workspace:^
         version: link:../../packages/persistence-redis
@@ -666,6 +669,9 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.1.0
+      hono:
+        specifier: ^4.7.7
+        version: 4.7.7
       ioredis:
         specifier: ^5.6.1
         version: 5.6.1

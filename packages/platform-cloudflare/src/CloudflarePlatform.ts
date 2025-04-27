@@ -52,7 +52,7 @@ export class CloudflarePlatform<
         super({
             ...config,
             ...(config.roomContext && config.mode === "detached"
-                ? { persistence: new PersistenceCloudflareTransactionalStorage(config.roomContext) }
+                ? { persistence: new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" }) }
                 : {}),
         });
 
@@ -136,18 +136,20 @@ export class CloudflarePlatform<
     }
 
     public initialize(config: AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>>): this {
-        const roomContext = config.roomContext ?? { ...this._roomContext };
+        const ctx = config.roomContext ?? { ...this._roomContext };
 
-        if (!roomContext.env || !roomContext.state) throw new Error("Could not derive platform roomContext");
+        if (!ctx.env || !ctx.state) throw new Error("Could not derive platform roomContext");
+
+        const roomContext = {
+            env: ctx.env,
+            meta: ctx.meta,
+            state: ctx.state,
+        } as CloudflarePlatformRoomContext<TEnv, TMeta>;
 
         return new CloudflarePlatform<TAuthorize, TEnv, TMeta>({
-            roomContext: {
-                env: roomContext.env,
-                meta: roomContext.meta,
-                state: roomContext.state,
-            } as CloudflarePlatformRoomContext<TEnv, TMeta>,
+            roomContext,
             mode: this._config.registrationMode,
-            persistence: this.persistence,
+            persistence: this.persistence.initialize(roomContext),
             pubSub: this.pubSub,
         })._initialize() as this;
     }

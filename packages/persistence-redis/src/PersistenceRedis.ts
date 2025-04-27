@@ -13,6 +13,7 @@ export interface PersistenceRedisOptions {
 
 export class PersistenceRedis extends AbstractPersistence {
     private _client: RedisClient;
+    private _initialized: Promise<true> | null = null;
 
     constructor(options: PersistenceRedisOptions) {
         super();
@@ -23,6 +24,10 @@ export class PersistenceRedis extends AbstractPersistence {
     }
 
     public async addUser(room: string, connectionId: string, user: JsonObject | null): Promise<void> {
+        if (!this._initialized) return;
+
+        await this._initialized;
+
         await this._client
             .multi()
             .sadd(this._getRoomUsersKey(room), connectionId)
@@ -31,10 +36,18 @@ export class PersistenceRedis extends AbstractPersistence {
     }
 
     public async deleteStorageState(room: string): Promise<void> {
+        if (!this._initialized) return;
+
+        await this._initialized;
+
         await this._client.del(this._getRoomStorageKey(room));
     }
 
     public async deleteUser(room: string, connectionId: string): Promise<void> {
+        if (!this._initialized) return;
+
+        await this._initialized;
+
         const size = await this.getUsersSize(room);
 
         let multi = this._client
@@ -50,6 +63,10 @@ export class PersistenceRedis extends AbstractPersistence {
     }
 
     public async deleteUsers(room: string): Promise<void> {
+        if (!this._initialized) return;
+
+        await this._initialized;
+
         const members = await this._client.smembers(this._getRoomUsersKey(room));
 
         await members
@@ -63,27 +80,53 @@ export class PersistenceRedis extends AbstractPersistence {
     }
 
     public async getStorageState(room: string): Promise<string | null> {
+        if (!this._initialized) return null;
+
+        await this._initialized;
+
         return await this._client.get(this._getRoomStorageKey(room));
     }
 
     public async setStorageState(room: string, state: string): Promise<void> {
+        if (!this._initialized) return;
+
+        await this._initialized;
+
         await this._client.set(this._getRoomStorageKey(room), state);
     }
 
     public async getUser(room: string, connectionId: string): Promise<JsonObject | null> {
+        if (!this._initialized) return null;
+
+        await this._initialized;
+
         const data = await this._client.get(this._getRoomUsersUserKey(room, connectionId));
 
         return !data ? null : JSON.parse(data);
     }
 
     public async getUsers(room: string): Promise<readonly (JsonObject | null)[]> {
+        if (!this._initialized) return [];
+
+        await this._initialized;
+
         const members = await this._client.smembers(this._getRoomUsersKey(room));
 
         return await Promise.all(members.map((connectionId) => this.getUser(room, connectionId)));
     }
 
     public async getUsersSize(room: string): Promise<number> {
+        if (!this._initialized) return 0;
+
+        await this._initialized;
+
         return await this._client.scard(this._getRoomUsersKey(room));
+    }
+
+    public initialize(roomContext: {}): this {
+        this._initialized = Promise.resolve(true as const);
+
+        return this;
     }
 
     private _getClusterKey(key: string): string {
