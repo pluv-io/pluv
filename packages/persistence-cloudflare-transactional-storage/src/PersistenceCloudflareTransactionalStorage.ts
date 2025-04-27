@@ -1,6 +1,6 @@
 import { AbstractPersistence } from "@pluv/io";
 import type { JsonObject } from "@pluv/types";
-import { partitionByLength } from "./utils";
+import { castNumber, partitionByLength, sql } from "./utils";
 
 /**
  * !HACK
@@ -8,92 +8,311 @@ import { partitionByLength } from "./utils";
  * @see https://developers.cloudflare.com/durable-objects/api/transactional-storage-api/#delete
  * @date July 8, 2024
  */
-const CLOUDFLARE_DELETE_BATCH_LIMIT = 128;
-const STORAGE_PREFIX = "$PLUV_STORAGE;";
-const USER_PREFIX = "$PLUV_USER";
+const KV_CLOUDFLARE_DELETE_BATCH_LIMIT = 128;
+const KV_STORAGE_PREFIX = "$PLUV_STORAGE;";
+const KV_USER_PREFIX = "$PLUV_USER";
+
+const SQLITE_STORAGE_TABLE = "__pluv_storage";
+const SQLITE_USER_TABLE = "__pluv_user";
 
 export interface PersistenceCloudflareTransactionalStorageConfig {
-    state: DurableObjectState;
+    mode: "kv" | "sqlite";
 }
-
 export class PersistenceCloudflareTransactionalStorage extends AbstractPersistence {
-    private _state: DurableObjectState;
+    private _mode: "kv" | "sqlite";
+    private _state: DurableObjectState | null = null;
+    private _initialized: Promise<true> | null = null;
 
     constructor(config: PersistenceCloudflareTransactionalStorageConfig) {
         super();
 
-        const { state } = config;
+        const { mode } = config;
 
-        this._state = state;
+        this._mode = mode;
     }
 
     public async addUser(room: string, connectionId: string, user: JsonObject | null): Promise<void> {
-        await this._state.storage.put(this._getUserKey(room, connectionId), user);
+        if (!this._initialized) return;
+        if (!this._state) return;
+
+        await this._initialized;
+
+        if (this._mode === "kv") {
+            await this._state.storage.put(this._getUserKey(room, connectionId), user);
+            return;
+        }
+
+        this._state.storage.sql.exec(
+            sql`
+                INSERT INTO ${SQLITE_USER_TABLE} VALUES (?, ?, ?);
+            `,
+            connectionId,
+            JSON.stringify(user),
+            room,
+        );
     }
 
     public async deleteStorageState(room: string): Promise<void> {
-        await this._state.storage.delete(this._getStorageKey(room));
+        if (!this._initialized) return;
+        if (!this._state) return;
+
+        await this._initialized;
+
+        if (this._mode === "kv") {
+            await this._state.storage.delete(this._getStorageKey(room));
+            return;
+        }
+
+        this._state.storage.sql.exec(
+            sql`
+                DELETE FROM ${SQLITE_STORAGE_TABLE}
+                WHERE room = ?;
+            `,
+            room,
+        );
     }
 
     public async deleteUser(room: string, connectionId: string): Promise<void> {
-        await this._state.storage.delete(this._getUserKey(room, connectionId));
+        if (!this._initialized) return;
+        if (!this._state) return;
+
+        await this._initialized;
+
+        if (this._mode === "kv") {
+            await this._state.storage.delete(this._getUserKey(room, connectionId));
+
+            return;
+        }
+
+        this._state.storage.sql.exec(
+            sql`
+                DELETE FROM ${SQLITE_USER_TABLE}
+                WHERE room = ?
+                AND id = ?;
+            `,
+            room,
+            connectionId,
+        );
     }
 
     public async deleteUsers(room: string): Promise<void> {
-        const map = await this._state.storage.list({
-            allowConcurrency: true,
-            noCache: true,
-            prefix: USER_PREFIX,
-        });
+        if (!this._initialized) return;
+        if (!this._state) return;
 
-        const partitions = partitionByLength(Array.from(map.keys()), CLOUDFLARE_DELETE_BATCH_LIMIT);
+        await this._initialized;
 
-        await this._state.storage.transaction(async (tx) => {
-            await partitions.reduce(async (promise, partition) => {
-                return await promise.then(async () => {
+        if (this._mode === "kv") {
+            const map = await this._state.storage.list({
+                allowConcurrency: true,
+                noCache: true,
+                prefix: `${KV_USER_PREFIX}::${room}`,
+            });
+
+            const partitions = partitionByLength(Array.from(map.keys()), KV_CLOUDFLARE_DELETE_BATCH_LIMIT);
+
+            await this._state.storage.transaction(async (tx) => {
+                await partitions.reduce(async (promise, partition) => {
+                    await promise;
                     await tx.delete(partition as string[]);
-                });
-            }, Promise.resolve());
-        });
+                }, Promise.resolve());
+            });
+
+            return;
+        }
+
+        this._state.storage.sql.exec(
+            sql`
+                DELETE FROM ${SQLITE_USER_TABLE}
+                WHERE room = ?;
+            `,
+            room,
+        );
     }
 
     public async getStorageState(room: string): Promise<string | null> {
-        const storage = await this._state.storage.get<string>(this._getStorageKey(room));
+        if (!this._initialized) return null;
+        if (!this._state) return null;
 
-        return storage ?? null;
+        await this._initialized;
+
+        if (this._mode === "kv") {
+            const storage = await this._state.storage.get<string>(this._getStorageKey(room));
+            return storage ?? null;
+        }
+
+        const cursor = this._state.storage.sql.exec<{ room: string; data: string }>(
+            sql`
+                SELECT room, data
+                FROM ${SQLITE_STORAGE_TABLE}
+                WHERE room = ?;
+            `,
+            room,
+        );
+
+        try {
+            const result = cursor.one();
+
+            return result.data;
+        } catch {
+            return null;
+        }
     }
 
     public async getUser(room: string, connectionId: string): Promise<JsonObject | null> {
-        const user = await this._state.storage.get<JsonObject | null>(this._getUserKey(room, connectionId));
+        if (!this._initialized) return null;
+        if (!this._state) return null;
 
-        return user ?? null;
+        await this._initialized;
+
+        if (this._mode === "kv") {
+            const user = await this._state.storage.get<JsonObject | null>(this._getUserKey(room, connectionId));
+
+            return user ?? null;
+        }
+
+        const cursor = this._state.storage.sql.exec<{ id: string; data: string; room: string }>(
+            sql`
+                SELECT id, data, room
+                FROM ${SQLITE_USER_TABLE}
+                WHERE room = ?
+                AND id = ?;
+            `,
+            room,
+            connectionId,
+        );
+
+        try {
+            const result = cursor.one();
+            const user = JSON.parse(result.data);
+
+            return user;
+        } catch {
+            return null;
+        }
     }
 
     public async getUsers(room: string): Promise<readonly (JsonObject | null)[]> {
-        const storage = await this._state.storage.list({
-            prefix: USER_PREFIX,
-        });
+        if (!this._initialized) return [];
+        if (!this._state) return [];
 
-        return Array.from(storage.values()) as (JsonObject | null)[];
+        await this._initialized;
+
+        if (this._mode === "kv") {
+            const storage = await this._state.storage.list({
+                prefix: `${KV_USER_PREFIX}::${room}`,
+            });
+
+            return Array.from(storage.values()) as (JsonObject | null)[];
+        }
+
+        const cursor = this._state.storage.sql.exec<{ id: string; data: string; room: string }>(
+            sql`
+                SELECT id, room, data
+                FROM ${SQLITE_USER_TABLE}
+                WHERE room = ?;
+            `,
+            room,
+        );
+
+        return cursor.toArray().map(({ data }) => {
+            try {
+                return JSON.parse(data) as JsonObject;
+            } catch {
+                return null;
+            }
+        });
     }
 
     public async getUsersSize(room: string): Promise<number> {
-        const storage = await this._state.storage.list({ prefix: USER_PREFIX });
+        if (!this._initialized) return 0;
+        if (!this._state) return 0;
 
-        return storage.size;
+        await this._initialized;
+
+        if (this._mode) {
+            const storage = await this._state.storage.list({ prefix: `${KV_USER_PREFIX}::${room}` });
+
+            return storage.size;
+        }
+
+        const cursor = this._state.storage.sql.exec<{ count: number }>(
+            sql`
+                SELECT COUNT(*) count
+                FROM ${SQLITE_USER_TABLE}
+                WHERE room = ?;
+            `,
+            room,
+        );
+
+        try {
+            const result = cursor.one();
+
+            return castNumber(result.count);
+        } catch {
+            return 0;
+        }
+    }
+
+    public initialize(roomContext: { state: DurableObjectState }): this {
+        this._initialized = (async () => {
+            const { state } = roomContext;
+
+            this._state = state;
+
+            if (this._mode === "sqlite") {
+                this._state.storage.sql.exec(sql`
+                    CREATE TABLE IF NOT EXISTS ${SQLITE_STORAGE_TABLE}(
+                        room TEXT PRIMARY KEY,
+                        data TEXT NOT NULL
+                    );
+                    CREATE TABLE IF NOT EXISTS ${SQLITE_USER_TABLE}(
+                        id   TEXT PRIMARY KEY,
+                        data TEXT NOT NULL,
+                        room TEXT NOT NULL
+                    );
+                    CREATE INDEX ${SQLITE_USER_TABLE}_room ON ${SQLITE_USER_TABLE}(room);
+                `);
+            }
+
+            return true as const;
+        })();
+
+        return this;
     }
 
     public async setStorageState(room: string, state: string): Promise<void> {
-        await this._state.storage.put(this._getStorageKey(room), state, {
-            allowConcurrency: true,
-        });
+        if (!this._initialized) return;
+        if (!this._state) return;
+
+        await this._initialized;
+
+        if (this._mode === "kv") {
+            await this._state.storage.put(this._getStorageKey(room), state, { allowConcurrency: true });
+            return;
+        }
+
+        this._state.storage.sql.exec(
+            sql`
+                INSERT INTO ${SQLITE_STORAGE_TABLE} VALUES (?, ?);
+            `,
+            room,
+            state,
+        );
     }
 
     private _getStorageKey(room: string): string {
-        return `${STORAGE_PREFIX}::${room}`;
+        if (this._mode === "sqlite") {
+            throw new Error("Attempted to get kv key for sqlite storage");
+        }
+
+        return `${KV_STORAGE_PREFIX}::${room}`;
     }
 
     private _getUserKey(room: string, connectionId: string): string {
-        return `${USER_PREFIX}::${room}::${connectionId}`;
+        if (this._mode === "sqlite") {
+            throw new Error("Attempted to get kv key for sqlite storage");
+        }
+
+        return `${KV_USER_PREFIX}::${room}::${connectionId}`;
     }
 }
