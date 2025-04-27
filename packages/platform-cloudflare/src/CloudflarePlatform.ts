@@ -149,7 +149,7 @@ export class CloudflarePlatform<
         return new CloudflarePlatform<TAuthorize, TEnv, TMeta>({
             roomContext,
             mode: this._config.registrationMode,
-            persistence: this.persistence.initialize(ctx),
+            persistence: this.persistence.initialize(roomContext),
             pubSub: this.pubSub,
         })._initialize() as this;
     }
