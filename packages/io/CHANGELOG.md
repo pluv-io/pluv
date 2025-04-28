@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 0.42.0
+
+### Patch Changes
+
+- cf1529a: Each time garbage collection is run, a sync-state event will be emitted to connected sessions with info of currently connected users.
+  - @pluv/crdt@0.42.0
+  - @pluv/types@0.42.0
+
 ## 0.41.7
 
 ### Patch Changes

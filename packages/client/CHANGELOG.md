@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.42.0
+
+### Patch Changes
+
+- 7ae56bf: Periodically sync connection ids with the server to clear stale connections.
+  - @pluv/crdt@0.42.0
+  - @pluv/types@0.42.0
+
 ## 0.41.7
 
 ### Patch Changes
