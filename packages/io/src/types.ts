@@ -145,6 +145,25 @@ export type PluvIOAuthorize<
     | (TUser extends BaseUser ? ResolvedPluvIOAuthorize<TPlatform, TUser> : null)
     | ((context: TContext) => TUser extends BaseUser ? ResolvedPluvIOAuthorize<TPlatform, TUser> : null);
 
+export interface PluvIOLimits {
+    /**
+     * @description Maximum size of presence object in bytes
+     */
+    presenceMaxSize?: number | null;
+    /**
+     * @description Maximum size of storage state in bytes
+     */
+    storageMaxSize?: number | null;
+    /**
+     * @description Maximum length of user id in characters
+     */
+    userIdMaxLength?: number | null;
+    /**
+     * @description Maximum size of user object in bytes
+     */
+    userMaxSize?: number | null;
+}
+
 export type BasePluvIOListeners<
     TPlatform extends AbstractPlatform<any, any, any, any>,
     TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
