@@ -10,7 +10,7 @@ import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
-import { MAX_PRESENCE_SIZE_BYTES, MAX_USER_SIZE_BYTES, PING_TIMEOUT_MS } from "./constants";
+import { MAX_PRESENCE_SIZE_BYTES, MAX_STORAGE_SIZE_BYTES, MAX_USER_SIZE_BYTES, PING_TIMEOUT_MS } from "./constants";
 import type {
     BasePluvIOListeners,
     GetInitialStorageFn,
@@ -27,6 +27,13 @@ export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
         ? IORoom<IPlatform, IAuthorize, IContext, IEvents>
         : never;
 
+export interface PluvServerLimits {
+    /**
+     * @description Maximum size of storage in bytes
+     */
+    storageMaxSize?: number | null;
+}
+
 export type PluvServerConfig<
     TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
     TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
@@ -38,6 +45,10 @@ export type PluvServerConfig<
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug?: boolean;
     getInitialStorage?: GetInitialStorageFn<TContext>;
+    /**
+     * @description Configurable limits for PluvServer capabilities
+     */
+    limits?: PluvServerLimits;
     platform: TPlatform;
     router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 };
@@ -145,9 +156,14 @@ export class PluvServer<
                     });
                 }
 
-                const state = (await this._platform.persistence.getStorageState(room)) ?? doc.getEncodedState();
+                const encodedState = (await this._platform.persistence.getStorageState(room)) ?? doc.getEncodedState();
+                const storageSize = new TextEncoder().encode(encodedState).length;
 
-                return { $storageReceived: { state } };
+                if (!!this._limits.storageMaxSize && storageSize >= this._limits.storageMaxSize) {
+                    throw new Error("Storage has exceeded the size limit");
+                }
+
+                return { $storageReceived: { state: encodedState } };
             }),
         $ping: this._procedure.self((data, { session }) => {
             if (!session) return {};
@@ -198,6 +214,11 @@ export class PluvServer<
 
             const updated = update === null ? doc : doc.applyEncodedState({ update });
             const encodedState = updated.getEncodedState();
+            const storageSize = new TextEncoder().encode(encodedState).length;
+
+            if (!!this._limits.storageMaxSize && storageSize >= this._limits.storageMaxSize) {
+                throw new Error("Storage has exceeded the size limit");
+            }
 
             this._platform.persistence.setStorageState(room, encodedState).then(() => {
                 this._getListeners().onStorageUpdated({
@@ -214,6 +235,7 @@ export class PluvServer<
     private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     private readonly _debug: boolean;
     private readonly _getInitialStorage: GetInitialStorageFn<TContext> | null = null;
+    private readonly _limits: PluvServerLimits;
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
@@ -255,6 +277,7 @@ export class PluvServer<
             crdt = noop,
             debug = false,
             getInitialStorage,
+            limits,
             platform,
             router = new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>({} as TEvents),
         } = options;
@@ -266,6 +289,10 @@ export class PluvServer<
 
         this._crdt = crdt;
         this._debug = debug;
+        this._limits = {
+            storageMaxSize: MAX_STORAGE_SIZE_BYTES,
+            ...limits,
+        };
         this._platform = platform;
         this._router = (router ? PluvRouter.merge(this._baseRouter, router) : this._baseRouter) as PluvRouter<
             TPlatform,
