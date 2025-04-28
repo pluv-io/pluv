@@ -20,7 +20,7 @@
         "@pluv/pubsub-redis": "workspace:^",
         "@pluv/react": "workspace:^",
         "@pluv/types": "workspace:^",
-        "@types/node": "^22.15.2",
+        "@types/node": "^22.15.3",
         "@types/react": "^19.1.2",
         "@types/react-dom": "^19.1.2",
         "@types/ws": "^8.18.1",
@@ -33,7 +33,7 @@
         "zod": "^3.24.3"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^4.20250427.0",
+        "@cloudflare/workers-types": "^4.20250428.0",
         "@pluv/tsconfig": "workspace:^",
         "eslint": "^9.25.1",
         "eslint-config-pluv": "workspace:^",
