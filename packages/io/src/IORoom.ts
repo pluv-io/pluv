@@ -256,6 +256,7 @@ export class IORoom<
     public async garbageCollect(): Promise<void> {
         this._lastGarbageCollectMs = Date.now();
         this._emitQuitters();
+        this._emitSyncState();
     }
 
     public getSize(): number {
@@ -505,6 +506,26 @@ export class IORoom<
         } catch (err) {
             console.error(err);
         }
+    }
+
+    private async _emitSyncState(): Promise<void> {
+        const userIds = await this._platform.persistence
+            .getUsers(this.id)
+            .then((users) => {
+                return users.reduce((set, user) => {
+                    const userId = user?.id;
+
+                    return typeof userId === "string" && !!userId ? set.add(userId) : set;
+                }, new Set<string>());
+            })
+            .then((set) => Array.from(set.values()));
+
+        await this._broadcast({
+            message: {
+                type: "$syncStateReceived",
+                data: { userIds },
+            },
+        });
     }
 
     private _ensureDetached(): void {
