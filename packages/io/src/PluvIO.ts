@@ -1,6 +1,6 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type { IOAuthorize, InferIOAuthorizeUser } from "@pluv/types";
+import type { BaseUser, IOAuthorize, InferIOAuthorizeUser } from "@pluv/types";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
 import type { WebSocketRegisterConfig } from "./IORoom";
 import { PluvProcedure } from "./PluvProcedure";
@@ -9,6 +9,7 @@ import { PluvRouter } from "./PluvRouter";
 import { PluvServer, PluvServerConfig } from "./PluvServer";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
+import { MAX_USER_SIZE_BYTES } from "./constants";
 import type {
     CrdtLibraryType,
     GetInitialStorageFn,
@@ -90,6 +91,25 @@ export class PluvIO<
         if (!this._authorize) throw new Error("IO does not specify authorize during initialization.");
 
         const ioAuthorize = this._getIOAuthorize(params);
+        const user = params.user as BaseUser;
+        const parsed = !!ioAuthorize ? ioAuthorize.user.parse(user) : user;
+
+        const bytes = new TextEncoder().encode(JSON.stringify(parsed)).length;
+
+        if (bytes > MAX_USER_SIZE_BYTES) {
+            throw new Error(
+                `createToken called with large payload. User must be at most 512 bytes. Current size: ${bytes.toLocaleString()}`,
+            );
+        }
+
+        /**
+         * !HACK
+         * @description Allow the platform to overwrite this behavior as needed. This is introduced
+         * to support platformPluv
+         * @date December 15, 2024
+         */
+        if (this._platform._createToken) return await this._platform._createToken(params as any);
+
         const secret = ioAuthorize?.secret ?? null;
 
         if (!secret) throw new Error("`authorize` was specified without a valid secret");
@@ -129,6 +149,7 @@ export class PluvIO<
             context: this._context,
             crdt: this._crdt,
             debug: this._debug,
+            io: this as PluvIO<TPlatform, TAuthorize, TContext>,
             platform: this._platform,
         } as PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>);
     }

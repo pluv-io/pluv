@@ -1,24 +1,17 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type { BaseUser, IOLike, Id, InferIOAuthorize, InferIOAuthorizeUser, JsonObject, Maybe } from "@pluv/types";
+import type { IOLike, Id, InferIOAuthorize, InferIOAuthorizeUser, JsonObject, Maybe } from "@pluv/types";
 import colors from "kleur";
 import type { AbstractPlatform, InferInitContextType, InferRoomContextType } from "./AbstractPlatform";
-import type { IORoomListeners, WebSocketRegisterConfig } from "./IORoom";
+import type { IORoomListeners } from "./IORoom";
 import { IORoom } from "./IORoom";
+import type { PluvIO } from "./PluvIO";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import type { JWTEncodeParams } from "./authorize";
-import { authorize } from "./authorize";
-import { MAX_PRESENCE_SIZE_BYTES, MAX_STORAGE_SIZE_BYTES, MAX_USER_SIZE_BYTES, PING_TIMEOUT_MS } from "./constants";
-import type {
-    BasePluvIOListeners,
-    GetInitialStorageFn,
-    PluvContext,
-    PluvIOAuthorize,
-    PluvIOListeners,
-    ResolvedPluvIOAuthorize,
-} from "./types";
+import { MAX_PRESENCE_SIZE_BYTES, MAX_STORAGE_SIZE_BYTES, PING_TIMEOUT_MS } from "./constants";
+import type { BasePluvIOListeners, GetInitialStorageFn, PluvContext, PluvIOAuthorize, PluvIOListeners } from "./types";
 import { pickBy } from "./utils";
 import { __PLUV_VERSION } from "./version";
 
@@ -49,6 +42,7 @@ export type PluvServerConfig<
      * @description Configurable limits for PluvServer capabilities
      */
     limits?: PluvServerLimits;
+    io: PluvIO<TPlatform, TAuthorize, TContext>;
     platform: TPlatform;
     router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 };
@@ -235,6 +229,7 @@ export class PluvServer<
     private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     private readonly _debug: boolean;
     private readonly _getInitialStorage: GetInitialStorageFn<TContext> | null = null;
+    private readonly _io: PluvIO<TPlatform, TAuthorize, TContext>;
     private readonly _limits: PluvServerLimits;
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
@@ -277,6 +272,7 @@ export class PluvServer<
             crdt = noop,
             debug = false,
             getInitialStorage,
+            io,
             limits,
             platform,
             router = new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>({} as TEvents),
@@ -289,6 +285,7 @@ export class PluvServer<
 
         this._crdt = crdt;
         this._debug = debug;
+        this._io = io;
         this._limits = {
             storageMaxSize: MAX_STORAGE_SIZE_BYTES,
             ...limits,
@@ -372,41 +369,7 @@ export class PluvServer<
     public async createToken(
         params: JWTEncodeParams<InferIOAuthorizeUser<InferIOAuthorize<this>>, TPlatform>,
     ): Promise<string> {
-        if (!this._authorize) {
-            throw new Error("IO does not specify authorize during initialization.");
-        }
-
-        const ioAuthorize = this._getIOAuthorize(params);
-        const user = params.user as BaseUser;
-        const parsed = !!ioAuthorize ? ioAuthorize.user.parse(user) : user;
-
-        const bytes = new TextEncoder().encode(JSON.stringify(parsed)).length;
-
-        if (bytes > MAX_USER_SIZE_BYTES) {
-            throw new Error(
-                `createToken called with large payload. User must be at most 512 bytes. Current size: ${bytes.toLocaleString()}`,
-            );
-        }
-
-        /**
-         * !HACK
-         * @description Allow the platform to overwrite this behavior as needed. This is introduced
-         * to support platformPluv
-         * @date December 15, 2024
-         */
-        if (this._platform._createToken) return await this._platform._createToken(params as any);
-
-        const secret = ioAuthorize?.secret ?? null;
-
-        if (!secret) throw new Error("`authorize` was specified without a valid secret");
-
-        return await authorize({ platform: this._platform, secret }).encode(params as JWTEncodeParams<any, TPlatform>);
-    }
-
-    private _getIOAuthorize(options: WebSocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
-        if (typeof this._authorize === "function") return this._authorize(options);
-
-        return this._authorize as ResolvedPluvIOAuthorize<any, any> | null;
+        return this._io.createToken(params);
     }
 
     private _getListeners(): BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents> {
