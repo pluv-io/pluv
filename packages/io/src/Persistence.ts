@@ -60,7 +60,7 @@ export class Persistence extends AbstractPersistence {
     public async getUsers(room: string): Promise<Map<string, JsonObject | null>> {
         const users = this._users.get(room);
 
-        if (!users) return Promise.resolve(new Map());
+        if (!users) return new Map();
 
         return users;
     }

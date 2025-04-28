@@ -198,11 +198,17 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
         await this._initialized;
 
         if (this._mode === "kv") {
-            const users = await this._state.storage.list<JsonObject | null>({
-                prefix: `${KV_USER_PREFIX}::${room}`,
-            });
+            const entries = await this._state.storage
+                .list<JsonObject | null>({
+                    prefix: `${KV_USER_PREFIX}::${room}`,
+                })
+                .then((map) => Array.from(map.entries()));
 
-            return users;
+            return entries.reduce((map, [key, user]) => {
+                const connectionId = key.split("::").slice(-1)[0];
+
+                return !!connectionId ? map.set(connectionId, user) : map;
+            }, new Map<string, JsonObject | null>());
         }
 
         const cursor = this._state.storage.sql.exec<{ id: string; data: string; room: string }>(
