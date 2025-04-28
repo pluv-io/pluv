@@ -40,6 +40,10 @@ export interface CreatePluvHandlerResult<TEnv extends Record<string, any> = {}> 
 type InferCloudflarePluvHandlerEnv<TPluvServer extends PluvServer<CloudflarePlatform<any, any>, any, any, any>> =
     TPluvServer extends PluvServer<CloudflarePlatform<any, infer IEnv>, any, any, any> ? IEnv : {};
 
+/**
+ * @deprecated Instructions will be provided on https://pluv.io on how to host this yourself instead.
+ * @date April 27, 2025
+ */
 export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatform<any, any>, any, any, any>>(
     config: CreatePluvHandlerConfig<TPluvServer, Id<InferCloudflarePluvHandlerEnv<TPluvServer>>>,
 ): CreatePluvHandlerResult<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> => {

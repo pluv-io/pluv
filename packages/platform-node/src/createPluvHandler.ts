@@ -55,6 +55,10 @@ export interface CreatePluvHandlerResult {
     wsHandler: WebSocketHandler;
 }
 
+/**
+ * @deprecated Instructions will be provided on https://pluv.io on how to host this yourself instead.
+ * @date April 27, 2025
+ */
 export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform<any>, any, any, any>>(
     config: CreatePluvHandlerConfig<TPluvServer>,
 ): CreatePluvHandlerResult => {
