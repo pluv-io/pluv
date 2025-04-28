@@ -1017,6 +1017,28 @@ export class PluvRoom<
         this._crdtNotifier.rootSubject.next(storageRoot);
     }
 
+    private _handleSyncStateReceived(message: IOEventMessage<TIO>): void {
+        const { connectionId } = message;
+
+        if (!connectionId) return;
+        // Should not reach here
+        if (!this._state.webSocket) throw new Error("Could not find WebSocket");
+        if (!this._usersManager.myself) return;
+
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$syncStateReceived"];
+        const active = new Set(data?.connectionIds ?? []);
+
+        const quitters = this._usersManager.getOthers().filter((other) => !active.has(other.connectionId));
+
+        quitters.forEach((quitter) => {
+            this._usersManager.deleteConnection(quitter.connectionId);
+        });
+
+        const remaining = this._usersManager.getOthers();
+
+        this._stateNotifier.subjects.others.next(remaining);
+    }
+
     private _handleUserJoinedMessage(message: IOEventMessage<TIO>): void {
         const { connectionId } = message;
 
@@ -1188,6 +1210,10 @@ export class PluvRoom<
             }
             case "$storageUpdated": {
                 this._handleStorageUpdatedMessage(message);
+                return;
+            }
+            case "$syncStateReceived": {
+                this._handleSyncStateReceived(message);
                 return;
             }
             case "$userJoined": {
