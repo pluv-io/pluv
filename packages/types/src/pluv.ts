@@ -57,6 +57,9 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = {
     $storageUpdated: {
         state: string;
     };
+    $syncStateReceived: {
+        userIds: readonly string[];
+    };
     $userJoined: {
         connectionId: string;
         presence: JsonObject;
