@@ -1,5 +1,31 @@
 # @pluv/platform-cloudflare
 
+## 0.42.0
+
+### Minor Changes
+
+- 5c2c71d: **BREAKING** Updated the `PersistenceCloudflareTransactionalStorage` constructor so require a new property `mode` (either `kv` or `sqlite`). `sqlite` makes use of `DurableObject` SQLite storage, and `kv` makes use of their key-value storage. `platformCloudflare` now sets the underlying `PersistenceCloudflareTransactionalStorage` to use the `sqlite` mode by default (was previously using `kv`). For more information on the differences, please refer to [Cloudflare's documentation](https://developers.cloudflare.com/durable-objects/api/storage-api/#sql-api).
+
+  To continue using the `kv` mode, you will need to install `@pluv/persistence-cloudflare-transactional-storage` and provide it manually to `platformCloudflare` with your desired mode.
+
+  ```ts
+  platformCloudflare({
+    // ...
+    persistence: new PersistenceCloudflareTransactionalStorage({ mode: "kv" }),
+    // ...
+  });
+  ```
+
+### Patch Changes
+
+- a47e171: Deprecated `createPluvHandler`. Instead, documentation will be provided on how to host pluv.io yourself on Node.js and Cloudflare Workers.
+- Updated dependencies [5c2c71d]
+- Updated dependencies [4ce32ee]
+- Updated dependencies [cf1529a]
+  - @pluv/persistence-cloudflare-transactional-storage@0.42.0
+  - @pluv/io@0.42.0
+  - @pluv/types@0.42.0
+
 ## 0.41.7
 
 ### Patch Changes

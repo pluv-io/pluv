@@ -1,5 +1,17 @@
 # @pluv/persistence-redis
 
+## 0.42.0
+
+### Minor Changes
+
+- 4ce32ee: **BREAKING** `Persistence.getUsers` now returns a map of connection id strings to user JSON objects instead of an array of user JSON objects. This change is intended to be internal only and generally non-breaking.
+
+### Patch Changes
+
+- Updated dependencies [cf1529a]
+  - @pluv/io@0.42.0
+  - @pluv/types@0.42.0
+
 ## 0.41.7
 
 ### Patch Changes

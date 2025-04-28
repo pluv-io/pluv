@@ -1,5 +1,15 @@
 # @pluv/platform-pluv
 
+## 0.42.0
+
+### Patch Changes
+
+- def08bc: Fix default endpoint for `createToken`.
+- Updated dependencies [cf1529a]
+  - @pluv/io@0.42.0
+  - @pluv/crdt@0.42.0
+  - @pluv/types@0.42.0
+
 ## 0.41.7
 
 ### Patch Changes

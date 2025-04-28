@@ -1,5 +1,14 @@
 # @pluv/platform-node
 
+## 0.42.0
+
+### Patch Changes
+
+- a47e171: Deprecated `createPluvHandler`. Instead, documentation will be provided on how to host pluv.io yourself on Node.js and Cloudflare Workers.
+- Updated dependencies [cf1529a]
+  - @pluv/io@0.42.0
+  - @pluv/types@0.42.0
+
 ## 0.41.7
 
 ### Patch Changes
