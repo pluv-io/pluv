@@ -191,18 +191,24 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
         }
     }
 
-    public async getUsers(room: string): Promise<readonly (JsonObject | null)[]> {
-        if (!this._initialized) return [];
-        if (!this._state) return [];
+    public async getUsers(room: string): Promise<Map<[connectionId: string][0], JsonObject | null>> {
+        if (!this._initialized) return new Map();
+        if (!this._state) return new Map();
 
         await this._initialized;
 
         if (this._mode === "kv") {
-            const storage = await this._state.storage.list({
-                prefix: `${KV_USER_PREFIX}::${room}`,
-            });
+            const entries = await this._state.storage
+                .list<JsonObject | null>({
+                    prefix: `${KV_USER_PREFIX}::${room}`,
+                })
+                .then((map) => Array.from(map.entries()));
 
-            return Array.from(storage.values()) as (JsonObject | null)[];
+            return entries.reduce((map, [key, user]) => {
+                const connectionId = key.split("::").slice(-1)[0];
+
+                return !!connectionId ? map.set(connectionId, user) : map;
+            }, new Map<string, JsonObject | null>());
         }
 
         const cursor = this._state.storage.sql.exec<{ id: string; data: string; room: string }>(
@@ -214,13 +220,15 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
             room,
         );
 
-        return cursor.toArray().map(({ data }) => {
+        return cursor.toArray().reduce((map, { id, data }) => {
             try {
-                return JSON.parse(data) as JsonObject;
+                const user = JSON.parse(data) as JsonObject;
+
+                return map.set(id, user);
             } catch {
-                return null;
+                return map;
             }
-        });
+        }, new Map<string, JsonObject | null>());
     }
 
     public async getUsersSize(room: string): Promise<number> {

@@ -57,12 +57,12 @@ export class Persistence extends AbstractPersistence {
         return Promise.resolve(user ?? null);
     }
 
-    public getUsers(room: string): Promise<readonly (JsonObject | null)[]> {
+    public async getUsers(room: string): Promise<Map<string, JsonObject | null>> {
         const users = this._users.get(room);
 
-        if (!users) return Promise.resolve([]);
+        if (!users) return new Map();
 
-        return Promise.resolve(Array.from(users.values()));
+        return users;
     }
 
     public async getUsersSize(room: string): Promise<number> {

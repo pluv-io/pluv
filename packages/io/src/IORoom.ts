@@ -509,21 +509,12 @@ export class IORoom<
     }
 
     private async _emitSyncState(): Promise<void> {
-        const userIds = await this._platform.persistence
-            .getUsers(this.id)
-            .then((users) => {
-                return users.reduce((set, user) => {
-                    const userId = user?.id;
-
-                    return typeof userId === "string" && !!userId ? set.add(userId) : set;
-                }, new Set<string>());
-            })
-            .then((set) => Array.from(set.values()));
+        const connectionIds = await this._platform.persistence.getUsers(this.id).then((map) => Object.keys(map));
 
         await this._broadcast({
             message: {
                 type: "$syncStateReceived",
-                data: { userIds },
+                data: { connectionIds },
             },
         });
     }

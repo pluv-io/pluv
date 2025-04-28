@@ -13,7 +13,7 @@ export abstract class AbstractPersistence {
 
     public abstract getUser(room: string, connectionId: string): Promise<JsonObject | null>;
 
-    public abstract getUsers(room: string): Promise<readonly (JsonObject | null)[]>;
+    public abstract getUsers(room: string): Promise<Map<[connectionId: string][0], JsonObject | null>>;
 
     public abstract getUsersSize(room: string): Promise<number>;
 

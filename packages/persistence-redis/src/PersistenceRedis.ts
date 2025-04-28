@@ -1,9 +1,12 @@
 import { AbstractPersistence } from "@pluv/io";
 import type { JsonObject } from "@pluv/types";
 import type { Cluster, Redis } from "ioredis";
+import { partitionByLength } from "./utils";
 
 const DELIMITER = ":::";
 const HASH_TAG = "{PluvPersistenceRedis}";
+
+const GET_USERS_CONCURRENCY = 4;
 
 export type RedisClient = Cluster | Redis;
 
@@ -105,14 +108,25 @@ export class PersistenceRedis extends AbstractPersistence {
         return !data ? null : JSON.parse(data);
     }
 
-    public async getUsers(room: string): Promise<readonly (JsonObject | null)[]> {
-        if (!this._initialized) return [];
+    public async getUsers(room: string): Promise<Map<[connectionId: string][0], JsonObject | null>> {
+        if (!this._initialized) return new Map();
 
         await this._initialized;
 
         const members = await this._client.smembers(this._getRoomUsersKey(room));
+        const partitions = partitionByLength(members, GET_USERS_CONCURRENCY);
 
-        return await Promise.all(members.map((connectionId) => this.getUser(room, connectionId)));
+        return await partitions.reduce(async (promise, partition) => {
+            const map = await promise;
+
+            const promises = partition.map(async (connectionId) => {
+                map.set(connectionId, await this.getUser(room, connectionId));
+            });
+
+            await Promise.all(promises);
+
+            return map;
+        }, Promise.resolve(new Map<string, JsonObject | null>()));
     }
 
     public async getUsersSize(room: string): Promise<number> {
