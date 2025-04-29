@@ -1,8 +1,14 @@
+import type { Maybe } from "@pluv/types";
 import type { CrdtType, InferCrdtJson } from "./types";
 
 export interface DocApplyEncodedStateParams {
     origin?: string;
-    update?: string | Uint8Array;
+    update?: Maybe<string | Uint8Array>;
+}
+
+export interface DocBatchApplyEncodedStateParams {
+    origin?: string;
+    updates?: Maybe<readonly Maybe<string | Uint8Array>[]>;
 }
 
 export interface DocSubscribeCallbackParams<T extends Record<string, CrdtType<any, any>>> {
@@ -14,9 +20,7 @@ export interface DocSubscribeCallbackParams<T extends Record<string, CrdtType<an
 
 export abstract class AbstractCrdtDoc<T extends Record<string, CrdtType<any, any>>> {
     public abstract applyEncodedState(params: DocApplyEncodedStateParams): this;
-    public abstract batchApplyEncodedState(
-        updates: readonly (DocApplyEncodedStateParams | string | null | undefined)[],
-    ): this;
+    public abstract batchApplyEncodedState(params: DocBatchApplyEncodedStateParams): this;
     public abstract canRedo(): boolean;
     public abstract canUndo(): boolean;
     public abstract destroy(): void;

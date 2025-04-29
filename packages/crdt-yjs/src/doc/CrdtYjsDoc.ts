@@ -1,4 +1,9 @@
-import type { DocApplyEncodedStateParams, DocSubscribeCallbackParams, InferCrdtJson } from "@pluv/crdt";
+import type {
+    DocApplyEncodedStateParams,
+    DocBatchApplyEncodedStateParams,
+    DocSubscribeCallbackParams,
+    InferCrdtJson,
+} from "@pluv/crdt";
 import { AbstractCrdtDoc } from "@pluv/crdt";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import {
@@ -13,6 +18,7 @@ import {
     XmlText as YXmlText,
     applyUpdate,
     encodeStateAsUpdate,
+    mergeUpdates,
 } from "yjs";
 import { YjsArray } from "../array/YjsArray";
 import { YjsMap } from "../map/YjsMap";
@@ -108,26 +114,31 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
         return this;
     }
 
-    public batchApplyEncodedState(updates: readonly (DocApplyEncodedStateParams | string | null | undefined)[]): this {
-        const params = updates.reduce<DocApplyEncodedStateParams[]>((acc, update) => {
+    public batchApplyEncodedState(params: DocBatchApplyEncodedStateParams): this {
+        const { origin } = params;
+        const updates = params.updates ?? [];
+
+        const filtered = updates.reduce<Uint8Array[]>((acc, update) => {
             if (!update) return acc;
 
             if (typeof update === "string") {
-                acc.push({ update });
-
+                acc.push(toUint8Array(update));
                 return acc;
             }
 
-            if (!!update && typeof update === "object") {
+            if (typeof update === "object") {
                 acc.push(update);
-
                 return acc;
             }
 
             return acc;
         }, []);
 
-        return params.reduce((doc, update) => doc.applyEncodedState(update), this);
+        if (!filtered.length) return this;
+
+        const merged = mergeUpdates(filtered);
+
+        return this.applyEncodedState({ origin, update: merged });
     }
 
     public canRedo(): boolean {

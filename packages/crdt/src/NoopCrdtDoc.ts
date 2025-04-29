@@ -1,4 +1,8 @@
-import type { DocApplyEncodedStateParams, DocSubscribeCallbackParams } from "./AbstractCrdtDoc";
+import type {
+    DocApplyEncodedStateParams,
+    DocBatchApplyEncodedStateParams,
+    DocSubscribeCallbackParams,
+} from "./AbstractCrdtDoc";
 import { AbstractCrdtDoc } from "./AbstractCrdtDoc";
 
 export class NoopCrdtDoc extends AbstractCrdtDoc<any> {
@@ -6,7 +10,7 @@ export class NoopCrdtDoc extends AbstractCrdtDoc<any> {
         return this;
     }
 
-    public batchApplyEncodedState(updates: readonly (string | DocApplyEncodedStateParams | null | undefined)[]): this {
+    public batchApplyEncodedState(params: DocBatchApplyEncodedStateParams): this {
         return this;
     }
 
