@@ -1,4 +1,9 @@
-import type { DocApplyEncodedStateParams, DocSubscribeCallbackParams, InferCrdtJson } from "@pluv/crdt";
+import type {
+    DocApplyEncodedStateParams,
+    DocBatchApplyEncodedStateParams,
+    DocSubscribeCallbackParams,
+    InferCrdtJson,
+} from "@pluv/crdt";
 import { AbstractCrdtDoc } from "@pluv/crdt";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import type { Container } from "loro-crdt";
@@ -62,40 +67,36 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
         return this;
     }
 
-    public batchApplyEncodedState(updates: readonly (DocApplyEncodedStateParams | string | null | undefined)[]): this {
-        const _updates = updates.reduce<Uint8Array[]>((acc, item) => {
-            if (!item) return acc;
+    public batchApplyEncodedState(params: DocBatchApplyEncodedStateParams): this {
+        const updates = params.updates ?? [];
 
-            if (typeof item === "string") {
-                acc.push(toUint8Array(item));
+        const filtered = updates.reduce<Uint8Array[]>((acc, update) => {
+            if (!update) return acc;
 
+            if (typeof update === "string") {
+                acc.push(toUint8Array(update));
                 return acc;
             }
 
-            if (typeof item === "object") {
-                const update = typeof item.update === "string" ? toUint8Array(item.update) : item.update;
-
-                if (!update) return acc;
-
+            if (typeof update === "object") {
                 acc.push(update);
-
                 return acc;
             }
 
             return acc;
         }, []);
 
-        if (!_updates.length) return this;
+        if (!filtered.length) return this;
 
-        if (_updates.length === 1) {
-            const update = _updates[0] ?? null;
+        if (filtered.length === 1) {
+            const update = filtered[0] ?? null;
 
             if (!!update) this.value.import(update);
 
             return this;
         }
 
-        this.value.importBatch(_updates);
+        this.value.importBatch(filtered);
 
         return this;
     }

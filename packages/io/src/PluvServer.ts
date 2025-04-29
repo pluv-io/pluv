@@ -134,7 +134,7 @@ export class PluvServer<
                 ];
 
                 if (updates.some((_update) => !!_update)) {
-                    const encodedState = doc.batchApplyEncodedState(updates).getEncodedState();
+                    const encodedState = doc.batchApplyEncodedState({ updates }).getEncodedState();
 
                     await this._platform.persistence.setStorageState(room, encodedState);
 

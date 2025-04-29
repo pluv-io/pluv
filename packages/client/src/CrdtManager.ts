@@ -93,7 +93,7 @@ export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
         origin?: string,
     ): AbstractCrdtDoc<TStorage> {
         doc.transact(() => {
-            doc.batchApplyEncodedState(updates.map((update) => ({ origin, update })));
+            doc.batchApplyEncodedState({ origin, updates });
         }, origin);
 
         return doc;
