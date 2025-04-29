@@ -10,8 +10,15 @@ import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import type { JWTEncodeParams } from "./authorize";
-import { MAX_PRESENCE_SIZE_BYTES, MAX_STORAGE_SIZE_BYTES, PING_TIMEOUT_MS } from "./constants";
-import type { BasePluvIOListeners, GetInitialStorageFn, PluvContext, PluvIOAuthorize, PluvIOListeners } from "./types";
+import { PING_TIMEOUT_MS } from "./constants";
+import type {
+    BasePluvIOListeners,
+    GetInitialStorageFn,
+    PluvContext,
+    PluvIOAuthorize,
+    PluvIOLimits,
+    PluvIOListeners,
+} from "./types";
 import { pickBy } from "./utils";
 import { __PLUV_VERSION } from "./version";
 
@@ -19,13 +26,6 @@ export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
     TServer extends PluvServer<infer IPlatform, infer IAuthorize, infer IContext, infer IEvents>
         ? IORoom<IPlatform, IAuthorize, IContext, IEvents>
         : never;
-
-export interface PluvServerLimits {
-    /**
-     * @description Maximum size of storage in bytes
-     */
-    storageMaxSize?: number | null;
-}
 
 export type PluvServerConfig<
     TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
@@ -38,10 +38,7 @@ export type PluvServerConfig<
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     debug?: boolean;
     getInitialStorage?: GetInitialStorageFn<TContext>;
-    /**
-     * @description Configurable limits for PluvServer capabilities
-     */
-    limits?: PluvServerLimits;
+    limits: PluvIOLimits;
     io: PluvIO<TPlatform, TAuthorize, TContext>;
     platform: TPlatform;
     router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
@@ -153,7 +150,7 @@ export class PluvServer<
                 const encodedState = (await this._platform.persistence.getStorageState(room)) ?? doc.getEncodedState();
                 const storageSize = new TextEncoder().encode(encodedState).length;
 
-                if (!!this._limits.storageMaxSize && storageSize >= this._limits.storageMaxSize) {
+                if (!!this._limits.storageMaxSize && storageSize > this._limits.storageMaxSize) {
                     throw new Error("Storage has exceeded the size limit");
                 }
 
@@ -185,7 +182,7 @@ export class PluvServer<
             const updated = Object.assign(Object.create(null), session.presence, cleanedPatch);
             const bytes = new TextEncoder().encode(JSON.stringify(updated)).length;
 
-            if (bytes > MAX_PRESENCE_SIZE_BYTES) {
+            if (!!this._limits.presenceMaxSize && bytes > this._limits.presenceMaxSize) {
                 throw new Error(
                     `Large presence. Presence must be at most 512 bytes. Current size: ${bytes.toLocaleString()}`,
                 );
@@ -210,7 +207,7 @@ export class PluvServer<
             const encodedState = updated.getEncodedState();
             const storageSize = new TextEncoder().encode(encodedState).length;
 
-            if (!!this._limits.storageMaxSize && storageSize >= this._limits.storageMaxSize) {
+            if (!!this._limits.storageMaxSize && storageSize > this._limits.storageMaxSize) {
                 throw new Error("Storage has exceeded the size limit");
             }
 
@@ -230,7 +227,7 @@ export class PluvServer<
     private readonly _debug: boolean;
     private readonly _getInitialStorage: GetInitialStorageFn<TContext> | null = null;
     private readonly _io: PluvIO<TPlatform, TAuthorize, TContext>;
-    private readonly _limits: PluvServerLimits;
+    private readonly _limits: PluvIOLimits;
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
@@ -286,10 +283,7 @@ export class PluvServer<
         this._crdt = crdt;
         this._debug = debug;
         this._io = io;
-        this._limits = {
-            storageMaxSize: MAX_STORAGE_SIZE_BYTES,
-            ...limits,
-        };
+        this._limits = limits;
         this._platform = platform;
         this._router = (router ? PluvRouter.merge(this._baseRouter, router) : this._baseRouter) as PluvRouter<
             TPlatform,
@@ -369,7 +363,7 @@ export class PluvServer<
     public async createToken(
         params: JWTEncodeParams<InferIOAuthorizeUser<InferIOAuthorize<this>>, TPlatform>,
     ): Promise<string> {
-        return this._io.createToken(params);
+        return await this._io.createToken(params);
     }
 
     private _getListeners(): BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents> {

@@ -9,12 +9,13 @@ import { PluvRouter } from "./PluvRouter";
 import { PluvServer, PluvServerConfig } from "./PluvServer";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
-import { MAX_USER_SIZE_BYTES } from "./constants";
+import { MAX_PRESENCE_SIZE_BYTES, MAX_STORAGE_SIZE_BYTES, MAX_USER_ID_LENGTH, MAX_USER_SIZE_BYTES } from "./constants";
 import type {
     CrdtLibraryType,
     GetInitialStorageFn,
     PluvContext,
     PluvIOAuthorize,
+    PluvIOLimits,
     PluvIOListeners,
     PluvIORouter,
     ResolvedPluvIOAuthorize,
@@ -30,6 +31,7 @@ export type PluvIOConfig<
     context?: PluvContext<TPlatform, TContext>;
     crdt?: CrdtLibraryType;
     debug?: boolean;
+    limits?: PluvIOLimits;
     platform: TPlatform;
 };
 
@@ -70,6 +72,7 @@ export class PluvIO<
     private readonly _context: PluvContext<TPlatform, TContext> = {} as PluvContext<TPlatform, TContext>;
     private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     private readonly _debug: boolean;
+    private readonly _limits: PluvIOLimits;
     private readonly _platform: TPlatform;
 
     public get procedure(): PluvProcedure<TPlatform, TAuthorize, TContext, {}, {}> {
@@ -77,10 +80,17 @@ export class PluvIO<
     }
 
     constructor(options: PluvIOConfig<TPlatform, TAuthorize, TContext>) {
-        const { authorize, context, crdt = noop, debug = false, platform } = options;
+        const { authorize, context, crdt = noop, debug = false, limits, platform } = options;
 
         this._crdt = crdt;
         this._debug = debug;
+        this._limits = {
+            presenceMaxSize: MAX_PRESENCE_SIZE_BYTES,
+            storageMaxSize: MAX_STORAGE_SIZE_BYTES,
+            userIdMaxLength: MAX_USER_ID_LENGTH,
+            userMaxSize: MAX_USER_SIZE_BYTES,
+            ...limits,
+        };
         this._platform = platform;
 
         if (authorize) this._authorize = authorize;
@@ -94,9 +104,15 @@ export class PluvIO<
         const user = params.user as BaseUser;
         const parsed = !!ioAuthorize ? ioAuthorize.user.parse(user) : user;
 
+        if (!!this._limits.userIdMaxLength && user.id.length > this._limits.userIdMaxLength) {
+            throw new Error(
+                `createToken was called with a long user id. User ID must be at most 128 characters. Current length: ${user.id.length.toLocaleString()}`,
+            );
+        }
+
         const bytes = new TextEncoder().encode(JSON.stringify(parsed)).length;
 
-        if (bytes > MAX_USER_SIZE_BYTES) {
+        if (!!this._limits.userMaxSize && bytes > this._limits.userMaxSize) {
             throw new Error(
                 `createToken called with large payload. User must be at most 512 bytes. Current size: ${bytes.toLocaleString()}`,
             );
@@ -150,6 +166,7 @@ export class PluvIO<
             crdt: this._crdt,
             debug: this._debug,
             io: this as PluvIO<TPlatform, TAuthorize, TContext>,
+            limits: this._limits,
             platform: this._platform,
         } as PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>);
     }
