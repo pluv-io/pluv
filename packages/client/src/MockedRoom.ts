@@ -26,6 +26,7 @@ import type {
     WebSocketConnection,
     WebSocketState,
 } from "./types";
+import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 
 export type MockedRoomEvents<TIO extends IOLike> = Partial<{
     [P in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[P]>) => Partial<InferIOOutput<TIO>>;
@@ -41,7 +42,7 @@ export type MockedRoomConfig<
     limits?: PluvClientLimits;
     router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
 } & Pick<CrdtManagerOptions<TStorage>, "initialStorage"> &
-    UsersManagerConfig<TPresence>;
+    Omit<UsersManagerConfig<TPresence>, "limits">;
 
 export class MockedRoom<
     TIO extends IOLike,
@@ -81,9 +82,12 @@ export class MockedRoom<
         super(room);
 
         this._events = events;
-        this._limits = limits;
+        this._limits = {
+            presenceMaxSize: MAX_PRESENCE_SIZE_BYTES,
+            ...limits,
+        };
         this._router = router ?? (new PluvRouter({}) as PluvRouter<TIO, TPresence, TStorage, TEvents>);
-        this._usersManager = new UsersManager<TIO, TPresence>({ initialPresence, limits, presence });
+        this._usersManager = new UsersManager<TIO, TPresence>({ initialPresence, limits: this._limits, presence });
 
         this._crdtManager = new CrdtManager<TStorage>({
             initialStorage,

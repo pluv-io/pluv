@@ -276,7 +276,7 @@ export class PluvRoom<
         };
 
         this._router = router ?? (new PluvRouter({}) as PluvRouter<TIO, TPresence, TStorage, TEvents>);
-        this._usersManager = new UsersManager<TIO, TPresence>({ initialPresence, limits, presence });
+        this._usersManager = new UsersManager<TIO, TPresence>({ initialPresence, limits: this._limits, presence });
         this._crdtManager = new CrdtManager<TStorage>({ initialStorage });
     }
 
