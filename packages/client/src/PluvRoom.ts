@@ -82,6 +82,7 @@ interface WindowListeners {
     onNavigatorOffline: () => void;
     onNavigatorOnline: () => void;
     onVisibilityChange: () => void;
+    onWindowFocus: () => void;
 }
 
 interface WebSocketListeners {
@@ -619,11 +620,13 @@ export class PluvRoom<
             onNavigatorOffline: this._onNavigatorOffline.bind(this),
             onNavigatorOnline: this._onNavigatorOnline.bind(this),
             onVisibilityChange: this._onVisibilityChange.bind(this),
+            onWindowFocus: this._onWindowFocus.bind(this),
         };
 
         window.addEventListener("offline", this._windowListeners.onNavigatorOffline);
         window.addEventListener("online", this._windowListeners.onNavigatorOnline);
         document.addEventListener("visibilitychange", this._windowListeners.onVisibilityChange);
+        window.addEventListener("focus", this._windowListeners.onWindowFocus);
     }
 
     private _attachWsListeners(): void {
@@ -675,8 +678,10 @@ export class PluvRoom<
         if (typeof window === "undefined") return;
         if (typeof document === "undefined") return;
 
+        window.removeEventListener("offline", this._windowListeners.onNavigatorOffline);
         window.removeEventListener("online", this._windowListeners.onNavigatorOnline);
         document.removeEventListener("visibilitychange", this._windowListeners.onVisibilityChange);
+        window.removeEventListener("focus", this._windowListeners.onWindowFocus);
 
         this._windowListeners = null;
     }
@@ -1286,6 +1291,10 @@ export class PluvRoom<
             }
             default:
         }
+    }
+
+    private async _onWindowFocus(): Promise<void> {
+        return await this._onVisibilityChange();
     }
 
     private _parseMessage(message: { data: string | ArrayBuffer }): IOEventMessage<TIO> | null {
