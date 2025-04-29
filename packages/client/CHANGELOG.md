@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.44.1
+
+### Patch Changes
+
+- 67c081d: Fix `PluvRoom._reconnect` not being called with the last used metadata (from `PluvRoom.connect`).
+  - @pluv/crdt@0.44.1
+  - @pluv/types@0.44.1
+
 ## 0.44.0
 
 ### Minor Changes

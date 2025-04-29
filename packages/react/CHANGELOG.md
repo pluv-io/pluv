@@ -1,5 +1,14 @@
 # @pluv/react
 
+## 0.44.1
+
+### Patch Changes
+
+- Updated dependencies [67c081d]
+  - @pluv/client@0.44.1
+  - @pluv/crdt@0.44.1
+  - @pluv/types@0.44.1
+
 ## 0.44.0
 
 ### Patch Changes
