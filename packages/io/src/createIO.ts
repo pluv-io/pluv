@@ -1,7 +1,7 @@
 import type { BaseUser } from "@pluv/types";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
 import { PluvIO } from "./PluvIO";
-import type { CrdtLibraryType, PluvContext, PluvIOAuthorize } from "./types";
+import type { CrdtLibraryType, PluvContext, PluvIOAuthorize, PluvIOLimits } from "./types";
 
 export type CreateIOParams<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -12,6 +12,7 @@ export type CreateIOParams<
     context?: PluvContext<TPlatform, TContext>;
     crdt?: CrdtLibraryType;
     debug?: boolean;
+    limits?: PluvIOLimits;
     platform: TPlatform;
 };
 
@@ -22,13 +23,14 @@ export const createIO = <
 >(
     params: CreateIOParams<TPlatform, TContext, TUser>,
 ): PluvIO<TPlatform, PluvIOAuthorize<TPlatform, TUser, InferInitContextType<TPlatform>>, TContext> => {
-    const { authorize, context, crdt, debug, platform } = params;
+    const { authorize, context, crdt, debug, limits, platform } = params;
 
     return new PluvIO<TPlatform, PluvIOAuthorize<TPlatform, TUser, InferInitContextType<TPlatform>>, TContext>({
         authorize,
         context,
         crdt,
         debug,
+        limits,
         platform,
     });
 };

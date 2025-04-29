@@ -46,6 +46,7 @@ export type {
     PlatformConfig,
     PluvContext,
     PluvIOAuthorize,
+    PluvIOLimits,
     PluvIOListeners,
     WebSocketRegistrationMode,
     WebSocketSerializedState,

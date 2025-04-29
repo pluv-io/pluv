@@ -1,4 +1,4 @@
-import type { CreateIOParams, InferInitContextType, PluvContext, PluvIOAuthorize } from "@pluv/io";
+import type { CreateIOParams, InferInitContextType, PluvContext, PluvIOAuthorize, PluvIOLimits } from "@pluv/io";
 import type { BaseUser, Id, IOAuthorize, Json } from "@pluv/types";
 import type { NodePlatformConfig } from "./NodePlatform";
 import { NodePlatform } from "./NodePlatform";
@@ -31,13 +31,14 @@ export const platformNode = <
 >(
     config: PlatformNodeCreateIOParams<TMeta, TContext, TUser> = {},
 ): CreateIOParams<NodePlatform<IOAuthorize<TUser, TContext>, TMeta>, TContext, TUser> => {
-    const { authorize, context, crdt, debug } = config;
+    const { authorize, context, crdt, debug, limits } = config;
 
     return {
         authorize,
         context,
         crdt,
         debug,
+        limits,
         platform: new NodePlatform<IOAuthorize<TUser, TContext>, TMeta>(config),
     };
 };
