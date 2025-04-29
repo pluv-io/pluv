@@ -37,6 +37,7 @@ import type {
     EventResolver,
     EventResolverContext,
     InternalSubscriptions,
+    PluvClientLimits,
     PublicKey,
     UpdateMyPresenceAction,
     UserInfo,
@@ -169,6 +170,7 @@ export type RoomConfig<
     {
         addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
         debug?: boolean | PluvRoomDebug<TIO>;
+        limits: PluvClientLimits;
         onAuthorizationFail?: (error: Error) => void;
         metadata?: InputZodLike<TMetadata>;
         publicKey?: PublicKey<TMetadata>;
@@ -197,6 +199,7 @@ export class PluvRoom<
     private readonly _intervals: IntervalIds = {
         heartbeat: null,
     };
+    private readonly _limits: PluvClientLimits;
     private readonly _listeners: InternalListeners;
     private readonly _otherNotifier = new OtherNotifier<TIO, TPresence>();
     private readonly _publicKey: PublicKey<TMetadata> | null = null;
@@ -237,6 +240,7 @@ export class PluvRoom<
             debug = false,
             initialPresence,
             initialStorage,
+            limits,
             metadata,
             onAuthorizationFail,
             presence,
@@ -259,6 +263,7 @@ export class PluvRoom<
 
         this._debug = debug;
         this._endpoints = { authEndpoint, wsEndpoint } as RoomEndpoints<TIO, TMetadata>;
+        this._limits = limits;
         this._reconnectTimeoutMs = reconnectTimeoutMs;
         this._storageStore = storage;
 
@@ -271,7 +276,7 @@ export class PluvRoom<
         };
 
         this._router = router ?? (new PluvRouter({}) as PluvRouter<TIO, TPresence, TStorage, TEvents>);
-        this._usersManager = new UsersManager<TIO, TPresence>({ initialPresence, presence });
+        this._usersManager = new UsersManager<TIO, TPresence>({ initialPresence, limits, presence });
         this._crdtManager = new CrdtManager<TStorage>({ initialStorage });
     }
 
