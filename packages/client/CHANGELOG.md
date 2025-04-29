@@ -1,5 +1,18 @@
 # @pluv/client
 
+## 0.44.0
+
+### Minor Changes
+
+- c9fcea5: **BREAKING** The `ConnectionState` enum is now a `const` to avoid several pitfalls of using TypeScript enums.
+
+### Patch Changes
+
+- fba9354: Fix potential edge case where event handlers may be called redundantly.
+- bc2d684: Fix `PluvRoom` not properly reconnecting when connections are unavailable.
+  - @pluv/crdt@0.44.0
+  - @pluv/types@0.44.0
+
 ## 0.43.0
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @pluv/crdt-yjs
 
+## 0.44.0
+
+### Patch Changes
+
+- 503c23b: Updated `batchApplyEncodedState` to use `Yjs.mergeUpdates` to more efficiently update the document under-the-hood, while also producing a smaller document.
+  - @pluv/crdt@0.44.0
+  - @pluv/types@0.44.0
+
 ## 0.43.0
 
 ### Patch Changes
