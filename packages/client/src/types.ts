@@ -57,6 +57,13 @@ export type MergeEventRecords<
       >
     : Id<TRoot>;
 
+export interface PluvClientLimits {
+    /**
+     * @description Maximum size of presence object in bytes
+     */
+    presenceMaxSize?: number | null;
+}
+
 export interface PublicKeyParams<TMetadata extends JsonObject> {
     metadata: TMetadata;
 }

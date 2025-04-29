@@ -20,11 +20,13 @@ import type {
     EventResolver,
     EventResolverContext,
     InternalSubscriptions,
+    PluvClientLimits,
     UpdateMyPresenceAction,
     UserInfo,
     WebSocketConnection,
     WebSocketState,
 } from "./types";
+import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 
 export type MockedRoomEvents<TIO extends IOLike> = Partial<{
     [P in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[P]>) => Partial<InferIOOutput<TIO>>;
@@ -37,9 +39,10 @@ export type MockedRoomConfig<
     TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
 > = {
     events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
+    limits?: PluvClientLimits;
     router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
 } & Pick<CrdtManagerOptions<TStorage>, "initialStorage"> &
-    UsersManagerConfig<TPresence>;
+    Omit<UsersManagerConfig<TPresence>, "limits">;
 
 export class MockedRoom<
     TIO extends IOLike,
@@ -47,12 +50,13 @@ export class MockedRoom<
     TStorage extends Record<string, CrdtType<any, any>> = {},
     TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
 > extends AbstractRoom<TIO, TPresence, TStorage> {
-    private _crdtManager: CrdtManager<TStorage>;
-    private _crdtNotifier = new CrdtNotifier<TStorage>();
-    private _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
-    private _events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
-    private _otherNotifier = new OtherNotifier<TIO, TPresence>();
-    private _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
+    private readonly _crdtManager: CrdtManager<TStorage>;
+    private readonly _crdtNotifier = new CrdtNotifier<TStorage>();
+    private readonly _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
+    private readonly _events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
+    private readonly _limits: PluvClientLimits;
+    private readonly _otherNotifier = new OtherNotifier<TIO, TPresence>();
+    private readonly _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
     private _state: WebSocketState<TIO> = {
         authorization: {
             token: null,
@@ -66,24 +70,24 @@ export class MockedRoom<
         },
         webSocket: null,
     };
-    private _stateNotifier = new StateNotifier<TIO, TPresence>();
-    private _subscriptions: InternalSubscriptions = {
+    private readonly _stateNotifier = new StateNotifier<TIO, TPresence>();
+    private readonly _subscriptions: InternalSubscriptions = {
         observeCrdt: null,
     };
-    private _usersManager: UsersManager<TIO, TPresence>;
+    private readonly _usersManager: UsersManager<TIO, TPresence>;
 
     constructor(room: string, options: MockedRoomConfig<TIO, TPresence, TStorage, TEvents>) {
-        const { events, initialPresence, initialStorage, presence, router } = options;
+        const { events, initialPresence, initialStorage, limits, presence, router } = options;
 
         super(room);
 
         this._events = events;
-
+        this._limits = {
+            presenceMaxSize: MAX_PRESENCE_SIZE_BYTES,
+            ...limits,
+        };
         this._router = router ?? (new PluvRouter({}) as PluvRouter<TIO, TPresence, TStorage, TEvents>);
-        this._usersManager = new UsersManager<TIO, TPresence>({
-            initialPresence,
-            presence,
-        });
+        this._usersManager = new UsersManager<TIO, TPresence>({ initialPresence, limits: this._limits, presence });
 
         this._crdtManager = new CrdtManager<TStorage>({
             initialStorage,

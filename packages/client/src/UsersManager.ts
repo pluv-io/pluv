@@ -1,12 +1,12 @@
 import type { InputZodLike, IOLike, JsonObject, OptionalProps } from "@pluv/types";
-import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
-import type { UserInfo } from "./types";
+import type { PluvClientLimits, UserInfo } from "./types";
 import { pickBy } from "./utils";
 
 export type Presence = Record<string, unknown>;
 
 export type UsersManagerConfig<TPresence extends JsonObject = {}> = {
     initialPresence?: TPresence;
+    limits: PluvClientLimits;
     presence?: InputZodLike<TPresence>;
 };
 
@@ -24,12 +24,13 @@ export type DeleteConnectionResult<TIO extends IOLike, TPresence extends JsonObj
 };
 
 export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}> {
-    private _idMap = {
+    public readonly initialPresence: TPresence;
+
+    private readonly _idMap = {
         fromConnectionId: new Map<[connectionId: string][0], [clientId: string][0]>(),
         fromClientId: new Map<[clientId: string][0], Set<[connectionId: string][0]>>(),
     };
-
-    public readonly initialPresence: TPresence;
+    private _limits: PluvClientLimits;
     /**
      * @description This presence can be updated while the user is not
      * connected.
@@ -43,10 +44,11 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
     private _presence: InputZodLike<TPresence> | null = null;
 
     constructor(config: UsersManagerConfig<TPresence>) {
-        const { initialPresence, presence = null } = config;
+        const { initialPresence, limits, presence = null } = config;
 
         this.initialPresence = initialPresence as TPresence;
 
+        this._limits = limits;
         this._myPresence = initialPresence as TPresence;
         this._presence = presence;
     }
@@ -256,7 +258,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
         const updated = { ...this.initialPresence, ...cleanedPresence, ...cleanedPatch } as TPresence;
         const bytes = new TextEncoder().encode(JSON.stringify(updated)).length;
 
-        if (bytes > MAX_PRESENCE_SIZE_BYTES) {
+        if (!!this._limits.presenceMaxSize && bytes > this._limits.presenceMaxSize) {
             throw new Error(
                 `Large presence. Presence must be at most 512 bytes. Current size: ${bytes.toLocaleString()}`,
             );

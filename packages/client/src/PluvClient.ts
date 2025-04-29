@@ -1,5 +1,6 @@
 import type { AbstractCrdtDocFactory, CrdtType } from "@pluv/crdt";
 import type { InputZodLike, IOLike, JsonObject } from "@pluv/types";
+import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import type { InferCallback } from "./infer";
 import { PluvProcedure } from "./PluvProcedure";
 import type {
@@ -14,7 +15,7 @@ import type {
 import { PluvRoom } from "./PluvRoom";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
-import type { PublicKey, WithMetadata } from "./types";
+import type { PluvClientLimits, PublicKey, WithMetadata } from "./types";
 
 export type PluvClientOptions<
     TIO extends IOLike<any, any>,
@@ -24,6 +25,11 @@ export type PluvClientOptions<
 > = RoomEndpoints<TIO, TMetadata> & {
     debug?: boolean;
     initialStorage?: AbstractCrdtDocFactory<TStorage>;
+    /**
+     * @description Configurable limits defined for client-side validation. You should only set
+     * this if you control the server and have changed the limits there.
+     */
+    limits?: PluvClientLimits;
     metadata?: InputZodLike<TMetadata>;
     presence?: InputZodLike<TPresence>;
     publicKey?: PublicKey<TMetadata>;
@@ -61,6 +67,7 @@ export class PluvClient<
     private readonly _authEndpoint: AuthEndpoint<TMetadata> | undefined;
     private readonly _debug: boolean;
     private readonly _initialStorage?: AbstractCrdtDocFactory<TStorage>;
+    private readonly _limits: PluvClientLimits;
     private readonly _presence?: InputZodLike<TPresence>;
     private readonly _publicKey: PublicKey<TMetadata> | null = null;
     private readonly _rooms = new Map<string, PluvRoom<TIO, TMetadata, TPresence, TStorage, any>>();
@@ -77,13 +84,26 @@ export class PluvClient<
     }
 
     constructor(options: PluvClientOptions<TIO, TPresence, TStorage, TMetadata>) {
-        const { authEndpoint, debug = false, initialStorage, metadata, presence, publicKey, wsEndpoint } = options;
+        const {
+            authEndpoint,
+            debug = false,
+            initialStorage,
+            limits,
+            metadata,
+            presence,
+            publicKey,
+            wsEndpoint,
+        } = options;
 
         this.metadata = metadata;
 
         this._authEndpoint = authEndpoint as AuthEndpoint<TMetadata>;
         this._debug = debug;
         this._initialStorage = initialStorage;
+        this._limits = {
+            presenceMaxSize: MAX_PRESENCE_SIZE_BYTES,
+            ...limits,
+        };
         this._presence = presence;
         this._wsEndpoint = wsEndpoint;
 
@@ -104,6 +124,7 @@ export class PluvClient<
             debug: options.debug,
             initialPresence: options.initialPresence,
             initialStorage: this._initialStorage,
+            limits: this._limits,
             metadata: this.metadata,
             onAuthorizationFail: options.onAuthorizationFail,
             presence: this._presence,
