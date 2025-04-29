@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 0.44.2
+
+### Patch Changes
+
+- 6cfd36f: Update `PluvRoom` to attempt to reconnect if currently disconnected when the window is re-focused.
+  - @pluv/crdt@0.44.2
+  - @pluv/types@0.44.2
+
 ## 0.44.1
 
 ### Patch Changes
