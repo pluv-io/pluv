@@ -1,5 +1,42 @@
 # @pluv/io
 
+## 0.43.0
+
+### Minor Changes
+
+- 0063e80: **BREAKING** Added a configurable limit for the max-size (in bytes) for storage (defaulting to 30MB). To unset this limit, you can set this limit to `0` or `null`.
+
+  ```ts
+  createIO({
+    limits: {
+      storageMaxSize: null,
+    },
+  });
+  ```
+
+- 4b0fbb3: **BREAKING** Added the ability to configure the limits for user object size, presence size, and user id length. User id is now defaulted to be limited to 128 characters. To unset this limit, you can set this limit to `0` or `null`.
+
+  ```ts
+  // defaults
+  createIO(
+    platformCloudflare({
+      limits: {
+        presenceMaxSize: 512,
+        storageMaxSize: 31_457_280,
+        userIdMaxLength: 128,
+        userMaxSize: 512,
+      },
+    }),
+  );
+  ```
+
+### Patch Changes
+
+- e60a677: Fix 1 and 2 character long room names not being supported.
+- 244a973: Fixed not applying user size limits when calling `PluvIO.authorize` and not allowing it to be overwritten for `platformPluv`.
+  - @pluv/crdt@0.43.0
+  - @pluv/types@0.43.0
+
 ## 0.42.0
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @pluv/platform-node
 
+## 0.43.0
+
+### Patch Changes
+
+- 29fe3fc: Update `platformNode` and `platformCloudflare` to be able to configure limits for `PluvIO` (when self-hosted).
+- Updated dependencies [e60a677]
+- Updated dependencies [0063e80]
+- Updated dependencies [244a973]
+- Updated dependencies [4b0fbb3]
+  - @pluv/io@0.43.0
+  - @pluv/types@0.43.0
+
 ## 0.42.0
 
 ### Patch Changes
