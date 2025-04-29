@@ -615,7 +615,7 @@ export class PluvRoom<
         if (typeof window === "undefined") return;
         if (typeof document === "undefined") return;
 
-        this._windowListeners = {
+        this._windowListeners = this._windowListeners || {
             onNavigatorOffline: this._onNavigatorOffline.bind(this),
             onNavigatorOnline: this._onNavigatorOnline.bind(this),
             onVisibilityChange: this._onVisibilityChange.bind(this),
@@ -629,7 +629,7 @@ export class PluvRoom<
     private _attachWsListeners(): void {
         if (!this._state.webSocket) return;
 
-        this._wsListeners = {
+        this._wsListeners = this._wsListeners || {
             onClose: this._onClose.bind(this),
             onError: this._onError.bind(this),
             onMessage: this._onMessage.bind(this),
