@@ -33,13 +33,14 @@ export const platformCloudflare = <
 >(
     config: PlatformCloudflareCreateIOParams<TEnv, TMeta, TContext, TUser> = {},
 ): CreateIOParams<CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>, TContext, TUser> => {
-    const { authorize, context, crdt, debug } = config;
+    const { authorize, context, crdt, debug, limits } = config;
 
     return {
         authorize,
         context,
         crdt,
         debug,
+        limits,
         platform: new CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>(config),
     };
 };

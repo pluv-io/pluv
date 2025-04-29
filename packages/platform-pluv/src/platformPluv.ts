@@ -8,7 +8,7 @@ export type PlatformPluvCreateIOParams<
     TUser extends BaseUser = BaseUser,
 > = Id<
     PluvPlatformConfig &
-        Omit<CreateIOParams<PluvPlatform, TContext, TUser>, "authorize" | "context" | "platform"> & {
+        Omit<CreateIOParams<PluvPlatform, TContext, TUser>, "authorize" | "context" | "limits" | "platform"> & {
             authorize: PluvIOAuthorize<PluvPlatform, TUser, InferInitContextType<PluvPlatform>>;
             context?: PluvContext<PluvPlatform, TContext>;
         }
