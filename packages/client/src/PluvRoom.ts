@@ -1371,7 +1371,11 @@ export class PluvRoom<
     }
 
     private _setMetadata(metadata: TMetadata): TMetadata {
-        return this.metadata ? this.metadata.parse(metadata) : metadata;
+        const parsed = this.metadata ? this.metadata.parse(metadata) : metadata;
+
+        this._lastMetadata = parsed;
+
+        return parsed;
     }
 
     private _updateState(updater: (oldState: WebSocketState<TIO>) => WebSocketState<TIO>): WebSocketState<TIO> {
