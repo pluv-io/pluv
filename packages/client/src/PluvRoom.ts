@@ -363,7 +363,7 @@ export class PluvRoom<
 
         this._setMetadata(metadata);
 
-        const canConnect = [ConnectionState.Closed, ConnectionState.Untouched].some(
+        const canConnect = [ConnectionState.Closed, ConnectionState.Unavailable, ConnectionState.Untouched].some(
             (state) => this._state.connection.state === state,
         );
 
@@ -1152,7 +1152,15 @@ export class PluvRoom<
 
         this._updateState((oldState) => {
             oldState.authorization.token = null;
-            oldState.connection.state = shouldRetry ? ConnectionState.Unavailable : ConnectionState.Closed;
+            oldState.connection.state = shouldRetry
+                ? ConnectionState.Unavailable
+                : /**
+                   * !HACK
+                   * @description Assume these are not recoverable. We're just going to mark this
+                   * as Closed to avoid reconnect attempts.
+                   * @date April 28, 2025
+                   */
+                  ConnectionState.Closed;
             oldState.webSocket = null;
 
             return oldState;
@@ -1314,9 +1322,15 @@ export class PluvRoom<
     }
 
     private async _reconnect(): Promise<void> {
-        if (!this._state.webSocket) return;
-
         this._closeWs();
+
+        /**
+         * @description User has manually closed this connection. We're not going to retry, since
+         * the user probably intends for this to stay closed. They will need to invoke connect
+         * themselves.
+         * @date April 28, 2025
+         */
+        if (this._state.connection.state === ConnectionState.Closed) return;
 
         const metadata = this._lastMetadata;
         const params = (typeof metadata === "undefined" ? [] : [{ metadata }]) as RoomConnectParams<TMetadata>;
