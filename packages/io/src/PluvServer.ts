@@ -320,7 +320,7 @@ export class PluvServer<
             throw new Error(`\`createRoom\` is unsupported for \`${this._platform._name}\``);
         }
 
-        if (!/^[a-z0-9]+[a-z0-9\-_]+[a-z0-9]+$/i.test(room)) throw new Error("Unsupported room name");
+        if (!/^[a-z0-9](?:[a-z0-9-_]*[a-z0-9])?$/i.test(room)) throw new Error("Unsupported room name");
 
         const roomContext = platformRoomContext as InferRoomContextType<TPlatform>;
         const context: TContext = typeof this._context === "function" ? this._context(roomContext) : this._context;
