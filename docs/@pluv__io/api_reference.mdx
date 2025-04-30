@@ -9,7 +9,7 @@ description: "@pluv/io API reference"
 
 Returns a `PluvIO` instance.
 
-Creates a server-side `PluvIO` client that can be used to create event procedures, routers and servers. Below will show an example configuration for `createIO`. To learn more about `createIO`, read [Authorization](/docs/io/authorization), [Cloudflare Workers](/docs/io/cloudflare-workers), [Node.js](/docs/io/node.js) and [PubSub](/docs/io/pubsub).
+Creates a server-side `PluvIO` client that can be used to create event procedures, routers and servers. Below will show an example configuration for `createIO`. To learn more about `createIO`, read [Authorization](/docs/io/authorization), [Cloudflare Workers](/docs/quickstart/cloudflare-workers), [Node.js](/docs/quickstart/node.js) and [PubSub](/docs/io/pubsub).
 
 ```ts
 import { yjs } from "@pluv/crdt-yjs";
@@ -212,7 +212,7 @@ const roomId = room.id;
 
 Returns `Promise<void>`.
 
-Registers a websocket to the room. Accepts a secondary options parameter to pass-in a token for authorizing the room. Read [Cloudflare Workers](/docs/io/cloudflare-workers), [Node.js](/docs/io/node.js) and [Authorization](/docs/io/authorization) to learn more.
+Registers a websocket to the room. Accepts a secondary options parameter to pass-in a token for authorizing the room. Read [Cloudflare Workers](/docs/quickstart/cloudflar-workers), [Node.js](/docs/quickstart/nodejs) and [Authorization](/docs/io/authorization) to learn more.
 
 ```ts
 // const token: string = ...
