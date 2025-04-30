@@ -2,6 +2,7 @@ import { serve, type HttpBindings } from "@hono/node-server";
 import { InferIORoom } from "@pluv/io";
 import { Option, program } from "commander";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import Crypto from "node:crypto";
 import Http from "node:http";
 import Url from "node:url";
@@ -24,17 +25,23 @@ const port = parseInt(`${options.port}`, 10);
 
 if (Number.isNaN(port)) throw new Error("Port is not a number");
 
-const app = new Hono<{ Bindings: HttpBindings }>().get("/api/pluv/authorize", async (c) => {
-    const room = c.req.query("room") as string;
+const app = new Hono<{ Bindings: HttpBindings }>()
+    .use(
+        cors({
+            origin: "*",
+        }),
+    )
+    .get("/api/pluv/authorize", async (c) => {
+        const room = c.req.query("room") as string;
 
-    const id = Crypto.randomUUID();
-    const user = { id, name: `user:${id}` };
+        const id = Crypto.randomUUID();
+        const user = { id, name: `user:${id}` };
+        const req = c.env.incoming;
 
-    const req = c.req.raw as unknown as Http.IncomingMessage;
-    const token = await ioServer.createToken({ user, req, room });
+        const token = await ioServer.createToken({ user, req, room });
 
-    return c.text(token, 200);
-});
+        return c.text(token, 200);
+    });
 const server = serve(
     {
         fetch: app.fetch,
