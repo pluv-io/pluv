@@ -1,0 +1,148 @@
+---
+title: "Node.js - Quickstart"
+description: "Build real-time applications with pluv.io on Node.js"
+---
+
+# Node.js
+
+`@pluv/io` was designed to be self-hosted on the [Node.js](https://nodejs.org/) runtime. Let's step through how we'd put together a real-time API for Node.js.
+
+## Installation
+
+To install pluv.io for Node.js (self-hosted), we will install the following packages from pluv.io:
+
+| Purpose                                                 | Location | Install command                       |
+|---------------------------------------------------------|----------|---------------------------------------|
+| Register websockets and custom events                   | Server   | npm install @pluv/io                  |
+| Adapter for Node.js runtime                             | Server   | npm install @pluv/platform-node       |
+| yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs            |
+
+### Installation Example
+
+Here is an example installation for [npm](https://www.npmjs.com) for you to copy:
+
+```bash
+# For the server
+npm install @pluv/io @pluv/platform-node
+# Server peer dependencies
+npm install zod
+
+# For storage capabilities
+npm install @pluv/crdt-yjs
+# Storage peer dependencies
+npm install yjs
+```
+
+## Create PluvIO instance
+
+Define an io (websocket client) instance on the server codebase:
+
+```ts
+// backend/io.ts
+
+import { yjs } from "@pluv/crdt-yjs";
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { z } from "zod";
+import { Database } from "./db";
+
+export const io = createIO(
+    platformNode({
+        // Optional: Authorization is optional for `$pluv/platforn-node`
+        // If excluded, your `user` will be `null` on the frontend.
+        authorize: {
+            // Your own secret for generating JWTs
+            secret: process.env.PLUV_AUTH_SECRET!,
+            // The shape of your user object. `id` must be provided
+            user: z.object({
+                id: z.string(),
+                // Here is an additional field we can add
+                name: z.string(),
+            }),
+        },
+        // Optional: Context that will be made available in event
+        // handlers and procedures
+        context: () => ({
+            db: new Database(process.env.DATABASE_URL),
+        }),
+        // Optional: Only if you want to use CRDT storage features
+        crdt: yjs,
+        // Optional: If you want to enable development logging
+        debug: process.env.NODE_ENV === "development",
+    })
+);
+
+export const ioServer = io.server();
+```
+
+## Integrate PluvIO with ws
+
+Integrate with [ws](https://www.npmjs.com/package/ws) on your Node.js server.
+
+```ts
+// backend/server.ts
+
+import type { InferIORoom } from "@pluv/io";
+import { serve, type HttpBindings } from "@hono/node-server";
+import Http from "http";
+import { Hono } from "hono";
+import Ws from "ws";
+import { ioServer } from "./io";
+
+const PORT = 3000;
+
+const app = new Hono<{ Bindings: HttpBindings }>();
+const server = serve({
+    fetch: app.fetch,
+    port: PORT,
+}) as Http.Server;
+const wsServer = new Ws.WebSocketServer({ server });
+
+// Manage rooms in-memory
+const rooms = new Map<string, InferIORoom<typeof ioServer>>();
+const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
+    const existing = rooms.get(roomId);
+    if (existing) return existing;
+
+    const newRoom = ioServer.createRoom(roomId, {
+        onDestroy: (event) => {
+            rooms.delete(event.room);
+        },
+    });
+    rooms.set(roomId, newRoom);
+
+    return newRoom;
+};
+
+const server = Http.createServer(app);
+const wsServer = new WebSocket.Server({ server });
+
+const parseRoomId = (url: string): string => {
+    /* get room from req.url */
+};
+
+const rooms = new Map<string, InferIORoom<typeof ioServer>>();
+const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
+    const existing = rooms.get(roomId);
+
+    if (existing) return existing;
+
+    const room = ioServer.createRoom(roomId, {
+        onDelete: (event) => {
+            rooms.delete(event.room);
+        },
+    });
+    rooms.set(roomId, room);
+
+    return room;
+};
+
+wsServer.on("connection", async (ws, req) => {
+    const roomId = parseRoomId(req.url);
+    const room = getRoom(roomId);
+
+    // Token is only needed if you have configured authorization
+    const token = new URL(req.url).searchParams.get("token");
+    await room.register(ws, { req, token });
+});
+```

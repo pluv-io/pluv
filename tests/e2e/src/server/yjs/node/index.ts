@@ -50,7 +50,7 @@ const server = serve(
     () => {
         console.log(`Server is listening on port: ${port}`);
     },
-) as Http.Server<typeof Http.IncomingMessage, typeof Http.ServerResponse<Http.IncomingMessage>>;
+) as Http.Server;
 const wsServer = new Ws.WebSocketServer({ server });
 
 const rooms = new Map<string, InferIORoom<typeof ioServer>>();
