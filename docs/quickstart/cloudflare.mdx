@@ -136,14 +136,21 @@ export class RoomDurableObject extends DurableObject<Env> {
     }
 
     // Only needed if using "detached" mode (i.e. hibernation)
-    public async webSocketClose(ws: WebSocket, code: number, reason: string): Promise<void> {
+    public async webSocketClose(
+        ws: WebSocket,
+        code: number,
+        reason: string
+    ): Promise<void> {
         const handler = this._room.onClose(ws);
 
         await handler({ code, reason });
     }
 
     // Only needed if using "detached" mode (i.e. hibernation)
-    public async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
+    public async webSocketError(
+        ws: WebSocket,
+        error: unknown
+    ): Promise<void> {
         const handler = this._room.onError(ws);
         const eventError = error instanceof Error ? error : new Error("Internal Error");
 
@@ -151,7 +158,10 @@ export class RoomDurableObject extends DurableObject<Env> {
     }
 
     // Only needed if using "detached" mode (i.e. hibernation)
-    public async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
+    public async webSocketMessage(
+        ws: WebSocket,
+        message: string | ArrayBuffer
+    ): Promise<void> {
         const handler = this._room.onMessage(ws);
 
         await handler({ data: message });
