@@ -8,13 +8,14 @@ const PLUV_AUTH_SECRET = "secret123";
 
 export const io = createIO(
     platformCloudflare({
-        authorize: {
+        authorize: ({ env }) => ({
             secret: PLUV_AUTH_SECRET,
             user: z.object({
                 id: z.string(),
                 name: z.string(),
             }),
-        },
+        }),
+        context: ({ env }) => ({}),
         crdt: yjs,
         debug: true,
         persistence: new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" }),
