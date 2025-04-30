@@ -1,10 +1,13 @@
-import { createPluvHandler } from "@pluv/platform-node";
-import bodyParser from "body-parser";
+import { serve, type HttpBindings } from "@hono/node-server";
+import { InferIORoom } from "@pluv/io";
 import { Option, program } from "commander";
-import cors from "cors";
-import Crypto from "crypto";
-import express from "express";
-import Http from "http";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import Crypto from "node:crypto";
+import Http from "node:http";
+import Url from "node:url";
+import { match } from "path-to-regexp";
+import Ws from "ws";
 import { ioServer } from "./pluv-io";
 
 export type { ioServer } from "./pluv-io";
@@ -22,25 +25,64 @@ const port = parseInt(`${options.port}`, 10);
 
 if (Number.isNaN(port)) throw new Error("Port is not a number");
 
-const app = express();
-const server = Http.createServer(app);
+const app = new Hono<{ Bindings: HttpBindings }>()
+    .use(
+        cors({
+            origin: "*",
+        }),
+    )
+    .get("/api/pluv/authorize", async (c) => {
+        const room = c.req.query("room") as string;
 
-const Pluv = createPluvHandler({
-    authorize: () => {
         const id = Crypto.randomUUID();
+        const user = { id, name: `user:${id}` };
+        const req = c.env.incoming;
 
-        return { id, name: `user:${id}` };
+        const token = await ioServer.createToken({ user, req, room });
+
+        return c.text(token, 200);
+    });
+const server = serve(
+    {
+        fetch: app.fetch,
+        port,
     },
-    io: ioServer,
-    server,
-});
+    () => {
+        console.log(`Server is listening on port: ${port}`);
+    },
+) as Http.Server<typeof Http.IncomingMessage, typeof Http.ServerResponse<Http.IncomingMessage>>;
+const wsServer = new Ws.WebSocketServer({ server });
 
-Pluv.createWsServer();
+const rooms = new Map<string, InferIORoom<typeof ioServer>>();
 
-app.use(bodyParser.json());
-app.use(cors({ origin: "*" }));
-app.use(Pluv.handler);
+const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
+    const existing = rooms.get(roomId);
+    if (existing) return existing;
 
-server.listen(port, () => {
-    console.log(`Server is listening on port: ${port}`);
+    const newRoom = ioServer.createRoom(roomId, {
+        onDestroy: (event) => {
+            rooms.delete(event.room);
+        },
+    });
+    rooms.set(roomId, newRoom);
+
+    return newRoom;
+};
+
+wsServer.on("connection", async (ws, req) => {
+    const url: string = req.url!;
+    const parsed = Url.parse(url, true);
+    const pathname = parsed.pathname!;
+
+    const matcher = match<{ roomId: string }>("/api/pluv/room/:roomId");
+    const matched = matcher(pathname);
+
+    if (!matched) throw new Error("Unexpected unmatch");
+
+    const { roomId } = matched.params;
+    const token = parsed.query?.token as string | undefined;
+
+    const room = getRoom(roomId);
+
+    await room.register(ws, { req, token });
 });
