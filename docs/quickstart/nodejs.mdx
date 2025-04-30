@@ -72,7 +72,27 @@ export const io = createIO(
     })
 );
 
-export const ioServer = io.server();
+export const ioServer = io.server({
+    // Optional: Only if you're using storage, and persisting
+    // to a database
+    getInitialStorage: async ({ room, context }) => {
+        const { db } = context;
+
+        // Stubbed example DB query
+        const rows = await db.sql(
+            "SELECT storage FROM room WHERE name = ?;",
+            [room]
+        );
+        const storage = rows[0]?.storage;
+
+        return storage;
+    },
+    // Optional: Only if you want to run code when a room
+    // is deleted, such as saving the last storage state
+    onRoomDeleted: async ({ room, encodedState, context }) => {
+        // Upsert the db room with last storage state
+    },
+});
 ```
 
 ## Integrate PluvIO with ws
@@ -91,7 +111,18 @@ import { ioServer } from "./io";
 
 const PORT = 3000;
 
-const app = new Hono<{ Bindings: HttpBindings }>();
+const app = new Hono<{ Bindings: HttpBindings }>()
+    // Only if you specified `authorize` on @pluv/io
+    .get("/api/pluv/auth", async (c) => {
+        const room = c.req.query("room") as string;
+
+        const req: Http.IncomingMessage = c.env.incoming;
+        // Example stub. However you get the authed user here
+        const user = await getUser(req);
+        const token = await ioServer.createToken({ user, req, room });
+
+        return c.text(token, 200);
+    });
 const server = serve({
     fetch: app.fetch,
     port: PORT,
@@ -112,29 +143,6 @@ const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
     rooms.set(roomId, newRoom);
 
     return newRoom;
-};
-
-const server = Http.createServer(app);
-const wsServer = new WebSocket.Server({ server });
-
-const parseRoomId = (url: string): string => {
-    /* get room from req.url */
-};
-
-const rooms = new Map<string, InferIORoom<typeof ioServer>>();
-const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
-    const existing = rooms.get(roomId);
-
-    if (existing) return existing;
-
-    const room = ioServer.createRoom(roomId, {
-        onDelete: (event) => {
-            rooms.delete(event.room);
-        },
-    });
-    rooms.set(roomId, room);
-
-    return room;
 };
 
 wsServer.on("connection", async (ws, req) => {
