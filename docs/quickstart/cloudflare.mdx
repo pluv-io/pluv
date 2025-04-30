@@ -53,8 +53,8 @@ export type Env = {
 
 /**
  * Infer type of Cloudflare Env
- * Note that it is defined outside of the `createIO` function. This is to work
- * around TypeScript type-inference limitations.
+ * Note that it is defined outside of the `createIO` function. This is to
+ * work around TypeScript type-inference limitations.
  */
 const types = infer((i) => ({ env: i<Env> }));
 export const io = createIO(
