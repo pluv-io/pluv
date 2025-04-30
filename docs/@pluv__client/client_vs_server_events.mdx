@@ -5,7 +5,7 @@ description: "Understanding the difference between client and server custom even
 
 # Client vs Server Events
 
-In pluv.io, you can define type-safe custom events both on the client and server. Both client and server event procedures represent a message that a user has sent to be transformed before being emitted to connected peers. If a procedure does not exist to capture a received message, that message will be forwarded as-is to the next receiver of the message. i.e. if a client procedure does not exist, the message is forwarded to the server procedure. If that does not exist, then the message is forwarded to connected peers.
+In pluv.io, you can define type-safe custom events both on the client and server. Event procedures transform sent messages before emitting to connected peers. If a procedure does not exist to capture a received message, that message will be forwarded as-is to the next receiver of the message. i.e. if a client procedure does not exist, the message is forwarded to the server procedure. If that does not exist, then the message is forwarded to connected peers.
 
 The full broadcasted message flow is like so:
 
@@ -65,9 +65,7 @@ const serverExample = io.procedure
             // This includes the emitter's session as well
             sessions,
         }
-    ) => {
-        return { finishExample: data };
-    });
+    ) => ({ finishExample: data }));
 
 export const ioServer = io.server({
     // Register your procedures to the PluvServer via `router`
@@ -119,9 +117,7 @@ const clientExample = io.procedure
             // The current connected user
             user,
         }
-    ) => {
-        return { finishExample: data };
-    })
+    ) => ({ finishExample: data }))
 
 const room = io.createRoom("my-custom-room", {
     router: io.router({
