@@ -123,10 +123,8 @@ const app = new Hono<{ Bindings: HttpBindings }>()
 
         return c.text(token, 200);
     });
-const server = serve({
-    fetch: app.fetch,
-    port: PORT,
-}) as Http.Server;
+
+const server = serve({ fetch: app.fetch, port: PORT }) as Http.Server;
 const wsServer = new Ws.WebSocketServer({ server });
 
 // Manage rooms in-memory
