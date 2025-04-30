@@ -5,7 +5,7 @@ description: "Build real-time applications with pluv.io on Node.js"
 
 # Node.js
 
-`@pluv/io` was designed to be self-hosted on the [Node.js](https://nodejs.org/) runtime. Let's step through how we'd put together a real-time API for Node.js.
+`@pluv/io` is designed to be self-hosted on the [Node.js](https://nodejs.org/) runtime. Let's step through how we'd put together a real-time API for Node.js.
 
 ## Installation
 
@@ -33,7 +33,7 @@ npm install @pluv/crdt-yjs
 npm install yjs
 ```
 
-## Create PluvIO instance
+##$ Create PluvIO instance
 
 Define an io (websocket client) instance on the server codebase:
 
@@ -95,7 +95,7 @@ export const ioServer = io.server({
 });
 ```
 
-## Integrate PluvIO with ws
+##$ Integrate PluvIO with ws
 
 Integrate with [ws](https://www.npmjs.com/package/ws) on your Node.js server.
 

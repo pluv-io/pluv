@@ -5,7 +5,7 @@ description: "Build real-time applications with pluv.io on Cloudflare Workers"
 
 # Hosting on Cloudflare
 
-`@pluv/io` was designed to be self-hosted on the [Cloudflare Workers](https://workers.cloudflare.com/) runtime via [Durable Objects](https://developers.cloudflare.com/workers/runtime-apis/durable-objects/).
+`@pluv/io` is designed to be self-hosted on the [Cloudflare Workers](https://workers.cloudflare.com/) runtime via [Durable Objects](https://developers.cloudflare.com/workers/runtime-apis/durable-objects/).
 
 While `@pluv/io` does support [key-value storage-backed Durable Objects](https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/#create-durable-object-class-with-key-value-storage) and the [standard WebSocket API](https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-standard-api), this documentation will walkthrough the recommended way to setup `@pluv/io` - using [WebSocket hibernation](https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-hibernation-api) on [SQLite-backed Durable Objects](https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/#create-sqlite-backed-durable-object-class).
 
@@ -35,32 +35,17 @@ npm install @pluv/crdt-yjs
 npm install yjs
 ```
 
-## Using with Cloudflare Workers (manual)
-
-Let's step through how we'd put together a real-time API for Cloudflare Workers. The examples below assumes a basic understanding of Cloudflare Workers and Durable Objects.
-
-### Install dependencies
-
-```bash
-# For the server
-npm install @pluv/io @pluv/platform-cloudflare
-
-# Server peer-dependencies
-npm install zod
-```
-
-## Create PluvIO instance
+### Create PluvIO instance
 
 Define an io (websocket client) instance on the server codebase:
 
 ```ts
 // server/io.ts
 
+import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { infer, platformCloudflare } from "@pluv/platform-cloudflare";
-import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/d1";
-import { schema } from "./schema";
+import { Database } from "./db";
 
 export type Env = {
     DB: D1Database;
@@ -96,7 +81,7 @@ export const io = createIO(
         // Optional: Only if you want to use CRDT storage features
         crdt: yjs,
         // Optional: If you want to enable development logging
-        debug: process.env.NODE_ENV === "development",
+        debug: true,
         /**
          * Optional: Specify whether WebSocket event listeners should be
          * "attached" to or "detached" from the WebSocket upon registration.
@@ -120,7 +105,7 @@ export const ioServer = io.server({
             "SELECT storage FROM room WHERE name = ?;",
             [room]
         );
-        const storage = rows[0]?.storage;
+        const storage = rows[0]?.storage ?? null;
 
         return storage;
     },
