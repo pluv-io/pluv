@@ -28,6 +28,7 @@
 		"tsc:check": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@hono/node-server": "^1.14.1",
 		"@pluv/addon-indexeddb": "workspace:^",
 		"@pluv/client": "workspace:^",
 		"@pluv/crdt-loro": "workspace:^",
