@@ -17,28 +17,28 @@ Multi-platform, E2E type-safe realtime packages
     }}
 >
     <a href="https://www.npmjs.com/package/@pluv/io" rel="noreferrer noopener" target="_blank" title="npm">
-        <img src="https://img.shields.io/npm/v/@pluv/io" alt="npm @pluv/io" loading="lazy" />
+        <img src="https://img.shields.io/npm/v/@pluv/io" alt="npm @pluv/io" loading="lazy"></img>
     </a>
     <a href="https://github.com/pluv-io/pluv/blob/master/LICENSE" rel="noreferrer noopener" target="_blank" title="license">
-        <img src="https://img.shields.io/github/license/pluv-io/pluv" alt="License MIT" loading="lazy" />
+        <img src="https://img.shields.io/github/license/pluv-io/pluv" alt="License MIT" loading="lazy"></img>
     </a>
     <a href="https://commitizen.github.io/cz-cli/" rel="noreferrer noopener" target="_blank" title="commitizen">
-        <img src="https://img.shields.io/badge/commitizen-friendly-blue.svg" alt="Commitizen friendly" loading="lazy" />
+        <img src="https://img.shields.io/badge/commitizen-friendly-blue.svg" alt="Commitizen friendly" loading="lazy"></img>
     </a>
     <a href="https://www.typescriptlang.org/" rel="noreferrer noopener" target="_blank" title="typescript">
-        <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript" loading="lazy" />
+        <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript" loading="lazy"></img>
     </a>
 </p>
 
-[pluv.io](https://www.npmjs.com/package/@pluv/io) allows you to more easily build real-time collaborative features with a fully end-to-end type-safe api.
+[pluv.io](https://www.npmjs.com/package/@pluv/io) allows you to more easily build real-time collaborative features with a fully end-to-end type-safe API.
 
 Existing open-source tools for building real-time APIs come with several trade-offs. With [socket.io](https://socket.io) or [y-websocket](https://github.com/yjs/y-websocket), you get built-in support for things like heartbeats, rooms and awareness without any automatic type-safety server-to-client. Meanwhile, with [GraphQL](https://graphql.org/) you get type-safety in subscriptions but lose those same features. pluv.io unifies these experiences by providing **common websocket API capabilities** and **end-to-end type-safety** server-to-client.
 
 ## Bring your own runtime, framework and CRDT
 
-Today, pluv.io supports hosting on either [Node.js](https://nodejs.org/) or [Cloudflare Workers](https://workers.cloudflare.com/). Support for multiple frameworks is also planned, with [React](https://beta.es.reactjs.org/) already available with [@pluv/react](https://www.npmjs.com/package/@pluv/react). If you're building for other frameworks, [@pluv/client](https://www.npmjs.com/package/@pluv/client) is framework agnostic and can meet your needs.
+While pluv.io offers a fully managed service, pluv.io was built to self-host on either [Node.js](https://nodejs.org/) or [Cloudflare Workers](https://workers.cloudflare.com/). Support for multiple frameworks is also planned, with [React](https://react.dev/) already available with [@pluv/react](https://www.npmjs.com/package/@pluv/react). If you're building for other frameworks, [@pluv/client](https://www.npmjs.com/package/@pluv/client) is framework agnostic and can meet your needs for now.
 
-pluv.io also supports [Yjs](https://docs.yjs.dev/) and experimentally supports the [Loro](https://loro.dev/) CRDT library.
+pluv.io's shared data-storage (Storage) is built on top of [Yjs](https://docs.yjs.dev/) and [Loro](https://loro.dev/), allowing you to pick whichever better fits your application.
 
 ## Features and roadmap
 
@@ -51,6 +51,7 @@ pluv.io also supports [Yjs](https://docs.yjs.dev/) and experimentally supports t
 - [x] Awareness + Presence
 - [x] [CRDTs](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)
     - [x] [Yjs](https://docs.yjs.dev/)
+        - [ ] [Provider](https://github.com/yjs/yjs?tab=readme-ov-file#providers) (Coming soon!)
         - [x] **Shared Types**
             - [x] [Map](https://docs.yjs.dev/api/shared-types/y.map)
             - [x] [Array](https://docs.yjs.dev/api/shared-types/y.array)
@@ -69,18 +70,24 @@ pluv.io also supports [Yjs](https://docs.yjs.dev/) and experimentally supports t
 ### Runtimes
 
 - [x] [Cloudflare Workers](https://workers.cloudflare.com/)
+    - **WebSocket API**
+        - [x] [Hibernation API](https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-hibernation-api) (default, recommended)
+        - [x] [Standard API](https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-standard-api)
+    - **State Persistence**
+        - [x] [SQLite-backed Durable Objects](https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/#create-sqlite-backed-durable-object-class) (default, recommended)
+        - [x] [Key-value storage-backed Durable Object](https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/#create-durable-object-class-with-key-value-storage)
 - [x] [Node.js](https://nodejs.org/)
     - [x] **PubSubs**
         - [x] [Redis](https://redis.io/)
         - [ ] [RabbitMQ](https://www.rabbitmq.com/)
         - [ ] [Kafka](https://kafka.apache.org/)
-    - [x] **CRDT State Persistence**
+    - [x] **State Persistence**
+        - [x] In-memory (default)
         - [x] [Redis](https://redis.io/)
-        - [ ] [Prisma](https://www.prisma.io/)
 
-### Frontends
+### Frontends Frameworks
 
-- [x] [React.js](https://beta.reactjs.org/)
+- [x] [React.js](https://react.dev/)
 - [ ] [Solid.js](https://www.solidjs.com/)
 - [ ] [Vue.js](https://vuejs.org/)
 - [ ] [Svelte](https://svelte.dev/)

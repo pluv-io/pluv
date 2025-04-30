@@ -1,17 +1,27 @@
 ---
-title: "Getting Started"
-description: "Learn how to quickly setup and get started on the pluv.io network"
+title: "Next.js - Installation"
+description: "Learn how to quickly setup and get started with @pluv/io on Next.js"
 ---
 
-# Getting Started
+# Next.js
 
-Learn how to quickly setup and get started on the pluv.io network.
-
-For the most part, setting up `@pluv/io` on the pluv.io network is not too different from setting it up when self-hosting on either the [Node.js](https://nodejs.org/) or [Cloudflare Workers](https://workers.cloudflare.com/) runtimes. The following examples will assume an application running on [Next.js](https://nextjs.org/).
+Next.js is a full-stack [React](https://react.dev/) framework that is commonly hosted on [Vercel](https://vercel.com/). As of the date of writing (April 1, 2025), [Vercel doesn't currently support WebSockets](https://vercel.com/guides/do-vercel-serverless-functions-support-websocket-connections) (i.e. does not support the wss protocol). As a result, we connecting to the pluv.io network to use `@pluv.io`.
 
 ## Installation
 
-Here is the example installation for [npm](https://www.npmjs.com/).
+To install pluv.io for Next.js, we will install the following packages from pluv.io:
+
+| Purpose                                                 | Location | Install command                       |
+|---------------------------------------------------------|----------|---------------------------------------|
+| Register websockets and custom events                   | Server   | npm install @pluv/io                  |
+| Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client              |
+| React-bindings for @pluv/client                         | Client   | npm install @pluv/react               |
+| Adapter for running on the pluv.io network              | Server   | npm install @pluv/platform-pluv       |
+| yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs            |
+
+### Installation Example
+
+Here is an example installation for [npm](https://www.npmjs.com) for you to copy:
 
 ```bash
 # For the server
@@ -19,14 +29,15 @@ npm install @pluv/io @pluv/platform-pluv
 
 # For the client
 npm install @pluv/client @pluv/react
-# Client peer-dependencies
-npm install react react-dom zod @types/react @types/react-dom
+# Client peer dependencies
+npm install react react-dom @types/react @types/react-dom
 
-# If you want to use storage features, install your preferred CRDT
-# (yjs or loro)
-npm install @pluv/crdt-yjs yjs
+# For storage capabilities
+npm install @pluv/crdt-yjs
+# Storage peer dependencies
+npm install yjs
 
-# Client + server peer dependencies
+# Server + client peer dependencies
 npm install zod
 ```
 
@@ -56,7 +67,7 @@ On `@pluv/platform-pluv`, server event listeners (i.e. `getInitialStorage`, `onR
 
 <img className="mx-auto" width="100%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/master/assets/create_webhook_dashboard.png" alt="Create webhook dashboard" loading="lazy" />
 
-Note that the endpoint must be publicly accessable (i.e. not localhost), so we recommend using [Ngrok](https://ngrok.com/) or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) for testing locally.
+Note that the endpoint must be publicly accessable (i.e. not localhost), so we recommend using [Ngrok](https://ngrok.com/) or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) for testing locally. In the future, we may provide a utility to run a local-only dev server using `@pluv/platform-cloudflare` under-the-hood.
 
 <img className="mx-auto" width="72%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/master/assets/create_webhook_dialog.png" alt="Create webhook dialog" loading="lazy" />
 
