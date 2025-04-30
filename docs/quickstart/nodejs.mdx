@@ -25,7 +25,7 @@ Here is an example installation for [npm](https://www.npmjs.com) for you to copy
 # For the server
 npm install @pluv/io @pluv/platform-node
 # Server peer dependencies
-npm install zod
+npm install ws zod
 
 # For storage capabilities
 npm install @pluv/crdt-yjs
@@ -111,6 +111,11 @@ import { ioServer } from "./io";
 
 const PORT = 3000;
 
+// Stub example to get roomId from url
+const parseRoomId = (url: string): string => {
+    /* get room from req.url */
+};
+
 const app = new Hono<{ Bindings: HttpBindings }>()
     // Only if you specified `authorize` on @pluv/io
     .get("/api/pluv/auth", async (c) => {
@@ -143,6 +148,7 @@ const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
     return newRoom;
 };
 
+// Setup your websocket request handler
 wsServer.on("connection", async (ws, req) => {
     const roomId = parseRoomId(req.url);
     const room = getRoom(roomId);
