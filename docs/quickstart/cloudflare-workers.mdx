@@ -173,6 +173,9 @@ export class RoomDurableObject extends DurableObject<Env> {
             return new Response("Expected WebSocket", { status: 400 });
         }
 
+        const alarm = await this.ctx.storage.getAlarm();
+        if (alarm !== null) await this.ctx.storage.setAlarm(Date.now() + 60_000);
+
         const { 0: client, 1: server } = new WebSocketPair();
 
         // Only needed if you have specified authorize
@@ -180,6 +183,13 @@ export class RoomDurableObject extends DurableObject<Env> {
         await this._room.register(server, { request, token });
 
         return new Response(null, { status: 101, webSocket: client });
+    }
+
+    // Recommended to run garbage collection periodically due to edge cases around
+    // WebSocket hibernation
+    public async alarm(alarmInfo?: AlarmInvocationInfo): Promise<void> {
+        await this._room.garbageCollect();
+        await this.ctx.storage.setAlarm(Date.now() + 60_000);
     }
 }
 ```
