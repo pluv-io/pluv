@@ -51,8 +51,25 @@ const room = io.createRoom("my-custom-room", {
 });
 ```
 
+## Sending and receiving events
+
+```ts
+const room = client.createRoom("...", { /* ... */ });
+
+// Send events
+room.broadcast.sendMessage({ message: "Hello world!" });
+room.broadcast.wave();
+
+// Receive events
+room.event.receiveMessage(({ data }) => {
+    console.log(data.message);
+});
+room.event.receiveValue(({ data }) => {
+    console.log(data.value);
+});
+```
+
 ## Related
 
 * [Client vs server events](/docs/client-vs-server-events)
 * [Use custom events](/docs/react/custom-events)
-
