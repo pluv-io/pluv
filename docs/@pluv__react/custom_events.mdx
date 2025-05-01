@@ -9,26 +9,30 @@ Define custom events on your backend `PluvServer` instance. Then send and receiv
 
 ## Define custom events
 
-To get started, define custom events in your backend `@pluv/io` instance (see [Define Events](/docs/io/define-events) to get started).
+To get started, define custom events in either [your backend @pluv/io instance](/docs/io/define-events) or [your frontend client](/docs/client/define-events).
 
 ## Use custom events
 
-Then, assuming you've already setup your React.js bundle and providers, listen and broadcast your custom events using `useBroadcast` and `useEvent` from your react bundle.
+Then, assuming you've already setup your React bundle and providers, listen and broadcast your custom events using `useBroadcast` and `useEvent` from the react bundle you created from [createBundle](/docs/react/create-bundle).
 
 ```ts
-import { pluvRoom } from "frontend/io";
 import { useCallback } from "react";
 
-pluvRoom.event.receiveMessage.useEvent(({ data }) => {
+// These are exported from `createBundle`
+import { event, useBroadcast } from "./frontend/io";
+
+// Listen to events emitted from the `PluvIO` backend
+event.receiveMessage.useEvent(({ data }) => {
     console.log(data.message);
 });
 
-pluvRoom.event.receiveValue.useEvent(({ data }) => {
+event.receiveValue.useEvent(({ data }) => {
     console.log(data.value);
 });
 
-const broadcast = pluvRoom.useBroadcast();
+const broadcast = useBroadcast();
 
+// Broadcast events to all participants
 const sendMessage = useCallback((message: string): void => {
     broadcast.sendMessage({ message });
 }, [broadcast]);

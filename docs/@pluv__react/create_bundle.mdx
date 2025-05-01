@@ -11,21 +11,20 @@ pluv.io ships [@pluv/react](https://npmjs.com/package/@pluv/react) to leverage [
 
 First, create a `PluvIO` instance from the `@pluv/io` package in your backend codebase.
 
+You can view examples of setting up the `PluvIO` instance via your platform's respective quickstart guides:
+
+1. [Next.js](/docs/quickstart/nextjs)
+2. [Cloudflare Workers](/docs/quickstart/cloudflare-workers)
+3. [Node.js](/docs/quickstart/nodejs)
+
 ```ts
 // backend/io.ts
-
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
-import { platformNode } from "@pluv/platform-node";
+import { platformPluv } from "@pluv/platform-pluv";
 
 export const io = createIO(
-    platformNode({
-        /**
-         * @optional
-         * @description This is required if you intend to use storage. Specify crdt to use for storage
-         */
-        crdt: yjs,
-    })
+    platformPluv({ /* ... */})
 );
 
 // Export the ioServer, so that this can be type-imported on the frontend
@@ -38,7 +37,6 @@ Then, import your `PluvIO` type to the frontend, and create your type-safe React
 
 ```ts
 // frontend/io.ts
-
 import { yjs } from "@pluv/crdt-yjs";
 import { createClient, infer } from "@pluv/client";
 import { createBundle } from "@pluv/react";
@@ -47,16 +45,11 @@ import { z } from "zod";
 import type { ioServer } from "./backend/io";
 
 const types = infer((i) => ({ io: i<typeof ioServer> }));
-const client = clientClient({
-    authEndpoint: () => "{{your auth endpoint}}",
-    wsEndpoint: () => "{{your ws endpoint}}",
-    // Optional: Specify which CRDT you are using, as well as the initial storage
-    initialStorage: yjs.doc(() => ({})),
-    types,
-});
+const client = clientClient({ /* ... */});
 
 export const {
     // components
+    MockedRoomProvider,
     PluvProvider,
     PluvRoomProvider,
 
@@ -65,19 +58,25 @@ export const {
 
     // hooks
     useBroadcast,
+    useCanRedo,
+    useCanUndo,
     useClient,
     useConnection,
+    useDoc,
     useEvent,
     useMyPresence,
     useMyself,
     useOther,
     useOthers,
+    useRedo,
     useRoom,
     useStorage,
+    useTransact,
+    useUndo,
 } = createBundle(client);
 ```
 
-## Next Steps
+## Related
 
 * [Setup authorization](/docs/io/authorization)
 * [Create rooms](/docs/react/create-rooms)

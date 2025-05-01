@@ -5,24 +5,44 @@ description: "Learn how to create and connect to rooms with @pluv/react"
 
 # Create Rooms
 
-Rooms are the channels that WebSockets can enter and leave (i.e. connect and disconnect). Events emitted by sockets in a room will be broadcasted only to other sockets within the same room.
+Rooms are the channels that WebSockets can enter and leave (i.e. connect and disconnect). Events emitted by a connection in a room will be broadcasted only to connections within the same room.
 
 ## Create and connect to a PluvRoom
 
 Create and connect to a `PluvRoom` by mounting a `PluvRoomProvider` from your `@pluv/react` bundle. When this provider is mounted, all of the hooks from the `createBundle` output will become usable in the child react tree, and the user joins the room as an active WebSocket connection. When the component unmounts, the user leaves the room.
 
 > **Note**
-> You may not have multiple PluvRoomProvider components mounted at the same time with the same `room` attribute within your app.
+> You may not have multiple PluvRoomProvider components mounted at the same time with the same `room` attribute within your app. Doing so may yield unexpected behaviors.
 
 ```tsx
 import type { FC } from "react";
-import { pluv } from "./frontend/io";
+import { PluvRoomProvider } from "./frontend/io";
 
 export const MyPage: FC = () => {
     return (
-        <pluv.PluvRoomProvider room="my-room-id">
+        <PluvRoomProvider
+            // Optional: Set the value of `connect` to trigger a connect or disconnect of the room.
+            // Default: true
+            connect={true}
+            // Required if `presence` was set on the client: Define the user's
+            // initial presence value
+            initialPresence={{
+                selectionId: null,
+            }}
+            // Optional: Overwrite the initialStorage value from the client
+            initialStorage={() => ({
+                messages: yjs.array(),
+            })}
+            // Optional: Emits an error whenever authorization fails (when
+            // `authorize` is set on the PluvIO instance`)
+            onAuthorizationFail={(error: Error) => {
+                console.error(error);
+            }}
+            // Required: The room's id
+            room="my-room-id"
+        >
             <MyRoom />
-        </pluv.PluvRoomProvider>
+        </PluvRoomProvider>
     );
 };
 ```
