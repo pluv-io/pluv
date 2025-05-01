@@ -9,7 +9,7 @@ description: "@pluv/io API reference"
 
 Returns a `PluvIO` instance.
 
-Creates a server-side `PluvIO` client that can be used to create event procedures, routers and servers. Below will show an example configuration for `createIO`. To learn more about `createIO`, read [Authorization](/docs/io/authorization), [Cloudflare Workers](/docs/quickstart/cloudflare-workers), [Node.js](/docs/quickstart/node.js) and [PubSub](/docs/io/pubsub).
+Creates a server-side `PluvIO` client that can be used to create event procedures, routers and servers. Below is an example configuration for `createIO`. To learn more about `createIO`, read [Authorization](/docs/io/authorization), [Cloudflare Workers](/docs/quickstart/cloudflare-workers) and [Node.js](/docs/quickstart/node.js).
 
 ```ts
 import { yjs } from "@pluv/crdt-yjs";
@@ -19,26 +19,17 @@ import { z } from "zod";
 import { Database } from "./db";
 
 const io = createIO(
-    // Enable @pluv/io for Node.js
     platformNode({
-        // Optional: if provided, defines authorization for rooms created by io
         authorize: {
-            // The secret for generating your JWT
             secret: process.env.PLUV_AUTH_SECRET!,
-            // The shape of your user object. `id` must always be required.
             user: z.object({
                 id: z.string(),
-                // Here is an additional field we wish to add.
                 name: z.string(),
             }),
         },
-        // Optional: if provided, this context will be made available in event
-        // handlers and procedures
         context: () => ({
-            db: new Database(process.env.DATABASE_URL),
+            db: new Database(process.env.DATABASE_URL!),
         }),
-        // Optional. Specify to use Yjs CRDT for storage.
-        // This is required only if/when you wish to use storage features.
         crdt: yjs,
     })
 );
@@ -55,21 +46,25 @@ Returns `Promise<string>`.
 Creates a JWT for a user trying to connect to a room. This should be called within a custom authentication endpoint you define. See [Authorization](/docs/io/authorization) for more information.
 
 ```ts
+// If using `@pluv/platform-pluv`
 const token = await io.createToken({
-    // If using @platform/node
-    req: req as IncomingMessage,
+    room: "my-example-room",
+    user: { id: "...", name: "..." },
+});
 
-    // If using @platform/cloudflare
-    // This is the env from the Cloudflare worker handler's fetch function
+// If using `@pluv/platform-cloudflare
+const token = await io.createToken({
     env: env as Env,
     request: request as Request,
-
-    // ...
     room: "my-example-room",
-    user: {
-        id: "abc123",
-        name: "pluvrt",
-    },
+    user: { id: "...", name: "..." },
+});
+
+// If using `@pluv/platform-node`
+const token = await io.createToken({
+    req: req as Http.IncomingMessage,
+    room: "my-example-room",
+    user: { id: "...", name: "..." },
 });
 ```
 
@@ -129,6 +124,8 @@ const router = io.router({
 
 Creates a `PluvServer` that will create rooms to register your websockets to.
 
+In the example below, not all event listeners are available for all platforms. Refer to the TypeScript intellisense for your selected platform when defining your server to know which you can use.
+
 ```ts
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
@@ -138,28 +135,45 @@ const io = createIO(platformNode());
 const router = io.router({ /* ... */ });
 
 const server = io.server({
-    // Optional. Only needed to load persisted storage for rooms.
-    // Load storage for a newly created room.
-    getInitialStorage: async ({ room }) => {
+    // Optional: Triggered when a room is freshly created. If the room existed
+    // before, you can load the storage state for the room by returning it here
+    getInitialStorage: async ({ context, room }) => {
+        const { db } = context;
         const existingRoom = await db.room.findUnique({ where: { room } });
 
         return existingRoom?.encodedState ?? null;
     },
-    // Optional. Only needed for persisting storage for rooms.
-    // Before the room is destroyed, persist the state to a database to load
-    // when the room is re-created.
-    onRoomDeleted: async ({ encodedState, room }) => {
+    // Optional: Triggered when a room is deleted. Callback includes the last
+    // value for the room's state for persisting purposes
+    onRoomDeleted: async ({ context, encodedState, room }) => {
+        const { db } = context;
+
         await db.room.upsert({
             where: { room },
             create: { encodedState, room },
             update: { encodedState },
         });
     },
-    // Optional. It is unnecessary to save the storage state in this listener.
-    // If a room already exists, users will load the currently active storage
-    // before the storage from initialStorage.
-    onStorageUpdated: ({ encodedState, room }) => {
-        console.log(room, encodedState);
+    // Optional: Triggered each time any participant sends a new message to
+    // other participants
+    // It is advised not to perform any heavy operations in this listener
+    // due to the frequency of invocations
+    onRoomMessage: async ({ context, encodedState, room }) => {
+        // ...
+    },
+    // Optional: Triggered each time the room's storage is updated.
+    // It is advised not to perform any heavy operations in this listener
+    // due to the frequency of invocations
+    onStorageUpdated: ({ context, encodedState, room }) => {
+        // ...
+    },
+    // Optional: Triggered each time a user connects to a room
+    onUserConnected: ({ context, encodedState, room, user }) => {
+        // ...
+    },
+    // Optional: Triggered each time a user disconnects from a room
+    onUserDisconnected: ({ context, encodedState, room, user }) => {
+        // ...
     },
     // Optional. Only needed if specifying events
     router,
@@ -187,7 +201,7 @@ This is the room returned by `PluvServer.createRoom`. This is what websockets ar
 
 ### broadcast
 
-Returns `void`.
+Returns `Promise<void>`.
 
 Broadcasts an event to all connected websockets to the room.
 
@@ -196,6 +210,46 @@ Broadcasts an event to all connected websockets to the room.
 room.broadcast("sendMessage", { message: "Hello world~!" });
 
 room.broadcast.sendMessage({ message: "Hello world~!" });
+```
+
+### evict
+
+Returns `Promise<void>`
+
+Disconnects a connection from the room by connection id.
+
+```ts
+room.evict(connectionId);
+```
+
+### evictAll
+
+Returns `Promise<void>`
+
+Disconnects all connections from the room. Effectively destroys the room, as rooms automatically destroy when empty.
+
+```ts
+room.evictAll();
+```
+
+### garbageCollect
+
+Returns `Promise<void>`
+
+While uncommon and unusual, there may be edge cases that may cause stale connections to persist either in user's browsers, or in the `IORoom`. Such can be missed websocket messages or server errors that weren't gracefully handled. `@pluv/platform-node` will automatically run garbage collection periodically; however, for `@pluv/platform-cloudflare`, it is recommended that this is called in a Durable Object alarm periodically.
+
+```ts
+room.garbageCollect();
+```
+
+### getSize
+
+Returns `number`
+
+Returns the current count of active connections in the room
+
+```ts
+room.getSize();
 ```
 
 ### id
@@ -217,6 +271,16 @@ Registers a websocket to the room. Accepts a secondary options parameter to pass
 ```ts
 // const token: string = ...
 
-room.register(webSocket, { token });
+// For @pluv/platform-cloudflare
+room.register(webSocket, {
+    env: env as Env,
+    request: request as Request,
+    token,
+});
+// For @pluv/platform-node
+room.register(webSocket, {
+    req: req as Http.IncomingMessage,
+    token,
+});
 ```
 
