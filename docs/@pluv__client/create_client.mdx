@@ -55,7 +55,10 @@ import type { ioServer } from "./server/pluv-io";
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 export const client = createClient({
     types,
-    // Optional: Define the initial storage for rooms. This will 
+    // Optional: Define the initial storage for rooms. This will set
+    // the types for storage when using it in your application. Don't
+    // worry about the value, as this can be overwritten when creating
+    // a room via `client.createRoom`.
     initialStorage: yjs.doc(() => ({
         messages: yjs.array<string>([]),
     })),
@@ -64,11 +67,10 @@ export const client = createClient({
         selectionId: z.string().nullable(),
     }),
 
-    // Optional: If we want to provide data at the point of
-    // connecting to the room for use in `publicKey`, `wsEndpoint`
-    // or `authEndpoint`. This is particularly useful for
-    // Cloudflare Pages where accessing environment variables can
-    // be difficult
+    // Optional: Provide additional data at the point of connecting to
+    // to the room for use in `publicKey`, `wsEndpoint` or `authEndpoint`.
+    // This is particularly useful for Cloudflare Pages where accessing
+    // environment variables can be difficult
     metadata: z.object({
         secret: z.string(),
     }),

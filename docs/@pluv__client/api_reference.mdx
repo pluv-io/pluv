@@ -15,44 +15,35 @@ Create a frontend `PluvClient` that will create rooms to connect to your server'
 
 If you've created a basic `PluvIO` backend without any auth, you can create a `PluvClient` with your websocket connection endpoint.
 
+See the [Create Client](/docs/client/create-client) docs for more details.
+
 ```ts
-// frontend/io.ts
-
 import { createClient, infer } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
 import type { ioServer } from "./server/pluv-io";
+import { z } from "zod";
 
-/**
- * Use this `infer` function to connect your ioServer type
- * This is used because of TypeScript limitations with partial
- * inference
- */
+// Connect your `ioServer` type to the client via `infer`
+// Note this is declared outside of `createClient` to workaround
+// TypeScript inferrence limitations
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const io = createClient({
-
-    /**
-     * Optional: Define the initial storage for rooms that are created.
-     * This can be overwritten in `createRoom`
-     */
+    types,
+    // Optional: Define the initial storage for rooms. This will set
+    // the types for storage when using it in your application. Don't
+    // worry about the value, as this can be overwritten when creating
+    // a room via `client.createRoom`.
     initialStorage: yjs.doc(() => ({
         messages: yjs.array<string>([]),
     })),
-    /**
-     * Optional: Add this property if additional data is needed to be
-     * passed to endpoints. 
-     */
-    metadata: z.object({
-        baseWsUrl: z.string(),
-    }),
     // Optional: Define your presence schema
     presence: z.object({
         selectionId: z.string().nullable(),
     }),
-    types,
-    // Defaults to ({ room }) => `/api/pluv/room/${room}`
-    // This is the default from `createPluvHandler`.
-    wsEndpoint: ({ metadata, room }) => {
-        return `${metadata.baseWsUrl}/api/room?room=${room}`;
-    },
+    // Required if you are using `@pluv/platform-pluv`: This is the
+    // publishable-key that was created for your project on pluv.io
+    // This can either be a string or a function returning a string
+    publicKey: "pk_...",
 });
 ```
 
@@ -65,7 +56,6 @@ import { createClient } from "@pluv/client";
 
 const io = createClient({
     authEndpoint: ({ room }) => `/api/room/auth?room=${room}`,
-    wsEndpoint: ({ room }) => `/api/room?room=${room}`,
     // ...
 });
 ```
@@ -100,30 +90,16 @@ This is the client returned by `createClient`.
 
 Returns a `PluvRoom` instance
 
-Create a `PluvRoom` that websockets can join and leave. The second argument is an optional configuration for presence and storage. See the example below for the available properties of the configuration.
+Create a `PluvRoom` that websockets can join and leave.
+
+See the [Create Rooms](/docs/client/create-rooms) docs for more details.
 
 ```ts
-// frontend/room.ts
-import { createClient } from "@pluv/client";
-import { yjs } from "@pluv/crdt-yjs";
-import { z } from "zod";
-import type { ioServer } from "./server/pluv-io";
-
 export const io = createClient({
-    /**
-     * Optional: Define the initial storage for rooms that are created.
-     * This can be overwritten in `createRoom`
-     */
+    // Optional: Define the initial storage for rooms. This will 
     initialStorage: yjs.doc(() => ({
         messages: yjs.array<string>([]),
     })),
-    /**
-     * Optional: Add this property if additional data is needed to be
-     * passed to endpoints. 
-     */
-    metadata: z.object({
-        baseWsUrl: z.string(),
-    }),
     // Optional: Define your presence schema
     presence: z.object({
         selectionId: z.string().nullable(),
@@ -131,23 +107,16 @@ export const io = createClient({
     // ...
 });
 
-const router = io.router({ /* ... */ });
-
 const room = io.createRoom("my-example-room", {
-    // Define the user's initial presence
+    // Required (if presence is defined on the client): Define
+    // the user's initial presence value
     initialPresence: {
         selectionId: null,
     },
-    // Overwritten from client
+    // Optional: Overwrite initial storage from client
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
-    // If your client specifies metadata
-    metadata: {
-        baseUrl: "ws://localhost:3000",
-    },
-    // Optional: Define type-safe events to broadcast to connected peers
-    router,
 });
 ```
 
@@ -230,7 +199,7 @@ const doubleValue = io.procedure
     .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
 
 const wave = io.procedure
-    .broadcast(() => ({ receiveMessage: { message: "Hello world!" } }));
+    .broadcast(() => ({ receiveMessage: { message: "hello world!" } }));
 ```
 
 ### PluvClient.router
@@ -252,7 +221,7 @@ const doubleValue = io.procedure
     .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
 
 const wave = io.procedure
-    .broadcast(() => ({ receiveMessage: { message: "Hello world!" } }));
+    .broadcast(() => ({ receiveMessage: { message: "hello world!" } }));
 
 const router = io.router({
     sendMessage,
@@ -281,9 +250,9 @@ Broadcasts an event to all websockets connected to the room.
 // frontend/room.ts
 
 // The below 2 statements are equivalent
-room.broadcast("sendMessage", { message: "Hello world~!" });
+room.broadcast("sendMessage", { message: "hello world!" });
 
-room.broadcast.sendMessage({ message: "Hello world~!" });
+room.broadcast.sendMessage({ message: "hello world!" });
 ```
 
 ### PluvRoom.canRedo
@@ -323,7 +292,7 @@ room.connect().then(() => {
 
 ### PluvRoom.disconnect
 
-Returns `void`
+Returns `Promise<void>`
 
 Disconnects from the room if already connected.
 
@@ -331,7 +300,7 @@ Disconnects from the room if already connected.
 
 Returns `() => void`
 
-Subscribes to an event. These events are defined by `PluvIO.procedure` and are emitted when other websockets emit events via `PluvRoom.broadcast`.
+Subscribes to an event. These events are defined by `PluvIO.procedure` and are emitted when other websockets emit events via `PluvRoom.broadcast`. Returns a function to unsubscribe from the event.
 
 ```ts
 // Subscribe to receiveMessage messages
@@ -419,11 +388,12 @@ const others = room.getOthers();
 
 ### PluvRoom.getStorage
 
-Returns a `CrdtAbstractType` from `@pluv/crdt` that holds a CRDT shared type. For instance, if using `@pluv/crdt-yjs`, the `CrdtAbstractType` will hold a [yjs](https://yjs.dev/) shared type in its `value` property.
+Returns a `CrdtAbstractType` from `@pluv/crdt` that holds a CRDT shared type. For instance, if using `@pluv/crdt-yjs`, the `CrdtAbstractType` will hold a [yjs](https://yjs.dev/) shared type in its `value` property. This will be null when not yet connected.
 
 ```ts
 // frontend/room.ts
 import { yjs } from "@pluv/crdt-yjs";
+import { Array as YArray } from "yjs";
 import { z } from "zod";
 
 // const io = ...
@@ -439,23 +409,22 @@ const room = io.createRoom("my-example-room", {
 });
 
 // Get messages as defined from the `createRoom` config
-const messages: YArray = room.getStorage("messages");
+const messages: yjs.YjsArray<string> | null = room.getStorage("messages");
+const sharedType: YArray<string> | null = messages?.value;
 ```
 
 ### PluvRoom.other
 
 Returns `() => void`
 
-Subscribes to a given user info object for a connection that isn't the current user's.
+Subscribes to a given user info object for a connection that isn't the current user's. Returns a function to unsubscribe.
 
 ```ts
 // const connectionId = "some connection id of another connection"
 
-const unsubscribe = room.other(connectionId, ({
-    connectionId,
-    presence,
-    user
-}) => {
+const unsubscribe = room.other(connectionId, (userInfo) => {
+    const { connectionId, presence, user } = userInfo;
+
     console.log(connectionId, presence, user);
 });
 
@@ -480,7 +449,7 @@ room.redo();
 
 Returns `() => void`
 
-Subscribes to a given root-level value in the room's document storage. The data in the callback will be a serialized value rather than the CRDT's instance.
+Subscribes to a given root-level value in the room's document storage. The data in the callback will be a serialized value rather than the CRDT's instance. Returns a function to unsubscribe.
 
 ```ts
 // frontend/room.ts
@@ -517,7 +486,7 @@ unsubscribe();
 
 Returns `() => void`
 
-Subscribes to the user's connection state.
+Subscribes to the user's connection state. Returns a function to unsubscribe.
 
 ```ts
 const unsubscribe = room.subscribe("connection", ({
@@ -558,7 +527,7 @@ unsubscribe();
 
 Returns `() => void`
 
-Subscribes to the user's info object.
+Subscribes to the user's info object. Returns a function to unsubscribe.
 
 ```ts
 const unsubscribe = room.subscribe("myself", (myself) => {
@@ -575,7 +544,7 @@ unsubscribe();
 
 Returns `() => void`
 
-Subscribes to the list of user info objects of the other connections that aren't the user's.
+Subscribes to the list of user info objects of the other connections that aren't the user's. Returns a function to unsubscribe.
 
 ```ts
 const unsubscribe = room.subscribe("others", (others) => {
