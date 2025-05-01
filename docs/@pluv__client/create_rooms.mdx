@@ -17,34 +17,48 @@ To create a `PluvRoom`, you must first have a `PluvClient` defined. Refer to the
 import { createClient, infer } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
+
+// Use a type import to avoid including the code in your frontend
 import type { ioServer } from "./server/pluv-io";
 
+// Connect your `ioServer` type to the client via `infer`
+// Note this is declared outside of `createClient` to workaround
+// TypeScript inferrence limitations
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 export const client = createClient({
-    /**
-     * Define the initial storage for rooms that are created.
-     * This can be overwritten in `createRoom`
-     */
+    types,
+    // Optional: Define the initial storage for rooms. This will 
     initialStorage: yjs.doc(() => ({
         messages: yjs.array<string>([]),
     })),
-    // Define your presence schema
+    // Optional: Define your presence schema
     presence: z.object({
         selectionId: z.string().nullable(),
     }),
-    types,
-    // ...
+    // Other fields here ...
 });
 
 const room = client.createRoom("my-test-room", {
-    // Define the user's initial presence value
+    // Required (if presence is defined on the client): Define
+    // the user's initial presence value
     initialPresence: {
         selectionId: null,
     },
-    // Overwritten from client
+    // Optional: Overwrite initial storage from client
     initialStorage: yjs.doc(() => ({
         messages: yjs.array(["hello world!"]),
     })),
+    // Optional: Handler when a user fails authorization
+    // This only matters if `authorize` has been configured on
+    // your `createIO` instance
+    onAuthorizationFail: (error: Error) => {
+        console.error(error);
+    },
+    // Optional: Whenever a connection drops, how much time before
+    // attempting to reconnect. `attempts` is the count of already
+    // failed reconnect attempts, starting from zero.
+    // Default: 30_000
+    reconnectTimeoutMs: ({ attempts }) => attempts * 1_000,
 });
 ```
 
@@ -55,9 +69,13 @@ import { client } from "./io";
 
 // connect by room name
 await client.enter(ROOM_NAME);
-
 // or connect by room instance
 await client.enter(room);
+
+// If your `PluvClient` specifies `metadata`, you will need to provide it as
+// the 2nd argument when entering
+await client.enter(ROOM_NAME, { metadata });
+await client.enter(room, { metadata });
 ```
 
 ## Leave your PluvRoom
@@ -67,7 +85,6 @@ import { client } from "./io";
 
 // leave by room name
 client.leave(ROOM_NAME);
-
 // or leave by room instance
 client.leave(room);
 ```

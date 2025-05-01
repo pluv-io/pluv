@@ -86,9 +86,7 @@ import { createClient, infer } from "@pluv/client";
 import type { ioServer } from "./backend/pluv-io";
 
 const types = infer((i) => ({ io: i<typeof ioServer> }));
-const io = createClient({
-    types,
-});
+const io = createClient({ types });
 
 // Basic example of a procedure, that works like a server procedure
 const add5 = io.procedure
