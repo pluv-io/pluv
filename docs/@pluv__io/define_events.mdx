@@ -45,9 +45,6 @@ const router = io.router({
 
 // Lastly, add the router to your server, so that it can begin accepting custom events
 const server = io.server({ router });
-
-// Export the io type instance of the io itself
-export type AppPluvIO = typeof server;
 ```
 
 ## Next steps
