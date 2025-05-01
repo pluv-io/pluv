@@ -5,12 +5,6 @@ description: "@pluv/react API Reference"
 
 # API Reference
 
-## createClient
-
-Returns a `PluvClient` instance
-
-This is a re-export of [createClient](/docs/client/api-reference#createclient) from [@pluv/client](/docs/client/api-reference).
-
 ## createBundle
 
 Returns a `CreateBundle` instance
@@ -53,6 +47,13 @@ export const {
     useTransact,
     useUndo,
 } = createBundle(io);
+
+// If you defined a client-side custom events router, you can pass
+// that into createBundle as a 2nd argument
+
+const router = io.router({ /* ... */ });
+
+const { /* ... */} = createBundle(io, { router });
 ```
 
 ## CreateBundle
@@ -70,33 +71,21 @@ import { MockedRoomProvider } from "./io";
 const MyComponent: FC = () => {
     return (
         <MockedRoomProvider
-            /**
-             * @description Mock events sent and received for hooks in child components.
-             */
-            // 
+            // Mock events sent and received for hooks in child components
             events={{
                 EMIT_EMOJI: ({ emojiCode }) => ({
                     EMOJI_RECEIVED: { emojiCode },
                 }),
             }}
-            /**
-             * @optional
-             * @description Define your initial presence
-             */
+            // Define your initial presence
             initialPresence={{
                 selectionId: null,
             }}
-            /**
-             * @optional
-             * @description Define the initial storage for the room, as well as the CRDT to use
-             */
+            // Define the initial storage for the room
             initialStorage={() => ({
                 messages: yjs.array(),
             })}
-            /**
-             * @required
-             * @description Set the room id
-             */
+            // The room's id
             room="my-mock-room"
         >
             {children}
@@ -124,32 +113,21 @@ import { MockedRoomProvider } from "./io";
 const MyComponent: FC = () => {
     return (
         <PluvRoomProvider
-            /**
-             * @optional
-             * @description Define the user's initial presence
-             */
+            // Required if `presence` was set on the client: Define the user's
+            // initial presence value
             initialPresence={{
                 selectionId: null,
             }}
-            /**
-             * @optional
-             * @description Define the initial storage for the room
-             */
+            // Optional: Overwrite the initialStorage value from the client
             initialStorage={() => ({
                 messages: yjs.array(),
             })}
-            /**
-             * @optional
-             * @description Emits an error whenever authorization fails, for
-             * monitoring or debugging purposes
-             */
+            // Optional: Emits an error whenever authorization fails (when
+            // `authorize` is set on the PluvIO instance`)
             onAuthorizationFail={(error: Error) => {
                 console.error(error);
             }}
-            /**
-             * @required
-             * @description Set the room id
-             */
+            // Required: The room's id
             room="my-room-id"
         >
             {children}
@@ -160,7 +138,7 @@ const MyComponent: FC = () => {
 
 ### event
 
-Returns `EventProxy`
+typeof `EventProxy`
 
 Defines an event listener client for events broadcasted by connected clients. See [useEvent](/docs/react/api-reference#useEvent) for more details.
 
@@ -251,8 +229,8 @@ Returns `void`
 Defines a listener for events broadcasted by connected clients. This is type-safe. The first parameter `event` is the name of the event to listen to from your backend `PluvIO` instance. The second parameter is a callback containing the data emitted from the broadcasted event.
 
 ```tsx
-useEvent("EMOJI_RECEIVED", ({ emojiCode }) => {
-    console.log(emojiCode);
+useEvent("messageReceived", ({ message }) => {
+    console.log(message);
 });
 ```
 
@@ -383,9 +361,9 @@ const { useStorage } = createBundle(io);
 
 const [messages, sharedType] = useStorage("messages");
 
-sharedType.push(["world~!"]);
+sharedType?.push(["world~!"]);
 
-messages.map((message, key) => <div key={key}>{message}</div>);
+messages?.map((message, key) => <div key={key}>{message}</div>);
 ```
 
 ### useTransact
