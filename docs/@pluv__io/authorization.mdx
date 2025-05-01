@@ -7,7 +7,13 @@ description: "Learn how to add custom authorization to rooms in @pluv/io"
 
 pluv.io uses JWTs to authorize access to rooms on a new connection. To generate a JWT, you will need to setup an authentication endpoint to determine if the user should have access to the room.
 
-The examples below will use [express](https://expressjs.com), but so long as you can create an http endpoint that can return text responses, these should still be relevant.
+The examples below will use [hono](https://hono.dev), but so long as you can create an http endpoint that can return text responses, the documentation below should still be relevant.
+
+You can view another example of these via your platform's respective quickstart guides:
+
+1. [Next.js](/docs/quickstart/nextjs)
+2. [Cloudflare Workers](/docs/quickstart/cloudflare-workers)
+3. [Node.js](/docs/quickstart/nodejs)
 
 ## Enable authorization on io
 
@@ -45,35 +51,31 @@ To add custom authorization, you'll need to define an http endpoint to return a 
 ```ts
 // server/server.ts
 
-import express from "express";
+import { serve, type HttpBindings } from "@hono/node-server";
 import Http from "http";
+import { Hono } from "hono";
 import { ioServer } from "./io";
 
 const PORT = 3000;
 
-const app = express();
-const server = Http.createServer(app);
+const app = new Hono<{ Bindings: HttpBindings }>()
+    // Only if you specified `authorize` on @pluv/io
+    .get("/api/pluv/auth", async (c) => {
+        const room = c.req.query("room") as string;
+        const req: Http.IncomingMessage = c.env.incoming;
 
-app.get("/api/authorize", async (req, res) => {
-    const room = req.query.room as string;
+        // Implement your custom authorization here
+        // ...
 
-    // ... Implement your custom authorization here
+        // Example stub. However you get the authed user here
+        const user = await getUser(req);
+        const token = await ioServer.createToken({ user, req, room });
 
-    const token = await ioServer.createToken({
-        req,
-        room,
-        user: {
-            id: "abc123",
-            name: "pluvrt",
-        },
+        return c.text(token, 200);
     });
 
-    res.send(token).status(200);
-});
-
-server.listen(PORT, () => {
-    console.log(`Server is listening on port: ${port}`);
-});
+const server = serve({ fetch: app.fetch, port: PORT }) as Http.Server;
+const wsServer = new Ws.WebSocketServer({ server });
 ```
 
 ## Connect to your authorization endpoint
@@ -91,7 +93,7 @@ const client = createClient<typeof ioServer>({
     // Set to `true` if you have authorization on your io instance, and you
     // want to use the default of (room) => `/api/pluv/authorize?room=${room}`
     // This is the default from `createPluvHandler`
-    authEndpoint: ({ room }) => `/api/authorize?room=${room}`,
+    authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,
     // ...
 });
 ```
@@ -122,17 +124,19 @@ const client = createClient<typeof ioServer>({
 When the frontend receives a JWT from your authorization endpoint, it will add that token as a `token` query parameter to your websocket connection request. To use this token, pass the token into `io.room.register` on your server.
 
 ```ts
-import type { InferIORoom } from "@pluv/io";
-import express from "express";
+import { serve, type HttpBindings } from "@hono/node-server";
 import Http from "http";
-import WebSocket from "ws";
-import { io, ioServer } from "./io";
+import { Hono } from "hono";
+import { ioServer } from "./io";
 
 const PORT = 3000;
 
-const app = express();
-const server = Http.createServer(app);
-const wsServer = new WebSocket.Server({ server });
+const app = new Hono<{ Bindings: HttpBindings }>()
+    // Only if you specified `authorize` on @pluv/io
+    .get("/api/pluv/auth", async (c) => {
+        // ...
+        return c.text(token, 200);
+    });
 
 const parseRoomId = (url: string): string => {
     /* get room from req.url */
@@ -142,20 +146,8 @@ const parseToken = (url: string): string => {
     /* get token from query parameters of req.url */
 };
 
-const rooms = new Map<string, InferIORoom<typeof ioServer>>();
 const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
-    const existing = rooms.get(roomId);
-
-    if (existing) return existing;
-
-    const room = ioServer.createRoom(roomId, {
-        onDelete: (event) => {
-            rooms.delete(event.room);
-        },
-    });
-    rooms.set(roomId, room);
-
-    return room;
+    // ...
 };
 
 wsServer.on("connection", async (ws, req) => {
@@ -164,27 +156,6 @@ wsServer.on("connection", async (ws, req) => {
     const room = getRoom(roomId);
 
     // Pass in the token from query params
-    await room.register(ws, { token });
-});
-
-app.get("/api/authorize", async (req, res) => {
-    const room = req.query.room as string;
-
-    // ... Implement your custom authorization here
-
-    const token = await io.createToken({
-        req,
-        room,
-        user: {
-            id: "abc123",
-            name: "pluvrt",
-        },
-    });
-
-    res.send(token).status(200);
-});
-
-server.listen(PORT, () => {
-    console.log(`Server is listening on port: ${port}`);
+    await room.register(ws, { req, token });
 });
 ```
