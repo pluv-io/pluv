@@ -9,7 +9,7 @@ Define custom events on your backend `PluvServer` or frontend `PluvClient`. Then
 
 ## Define custom events
 
-To get started, define custom events in either [your PluvServer](/docs/io/define-events) or [your PluvClient](/docs/client/define-events).
+To get started, define custom events in either your [PluvServer](/docs/io/define-events) or your [PluvClient](/docs/client/define-events).
 
 We'll create a `sendMessage` and `wave` events on our `PluvClient` for this example:
 
@@ -31,7 +31,7 @@ const wave = io.broadcast(() => ({ receiveWave: {} }));
 const router = io.router({ sendMessage, wave });
 ```
 
-Then, when we create the react bundle via [createBundle](/docs/react/create-bundle), provide the `router` we created just above into the 2nd parameter of the `createBundle` function.
+Then include the `router` we created above into [createBundle](/docs/react/create-bundle) to connect the events to your frontend bundle.
 
 ```ts
 import { createBundle } from "@pluv/react";
@@ -45,7 +45,7 @@ const {
 
 ## Use custom events
 
-Then, assuming you've already setup your React bundle and providers, listen and broadcast your custom events using `useBroadcast` and `useEvent` from the react bundle you created from [createBundle](/docs/react/create-bundle).
+Assuming you've already setup your React bundle and providers, use can then use [useBroadcast](/docs/react/api-reference#useBroadcast) and [event](https://pluv.io/docs/react/api-reference#event) to broadcast and listen to the custom events defined from your router.
 
 ```ts
 import { useCallback } from "react";

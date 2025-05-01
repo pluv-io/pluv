@@ -14,16 +14,21 @@ To get started with storage for pluv.io, first specify which CRDT you intend to 
 ```ts
 import { yjs } from "@pluv/crdt-yjs";
 import { loro } from "@pluv/crdt-loro";
+import { platformPluv } from "@pluv/platform-pluv";
 
-export const io = createIO({
-    // ...
-    crdt: yjs,
-});
+export const io = createIO(
+    platformPluv({
+        // ...
+        crdt: yjs,
+    })
+);
 
-export const io = createIO({
-    // ...
-    crdt: loro,
-});
+export const io = createIO(
+    platformPluv({
+        // ...
+        crdt: loro,
+    })
+);
 ```
 
 ## Set initialStorage
