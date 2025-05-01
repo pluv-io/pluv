@@ -5,29 +5,34 @@ description: "Learn how to apply awareness and presence to your real-time applic
 
 # Presence
 
-Presence is a per-connection state that allows users to track what other users are doing in the same room. Presence can be used to represent movement, selections, and characteristics of a user, and can be really important to building collaborative experiences.
+Presence is a per-connection state that allows users to view what others are doing within the same room. Presence can be used to represent things such as movement and selections and can be really valuable for users to understand an experience to be multiplayer.
 
 ## Set presence
 
-To get started with presence for pluv.io, first set a `presence` config on your `createClient` config.
+To get started with presence for pluv.io, first set a `presence` config on your `createClient` config and create your react bundle.
 
 ```ts
 import { createClient, infer } from "@pluv/client";
 import { createBundle } from "@pluv/react";
-import type { ioServer } from "./backend/io";
 import { z } from "zod";
+import type { ioServer } from "./backend/io";
 
 const types = infer((i) => ({ io: i<typeof iServer> }));
 const client = createClient({
-    // Optional: Define the validation schema for presence, using zod
+    types,
     presence: z.object({
         selectionId: z.string().nullable(),
     }),
-    types,
-    wsEndpoint: ({ room }) => `${process.env.WS_ENDPOINT}/api/room/${room}`,
+    // ...
 });
 
-export const pluv = createBundle(client);
+export const {
+    PluvRoomProvider,
+    useMyPresence,
+    useMyself,
+    useOther,
+    useOthers,
+} = createBundle(client);
 ```
 
 ## Set initialPresence on PluvRoomProvider
@@ -38,7 +43,7 @@ import { pluv } from "./frontend/io";
 
 const Room: FC = () => {
     return (
-        <pluv.PluvRoomProvider
+        <PluvRoomProvider
             // Specify the initial presence for each newly connected user
             initialPresence={{
                 selectionId: null,
@@ -46,12 +51,16 @@ const Room: FC = () => {
             room="my-example-room"
         >
             <ChatRoom />
-        </pluv.PluvRoomProvider>
+        </PluvRoomProvider>
     );
 };
 ```
 
 ## Observing presence
+
+The following example usages of react hooks pertain to users' presence in rooms.
+
+> **Note**: The hooks will trigger a re-render of your component if the values returned change. So consider using the selectors within these hooks to return data that changes as little as you need.
 
 ### Current user's presence
 
@@ -59,15 +68,24 @@ const Room: FC = () => {
 import { useCallback } from "react";
 import { pluv } from "./frontend/io";
 
-const [myPresence, updateMyPresence] = pluv.useMyPresence();
+const [myPresence, updateMyPresence] = useMyPresence();
 //     ^? const myPresence: { selectionId: string | null } | null
 
-const myself = pluv.useMyself();
+// It is recommended that you specify a selector in `useMyPresence` to
+// minimize re-renders for your component in case your presence state
+// contains multiple fields
+const [mySelectionId] = useMyPresence((presence) => presence.selectionId);
+//     ^? const mySelectionId: string | null
+
+const myself = useMyself();
 //    ^? const myself: {
 //        connectionId: string;
 //        presence: { selectionId: string | null };
 //        user: null;
 //    } | null;
+
+const mySelectionId = useMyself(({ presence }) => presence.selectionId);
+//    ^? const mySelectionId: string | null
 
 // Updating the current user's presence
 const selectInput = useCallback((selectionId: string) => {
@@ -80,19 +98,29 @@ const selectInput = useCallback((selectionId: string) => {
 ```tsx
 import { pluv } from "./frontend/io";
 
-const others = pluv.useOthers();
+const others = useOthers();
 //    ^? const others: readonly {
 //        connectionId: string;
 //        presence: { selectionId: string | null };
 //        user: null;
-//    } | null;
+//    }[] | null;
 
-// const connectionId = others[0]?.connectionId!;
+// Recommended that you actually map connection ids, and use useOther
+// in another component
+const others = useOthers((others) => {
+//    ^? const others: readonly string[] | null;
+    return others.map((other) => other.connectionId);
+});
 
-const other = pluv.useOther(connectionId);
+const other = useOther(connectionId);
 //    ^? const other: {
 //        connectionId: string;
 //        presence: { selectionId: string | null };
 //        user: null;
 //    } | null;
+
+// Example with selector
+const other = useOther(connectionId, (other) => {
+    return other.presence.selectionId;
+});
 ```
