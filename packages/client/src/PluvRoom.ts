@@ -1404,11 +1404,9 @@ export class PluvRoom<
         };
 
         const newState = updater(oldState);
-
-        this._logDebug("WebSocket new state: ", newState);
-
         this._state = newState;
 
+        this._logDebug("WebSocket new state: ", newState);
         this._stateNotifier.subjects.connection.next(newState);
 
         return newState;
