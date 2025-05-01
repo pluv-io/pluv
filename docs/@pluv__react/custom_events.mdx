@@ -5,11 +5,43 @@ description: "Learn how to use custom type-safe events with @pluv/react"
 
 # Custom Events
 
-Define custom events on your backend `PluvServer` instance. Then send and receive custom websocket events in a type-safe way with `@pluv/react`.
+Define custom events on your backend `PluvServer` or frontend `PluvClient`. Then send and receive custom websocket events in a type-safe way with `@pluv/react`.
 
 ## Define custom events
 
-To get started, define custom events in either [your backend @pluv/io instance](/docs/io/define-events) or [your frontend client](/docs/client/define-events).
+To get started, define custom events in either [your PluvServer](/docs/io/define-events) or [your PluvClient](/docs/client/define-events).
+
+We'll create a `sendMessage` and `wave` events on our `PluvClient` for this example:
+
+```ts
+// frontend/io
+import { createClient } from "@pluv/client";
+import { z } from "zod";
+
+const io = createClient({ /* ... */ });
+
+const sendMessage = io
+    .input(z.object({ message: z.string() }))
+    .broadcast(({ message }) => ({
+        receiveMessage: { message }
+    }));
+
+const wave = io.broadcast(() => ({ receiveWave: {} }));
+
+const router = io.router({ sendMessage, wave });
+```
+
+Then, when we create the react bundle via [createBundle](/docs/react/create-bundle), provide the `router` we created just above into the 2nd parameter of the `createBundle` function.
+
+```ts
+import { createBundle } from "@pluv/react";
+import { io, router } from "./frontend/io";
+
+const {
+    event,
+    useBroadcast
+} = createBundle(io, { router });
+```
 
 ## Use custom events
 
