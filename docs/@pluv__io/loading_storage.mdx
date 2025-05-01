@@ -9,9 +9,14 @@ Listen to when a room is deleted so that when the same room is re-created, users
 
 ## Add listeners
 
+Every time a room is freshly created, the `getInitialStorage` listener will run, and the return value of this function will set the initial value of the room's storage.
+
+Beyond this, the `IOServer` provides several event listeners in which you can hook into and save the room's current storage state. It is recommended that you do not save your room's storage state in a handler that runs too frequently so that your database isn't overly written to.
+
+Our recommendation is to save your room's storage state in `onRoomDeleted`. And if you need more saves beyond that, to throttle writes per room in event listeners such as `onStorageUpdated` or `onRoomMessage`.
+
 ```ts
 // server/io.ts
-
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
@@ -25,26 +30,45 @@ export const io = createIO(
 );
 
 export const ioServer = io.server({
-    // Load storage for a newly created room.
-    getInitialStorage: async ({ room }) => {
+    // Optional: Triggered when a room is freshly created. If the room existed
+    // before, you can load the storage state for the room by returning it here
+    getInitialStorage: async ({ context, room }) => {
+        const { db } = context;
         const existingRoom = await db.room.findUnique({ where: { room } });
 
         return existingRoom?.encodedState ?? null;
     },
-    // Before the room is destroyed, persist the state to a database
-    // to load when the room is re-created.
-    onRoomDeleted: async ({ encodedState, room }) => {
+    // Optional: Triggered when a room is deleted. Callback includes the last
+    // value for the room's state for persisting purposes
+    onRoomDeleted: async ({ context, encodedState, room }) => {
+        const { db } = context;
+
         await db.room.upsert({
             where: { room },
             create: { encodedState, room },
             update: { encodedState },
         });
     },
-    // It is unnecessary to save the storage state in this listener.
-    // If a room already exists, users will load the currently active
-    // storage before the storage from initialStorage.
-    onStorageUpdated: ({ encodedState, room }) => {
-        console.log(room, encodedState);
+    // Optional: Triggered each time any participant sends a new message to
+    // other participants
+    // It is advised not to perform any heavy operations in this listener
+    // due to the frequency of invocations
+    onRoomMessage: async ({ context, encodedState, room }) => {
+        // ...
+    },
+    // Optional: Triggered each time the room's storage is updated.
+    // It is advised not to perform any heavy operations in this listener
+    // due to the frequency of invocations
+    onStorageUpdated: ({ context, encodedState, room }) => {
+        // ...
+    },
+    // Optional: Triggered each time a user connects to a room
+    onUserConnected: ({ context, encodedState, room, user }) => {
+        // ...
+    },
+    // Optional: Triggered each time a user disconnects from a room
+    onUserDisconnected: ({ context, encodedState, room, user }) => {
+        // ...
     },
 });
 ```

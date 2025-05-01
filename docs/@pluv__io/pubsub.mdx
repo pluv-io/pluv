@@ -6,6 +6,7 @@ description: "Add a PubSub to pluv.io to horizontally scale your real-time API"
 # PubSub
 
 > **Note**: Currently PubSub's are supported for Node.js only.
+> **Note**: PubSub support has been only moderately tested. So consider support to currently be experimental.
 
 You may want to run a single room across multiple servers to horizontally scale your API. For that a PubSub will be necessary to share the events, and Persistence will be necessary for syncing storage state across servers.
 
@@ -30,7 +31,6 @@ Create your pluv.io instance with your selected PubSub and Persistence:
 
 ```ts
 // server/io.ts
-
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { PubSubRedis } from "@pluv/pubsub-redis";

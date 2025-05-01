@@ -21,7 +21,6 @@ Set the `authorize` property on your `createIO` config to enable authorization o
 
 ```ts
 // server/io.ts
-
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
@@ -50,7 +49,6 @@ To add custom authorization, you'll need to define an http endpoint to return a 
 
 ```ts
 // server/server.ts
-
 import { serve, type HttpBindings } from "@hono/node-server";
 import Http from "http";
 import { Hono } from "hono";
@@ -84,7 +82,6 @@ Now that we have your endpoint defined, connect your frontend client to your aut
 
 ```ts
 // frontend/io.ts
-
 import { createClient } from "@pluv/react";
 import type { ioServer } from "server/io";
 
@@ -102,7 +99,6 @@ const client = createClient<typeof ioServer>({
 
 ```ts
 // frontend/io.ts
-
 import { createClient } from "@pluv/react";
 import type { ioServer } from "server/io";
 
@@ -121,7 +117,7 @@ const client = createClient<typeof ioServer>({
 
 ## Add token to room registration
 
-When the frontend receives a JWT from your authorization endpoint, it will add that token as a `token` query parameter to your websocket connection request. To use this token, pass the token into `io.room.register` on your server.
+When the frontend receives a JWT from your authorization endpoint, it will add that token as a `token` query parameter to your websocket connection request. To use this token, pass the token into `IORoom.register` on your server.
 
 ```ts
 import { serve, type HttpBindings } from "@hono/node-server";
