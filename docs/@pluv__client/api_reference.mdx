@@ -591,3 +591,26 @@ Undoes the last mutation that was applied via [PluvRoom.transact](/docs/client/a
 // frontend/room.ts
 room.undo();
 ```
+
+### PluvRoom.updateMyPresence
+
+Returns `void`
+
+Updates the user's own presence and broadcasts the update to all connected participants
+
+```ts
+// frontend/room.ts
+const client = createClient({
+    // ...
+    presence: z.object({
+        selectionId: z.string().nullable(),
+    }),
+});
+
+const room = client.createRoom("my-example-room", {
+    // ...
+    initialPresence: { selectionId: null },
+});
+
+room.updateMyPresence({ selectionId: "id_..." });
+```
