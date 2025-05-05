@@ -1,16 +1,11 @@
-> **Disclaimer:**
-> This package is currently in preview and may have breaking changes between versions. Please wait for a `v1.0.0` stable release before using this in production.
+<div align="center">
+  <a href="https://pluv.io/docs/introduction">
+    <img src="https://github.com/pluv-io/pluv/blob/master/assets/pluv-icon-192x192.png?raw=true" alt="Pluv.IO" width="156" style="border-radius:16px" />
+  </a>
+</div>
 
-<h1 align="center">
-  <br />
-  <img src="https://github.com/pluv-io/pluv/blob/master/assets/pluv-icon-192x192.png?raw=true" alt="Pluv.IO" width="180" style="border-radius:16px" />
-  <br />
-  <a href="https://pluv.io/docs/introduction">Pluv.IO (preview)</a>
-  <br />
-</h1>
-
-<h3 align="center">Multi-platform, E2E type-safe realtime packages</h3>
-<h4 align="center">💕 Inspired by <a href="https://trpc.io">trpc</a> 💕 <a href="https://docs.yjs.dev/">yjs</a> 💕 and <a href="https://developers.cloudflare.com/">Cloudflare</a> 💕 </h4>
+<h1 align="center">pluv.io</h1>
+<h3 align="center">TypeSafe Primitives for a Realtime Web</h3>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@pluv/io">
@@ -24,93 +19,149 @@
   </a>
   <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript" />
 </p>
-
-<p align="center">
-  <a href="#intro">Intro</a> •
-  <a href="#usage">Usage</a> •
-  <a href="#related">Related</a> •
-  <a href="#credits">Credits</a> •
-  <a href="#license">License</a>
-</p>
+<h4 align="center">💕 Inspired by <a href="https://trpc.io">trpc</a> 💕 <a href="https://docs.yjs.dev/">yjs</a> 💕 <br />and <a href="https://workers.cloudflare.com/">Cloudflare Workers</a> 💕</h4>
 
 ## Intro
 
-pluv.io allows you to more easily build real-time collaborative experiences with a fully end-to-end type-safe api and the ecosystem of existing CRDT implementations such as **[yjs](https://docs.yjs.dev/)**.
+**[pluv.io](https://pluv.io) allows you to more easily build realtime multiplayer experiences with a fully typesafe API and powerful abstractions as primitives, so that you can focus on building for your end users.**
 
-**👉 See full documentation on [pluv.io](https://pluv.io/docs/introduction). 👈**
+Self-host on [Cloudflare Workers](https://pluv.io/docs/quickstart/cloudflare-workers) or [Node.js](https://pluv.io/docs/quickstart/nodejs); or [get started on the pluv.io network](https://pluv.io/signup).
 
-### Features
+## Preview
 
-- ✅ Automatic type safety
+Create your pluv.io backend
+
+```ts
+// backend
+const io = createIO(platformNode({ crdt: yjs }));
+
+export const ioServer = io.server({
+  router: io.router({
+    sendGreeting: io.procedure
+      .input(z.object({ message: z.string() }))
+      .broadcast(({ message }) => ({
+        receiveGreeting: { message }
+      }))
+  })
+});
+```
+
+Create your frontend client with your backend types
+
+```ts
+// frontend
+const types = infer((i) => ({ io: i<typeof ioServer> }));
+const io = createClient({
+  types,
+  initialStorage: yjs.doc(() => ({
+    messages: yjs.array<string>(),
+  })),
+  presence: z.object({
+    selectionId: z.string().nullable()
+  })
+});
+
+const { useMyPresence, useOthers, useStorage } = createBundle(io);
+```
+
+Use powerful primitives to build realtime features
+
+```tsx
+// react
+const [mySelection, update] = useMyPresence((presence) => {
+//     ^? const mySelection: string | null
+  return presence.selectionId;
+});
+
+const others = useOthers((others) => {
+//    ^? const others = string[]
+  return others.map((other) => other.presence.selectionId);
+});
+
+const [
+  messages,
+// ^? const messages: string[] | null
+  sharedType
+// ^? YArray<string> | null
+] = useStorage("messages");
+```
+
+## Documentation
+
+The full documentation is available at [pluv.io](https://pluv.io/docs/introduction).
+
+## Features
+
+- ✅ Automatic type-safety
 - ✅ Basic events
 - ✅ Rooms
 - ✅ Authentication
 - ✅ Awareness + Presence
 - ✅ [CRDTs](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)
-  - ✅ [Yjs](https://docs.yjs.dev/)
-    - ✅ **Shared Types**
-      - ✅ [Map](https://docs.yjs.dev/api/shared-types/y.map)
-      - ✅ [Array](https://docs.yjs.dev/api/shared-types/y.array)
-      - ✅ [Text](https://docs.yjs.dev/api/shared-types/y.text)
-      - ✅ [XmlFragment](https://docs.yjs.dev/api/shared-types/y.xmlfragment)
-      - ✅ [XmlElement](https://docs.yjs.dev/api/shared-types/y.xmlelement)
-      - ✅ [XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext)
-  - ✅ [Loro](https://loro.dev/)
-    - ✅ **Containers**
-        - ✅ List
-        - ✅ Map
-        - ✅ Text
-        - ⬜ Tree
+    - ✅ [Yjs](https://docs.yjs.dev/)
+        - ⬜ [Provider](https://github.com/yjs/yjs?tab=readme-ov-file#providers) (Coming soon!)
+        - ✅ **Shared Types**
+            - ✅ [Map](https://docs.yjs.dev/api/shared-types/y.map)
+            - ✅ [Array](https://docs.yjs.dev/api/shared-types/y.array)
+            - ✅ [Text](https://docs.yjs.dev/api/shared-types/y.text)
+            - ✅ [XmlFragment](https://docs.yjs.dev/api/shared-types/y.xmlfragment)
+            - ✅ [XmlElement](https://docs.yjs.dev/api/shared-types/y.xmlelement)
+            - ✅ [XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext)
+    - ✅ [Loro](https://loro.dev/) (preview)
+        - ✅ **Containers**
+            - ✅ List
+            - ✅ Map
+            - ✅ Text
+            - ⬜ Tree
 - ⬜ Studio (admin & developer panel)
 
-### Runtimes
+## Runtimes
 
 - ✅ [Cloudflare Workers](https://workers.cloudflare.com/)
+    - **WebSocket API**
+        - ✅ [Hibernation API](https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-hibernation-api) (default, recommended)
+        - ✅ [Standard API](https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-standard-api)
+    - **State Persistence**
+        - ✅ [SQLite-backed Durable Objects](https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/#create-sqlite-backed-durable-object-class) (default, recommended)
+        - ✅ [Key-value storage-backed Durable Object](https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/#create-durable-object-class-with-key-value-storage)
 - ✅ [Node.js](https://nodejs.org/)
-  - ✅ **PubSubs**
-    - ✅ [Redis](https://redis.io/)
-    - ⬜ [RabbitMQ](https://www.rabbitmq.com/)
-    - ⬜ [Kafka](https://kafka.apache.org/)
-  - ✅ **CRDT State Persistence**
-    - ✅ [Redis](https://redis.io/)
-    - ⬜ [Prisma](https://www.prisma.io/)
+    - ✅ **PubSubs**
+        - ✅ [Redis](https://redis.io/) (preview)
+        - ⬜ [MQTT](https://mqtt.org/)
+    - ✅ **State Persistence**
+        - ✅ In-memory (default)
+        - ✅ [Redis](https://redis.io/) (preview)
 
-### Frontends
+## Frontends Frameworks
 
 - ✅ [React.js](https://react.dev/)
 - ⬜ [Solid.js](https://www.solidjs.com/)
 - ⬜ [Vue.js](https://vuejs.org/)
 - ⬜ [Svelte](https://svelte.dev/)
 
-## Usage
+## Packages
 
-Before diving into documentation, check out usage instructions for your selected platform:
-
-### Documentation
-
-Documentation is available at [pluv.io](https://pluv.io/docs/introduction).
-
-## Related
-
+- [@pluv/io](https://www.npmjs.com/package/@pluv/io) - Server
 - [@pluv/client](https://www.npmjs.com/package/@pluv/client) - Framework agnostic client
-- [@pluv/crdt-loro](https://www.npmjs.com/package/@pluv/crdt-loro) - Loro CRDT for Pluv.IO
-- [@pluv/crdt-yjs](https://www.npmjs.com/package/@pluv/crdt-yjs) - Yjs CRDT for Pluv.IO
-- [@pluv/persistence-redis](https://www.npmjs.com/package/@pluv/persistence-redis) - Persistence for storage on distributed systems (Node.js only)
-- [@pluv/platform-cloudflare](https://www.npmjs.com/package/@pluv/platform-cloudflare) - Adapter to run @pluv/io on Cloudflare Workers
-- [@pluv/platform-node](https://www.npmjs.com/package/@pluv/platform-node) - Adapter to run @pluv/io on Node.js
-- [@pluv/pubsub-redis](https://www.npmjs.com/package/@pluv/pubsub-redis) - PubSub for rooms across distributed systems
 - [@pluv/react](https://www.npmjs.com/package/@pluv/react) - Integrate @pluv/client with React.js
+- [@pluv/platform-pluv](https://www.npmjs.com/package/@pluv/platform-node) - Adapter to run on pluv.io
+- [@pluv/platform-cloudflare](https://www.npmjs.com/package/@pluv/platform-cloudflare) - Adapter to run on Cloudflare Workers
+- [@pluv/platform-node](https://www.npmjs.com/package/@pluv/platform-node) - Adapter to run on Node.js
+- [@pluv/crdt-yjs](https://www.npmjs.com/package/@pluv/crdt-yjs) - Yjs CRDT adapter
+- [@pluv/crdt-loro](https://www.npmjs.com/package/@pluv/crdt-loro) - Loro CRDT adapter
+- [@pluv/persistence-redis](https://www.npmjs.com/package/@pluv/persistence-redis) - Persistence for storage on distributed systems (Node.js only)
+- [@pluv/persistence-cloudflare-transactional-storage](https://www.npmjs.com/package/@pluv/persistence-cloudflare-transactional-storage) - Durable Object persistent state for WebSocket hibernation
+- [@pluv/pubsub-redis](https://www.npmjs.com/package/@pluv/pubsub-redis) - PubSub for rooms across distributed systems
 
 ## Credits
 
 This software uses the following open source tooling and libraries:
 
-- [Loro](https://loro.dev/)
-- [Yjs](https://yjs.dev/)
-- [Node.js](https://nodejs.org/)
 - [Cloudflare Workers](https://workers.cloudflare.com/)
-- [ioredis](https://github.com/luin/ioredis)
+- [Node.js](https://nodejs.org/)
 - [React.js](https://reactjs.org/)
+- [Yjs](https://yjs.dev/)
+- [Loro](https://loro.dev/)
 
 ## License
 

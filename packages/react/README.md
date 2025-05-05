@@ -8,11 +8,11 @@
 
 ```bash
 # npm
-npm install @pluv/react @pluv/crdt-yjs yjs zod
+npm install @pluv/client @pluv/react @pluv/crdt-yjs yjs zod
 
 # yarn
-yarn add @pluv/react @pluv/crdt-yjs yjs zod
+yarn add @pluv/client @pluv/react @pluv/crdt-yjs yjs zod
 
 # pnpm
-pnpm add @pluv/react @pluv/crdt-yjs yjs zod
+pnpm add @pluv/client @pluv/react @pluv/crdt-yjs yjs zod
 ```
