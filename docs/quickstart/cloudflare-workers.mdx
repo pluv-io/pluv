@@ -297,3 +297,30 @@ export const {
     ...pluv,
 } = createBundle(client);
 ```
+
+### Wrap the PluvRoomProvider
+
+At the route the room's layout will be defined, wrap the page with the `PluvRoomProvider` that was destructured from the previous step. This is necessary to enable all other functions from `createBundle`.
+
+```tsx
+import type { FC, ReactNode } from "react";
+
+interface PageProps {
+    children?: ReactNode;
+    params: Promise<{ room: string }>;
+}
+
+const Page: FC<PageProps> = async (props) => {
+    const { room } = await params;
+
+    return (
+        <PluvRoomProvider room={room}>
+            {children}
+        </PluvRoomProvider>
+    );
+};
+
+export default Page;
+```
+
+And that's it! With this, functions (e.g. hooks) from `createBundle` can be used for components within your provider.
