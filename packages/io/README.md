@@ -19,6 +19,11 @@
   </a>
   <img src="https://badgen.net/badge/-/TypeScript?icon=typescript&label&labelColor=blue&color=555555" alt="TypeScript" />
 </p>
+
+<div align="center">
+<a href="https://www.producthunt.com/posts/pluv-io?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-pluv&#0045;io" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=961147&theme=light&t=1746462368894" alt="pluv&#0046;io - Open&#0032;source&#0032;multiplayer&#0032;APIs&#0044;&#0032;powered&#0032;by&#0032;TypeScript | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+</div>
+
 <h4 align="center">💕 Inspired by <a href="https://trpc.io">trpc</a> 💕 <a href="https://docs.yjs.dev/">yjs</a> 💕 <br />and <a href="https://workers.cloudflare.com/">Cloudflare Workers</a> 💕</h4>
 
 ## Intro
