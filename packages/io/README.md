@@ -61,13 +61,27 @@ const io = createClient({
   })
 });
 
-const { useMyPresence, useOthers, useStorage } = createBundle(io);
+const {
+  event,
+  useBroadcast,
+  useMyPresence,
+  useOthers,
+  useStorage
+} = createBundle(io);
 ```
 
 Use powerful primitives to build realtime features
 
 ```tsx
 // react
+event.receiveGreeting.useEvent(({ data }) => { /* ... */});
+//                                ^? const data: { message: string }
+
+const broadcast = useBroadcast();
+
+broadcast.sendGreeting({ message: "hello world" });
+//        ^? const sendGreeting: (data: { message: string }) => void
+
 const [mySelection, update] = useMyPresence((presence) => {
 //     ^? const mySelection: string | null
   return presence.selectionId;
