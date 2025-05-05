@@ -1,5 +1,21 @@
 # @pluv/persistence-cloudflare-transactional-storage
 
+## 1.0.0
+
+### Major Changes
+
+- af94706: pluv.io is now stable and production ready!
+
+  With this v1 release, pluv.io will now follow [semantic versioning](https://semver.org/) with more comprehensive release notes for future changes to the library.
+
+  Checkout the [full documentation here](https://pluv.io/docs/introduction) to get started today!
+
+### Patch Changes
+
+- Updated dependencies [af94706]
+  - @pluv/io@1.0.0
+  - @pluv/types@1.0.0
+
 ## 0.44.2
 
 ### Patch Changes

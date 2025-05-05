@@ -1,5 +1,23 @@
 # @pluv/react
 
+## 1.0.0
+
+### Major Changes
+
+- 4c8b203: **BREAKING** `@pluv/client` is now a peer dependency of `@pluv/react`.
+- af94706: pluv.io is now stable and production ready!
+
+  With this v1 release, pluv.io will now follow [semantic versioning](https://semver.org/) with more comprehensive release notes for future changes to the library.
+
+  Checkout the [full documentation here](https://pluv.io/docs/introduction) to get started today!
+
+### Patch Changes
+
+- Updated dependencies [af94706]
+  - @pluv/client@1.0.0
+  - @pluv/crdt@1.0.0
+  - @pluv/types@1.0.0
+
 ## 0.44.2
 
 ### Patch Changes
