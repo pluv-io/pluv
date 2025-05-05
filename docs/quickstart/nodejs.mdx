@@ -39,7 +39,7 @@ npm install yjs
 Define an io (websocket client) instance on the server codebase:
 
 ```ts
-// backend/io.ts
+// server/io.ts
 
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
@@ -158,4 +158,58 @@ wsServer.on("connection", async (ws, req) => {
     const token = new URL(req.url).searchParams.get("token");
     await room.register(ws, { req, token });
 });
+```
+
+### Create the client bundle
+
+```ts
+// frontend/pluv.ts
+
+"use client";
+
+import { createClient } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
+import { createBundle, infer } from "@pluv/react";
+
+// Use a type-import, since this will be used on the frontend
+import type { ioServer } from "./server/pluv";
+
+// Create `types` outside of `createClient` due to TypeScript inference
+// limitations
+const types = infer((i) => ({ io: i<typeof ioServer> }));
+
+// Note that the `wsEndpoint` param is omitted when using
+// `@pluv/platform-pluv`
+export const client = createClient({
+    types,
+    // Wherever your auth endpoint was
+    authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,
+    wsEndpoint: ({ room }) => {
+        const host = document.location.host;
+        const protocol = document.location.protocol;
+        const wsProtocol = protocol.includes("https") ? "wss:" : "ws:";
+
+        // Or wherever you intend to receive the connection requests from
+        return `${wsProtocol}//${host}/api/pluv/room?room=${room}`;
+    },
+});
+
+// Destructure the bundle, as the app router will not allow accessing
+// properties of objects within server components (e.g. you are unable to
+// write pluv.PluvRoomProvider in a layout that is a server component)
+export const {
+    PluvRoomProvider,
+
+    useStorage,
+    useMyself,
+    useOthers,
+    useRoom,
+    useTransact,
+
+    // ... Other values as needed
+
+    // Alternatively for things that will only be used in client components
+    // (i.e. not server components)
+    ...pluv,
+} = createBundle(client);
 ```
