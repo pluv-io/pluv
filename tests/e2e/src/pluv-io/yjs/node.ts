@@ -2,6 +2,7 @@ import { addonIndexedDB } from "@pluv/addon-indexeddb";
 import { createClient, infer } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
+import { slateNodesToInsertDelta } from "@slate-yjs/core";
 import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node";
 
@@ -18,6 +19,13 @@ const io = createClient({
                 name: "pluvrt",
             }),
         ]),
+        slate: (() => {
+            const type = yjs.xmlText();
+
+            type.applyDelta(slateNodesToInsertDelta([]));
+
+            return type;
+        })(),
     })),
     presence: z.object({
         count: z.number(),

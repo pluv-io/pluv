@@ -8,6 +8,7 @@ export const Page: NextPage = () => {
             <NextLink href="/yjs/node/broadcast">broadcast</NextLink>
             <NextLink href="/yjs/node/presence">presence</NextLink>
             <NextLink href="/yjs/node/storage">storage</NextLink>
+            <NextLink href="/yjs/node/slate">slate</NextLink>
         </div>
     );
 };
