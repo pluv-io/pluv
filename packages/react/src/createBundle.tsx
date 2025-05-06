@@ -14,7 +14,15 @@ import type {
 } from "@pluv/client";
 import { MockedRoom, PluvRoom } from "@pluv/client";
 import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
-import type { Id, InferIOInput, InferIOOutput, IOEventMessage, IOLike, JsonObject, MaybePromise } from "@pluv/types";
+import type {
+    Id,
+    InferIOInput,
+    InferIOOutput,
+    IOEventMessage,
+    IOLike,
+    JsonObject,
+    MaybePromise,
+} from "@pluv/types";
 import fastDeepEqual from "fast-deep-equal";
 import type { Dispatch, FC, ReactNode } from "react";
 import { createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
@@ -31,7 +39,10 @@ export interface PluvProviderProps {
     children?: ReactNode;
 }
 
-type BaseRoomProviderProps<TPresence extends JsonObject, TStorage extends Record<string, CrdtType<any, any>>> = {
+type BaseRoomProviderProps<
+    TPresence extends JsonObject,
+    TStorage extends Record<string, CrdtType<any, any>>,
+> = {
     children?: ReactNode;
     initialStorage?: keyof TStorage extends never ? never : () => TStorage;
     room: string;
@@ -46,7 +57,9 @@ export type MockedRoomProviderProps<
     events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
 };
 
-export type MetadataGetter<TMetadata extends JsonObject> = TMetadata | (() => MaybePromise<TMetadata>);
+export type MetadataGetter<TMetadata extends JsonObject> =
+    | TMetadata
+    | (() => MaybePromise<TMetadata>);
 
 export type PluvRoomProviderProps<
     TIO extends IOLike<any, any>,
@@ -57,7 +70,9 @@ export type PluvRoomProviderProps<
     connect?: boolean;
     debug?: boolean | PluvRoomDebug<TIO>;
     onAuthorizationFail?: (error: Error) => void;
-} & (keyof TMetadata extends never ? { metadata?: undefined } : { metadata: MetadataGetter<TMetadata> });
+} & (keyof TMetadata extends never
+        ? { metadata?: undefined }
+        : { metadata: MetadataGetter<TMetadata> });
 
 export interface SubscriptionHookOptions<T extends unknown> {
     isEqual?: (a: T, b: T) => boolean;
@@ -128,7 +143,10 @@ export interface CreateBundle<
     ) => T;
     useRedo: () => () => void;
     useRoom: () => AbstractRoom<TIO, TPresence, TStorage>;
-    useStorage: <TKey extends keyof TStorage, TData extends unknown = InferCrdtJson<TStorage[TKey]>>(
+    useStorage: <
+        TKey extends keyof TStorage,
+        TData extends unknown = InferCrdtJson<TStorage[TKey]>,
+    >(
         key: TKey,
         selector?: (data: InferCrdtJson<TStorage[TKey]>) => TData,
         options?: SubscriptionHookOptions<TData | null>,
@@ -199,88 +217,98 @@ export const createBundle = <
 
     MockedRoomProvider.displayName = "MockedRoomProvider";
 
-    const PluvRoomProvider = memo<PluvRoomProviderProps<TIO, TMetadata, TPresence, TStorage>>((props) => {
-        const {
-            children,
-            connect = true,
-            debug,
-            initialPresence,
-            initialStorage,
-            metadata,
-            onAuthorizationFail,
-            room: _room,
-        } = props;
-
-        const queue = useAsyncQueue();
-        const rerender = useRerender();
-        const mockedRoom = useContext(MockedRoomContext);
-
-        const resolvedMeta = useDeepAsyncMemo(async () => {
-            const resolved = await Promise.resolve(typeof metadata === "function" ? metadata() : metadata);
-
-            return !!room.metadata ? room.metadata.parse(resolved) : resolved;
-        });
-
-        const [room] = useState<PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents>>(() => {
-            return client.createRoom(_room, {
-                addons: options.addons,
+    const PluvRoomProvider = memo<PluvRoomProviderProps<TIO, TMetadata, TPresence, TStorage>>(
+        (props) => {
+            const {
+                children,
+                connect = true,
                 debug,
                 initialPresence,
-                initialStorage:
-                    typeof initialStorage === "function"
-                        ? client._defs.initialStorage?.getFactory(initialStorage)
-                        : client._defs.initialStorage,
+                initialStorage,
                 metadata,
                 onAuthorizationFail,
-                router: options.router,
-            } as CreateRoomOptions<TIO, TPresence, TStorage, TMetadata, TEvents>);
-        });
+                room: _room,
+            } = props;
 
-        useEffect(() => {
-            const unsubscribe = room.subscribe("connection", () => {
-                rerender();
+            const queue = useAsyncQueue();
+            const rerender = useRerender();
+            const mockedRoom = useContext(MockedRoomContext);
+
+            const resolvedMeta = useDeepAsyncMemo(async () => {
+                const resolved = await Promise.resolve(
+                    typeof metadata === "function" ? metadata() : metadata,
+                );
+
+                return !!room.metadata ? room.metadata.parse(resolved) : resolved;
             });
 
-            return () => {
-                unsubscribe();
-            };
-        }, [rerender, room]);
+            const [room] = useState<PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents>>(() => {
+                return client.createRoom(_room, {
+                    addons: options.addons,
+                    debug,
+                    initialPresence,
+                    initialStorage:
+                        typeof initialStorage === "function"
+                            ? client._defs.initialStorage?.getFactory(initialStorage)
+                            : client._defs.initialStorage,
+                    metadata,
+                    onAuthorizationFail,
+                    router: options.router,
+                } as CreateRoomOptions<TIO, TPresence, TStorage, TMetadata, TEvents>);
+            });
 
-        useEffect(() => {
-            const leaveRoom = async (): Promise<void> => {
-                await queue.push(
-                    client.leave(room).catch((error) => {
-                        console.error(error);
-                    }),
+            useEffect(() => {
+                const unsubscribe = room.subscribe("connection", () => {
+                    rerender();
+                });
+
+                return () => {
+                    unsubscribe();
+                };
+            }, [rerender, room]);
+
+            useEffect(() => {
+                const leaveRoom = async (): Promise<void> => {
+                    await queue.push(
+                        client.leave(room).catch((error) => {
+                            console.error(error);
+                        }),
+                    );
+                };
+
+                if (!connect) {
+                    leaveRoom();
+                    return;
+                }
+
+                if (!resolvedMeta.isInitialized) {
+                    leaveRoom();
+                    return;
+                }
+
+                const resolved = resolvedMeta.value as TMetadata;
+
+                queue.push(
+                    client
+                        .enter(room, ...([{ metadata: resolved }] as EnterRoomParams<TMetadata>))
+                        .catch(async (error) => {
+                            console.error(error);
+                            await leaveRoom();
+                        }),
                 );
-            };
 
-            if (!connect) {
-                leaveRoom();
-                return;
-            }
+                return () => {
+                    leaveRoom();
+                };
+            }, [connect, queue, resolvedMeta.isInitialized, resolvedMeta.value, room]);
 
-            if (!resolvedMeta.isInitialized) {
-                leaveRoom();
-                return;
-            }
-
-            const resolved = resolvedMeta.value as TMetadata;
-
-            queue.push(
-                client.enter(room, ...([{ metadata: resolved }] as EnterRoomParams<TMetadata>)).catch(async (error) => {
-                    console.error(error);
-                    await leaveRoom();
-                }),
+            return (
+                <PluvRoomContext.Provider value={mockedRoom ?? room}>
+                    {children}
+                </PluvRoomContext.Provider>
             );
-
-            return () => {
-                leaveRoom();
-            };
-        }, [connect, queue, resolvedMeta.isInitialized, resolvedMeta.value, room]);
-
-        return <PluvRoomContext.Provider value={mockedRoom ?? room}>{children}</PluvRoomContext.Provider>;
-    });
+        },
+    );
 
     PluvRoomProvider.displayName = "PluvRoomProvider";
 
@@ -292,12 +320,16 @@ export const createBundle = <
 
     PluvProvider.displayName = "PluvProvider";
 
-    const useClient = (): PluvClient<TIO, TPresence, TStorage, TMetadata> => useContext(PluvContext);
+    const useClient = (): PluvClient<TIO, TPresence, TStorage, TMetadata> =>
+        useContext(PluvContext);
 
     const useRoom = () => {
         const room = useContext(PluvRoomContext);
 
-        if (!room) throw new Error("Room could not be found. Component must be wrapped with PluvRoomProvider");
+        if (!room)
+            throw new Error(
+                "Room could not be found. Component must be wrapped with PluvRoomProvider",
+            );
 
         return room;
     };
@@ -320,7 +352,9 @@ export const createBundle = <
                 get(fn, prop) {
                     return (
                         data: Id<
-                            InferIOInput<MergeEvents<TEvents, TIO>>[keyof InferIOInput<MergeEvents<TEvents, TIO>>]
+                            InferIOInput<MergeEvents<TEvents, TIO>>[keyof InferIOInput<
+                                MergeEvents<TEvents, TIO>
+                            >]
                         >,
                     ): void => {
                         return fn(prop as keyof InferIOInput<MergeEvents<TEvents, TIO>>, data);
@@ -333,11 +367,19 @@ export const createBundle = <
     const useCanRedo = (): boolean => {
         const room = useRoom();
 
-        const subscribe = useCallback((onStoreChange: () => void) => room.storageRoot(onStoreChange), [room]);
+        const subscribe = useCallback(
+            (onStoreChange: () => void) => room.storageRoot(onStoreChange),
+            [room],
+        );
 
         const getSnapshot = useCallback((): boolean => room.canRedo(), [room]);
 
-        const canRedo = useSyncExternalStoreWithSelector(subscribe, getSnapshot, getSnapshot, identity);
+        const canRedo = useSyncExternalStoreWithSelector(
+            subscribe,
+            getSnapshot,
+            getSnapshot,
+            identity,
+        );
 
         return canRedo;
     };
@@ -345,11 +387,19 @@ export const createBundle = <
     const useCanUndo = (): boolean => {
         const room = useRoom();
 
-        const subscribe = useCallback((onStoreChange: () => void) => room.storageRoot(onStoreChange), [room]);
+        const subscribe = useCallback(
+            (onStoreChange: () => void) => room.storageRoot(onStoreChange),
+            [room],
+        );
 
         const getSnapshot = useCallback((): boolean => room.canUndo(), [room]);
 
-        const canUndo = useSyncExternalStoreWithSelector(subscribe, getSnapshot, getSnapshot, identity);
+        const canUndo = useSyncExternalStoreWithSelector(
+            subscribe,
+            getSnapshot,
+            getSnapshot,
+            identity,
+        );
 
         return canUndo;
     };
@@ -369,7 +419,10 @@ export const createBundle = <
 
         const getSnapshot = room.getConnection;
 
-        const _selector = useCallback((snapshot: WebSocketConnection) => selector(snapshot) as Id<T>, [selector]);
+        const _selector = useCallback(
+            (snapshot: WebSocketConnection) => selector(snapshot) as Id<T>,
+            [selector],
+        );
 
         return useSyncExternalStoreWithSelector(
             subscribe,
@@ -408,11 +461,17 @@ export const createBundle = <
                 const useProxyEvent = (
                     callback: (
                         data: Id<
-                            IOEventMessage<MergeEvents<TEvents, TIO>, keyof InferIOOutput<MergeEvents<TEvents, TIO>>>
+                            IOEventMessage<
+                                MergeEvents<TEvents, TIO>,
+                                keyof InferIOOutput<MergeEvents<TEvents, TIO>>
+                            >
                         >,
                     ) => void,
                 ): void => {
-                    return useEvent(prop as keyof InferIOOutput<MergeEvents<TEvents, TIO>>, callback);
+                    return useEvent(
+                        prop as keyof InferIOOutput<MergeEvents<TEvents, TIO>>,
+                        callback,
+                    );
                 };
 
                 return { useEvent: useProxyEvent };
@@ -435,7 +494,10 @@ export const createBundle = <
 
         const getSnapshot = room.getMyPresence;
 
-        const _selector = useCallback((snapshot: TPresence) => selector(snapshot) as Id<T>, [selector]);
+        const _selector = useCallback(
+            (snapshot: TPresence) => selector(snapshot) as Id<T>,
+            [selector],
+        );
 
         const myPresence = useSyncExternalStoreWithSelector(
             subscribe,
@@ -556,7 +618,10 @@ export const createBundle = <
         return room.redo;
     };
 
-    const useStorage = <TKey extends keyof TStorage, TData extends unknown = InferCrdtJson<TStorage[TKey]>>(
+    const useStorage = <
+        TKey extends keyof TStorage,
+        TData extends unknown = InferCrdtJson<TStorage[TKey]>,
+    >(
         key: TKey,
         selector = identity as (data: InferCrdtJson<TStorage[TKey]>) => TData,
         options?: SubscriptionHookOptions<TData | null>,
@@ -568,7 +633,10 @@ export const createBundle = <
             rerender();
         });
 
-        const subscribe = useCallback((onStoreChange: () => void) => room.storage(key, onStoreChange), [key, room]);
+        const subscribe = useCallback(
+            (onStoreChange: () => void) => room.storage(key, onStoreChange),
+            [key, room],
+        );
 
         const getSnapshot = useCallback((): InferCrdtJson<TStorage[TKey]> | null => {
             return room.getStorageJson(key);

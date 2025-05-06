@@ -49,7 +49,9 @@ export abstract class AbstractRoom<
     public abstract getStorage<TKey extends keyof TStorage>(type: TKey): TStorage[TKey] | null;
 
     public abstract getStorageJson(): InferCrdtJson<TStorage> | null;
-    public abstract getStorageJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]> | null;
+    public abstract getStorageJson<TKey extends keyof TStorage>(
+        type: TKey,
+    ): InferCrdtJson<TStorage[TKey]> | null;
 
     public abstract other(
         connectionId: string,

@@ -30,7 +30,9 @@ type SpreadTwo<L, R> = Id<
         SpreadProperties<L, R, OptionalPropertyNames<R> & keyof L>
 >;
 
-export type Spread<A extends readonly [...any]> = A extends [infer L, ...infer R] ? SpreadTwo<L, Spread<R>> : unknown;
+export type Spread<A extends readonly [...any]> = A extends [infer L, ...infer R]
+    ? SpreadTwo<L, Spread<R>>
+    : unknown;
 
 export type DeepPartial<T> = {
     [P in keyof T]?: T[P] extends Array<infer U>
@@ -63,6 +65,8 @@ export type JsonObject = Record<string, Json>;
 
 export type StringLiteral<T> = T extends string ? (string extends T ? never : T) : never;
 
-export type UnionToIntersection<U> = (U extends any ? (arg: U) => any : never) extends (arg: infer I) => void
+export type UnionToIntersection<U> = (U extends any ? (arg: U) => any : never) extends (
+    arg: infer I,
+) => void
     ? I
     : never;

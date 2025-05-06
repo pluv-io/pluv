@@ -46,7 +46,10 @@ export class PubSubRedis extends AbstractPubSub {
         await this._publisher.publish(roomName, JSON.stringify(payload));
     }
 
-    public async subscribe(roomName: string, onMessage: (message: IOPubSubEventMessage<any>) => void): Promise<number> {
+    public async subscribe(
+        roomName: string,
+        onMessage: (message: IOPubSubEventMessage<any>) => void,
+    ): Promise<number> {
         const id = this._currentSubscriptionId++;
         const refs = this._subscriptionsRefs.get(roomName) ?? [];
 
@@ -89,7 +92,8 @@ export class PubSubRedis extends AbstractPubSub {
 
         if (!subscribers?.length) return;
 
-        const parsed: IOPubSubEventMessage<any> = typeof message === "string" ? JSON.parse(message) : message;
+        const parsed: IOPubSubEventMessage<any> =
+            typeof message === "string" ? JSON.parse(message) : message;
 
         subscribers.forEach((id) => {
             const subscription = this._subscriptions.get(id);

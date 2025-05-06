@@ -77,11 +77,13 @@ export type EventRecord<TEvent extends string, TData extends JsonObject> = {
     [key in `${TEvent}`]: TData;
 };
 
-export type GetEventMessage<T extends EventRecord<string, any>, TEvent extends keyof T> = TEvent extends string
-    ? EventMessage<TEvent, T[TEvent]>
-    : never;
+export type GetEventMessage<
+    T extends EventRecord<string, any>,
+    TEvent extends keyof T,
+> = TEvent extends string ? EventMessage<TEvent, T[TEvent]> : never;
 
-export type InferIOAuthorize<TIO extends IOLike<any, any>> = TIO extends IOLike<infer IAuthorize> ? IAuthorize : never;
+export type InferIOAuthorize<TIO extends IOLike<any, any>> =
+    TIO extends IOLike<infer IAuthorize> ? IAuthorize : never;
 
 export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any> | null> =
     TAuthorize extends IOAuthorize<infer IUser, any> ? IUser : null;
@@ -90,7 +92,10 @@ export type InputZodLike<TData extends JsonObject> = {
     parse: (data: unknown) => TData;
 } & ({ _input: TData } | { _zod: { input: TData } });
 
-export type IOAuthorize<TUser extends BaseUser | null = any, TContext extends Record<string, unknown> = {}> =
+export type IOAuthorize<
+    TUser extends BaseUser | null = any,
+    TContext extends Record<string, unknown> = {},
+> =
     | (TUser extends BaseUser
           ? {
                 secret?: string;
@@ -109,9 +114,14 @@ export type IOAuthorizeEventMessage<TIO extends IOLike> = {
     user: InferIOAuthorizeUser<InferIOAuthorize<TIO>>;
 };
 
-export type ProcedureLike<TInput extends JsonObject = {}, TOutput extends EventRecord<string, any> = {}> = {
+export type ProcedureLike<
+    TInput extends JsonObject = {},
+    TOutput extends EventRecord<string, any> = {},
+> = {
     config: {
-        broadcast?: ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>) | null;
+        broadcast?:
+            | ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>)
+            | null;
         input?: InputZodLike<TInput> | null;
         resolver: (data: TInput, ...args: any[]) => MaybePromise<TOutput>;
         self?: ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>) | null;
@@ -139,11 +149,14 @@ export type InferEventsInput<TEvents extends Record<string, ProcedureLike<any, a
     [P in keyof TEvents]: TEvents[P] extends ProcedureLike<infer IInput, any> ? IInput : never;
 };
 
-export type InferEventsOutput<TEvents extends Record<string, ProcedureLike<any, any>>> = UnionToIntersection<
-    {
-        [P in keyof TEvents]: TEvents[P] extends ProcedureLike<any, infer IOutput> ? IOutput : never;
-    }[keyof TEvents]
->;
+export type InferEventsOutput<TEvents extends Record<string, ProcedureLike<any, any>>> =
+    UnionToIntersection<
+        {
+            [P in keyof TEvents]: TEvents[P] extends ProcedureLike<any, infer IOutput>
+                ? IOutput
+                : never;
+        }[keyof TEvents]
+    >;
 
 export type InferIOInput<TRouter extends IORouterLike<any>> =
     TRouter extends IORouterLike<infer IEvents> ? InferEventsInput<IEvents> : never;
@@ -151,7 +164,10 @@ export type InferIOInput<TRouter extends IORouterLike<any>> =
 export type InferIOOutput<TRouter extends IORouterLike<any>> =
     TRouter extends IORouterLike<infer IEvents> ? InferEventsOutput<IEvents> : never;
 
-export type InferEventMessage<TEvents = EventRecord<string, any>, TEvent extends keyof TEvents = keyof TEvents> =
+export type InferEventMessage<
+    TEvents = EventRecord<string, any>,
+    TEvent extends keyof TEvents = keyof TEvents,
+> =
     TEvents extends EventRecord<string, any>
         ? { [P in TEvent]: P extends string ? Id<EventMessage<P, TEvents[P]>> : never }[TEvent]
         : never;

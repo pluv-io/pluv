@@ -22,7 +22,11 @@ import type {
     InferPlatformWebSocketSource,
     InferRoomContextType,
 } from "./AbstractPlatform";
-import type { AbstractCloseEvent, AbstractErrorEvent, AbstractMessageEvent } from "./AbstractWebSocket";
+import type {
+    AbstractCloseEvent,
+    AbstractErrorEvent,
+    AbstractMessageEvent,
+} from "./AbstractWebSocket";
 import { AbstractWebSocket } from "./AbstractWebSocket";
 import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { authorize } from "./authorize";
@@ -61,7 +65,9 @@ export interface IORoomListeners<
     onUserDisconnected: (event: IOUserDisconnectedEvent<TPlatform, TAuthorize, TContext>) => void;
 }
 
-export type BroadcastProxy<TIO extends IORoom<any, any, any, any>> = (<TEvent extends keyof InferIOInput<TIO>>(
+export type BroadcastProxy<TIO extends IORoom<any, any, any, any>> = (<
+    TEvent extends keyof InferIOInput<TIO>,
+>(
     event: TEvent,
     data: Id<InferIOInput<TIO>[TEvent]>,
 ) => Promise<void>) & {
@@ -70,7 +76,11 @@ export type BroadcastProxy<TIO extends IORoom<any, any, any, any>> = (<TEvent ex
 
 export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
+    TAuthorize extends PluvIOAuthorize<
+        TPlatform,
+        any,
+        InferInitContextType<TPlatform>
+    > | null = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -94,13 +104,19 @@ interface PatchPresenceParams {
     timer?: number | null;
 }
 
-export type WebSocketRegisterConfig<TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>> = {
+export type WebSocketRegisterConfig<
+    TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
+> = {
     token?: string | null;
 } & InferInitContextType<TPlatform>;
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = null,
+    TAuthorize extends PluvIOAuthorize<
+        TPlatform,
+        any,
+        InferInitContextType<TPlatform>
+    > | null = null,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IOLike<TAuthorize, TEvents>
@@ -118,7 +134,10 @@ export class IORoom<
     private readonly _listeners: IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>;
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
-    private readonly _sessions = new Map<[sessionId: string][0], AbstractWebSocket<any, TAuthorize>>();
+    private readonly _sessions = new Map<
+        [sessionId: string][0],
+        AbstractWebSocket<any, TAuthorize>
+    >();
     private readonly _userSessionss = new Map<[userId: string][0], Set<[sessionId: string][0]>>();
 
     /**
@@ -199,7 +218,8 @@ export class IORoom<
          * @see https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-hibernation-api
          * @date April 17, 2025
          */
-        const webSockets = this._platform.getWebSockets() as readonly InferPlatformWebSocketSource<TPlatform>[];
+        const webSockets =
+            this._platform.getWebSockets() as readonly InferPlatformWebSocketSource<TPlatform>[];
 
         webSockets.forEach((webSocket) => {
             const deserialized = this._platform.getSerializedState(webSocket);
@@ -276,7 +296,9 @@ export class IORoom<
         }, 0);
     }
 
-    public onClose(webSocket: WebSocketType<TPlatform>): (event: AbstractCloseEvent) => Promise<void> {
+    public onClose(
+        webSocket: WebSocketType<TPlatform>,
+    ): (event: AbstractCloseEvent) => Promise<void> {
         this._ensureDetached();
 
         const wsSession = this._getAbstractWs(webSocket);
@@ -286,7 +308,9 @@ export class IORoom<
         return this._onClose(wsSession);
     }
 
-    public onError(webSocket: WebSocketType<TPlatform>): (event: AbstractErrorEvent) => Promise<void> {
+    public onError(
+        webSocket: WebSocketType<TPlatform>,
+    ): (event: AbstractErrorEvent) => Promise<void> {
         this._ensureDetached();
 
         const wsSession = this._getAbstractWs(webSocket);
@@ -296,7 +320,9 @@ export class IORoom<
         return this._onClose(wsSession);
     }
 
-    public onMessage(webSocket: WebSocketType<TPlatform>): (event: AbstractMessageEvent) => Promise<void> {
+    public onMessage(
+        webSocket: WebSocketType<TPlatform>,
+    ): (event: AbstractMessageEvent) => Promise<void> {
         this._ensureDetached();
 
         const wsSession = this._getAbstractWs(webSocket);
@@ -358,7 +384,9 @@ export class IORoom<
             this._addUserSession(user.id, pluvWs.sessionId);
         }
 
-        this._logDebug(`${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
+        this._logDebug(
+            `${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`,
+        );
 
         await this._platform.acceptWebSocket(pluvWs);
         this._sessions.set(pluvWs.sessionId, pluvWs);
@@ -377,7 +405,9 @@ export class IORoom<
 
         const size = this.getSize();
 
-        this._logDebug(`${colors.blue(`Registered connection for room ${this.id}:`)} ${pluvWs.sessionId}`);
+        this._logDebug(
+            `${colors.blue(`Registered connection for room ${this.id}:`)} ${pluvWs.sessionId}`,
+        );
         this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
     }
 
@@ -407,13 +437,19 @@ export class IORoom<
         });
     }
 
-    private async _closeWebSockets(webSockets: readonly AbstractWebSocket<any, TAuthorize>[]): Promise<void> {
-        const closeWebSocket = async (webSocket: AbstractWebSocket<any, TAuthorize>): Promise<void> => {
+    private async _closeWebSockets(
+        webSockets: readonly AbstractWebSocket<any, TAuthorize>[],
+    ): Promise<void> {
+        const closeWebSocket = async (
+            webSocket: AbstractWebSocket<any, TAuthorize>,
+        ): Promise<void> => {
             webSocket.state = { ...webSocket.state, quit: true };
 
             const sessionId = webSocket.sessionId;
 
-            this._logDebug(`${colors.blue(`Unregistering connection for room ${this.id}:`)} ${sessionId}`);
+            this._logDebug(
+                `${colors.blue(`Unregistering connection for room ${this.id}:`)} ${sessionId}`,
+            );
             this._sessions.delete(sessionId);
 
             await this._platform.persistence.deleteUser(this.id, sessionId).catch(() => null);
@@ -443,7 +479,9 @@ export class IORoom<
                 console.error(error);
             }
 
-            this._logDebug(`${colors.blue(`Unregistered connection for room ${this.id}:`)} ${webSocket.sessionId}`);
+            this._logDebug(
+                `${colors.blue(`Unregistered connection for room ${this.id}:`)} ${webSocket.sessionId}`,
+            );
         };
 
         const promises = webSockets.map(async (webSocket) => {
@@ -466,7 +504,8 @@ export class IORoom<
     private async _emitQuitters(): Promise<void> {
         const currentTime = new Date().getTime();
         const quitters = Array.from(this._sessions.values()).filter(
-            (pluvWs) => pluvWs.state.quit || currentTime - pluvWs.state.timers.ping > PING_TIMEOUT_MS,
+            (pluvWs) =>
+                pluvWs.state.quit || currentTime - pluvWs.state.timers.ping > PING_TIMEOUT_MS,
         );
 
         this._closeWebSockets(quitters);
@@ -509,7 +548,9 @@ export class IORoom<
     }
 
     private async _emitSyncState(): Promise<void> {
-        const connectionIds = await this._platform.persistence.getUsers(this.id).then((map) => Object.keys(map));
+        const connectionIds = await this._platform.persistence
+            .getUsers(this.id)
+            .then((map) => Object.keys(map));
 
         await this._broadcast({
             message: {
@@ -525,7 +566,9 @@ export class IORoom<
         throw new Error("Platform must use detached mode");
     }
 
-    private _getAbstractWs(webSocket: WebSocketType<TPlatform>): AbstractWebSocket<any, TAuthorize> | null {
+    private _getAbstractWs(
+        webSocket: WebSocketType<TPlatform>,
+    ): AbstractWebSocket<any, TAuthorize> | null {
         if ((webSocket as unknown as any) instanceof AbstractWebSocket) return webSocket;
 
         const sessionId = this._platform.getSessionId(webSocket);
@@ -550,7 +593,8 @@ export class IORoom<
         if (!ioAuthorize) return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
         if (!token) return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
 
-        if (!ioAuthorize.secret) throw new Error("`authorize` was specified without a valid secret");
+        if (!ioAuthorize.secret)
+            throw new Error("`authorize` was specified without a valid secret");
 
         const payload = await authorize({
             platform: this._platform,
@@ -590,13 +634,18 @@ export class IORoom<
         return doc;
     }
 
-    private _getIOAuthorize(options: WebSocketRegisterConfig<TPlatform>): ResolvedPluvIOAuthorize<any, any> | null {
+    private _getIOAuthorize(
+        options: WebSocketRegisterConfig<TPlatform>,
+    ): ResolvedPluvIOAuthorize<any, any> | null {
         if (typeof this._authorize === "function") return this._authorize(options);
 
         return this._authorize as ResolvedPluvIOAuthorize<any, any> | null;
     }
 
-    private _getLatestPresence(userId: string): { timer: number | null; presence: JsonObject | null } {
+    private _getLatestPresence(userId: string): {
+        timer: number | null;
+        presence: JsonObject | null;
+    } {
         if (!this._authorize) return { timer: null, presence: null };
 
         const sessionIds = Array.from(this._userSessionss.get(userId)?.values() ?? []);
@@ -628,11 +677,19 @@ export class IORoom<
 
     private _getProcedure(
         message: EventMessage<string, any>,
-    ): (typeof this._router)["_defs"]["events"][keyof (typeof this._router)["_defs"]["events"]] | null {
-        return this._router._defs.events[message.type as keyof (typeof this._router)["_defs"]["events"]] ?? null;
+    ):
+        | (typeof this._router)["_defs"]["events"][keyof (typeof this._router)["_defs"]["events"]]
+        | null {
+        return (
+            this._router._defs.events[
+                message.type as keyof (typeof this._router)["_defs"]["events"]
+            ] ?? null
+        );
     }
 
-    private _getProcedureInputs(message: EventMessage<string, any>): InferIOInput<this>[keyof TEvents] {
+    private _getProcedureInputs(
+        message: EventMessage<string, any>,
+    ): InferIOInput<this>[keyof TEvents] {
         const procedure = this._getProcedure(message);
 
         if (!procedure) return message.data;
@@ -706,7 +763,9 @@ export class IORoom<
 
                 await Promise.resolve(
                     this._listeners.onDestroy({
-                        ...("_meta" in this._platform && !!this._platform._meta ? { _meta: this._platform._meta } : {}),
+                        ...("_meta" in this._platform && !!this._platform._meta
+                            ? { _meta: this._platform._meta }
+                            : {}),
                         context: this._context,
                         encodedState,
                         room: this.id,
@@ -736,7 +795,9 @@ export class IORoom<
         };
     }
 
-    private _onMessage(webSocket: AbstractWebSocket<any, TAuthorize>): (event: AbstractMessageEvent) => Promise<void> {
+    private _onMessage(
+        webSocket: AbstractWebSocket<any, TAuthorize>,
+    ): (event: AbstractMessageEvent) => Promise<void> {
         return async (event: AbstractMessageEvent): Promise<void> => {
             if (!(await this._initialized)) return;
 
@@ -752,7 +813,12 @@ export class IORoom<
             };
 
             const doc = await this._doc;
-            const eventContext: EventResolverContext<EventResolverKind, TPlatform, TAuthorize, TContext> = {
+            const eventContext: EventResolverContext<
+                EventResolverKind,
+                TPlatform,
+                TAuthorize,
+                TContext
+            > = {
                 context: this._context,
                 doc,
                 garbageCollect: async () => {
@@ -788,10 +854,15 @@ export class IORoom<
             const procedure = this._getProcedure(message);
 
             this._listeners.onMessage({
-                ...("_meta" in this._platform && !!this._platform._meta ? { _meta: this._platform._meta } : {}),
+                ...("_meta" in this._platform && !!this._platform._meta
+                    ? { _meta: this._platform._meta }
+                    : {}),
                 context: this._context,
                 encodedState: doc.getEncodedState(),
-                message: message as InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>,
+                message: message as InferEventMessage<
+                    InferEventsOutput<TEvents>,
+                    keyof InferEventsOutput<TEvents>
+                >,
                 room: this.id,
                 user: session.user,
                 webSocket: session.webSocket.webSocket,
@@ -875,7 +946,9 @@ export class IORoom<
         };
     }
 
-    private _parseMessage(message: { data: string | ArrayBuffer }): EventMessage<string, any> | null {
+    private _parseMessage(message: {
+        data: string | ArrayBuffer;
+    }): EventMessage<string, any> | null {
         try {
             const parsed = this._platform.parseData(message.data);
 
@@ -923,7 +996,10 @@ export class IORoom<
         });
     }
 
-    private _removeUserSession(userId: string, sessionId: string): Set<[sessionId: string][0]> | null {
+    private _removeUserSession(
+        userId: string,
+        sessionId: string,
+    ): Set<[sessionId: string][0]> | null {
         const set = this._userSessionss.get(userId);
 
         if (!set) return null;

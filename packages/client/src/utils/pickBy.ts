@@ -1,4 +1,7 @@
-export const pickBy = <T extends Record<string, any>>(obj: T, by: (value: T[keyof T]) => boolean): Partial<T> => {
+export const pickBy = <T extends Record<string, any>>(
+    obj: T,
+    by: (value: T[keyof T]) => boolean,
+): Partial<T> => {
     const result: Partial<T> = {};
     const keys: (keyof T)[] = Object.keys(obj);
 

@@ -130,7 +130,9 @@ export class PluvPlatform<
 
         this._basePath = basePath;
         this._context = typeof context === "function" ? context(this._roomContext) : context;
-        this._endpoints = _defs?.endpoints ?? { createToken: "https://rooms.pluv.io/api/room/token" };
+        this._endpoints = _defs?.endpoints ?? {
+            createToken: "https://rooms.pluv.io/api/room/token",
+        };
         this._publicKey = publicKey;
         this._secretKey = secretKey;
         this._webhookSecret = webhookSecret;
@@ -175,14 +177,20 @@ export class PluvPlatform<
         throw new Error("Not implemented");
     }
 
-    public setSerializedState(webSocket: AbstractWebSocket, state: WebSocketSerializedState): WebSocketSerializedState {
+    public setSerializedState(
+        webSocket: AbstractWebSocket,
+        state: WebSocketSerializedState,
+    ): WebSocketSerializedState {
         throw new Error("Not implemented");
     }
 
     public validateConfig(config: any): void {
-        if (!config.authorize) throw new Error("Config `authorize` must be provided to `platformPluv`");
-        if (!!config.onRoomMessage) throw new Error("Config `onRoomMessage` is not supported on `platformPluv`");
-        if (!!config.onStorageUpdated) throw new Error("Config `onStorageUpdated` is not supported on `platformPluv`");
+        if (!config.authorize)
+            throw new Error("Config `authorize` must be provided to `platformPluv`");
+        if (!!config.onRoomMessage)
+            throw new Error("Config `onRoomMessage` is not supported on `platformPluv`");
+        if (!!config.onStorageUpdated)
+            throw new Error("Config `onStorageUpdated` is not supported on `platformPluv`");
 
         /**
          * !HACK
@@ -199,79 +207,94 @@ export class PluvPlatform<
         };
     }
 
-    private _webhooksRouter = new Hono().basePath("/").post("/", async (c: Context<BlankEnv, "/", BlankInput>) => {
-        const [algorithm, signature] = c.req.header(SIGNATURE_HEADER)?.split("=") ?? [];
+    private _webhooksRouter = new Hono()
+        .basePath("/")
+        .post("/", async (c: Context<BlankEnv, "/", BlankInput>) => {
+            const [algorithm, signature] = c.req.header(SIGNATURE_HEADER)?.split("=") ?? [];
 
-        try {
-            if (!this._webhookSecret) throw new HttpError("Unauthorized", 401);
-            if (algorithm !== SIGNATURE_ALGORITHM) throw new HttpError("Unauthorized", 401);
-            if (!signature) throw new HttpError("Unauthorized", 401);
+            try {
+                if (!this._webhookSecret) throw new HttpError("Unauthorized", 401);
+                if (algorithm !== SIGNATURE_ALGORITHM) throw new HttpError("Unauthorized", 401);
+                if (!signature) throw new HttpError("Unauthorized", 401);
 
-            const [payload, webhookSecret] = await Promise.all([
-                c.req.json(),
-                typeof this._webhookSecret === "string" ? this._webhookSecret : await this._webhookSecret(),
-            ]);
+                const [payload, webhookSecret] = await Promise.all([
+                    c.req.json(),
+                    typeof this._webhookSecret === "string"
+                        ? this._webhookSecret
+                        : await this._webhookSecret(),
+                ]);
 
-            const verified = await verifyWebhook({
-                payload: stringify(payload),
-                signature,
-                secret: webhookSecret,
-            });
+                const verified = await verifyWebhook({
+                    payload: stringify(payload),
+                    signature,
+                    secret: webhookSecret,
+                });
 
-            if (!verified) throw new HttpError("Unauthorized", 401);
+                if (!verified) throw new HttpError("Unauthorized", 401);
 
-            const parsed = ZodEvent.safeParse(payload);
+                const parsed = ZodEvent.safeParse(payload);
 
-            if (!parsed.success) throw new HttpError("Invalid request", 400);
+                if (!parsed.success) throw new HttpError("Invalid request", 400);
 
-            const { event, data } = parsed.data;
-            const context = this._context;
+                const { event, data } = parsed.data;
+                const context = this._context;
 
-            switch (event) {
-                case "initial-storage": {
-                    const room = data.room;
-                    const storage =
-                        typeof room === "string"
-                            ? ((await this._getInitialStorage?.({ context, room })) ?? null)
-                            : null;
+                switch (event) {
+                    case "initial-storage": {
+                        const room = data.room;
+                        const storage =
+                            typeof room === "string"
+                                ? ((await this._getInitialStorage?.({ context, room })) ?? null)
+                                : null;
 
-                    return createSuccessResponse(c, { event, room, storage });
+                        return createSuccessResponse(c, { event, room, storage });
+                    }
+                    case "room-deleted": {
+                        const room = data.room;
+                        const encodedState = data.storage;
+
+                        await Promise.resolve(
+                            this._listeners?.onRoomDeleted({ context, encodedState, room }),
+                        );
+
+                        return createSuccessResponse(c, { event, room });
+                    }
+                    case "user-connected": {
+                        const room = data.room;
+                        const encodedState = data.storage;
+                        const user = data.user as any;
+
+                        await Promise.resolve(
+                            this._listeners?.onUserConnected({ context, encodedState, room, user }),
+                        );
+
+                        return createSuccessResponse(c, { event, room });
+                    }
+                    case "user-disconnected": {
+                        const room = data.room;
+                        const encodedState = data.storage;
+                        const user = data.user as any;
+
+                        await Promise.resolve(
+                            this._listeners?.onUserDisconnected({
+                                context,
+                                encodedState,
+                                room,
+                                user,
+                            }),
+                        );
+
+                        return createSuccessResponse(c, { event, room });
+                    }
+                    default: {
+                        throw new HttpError("Unknown event", 400);
+                    }
                 }
-                case "room-deleted": {
-                    const room = data.room;
-                    const encodedState = data.storage;
+            } catch (error) {
+                const message = error instanceof Error ? error.message : "Unexpected error";
+                const status = error instanceof HttpError ? error.status : 500;
 
-                    await Promise.resolve(this._listeners?.onRoomDeleted({ context, encodedState, room }));
-
-                    return createSuccessResponse(c, { event, room });
-                }
-                case "user-connected": {
-                    const room = data.room;
-                    const encodedState = data.storage;
-                    const user = data.user as any;
-
-                    await Promise.resolve(this._listeners?.onUserConnected({ context, encodedState, room, user }));
-
-                    return createSuccessResponse(c, { event, room });
-                }
-                case "user-disconnected": {
-                    const room = data.room;
-                    const encodedState = data.storage;
-                    const user = data.user as any;
-
-                    await Promise.resolve(this._listeners?.onUserDisconnected({ context, encodedState, room, user }));
-
-                    return createSuccessResponse(c, { event, room });
-                }
-                default: {
-                    throw new HttpError("Unknown event", 400);
-                }
+                return createErrorResponse(c, { message }, status);
             }
-        } catch (error) {
-            const message = error instanceof Error ? error.message : "Unexpected error";
-            const status = error instanceof HttpError ? error.status : 500;
-
-            return createErrorResponse(c, { message }, status);
-        }
-    });
+        });
 }

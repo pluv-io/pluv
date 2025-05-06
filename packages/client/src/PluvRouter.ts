@@ -67,7 +67,10 @@ export class PluvRouter<
     public static merge<TRouters extends PluvRouter<any, any, any, any>[]>(
         ...routers: TRouters
     ): MergedRouter<TRouters> {
-        const events = Object.assign(Object.create(null), ...routers.map((router) => router._defs.events));
+        const events = Object.assign(
+            Object.create(null),
+            ...routers.map((router) => router._defs.events),
+        );
 
         if (Object.keys(events).some((key) => key.startsWith("$"))) {
             throw new Error('Procedures may not start with "$"');

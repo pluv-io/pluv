@@ -1,8 +1,19 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type { IOLike, Id, InferIOAuthorize, InferIOAuthorizeUser, JsonObject, Maybe } from "@pluv/types";
+import type {
+    IOLike,
+    Id,
+    InferIOAuthorize,
+    InferIOAuthorizeUser,
+    JsonObject,
+    Maybe,
+} from "@pluv/types";
 import colors from "kleur";
-import type { AbstractPlatform, InferInitContextType, InferRoomContextType } from "./AbstractPlatform";
+import type {
+    AbstractPlatform,
+    InferInitContextType,
+    InferRoomContextType,
+} from "./AbstractPlatform";
 import type { IORoomListeners } from "./IORoom";
 import { IORoom } from "./IORoom";
 import type { PluvIO } from "./PluvIO";
@@ -29,7 +40,11 @@ export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
 
 export type PluvServerConfig<
     TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
+    TAuthorize extends PluvIOAuthorize<
+        TPlatform,
+        any,
+        InferInitContextType<TPlatform>
+    > | null = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -60,11 +75,20 @@ export type CreateRoomOptions<
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = keyof InferRoomContextType<TPlatform> extends never
     ? [BaseCreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>] | []
-    : [Id<BaseCreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents> & InferRoomContextType<TPlatform>>];
+    : [
+          Id<
+              BaseCreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents> &
+                  InferRoomContextType<TPlatform>
+          >,
+      ];
 
 export class PluvServer<
     TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
+    TAuthorize extends PluvIOAuthorize<
+        TPlatform,
+        any,
+        InferInitContextType<TPlatform>
+    > | null = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IOLike<TAuthorize, TEvents>
@@ -147,7 +171,9 @@ export class PluvServer<
                     });
                 }
 
-                const encodedState = (await this._platform.persistence.getStorageState(room)) ?? doc.getEncodedState();
+                const encodedState =
+                    (await this._platform.persistence.getStorageState(room)) ??
+                    doc.getEncodedState();
                 const storageSize = new TextEncoder().encode(encodedState).length;
 
                 if (!!this._limits.storageMaxSize && storageSize > this._limits.storageMaxSize) {
@@ -222,7 +248,10 @@ export class PluvServer<
             return { $storageUpdated: { state: encodedState } };
         }),
     });
-    private readonly _context: PluvContext<TPlatform, TContext> = {} as PluvContext<TPlatform, TContext>;
+    private readonly _context: PluvContext<TPlatform, TContext> = {} as PluvContext<
+        TPlatform,
+        TContext
+    >;
     private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
     private readonly _debug: boolean;
     private readonly _getInitialStorage: GetInitialStorageFn<TContext> | null = null;
@@ -233,7 +262,8 @@ export class PluvServer<
 
     public get fetch(): (...args: any[]) => Promise<any> {
         return ((...args: any[]): Promise<any> => {
-            if (!this._platform._fetch) throw new Error(`\`${this._platform._name}\` does not support \`fetch\``);
+            if (!this._platform._fetch)
+                throw new Error(`\`${this._platform._name}\` does not support \`fetch\``);
 
             return this._platform._fetch(...args);
         }) as NonNullable<typeof this._platform._fetch>;
@@ -275,8 +305,13 @@ export class PluvServer<
             router = new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>({} as TEvents),
         } = options;
 
-        const { onRoomDeleted, onRoomMessage, onStorageUpdated, onUserConnected, onUserDisconnected } =
-            options as Partial<BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>>;
+        const {
+            onRoomDeleted,
+            onRoomMessage,
+            onStorageUpdated,
+            onUserConnected,
+            onUserDisconnected,
+        } = options as Partial<BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>>;
 
         platform.validateConfig(options);
 
@@ -285,12 +320,9 @@ export class PluvServer<
         this._io = io;
         this._limits = limits;
         this._platform = platform;
-        this._router = (router ? PluvRouter.merge(this._baseRouter, router) : this._baseRouter) as PluvRouter<
-            TPlatform,
-            TAuthorize,
-            TContext,
-            TEvents
-        >;
+        this._router = (
+            router ? PluvRouter.merge(this._baseRouter, router) : this._baseRouter
+        ) as PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
         if (authorize) this._authorize = authorize;
         if (context) this._context = context;
@@ -309,21 +341,19 @@ export class PluvServer<
         room: string,
         ...options: CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>
     ): IORoom<TPlatform, TAuthorize, TContext, TEvents> {
-        const { _meta, debug, onDestroy, onMessage, ...platformRoomContext } = (options[0] ?? {}) as CreateRoomOptions<
-            TPlatform,
-            TAuthorize,
-            TContext,
-            TEvents
-        >[0] & { _meta?: any };
+        const { _meta, debug, onDestroy, onMessage, ...platformRoomContext } = (options[0] ??
+            {}) as CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>[0] & { _meta?: any };
 
         if (this._platform._config.handleMode !== "io") {
             throw new Error(`\`createRoom\` is unsupported for \`${this._platform._name}\``);
         }
 
-        if (!/^[a-z0-9](?:[a-z0-9-_]*[a-z0-9])?$/i.test(room)) throw new Error("Unsupported room name");
+        if (!/^[a-z0-9](?:[a-z0-9-_]*[a-z0-9])?$/i.test(room))
+            throw new Error("Unsupported room name");
 
         const roomContext = platformRoomContext as InferRoomContextType<TPlatform>;
-        const context: TContext = typeof this._context === "function" ? this._context(roomContext) : this._context;
+        const context: TContext =
+            typeof this._context === "function" ? this._context(roomContext) : this._context;
 
         const newRoom = new IORoom<TPlatform, TAuthorize, TContext, TEvents>(room, {
             ...(!!_meta ? { _meta } : {}),

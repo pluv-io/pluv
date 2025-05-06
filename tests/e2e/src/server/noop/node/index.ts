@@ -13,7 +13,9 @@ type CommanderOptionValue = string | boolean | string[] | undefined;
 
 const options = program
     .description("Pluv server running on node")
-    .addOption(new Option("--port <PORT>").default(3122).argParser((value: string) => parseInt(value, 10)))
+    .addOption(
+        new Option("--port <PORT>").default(3122).argParser((value: string) => parseInt(value, 10)),
+    )
     .argument("[args...]")
     .parse(process.argv)
     .opts<{ port: CommanderOptionValue }>();

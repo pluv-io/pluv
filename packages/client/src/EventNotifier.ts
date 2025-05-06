@@ -2,14 +2,20 @@ import type { Id, InferIOOutput, IOEventMessage, IOLike } from "@pluv/types";
 import type { Subject } from "wonka";
 import { makeSubject, subscribe } from "wonka";
 
-export type EventNotifierSubscriptionCallback<TIO extends IOLike<any, any>, TEvent extends keyof InferIOOutput<TIO>> = (
-    value: Id<IOEventMessage<TIO, TEvent>>,
-) => void;
+export type EventNotifierSubscriptionCallback<
+    TIO extends IOLike<any, any>,
+    TEvent extends keyof InferIOOutput<TIO>,
+> = (value: Id<IOEventMessage<TIO, TEvent>>) => void;
 
 export class EventNotifier<TIO extends IOLike> {
-    public subjects = new Map<keyof InferIOOutput<TIO>, Subject<Id<IOEventMessage<TIO, keyof InferIOOutput<TIO>>>>>();
+    public subjects = new Map<
+        keyof InferIOOutput<TIO>,
+        Subject<Id<IOEventMessage<TIO, keyof InferIOOutput<TIO>>>>
+    >();
 
-    public subject<TEvent extends keyof InferIOOutput<TIO>>(name: TEvent): Subject<Id<IOEventMessage<TIO, TEvent>>> {
+    public subject<TEvent extends keyof InferIOOutput<TIO>>(
+        name: TEvent,
+    ): Subject<Id<IOEventMessage<TIO, TEvent>>> {
         const subject = this.subjects.get(name);
 
         if (subject) return subject;

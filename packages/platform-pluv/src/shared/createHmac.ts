@@ -24,7 +24,10 @@ export const createHmac = async (params: CreateHmacParams): Promise<CreateHmacRe
     const algorithm: webcrypto.HmacImportParams = { name: "HMAC", hash: { name: "SHA-256" } };
     const extractable = false;
 
-    const key = await crypto.subtle.importKey("raw", keyBytes, algorithm, extractable, ["sign", "verify"]);
+    const key = await crypto.subtle.importKey("raw", keyBytes, algorithm, extractable, [
+        "sign",
+        "verify",
+    ]);
     const payloadBytes = encoder.encode(payload);
 
     const signature = await crypto.subtle.sign("HMAC", key, payloadBytes);

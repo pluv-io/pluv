@@ -8,7 +8,10 @@ export type OtherNotifierSubscriptionCallback<TIO extends IOLike, TPresence exte
 ) => void;
 
 export class OtherNotifier<TIO extends IOLike, TPresence extends JsonObject = {}> {
-    private _subjects = new Map<[clientId: string][0], Subject<Id<UserInfo<TIO, TPresence>> | null>>();
+    private _subjects = new Map<
+        [clientId: string][0],
+        Subject<Id<UserInfo<TIO, TPresence>> | null>
+    >();
 
     public clear(): void {
         this._subjects.forEach((subject) => {
@@ -35,7 +38,10 @@ export class OtherNotifier<TIO extends IOLike, TPresence extends JsonObject = {}
         return newSubject;
     }
 
-    public subscribe(clientId: string, callback: OtherNotifierSubscriptionCallback<TIO, TPresence>): () => void {
+    public subscribe(
+        clientId: string,
+        callback: OtherNotifierSubscriptionCallback<TIO, TPresence>,
+    ): () => void {
         const source = this.subject(clientId).source;
 
         return subscribe(callback)(source).unsubscribe;

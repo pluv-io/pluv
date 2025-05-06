@@ -20,7 +20,10 @@ export class PubSub extends AbstractPubSub {
         Promise.resolve(subject.next(payload));
     }
 
-    public subscribe(roomName: string, onMessage: (message: IOPubSubEventMessage<any>) => void): Promise<number> {
+    public subscribe(
+        roomName: string,
+        onMessage: (message: IOPubSubEventMessage<any>) => void,
+    ): Promise<number> {
         const id = this._currentSubscriptionId++;
         const refs = this._subscriptionsRefs.get(roomName) ?? [];
 

@@ -2,7 +2,9 @@ import type { Container } from "loro-crdt";
 import { LoroList, isContainer } from "loro-crdt";
 import type { LoroType } from "./types";
 
-export const list = <T extends unknown>(value: T[] | readonly T[] = []): LoroType<LoroList<T>, T[]> => {
+export const list = <T extends unknown>(
+    value: T[] | readonly T[] = [],
+): LoroType<LoroList<T>, T[]> => {
     const container = new LoroList();
 
     value.forEach((item, i) => {

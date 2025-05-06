@@ -1,5 +1,11 @@
 import type { InferInitContextType, PluvServer } from "@pluv/io";
-import type { BaseUser, InferIOAuthorize, InferIOAuthorizeUser, Maybe, MaybePromise } from "@pluv/types";
+import type {
+    BaseUser,
+    InferIOAuthorize,
+    InferIOAuthorizeUser,
+    Maybe,
+    MaybePromise,
+} from "@pluv/types";
 import type { Server as HttpServer, IncomingMessage, ServerResponse } from "node:http";
 import Url from "node:url";
 import { match } from "path-to-regexp";
@@ -9,7 +15,9 @@ import { NodePlatform } from "./NodePlatform";
 
 export type AuthorizeFunctionContext<TPluvServer extends PluvServer<any, any, any, any>> = {
     room: string;
-} & InferInitContextType<TPluvServer extends PluvServer<infer IPlatform, any, any, any> ? IPlatform : never>;
+} & InferInitContextType<
+    TPluvServer extends PluvServer<infer IPlatform, any, any, any> ? IPlatform : never
+>;
 
 export type AuthorizeFunction<TPluvServer extends PluvServer<any, any, any, any>> = (
     ctx: AuthorizeFunctionContext<TPluvServer>,
@@ -47,7 +55,10 @@ export interface WebSocketHandlerResult {
     matched: boolean;
 }
 
-export type WebSocketHandler = (ws: WebSocket, req: IncomingMessage) => Promise<WebSocketHandlerResult>;
+export type WebSocketHandler = (
+    ws: WebSocket,
+    req: IncomingMessage,
+) => Promise<WebSocketHandlerResult>;
 
 export interface CreatePluvHandlerResult {
     createWsServer: () => WebSocketServer;
@@ -91,7 +102,10 @@ export const createPluvHandler = <TPluvServer extends PluvServer<NodePlatform<an
         return newRoom;
     };
 
-    const wsHandler = async (ws: WebSocket, req: IncomingMessage): Promise<WebSocketHandlerResult> => {
+    const wsHandler = async (
+        ws: WebSocket,
+        req: IncomingMessage,
+    ): Promise<WebSocketHandlerResult> => {
         const url = req.url;
         const onError = handle(ws);
 

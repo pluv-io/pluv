@@ -1,6 +1,9 @@
 import type { Json } from "@pluv/types";
 
-export type CrdtType<TValue extends unknown, TJson extends unknown = any> = Omit<TValue, "__pluvType"> & {
+export type CrdtType<TValue extends unknown, TJson extends unknown = any> = Omit<
+    TValue,
+    "__pluvType"
+> & {
     __pluvType: () => TJson;
 };
 

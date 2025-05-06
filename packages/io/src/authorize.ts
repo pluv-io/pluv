@@ -15,7 +15,10 @@ export interface JWT<TUser extends BaseUser> {
     user: TUser;
 }
 
-export type JWTEncodeParams<TUser extends BaseUser | null, TPlatform extends AbstractPlatform<any, any>> = {
+export type JWTEncodeParams<
+    TUser extends BaseUser | null,
+    TPlatform extends AbstractPlatform<any, any>,
+> = {
     maxAge?: number;
     room: string;
     user: TUser extends BaseUser ? TUser : "Error: Cannot create token without authorization!";

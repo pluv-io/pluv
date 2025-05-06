@@ -109,7 +109,9 @@ export type AuthEndpoint<TMetadata extends JsonObject> =
     | string
     | ((params: EndpointParams<TMetadata>) => string | FetchOptions)
     | true;
-export type WsEndpoint<TMetadata extends JsonObject> = string | ((params: EndpointParams<TMetadata>) => string);
+export type WsEndpoint<TMetadata extends JsonObject> =
+    | string
+    | ((params: EndpointParams<TMetadata>) => string);
 
 type FetchOptions = { url: string; options?: RequestInit };
 
@@ -128,7 +130,9 @@ export type PluvRoomAddon<
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
-> = (input: PluvRoomAddonInput<TIO, TMetadata, TPresence, TStorage>) => Partial<PluvRoomAddonResult>;
+> = (
+    input: PluvRoomAddonInput<TIO, TMetadata, TPresence, TStorage>,
+) => Partial<PluvRoomAddonResult>;
 
 export interface PluvRoomAddonInput<
     TIO extends IOLike = IOLike,
@@ -276,8 +280,13 @@ export class PluvRoom<
             },
         };
 
-        this._router = router ?? (new PluvRouter({}) as PluvRouter<TIO, TPresence, TStorage, TEvents>);
-        this._usersManager = new UsersManager<TIO, TPresence>({ initialPresence, limits: this._limits, presence });
+        this._router =
+            router ?? (new PluvRouter({}) as PluvRouter<TIO, TPresence, TStorage, TEvents>);
+        this._usersManager = new UsersManager<TIO, TPresence>({
+            initialPresence,
+            limits: this._limits,
+            presence,
+        });
         this._crdtManager = new CrdtManager<TStorage>({ initialStorage });
     }
 
@@ -325,10 +334,9 @@ export class PluvRoom<
                 user: myself,
             };
 
-            const output = await (procedure.config.broadcast as EventResolver<TIO, any, any, TPresence, TStorage>)(
-                parsed,
-                context,
-            );
+            const output = await (
+                procedure.config.broadcast as EventResolver<TIO, any, any, TPresence, TStorage>
+            )(parsed, context);
 
             Object.entries(output).forEach(([_type, _data]) => {
                 this._sendMessage({ data: _data, type: _type });
@@ -336,7 +344,9 @@ export class PluvRoom<
         },
         {
             get(fn, prop) {
-                return async (data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[any]>): Promise<void> => {
+                return async (
+                    data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[any]>,
+                ): Promise<void> => {
                     return await fn(prop, data);
                 };
             },
@@ -364,9 +374,11 @@ export class PluvRoom<
 
         this._setMetadata(metadata);
 
-        const canConnect = [ConnectionState.Closed, ConnectionState.Unavailable, ConnectionState.Untouched].some(
-            (state) => this._state.connection.state === state,
-        );
+        const canConnect = [
+            ConnectionState.Closed,
+            ConnectionState.Unavailable,
+            ConnectionState.Untouched,
+        ].some((state) => this._state.connection.state === state);
 
         if (!canConnect) return;
 
@@ -453,8 +465,9 @@ export class PluvRoom<
         ): (() => void) => this._eventNotifier.subscribe(event, callback),
         {
             get(fn, prop) {
-                return (callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>): (() => void) =>
-                    fn(prop as any, callback);
+                return (
+                    callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
+                ): (() => void) => fn(prop as any, callback);
             },
         },
     ) as (<TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
@@ -500,7 +513,9 @@ export class PluvRoom<
     };
 
     public getStorageJson(): InferCrdtJson<TStorage> | null;
-    public getStorageJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]> | null;
+    public getStorageJson<TKey extends keyof TStorage>(
+        type: TKey,
+    ): InferCrdtJson<TStorage[TKey]> | null;
     public getStorageJson<TKey extends keyof TStorage>(type?: TKey) {
         if (this._state.connection.id === null) return null;
 
@@ -574,7 +589,8 @@ export class PluvRoom<
     };
 
     public updateMyPresence = (presence: UpdateMyPresenceAction<TPresence>): void => {
-        const newPresence = typeof presence === "function" ? presence(this.getMyPresence()) : presence;
+        const newPresence =
+            typeof presence === "function" ? presence(this.getMyPresence()) : presence;
 
         this._usersManager.updateMyPresence(newPresence);
 
@@ -743,7 +759,10 @@ export class PluvRoom<
         );
     };
 
-    private _getAuthFetchOptions(room: string, params: GetAuthEndpointParams<TMetadata>): FetchOptions | null {
+    private _getAuthFetchOptions(
+        room: string,
+        params: GetAuthEndpointParams<TMetadata>,
+    ): FetchOptions | null {
         const metadata = params.metadata as TMetadata;
 
         if (typeof this._endpoints.authEndpoint === "undefined") return null;
@@ -767,7 +786,10 @@ export class PluvRoom<
         return typeof result === "string" ? { url: result, options: {} } : result;
     }
 
-    private async _getAuthorization(room: string, params: GetAuthEndpointParams<TMetadata>): Promise<string | null> {
+    private async _getAuthorization(
+        room: string,
+        params: GetAuthEndpointParams<TMetadata>,
+    ): Promise<string | null> {
         const fetchOptions = this._getAuthFetchOptions(room, params);
 
         if (!fetchOptions) return null;
@@ -798,7 +820,9 @@ export class PluvRoom<
 
         switch (typeof this._endpoints.wsEndpoint) {
             case "undefined":
-                return !!this._getPublicKey(params) ? `wss://rooms.pluv.io/api/room/${room}` : `/api/pluv/room/${room}`;
+                return !!this._getPublicKey(params)
+                    ? `wss://rooms.pluv.io/api/room/${room}`
+                    : `/api/pluv/room/${room}`;
             case "string":
                 return this._endpoints.wsEndpoint;
             default:
@@ -948,7 +972,10 @@ export class PluvRoom<
         this._stateNotifier.subjects["my-presence"].next(presence);
         this._stateNotifier.subjects.myself.next(myself);
 
-        const update = this._state.connection.count > 1 ? (this._crdtManager.doc.getEncodedState() ?? null) : null;
+        const update =
+            this._state.connection.count > 1
+                ? (this._crdtManager.doc.getEncodedState() ?? null)
+                : null;
 
         this._sendMessage({
             type: "$initializeSession",
@@ -998,7 +1025,9 @@ export class PluvRoom<
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
-        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>[typeof ORIGIN_STORAGE_UPDATED];
+        const data = message.data as BaseIOEventRecord<
+            InferIOAuthorize<TIO>
+        >[typeof ORIGIN_STORAGE_UPDATED];
 
         if (!this._crdtManager) return;
 
@@ -1038,7 +1067,9 @@ export class PluvRoom<
         const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$syncStateReceived"];
         const active = new Set(data?.connectionIds ?? []);
 
-        const quitters = this._usersManager.getOthers().filter((other) => !active.has(other.connectionId));
+        const quitters = this._usersManager
+            .getOthers()
+            .filter((other) => !active.has(other.connectionId));
 
         quitters.forEach((quitter) => {
             this._usersManager.deleteConnection(quitter.connectionId);
@@ -1080,7 +1111,10 @@ export class PluvRoom<
 
     private _heartbeat(): void {
         this._clearTimeout(this._timeouts.pong);
-        this._timeouts.pong = setTimeout(this._reconnect.bind(this), PONG_TIMEOUT_MS) as unknown as number;
+        this._timeouts.pong = setTimeout(
+            this._reconnect.bind(this),
+            PONG_TIMEOUT_MS,
+        ) as unknown as number;
 
         /**
          * !HACK
@@ -1193,7 +1227,9 @@ export class PluvRoom<
         if (!message) return;
 
         const shouldLog =
-            typeof this._debug === "boolean" ? this._debug : this._debug.output.find((value) => value === message.type);
+            typeof this._debug === "boolean"
+                ? this._debug
+                : this._debug.output.find((value) => value === message.type);
 
         if (shouldLog) {
             this._logDebug("WebSocket event received: ", message.type, message);
@@ -1254,7 +1290,10 @@ export class PluvRoom<
         });
 
         this._clearInterval(this._intervals.heartbeat);
-        this._intervals.heartbeat = setInterval(this._heartbeat.bind(this), HEARTBEAT_INTERVAL_MS) as unknown as number;
+        this._intervals.heartbeat = setInterval(
+            this._heartbeat.bind(this),
+            HEARTBEAT_INTERVAL_MS,
+        ) as unknown as number;
     }
 
     private async _onNavigatorOffline(): Promise<void> {
@@ -1325,9 +1364,15 @@ export class PluvRoom<
             typeof this._reconnectTimeoutMs === "number"
                 ? this._reconnectTimeoutMs
                 : this._reconnectTimeoutMs({ attempts: this._state.connection.attempts });
-        const clampedMs = Math.max(Math.min(MIN_RECONNECT_TIMEOUT_MS, timeoutMs), MAX_RECONNECT_TIMEOUT_MS);
+        const clampedMs = Math.max(
+            Math.min(MIN_RECONNECT_TIMEOUT_MS, timeoutMs),
+            MAX_RECONNECT_TIMEOUT_MS,
+        );
 
-        this._timeouts.reconnect = setTimeout(this._reconnect.bind(this), clampedMs) as unknown as number;
+        this._timeouts.reconnect = setTimeout(
+            this._reconnect.bind(this),
+            clampedMs,
+        ) as unknown as number;
     }
 
     private async _reconnect(): Promise<void> {
@@ -1342,13 +1387,17 @@ export class PluvRoom<
         if (this._state.connection.state === ConnectionState.Closed) return;
 
         const metadata = this._lastMetadata;
-        const params = (typeof metadata === "undefined" ? [] : [{ metadata }]) as RoomConnectParams<TMetadata>;
+        const params = (
+            typeof metadata === "undefined" ? [] : [{ metadata }]
+        ) as RoomConnectParams<TMetadata>;
 
         await this.connect(...params);
     }
 
     private _sendMessage(data: string): void;
-    private _sendMessage<TMessage extends EventMessage<string, any> = EventMessage<string, any>>(data: TMessage): void;
+    private _sendMessage<TMessage extends EventMessage<string, any> = EventMessage<string, any>>(
+        data: TMessage,
+    ): void;
     private _sendMessage(data: any): void {
         const webSocket = this._state.webSocket;
 
@@ -1387,7 +1436,9 @@ export class PluvRoom<
         return parsed;
     }
 
-    private _updateState(updater: (oldState: WebSocketState<TIO>) => WebSocketState<TIO>): WebSocketState<TIO> {
+    private _updateState(
+        updater: (oldState: WebSocketState<TIO>) => WebSocketState<TIO>,
+    ): WebSocketState<TIO> {
         let authorization: AuthorizationState<TIO>;
 
         try {

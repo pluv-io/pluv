@@ -5,4 +5,6 @@ export type InferCallback<TIO extends IOLike<any, any>> = (i: typeof identity) =
     io: (io: TIO) => TIO;
 };
 
-export const infer = <TIO extends IOLike<any, any>>(callback: InferCallback<TIO>): InferCallback<TIO> => callback;
+export const infer = <TIO extends IOLike<any, any>>(
+    callback: InferCallback<TIO>,
+): InferCallback<TIO> => callback;

@@ -26,7 +26,11 @@ export class PersistenceRedis extends AbstractPersistence {
         this._client = client;
     }
 
-    public async addUser(room: string, connectionId: string, user: JsonObject | null): Promise<void> {
+    public async addUser(
+        room: string,
+        connectionId: string,
+        user: JsonObject | null,
+    ): Promise<void> {
         if (!this._initialized) return;
 
         await this._initialized;
@@ -108,7 +112,9 @@ export class PersistenceRedis extends AbstractPersistence {
         return !data ? null : JSON.parse(data);
     }
 
-    public async getUsers(room: string): Promise<Map<[connectionId: string][0], JsonObject | null>> {
+    public async getUsers(
+        room: string,
+    ): Promise<Map<[connectionId: string][0], JsonObject | null>> {
         if (!this._initialized) return new Map();
 
         await this._initialized;

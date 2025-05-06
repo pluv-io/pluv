@@ -30,7 +30,9 @@ import { YjsXmlText } from "../xmlText/YjsXmlText";
 
 const MERGE_INTERVAL_MS = 1_000;
 
-export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> extends AbstractCrdtDoc<TStorage> {
+export class CrdtYjsDoc<
+    TStorage extends Record<string, YjsType<any, any>>,
+> extends AbstractCrdtDoc<TStorage> {
     public value: YDoc = new YDoc();
 
     private _storage: TStorage;
@@ -87,7 +89,8 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
             if (node instanceof YXmlFragment) {
                 const yXmlFragment = this.value.getXmlFragment(key);
 
-                if (!!node.initialValue?.length) yXmlFragment.insert(0, node.initialValue?.slice(0));
+                if (!!node.initialValue?.length)
+                    yXmlFragment.insert(0, node.initialValue?.slice(0));
 
                 return { ...acc, [key]: yXmlFragment };
             }
@@ -196,20 +199,23 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> exte
     public track(): this {
         if (this._undoManager) this._undoManager.destroy();
 
-        const sharedTypes = Object.values(this._storage).reduce<YjsType<AbstractType<any>, any>[]>((acc, type) => {
-            if (
-                type instanceof YArray ||
-                type instanceof YMap ||
-                type instanceof YText ||
-                type instanceof YXmlElement ||
-                type instanceof YXmlFragment ||
-                type instanceof YXmlText
-            ) {
-                acc.push(type);
-            }
+        const sharedTypes = Object.values(this._storage).reduce<YjsType<AbstractType<any>, any>[]>(
+            (acc, type) => {
+                if (
+                    type instanceof YArray ||
+                    type instanceof YMap ||
+                    type instanceof YText ||
+                    type instanceof YXmlElement ||
+                    type instanceof YXmlFragment ||
+                    type instanceof YXmlText
+                ) {
+                    acc.push(type);
+                }
 
-            return acc;
-        }, []);
+                return acc;
+            },
+            [],
+        );
 
         if (!sharedTypes.length) {
             this._undoManager?.destroy();

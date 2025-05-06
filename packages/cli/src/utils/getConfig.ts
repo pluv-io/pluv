@@ -14,12 +14,16 @@ export const getConfig = (): ParsedPluvConfig => {
         filenames.some((filename) => filename === validName),
     );
 
-    const config: PluvConfig = configName ? require(path.resolve(process.cwd(), `./${configName}`)) : {};
+    const config: PluvConfig = configName
+        ? require(path.resolve(process.cwd(), `./${configName}`))
+        : {};
     const parsed = ZodPluvConfig.parse(config);
 
     const input =
         parsed.input ??
-        ["pluv.ts", "pluv.mjs", "pluv.js"].find((validName) => filenames.some((filename) => filename === validName));
+        ["pluv.ts", "pluv.mjs", "pluv.js"].find((validName) =>
+            filenames.some((filename) => filename === validName),
+        );
 
     return { ...parsed, input };
 };

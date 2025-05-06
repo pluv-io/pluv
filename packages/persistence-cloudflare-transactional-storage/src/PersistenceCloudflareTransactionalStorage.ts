@@ -31,7 +31,11 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
         this._mode = mode;
     }
 
-    public async addUser(room: string, connectionId: string, user: JsonObject | null): Promise<void> {
+    public async addUser(
+        room: string,
+        connectionId: string,
+        user: JsonObject | null,
+    ): Promise<void> {
         if (!this._initialized) return;
         if (!this._state) return;
 
@@ -108,7 +112,10 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
                 prefix: `${KV_USER_PREFIX}::${room}`,
             });
 
-            const partitions = partitionByLength(Array.from(map.keys()), KV_CLOUDFLARE_DELETE_BATCH_LIMIT);
+            const partitions = partitionByLength(
+                Array.from(map.keys()),
+                KV_CLOUDFLARE_DELETE_BATCH_LIMIT,
+            );
 
             await this._state.storage.transaction(async (tx) => {
                 await partitions.reduce(async (promise, partition) => {
@@ -165,7 +172,9 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
         await this._initialized;
 
         if (this._mode === "kv") {
-            const user = await this._state.storage.get<JsonObject | null>(this._getUserKey(room, connectionId));
+            const user = await this._state.storage.get<JsonObject | null>(
+                this._getUserKey(room, connectionId),
+            );
 
             return user ?? null;
         }
@@ -191,7 +200,9 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
         }
     }
 
-    public async getUsers(room: string): Promise<Map<[connectionId: string][0], JsonObject | null>> {
+    public async getUsers(
+        room: string,
+    ): Promise<Map<[connectionId: string][0], JsonObject | null>> {
         if (!this._initialized) return new Map();
         if (!this._state) return new Map();
 
@@ -238,7 +249,9 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
         await this._initialized;
 
         if (this._mode) {
-            const storage = await this._state.storage.list({ prefix: `${KV_USER_PREFIX}::${room}` });
+            const storage = await this._state.storage.list({
+                prefix: `${KV_USER_PREFIX}::${room}`,
+            });
 
             return storage.size;
         }
@@ -295,7 +308,9 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
         await this._initialized;
 
         if (this._mode === "kv") {
-            await this._state.storage.put(this._getStorageKey(room), state, { allowConcurrency: true });
+            await this._state.storage.put(this._getStorageKey(room), state, {
+                allowConcurrency: true,
+            });
             return;
         }
 

@@ -129,7 +129,11 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
         if (!userInfo) return null;
 
         const remaining = this._getConnectionIds(clientId)?.size ?? 0;
-        const result: DeleteConnectionResult<TIO, TPresence> = { clientId, remaining, data: userInfo };
+        const result: DeleteConnectionResult<TIO, TPresence> = {
+            clientId,
+            remaining,
+            data: userInfo,
+        };
 
         /**
          * @description A user may have multiple websocket connections open. If one connection is
@@ -195,8 +199,15 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
         if (!other) return null;
 
         const cleanedPatch = pickBy(patch ?? {}, (value) => typeof value !== "undefined");
-        const cleanedPresence = pickBy(other.presence ?? {}, (value) => typeof value !== "undefined");
-        const presence = { ...this.initialPresence, ...cleanedPresence, ...cleanedPatch } as TPresence;
+        const cleanedPresence = pickBy(
+            other.presence ?? {},
+            (value) => typeof value !== "undefined",
+        );
+        const presence = {
+            ...this.initialPresence,
+            ...cleanedPresence,
+            ...cleanedPatch,
+        } as TPresence;
         const validated = this._presence ? this._presence.parse(presence) : presence;
 
         this._others.set(clientId, { ...other, presence: validated });
@@ -255,7 +266,11 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
     public updateMyPresence(patch: Partial<TPresence>): TPresence {
         const cleanedPatch = pickBy(patch, (value) => typeof value !== "undefined");
         const cleanedPresence = pickBy(this._myPresence, (value) => typeof value !== "undefined");
-        const updated = { ...this.initialPresence, ...cleanedPresence, ...cleanedPatch } as TPresence;
+        const updated = {
+            ...this.initialPresence,
+            ...cleanedPresence,
+            ...cleanedPatch,
+        } as TPresence;
         const bytes = new TextEncoder().encode(JSON.stringify(updated)).length;
 
         if (!!this._limits.presenceMaxSize && bytes > this._limits.presenceMaxSize) {
@@ -297,7 +312,10 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
         return set ?? null;
     }
 
-    private _setConnectionId(connectionId: string, clientId: string): Set<[connectionId: string][0]> {
+    private _setConnectionId(
+        connectionId: string,
+        clientId: string,
+    ): Set<[connectionId: string][0]> {
         const set = this._idMap.fromClientId.get(clientId) ?? new Set<string>();
         const updated = set.add(connectionId);
 

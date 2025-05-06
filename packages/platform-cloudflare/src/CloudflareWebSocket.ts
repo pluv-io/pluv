@@ -17,10 +17,9 @@ export interface CloudflareWebSocketEventMap {
 
 export type CloudflareWebSocketConfig = AbstractWebSocketConfig;
 
-export class CloudflareWebSocket<TAuthorize extends IOAuthorize<any, any> | null = null> extends AbstractWebSocket<
-    WebSocket,
-    TAuthorize
-> {
+export class CloudflareWebSocket<
+    TAuthorize extends IOAuthorize<any, any> | null = null,
+> extends AbstractWebSocket<WebSocket, TAuthorize> {
     public set presence(presence: JsonObject | null) {
         const deserialized = this.webSocket.deserializeAttachment();
         const state = deserialized.state;
@@ -113,12 +112,17 @@ export class CloudflareWebSocket<TAuthorize extends IOAuthorize<any, any> | null
         });
     }
 
-    public addEventListener<TType extends keyof AbstractEventMap>(type: TType, handler: AbstractListener<TType>) {
+    public addEventListener<TType extends keyof AbstractEventMap>(
+        type: TType,
+        handler: AbstractListener<TType>,
+    ) {
         this.webSocket.addEventListener(type, handler as any);
     }
 
     public close(code?: number | undefined, reason?: string | undefined): void {
-        const canClose = [this.CONNECTING, this.OPEN].some((readyState) => readyState === this.readyState);
+        const canClose = [this.CONNECTING, this.OPEN].some(
+            (readyState) => readyState === this.readyState,
+        );
 
         if (!canClose) return;
 
