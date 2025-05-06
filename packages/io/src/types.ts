@@ -57,7 +57,9 @@ export interface EventResolverContext<
     garbageCollect: () => Promise<void>;
     presence: JsonObject | null;
     room: string;
-    session: TKind extends "sync" ? WebSocketSession<TAuthorize> | null : WebSocketSession<TAuthorize>;
+    session: TKind extends "sync"
+        ? WebSocketSession<TAuthorize> | null
+        : WebSocketSession<TAuthorize>;
     sessions: readonly WebSocketSession<TAuthorize>[];
     time: number;
 }
@@ -79,11 +81,12 @@ export interface WebSocketSerializedState {
     timers: WebSocketSessionTimers;
 }
 
-export type WebSocketSession<TAuthorize extends IOAuthorize<any, any> | null = null> = WebSocketSerializedState & {
-    id: string;
-    user: InferIOAuthorizeUser<TAuthorize>;
-    webSocket: AbstractWebSocket;
-};
+export type WebSocketSession<TAuthorize extends IOAuthorize<any, any> | null = null> =
+    WebSocketSerializedState & {
+        id: string;
+        user: InferIOAuthorizeUser<TAuthorize>;
+        webSocket: AbstractWebSocket;
+    };
 
 export type MergeEventRecords<
     TEventRecords extends EventRecord<string, any>[],
@@ -143,7 +146,9 @@ export type PluvIOAuthorize<
     TContext extends Record<string, unknown> = {},
 > =
     | (TUser extends BaseUser ? ResolvedPluvIOAuthorize<TPlatform, TUser> : null)
-    | ((context: TContext) => TUser extends BaseUser ? ResolvedPluvIOAuthorize<TPlatform, TUser> : null);
+    | ((
+          context: TContext,
+      ) => TUser extends BaseUser ? ResolvedPluvIOAuthorize<TPlatform, TUser> : null);
 
 export interface PluvIOLimits {
     /**
@@ -184,7 +189,10 @@ export type PluvIOListeners<
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = UndefinedProps<
     BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>,
-    Exclude<keyof BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>, InferPlatformListeners<TPlatform>>
+    Exclude<
+        keyof BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>,
+        InferPlatformListeners<TPlatform>
+    >
 >;
 
 export type PluvIORouter<
@@ -200,14 +208,20 @@ export type PluvIORouter<
 export type InferPlatformConfig<TPlatform extends AbstractPlatform<any, any, any, any>> =
     TPlatform extends AbstractPlatform<any, any, any, infer IConfig> ? IConfig : never;
 
-export type InferPlatformAuthorizeProperties<TPlatform extends AbstractPlatform<any, any, any, any>> = keyof {
-    [P in keyof PlatformConfig["authorize"] as InferPlatformConfig<TPlatform>["authorize"][P] extends true | undefined
+export type InferPlatformAuthorizeProperties<
+    TPlatform extends AbstractPlatform<any, any, any, any>,
+> = keyof {
+    [P in keyof PlatformConfig["authorize"] as InferPlatformConfig<TPlatform>["authorize"][P] extends
+        | true
+        | undefined
         ? P
         : never]: true;
 };
 
 export type InferPlatformListeners<TPlatform extends AbstractPlatform<any, any, any, any>> = keyof {
-    [P in keyof PlatformConfig["listeners"] as InferPlatformConfig<TPlatform>["listeners"][P] extends true | undefined
+    [P in keyof PlatformConfig["listeners"] as InferPlatformConfig<TPlatform>["listeners"][P] extends
+        | true
+        | undefined
         ? P
         : never]: true;
 };

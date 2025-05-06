@@ -54,7 +54,10 @@ export interface AbstractWebSocketConfig {
     room: string;
 }
 
-export abstract class AbstractWebSocket<TWebSocket = any, TAuthorize extends IOAuthorize<any, any> | null = null> {
+export abstract class AbstractWebSocket<
+    TWebSocket = any,
+    TAuthorize extends IOAuthorize<any, any> | null = null,
+> {
     /** The connection is not yet open. */
     public readonly CONNECTING = 0;
     /** The connection is open and ready to communicate. */
@@ -96,7 +99,10 @@ export abstract class AbstractWebSocket<TWebSocket = any, TAuthorize extends IOA
      * result.
      * @date August 28, 2022
      */
-    public abstract addEventListener<TType extends EventType>(type: TType, handler: AbstractListener<TType>): void;
+    public abstract addEventListener<TType extends EventType>(
+        type: TType,
+        handler: AbstractListener<TType>,
+    ): void;
 
     public abstract close(code?: number | undefined, reason?: string | undefined): void;
 
@@ -120,7 +126,9 @@ export abstract class AbstractWebSocket<TWebSocket = any, TAuthorize extends IOA
         });
     }
 
-    public sendMessage<TMessage extends IOEventMessage<any> = IOEventMessage<any>>(data: TMessage): void {
+    public sendMessage<TMessage extends IOEventMessage<any> = IOEventMessage<any>>(
+        data: TMessage,
+    ): void {
         return this.send(JSON.stringify(data));
     }
 }

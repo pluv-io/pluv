@@ -5,7 +5,11 @@ import type { PluvIOAuthorize } from "./types";
 
 export type PluvRouterEventConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
+    TAuthorize extends PluvIOAuthorize<
+        TPlatform,
+        any,
+        InferInitContextType<TPlatform>
+    > | null = any,
     TContext extends Record<string, any> = {},
 > = { [P: string]: Pick<PluvProcedure<TPlatform, TAuthorize, TContext, any, any>, "config"> };
 
@@ -24,7 +28,11 @@ export type MergedRouter<
 
 export class PluvRouter<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null = any,
+    TAuthorize extends PluvIOAuthorize<
+        TPlatform,
+        any,
+        InferInitContextType<TPlatform>
+    > | null = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IORouterLike<TEvents>
@@ -46,7 +54,10 @@ export class PluvRouter<
     public static merge<TRouters extends PluvRouter<any, any, any, any>[]>(
         ...routers: TRouters
     ): MergedRouter<TRouters> {
-        const events = Object.assign(Object.create(null), ...routers.map((router) => router._defs.events));
+        const events = Object.assign(
+            Object.create(null),
+            ...routers.map((router) => router._defs.events),
+        );
 
         return new PluvRouter<any, any, any, any>(events) as MergedRouter<TRouters>;
     }

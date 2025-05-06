@@ -5,4 +5,5 @@ export type InferCallback<TMeta extends Record<string, Json> = {}> = (i: typeof 
     meta?: (io: TMeta) => TMeta;
 };
 
-export const infer = <TMeta extends Record<string, Json> = {}>(callback: InferCallback<TMeta>) => callback;
+export const infer = <TMeta extends Record<string, Json> = {}>(callback: InferCallback<TMeta>) =>
+    callback;

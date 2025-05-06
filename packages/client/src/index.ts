@@ -23,4 +23,11 @@ export type {
 export type { MergeEvents, PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 export { register } from "./register";
 export type { RegisterParams } from "./register";
-export type { InferMetadata, PublicKey, PublicKeyParams, UserInfo, WebSocketConnection, WebSocketState } from "./types";
+export type {
+    InferMetadata,
+    PublicKey,
+    PublicKeyParams,
+    UserInfo,
+    WebSocketConnection,
+    WebSocketState,
+} from "./types";

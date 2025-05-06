@@ -10,7 +10,9 @@ export type InferPlatformWebSocketType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<infer IAbstractWebSocket> ? IAbstractWebSocket : never;
 
 export type InferPlatformWebSocketSource<TPlatform> =
-    TPlatform extends AbstractPlatform<infer IAbstractWebSocket> ? InferWebSocketSource<IAbstractWebSocket> : never;
+    TPlatform extends AbstractPlatform<infer IAbstractWebSocket>
+        ? InferWebSocketSource<IAbstractWebSocket>
+        : never;
 
 export type InferInitContextType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<any, infer IInitContext> ? IInitContext : never;
@@ -66,7 +68,9 @@ export abstract class AbstractPlatform<
 
     public abstract getLastPing(webSocket: AbstractWebSocket<any, any>): number | null;
 
-    public abstract getSerializedState(webSocket: InferWebSocketSource<TWebSocket>): WebSocketSerializedState | null;
+    public abstract getSerializedState(
+        webSocket: InferWebSocketSource<TWebSocket>,
+    ): WebSocketSerializedState | null;
 
     public abstract getSessionId(webSocket: InferWebSocketSource<TWebSocket>): string | null;
 

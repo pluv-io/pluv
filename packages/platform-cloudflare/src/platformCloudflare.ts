@@ -12,7 +12,11 @@ export type PlatformCloudflareCreateIOParams<
 > = Id<
     CloudflarePlatformConfig<TEnv, TMeta> &
         Omit<
-            CreateIOParams<CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>, TContext, TUser>,
+            CreateIOParams<
+                CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>,
+                TContext,
+                TUser
+            >,
             "authorize" | "context" | "platform"
         > & {
             authorize?: PluvIOAuthorize<
@@ -20,7 +24,10 @@ export type PlatformCloudflareCreateIOParams<
                 TUser,
                 InferInitContextType<CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>>
             >;
-            context?: PluvContext<CloudflarePlatform<IOAuthorize<TUser, any>, TEnv, TMeta>, TContext>;
+            context?: PluvContext<
+                CloudflarePlatform<IOAuthorize<TUser, any>, TEnv, TMeta>,
+                TContext
+            >;
             types?: InferCallback<TEnv, TMeta>;
         }
 >;
@@ -32,7 +39,11 @@ export const platformCloudflare = <
     TUser extends BaseUser | null = null,
 >(
     config: PlatformCloudflareCreateIOParams<TEnv, TMeta, TContext, TUser> = {},
-): CreateIOParams<CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>, TContext, TUser> => {
+): CreateIOParams<
+    CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>,
+    TContext,
+    TUser
+> => {
     const { authorize, context, crdt, debug, limits } = config;
 
     return {

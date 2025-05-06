@@ -35,7 +35,7 @@ export const config = [
   {
     plugins: { prettier: eslintPluginPrettier },
     rules: {
-      "prettier/prettier": ["warn", { printWidth: 120, tabWidth: 4 }],
+      "prettier/prettier": ["warn", { printWidth: 100, tabWidth: 4 }],
     },
   },
   overrides,

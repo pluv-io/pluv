@@ -7,7 +7,10 @@ export class CrdtNotifier<TStorage extends Record<string, CrdtType<any, any>>> {
         [P in keyof TStorage]: InferCrdtJson<TStorage[P]>;
     }>();
 
-    public subjects = new Map<keyof TStorage, Subject<InferCrdtJson<TStorage[keyof TStorage]>> | null>();
+    public subjects = new Map<
+        keyof TStorage,
+        Subject<InferCrdtJson<TStorage[keyof TStorage]>> | null
+    >();
 
     public subject<TKey extends keyof TStorage>(key: TKey): Subject<InferCrdtJson<TStorage[TKey]>> {
         const subject = this.subjects.get(key);

@@ -7,13 +7,24 @@ import type {
 import { AbstractCrdtDoc } from "@pluv/crdt";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import type { Container } from "loro-crdt";
-import { LoroCounter, LoroDoc, LoroEventBatch, LoroList, LoroMap, LoroText, UndoManager, isContainer } from "loro-crdt";
+import {
+    LoroCounter,
+    LoroDoc,
+    LoroEventBatch,
+    LoroList,
+    LoroMap,
+    LoroText,
+    UndoManager,
+    isContainer,
+} from "loro-crdt";
 import type { LoroType } from "../types";
 
 const MAX_UNDO_STEPS = 100;
 const MERGE_INTERVAL_MS = 1_000;
 
-export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> extends AbstractCrdtDoc<TStorage> {
+export class CrdtLoroDoc<
+    TStorage extends Record<string, LoroType<any, any>>,
+> extends AbstractCrdtDoc<TStorage> {
     public value: LoroDoc = new LoroDoc();
 
     private _storage: TStorage;
@@ -58,7 +69,8 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>> ex
     }
 
     public applyEncodedState(params: DocApplyEncodedStateParams): this {
-        const update = typeof params.update === "string" ? toUint8Array(params.update) : params.update;
+        const update =
+            typeof params.update === "string" ? toUint8Array(params.update) : params.update;
 
         if (!update) return this;
 

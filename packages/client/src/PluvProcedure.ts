@@ -21,7 +21,8 @@ export class PluvProcedure<
     TStorage extends Record<string, CrdtType<any, any>> = {},
     TFilled extends "input" | "broadcast" | "" = "",
 > {
-    private _broadcast: EventResolver<TIO, TInput, Partial<TOutput>, TPresence, TStorage> | null = null;
+    private _broadcast: EventResolver<TIO, TInput, Partial<TOutput>, TPresence, TStorage> | null =
+        null;
     private _input: InputZodLike<TInput> | null = null;
 
     public get config(): ProcedureLike<TInput, TOutput>["config"] {
@@ -71,7 +72,10 @@ export class PluvProcedure<
 
     public input<TData extends JsonObject>(
         input: InputZodLike<TData>,
-    ): Omit<PluvProcedure<TIO, TData, {}, TPresence, TStorage, TFilled | "input">, TFilled | "input"> {
+    ): Omit<
+        PluvProcedure<TIO, TData, {}, TPresence, TStorage, TFilled | "input">,
+        TFilled | "input"
+    > {
         return new PluvProcedure<TIO, TData, {}, TPresence, TStorage, TFilled | "input">({ input });
     }
 

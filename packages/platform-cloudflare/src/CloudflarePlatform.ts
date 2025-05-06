@@ -10,7 +10,10 @@ import type { IOAuthorize, Json } from "@pluv/types";
 import { CloudflareWebSocket } from "./CloudflareWebSocket";
 import { DEFAULT_REGISTRATION_MODE } from "./constants";
 
-export type CloudflarePlatformRoomContext<TEnv extends Record<string, any>, TMeta extends Record<string, Json>> = {
+export type CloudflarePlatformRoomContext<
+    TEnv extends Record<string, any>,
+    TMeta extends Record<string, Json>,
+> = {
     env: TEnv;
     state: DurableObjectState;
 } & (keyof TMeta extends never ? { meta?: undefined } : { meta: TMeta });
@@ -18,7 +21,9 @@ export type CloudflarePlatformRoomContext<TEnv extends Record<string, any>, TMet
 export type CloudflarePlatformConfig<
     TEnv extends Record<string, any> = {},
     TMeta extends Record<string, Json> = {},
-> = AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>> & { mode?: WebSocketRegistrationMode };
+> = AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>> & {
+    mode?: WebSocketRegistrationMode;
+};
 
 export class CloudflarePlatform<
     TAuthorize extends IOAuthorize<any, any> | null = null,
@@ -78,7 +83,10 @@ export class CloudflarePlatform<
         if (!detachedState) return;
 
         detachedState.setWebSocketAutoResponse(
-            new WebSocketRequestResponsePair('{"type":"$ping","data":{}}', JSON.stringify({ type: "$pong", data: {} })),
+            new WebSocketRequestResponsePair(
+                '{"type":"$ping","data":{}}',
+                JSON.stringify({ type: "$pong", data: {} }),
+            ),
         );
     }
 
@@ -94,10 +102,17 @@ export class CloudflarePlatform<
         detachedState.acceptWebSocket(webSocket.webSocket);
     }
 
-    public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): CloudflareWebSocket<TAuthorize> {
+    public convertWebSocket(
+        webSocket: WebSocket,
+        config: ConvertWebSocketConfig,
+    ): CloudflareWebSocket<TAuthorize> {
         const { room } = config;
 
-        return new CloudflareWebSocket<TAuthorize>(webSocket, { persistence: this.persistence, platform: this, room });
+        return new CloudflareWebSocket<TAuthorize>(webSocket, {
+            persistence: this.persistence,
+            platform: this,
+            room,
+        });
     }
 
     public getLastPing(webSocket: CloudflareWebSocket<TAuthorize>): number | null {
@@ -135,7 +150,9 @@ export class CloudflarePlatform<
         return webSockets;
     }
 
-    public initialize(config: AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>>): this {
+    public initialize(
+        config: AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>>,
+    ): this {
         const ctx = config.roomContext ?? { ...this._roomContext };
 
         if (!ctx.env || !ctx.state) throw new Error("Could not derive platform roomContext");

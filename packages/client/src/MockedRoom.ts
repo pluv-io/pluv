@@ -86,8 +86,13 @@ export class MockedRoom<
             presenceMaxSize: MAX_PRESENCE_SIZE_BYTES,
             ...limits,
         };
-        this._router = router ?? (new PluvRouter({}) as PluvRouter<TIO, TPresence, TStorage, TEvents>);
-        this._usersManager = new UsersManager<TIO, TPresence>({ initialPresence, limits: this._limits, presence });
+        this._router =
+            router ?? (new PluvRouter({}) as PluvRouter<TIO, TPresence, TStorage, TEvents>);
+        this._usersManager = new UsersManager<TIO, TPresence>({
+            initialPresence,
+            limits: this._limits,
+            presence,
+        });
 
         this._crdtManager = new CrdtManager<TStorage>({
             initialStorage,
@@ -136,10 +141,9 @@ export class MockedRoom<
                 user: myself,
             };
 
-            const output = await (procedure.config.broadcast as EventResolver<TIO, any, any, TPresence, TStorage>)(
-                parsed,
-                context,
-            );
+            const output = await (
+                procedure.config.broadcast as EventResolver<TIO, any, any, TPresence, TStorage>
+            )(parsed, context);
 
             Object.entries(output).forEach(([_type, _data]) => {
                 this._simulateEvent(_type as TEvent, _data as any);
@@ -147,7 +151,9 @@ export class MockedRoom<
         },
         {
             get(fn, prop) {
-                return async (data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[any]>): Promise<void> => {
+                return async (
+                    data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[any]>,
+                ): Promise<void> => {
                     return await fn(prop, data);
                 };
             },
@@ -174,8 +180,9 @@ export class MockedRoom<
         ): (() => void) => this._eventNotifier.subscribe(event, callback),
         {
             get(fn, prop) {
-                return (callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>): (() => void) =>
-                    fn(prop as any, callback);
+                return (
+                    callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
+                ): (() => void) => fn(prop as any, callback);
             },
         },
     ) as (<TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
@@ -221,7 +228,9 @@ export class MockedRoom<
     };
 
     public getStorageJson(): InferCrdtJson<TStorage> | null;
-    public getStorageJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]> | null;
+    public getStorageJson<TKey extends keyof TStorage>(
+        type: TKey,
+    ): InferCrdtJson<TStorage[TKey]> | null;
     public getStorageJson<TKey extends keyof TStorage>(type?: TKey) {
         if (this._state.connection.id === null) return null;
 
@@ -293,7 +302,8 @@ export class MockedRoom<
     };
 
     public updateMyPresence = (presence: UpdateMyPresenceAction<TPresence>): void => {
-        const newPresence = typeof presence === "function" ? presence(this.getMyPresence()) : presence;
+        const newPresence =
+            typeof presence === "function" ? presence(this.getMyPresence()) : presence;
 
         this._usersManager.updateMyPresence(newPresence);
 

@@ -13,7 +13,12 @@ export class RoomSQLiteDurableObject extends DurableObject<CloudflareEnv> {
         this._room = ioServer.createRoom(state.id.toString(), { env, state });
     }
 
-    public async webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean): Promise<void> {
+    public async webSocketClose(
+        ws: WebSocket,
+        code: number,
+        reason: string,
+        wasClean: boolean,
+    ): Promise<void> {
         const onCloseHandler = this._room.onClose(ws);
 
         await onCloseHandler({ code, reason });
@@ -41,7 +46,9 @@ export class RoomSQLiteDurableObject extends DurableObject<CloudflareEnv> {
         const token = new URL(request.url).searchParams.get("token");
 
         const alarm = await this.ctx.storage.getAlarm();
-        if (alarm !== null) await this.ctx.storage.setAlarm(Date.now() + GARBAGE_COLLECT_INTERVAL_MS);
+        if (alarm !== null) {
+            await this.ctx.storage.setAlarm(Date.now() + GARBAGE_COLLECT_INTERVAL_MS);
+        }
 
         await this._room.register(server, { env: this.env, request, token });
 

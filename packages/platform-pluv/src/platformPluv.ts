@@ -8,13 +8,19 @@ export type PlatformPluvCreateIOParams<
     TUser extends BaseUser = BaseUser,
 > = Id<
     PluvPlatformConfig &
-        Omit<CreateIOParams<PluvPlatform, TContext, TUser>, "authorize" | "context" | "limits" | "platform"> & {
+        Omit<
+            CreateIOParams<PluvPlatform, TContext, TUser>,
+            "authorize" | "context" | "limits" | "platform"
+        > & {
             authorize: PluvIOAuthorize<PluvPlatform, TUser, InferInitContextType<PluvPlatform>>;
             context?: PluvContext<PluvPlatform, TContext>;
         }
 >;
 
-export const platformPluv = <TContext extends Record<string, any> = {}, TUser extends BaseUser = BaseUser>(
+export const platformPluv = <
+    TContext extends Record<string, any> = {},
+    TUser extends BaseUser = BaseUser,
+>(
     config: PlatformPluvCreateIOParams<TContext, TUser>,
 ): CreateIOParams<PluvPlatform<TContext, TUser>, TContext, TUser> => {
     const { authorize, context, crdt, debug } = config;

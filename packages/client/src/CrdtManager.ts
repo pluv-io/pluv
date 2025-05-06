@@ -19,7 +19,8 @@ export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
     private readonly _docFactory: AbstractCrdtDocFactory<TStorage>;
 
     constructor(options: CrdtManagerOptions<TStorage>) {
-        const { encodedState, initialStorage = noop.doc({}) as AbstractCrdtDocFactory<TStorage> } = options;
+        const { encodedState, initialStorage = noop.doc({}) as AbstractCrdtDocFactory<TStorage> } =
+            options;
 
         this._docFactory = initialStorage;
 

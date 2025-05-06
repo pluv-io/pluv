@@ -9,7 +9,8 @@ export interface RegisterParams<TMetadata extends JsonObject> {
 export const register = <TMetadata extends JsonObject>(params: RegisterParams<TMetadata>) => {
     const { authEndpoint, publicKey } = params;
 
-    const wsEndpoint: WsEndpoint<TMetadata> = ({ room }) => `wss://connect.pluv.io/api/room?room=${room}`;
+    const wsEndpoint: WsEndpoint<TMetadata> = ({ room }) =>
+        `wss://connect.pluv.io/api/room?room=${room}`;
 
     return {
         authEndpoint,

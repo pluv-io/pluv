@@ -15,7 +15,10 @@ type InferSubjectValue<
     TIO extends IOLike,
     TPresence extends JsonObject,
     TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
-> = StateNotifierSubjects<TIO, TPresence>[TSubject] extends Subject<infer IValue> ? Id<IValue> : never;
+> =
+    StateNotifierSubjects<TIO, TPresence>[TSubject] extends Subject<infer IValue>
+        ? Id<IValue>
+        : never;
 
 export type SubscriptionCallback<
     TIO extends IOLike,

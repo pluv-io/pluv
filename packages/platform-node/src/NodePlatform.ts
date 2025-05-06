@@ -18,7 +18,9 @@ export type NodePlatformRoomContext<TMeta extends Record<string, Json>> = keyof 
     ? { meta?: undefined }
     : { meta: TMeta };
 
-export type NodePlatformConfig<TMeta extends Record<string, Json>> = { mode?: WebSocketRegistrationMode } & (
+export type NodePlatformConfig<TMeta extends Record<string, Json>> = {
+    mode?: WebSocketRegistrationMode;
+} & (
     | { persistence?: undefined; pubSub?: undefined }
     | { persistence: AbstractPersistence; pubSub: AbstractPubSub }
 ) & { roomContext?: NodePlatformRoomContext<TMeta> };
@@ -80,10 +82,17 @@ export class NodePlatform<
         return Promise.resolve(undefined);
     }
 
-    public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): NodeWebSocket<TAuthorize> {
+    public convertWebSocket(
+        webSocket: WebSocket,
+        config: ConvertWebSocketConfig,
+    ): NodeWebSocket<TAuthorize> {
         const { room } = config;
 
-        return new NodeWebSocket<TAuthorize>(webSocket, { persistence: this.persistence, platform: this, room });
+        return new NodeWebSocket<TAuthorize>(webSocket, {
+            persistence: this.persistence,
+            platform: this,
+            room,
+        });
     }
 
     public getLastPing(webSocket: NodeWebSocket<TAuthorize>): number | null {

@@ -22,7 +22,10 @@ export type EventResolver<
     TOutput extends EventRecord<string, any> = {},
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
-> = (data: TInput, context: EventResolverContext<TIO, TPresence, TStorage>) => MaybePromise<TOutput | void>;
+> = (
+    data: TInput,
+    context: EventResolverContext<TIO, TPresence, TStorage>,
+) => MaybePromise<TOutput | void>;
 
 export interface EventResolverContext<
     TIO extends IOLike = IOLike,
@@ -67,7 +70,9 @@ export interface PluvClientLimits {
 export interface PublicKeyParams<TMetadata extends JsonObject> {
     metadata: TMetadata;
 }
-export type PublicKey<TMetadata extends JsonObject> = string | ((params: PublicKeyParams<TMetadata>) => string);
+export type PublicKey<TMetadata extends JsonObject> =
+    | string
+    | ((params: PublicKeyParams<TMetadata>) => string);
 
 export type UpdateMyPresenceAction<TPresence extends JsonObject> =
     | Partial<TPresence>

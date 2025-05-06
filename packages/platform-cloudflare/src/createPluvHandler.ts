@@ -1,5 +1,12 @@
 import type { InferInitContextType, IORoom, PluvServer } from "@pluv/io";
-import type { BaseUser, Id, InferIOAuthorize, InferIOAuthorizeUser, Maybe, MaybePromise } from "@pluv/types";
+import type {
+    BaseUser,
+    Id,
+    InferIOAuthorize,
+    InferIOAuthorizeUser,
+    Maybe,
+    MaybePromise,
+} from "@pluv/types";
 import { DurableObject as BaseDurableObject } from "cloudflare:workers";
 import { match } from "path-to-regexp";
 import { CloudflarePlatform } from "./CloudflarePlatform";
@@ -7,7 +14,9 @@ import { GARBAGE_COLLECT_INTERVAL_MS } from "./constants";
 
 export type AuthorizeFunctionContext<TPluvServer extends PluvServer<any, any, any, any>> = {
     room: string;
-} & InferInitContextType<TPluvServer extends PluvServer<infer IPlatform, any, any, any> ? IPlatform : never>;
+} & InferInitContextType<
+    TPluvServer extends PluvServer<infer IPlatform, any, any, any> ? IPlatform : never
+>;
 export type AuthorizeFunction<TPluvServer extends PluvServer<any, any, any, any>> = (
     ctx: AuthorizeFunctionContext<TPluvServer>,
 ) => MaybePromise<Maybe<InferIOAuthorizeUser<InferIOAuthorize<TPluvServer>>>>;
@@ -37,28 +46,41 @@ export interface CreatePluvHandlerResult<TEnv extends Record<string, any> = {}> 
     handler: ExportedHandler<TEnv>;
 }
 
-type InferCloudflarePluvHandlerEnv<TPluvServer extends PluvServer<CloudflarePlatform<any, any>, any, any, any>> =
-    TPluvServer extends PluvServer<CloudflarePlatform<any, infer IEnv>, any, any, any> ? IEnv : {};
+type InferCloudflarePluvHandlerEnv<
+    TPluvServer extends PluvServer<CloudflarePlatform<any, any>, any, any, any>,
+> = TPluvServer extends PluvServer<CloudflarePlatform<any, infer IEnv>, any, any, any> ? IEnv : {};
 
 /**
  * @deprecated Instructions will be provided on https://pluv.io on how to host this yourself instead.
  * @date April 27, 2025
  */
-export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatform<any, any>, any, any, any>>(
+export const createPluvHandler = <
+    TPluvServer extends PluvServer<CloudflarePlatform<any, any>, any, any, any>,
+>(
     config: CreatePluvHandlerConfig<TPluvServer, Id<InferCloudflarePluvHandlerEnv<TPluvServer>>>,
 ): CreatePluvHandlerResult<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> => {
     const { authorize, binding, endpoint = "/api/pluv", modify, io } = config;
 
-    const DurableObject = class extends BaseDurableObject<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> {
+    const DurableObject = class extends BaseDurableObject<
+        Id<InferCloudflarePluvHandlerEnv<TPluvServer>>
+    > {
         private _room: IORoom<CloudflarePlatform<any, any>>;
 
-        constructor(state: DurableObjectState, env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>) {
+        constructor(
+            state: DurableObjectState,
+            env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>,
+        ) {
             super(state, env);
 
             this._room = io.createRoom(state.id.toString(), { env, state });
         }
 
-        public async webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean): Promise<void> {
+        public async webSocketClose(
+            ws: WebSocket,
+            code: number,
+            reason: string,
+            wasClean: boolean,
+        ): Promise<void> {
             if (io._defs.platform._config.registrationMode !== "detached") return;
 
             const onCloseHandler = this._room.onClose(ws);
@@ -92,7 +114,8 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
             const token = new URL(request.url).searchParams.get("token");
 
             const alarm = await this.ctx.storage.getAlarm();
-            if (alarm !== null) await this.ctx.storage.setAlarm(Date.now() + GARBAGE_COLLECT_INTERVAL_MS);
+            if (alarm !== null)
+                await this.ctx.storage.setAlarm(Date.now() + GARBAGE_COLLECT_INTERVAL_MS);
 
             await this._room.register(server, { env: this.env, request, token });
 
@@ -105,7 +128,9 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
         }
     };
 
-    const getDurableObjectNamespace = (env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>): DurableObjectNamespace => {
+    const getDurableObjectNamespace = (
+        env: Id<InferCloudflarePluvHandlerEnv<TPluvServer>>,
+    ): DurableObjectNamespace => {
         const namespace = env[binding as keyof typeof env] as DurableObjectNamespace;
 
         if (!namespace) {
@@ -115,7 +140,10 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
         return namespace;
     };
 
-    const authHandler: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = async (request, env) => {
+    const authHandler: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = async (
+        request,
+        env,
+    ) => {
         if (!authorize) return null;
 
         const { pathname, searchParams } = new URL(request.url);
@@ -134,7 +162,11 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
         }
 
         try {
-            const user = await authorize({ env, request, room } as AuthorizeFunctionContext<TPluvServer>);
+            const user = await authorize({
+                env,
+                request,
+                room,
+            } as AuthorizeFunctionContext<TPluvServer>);
 
             if (!user) throw new Error();
 
@@ -160,7 +192,10 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
         }
     };
 
-    const roomHandler: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = async (request, env) => {
+    const roomHandler: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = async (
+        request,
+        env,
+    ) => {
         const { pathname } = new URL(request.url);
         const matcher = match<{ roomId: string }>(`${endpoint}/room/:roomId`);
         const matched = matcher(pathname);
@@ -183,7 +218,10 @@ export const createPluvHandler = <TPluvServer extends PluvServer<CloudflarePlatf
         return room.fetch(request);
     };
 
-    const handlerFetch: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = async (request, env) => {
+    const handlerFetch: PluvHandlerFetch<Id<InferCloudflarePluvHandlerEnv<TPluvServer>>> = async (
+        request,
+        env,
+    ) => {
         return [authHandler, roomHandler].reduce(async (promise, current) => {
             return await promise.then(async (value) => value ?? (await current(request, env)));
         }, Promise.resolve<Response | null>(null));

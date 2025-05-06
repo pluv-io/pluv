@@ -22,10 +22,18 @@ export const createIO = <
     TUser extends BaseUser | null = null,
 >(
     params: CreateIOParams<TPlatform, TContext, TUser>,
-): PluvIO<TPlatform, PluvIOAuthorize<TPlatform, TUser, InferInitContextType<TPlatform>>, TContext> => {
+): PluvIO<
+    TPlatform,
+    PluvIOAuthorize<TPlatform, TUser, InferInitContextType<TPlatform>>,
+    TContext
+> => {
     const { authorize, context, crdt, debug, limits, platform } = params;
 
-    return new PluvIO<TPlatform, PluvIOAuthorize<TPlatform, TUser, InferInitContextType<TPlatform>>, TContext>({
+    return new PluvIO<
+        TPlatform,
+        PluvIOAuthorize<TPlatform, TUser, InferInitContextType<TPlatform>>,
+        TContext
+    >({
         authorize,
         context,
         crdt,

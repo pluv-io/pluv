@@ -8,7 +8,10 @@ export class YjsXmlElement<T extends Record<string, any> = Record<string, any>>
 {
     public initialValue?: (YXmlElement | YXmlText)[] | readonly (YXmlElement | YXmlText)[];
 
-    constructor(name: string, value: (YXmlElement | YXmlText)[] | readonly (YXmlElement | YXmlText)[]) {
+    constructor(
+        name: string,
+        value: (YXmlElement | YXmlText)[] | readonly (YXmlElement | YXmlText)[],
+    ) {
         super(name);
 
         if (!!value.length) this.insert(0, value as (YXmlElement | YXmlText)[]);

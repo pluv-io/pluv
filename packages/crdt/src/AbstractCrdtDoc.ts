@@ -29,7 +29,9 @@ export abstract class AbstractCrdtDoc<T extends Record<string, CrdtType<any, any
     public abstract getEncodedState(): string;
     public abstract isEmpty(): boolean;
     public abstract redo(): this;
-    public abstract subscribe(listener: (params: DocSubscribeCallbackParams<T>) => void): () => void;
+    public abstract subscribe(
+        listener: (params: DocSubscribeCallbackParams<T>) => void,
+    ): () => void;
     public abstract toJson(): InferCrdtJson<T>;
     public abstract toJson<TKey extends keyof T>(type: TKey): InferCrdtJson<T[TKey]>;
     public abstract track(): this;

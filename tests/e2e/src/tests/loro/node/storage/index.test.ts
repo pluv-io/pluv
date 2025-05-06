@@ -45,7 +45,10 @@ test.describe("Node Storage", () => {
             const firstPage = await openTestPage(testUrl);
             const secondPage = await openTestPage(testUrl);
 
-            await Promise.all([firstPage.waitForSelector("#storage"), secondPage.waitForSelector("#storage")]);
+            await Promise.all([
+                firstPage.waitForSelector("#storage"),
+                secondPage.waitForSelector("#storage"),
+            ]);
 
             await waitMs(ms("0.25s"));
 
