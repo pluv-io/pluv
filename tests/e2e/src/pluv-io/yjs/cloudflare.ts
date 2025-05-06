@@ -1,6 +1,7 @@
 import { createClient, infer } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
+import { slateNodesToInsertDelta } from "@slate-yjs/core";
 import { z } from "zod";
 import type { ioServerSqlite } from "../../server/yjs/cloudflare";
 
@@ -26,6 +27,13 @@ const client = createClient({
                 name: "pluvrt",
             }),
         ]),
+        slate: (() => {
+            const type = yjs.xmlText();
+
+            type.applyDelta(slateNodesToInsertDelta([]));
+
+            return type;
+        })(),
     })),
     metadata: z.object({
         authEndpoint: z.string().default("http://localhost:3101"),
