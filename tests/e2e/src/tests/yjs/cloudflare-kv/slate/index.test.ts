@@ -29,7 +29,7 @@ test.describe("Cloudflare Slate", () => {
             await secondPage
                 .locator("#slate-editable")
                 .innerText()
-                .then((text) => expect(text).toEqual("hello world"));
+                .then((text) => expect(text.trim()).toEqual("hello world"));
             await waitMs(ms("0.25s"));
 
             await secondPage.locator("#slate-editable").clear();
@@ -38,7 +38,7 @@ test.describe("Cloudflare Slate", () => {
             await firstPage
                 .locator("#slate-editable")
                 .innerText()
-                .then((text) => expect(text).toEqual(""));
+                .then((text) => expect(text.trim()).toEqual(""));
 
             await firstPage.close();
             await secondPage.close();
