@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { SlateEditor } from "../../../../components/yjs/node";
+import { SlateEditor } from "../../../../components/yjs/node-redis";
 import { useNoSsr } from "../../../../hooks/useNoSsr";
 import { PluvRoomProvider } from "../../../../pluv-io/yjs/node-redis";
 
@@ -13,7 +13,7 @@ export const Page: NextPage = () => {
 
     if (!router.isReady) return null;
 
-    const roomId = (router.query.room as string) ?? "e2e-node-storage";
+    const roomId = (router.query.room as string) ?? "e2e-node-redis-slate";
 
     return noSsr(
         <div>

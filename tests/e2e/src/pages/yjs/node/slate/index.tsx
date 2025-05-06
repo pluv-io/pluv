@@ -13,7 +13,7 @@ export const Page: NextPage = () => {
 
     if (!router.isReady) return null;
 
-    const roomId = (router.query.room as string) ?? "e2e-node-storage";
+    const roomId = (router.query.room as string) ?? "e2e-node-slate";
 
     return noSsr(
         <div>
