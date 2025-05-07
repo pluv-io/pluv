@@ -17,7 +17,7 @@ test.describe("CloudflareKV Slate", () => {
             secondPage.waitForSelector("#slate-editable"),
         ]);
 
-        await waitMs(ms("0.25ms"));
+        await waitMs(ms("1ms"));
 
         await firstPage.locator("#slate-editable").fill("hello world");
         await waitMs(ms("1s"));
