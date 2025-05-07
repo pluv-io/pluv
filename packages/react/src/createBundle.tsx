@@ -1,5 +1,4 @@
 import type {
-    AbstractRoom,
     CreateRoomOptions,
     EnterRoomParams,
     MergeEvents,
@@ -13,8 +12,9 @@ import type {
     WebSocketConnection,
 } from "@pluv/client";
 import { MockedRoom, PluvRoom } from "@pluv/client";
-import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
+import type { CrdtType, InferCrdtJson } from "@pluv/crdt";
 import type {
+    CrdtDocLike,
     Id,
     InferIOInput,
     InferIOOutput,
@@ -22,6 +22,7 @@ import type {
     IOLike,
     JsonObject,
     MaybePromise,
+    RoomLike,
 } from "@pluv/types";
 import fastDeepEqual from "fast-deep-equal";
 import type { Dispatch, FC, ReactNode } from "react";
@@ -119,7 +120,7 @@ export interface CreateBundle<
         selector: (connection: WebSocketConnection) => T,
         options?: SubscriptionHookOptions<Id<T>>,
     ) => Id<T>;
-    useDoc: () => AbstractCrdtDoc<TStorage>;
+    useDoc: () => CrdtDocLike<TStorage>;
     useEvent: <TType extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
         type: TType,
         callback: (data: Id<IOEventMessage<MergeEvents<TEvents, TIO>, TType>>) => void,
@@ -142,7 +143,7 @@ export interface CreateBundle<
         options?: SubscriptionHookOptions<T>,
     ) => T;
     useRedo: () => () => void;
-    useRoom: () => AbstractRoom<TIO, TPresence, TStorage>;
+    useRoom: () => RoomLike<TIO, TPresence, TStorage>;
     useStorage: <
         TKey extends keyof TStorage,
         TData extends unknown = InferCrdtJson<TStorage[TKey]>,
@@ -190,9 +191,9 @@ export const createBundle = <
      * and let the users deal with it.
      * @date November 11, 2022
      */
-    const PluvRoomContext = createContext<AbstractRoom<TIO, TPresence, TStorage>>(null as any);
+    const PluvRoomContext = createContext<RoomLike<TIO, TPresence, TStorage>>(null as any);
 
-    const MockedRoomContext = createContext<AbstractRoom<TIO, TPresence, TStorage> | null>(null);
+    const MockedRoomContext = createContext<RoomLike<TIO, TPresence, TStorage> | null>(null);
 
     const MockedRoomProvider = memo<MockedRoomProviderProps<TIO, TPresence, TStorage>>((props) => {
         const { children, events, initialPresence, initialStorage, room: _room } = props;

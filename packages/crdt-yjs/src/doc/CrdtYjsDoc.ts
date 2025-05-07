@@ -1,10 +1,10 @@
 import type {
+    CrdtDocLike,
     DocApplyEncodedStateParams,
     DocBatchApplyEncodedStateParams,
     DocSubscribeCallbackParams,
     InferCrdtJson,
 } from "@pluv/crdt";
-import { AbstractCrdtDoc } from "@pluv/crdt";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import {
     AbstractType,
@@ -30,17 +30,15 @@ import { YjsXmlText } from "../xmlText/YjsXmlText";
 
 const MERGE_INTERVAL_MS = 1_000;
 
-export class CrdtYjsDoc<
-    TStorage extends Record<string, YjsType<any, any>>,
-> extends AbstractCrdtDoc<TStorage> {
+export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
+    implements CrdtDocLike<TStorage>
+{
     public value: YDoc = new YDoc();
 
     private _storage: TStorage;
     private _undoManager: UndoManager | null = null;
 
     constructor(value: TStorage = {} as TStorage) {
-        super();
-
         this._storage = Object.entries(value).reduce((acc, [key, node]) => {
             if (node instanceof YjsArray) {
                 const yArray = this.value.getArray(key);

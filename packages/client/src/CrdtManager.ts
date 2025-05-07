@@ -1,4 +1,4 @@
-import type { AbstractCrdtDoc, AbstractCrdtDocFactory, CrdtType } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, CrdtDocLike, CrdtType } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 
 export type CrdtManagerOptions<TStorage extends Record<string, CrdtType<any, any>> = {}> = {
@@ -13,7 +13,7 @@ type CrdtManagerInitializeParams = {
 };
 
 export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
-    public doc: AbstractCrdtDoc<TStorage>;
+    public doc: CrdtDocLike<TStorage>;
     public initialized: boolean = false;
 
     private readonly _docFactory: AbstractCrdtDocFactory<TStorage>;
@@ -89,10 +89,10 @@ export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
     }
 
     private _applyDocUpdates(
-        doc: AbstractCrdtDoc<TStorage>,
+        doc: CrdtDocLike<TStorage>,
         updates: readonly string[],
         origin?: string,
-    ): AbstractCrdtDoc<TStorage> {
+    ): CrdtDocLike<TStorage> {
         doc.transact(() => {
             doc.batchApplyEncodedState({ origin, updates });
         }, origin);

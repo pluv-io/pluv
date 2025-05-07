@@ -1,8 +1,9 @@
-import type { AbstractCrdtDoc, AbstractCrdtDocFactory } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
     BaseUser,
+    CrdtDocLike,
     EventMessage,
     IOEventMessage,
     IOLike,
@@ -123,7 +124,7 @@ export class IORoom<
 {
     public readonly id: string;
 
-    private _doc: Promise<AbstractCrdtDoc<any>>;
+    private _doc: Promise<CrdtDocLike<any>>;
     private _lastGarbageCollectMs: number = -1 * (GARBAGE_COLLECT_INTERVAL_MS + 1);
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
@@ -625,7 +626,7 @@ export class IORoom<
         }
     }
 
-    private async _getInitialDoc(): Promise<AbstractCrdtDoc<any>> {
+    private async _getInitialDoc(): Promise<CrdtDocLike<any>> {
         const doc = this._docFactory.getEmpty();
         const encodedState = await this._platform.persistence.getStorageState(this.id);
 

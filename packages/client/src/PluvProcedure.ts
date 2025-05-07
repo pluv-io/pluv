@@ -20,7 +20,8 @@ export class PluvProcedure<
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
     TFilled extends "input" | "broadcast" | "" = "",
-> {
+> implements ProcedureLike<TInput, TOutput>
+{
     private _broadcast: EventResolver<TIO, TInput, Partial<TOutput>, TPresence, TStorage> | null =
         null;
     private _input: InputZodLike<TInput> | null = null;

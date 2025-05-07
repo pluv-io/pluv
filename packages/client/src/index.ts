@@ -1,9 +1,17 @@
 export type { CrdtType, InferCrdtJson } from "@pluv/crdt";
-export type { BaseUser, EventMessage, EventRecord, IOEventMessage } from "@pluv/types";
-export { AbstractRoom } from "./AbstractRoom";
+export { ConnectionState } from "@pluv/types";
+export type {
+    BaseUser,
+    EventMessage,
+    EventRecord,
+    IOEventMessage,
+    MergeEvents,
+    UserInfo,
+    WebSocketConnection,
+    WebSocketState,
+} from "@pluv/types";
 export { AbstractStorageStore } from "./AbstractStorageStore";
 export { createClient } from "./createClient";
-export { ConnectionState } from "./enums";
 export { infer } from "./infer";
 export type { InferCallback } from "./infer";
 export { MockedRoom } from "./MockedRoom";
@@ -20,14 +28,7 @@ export type {
     RoomConnectParams,
     RoomEndpoints,
 } from "./PluvRoom";
-export type { MergeEvents, PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
+export type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 export { register } from "./register";
 export type { RegisterParams } from "./register";
-export type {
-    InferMetadata,
-    PublicKey,
-    PublicKeyParams,
-    UserInfo,
-    WebSocketConnection,
-    WebSocketState,
-} from "./types";
+export type { InferMetadata, PublicKey, PublicKeyParams } from "./types";

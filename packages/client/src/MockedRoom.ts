@@ -1,32 +1,40 @@
-import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
-import type { IOLike, Id, InferIOInput, InferIOOutput, JsonObject } from "@pluv/types";
-import { AbstractRoom } from "./AbstractRoom";
+import type { CrdtType, InferCrdtJson } from "@pluv/crdt";
+import type {
+    CrdtDocLike,
+    EventNotifierSubscriptionCallback,
+    IOLike,
+    Id,
+    InferIOInput,
+    InferIOOutput,
+    JsonObject,
+    MergeEvents,
+    OtherNotifierSubscriptionCallback,
+    RoomLike,
+    UpdateMyPresenceAction,
+    UserInfo,
+    WebSocketConnection,
+    WebSocketState,
+} from "@pluv/types";
+import { ConnectionState } from "@pluv/types";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
-import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import { EventNotifier } from "./EventNotifier";
-import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
 import { OtherNotifier } from "./OtherNotifier";
 import { PluvProcedure } from "./PluvProcedure";
-import type { MergeEvents, PluvRouterEventConfig } from "./PluvRouter";
+import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
-import { ConnectionState } from "./enums";
+import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import type {
     EventResolver,
     EventResolverContext,
     InternalSubscriptions,
     PluvClientLimits,
-    UpdateMyPresenceAction,
-    UserInfo,
-    WebSocketConnection,
-    WebSocketState,
 } from "./types";
-import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 
 export type MockedRoomEvents<TIO extends IOLike> = Partial<{
     [P in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[P]>) => Partial<InferIOOutput<TIO>>;
@@ -49,7 +57,10 @@ export class MockedRoom<
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
     TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
-> extends AbstractRoom<TIO, TPresence, TStorage> {
+> implements RoomLike<TIO, TPresence, TStorage>
+{
+    public readonly id: string;
+
     private readonly _crdtManager: CrdtManager<TStorage>;
     private readonly _crdtNotifier = new CrdtNotifier<TStorage>();
     private readonly _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
@@ -79,7 +90,7 @@ export class MockedRoom<
     constructor(room: string, options: MockedRoomConfig<TIO, TPresence, TStorage, TEvents>) {
         const { events, initialPresence, initialStorage, limits, presence, router } = options;
 
-        super(room);
+        this.id = room;
 
         this._events = events;
         this._limits = {
@@ -199,7 +210,7 @@ export class MockedRoom<
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     };
 
-    public getDoc(): AbstractCrdtDoc<TStorage> {
+    public getDoc(): CrdtDocLike<TStorage> {
         return this._crdtManager.doc;
     }
 
