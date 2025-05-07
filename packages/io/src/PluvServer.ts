@@ -152,6 +152,12 @@ export class PluvServer<
                 const oldState = await this._platform.persistence.getStorageState(room);
                 const update = (data as any)?.update as Maybe<string>;
 
+                if (!doc.isEmpty()) {
+                    const encodedState = doc.getEncodedState();
+
+                    return { $storageReceived: { state: encodedState } };
+                }
+
                 const updates: readonly Maybe<string>[] = [
                     oldState ? null : await this._getInitialStorage?.({ context, room }),
                     update,

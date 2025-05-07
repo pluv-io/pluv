@@ -972,10 +972,7 @@ export class PluvRoom<
         this._stateNotifier.subjects["my-presence"].next(presence);
         this._stateNotifier.subjects.myself.next(myself);
 
-        const update =
-            this._state.connection.count > 1
-                ? (this._crdtManager.doc.getEncodedState() ?? null)
-                : null;
+        const update = this._crdtManager.doc.getEncodedState() ?? null;
 
         this._sendMessage({
             type: "$initializeSession",
