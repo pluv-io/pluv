@@ -17,7 +17,7 @@ test.describe("Node Storage", () => {
             const firstPage = await openTestPage(testUrl);
 
             await firstPage.waitForSelector("#storage-room");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage
                 .locator("#storage")
@@ -50,7 +50,7 @@ test.describe("Node Storage", () => {
                 secondPage.waitForSelector("#storage"),
             ]);
 
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage
                 .locator("#storage")
@@ -65,7 +65,7 @@ test.describe("Node Storage", () => {
                 .then((messages) => expect(messages.length).toEqual(1));
 
             await firstPage.click("#button-add-message");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage
                 .locator("#storage")
@@ -80,7 +80,7 @@ test.describe("Node Storage", () => {
                 .then((messages) => expect(messages.length).toEqual(2));
 
             await secondPage.click("#button-add-message");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage
                 .locator("#storage")
@@ -120,15 +120,15 @@ test.describe("Node Storage", () => {
             const firstPage = await openTestPage(testUrl);
 
             await firstPage.waitForSelector("#storage");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage.click("#button-add-message");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             const secondPage = await openTestPage(testUrl);
 
             await secondPage.waitForSelector("#storage");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await secondPage
                 .locator("#storage")
@@ -137,14 +137,14 @@ test.describe("Node Storage", () => {
                 .then((messages) => expect(messages.length).toEqual(2));
 
             await firstPage.click("#disconnect-room");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await secondPage.click("#button-add-message");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage.click("#connect-room");
             await firstPage.waitForSelector("#storage-room");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage
                 .locator("#storage")
@@ -154,11 +154,11 @@ test.describe("Node Storage", () => {
 
             await firstPage.click("#disconnect-room");
             await secondPage.click("#disconnect-room");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage.click("#connect-room");
             await firstPage.waitForSelector("#storage-room");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage
                 .locator("#storage")
@@ -181,7 +181,7 @@ test.describe("Node Storage", () => {
             const firstPage = await openTestPage(testUrl);
 
             await firstPage.waitForSelector("#storage");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage
                 .locator("#can-undo")

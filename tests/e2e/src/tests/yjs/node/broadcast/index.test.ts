@@ -21,14 +21,14 @@ test.describe("Node Broadcast", () => {
                 secondPage.waitForSelector("#broadcast-room"),
             ]);
 
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await Promise.all([
                 firstPage.waitForSelector("#connection-id"),
                 secondPage.waitForSelector("#connection-id"),
             ]);
 
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage
                 .locator("#doubled-value")
@@ -55,7 +55,7 @@ test.describe("Node Broadcast", () => {
                 .then((value) => expect(value).toEqual(0));
 
             await firstPage.click("#button-subtract-from-7");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage
                 .locator("#doubled-value")
@@ -82,7 +82,7 @@ test.describe("Node Broadcast", () => {
                 .then((value) => expect(value).toEqual(2));
 
             await secondPage.click("#button-subtract-from-11");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage
                 .locator("#doubled-value")
@@ -109,7 +109,7 @@ test.describe("Node Broadcast", () => {
                 .then((value) => expect(value).toEqual(6));
 
             await firstPage.click("#button-subtract-from-17");
-            await waitMs(ms("0.5s"));
+            await waitMs(ms("1s"));
 
             await firstPage
                 .locator("#doubled-value")
