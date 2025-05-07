@@ -17,7 +17,7 @@ test.describe("Cloudflare Storage", () => {
             const firstPage = await openTestPage(testUrl);
 
             await firstPage.waitForSelector("#storage-room");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage
                 .locator("#storage")
@@ -50,7 +50,7 @@ test.describe("Cloudflare Storage", () => {
                 secondPage.waitForSelector("#storage"),
             ]);
 
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage
                 .locator("#storage")
@@ -65,7 +65,7 @@ test.describe("Cloudflare Storage", () => {
                 .then((messages) => expect(messages.length).toEqual(1));
 
             await firstPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage
                 .locator("#storage")
@@ -80,7 +80,7 @@ test.describe("Cloudflare Storage", () => {
                 .then((messages) => expect(messages.length).toEqual(2));
 
             await secondPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage
                 .locator("#storage")
@@ -120,15 +120,15 @@ test.describe("Cloudflare Storage", () => {
             const firstPage = await openTestPage(testUrl);
 
             await firstPage.waitForSelector("#storage");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             const secondPage = await openTestPage(testUrl);
 
             await secondPage.waitForSelector("#storage");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await secondPage
                 .locator("#storage")
@@ -137,14 +137,14 @@ test.describe("Cloudflare Storage", () => {
                 .then((messages) => expect(messages.length).toEqual(2));
 
             await firstPage.click("#disconnect-room");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await secondPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage.click("#connect-room");
             await firstPage.waitForSelector("#storage-room");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage
                 .locator("#storage")
@@ -154,11 +154,11 @@ test.describe("Cloudflare Storage", () => {
 
             await firstPage.click("#disconnect-room");
             await secondPage.click("#disconnect-room");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage.click("#connect-room");
             await firstPage.waitForSelector("#storage-room");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage
                 .locator("#storage")
@@ -181,7 +181,7 @@ test.describe("Cloudflare Storage", () => {
             const firstPage = await openTestPage(testUrl);
 
             await firstPage.waitForSelector("#storage");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage
                 .locator("#can-undo")
@@ -194,7 +194,7 @@ test.describe("Cloudflare Storage", () => {
                 .then((text) => expect(text).toEqual(`Can Redo: false`));
 
             await firstPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage
                 .locator("#can-undo")
@@ -209,7 +209,7 @@ test.describe("Cloudflare Storage", () => {
             const secondPage = await openTestPage(testUrl);
 
             await secondPage.waitForSelector("#storage");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await secondPage
                 .locator("#storage")
@@ -228,7 +228,7 @@ test.describe("Cloudflare Storage", () => {
                 .then((text) => expect(text).toEqual(`Can Redo: false`));
 
             await secondPage.click("#button-add-message");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await secondPage
                 .locator("#can-undo")
@@ -247,7 +247,7 @@ test.describe("Cloudflare Storage", () => {
                 .then((messages) => expect(messages.length).toEqual(3));
 
             await firstPage.click("#button-undo");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage
                 .locator("#storage")
@@ -266,7 +266,7 @@ test.describe("Cloudflare Storage", () => {
                 .then((text) => expect(text).toEqual(`Can Redo: true`));
 
             await firstPage.click("#button-undo");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage
                 .locator("#can-undo")
@@ -279,7 +279,7 @@ test.describe("Cloudflare Storage", () => {
                 .then((text) => expect(text).toEqual(`Can Redo: true`));
 
             await firstPage.click("#button-redo");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage
                 .locator("#can-undo")
@@ -298,10 +298,10 @@ test.describe("Cloudflare Storage", () => {
                 .then((messages) => expect(messages.length).toEqual(3));
 
             await secondPage.click("#button-undo");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await firstPage.click("#button-undo");
-            await waitMs(ms("0.25s"));
+            await waitMs(ms("0.5s"));
 
             await secondPage
                 .locator("#storage")
