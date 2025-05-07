@@ -517,12 +517,16 @@ export class IORoom<
         const presence = session.presence;
         const user = session.user;
 
+        const doc = await this._doc;
+        const encodedState = doc.getEncodedState();
+
         await this._sendSelfMessage(
             {
                 type: "$registered",
                 data: {
                     presence,
                     sessionId,
+                    state: encodedState,
                     timers: { presence: session.timers.presence },
                 },
             },
@@ -530,9 +534,6 @@ export class IORoom<
         );
 
         try {
-            const doc = await this._doc;
-            const encodedState = doc.getEncodedState();
-
             await Promise.resolve(
                 this._listeners.onUserConnected({
                     context: this._context,
