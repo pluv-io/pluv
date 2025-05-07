@@ -48,6 +48,10 @@ export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
         return this.doc.get(key);
     }
 
+    public getInitialState(): string {
+        return this._docFactory.getInitialized().getEncodedState();
+    }
+
     public initialize(params: CrdtManagerInitializeParams): this {
         const { onInitialized, origin, update } = params;
 
