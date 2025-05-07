@@ -5,7 +5,7 @@ import { openTestPage, waitMs } from "../../../../utils";
 
 const TEST_URL = "http://localhost:3100/yjs/node-redis/slate";
 
-test.describe("Cloudflare Slate", () => {
+test.describe("Node Redis Slate", () => {
     test("slate", async () => {
         const testUrl = `${TEST_URL}?room=e2e-slate-1`;
 
