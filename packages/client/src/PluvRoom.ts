@@ -1026,8 +1026,6 @@ export class PluvRoom<
             InferIOAuthorize<TIO>
         >[typeof ORIGIN_STORAGE_UPDATED];
 
-        if (!this._crdtManager) return;
-
         this._crdtManager.doc.applyEncodedState({
             origin: ORIGIN_STORAGE_UPDATED,
             update: data.state,
@@ -1037,8 +1035,6 @@ export class PluvRoom<
 
         const storageRoot = Object.keys(sharedTypes).reduce(
             (acc, prop) => {
-                if (!this._crdtManager) return acc;
-
                 const serialized = this._crdtManager.doc.toJson(prop);
 
                 this._crdtNotifier.subject(prop).next(serialized);
@@ -1129,8 +1125,6 @@ export class PluvRoom<
 
     private _observeCrdt(): void {
         this._subscriptions.observeCrdt?.();
-
-        if (!this._crdtManager) return;
 
         const unsubscribe = this._crdtManager.doc.subscribe((event) => {
             const origin = event.origin ?? null;

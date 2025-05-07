@@ -66,6 +66,8 @@ export class CrdtLoroDoc<
 
             return acc;
         }, {} as TStorage);
+
+        this.value.commit();
     }
 
     public applyEncodedState(params: DocApplyEncodedStateParams): this {
@@ -165,6 +167,8 @@ export class CrdtLoroDoc<
 
     public isEmpty(): boolean {
         const serialized = this.value.toJSON();
+
+        console.log("serialized", serialized);
 
         return !serialized || !Object.keys(serialized).length;
     }

@@ -2,7 +2,6 @@ import type { AbstractCrdtDoc, AbstractCrdtDocFactory, CrdtType } from "@pluv/cr
 import { noop } from "@pluv/crdt";
 
 export type CrdtManagerOptions<TStorage extends Record<string, CrdtType<any, any>> = {}> = {
-    encodedState?: string | Uint8Array | null;
     initialStorage?: AbstractCrdtDocFactory<TStorage>;
 };
 
@@ -19,14 +18,10 @@ export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
     private readonly _docFactory: AbstractCrdtDocFactory<TStorage>;
 
     constructor(options: CrdtManagerOptions<TStorage>) {
-        const { encodedState, initialStorage = noop.doc({}) as AbstractCrdtDocFactory<TStorage> } =
-            options;
+        const { initialStorage = noop.doc({}) as AbstractCrdtDocFactory<TStorage> } = options;
 
         this._docFactory = initialStorage;
-
-        this.doc = encodedState
-            ? initialStorage.getFresh().applyEncodedState({ update: encodedState })
-            : initialStorage.getFresh();
+        this.doc = initialStorage.getEmpty();
     }
 
     /**

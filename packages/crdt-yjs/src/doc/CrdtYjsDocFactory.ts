@@ -35,44 +35,6 @@ export class CrdtYjsDocFactory<
         return new CrdtYjsDocFactory<TStorage>(initialStorage ?? this._initialStorage);
     }
 
-    public getFresh(): CrdtYjsDoc<TStorage> {
-        const storage = this._initialStorage();
-
-        return new CrdtYjsDoc<TStorage>(
-            Object.entries(storage).reduce((acc, [key, node]) => {
-                if (node instanceof YjsArray) {
-                    return { ...acc, [key]: array() };
-                }
-
-                if (node instanceof YjsMap) {
-                    return { ...acc, [key]: map() };
-                }
-
-                if (node instanceof YjsObject) {
-                    return { ...acc, [key]: object() };
-                }
-
-                if (node instanceof YjsText) {
-                    return { ...acc, [key]: text() };
-                }
-
-                if (node instanceof YjsXmlElement) {
-                    return { ...acc, [key]: xmlElement(node.nodeName, []) };
-                }
-
-                if (node instanceof YXmlFragment) {
-                    return { ...acc, [key]: xmlFragment([]) };
-                }
-
-                if (node instanceof YjsXmlText) {
-                    return { ...acc, [key]: xmlText() };
-                }
-
-                return acc;
-            }, {} as TStorage),
-        );
-    }
-
     public getInitialized(initialStorage?: () => TStorage): CrdtYjsDoc<TStorage> {
         return new CrdtYjsDoc<TStorage>(initialStorage?.() ?? this._initialStorage());
     }
