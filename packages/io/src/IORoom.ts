@@ -503,10 +503,9 @@ export class IORoom<
 
     private async _emitQuitters(): Promise<void> {
         const currentTime = new Date().getTime();
-        const quitters = Array.from(this._sessions.values()).filter(
-            (pluvWs) =>
-                pluvWs.state.quit || currentTime - pluvWs.state.timers.ping > PING_TIMEOUT_MS,
-        );
+        const quitters = Array.from(this._sessions.values()).filter((pluvWs) => {
+            return pluvWs.state.quit || currentTime - pluvWs.state.timers.ping > PING_TIMEOUT_MS;
+        });
 
         this._closeWebSockets(quitters);
     }
