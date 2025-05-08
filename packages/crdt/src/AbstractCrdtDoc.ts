@@ -28,6 +28,7 @@ export abstract class AbstractCrdtDoc<T extends Record<string, CrdtType<any, any
     public abstract get<TKey extends keyof T>(key: TKey): T[TKey];
     public abstract getEncodedState(): string;
     public abstract isEmpty(): boolean;
+    public abstract rebuildStorage(): this;
     public abstract redo(): this;
     public abstract subscribe(
         listener: (params: DocSubscribeCallbackParams<T>) => void,

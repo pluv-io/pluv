@@ -40,6 +40,10 @@ export class NoopCrdtDoc extends AbstractCrdtDoc<any> {
         return true;
     }
 
+    public rebuildStorage(): this {
+        return this;
+    }
+
     public redo(): this {
         return this;
     }

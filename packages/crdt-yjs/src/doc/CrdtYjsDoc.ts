@@ -173,6 +173,21 @@ export class CrdtYjsDoc<
         return !this.value.share.size;
     }
 
+    public rebuildStorage(): this {
+        const isBuilt = !!Object.keys(this._storage).length;
+
+        if (isBuilt) {
+            console.warn("Attempted to rebuild storage multiple times");
+            return this;
+        }
+
+        this._storage = this.value.share
+            .entries()
+            .reduce((acc, [key, type]) => ({ ...acc, [key]: type }), {} as TStorage);
+
+        return this;
+    }
+
     public redo(): this {
         this._undoManager?.redo();
 

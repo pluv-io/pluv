@@ -389,8 +389,8 @@ export class PluvRoom<
             return oldState;
         });
 
-        await this._storageStore.initialize();
-        await this._applyStorageStore();
+        // await this._storageStore.initialize();
+        // await this._applyStorageStore();
 
         const wsEndpoint = this._getWsEndpoint(this.id, params);
         const url = new URL(wsEndpoint);
@@ -950,6 +950,12 @@ export class PluvRoom<
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
         const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$registered"];
+        /**
+         * TODO
+         * @description Maybe we can use this to resolve storage initialization more efficiently
+         * @date May 7, 2025
+         */
+        const state = data.state;
 
         this._updateState((oldState) => {
             oldState.connection.count += 1;
@@ -988,17 +994,17 @@ export class PluvRoom<
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
         const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$storageReceived"];
+        const state = data.state;
 
         this._crdtManager.initialize({
             onInitialized: async (update) => {
-                this._addToStorageStore(update);
+                await this._addToStorageStore(update);
                 this._emitSharedTypes();
-
                 this._observeCrdt();
                 this._stateNotifier.subjects["storage-loaded"].next(true);
             },
             origin: ORIGIN_INITIALIZED,
-            update: data.state,
+            update: state,
         });
 
         const encodedState = this._crdtManager.doc.getEncodedState();

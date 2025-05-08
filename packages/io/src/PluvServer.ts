@@ -150,23 +150,56 @@ export class PluvServer<
             })
             .self(async (data, { context, doc, room, session }) => {
                 const oldState = await this._platform.persistence.getStorageState(room);
+                /**
+                 * !HACK
+                 * @description This is the frontend's initialStorage. We only want to
+                 * apply this if the server's storage is empty (i.e. no initial storage
+                 * has been applied)
+                 */
                 const update = (data as any)?.update as Maybe<string>;
 
+                if (!oldState) {
+                    const loadedState = await this._getInitialStorage?.({ context, room });
+
+                    if (!!loadedState) {
+                        doc.applyEncodedState({ update: loadedState }).getEncodedState();
+                    }
+                }
+
+                /**
+                 * @description Storage was already initialized. Don't overwrite the current
+                 * storage state with the incoming initial storage. Return what the current state
+                 * is without changes.
+                 * @date May 7, 2025
+                 */
                 if (!doc.isEmpty()) {
                     const encodedState = doc.getEncodedState();
 
                     return { $storageReceived: { state: encodedState } };
                 }
 
-                const updates: readonly Maybe<string>[] = [
-                    oldState ? null : await this._getInitialStorage?.({ context, room }),
-                    update,
-                ];
+                /**
+                 * @description Storage was never initialized, and there is an incoming
+                 * initialStorage from the client. Apply the initialStorage and persist the state
+                 * as an update.
+                 * @date May 7, 2025
+                 */
+                if (!!update) {
+                    const encodedState = doc.applyEncodedState({ update }).getEncodedState();
+                    const storageSize = new TextEncoder().encode(encodedState).length;
 
-                if (updates.some((_update) => !!_update)) {
-                    const encodedState = doc.batchApplyEncodedState({ updates }).getEncodedState();
+                    if (
+                        !!this._limits.storageMaxSize &&
+                        storageSize > this._limits.storageMaxSize
+                    ) {
+                        throw new Error("Storage has exceeded the size limit");
+                    }
 
-                    await this._platform.persistence.setStorageState(room, encodedState);
+                    await this._platform.persistence
+                        .setStorageState(room, encodedState)
+                        .catch((error) => {
+                            this._logDebug(error);
+                        });
 
                     this._getListeners().onStorageUpdated({
                         context,
@@ -177,14 +210,7 @@ export class PluvServer<
                     });
                 }
 
-                const encodedState =
-                    (await this._platform.persistence.getStorageState(room)) ??
-                    doc.getEncodedState();
-                const storageSize = new TextEncoder().encode(encodedState).length;
-
-                if (!!this._limits.storageMaxSize && storageSize > this._limits.storageMaxSize) {
-                    throw new Error("Storage has exceeded the size limit");
-                }
+                const encodedState = doc.getEncodedState();
 
                 return { $storageReceived: { state: encodedState } };
             }),

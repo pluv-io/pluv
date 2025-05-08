@@ -168,9 +168,26 @@ export class CrdtLoroDoc<
     public isEmpty(): boolean {
         const serialized = this.value.toJSON();
 
-        console.log("serialized", serialized);
-
         return !serialized || !Object.keys(serialized).length;
+    }
+
+    public rebuildStorage(): this {
+        const isBuilt = !!Object.keys(this._storage).length;
+
+        if (isBuilt) {
+            console.warn("Attempted to rebuild storage multiple times");
+            return this;
+        }
+
+        const keys = Object.keys(this.value.toJSON());
+
+        this._storage = keys.reduce((acc, key) => {
+            const container = this.value.getByPath(key);
+
+            return isContainer(container) ? { ...acc, [key]: container } : acc;
+        }, {} as TStorage);
+
+        return this;
     }
 
     public redo(): this {
