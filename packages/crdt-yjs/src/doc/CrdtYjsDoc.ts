@@ -82,7 +82,9 @@ export class CrdtYjsDoc<
             if (node instanceof YjsXmlElement) {
                 const yXmlElement = this.value.getXmlElement(key);
 
-                if (!!node.initialValue?.length) yXmlElement.insert(0, node.initialValue?.slice(0));
+                if (!!node.initialValue?.length) {
+                    yXmlElement.insert(0, node.initialValue?.slice(0));
+                }
 
                 return { ...acc, [key]: yXmlElement };
             }
@@ -90,8 +92,9 @@ export class CrdtYjsDoc<
             if (node instanceof YjsXmlFragment) {
                 const yXmlFragment = this.value.getXmlFragment(key);
 
-                if (!!node.initialValue?.length)
+                if (!!node.initialValue?.length) {
                     yXmlFragment.insert(0, node.initialValue?.slice(0));
+                }
 
                 return { ...acc, [key]: yXmlFragment };
             }
@@ -236,7 +239,7 @@ export class CrdtYjsDoc<
                     type instanceof YXmlFragment ||
                     type instanceof YXmlText
                 ) {
-                    acc.push(type);
+                    acc.push(type as YjsType<AbstractType<any>, any>);
                 }
 
                 return acc;
