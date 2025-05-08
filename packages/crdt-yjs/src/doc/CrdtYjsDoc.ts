@@ -26,6 +26,7 @@ import { YjsObject } from "../object/YjsObject";
 import { YjsText } from "../text/YjsText";
 import type { YjsType } from "../types";
 import { YjsXmlElement } from "../xmlElement/YjsXmlElement";
+import { YjsXmlFragment } from "../xmlFragment/YjsXmlFragment";
 import { YjsXmlText } from "../xmlText/YjsXmlText";
 
 const MERGE_INTERVAL_MS = 1_000;
@@ -86,7 +87,7 @@ export class CrdtYjsDoc<
                 return { ...acc, [key]: yXmlElement };
             }
 
-            if (node instanceof YXmlFragment) {
+            if (node instanceof YjsXmlFragment) {
                 const yXmlFragment = this.value.getXmlFragment(key);
 
                 if (!!node.initialValue?.length)
