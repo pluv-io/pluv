@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 1.0.1
+
+### Patch Changes
+
+- c583be9: Fixed storage race condition that occurred when 2 users joined a room near simultaneously that would cause users to have mismatched storage states from the server (and thereby preventing updates from properly registering) until the user reconnected.
+  - @pluv/crdt@1.0.1
+  - @pluv/types@1.0.1
+
 ## 1.0.0
 
 ### Major Changes

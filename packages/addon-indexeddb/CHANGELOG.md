@@ -1,5 +1,14 @@
 # @pluv/addon-indexeddb
 
+## 1.0.1
+
+### Patch Changes
+
+- c583be9: Temporarily disabled `@pluv/addon-indexeddb`.
+- Updated dependencies [c583be9]
+  - @pluv/client@1.0.1
+  - @pluv/crdt@1.0.1
+
 ## 1.0.0
 
 ### Major Changes

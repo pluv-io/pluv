@@ -1,5 +1,13 @@
 # @pluv/platform-node
 
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [c583be9]
+  - @pluv/io@1.0.1
+  - @pluv/types@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
