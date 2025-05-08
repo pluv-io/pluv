@@ -987,15 +987,11 @@ export class PluvRoom<
 
         const updates = await this._storageStore.getUpdates();
 
-        console.log("changeKind", changeKind, updates, this._crdtManager.initialized);
-
         if (changeKind === "empty") {
             this._crdtManager.destroy();
             this._crdtManager.initialize({ origin: ORIGIN_INITIALIZED, update: updates });
         } else if (changeKind === "initialized") {
             if (this._crdtManager.initialized) {
-                console.log("initialized", updates);
-
                 if (!!updates.length)
                     this._crdtManager.applyUpdate({ update: updates, origin: ORIGIN_INITIALIZED });
                 else {
