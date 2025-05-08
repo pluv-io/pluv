@@ -1,19 +1,5 @@
 import { AbstractCrdtDocFactory } from "@pluv/crdt";
-import { XmlFragment as YXmlFragment } from "yjs";
-import { array } from "../array";
-import { YjsArray } from "../array/YjsArray";
-import { map } from "../map";
-import { YjsMap } from "../map/YjsMap";
-import { object } from "../object";
-import { YjsObject } from "../object/YjsObject";
-import { text } from "../text";
-import { YjsText } from "../text/YjsText";
 import type { YjsType } from "../types";
-import { xmlElement } from "../xmlElement";
-import { YjsXmlElement } from "../xmlElement/YjsXmlElement";
-import { xmlFragment } from "../xmlFragment";
-import { xmlText } from "../xmlText";
-import { YjsXmlText } from "../xmlText/YjsXmlText";
 import { CrdtYjsDoc } from "./CrdtYjsDoc";
 
 export class CrdtYjsDocFactory<

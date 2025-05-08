@@ -99,6 +99,10 @@ export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
         return this;
     }
 
+    public resolveEncodedState(updates: string | string[] | readonly string[]): string | null {
+        return this._docFactory.resolveEncodedState(updates);
+    }
+
     private _applyDocUpdates(
         doc: AbstractCrdtDoc<TStorage>,
         updates: readonly string[],
