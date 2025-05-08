@@ -342,7 +342,7 @@ test.describe("Node Storage", () => {
         },
     );
 
-    test.skip(
+    test(
         oneLine`
             addonIndexedDB persists old storage on refresh
         `,

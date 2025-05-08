@@ -389,8 +389,7 @@ export class PluvRoom<
             return oldState;
         });
 
-        // await this._storageStore.initialize();
-        // await this._applyStorageStore();
+        await this._storageStore.initialize();
 
         const wsEndpoint = this._getWsEndpoint(this.id, params);
         const url = new URL(wsEndpoint);
@@ -614,17 +613,9 @@ export class PluvRoom<
 
     private async _applyStorageStore(): Promise<void> {
         const updates = await this._storageStore.getUpdates();
+        const filtered = updates.filter((update) => !!update);
 
-        this._crdtManager.initialize({
-            onInitialized: () => {
-                this._stateNotifier.subjects["storage-loaded"].next(true);
-
-                this._observeCrdt();
-            },
-            origin: ORIGIN_INITIALIZED,
-            update: updates,
-        });
-
+        this._crdtManager.doc.batchApplyEncodedState({ updates: filtered });
         this._emitSharedTypes();
     }
 
@@ -998,7 +989,9 @@ export class PluvRoom<
 
         this._crdtManager.initialize({
             onInitialized: async (update) => {
+                await this._applyStorageStore();
                 await this._addToStorageStore(update);
+
                 this._emitSharedTypes();
                 this._observeCrdt();
                 this._stateNotifier.subjects["storage-loaded"].next(true);
