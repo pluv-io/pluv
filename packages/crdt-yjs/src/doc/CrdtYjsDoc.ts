@@ -196,9 +196,8 @@ export class CrdtYjsDoc<
 
             return acc;
         }, {} as TStorage);
-        this.track();
 
-        return this;
+        return this.track();
     }
 
     public redo(): this {

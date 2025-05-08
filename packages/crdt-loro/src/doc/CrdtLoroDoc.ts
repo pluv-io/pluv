@@ -187,7 +187,7 @@ export class CrdtLoroDoc<
             return isContainer(container) ? { ...acc, [key]: container } : acc;
         }, {} as TStorage);
 
-        return this;
+        return this.track();
     }
 
     public redo(): this {
