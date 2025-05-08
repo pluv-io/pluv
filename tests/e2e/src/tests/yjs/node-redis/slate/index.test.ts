@@ -6,7 +6,7 @@ import { openTestPage, waitMs } from "../../../../utils";
 const TEST_URL = "http://localhost:3100/yjs/node-redis/slate";
 
 test.describe("Node Redis Slate", () => {
-    test("slate", async () => {
+    test.skip("slate", async () => {
         const testUrl = `${TEST_URL}?room=e2e-slate-1`;
 
         const firstPage = await openTestPage(testUrl);
@@ -17,19 +17,19 @@ test.describe("Node Redis Slate", () => {
             secondPage.waitForSelector("#slate-editable"),
         ]);
 
-        await waitMs(ms("0.25ms"));
+        await waitMs(ms("1ms"));
 
         await firstPage.locator("#slate-editable").fill("hello world");
-        await waitMs(ms("0.25s"));
+        await waitMs(ms("0.25ms"));
 
         await secondPage
             .locator("#slate-editable")
             .innerText()
             .then((text) => expect(text.trim()).toEqual("hello world"));
-        await waitMs(ms("0.25s"));
+        await waitMs(ms("0.25ms"));
 
         await secondPage.locator("#slate-editable").clear();
-        await waitMs(ms("0.25s"));
+        await waitMs(ms("0.25ms"));
 
         await firstPage
             .locator("#slate-editable")

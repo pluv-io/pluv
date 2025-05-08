@@ -503,10 +503,9 @@ export class IORoom<
 
     private async _emitQuitters(): Promise<void> {
         const currentTime = new Date().getTime();
-        const quitters = Array.from(this._sessions.values()).filter(
-            (pluvWs) =>
-                pluvWs.state.quit || currentTime - pluvWs.state.timers.ping > PING_TIMEOUT_MS,
-        );
+        const quitters = Array.from(this._sessions.values()).filter((pluvWs) => {
+            return pluvWs.state.quit || currentTime - pluvWs.state.timers.ping > PING_TIMEOUT_MS;
+        });
 
         this._closeWebSockets(quitters);
     }
@@ -517,12 +516,16 @@ export class IORoom<
         const presence = session.presence;
         const user = session.user;
 
+        const doc = await this._doc;
+        const encodedState = doc.getEncodedState();
+
         await this._sendSelfMessage(
             {
                 type: "$registered",
                 data: {
                     presence,
                     sessionId,
+                    state: encodedState,
                     timers: { presence: session.timers.presence },
                 },
             },
@@ -530,9 +533,6 @@ export class IORoom<
         );
 
         try {
-            const doc = await this._doc;
-            const encodedState = doc.getEncodedState();
-
             await Promise.resolve(
                 this._listeners.onUserConnected({
                     context: this._context,
