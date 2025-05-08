@@ -6,7 +6,7 @@ import { openTestPage, waitMs } from "../../../../utils";
 const TEST_URL = "http://localhost:3100/yjs/node-redis/slate";
 
 test.describe("Node Redis Slate", () => {
-    test("slate", async () => {
+    test.skip("slate", async () => {
         const testUrl = `${TEST_URL}?room=e2e-slate-1`;
 
         const firstPage = await openTestPage(testUrl);

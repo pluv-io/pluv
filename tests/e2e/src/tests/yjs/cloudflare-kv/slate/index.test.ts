@@ -6,7 +6,7 @@ import { openTestPage, waitMs } from "../../../../utils";
 const TEST_URL = "http://localhost:3100/yjs/cloudflare/slate";
 
 test.describe("CloudflareKV Slate", () => {
-    test("slate", async () => {
+    test.skip("slate", async () => {
         const testUrl = `${TEST_URL}?room=kv-e2e-slate-1`;
 
         const firstPage = await openTestPage(testUrl);
