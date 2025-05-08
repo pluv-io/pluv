@@ -174,7 +174,7 @@ export class CrdtYjsDoc<
         return !this.value.share.size;
     }
 
-    public rebuildStorage(): this {
+    public rebuildStorage(reference: TStorage): this {
         const isBuilt = !!Object.keys(this._storage).length;
 
         if (isBuilt) {
@@ -182,9 +182,21 @@ export class CrdtYjsDoc<
             return this;
         }
 
-        this._storage = this.value.share
-            .entries()
-            .reduce((acc, [key, type]) => ({ ...acc, [key]: type }), {} as TStorage);
+        this._storage = Object.entries(reference).reduce((acc, [key, node]) => {
+            if (node instanceof YArray) return { ...acc, [key]: this.value.getArray(key) };
+            if (node instanceof YMap) return { ...acc, [key]: this.value.getMap(key) };
+            if (node instanceof YText) return { ...acc, [key]: this.value.getText(key) };
+            if (node instanceof YXmlElement) {
+                return { ...acc, [key]: this.value.getXmlElement(key) };
+            }
+            if (node instanceof YXmlFragment) {
+                return { ...acc, [key]: this.value.getXmlFragment(key) };
+            }
+            if (node instanceof YXmlText) return { ...acc, [key]: this.value.get(key, YXmlText) };
+
+            return acc;
+        }, {} as TStorage);
+        this.track();
 
         return this;
     }

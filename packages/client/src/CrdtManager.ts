@@ -83,12 +83,16 @@ export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
 
         if (!updates.length) return this;
 
+        const initialized = this._docFactory.getInitialized();
+        const reference = initialized.get();
+
         this.doc = this._applyDocUpdates(
             this._docFactory.getEmpty(),
             updates,
             origin,
-        ).rebuildStorage();
+        ).rebuildStorage(reference);
         this.initialized = true;
+        initialized.destroy();
 
         onInitialized?.(this.doc.getEncodedState());
 
