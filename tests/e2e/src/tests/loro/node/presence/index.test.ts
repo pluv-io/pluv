@@ -23,7 +23,7 @@ test.describe("Node Presence", () => {
                 secondPage.waitForSelector("#presence-room"),
             ]);
 
-            await waitMs(ms("1s"));
+            await waitMs(ms("0.25ms"));
 
             await firstPage
                 .locator("#others")
@@ -61,7 +61,7 @@ test.describe("Node Presence", () => {
                 secondPage.waitForSelector("#presence-room"),
             ]);
 
-            await waitMs(ms("1s"));
+            await waitMs(ms("0.25ms"));
 
             await secondPage
                 .locator("#others")
@@ -71,7 +71,7 @@ test.describe("Node Presence", () => {
                 .then((count) => expect(count).toEqual(0));
 
             await firstPage.click("#button-increment-count");
-            await waitMs(ms("1s"));
+            await waitMs(ms("0.25ms"));
 
             await firstPage
                 .locator("#my-presence")
@@ -106,7 +106,7 @@ test.describe("Node Presence", () => {
             const firstPage = await openTestPage(testUrl);
 
             await firstPage.waitForSelector("#presence-room");
-            await waitMs(ms("1s"));
+            await waitMs(ms("0.25ms"));
 
             await firstPage
                 .locator("#my-presence")
@@ -116,7 +116,7 @@ test.describe("Node Presence", () => {
                 .then((count) => expect(count).toEqual(0));
 
             await firstPage.click("#button-increment-count");
-            await waitMs(ms("1s"));
+            await waitMs(ms("0.25ms"));
 
             await firstPage
                 .locator("#my-presence")
@@ -128,7 +128,7 @@ test.describe("Node Presence", () => {
             const secondPage = await openTestPage(testUrl);
 
             await secondPage.waitForSelector("#presence-room");
-            await waitMs(ms("1s"));
+            await waitMs(ms("0.25ms"));
 
             await secondPage
                 .locator("#others")
@@ -166,7 +166,7 @@ test.describe("Node Presence", () => {
                 secondPage.waitForSelector("#presence-room"),
             ]);
 
-            await waitMs(ms("1s"));
+            await waitMs(ms("0.25ms"));
 
             await secondPage
                 .locator("#others")
@@ -176,7 +176,7 @@ test.describe("Node Presence", () => {
                 .then((count) => expect(count).toEqual(0));
 
             await firstPage.click("#button-increment-count");
-            await waitMs(ms("1s"));
+            await waitMs(ms("0.25ms"));
 
             await secondPage
                 .locator("#others")
@@ -189,7 +189,7 @@ test.describe("Node Presence", () => {
                 });
 
             await firstPage.click("#disconnect-room");
-            await waitMs(ms("1s"));
+            await waitMs(ms("0.25ms"));
 
             await secondPage
                 .locator("#others")
@@ -200,7 +200,7 @@ test.describe("Node Presence", () => {
 
             await firstPage.click("#connect-room");
             await firstPage.waitForSelector("#presence-room");
-            await waitMs(ms("1s"));
+            await waitMs(ms("0.25ms"));
 
             await secondPage
                 .locator("#others")
