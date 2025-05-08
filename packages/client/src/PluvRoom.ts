@@ -389,8 +389,8 @@ export class PluvRoom<
             return oldState;
         });
 
-        await this._storageStore.initialize();
-        await this._applyStorageStore();
+        // await this._storageStore.initialize();
+        // await this._applyStorageStore();
 
         const wsEndpoint = this._getWsEndpoint(this.id, params);
         const url = new URL(wsEndpoint);
@@ -950,6 +950,12 @@ export class PluvRoom<
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
         const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$registered"];
+        /**
+         * TODO
+         * @description Maybe we can use this to resolve storage initialization more efficiently
+         * @date May 7, 2025
+         */
+        const state = data.state;
 
         this._updateState((oldState) => {
             oldState.connection.count += 1;
@@ -972,10 +978,7 @@ export class PluvRoom<
         this._stateNotifier.subjects["my-presence"].next(presence);
         this._stateNotifier.subjects.myself.next(myself);
 
-        const update =
-            this._state.connection.count > 1
-                ? (this._crdtManager.doc.getEncodedState() ?? null)
-                : null;
+        const update = this._crdtManager.getInitialState();
 
         this._sendMessage({
             type: "$initializeSession",
@@ -991,17 +994,17 @@ export class PluvRoom<
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
         const data = message.data as BaseIOEventRecord<InferIOAuthorize<TIO>>["$storageReceived"];
+        const state = data.state;
 
         this._crdtManager.initialize({
             onInitialized: async (update) => {
-                this._addToStorageStore(update);
+                await this._addToStorageStore(update);
                 this._emitSharedTypes();
-
                 this._observeCrdt();
                 this._stateNotifier.subjects["storage-loaded"].next(true);
             },
             origin: ORIGIN_INITIALIZED,
-            update: data.state,
+            update: state,
         });
 
         const encodedState = this._crdtManager.doc.getEncodedState();
@@ -1029,8 +1032,6 @@ export class PluvRoom<
             InferIOAuthorize<TIO>
         >[typeof ORIGIN_STORAGE_UPDATED];
 
-        if (!this._crdtManager) return;
-
         this._crdtManager.doc.applyEncodedState({
             origin: ORIGIN_STORAGE_UPDATED,
             update: data.state,
@@ -1040,8 +1041,6 @@ export class PluvRoom<
 
         const storageRoot = Object.keys(sharedTypes).reduce(
             (acc, prop) => {
-                if (!this._crdtManager) return acc;
-
                 const serialized = this._crdtManager.doc.toJson(prop);
 
                 this._crdtNotifier.subject(prop).next(serialized);
@@ -1132,8 +1131,6 @@ export class PluvRoom<
 
     private _observeCrdt(): void {
         this._subscriptions.observeCrdt?.();
-
-        if (!this._crdtManager) return;
 
         const unsubscribe = this._crdtManager.doc.subscribe((event) => {
             const origin = event.origin ?? null;
@@ -1282,7 +1279,6 @@ export class PluvRoom<
         if (this._state.connection.state !== ConnectionState.Connecting) return;
 
         this._logDebug("WebSocket connected");
-
         this._updateState((oldState) => {
             oldState.connection.state = ConnectionState.Open;
 

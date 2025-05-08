@@ -66,6 +66,8 @@ export class CrdtLoroDoc<
 
             return acc;
         }, {} as TStorage);
+
+        this.value.commit();
     }
 
     public applyEncodedState(params: DocApplyEncodedStateParams): this {
@@ -167,6 +169,25 @@ export class CrdtLoroDoc<
         const serialized = this.value.toJSON();
 
         return !serialized || !Object.keys(serialized).length;
+    }
+
+    public rebuildStorage(): this {
+        const isBuilt = !!Object.keys(this._storage).length;
+
+        if (isBuilt) {
+            console.warn("Attempted to rebuild storage multiple times");
+            return this;
+        }
+
+        const keys = Object.keys(this.value.toJSON());
+
+        this._storage = keys.reduce((acc, key) => {
+            const container = this.value.getByPath(key);
+
+            return isContainer(container) ? { ...acc, [key]: container } : acc;
+        }, {} as TStorage);
+
+        return this.track();
     }
 
     public redo(): this {

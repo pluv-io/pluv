@@ -46,6 +46,19 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
             return;
         }
 
+        const result = this._state.storage.sql.exec<{ count: 0 }>(
+            sql`
+                SELECT id
+                FROM ${SQLITE_USER_TABLE}
+                WHERE id = ?;
+            `,
+            connectionId,
+        );
+
+        const existing = !!(result.toArray()[0]?.count ?? 0);
+
+        if (existing) return;
+
         this._state.storage.sql.exec(
             sql`
                 INSERT INTO ${SQLITE_USER_TABLE} VALUES (?, ?, ?);
@@ -311,6 +324,31 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
             await this._state.storage.put(this._getStorageKey(room), state, {
                 allowConcurrency: true,
             });
+            return;
+        }
+
+        const result = this._state.storage.sql.exec<{ count: number }>(
+            sql`
+                SELECT COUNT(*) as count
+                FROM ${SQLITE_STORAGE_TABLE}
+                WHERE room = ?;
+            `,
+            room,
+        );
+
+        const existing = !!(result.toArray()[0]?.count ?? 0);
+
+        if (existing) {
+            this._state.storage.sql.exec(
+                sql`
+                    UPDATE ${SQLITE_STORAGE_TABLE}
+                    SET data = ?
+                    WHERE room = ?;
+                `,
+                state,
+                room,
+            );
+
             return;
         }
 

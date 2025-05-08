@@ -40,15 +40,19 @@ export class NoopCrdtDoc extends AbstractCrdtDoc<any> {
         return true;
     }
 
+    public rebuildStorage(): this {
+        return this;
+    }
+
     public redo(): this {
         return this;
     }
 
-    public subscribe(listener: (params: DocSubscribeCallbackParams<{}>) => void): () => void {
+    public subscribe(listener: (params: DocSubscribeCallbackParams<any>) => void): () => void {
         return () => undefined;
     }
 
-    public toJson(): {} {
+    public toJson(): any {
         return {};
     }
 

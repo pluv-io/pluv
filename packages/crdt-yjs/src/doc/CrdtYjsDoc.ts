@@ -26,6 +26,7 @@ import { YjsObject } from "../object/YjsObject";
 import { YjsText } from "../text/YjsText";
 import type { YjsType } from "../types";
 import { YjsXmlElement } from "../xmlElement/YjsXmlElement";
+import { YjsXmlFragment } from "../xmlFragment/YjsXmlFragment";
 import { YjsXmlText } from "../xmlText/YjsXmlText";
 
 const MERGE_INTERVAL_MS = 1_000;
@@ -81,16 +82,19 @@ export class CrdtYjsDoc<
             if (node instanceof YjsXmlElement) {
                 const yXmlElement = this.value.getXmlElement(key);
 
-                if (!!node.initialValue?.length) yXmlElement.insert(0, node.initialValue?.slice(0));
+                if (!!node.initialValue?.length) {
+                    yXmlElement.insert(0, node.initialValue?.slice(0));
+                }
 
                 return { ...acc, [key]: yXmlElement };
             }
 
-            if (node instanceof YXmlFragment) {
+            if (node instanceof YjsXmlFragment) {
                 const yXmlFragment = this.value.getXmlFragment(key);
 
-                if (!!node.initialValue?.length)
+                if (!!node.initialValue?.length) {
                     yXmlFragment.insert(0, node.initialValue?.slice(0));
+                }
 
                 return { ...acc, [key]: yXmlFragment };
             }
@@ -173,6 +177,32 @@ export class CrdtYjsDoc<
         return !this.value.share.size;
     }
 
+    public rebuildStorage(reference: TStorage): this {
+        const isBuilt = !!Object.keys(this._storage).length;
+
+        if (isBuilt) {
+            console.warn("Attempted to rebuild storage multiple times");
+            return this;
+        }
+
+        this._storage = Object.entries(reference).reduce((acc, [key, node]) => {
+            if (node instanceof YArray) return { ...acc, [key]: this.value.getArray(key) };
+            if (node instanceof YMap) return { ...acc, [key]: this.value.getMap(key) };
+            if (node instanceof YText) return { ...acc, [key]: this.value.getText(key) };
+            if (node instanceof YXmlElement) {
+                return { ...acc, [key]: this.value.getXmlElement(key) };
+            }
+            if (node instanceof YXmlFragment) {
+                return { ...acc, [key]: this.value.getXmlFragment(key) };
+            }
+            if (node instanceof YXmlText) return { ...acc, [key]: this.value.get(key, YXmlText) };
+
+            return acc;
+        }, {} as TStorage);
+
+        return this.track();
+    }
+
     public redo(): this {
         this._undoManager?.redo();
 
@@ -209,7 +239,7 @@ export class CrdtYjsDoc<
                     type instanceof YXmlFragment ||
                     type instanceof YXmlText
                 ) {
-                    acc.push(type);
+                    acc.push(type as YjsType<AbstractType<any>, any>);
                 }
 
                 return acc;
