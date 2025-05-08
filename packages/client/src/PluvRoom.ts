@@ -1279,7 +1279,6 @@ export class PluvRoom<
         if (this._state.connection.state !== ConnectionState.Connecting) return;
 
         this._logDebug("WebSocket connected");
-
         this._updateState((oldState) => {
             oldState.connection.state = ConnectionState.Open;
 
