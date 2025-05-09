@@ -16,7 +16,7 @@ test.describe("CloudflareSQLite Slate", () => {
             secondPage.waitForSelector("#slate-editable"),
         ]);
 
-        await waitMs(ms("1ms"));
+        await waitMs(ms("1s"));
 
         await firstPage.locator("#slate-editable").fill("hello world");
         await waitMs(ms("0.25s"));
