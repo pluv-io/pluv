@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 1.0.2
+
+### Patch Changes
+
+- d87159c: Restored `@pluv/addon-indexeddb` functionality, and fixed `@pluv/addon-indexeddb` sometimes duplicating storage operations based on `initialStorage` values.
+  - @pluv/crdt@1.0.2
+  - @pluv/types@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes
