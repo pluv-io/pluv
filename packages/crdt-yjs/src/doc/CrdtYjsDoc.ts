@@ -58,6 +58,53 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
              */
             if (keys.has(key)) return { ...acc, [key]: node };
 
+            if (node instanceof YjsXmlElement) {
+                this._warn(oneLine`
+                    Warning: You are using \`yjs.xmlElement\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
+                const yXmlElement = this.value.getXmlElement(key);
+
+                if (!!node.initialValue?.length) {
+                    yXmlElement.insert(0, node.initialValue?.slice(0));
+                }
+
+                return { ...acc, [key]: yXmlElement };
+            }
+
+            if (node instanceof YjsXmlFragment) {
+                this._warn(oneLine`
+                    Warning: You are using \`yjs.xmlFragment\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
+                const yXmlFragment = this.value.getXmlFragment(key);
+
+                if (!!node.initialValue?.length) {
+                    yXmlFragment.insert(0, node.initialValue?.slice(0));
+                }
+
+                return { ...acc, [key]: yXmlFragment };
+            }
+
+            if (node instanceof YjsXmlText) {
+                this._warn(oneLine`
+                    Warning: You are using \`yjs.xmlText\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
+                const yXmlText = this.value.get(key, YXmlText) as YXmlText;
+
+                return { ...acc, [key]: yXmlText };
+            }
+
             if (node instanceof YjsArray) {
                 this._warn(oneLine`
                     Warning: You are using \`yjs.array\` to declare top-level storage value \`${key}\`.
@@ -120,53 +167,6 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
                 if (typeof node.initialValue === "string") yText.insert(0, node.initialValue);
 
                 return { ...acc, [key]: yText };
-            }
-
-            if (node instanceof YjsXmlElement) {
-                this._warn(oneLine`
-                    Warning: You are using \`yjs.xmlElement\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
-                `);
-
-                const yXmlElement = this.value.getXmlElement(key);
-
-                if (!!node.initialValue?.length) {
-                    yXmlElement.insert(0, node.initialValue?.slice(0));
-                }
-
-                return { ...acc, [key]: yXmlElement };
-            }
-
-            if (node instanceof YjsXmlFragment) {
-                this._warn(oneLine`
-                    Warning: You are using \`yjs.xmlFragment\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
-                `);
-
-                const yXmlFragment = this.value.getXmlFragment(key);
-
-                if (!!node.initialValue?.length) {
-                    yXmlFragment.insert(0, node.initialValue?.slice(0));
-                }
-
-                return { ...acc, [key]: yXmlFragment };
-            }
-
-            if (node instanceof YjsXmlText) {
-                this._warn(oneLine`
-                    Warning: You are using \`yjs.xmlText\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
-                `);
-
-                const yXmlText = this.value.get(key, YXmlText) as YXmlText;
-
-                return { ...acc, [key]: yXmlText };
             }
 
             return acc;
@@ -250,9 +250,6 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
         }
 
         this._storage = Object.entries(reference).reduce((acc, [key, node]) => {
-            if (node instanceof YArray) return { ...acc, [key]: this.value.getArray(key) };
-            if (node instanceof YMap) return { ...acc, [key]: this.value.getMap(key) };
-            if (node instanceof YText) return { ...acc, [key]: this.value.getText(key) };
             if (node instanceof YXmlElement) {
                 return { ...acc, [key]: this.value.getXmlElement(key) };
             }
@@ -260,6 +257,9 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
                 return { ...acc, [key]: this.value.getXmlFragment(key) };
             }
             if (node instanceof YXmlText) return { ...acc, [key]: this.value.get(key, YXmlText) };
+            if (node instanceof YArray) return { ...acc, [key]: this.value.getArray(key) };
+            if (node instanceof YMap) return { ...acc, [key]: this.value.getMap(key) };
+            if (node instanceof YText) return { ...acc, [key]: this.value.getText(key) };
 
             return acc;
         }, {} as TStorage);
