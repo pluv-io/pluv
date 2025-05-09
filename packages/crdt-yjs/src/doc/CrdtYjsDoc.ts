@@ -51,6 +51,13 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
         const keys = this.value.share.keys().reduce((set, key) => set.add(key), new Set<string>());
 
         this._storage = Object.entries(storage).reduce((acc, [key, node]) => {
+            /**
+             * @description These are all shared types that we declared directly on the root
+             * document. So we're going to store these on the storage type directly.
+             * @date May 8, 2025
+             */
+            if (keys.has(key)) return { ...acc, [key]: node };
+
             if (node instanceof YjsArray) {
                 this._warn(oneLine`
                     Warning: You are using \`yjs.array\` to declare top-level storage value \`${key}\`.
@@ -161,13 +168,6 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
 
                 return { ...acc, [key]: yXmlText };
             }
-
-            /**
-             * @description These are all shared types that we declared directly on the root
-             * document. So we're going to store these on the storage type directly.
-             * @date May 8, 2025
-             */
-            if (keys.has(key)) return { ...acc, [key]: node };
 
             return acc;
         }, {} as TStorage);
