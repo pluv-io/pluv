@@ -1,11 +1,11 @@
-import type {
+import {
+    CrdtDocLike,
     DocApplyEncodedStateParams,
     DocBatchApplyEncodedStateParams,
     DocSubscribeCallbackParams,
-} from "./AbstractCrdtDoc";
-import { AbstractCrdtDoc } from "./AbstractCrdtDoc";
+} from "@pluv/types";
 
-export class NoopCrdtDoc extends AbstractCrdtDoc<any> {
+export class NoopCrdtDoc implements CrdtDocLike<any> {
     public applyEncodedState(params: DocApplyEncodedStateParams): this {
         return this;
     }

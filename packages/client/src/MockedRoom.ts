@@ -1,5 +1,5 @@
-import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
-import type { IOLike, Id, InferIOInput, InferIOOutput, JsonObject } from "@pluv/types";
+import type { CrdtType, InferCrdtJson } from "@pluv/crdt";
+import type { CrdtDocLike, IOLike, Id, InferIOInput, InferIOOutput, JsonObject } from "@pluv/types";
 import { AbstractRoom } from "./AbstractRoom";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
@@ -199,7 +199,7 @@ export class MockedRoom<
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     };
 
-    public getDoc(): AbstractCrdtDoc<TStorage> {
+    public getDoc(): CrdtDocLike<TStorage> {
         return this._crdtManager.doc;
     }
 

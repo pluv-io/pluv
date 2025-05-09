@@ -37,20 +37,21 @@ export interface DocSubscribeCallbackParams<T extends Record<string, CrdtType<an
     update: string;
 }
 
-export interface CrdtDocLike<T extends Record<string, CrdtType<any, any>>> {
+export interface CrdtDocLike<TStorage extends Record<string, CrdtType<any, any>>> {
     applyEncodedState(params: DocApplyEncodedStateParams): this;
     batchApplyEncodedState(params: DocBatchApplyEncodedStateParams): this;
     canRedo(): boolean;
     canUndo(): boolean;
     destroy(): void;
-    get(key?: undefined): T;
-    get<TKey extends keyof T>(key: TKey): T[TKey];
+    get(key?: undefined): TStorage;
+    get<TKey extends keyof TStorage>(key: TKey): TStorage[TKey];
     getEncodedState(): string;
     isEmpty(): boolean;
+    rebuildStorage(reference: TStorage): this;
     redo(): this;
-    subscribe(listener: (params: DocSubscribeCallbackParams<T>) => void): () => void;
-    toJson(): InferCrdtJson<T>;
-    toJson<TKey extends keyof T>(type: TKey): InferCrdtJson<T[TKey]>;
+    subscribe(listener: (params: DocSubscribeCallbackParams<TStorage>) => void): () => void;
+    toJson(): InferCrdtJson<TStorage>;
+    toJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]>;
     track(): this;
     transact(fn: () => void, origin?: string): this;
     undo(): this;

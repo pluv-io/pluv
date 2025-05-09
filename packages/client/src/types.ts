@@ -1,5 +1,6 @@
-import type { AbstractCrdtDoc, CrdtType } from "@pluv/crdt";
+import type { CrdtType } from "@pluv/crdt";
 import type {
+    CrdtDocLike,
     EventRecord,
     Id,
     InferIOAuthorize,
@@ -32,7 +33,7 @@ export interface EventResolverContext<
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
 > {
-    doc: AbstractCrdtDoc<TStorage>;
+    doc: CrdtDocLike<TStorage>;
     others: readonly UserInfo<TIO, TPresence>[];
     room: string;
     user: UserInfo<TIO, TPresence>;

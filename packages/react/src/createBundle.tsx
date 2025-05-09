@@ -13,8 +13,9 @@ import type {
     WebSocketConnection,
 } from "@pluv/client";
 import { MockedRoom, PluvRoom } from "@pluv/client";
-import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
+import type { CrdtType, InferCrdtJson } from "@pluv/crdt";
 import type {
+    CrdtDocLike,
     Id,
     InferIOInput,
     InferIOOutput,
@@ -119,7 +120,7 @@ export interface CreateBundle<
         selector: (connection: WebSocketConnection) => T,
         options?: SubscriptionHookOptions<Id<T>>,
     ) => Id<T>;
-    useDoc: () => AbstractCrdtDoc<TStorage>;
+    useDoc: () => CrdtDocLike<TStorage>;
     useEvent: <TType extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
         type: TType,
         callback: (data: Id<IOEventMessage<MergeEvents<TEvents, TIO>, TType>>) => void,

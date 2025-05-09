@@ -1,5 +1,5 @@
-import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
-import type { IOLike, Id, InferIOInput, InferIOOutput, JsonObject } from "@pluv/types";
+import type { CrdtType, InferCrdtJson } from "@pluv/crdt";
+import type { CrdtDocLike, IOLike, Id, InferIOInput, InferIOOutput, JsonObject } from "@pluv/types";
 import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
 import type { MergeEvents, PluvRouterEventConfig } from "./PluvRouter";
@@ -29,7 +29,7 @@ export abstract class AbstractRoom<
 
     public abstract canUndo(): boolean;
 
-    public abstract getDoc(): AbstractCrdtDoc<TStorage>;
+    public abstract getDoc(): CrdtDocLike<TStorage>;
 
     public abstract event<TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
         event: TEvent,

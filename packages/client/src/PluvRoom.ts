@@ -1,7 +1,8 @@
-import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
+import type { CrdtType, InferCrdtJson } from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
     BaseUser,
+    CrdtDocLike,
     EventMessage,
     IOEventMessage,
     IOLike,
@@ -483,7 +484,7 @@ export class PluvRoom<
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     };
 
-    public getDoc = (): AbstractCrdtDoc<TStorage> => {
+    public getDoc = (): CrdtDocLike<TStorage> => {
         return this._crdtManager.doc;
     };
 
