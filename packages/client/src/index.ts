@@ -1,6 +1,5 @@
 export type { CrdtType, InferCrdtJson } from "@pluv/crdt";
-export type { BaseUser, EventMessage, EventRecord, IOEventMessage } from "@pluv/types";
-export { AbstractRoom } from "./AbstractRoom";
+export type { BaseUser, EventMessage, EventRecord, IOEventMessage, RoomLike } from "@pluv/types";
 export { AbstractStorageStore } from "./AbstractStorageStore";
 export { createClient } from "./createClient";
 export { ConnectionState } from "./enums";

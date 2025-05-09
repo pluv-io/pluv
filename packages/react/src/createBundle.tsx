@@ -1,5 +1,4 @@
 import type {
-    AbstractRoom,
     CreateRoomOptions,
     EnterRoomParams,
     MergeEvents,
@@ -23,6 +22,7 @@ import type {
     IOLike,
     JsonObject,
     MaybePromise,
+    RoomLike,
 } from "@pluv/types";
 import fastDeepEqual from "fast-deep-equal";
 import type { Dispatch, FC, ReactNode } from "react";
@@ -143,7 +143,7 @@ export interface CreateBundle<
         options?: SubscriptionHookOptions<T>,
     ) => T;
     useRedo: () => () => void;
-    useRoom: () => AbstractRoom<TIO, TPresence, TStorage>;
+    useRoom: () => RoomLike<TIO, TPresence, TStorage>;
     useStorage: <
         TKey extends keyof TStorage,
         TData extends unknown = InferCrdtJson<TStorage[TKey]>,
@@ -191,9 +191,9 @@ export const createBundle = <
      * and let the users deal with it.
      * @date November 11, 2022
      */
-    const PluvRoomContext = createContext<AbstractRoom<TIO, TPresence, TStorage>>(null as any);
+    const PluvRoomContext = createContext<RoomLike<TIO, TPresence, TStorage>>(null as any);
 
-    const MockedRoomContext = createContext<AbstractRoom<TIO, TPresence, TStorage> | null>(null);
+    const MockedRoomContext = createContext<RoomLike<TIO, TPresence, TStorage> | null>(null);
 
     const MockedRoomProvider = memo<MockedRoomProviderProps<TIO, TPresence, TStorage>>((props) => {
         const { children, events, initialPresence, initialStorage, room: _room } = props;

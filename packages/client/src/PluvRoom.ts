@@ -14,8 +14,8 @@ import type {
     InputZodLike,
     JsonObject,
     OptionalProps,
+    RoomLike,
 } from "@pluv/types";
-import { AbstractRoom } from "./AbstractRoom";
 import type { AbstractStorageStore } from "./AbstractStorageStore";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
@@ -193,9 +193,11 @@ export class PluvRoom<
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
     TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
-> extends AbstractRoom<TIO, TPresence, TStorage> {
+> implements RoomLike<TIO, TPresence, TStorage>
+{
     readonly _endpoints: RoomEndpoints<TIO, TMetadata>;
 
+    public readonly id: string;
     public readonly metadata?: InputZodLike<TMetadata>;
 
     private readonly _crdtManager: CrdtManager<TStorage>;
@@ -256,8 +258,6 @@ export class PluvRoom<
             wsEndpoint,
         } = options;
 
-        super(room);
-
         const addon = this._getAddon(addons);
 
         const { storage } = {
@@ -265,6 +265,7 @@ export class PluvRoom<
             ...addon({ room: this }),
         };
 
+        this.id = room;
         this.metadata = metadata;
 
         this._debug = debug;

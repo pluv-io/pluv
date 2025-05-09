@@ -1,6 +1,13 @@
 import type { CrdtType, InferCrdtJson } from "@pluv/crdt";
-import type { CrdtDocLike, IOLike, Id, InferIOInput, InferIOOutput, JsonObject } from "@pluv/types";
-import { AbstractRoom } from "./AbstractRoom";
+import type {
+    CrdtDocLike,
+    IOLike,
+    Id,
+    InferIOInput,
+    InferIOOutput,
+    JsonObject,
+    RoomLike,
+} from "@pluv/types";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
@@ -15,6 +22,7 @@ import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifie
 import { StateNotifier } from "./StateNotifier";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
+import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import { ConnectionState } from "./enums";
 import type {
     EventResolver,
@@ -26,7 +34,6 @@ import type {
     WebSocketConnection,
     WebSocketState,
 } from "./types";
-import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 
 export type MockedRoomEvents<TIO extends IOLike> = Partial<{
     [P in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[P]>) => Partial<InferIOOutput<TIO>>;
@@ -49,7 +56,10 @@ export class MockedRoom<
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
     TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
-> extends AbstractRoom<TIO, TPresence, TStorage> {
+> implements RoomLike<TIO, TPresence, TStorage>
+{
+    public id: string;
+
     private readonly _crdtManager: CrdtManager<TStorage>;
     private readonly _crdtNotifier = new CrdtNotifier<TStorage>();
     private readonly _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
@@ -79,7 +89,7 @@ export class MockedRoom<
     constructor(room: string, options: MockedRoomConfig<TIO, TPresence, TStorage, TEvents>) {
         const { events, initialPresence, initialStorage, limits, presence, router } = options;
 
-        super(room);
+        this.id = room;
 
         this._events = events;
         this._limits = {
