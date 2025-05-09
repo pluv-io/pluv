@@ -9,8 +9,8 @@ const client = createClient({
     authEndpoint: ({ room }) => {
         return `http://localhost:3112/api/pluv/authorize?room=${room}`;
     },
-    initialStorage: loro.doc(() => ({
-        messages: loro.list([
+    initialStorage: loro.doc((t) => ({
+        messages: t.list("messages", [
             loro.object({
                 message: "hello",
                 name: "pluvrt",
