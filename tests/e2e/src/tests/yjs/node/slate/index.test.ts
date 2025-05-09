@@ -1,12 +1,11 @@
 import test, { expect } from "@playwright/test";
-import { oneLine } from "common-tags";
 import ms from "ms";
 import { openTestPage, waitMs } from "../../../../utils";
 
 const TEST_URL = "http://localhost:3100/yjs/node/slate";
 
 test.describe("Node Slate", () => {
-    test.skip("slate", async () => {
+    test("slate", async () => {
         const testUrl = `${TEST_URL}?room=e2e-slate-1`;
 
         const firstPage = await openTestPage(testUrl);
