@@ -986,50 +986,30 @@ export class PluvRoom<
         const state = data.state;
 
         const updates = await this._storageStore.getUpdates();
+        const origin = ORIGIN_INITIALIZED;
+
+        const updateStorage = (update: string | readonly string[]) => {
+            return this._crdtManager.initialized
+                ? this._crdtManager.applyUpdate({ update, origin })
+                : this._crdtManager.initialize({ update, origin });
+        };
 
         if (changeKind === "empty") {
             this._crdtManager.destroy();
-            this._crdtManager.initialize({ origin: ORIGIN_INITIALIZED, update: updates });
+            this._crdtManager.initialize({ origin, update: updates });
         } else if (changeKind === "initialized") {
-            if (this._crdtManager.initialized) {
-                if (!!updates.length)
-                    this._crdtManager.applyUpdate({ update: updates, origin: ORIGIN_INITIALIZED });
-                else {
-                    const encodedState = this._crdtManager
-                        .applyUpdate({ update: state, origin: ORIGIN_INITIALIZED })
-                        .doc.getEncodedState();
+            if (!!updates.length) updateStorage(updates);
+            else {
+                const encodedState = updateStorage(state).doc.getEncodedState();
 
-                    if (!updates.length)
-                        this._crdtManager.applyUpdate({
-                            update: encodedState,
-                            origin: ORIGIN_INITIALIZED,
-                        });
-                    else
-                        this._crdtManager.applyUpdate({
-                            update: updates,
-                            origin: ORIGIN_INITIALIZED,
-                        });
-                }
-            } else {
-                if (!!updates.length)
-                    this._crdtManager.initialize({ origin: ORIGIN_INITIALIZED, update: updates });
-                else {
-                    const encodedState = this._crdtManager
-                        .initialize({ origin: ORIGIN_INITIALIZED, update: state })
-                        .doc.getEncodedState();
-
-                    this._addToStorageStore(encodedState);
-                }
+                this._addToStorageStore(encodedState);
             }
         } else {
-            if (this._crdtManager.initialized) {
-                this._crdtManager.applyUpdate({ update: state, origin: ORIGIN_INITIALIZED });
-            } else this._crdtManager.initialize({ origin: ORIGIN_INITIALIZED, update: state });
+            const encodedState = updateStorage(state).doc.getEncodedState();
 
-            const encodedState = this._crdtManager.doc.getEncodedState();
+            if (!!updates.length) this._crdtManager.applyUpdate({ update: updates, origin });
 
-            if (!updates.length) await this._addToStorageStore(encodedState);
-            else this._crdtManager.applyUpdate({ update: updates, origin: ORIGIN_INITIALIZED });
+            await this._addToStorageStore(encodedState);
         }
 
         const encodedState = this._crdtManager.doc.getEncodedState();
@@ -1040,7 +1020,7 @@ export class PluvRoom<
 
         this._sendMessage({
             type: "$updateStorage",
-            data: { origin: ORIGIN_INITIALIZED, update: encodedState },
+            data: { origin, update: encodedState },
         });
     }
 
