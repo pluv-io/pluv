@@ -1,38 +1,39 @@
 import type { CrdtType, InferCrdtJson } from "@pluv/crdt";
 import type {
     CrdtDocLike,
+    EventNotifierSubscriptionCallback,
     IOLike,
     Id,
     InferIOInput,
     InferIOOutput,
     JsonObject,
+    MergeEvents,
+    OtherNotifierSubscriptionCallback,
     RoomLike,
+    UpdateMyPresenceAction,
+    UserInfo,
+    WebSocketState,
 } from "@pluv/types";
+import { ConnectionState } from "@pluv/types";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
-import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import { EventNotifier } from "./EventNotifier";
-import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
 import { OtherNotifier } from "./OtherNotifier";
 import { PluvProcedure } from "./PluvProcedure";
-import type { MergeEvents, PluvRouterEventConfig } from "./PluvRouter";
+import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
 import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
-import { ConnectionState } from "./enums";
 import type {
     EventResolver,
     EventResolverContext,
     InternalSubscriptions,
     PluvClientLimits,
-    UpdateMyPresenceAction,
-    UserInfo,
     WebSocketConnection,
-    WebSocketState,
 } from "./types";
 
 export type MockedRoomEvents<TIO extends IOLike> = Partial<{

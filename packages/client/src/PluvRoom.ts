@@ -4,6 +4,7 @@ import type {
     BaseUser,
     CrdtDocLike,
     EventMessage,
+    EventNotifierSubscriptionCallback,
     IOEventMessage,
     IOLike,
     Id,
@@ -13,26 +14,27 @@ import type {
     InferIOOutput,
     InputZodLike,
     JsonObject,
+    MergeEvents,
     OptionalProps,
+    OtherNotifierSubscriptionCallback,
     RoomLike,
+    UpdateMyPresenceAction,
+    UserInfo,
+    WebSocketState,
 } from "@pluv/types";
+import { ConnectionState } from "@pluv/types";
 import type { AbstractStorageStore } from "./AbstractStorageStore";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
-import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import { EventNotifier } from "./EventNotifier";
-import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
 import { OtherNotifier } from "./OtherNotifier";
 import { PluvProcedure } from "./PluvProcedure";
-import type { MergeEvents, PluvRouterEventConfig } from "./PluvRouter";
+import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import { StorageStore } from "./StorageStore";
-import type { UsersManagerConfig } from "./UsersManager";
-import { UsersManager } from "./UsersManager";
-import { ConnectionState } from "./enums";
 import type {
     AuthorizationState,
     EventResolver,
@@ -40,12 +42,11 @@ import type {
     InternalSubscriptions,
     PluvClientLimits,
     PublicKey,
-    UpdateMyPresenceAction,
-    UserInfo,
     WebSocketConnection,
-    WebSocketState,
     WithMetadata,
 } from "./types";
+import type { UsersManagerConfig } from "./UsersManager";
+import { UsersManager } from "./UsersManager";
 import { debounce } from "./utils";
 
 const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;

@@ -1,5 +1,6 @@
 import type { CrdtType } from "@pluv/crdt";
 import type {
+    ConnectionState,
     CrdtDocLike,
     EventRecord,
     Id,
@@ -8,8 +9,8 @@ import type {
     IOLike,
     JsonObject,
     MaybePromise,
+    UserInfo,
 } from "@pluv/types";
-import type { ConnectionState } from "./enums";
 import type { PluvClient } from "./PluvClient";
 
 export interface AuthorizationState<TIO extends IOLike> {
@@ -75,16 +76,6 @@ export type PublicKey<TMetadata extends JsonObject> =
     | string
     | ((params: PublicKeyParams<TMetadata>) => string);
 
-export type UpdateMyPresenceAction<TPresence extends JsonObject> =
-    | Partial<TPresence>
-    | ((oldPresence: TPresence | null) => Partial<TPresence>);
-
-export interface UserInfo<TIO extends IOLike, TPresence extends JsonObject = {}> {
-    connectionId: string;
-    presence: TPresence;
-    user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>;
-}
-
 export interface WebSocketConnection {
     /**
      * @description How many times a connection attempt was made. This will increment upon each
@@ -102,12 +93,6 @@ export interface WebSocketConnection {
     count: number;
     id: string | null;
     state: ConnectionState;
-}
-
-export interface WebSocketState<TIO extends IOLike> {
-    authorization: AuthorizationState<TIO>;
-    connection: WebSocketConnection;
-    webSocket: WebSocket | null;
 }
 
 export type WithMetadata<TMetadata extends JsonObject = {}> = keyof TMetadata extends never

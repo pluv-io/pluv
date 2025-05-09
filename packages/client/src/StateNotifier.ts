@@ -1,7 +1,6 @@
-import type { Id, IOLike, JsonObject } from "@pluv/types";
+import type { Id, IOLike, JsonObject, UserInfo, WebSocketState } from "@pluv/types";
 import type { Subject } from "wonka";
 import { makeSubject, subscribe } from "wonka";
-import type { UserInfo, WebSocketState } from "./types";
 
 export interface StateNotifierSubjects<TIO extends IOLike, TPresence extends JsonObject> {
     connection: Subject<Id<WebSocketState<TIO>>>;

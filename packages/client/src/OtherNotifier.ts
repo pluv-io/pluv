@@ -1,11 +1,12 @@
-import type { Id, IOLike, JsonObject } from "@pluv/types";
+import type {
+    Id,
+    IOLike,
+    JsonObject,
+    OtherNotifierSubscriptionCallback,
+    UserInfo,
+} from "@pluv/types";
 import type { Subject } from "wonka";
 import { makeSubject, subscribe } from "wonka";
-import type { UserInfo } from "./types";
-
-export type OtherNotifierSubscriptionCallback<TIO extends IOLike, TPresence extends JsonObject> = (
-    value: Id<UserInfo<TIO, TPresence>> | null,
-) => void;
 
 export class OtherNotifier<TIO extends IOLike, TPresence extends JsonObject = {}> {
     private _subjects = new Map<

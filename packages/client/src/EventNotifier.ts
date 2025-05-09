@@ -1,11 +1,12 @@
-import type { Id, InferIOOutput, IOEventMessage, IOLike } from "@pluv/types";
+import type {
+    EventNotifierSubscriptionCallback,
+    Id,
+    InferIOOutput,
+    IOEventMessage,
+    IOLike,
+} from "@pluv/types";
 import type { Subject } from "wonka";
 import { makeSubject, subscribe } from "wonka";
-
-export type EventNotifierSubscriptionCallback<
-    TIO extends IOLike<any, any>,
-    TEvent extends keyof InferIOOutput<TIO>,
-> = (value: Id<IOEventMessage<TIO, TEvent>>) => void;
 
 export class EventNotifier<TIO extends IOLike> {
     public subjects = new Map<
