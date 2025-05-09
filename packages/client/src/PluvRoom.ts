@@ -989,9 +989,6 @@ export class PluvRoom<
                 : this._crdtManager.initialize({ update, origin });
         };
 
-        console.log("changeKind", changeKind, state);
-        console.log("updates", updates, this._storageStore);
-
         if (changeKind === "empty") {
             this._crdtManager.destroy();
             this._crdtManager.initialize({ origin, update: updates });
