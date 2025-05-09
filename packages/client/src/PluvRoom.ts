@@ -611,13 +611,6 @@ export class PluvRoom<
         this._flattenStorageStore();
     }
 
-    private async _applyStorageStore(): Promise<void> {
-        const updates = await this._storageStore.getUpdates();
-
-        this._crdtManager.doc.batchApplyEncodedState({ updates });
-        this._emitSharedTypes();
-    }
-
     private _attachWindowListeners(): void {
         if (typeof window === "undefined") return;
         if (typeof document === "undefined") return;
