@@ -58,6 +58,12 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
              */
             if (keys.has(key)) return { ...acc, [key]: node };
 
+            /**
+             * @description It is important that the XML shared-types be checked before the others
+             * because they extend off the non-xml types (thereby you can mistakenly identify the
+             * wrong type if checked in the reverse order)
+             * @date May 9 ,2025
+             */
             if (node instanceof YjsXmlElement) {
                 this._warn(oneLine`
                     Warning: You are using \`yjs.xmlElement\` to declare top-level storage value \`${key}\`.
@@ -250,6 +256,12 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
         }
 
         this._storage = Object.entries(reference).reduce((acc, [key, node]) => {
+            /**
+             * @description It is important that the XML shared-types be checked before the others
+             * because they extend off the non-xml types (thereby you can mistakenly identify the
+             * wrong type if checked in the reverse order)
+             * @date May 9 ,2025
+             */
             if (node instanceof YXmlElement) {
                 return { ...acc, [key]: this.value.getXmlElement(key) };
             }
