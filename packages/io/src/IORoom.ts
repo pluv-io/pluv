@@ -517,7 +517,7 @@ export class IORoom<
         const user = session.user;
 
         const doc = await this._doc;
-        const encodedState = doc.getEncodedState();
+        const encodedState = doc.isEmpty() ? null : doc.getEncodedState();
 
         await this._sendSelfMessage(
             {

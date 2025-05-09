@@ -49,10 +49,11 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = {
     $registered: {
         presence: JsonObject | null;
         sessionId: string;
-        state: string;
+        state: string | null;
         timers: { presence: number | null };
     };
     $storageReceived: {
+        changeKind: "empty" | "initialized" | "unchanged";
         state: string;
     };
     $storageUpdated: {

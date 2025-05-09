@@ -175,7 +175,7 @@ export class PluvServer<
                 if (!doc.isEmpty()) {
                     const encodedState = doc.getEncodedState();
 
-                    return { $storageReceived: { state: encodedState } };
+                    return { $storageReceived: { changeKind: "unchanged", state: encodedState } };
                 }
 
                 /**
@@ -208,11 +208,13 @@ export class PluvServer<
                         user: session?.user,
                         webSocket: session?.webSocket.webSocket,
                     });
+
+                    return { $storageReceived: { changeKind: "initialized", state: encodedState } };
                 }
 
                 const encodedState = doc.getEncodedState();
 
-                return { $storageReceived: { state: encodedState } };
+                return { $storageReceived: { changeKind: "empty", state: encodedState } };
             }),
         $ping: this._procedure.self((data, { session }) => {
             if (!session) return {};

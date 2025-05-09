@@ -5,11 +5,15 @@ export type CrdtManagerOptions<TStorage extends Record<string, CrdtType<any, any
     initialStorage?: AbstractCrdtDocFactory<TStorage>;
 };
 
-type CrdtManagerInitializeParams = {
-    onInitialized?: (state: string) => void;
+interface CrdtManagerInitializeParams {
     origin?: any;
     update: string | readonly string[];
-};
+}
+
+interface ApplyUpdateParams {
+    origin?: any;
+    update: string | readonly string[];
+}
 
 export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
     public doc: AbstractCrdtDoc<TStorage>;
@@ -30,7 +34,9 @@ export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
      * update. This unfortunately means updates can be dropped entirely
      * @date June 13, 2023
      */
-    public applyUpdate(update: string | readonly string[], origin?: any): this {
+    public applyUpdate(params: ApplyUpdateParams): this {
+        const { origin, update } = params;
+
         if (!this.initialized) return this;
 
         const updates: readonly string[] = typeof update === "string" ? [update] : update;
@@ -41,7 +47,9 @@ export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
     }
 
     public destroy(): void {
+        this.initialized = false;
         this.doc.destroy();
+        this.doc = this._docFactory.getEmpty();
     }
 
     public get<TKey extends keyof TStorage>(key: TKey): TStorage[TKey] {
@@ -53,7 +61,7 @@ export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
     }
 
     public initialize(params: CrdtManagerInitializeParams): this {
-        const { onInitialized, origin, update } = params;
+        const { origin, update } = params;
 
         /**
          * !HACK
@@ -94,9 +102,11 @@ export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
         this.initialized = true;
         initialized.destroy();
 
-        onInitialized?.(this.doc.getEncodedState());
-
         return this;
+    }
+
+    public resolveEncodedState(updates: string | string[] | readonly string[]): string | null {
+        return this._docFactory.resolveEncodedState(updates);
     }
 
     private _applyDocUpdates(
