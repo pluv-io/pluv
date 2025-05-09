@@ -259,21 +259,20 @@ export class PluvRoom<
             wsEndpoint,
         } = options;
 
-        const addon = this._getAddon(addons);
+        this.id = room;
+        this.metadata = metadata;
 
+        const addon = this._getAddon(addons);
         const { storage } = {
             ...DEFAULT_PLUV_CLIENT_ADDON({ room: this }),
             ...addon({ room: this }),
         };
-
-        this.id = room;
-        this.metadata = metadata;
+        this._storageStore = storage;
 
         this._debug = debug;
         this._endpoints = { authEndpoint, wsEndpoint } as RoomEndpoints<TIO, TMetadata>;
         this._limits = limits;
         this._reconnectTimeoutMs = reconnectTimeoutMs;
-        this._storageStore = storage;
 
         if (!!publicKey) this._publicKey = publicKey;
 
@@ -989,6 +988,9 @@ export class PluvRoom<
                 ? this._crdtManager.applyUpdate({ update, origin })
                 : this._crdtManager.initialize({ update, origin });
         };
+
+        console.log("changeKind", changeKind, state);
+        console.log("updates", updates, this._storageStore);
 
         if (changeKind === "empty") {
             this._crdtManager.destroy();

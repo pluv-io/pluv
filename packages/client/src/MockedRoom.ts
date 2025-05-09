@@ -59,7 +59,7 @@ export class MockedRoom<
     TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
 > implements RoomLike<TIO, TPresence, TStorage>
 {
-    public id: string;
+    public readonly id: string;
 
     private readonly _crdtManager: CrdtManager<TStorage>;
     private readonly _crdtNotifier = new CrdtNotifier<TStorage>();
