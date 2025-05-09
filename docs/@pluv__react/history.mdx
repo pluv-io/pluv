@@ -29,12 +29,12 @@ import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 
 const client = createClient({
-    initialStorage: yjs.doc(() => ({
-        messages: yjs.array([
-            yjs.object({
-                message: "hello",
-                name: "pluvrt",
-            }),
+    initialStorage: yjs.doc((t) => ({
+        messages: t.array("messages", [
+            yjs.map([
+                ["message", "hello"],
+                ["name", "i3dly"],
+            ]),
         ]),
     })),
     // ...

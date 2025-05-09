@@ -28,8 +28,8 @@ const types = infer((i) => ({ io: i<typeof ioServer> }));
 export const client = createClient({
     types,
     // Optional: Define the initial storage for rooms. This will 
-    initialStorage: yjs.doc(() => ({
-        messages: yjs.array<string>([]),
+    initialStorage: yjs.doc((t) => ({
+        messages: t.array<string>("messages", []),
     })),
     // Optional: Define your presence schema
     presence: z.object({
@@ -45,8 +45,8 @@ const room = client.createRoom("my-test-room", {
         selectionId: null,
     },
     // Optional: Overwrite initial storage from client
-    initialStorage: yjs.doc(() => ({
-        messages: yjs.array(["hello world!"]),
+    initialStorage: yjs.doc((t) => ({
+        messages: t.array("messages", ["hello world!"]),
     })),
     // Optional: Handler when a user fails authorization
     // This only matters if `authorize` has been configured on

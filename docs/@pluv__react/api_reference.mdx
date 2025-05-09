@@ -82,8 +82,8 @@ const MyComponent: FC = () => {
                 selectionId: null,
             }}
             // Define the initial storage for the room
-            initialStorage={() => ({
-                messages: yjs.array(),
+            initialStorage={(t) => ({
+                messages: t.array(),
             })}
             // The room's id
             room="my-mock-room"
@@ -123,8 +123,8 @@ const MyComponent: FC = () => {
                 selectionId: null,
             }}
             // Optional: Overwrite the initialStorage value from the client
-            initialStorage={() => ({
-                messages: yjs.array(),
+            initialStorage={(t) => ({
+                messages: t.array(),
             })}
             // Optional: Emits an error whenever authorization fails (when
             // `authorize` is set on the PluvIO instance`)
@@ -353,8 +353,8 @@ initializing its storage.
 import { yjs } from "@pluv/crdt-yjs";
 
 const io = createClient({
-    initialStorage: yjs.doc(() => ({
-        messages: yjs.array(["hello"]),
+    initialStorage: yjs.doc((t) => ({
+        messages: t.array("messages", ["hello"]),
     })),
     // ...
 });

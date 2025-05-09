@@ -59,8 +59,8 @@ export const client = createClient({
     // the types for storage when using it in your application. Don't
     // worry about the value, as this can be overwritten when creating
     // a room via `client.createRoom`.
-    initialStorage: yjs.doc(() => ({
-        messages: yjs.array<string>([]),
+    initialStorage: yjs.doc((t) => ({
+        messages: t.array<string>("messages", []),
     })),
     // Optional: Define your presence schema
     presence: z.object({

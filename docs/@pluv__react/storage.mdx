@@ -48,8 +48,15 @@ const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = createClient({
     // Set the initial storage value, and type here
     // Don't worry, we can set a different default value in the room component
-    initialStorage: yjs.doc(() => ({
-        messages: yjs.array<string>([]),
+    initialStorage: yjs.doc((t) => ({
+        messages: t.array<string>("messages", []),
+
+        // root types must use the builder type to instantiate
+        myRootType: t.map("myRootType", [
+            // nested types must use the crdt factory functions (e.g. `yjs.text`)
+            ["myKey1", yjs.text("")],
+            ["myKey2", yjs.text("")],
+        ]),
     })),
     types,
     // ...
@@ -77,8 +84,8 @@ export const MyPage: FC = () => {
     return (
         <PluvRoomProvider
             room="my-room-id"
-            initialStorage={() => ({
-                messages: yjs.array(),
+            initialStorage={(t) => ({
+                messages: t.array(),
             })}
         >
             <MyRoom />
