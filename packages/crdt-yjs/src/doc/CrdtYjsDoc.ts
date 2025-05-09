@@ -25,11 +25,18 @@ import { YjsMap } from "../map/YjsMap";
 import { YjsObject } from "../object/YjsObject";
 import { YjsText } from "../text/YjsText";
 import type { YjsType } from "../types";
+import { oneLine } from "../utils";
 import { YjsXmlElement } from "../xmlElement/YjsXmlElement";
 import { YjsXmlFragment } from "../xmlFragment/YjsXmlFragment";
 import { YjsXmlText } from "../xmlText/YjsXmlText";
+import type { YjsBuilder } from "./builder";
+import { builder } from "./builder";
 
 const MERGE_INTERVAL_MS = 1_000;
+
+export type CrdtYjsDocParams<TStorage extends Record<string, YjsType<any, any>>> = (
+    builder: YjsBuilder,
+) => TStorage;
 
 export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
     implements CrdtDocLike<TStorage>
@@ -39,9 +46,19 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
     private _storage: TStorage;
     private _undoManager: UndoManager | null = null;
 
-    constructor(value: TStorage = {} as TStorage) {
-        this._storage = Object.entries(value).reduce((acc, [key, node]) => {
+    constructor(params: CrdtYjsDocParams<TStorage> = () => ({}) as TStorage) {
+        const storage = params(builder(this.value));
+        const keys = this.value.share.keys().reduce((set, key) => set.add(key), new Set<string>());
+
+        this._storage = Object.entries(storage).reduce((acc, [key, node]) => {
             if (node instanceof YjsArray) {
+                this._warn(oneLine`
+                    Warning: You are using \`yjs.array\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
                 const yArray = this.value.getArray(key);
 
                 if (!!node.initialValue?.length) yArray.insert(0, node.initialValue?.slice(0));
@@ -50,6 +67,13 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             }
 
             if (node instanceof YjsMap) {
+                this._warn(oneLine`
+                    Warning: You are using \`yjs.map\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
                 const yMap = this.value.getMap(key);
 
                 (node.initialValue ?? []).forEach(([k, v]) => {
@@ -60,6 +84,13 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             }
 
             if (node instanceof YjsObject) {
+                this._warn(oneLine`
+                    Warning: You are using \`yjs.object\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
                 const yMap = this.value.getMap(key);
 
                 Object.entries(node.initialValue ?? {}).forEach(([k, v]) => {
@@ -70,6 +101,13 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             }
 
             if (node instanceof YjsText) {
+                this._warn(oneLine`
+                    Warning: You are using \`yjs.text\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
                 const yText = this.value.getText(key);
 
                 if (typeof node.initialValue === "string") yText.insert(0, node.initialValue);
@@ -78,6 +116,13 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             }
 
             if (node instanceof YjsXmlElement) {
+                this._warn(oneLine`
+                    Warning: You are using \`yjs.xmlElement\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
                 const yXmlElement = this.value.getXmlElement(key);
 
                 if (!!node.initialValue?.length) {
@@ -88,6 +133,13 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             }
 
             if (node instanceof YjsXmlFragment) {
+                this._warn(oneLine`
+                    Warning: You are using \`yjs.xmlFragment\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
                 const yXmlFragment = this.value.getXmlFragment(key);
 
                 if (!!node.initialValue?.length) {
@@ -98,10 +150,24 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             }
 
             if (node instanceof YjsXmlText) {
+                this._warn(oneLine`
+                    Warning: You are using \`yjs.xmlText\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
                 const yXmlText = this.value.get(key, YXmlText) as YXmlText;
 
                 return { ...acc, [key]: yXmlText };
             }
+
+            /**
+             * @description These are all shared types that we declared directly on the root
+             * document. So we're going to store these on the storage type directly.
+             * @date May 8, 2025
+             */
+            if (keys.has(key)) return { ...acc, [key]: node };
 
             return acc;
         }, {} as TStorage);
@@ -278,5 +344,11 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
         this._undoManager?.undo();
 
         return this;
+    }
+
+    private _warn(...data: any[]) {
+        if (typeof process === "undefined") return;
+        if (process.env?.NODE_ENV === "production") return;
+        console.log(...data);
     }
 }

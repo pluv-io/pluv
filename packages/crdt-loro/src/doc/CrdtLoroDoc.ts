@@ -13,14 +13,22 @@ import {
     LoroEventBatch,
     LoroList,
     LoroMap,
+    LoroMovableList,
     LoroText,
+    LoroTree,
     UndoManager,
     isContainer,
 } from "loro-crdt";
 import type { LoroType } from "../types";
+import type { LoroBuilder } from "./builder";
+import { builder } from "./builder";
 
 const MAX_UNDO_STEPS = 100;
 const MERGE_INTERVAL_MS = 1_000;
+
+export type CrdtLoroDocParams<TStorage extends Record<string, LoroType<any, any>>> = (
+    builder: LoroBuilder,
+) => TStorage;
 
 export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
     implements CrdtDocLike<TStorage>
@@ -30,8 +38,10 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
     private _storage: TStorage;
     private _undoManager: UndoManager | null = null;
 
-    constructor(value: TStorage = {} as TStorage) {
-        this._storage = Object.entries(value).reduce((acc, [key, node]) => {
+    constructor(params: CrdtLoroDocParams<TStorage> = () => ({}) as TStorage) {
+        const storage = params(builder(this.value));
+
+        this._storage = Object.entries(storage).reduce((acc, [key, node]) => {
             if (node instanceof LoroList) {
                 const container = this.value.getList(key);
 
@@ -169,7 +179,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
         return !serialized || !Object.keys(serialized).length;
     }
 
-    public rebuildStorage(): this {
+    public rebuildStorage(reference: TStorage): this {
         const isBuilt = !!Object.keys(this._storage).length;
 
         if (isBuilt) {
@@ -177,12 +187,17 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
             return this;
         }
 
-        const keys = Object.keys(this.value.toJSON());
+        this._storage = Object.entries(reference).reduce((acc, [key, node]) => {
+            if (node instanceof LoroCounter) return { ...acc, [key]: this.value.getCounter(key) };
+            if (node instanceof LoroList) return { ...acc, [key]: this.value.getList(key) };
+            if (node instanceof LoroMap) return { ...acc, [key]: this.value.getMap(key) };
+            if (node instanceof LoroMovableList) {
+                return { ...acc, [key]: this.value.getMovableList(key) };
+            }
+            if (node instanceof LoroText) return { ...acc, [key]: this.value.getText(key) };
+            if (node instanceof LoroTree) return { ...acc, [key]: this.value.getTree(key) };
 
-        this._storage = keys.reduce((acc, key) => {
-            const container = this.value.getByPath(key);
-
-            return isContainer(container) ? { ...acc, [key]: container } : acc;
+            return acc;
         }, {} as TStorage);
 
         return this.track();
@@ -254,5 +269,11 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
         this._undoManager?.undo();
 
         return this;
+    }
+
+    private _warn(...data: any[]) {
+        if (typeof process === "undefined") return;
+        if (process.env?.NODE_ENV === "production") return;
+        console.log(...data);
     }
 }
