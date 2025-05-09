@@ -1123,7 +1123,8 @@ export class PluvRoom<
     }
 
     private _logDebug(...data: any[]): void {
-        if ((process as unknown as any)?.env?.NODE_ENV === "production") return;
+        if (typeof process === "undefined") return;
+        if (process.env?.NODE_ENV === "production") return;
         if (this._debug) console.log(...data);
     }
 

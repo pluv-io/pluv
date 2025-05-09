@@ -12,15 +12,15 @@ const client = createClient({
 
         return `http://localhost:3103/api/authorize?roomName=${roomName}`;
     },
-    initialStorage: yjs.doc(() => ({
-        messages: yjs.array([
+    initialStorage: yjs.doc((t) => ({
+        messages: t.array("messages", [
             yjs.object({
                 message: "hello",
                 name: "pluvrt",
             }),
         ]),
         slate: (() => {
-            const type = yjs.xmlText();
+            const type = t.xmlText("slate");
 
             type.applyDelta(slateNodesToInsertDelta([]));
 

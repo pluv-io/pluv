@@ -6,11 +6,11 @@ export class NoopCrdtDocFactory extends AbstractCrdtDocFactory<any> {
         return new NoopCrdtDoc();
     }
 
-    public getFactory(initialStorage?: (() => any) | undefined): NoopCrdtDocFactory {
+    public getFactory(initialStorage?: ((builder: any) => any) | undefined): NoopCrdtDocFactory {
         return this;
     }
 
-    public getInitialized(initialStorage?: (() => any) | undefined): NoopCrdtDoc {
+    public getInitialized(initialStorage?: ((builder: any) => any) | undefined): NoopCrdtDoc {
         return new NoopCrdtDoc();
     }
 }

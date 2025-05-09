@@ -13,14 +13,23 @@ import {
     LoroEventBatch,
     LoroList,
     LoroMap,
+    LoroMovableList,
     LoroText,
+    LoroTree,
     UndoManager,
     isContainer,
 } from "loro-crdt";
 import type { LoroType } from "../types";
+import { oneLine } from "../utils";
+import type { LoroBuilder } from "./builder";
+import { builder } from "./builder";
 
 const MAX_UNDO_STEPS = 100;
 const MERGE_INTERVAL_MS = 1_000;
+
+export type CrdtLoroDocParams<TStorage extends Record<string, LoroType<any, any>>> = (
+    builder: LoroBuilder,
+) => TStorage;
 
 export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
     implements CrdtDocLike<TStorage>
@@ -30,9 +39,43 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
     private _storage: TStorage;
     private _undoManager: UndoManager | null = null;
 
-    constructor(value: TStorage = {} as TStorage) {
-        this._storage = Object.entries(value).reduce((acc, [key, node]) => {
+    constructor(params: CrdtLoroDocParams<TStorage> = () => ({}) as TStorage) {
+        const storage = params(builder(this.value));
+
+        const keys = Object.keys(this.value.toJSON()).reduce(
+            (set, key) => set.add(key),
+            new Set<string>(),
+        );
+
+        this._storage = Object.entries(storage).reduce((acc, [key, node]) => {
+            /**
+             * @description These are all container types that we declared directly on the root
+             * document. So we're going to store these on the storage type directly.
+             * @date May 8, 2025
+             */
+            if (keys.has(key)) return { ...acc, [key]: node };
+
+            if (node instanceof LoroCounter) {
+                this._warn(oneLine`
+                    Warning: You are using \`loro.counter\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
+                const container = this.value.getCounter(key);
+
+                return { ...acc, [key]: container };
+            }
+
             if (node instanceof LoroList) {
+                this._warn(oneLine`
+                    Warning: You are using \`loro.list\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
                 const container = this.value.getList(key);
 
                 node.toArray().forEach((item, i) => {
@@ -44,6 +87,13 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
             }
 
             if (node instanceof LoroMap) {
+                this._warn(oneLine`
+                    Warning: You are using \`loro.map\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
                 const container = this.value.getMap(key);
 
                 container.entries().forEach(([key, item]) => {
@@ -54,10 +104,48 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
                 return { ...acc, [key]: container };
             }
 
+            if (node instanceof LoroMovableList) {
+                this._warn(oneLine`
+                    Warning: You are using \`loro.moveableList\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
+                const container = this.value.getMovableList(key);
+
+                node.toArray().forEach((item, i) => {
+                    if (isContainer(item)) container.insertContainer(i, item);
+                    else container.insert(i, item);
+                });
+
+                return { ...acc, [key]: container };
+            }
+
             if (node instanceof LoroText) {
+                this._warn(oneLine`
+                    Warning: You are using \`loro.text\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
                 const container = this.value.getText(key);
 
                 container.insert(0, node.toString());
+
+                return { ...acc, [key]: container };
+            }
+
+            if (node instanceof LoroTree) {
+                this._warn(oneLine`
+                    Warning: You are using \`loro.tree\` to declare top-level storage value \`${key}\`.
+                    Adding top-level values this way has been deprecated, to be removed in v2.
+                    Please follow the v2 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v2
+                `);
+
+                const container = this.value.getTree(key);
 
                 return { ...acc, [key]: container };
             }
@@ -169,7 +257,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
         return !serialized || !Object.keys(serialized).length;
     }
 
-    public rebuildStorage(): this {
+    public rebuildStorage(reference: TStorage): this {
         const isBuilt = !!Object.keys(this._storage).length;
 
         if (isBuilt) {
@@ -177,12 +265,17 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
             return this;
         }
 
-        const keys = Object.keys(this.value.toJSON());
+        this._storage = Object.entries(reference).reduce((acc, [key, node]) => {
+            if (node instanceof LoroCounter) return { ...acc, [key]: this.value.getCounter(key) };
+            if (node instanceof LoroList) return { ...acc, [key]: this.value.getList(key) };
+            if (node instanceof LoroMap) return { ...acc, [key]: this.value.getMap(key) };
+            if (node instanceof LoroMovableList) {
+                return { ...acc, [key]: this.value.getMovableList(key) };
+            }
+            if (node instanceof LoroText) return { ...acc, [key]: this.value.getText(key) };
+            if (node instanceof LoroTree) return { ...acc, [key]: this.value.getTree(key) };
 
-        this._storage = keys.reduce((acc, key) => {
-            const container = this.value.getByPath(key);
-
-            return isContainer(container) ? { ...acc, [key]: container } : acc;
+            return acc;
         }, {} as TStorage);
 
         return this.track();
@@ -254,5 +347,11 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
         this._undoManager?.undo();
 
         return this;
+    }
+
+    private _warn(...data: any[]) {
+        if (typeof process === "undefined") return;
+        if (process.env?.NODE_ENV === "production") return;
+        console.log(...data);
     }
 }

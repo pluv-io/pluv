@@ -1,4 +1,6 @@
+export { counter } from "./counter";
 export { CrdtLoroDoc, doc } from "./doc";
+export type { LoroBuilder } from "./doc";
 export { list } from "./list";
 export { map } from "./map";
 export { movableList } from "./movableList";

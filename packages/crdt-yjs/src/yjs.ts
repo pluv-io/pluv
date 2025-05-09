@@ -1,5 +1,6 @@
 export { array } from "./array";
 export { doc } from "./doc";
+export type { YjsBuilder } from "./doc";
 export { map } from "./map";
 export { object } from "./object";
 export { text } from "./text";

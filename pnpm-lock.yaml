@@ -199,6 +199,9 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      '@types/node':
+        specifier: ^22.15.3
+        version: 22.15.3
       eslint:
         specifier: ^9.25.1
         version: 9.25.1(jiti@2.4.2)
@@ -230,6 +233,9 @@ importers:
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
+      '@types/node':
+        specifier: ^22.15.3
+        version: 22.15.3
       eslint:
         specifier: ^9.25.1
         version: 9.25.1(jiti@2.4.2)
