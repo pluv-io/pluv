@@ -1,8 +1,10 @@
-import type { AbstractCrdtDoc, CrdtType, InferCrdtJson } from "@pluv/crdt";
+import type { CrdtType, InferCrdtJson } from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
     BaseUser,
+    CrdtDocLike,
     EventMessage,
+    EventNotifierSubscriptionCallback,
     IOEventMessage,
     IOLike,
     Id,
@@ -12,26 +14,27 @@ import type {
     InferIOOutput,
     InputZodLike,
     JsonObject,
+    MergeEvents,
     OptionalProps,
+    OtherNotifierSubscriptionCallback,
+    RoomLike,
+    UpdateMyPresenceAction,
+    UserInfo,
+    WebSocketState,
 } from "@pluv/types";
-import { AbstractRoom } from "./AbstractRoom";
+import { ConnectionState } from "@pluv/types";
 import type { AbstractStorageStore } from "./AbstractStorageStore";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
-import type { EventNotifierSubscriptionCallback } from "./EventNotifier";
 import { EventNotifier } from "./EventNotifier";
-import type { OtherNotifierSubscriptionCallback } from "./OtherNotifier";
 import { OtherNotifier } from "./OtherNotifier";
 import { PluvProcedure } from "./PluvProcedure";
-import type { MergeEvents, PluvRouterEventConfig } from "./PluvRouter";
+import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import { StorageStore } from "./StorageStore";
-import type { UsersManagerConfig } from "./UsersManager";
-import { UsersManager } from "./UsersManager";
-import { ConnectionState } from "./enums";
 import type {
     AuthorizationState,
     EventResolver,
@@ -39,12 +42,11 @@ import type {
     InternalSubscriptions,
     PluvClientLimits,
     PublicKey,
-    UpdateMyPresenceAction,
-    UserInfo,
     WebSocketConnection,
-    WebSocketState,
     WithMetadata,
 } from "./types";
+import type { UsersManagerConfig } from "./UsersManager";
+import { UsersManager } from "./UsersManager";
 import { debounce } from "./utils";
 
 const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
@@ -192,9 +194,11 @@ export class PluvRoom<
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
     TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
-> extends AbstractRoom<TIO, TPresence, TStorage> {
+> implements RoomLike<TIO, TPresence, TStorage>
+{
     readonly _endpoints: RoomEndpoints<TIO, TMetadata>;
 
+    public readonly id: string;
     public readonly metadata?: InputZodLike<TMetadata>;
 
     private readonly _crdtManager: CrdtManager<TStorage>;
@@ -255,8 +259,6 @@ export class PluvRoom<
             wsEndpoint,
         } = options;
 
-        super(room);
-
         const addon = this._getAddon(addons);
 
         const { storage } = {
@@ -264,6 +266,7 @@ export class PluvRoom<
             ...addon({ room: this }),
         };
 
+        this.id = room;
         this.metadata = metadata;
 
         this._debug = debug;
@@ -483,7 +486,7 @@ export class PluvRoom<
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     };
 
-    public getDoc = (): AbstractCrdtDoc<TStorage> => {
+    public getDoc = (): CrdtDocLike<TStorage> => {
         return this._crdtManager.doc;
     };
 

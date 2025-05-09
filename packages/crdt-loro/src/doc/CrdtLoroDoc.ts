@@ -4,7 +4,7 @@ import type {
     DocSubscribeCallbackParams,
     InferCrdtJson,
 } from "@pluv/crdt";
-import { AbstractCrdtDoc } from "@pluv/crdt";
+import type { CrdtDocLike } from "@pluv/types";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import type { Container } from "loro-crdt";
 import {
@@ -22,17 +22,15 @@ import type { LoroType } from "../types";
 const MAX_UNDO_STEPS = 100;
 const MERGE_INTERVAL_MS = 1_000;
 
-export class CrdtLoroDoc<
-    TStorage extends Record<string, LoroType<any, any>>,
-> extends AbstractCrdtDoc<TStorage> {
+export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
+    implements CrdtDocLike<TStorage>
+{
     public value: LoroDoc = new LoroDoc();
 
     private _storage: TStorage;
     private _undoManager: UndoManager | null = null;
 
     constructor(value: TStorage = {} as TStorage) {
-        super();
-
         this._storage = Object.entries(value).reduce((acc, [key, node]) => {
             if (node instanceof LoroList) {
                 const container = this.value.getList(key);

@@ -15,12 +15,19 @@ export type {
     SpreadProperties,
     UndefinedProps,
 } from "./general";
+export { ConnectionState } from "./pluv";
 export type {
     BaseClientEventRecord,
     BaseClientMessage,
     BaseIOEventRecord,
     BaseUser,
+    CrdtDocLike,
+    CrdtType,
+    DocApplyEncodedStateParams,
+    DocBatchApplyEncodedStateParams,
+    DocSubscribeCallbackParams,
     EventMessage,
+    EventNotifierSubscriptionCallback,
     EventRecord,
     GetEventMessage,
     InferEventMessage,
@@ -36,5 +43,12 @@ export type {
     IOEventMessage,
     IOLike,
     IORouterLike,
+    MergeEvents,
+    OtherNotifierSubscriptionCallback,
     ProcedureLike,
+    RoomLike,
+    UpdateMyPresenceAction,
+    UserInfo,
+    WebSocketConnection,
+    WebSocketState,
 } from "./pluv";

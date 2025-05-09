@@ -563,6 +563,10 @@ importers:
   packages/tsconfig: {}
 
   packages/types:
+    dependencies:
+      wonka:
+        specifier: ^6.3.5
+        version: 6.3.5
     devDependencies:
       '@pluv/tsconfig':
         specifier: workspace:^

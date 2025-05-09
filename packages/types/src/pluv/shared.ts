@@ -1,4 +1,4 @@
-import type { Id, JsonObject, MaybePromise, UnionToIntersection } from "./general";
+import type { Id, JsonObject, MaybePromise, UnionToIntersection } from "../general";
 
 export type BaseUser = {
     id: string;
@@ -183,3 +183,27 @@ export type IOEventMessage<
             ? Partial<IOAuthorizeEventMessage<TIO>>
             : IOAuthorizeEventMessage<TIO>)
 >;
+
+export type PluvRouterEventConfig = { [P: string]: Pick<ProcedureLike<any, any>, "config"> };
+
+export type MergeEvents<
+    TClientEvents extends PluvRouterEventConfig,
+    TServerIO extends IOLike<any, any>,
+> =
+    TServerIO extends IOLike<infer IAuthorize, infer IServerEvents>
+        ? IOLike<
+              IAuthorize,
+              {
+                  [P in keyof TClientEvents]: TClientEvents[P] extends ProcedureLike<
+                      infer IClientInput,
+                      infer IClientOutput
+                  >
+                      ? {
+                            [K in keyof IClientOutput]: K extends keyof IServerEvents
+                                ? IServerEvents[K]
+                                : ProcedureLike<IClientInput, Id<Pick<IClientOutput, K>>>;
+                        }[keyof IClientOutput]
+                      : never;
+              } & IServerEvents
+          >
+        : never;

@@ -1,6 +1,7 @@
-import type { AbstractCrdtDoc, AbstractCrdtDocFactory } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import type {
     BaseUser,
+    CrdtDocLike,
     EventRecord,
     IOAuthorize,
     Id,
@@ -53,7 +54,7 @@ export interface EventResolverContext<
     TContext extends Record<string, any> = {},
 > {
     context: TContext;
-    doc: AbstractCrdtDoc<any>;
+    doc: CrdtDocLike<any>;
     garbageCollect: () => Promise<void>;
     presence: JsonObject | null;
     room: string;
