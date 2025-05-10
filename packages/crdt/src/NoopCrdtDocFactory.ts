@@ -2,6 +2,10 @@ import { AbstractCrdtDocFactory } from "./AbstractCrdtDocFactory";
 import { NoopCrdtDoc } from "./NoopCrdtDoc";
 
 export class NoopCrdtDocFactory extends AbstractCrdtDocFactory<any> {
+    constructor(initialStorage: () => {} = () => ({})) {
+        super(initialStorage);
+    }
+
     public getEmpty(): NoopCrdtDoc {
         return new NoopCrdtDoc();
     }

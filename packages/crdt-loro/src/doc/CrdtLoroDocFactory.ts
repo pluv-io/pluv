@@ -6,10 +6,10 @@ import type { LoroBuilder } from "./builder";
 export class CrdtLoroDocFactory<
     TStorage extends Record<string, LoroType<any, any>>,
 > extends AbstractCrdtDocFactory<TStorage> {
-    private _initialStorage: (builder: LoroBuilder) => TStorage;
+    public readonly _initialStorage: (builder: LoroBuilder) => TStorage;
 
     constructor(initialStorage: (builder: LoroBuilder) => TStorage = () => ({}) as TStorage) {
-        super();
+        super(initialStorage);
 
         this._initialStorage = initialStorage;
     }

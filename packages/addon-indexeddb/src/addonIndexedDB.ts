@@ -1,25 +1,25 @@
 import type { PluvRoom, PluvRoomAddon } from "@pluv/client";
-import type { CrdtType } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, CrdtType } from "@pluv/crdt";
 import type { IOLike, JsonObject } from "@pluv/types";
 import { IndexedDBStorage } from "./IndexedDBStorage";
 
 export interface AddonIndexedDBConfig<
     TIO extends IOLike<any, any>,
-    TMetadata extends JsonObject = {},
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
+    TMetadata extends JsonObject,
+    TPresence extends JsonObject,
+    TCrdt extends AbstractCrdtDocFactory<any>,
 > {
-    enabled?: boolean | ((room: PluvRoom<TIO, TMetadata, TPresence, TStorage>) => boolean);
+    enabled?: boolean | ((room: PluvRoom<TIO, TMetadata, TPresence, TCrdt>) => boolean);
 }
 
 export const addonIndexedDB = <
     TIO extends IOLike<any, any>,
-    TMetadata extends JsonObject = {},
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
+    TMetadata extends JsonObject,
+    TPresence extends JsonObject,
+    TCrdt extends AbstractCrdtDocFactory<any>,
 >(
-    config?: AddonIndexedDBConfig<TIO, TMetadata, TPresence, TStorage>,
-): PluvRoomAddon<TIO, TMetadata, TPresence, TStorage> => {
+    config?: AddonIndexedDBConfig<TIO, TMetadata, TPresence, TCrdt>,
+): PluvRoomAddon<TIO, TMetadata, TPresence, TCrdt> => {
     const { enabled = true } = config ?? {};
 
     return ({ room }) => {

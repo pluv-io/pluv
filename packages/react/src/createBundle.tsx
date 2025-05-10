@@ -12,7 +12,13 @@ import type {
     WebSocketConnection,
 } from "@pluv/client";
 import { MockedRoom, PluvRoom } from "@pluv/client";
-import type { CrdtType, InferCrdtJson } from "@pluv/crdt";
+import type {
+    AbstractCrdtDocFactory,
+    InferCrdtJson,
+    InferInitialStorageFn,
+    InferStorage,
+    NoopCrdtDocFactory,
+} from "@pluv/crdt";
 import type {
     CrdtDocLike,
     Id,
@@ -42,19 +48,19 @@ export interface PluvProviderProps {
 
 type BaseRoomProviderProps<
     TPresence extends JsonObject,
-    TStorage extends Record<string, CrdtType<any, any>>,
+    TCrdt extends AbstractCrdtDocFactory<any>,
 > = {
     children?: ReactNode;
-    initialStorage?: keyof TStorage extends never ? never : () => TStorage;
+    initialStorage?: keyof InferStorage<TCrdt> extends never ? never : InferInitialStorageFn<TCrdt>;
     room: string;
 } & (keyof TPresence extends never ? { initialPresence?: never } : { initialPresence: TPresence });
 
 export type MockedRoomProviderProps<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TStorage extends Record<string, CrdtType<any, any>>,
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
-> = BaseRoomProviderProps<TPresence, TStorage> & {
+    TCrdt extends AbstractCrdtDocFactory<any>,
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
+> = BaseRoomProviderProps<TPresence, TCrdt> & {
     events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
 };
 
@@ -66,8 +72,8 @@ export type PluvRoomProviderProps<
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject,
     TPresence extends JsonObject,
-    TStorage extends Record<string, CrdtType<any, any>>,
-> = BaseRoomProviderProps<TPresence, TStorage> & {
+    TCrdt extends AbstractCrdtDocFactory<any>,
+> = BaseRoomProviderProps<TPresence, TCrdt> & {
     connect?: boolean;
     debug?: boolean | PluvRoomDebug<TIO>;
     onAuthorizationFail?: (error: Error) => void;
@@ -100,13 +106,13 @@ export interface CreateBundle<
     TIO extends IOLike,
     TMetadata extends JsonObject,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
+    TCrdt extends AbstractCrdtDocFactory<any> = NoopCrdtDocFactory,
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > {
     // components
-    MockedRoomProvider: FC<MockedRoomProviderProps<TIO, TPresence, TStorage>>;
+    MockedRoomProvider: FC<MockedRoomProviderProps<TIO, TPresence, TCrdt>>;
     PluvProvider: FC<PluvProviderProps>;
-    PluvRoomProvider: FC<PluvRoomProviderProps<TIO, TMetadata, TPresence, TStorage>>;
+    PluvRoomProvider: FC<PluvRoomProviderProps<TIO, TMetadata, TPresence, TCrdt>>;
 
     // proxies
     event: EventProxy<MergeEvents<TEvents, TIO>>;
@@ -115,12 +121,12 @@ export interface CreateBundle<
     useBroadcast: () => BroadcastProxy<MergeEvents<TEvents, TIO>>;
     useCanRedo: () => boolean;
     useCanUndo: () => boolean;
-    useClient: () => PluvClient<TIO, TPresence, TStorage, TMetadata>;
+    useClient: () => PluvClient<TIO, TPresence, TCrdt, TMetadata>;
     useConnection: <T extends unknown = WebSocketConnection>(
         selector: (connection: WebSocketConnection) => T,
         options?: SubscriptionHookOptions<Id<T>>,
     ) => Id<T>;
-    useDoc: () => CrdtDocLike<TStorage>;
+    useDoc: () => CrdtDocLike<InferStorage<TCrdt>>;
     useEvent: <TType extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
         type: TType,
         callback: (data: Id<IOEventMessage<MergeEvents<TEvents, TIO>, TType>>) => void,
@@ -143,16 +149,16 @@ export interface CreateBundle<
         options?: SubscriptionHookOptions<T>,
     ) => T;
     useRedo: () => () => void;
-    useRoom: () => RoomLike<TIO, TPresence, TStorage>;
+    useRoom: () => RoomLike<TIO, TPresence, InferStorage<TCrdt>>;
     useStorage: <
-        TKey extends keyof TStorage,
-        TData extends unknown = InferCrdtJson<TStorage[TKey]>,
+        TKey extends keyof InferStorage<TCrdt>,
+        TData extends unknown = InferCrdtJson<InferStorage<TCrdt>[TKey]>,
     >(
         key: TKey,
-        selector?: (data: InferCrdtJson<TStorage[TKey]>) => TData,
+        selector?: (data: InferCrdtJson<InferStorage<TCrdt>[TKey]>) => TData,
         options?: SubscriptionHookOptions<TData | null>,
-    ) => [data: TData | null, sharedType: TStorage[TKey] | null];
-    useTransact: () => (fn: (storage: TStorage) => void, origin?: string) => void;
+    ) => [data: TData | null, sharedType: InferStorage<TCrdt>[TKey] | null];
+    useTransact: () => (fn: (storage: InferStorage<TCrdt>) => void, origin?: string) => void;
     useUndo: () => () => void;
 }
 
@@ -160,30 +166,30 @@ export type CreateBundleOptions<
     TIO extends IOLike,
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
+    TCrdt extends AbstractCrdtDocFactory<any> = NoopCrdtDocFactory,
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > = {
-    addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
-    router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
+    addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TCrdt>[];
+    router?: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
 };
 
 export const createBundle = <
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
+    TCrdt extends AbstractCrdtDocFactory<any> = NoopCrdtDocFactory,
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 >(
-    client: PluvClient<TIO, TPresence, TStorage, TMetadata>,
-    options: CreateBundleOptions<TIO, TMetadata, TPresence, TStorage, TEvents> = {},
-): CreateBundle<TIO, TMetadata, TPresence, TStorage, TEvents> => {
+    client: PluvClient<TIO, TPresence, TCrdt, TMetadata>,
+    options: CreateBundleOptions<TIO, TMetadata, TPresence, TCrdt, TEvents> = {},
+): CreateBundle<TIO, TMetadata, TPresence, TCrdt, TEvents> => {
     /**
      * !HACK
      * @description We'll let the context error out if client is not provided,
      * and let the users deal with it.
      * @date October 27, 2022
      */
-    const PluvContext = createContext<PluvClient<TIO, TPresence, TStorage, TMetadata>>(null as any);
+    const PluvContext = createContext<PluvClient<TIO, TPresence, TCrdt, TMetadata>>(null as any);
 
     /**
      * !HACK
@@ -191,20 +197,24 @@ export const createBundle = <
      * and let the users deal with it.
      * @date November 11, 2022
      */
-    const PluvRoomContext = createContext<RoomLike<TIO, TPresence, TStorage>>(null as any);
+    const PluvRoomContext = createContext<RoomLike<TIO, TPresence, InferStorage<TCrdt>>>(
+        null as any,
+    );
 
-    const MockedRoomContext = createContext<RoomLike<TIO, TPresence, TStorage> | null>(null);
+    const MockedRoomContext = createContext<RoomLike<TIO, TPresence, InferStorage<TCrdt>> | null>(
+        null,
+    );
 
-    const MockedRoomProvider = memo<MockedRoomProviderProps<TIO, TPresence, TStorage>>((props) => {
+    const MockedRoomProvider = memo<MockedRoomProviderProps<TIO, TPresence, TCrdt>>((props) => {
         const { children, events, initialPresence, initialStorage, room: _room } = props;
 
-        const [room] = useState<MockedRoom<TIO, TPresence, TStorage, TEvents>>(() => {
-            return new MockedRoom<TIO, TPresence, TStorage, TEvents>(_room, {
+        const [room] = useState<MockedRoom<TIO, TPresence, TCrdt, TEvents>>(() => {
+            return new MockedRoom<TIO, TPresence, TCrdt, TEvents>(_room, {
                 events,
                 initialPresence,
                 initialStorage:
                     typeof initialStorage === "function"
-                        ? client._defs.initialStorage?.getFactory(initialStorage)
+                        ? (client._defs.initialStorage?.getFactory(initialStorage) as TCrdt)
                         : client._defs.initialStorage,
             });
         });
@@ -218,7 +228,7 @@ export const createBundle = <
 
     MockedRoomProvider.displayName = "MockedRoomProvider";
 
-    const PluvRoomProvider = memo<PluvRoomProviderProps<TIO, TMetadata, TPresence, TStorage>>(
+    const PluvRoomProvider = memo<PluvRoomProviderProps<TIO, TMetadata, TPresence, TCrdt>>(
         (props) => {
             const {
                 children,
@@ -243,7 +253,7 @@ export const createBundle = <
                 return !!room.metadata ? room.metadata.parse(resolved) : resolved;
             });
 
-            const [room] = useState<PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents>>(() => {
+            const [room] = useState<PluvRoom<TIO, TMetadata, TPresence, TCrdt, TEvents>>(() => {
                 return client.createRoom(_room, {
                     addons: options.addons,
                     debug,
@@ -255,7 +265,7 @@ export const createBundle = <
                     metadata,
                     onAuthorizationFail,
                     router: options.router,
-                } as CreateRoomOptions<TIO, TPresence, TStorage, TMetadata, TEvents>);
+                } as CreateRoomOptions<TIO, TPresence, TCrdt, TMetadata, TEvents>);
             });
 
             useEffect(() => {
@@ -321,8 +331,7 @@ export const createBundle = <
 
     PluvProvider.displayName = "PluvProvider";
 
-    const useClient = (): PluvClient<TIO, TPresence, TStorage, TMetadata> =>
-        useContext(PluvContext);
+    const useClient = (): PluvClient<TIO, TPresence, TCrdt, TMetadata> => useContext(PluvContext);
 
     const useRoom = () => {
         const room = useContext(PluvRoomContext);
@@ -620,13 +629,13 @@ export const createBundle = <
     };
 
     const useStorage = <
-        TKey extends keyof TStorage,
-        TData extends unknown = InferCrdtJson<TStorage[TKey]>,
+        TKey extends keyof InferStorage<TCrdt>,
+        TData extends unknown = InferCrdtJson<InferStorage<TCrdt>[TKey]>,
     >(
         key: TKey,
-        selector = identity as (data: InferCrdtJson<TStorage[TKey]>) => TData,
+        selector = identity as (data: InferCrdtJson<InferStorage<TCrdt>[TKey]>) => TData,
         options?: SubscriptionHookOptions<TData | null>,
-    ): [data: TData | null, sharedType: TStorage[TKey] | null] => {
+    ): [data: TData | null, sharedType: InferStorage<TCrdt>[TKey] | null] => {
         const room = useRoom();
         const rerender = useRerender();
 
@@ -639,12 +648,12 @@ export const createBundle = <
             [key, room],
         );
 
-        const getSnapshot = useCallback((): InferCrdtJson<TStorage[TKey]> | null => {
+        const getSnapshot = useCallback((): InferCrdtJson<InferStorage<TCrdt>[TKey]> | null => {
             return room.getStorageJson(key);
         }, [key, room]);
 
         const _selector = useCallback(
-            (snapshot: InferCrdtJson<TStorage[TKey]> | null) => {
+            (snapshot: InferCrdtJson<InferStorage<TCrdt>[TKey]> | null) => {
                 return snapshot === null ? null : selector(snapshot);
             },
             [selector],

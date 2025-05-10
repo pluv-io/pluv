@@ -1,4 +1,10 @@
-import type { CrdtType, InferCrdtJson } from "@pluv/crdt";
+import type {
+    AbstractCrdtDocFactory,
+    CrdtType,
+    InferCrdtJson,
+    InferStorage,
+    NoopCrdtDocFactory,
+} from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
     BaseUser,
@@ -70,12 +76,12 @@ declare global {
 }
 
 export const DEFAULT_PLUV_CLIENT_ADDON = <
-    TIO extends IOLike = IOLike,
-    TMetadata extends JsonObject = {},
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
+    TIO extends IOLike,
+    TMetadata extends JsonObject,
+    TPresence extends JsonObject,
+    TCrdt extends AbstractCrdtDocFactory<any>,
 >(
-    input: PluvRoomAddonInput<TIO, TMetadata, TPresence, TStorage>,
+    input: PluvRoomAddonInput<TIO, TMetadata, TPresence, TCrdt>,
 ): PluvRoomAddonResult => ({
     storage: new StorageStore(input.room.id),
 });
@@ -128,21 +134,19 @@ interface InternalListeners {
 }
 
 export type PluvRoomAddon<
-    TIO extends IOLike = IOLike,
-    TMetadata extends JsonObject = {},
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
-> = (
-    input: PluvRoomAddonInput<TIO, TMetadata, TPresence, TStorage>,
-) => Partial<PluvRoomAddonResult>;
+    TIO extends IOLike,
+    TMetadata extends JsonObject,
+    TPresence extends JsonObject,
+    TCrdt extends AbstractCrdtDocFactory<any>,
+> = (input: PluvRoomAddonInput<TIO, TMetadata, TPresence, TCrdt>) => Partial<PluvRoomAddonResult>;
 
 export interface PluvRoomAddonInput<
-    TIO extends IOLike = IOLike,
-    TMetadata extends JsonObject = {},
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
+    TIO extends IOLike,
+    TMetadata extends JsonObject,
+    TPresence extends JsonObject,
+    TCrdt extends AbstractCrdtDocFactory<any>,
 > {
-    room: PluvRoom<TIO, TMetadata, TPresence, TStorage>;
+    room: PluvRoom<TIO, TMetadata, TPresence, TCrdt>;
 }
 
 export interface PluvRoomAddonResult {
@@ -169,22 +173,22 @@ export type ReconnectTimeoutMs = number | ((params: ReconnectTimeoutMsParams) =>
 
 export type RoomConfig<
     TIO extends IOLike,
-    TMetadata extends JsonObject = {},
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
+    TMetadata extends JsonObject,
+    TPresence extends JsonObject,
+    TCrdt extends AbstractCrdtDocFactory<any>,
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>>,
 > = Id<
     {
-        addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
+        addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TCrdt>[];
         debug?: boolean | PluvRoomDebug<TIO>;
         limits: PluvClientLimits;
         onAuthorizationFail?: (error: Error) => void;
         metadata?: InputZodLike<TMetadata>;
         publicKey?: PublicKey<TMetadata>;
         reconnectTimeoutMs?: ReconnectTimeoutMs;
-        router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
+        router?: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
     } & RoomEndpoints<TIO, TMetadata> &
-        Pick<CrdtManagerOptions<TStorage>, "initialStorage"> &
+        Pick<CrdtManagerOptions<TCrdt>, "initialStorage"> &
         UsersManagerConfig<TPresence>
 >;
 
@@ -192,17 +196,17 @@ export class PluvRoom<
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
-> implements RoomLike<TIO, TPresence, TStorage>
+    TCrdt extends AbstractCrdtDocFactory<any> = NoopCrdtDocFactory,
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
+> implements RoomLike<TIO, TPresence, InferStorage<TCrdt>>
 {
     readonly _endpoints: RoomEndpoints<TIO, TMetadata>;
 
     public readonly id: string;
     public readonly metadata?: InputZodLike<TMetadata>;
 
-    private readonly _crdtManager: CrdtManager<TStorage>;
-    private readonly _crdtNotifier = new CrdtNotifier<TStorage>();
+    private readonly _crdtManager: CrdtManager<TCrdt>;
+    private readonly _crdtNotifier = new CrdtNotifier<InferStorage<TCrdt>>();
     private readonly _debug: boolean | PluvRoomDebug<TIO>;
     private readonly _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
     private readonly _intervals: IntervalIds = {
@@ -213,7 +217,7 @@ export class PluvRoom<
     private readonly _otherNotifier = new OtherNotifier<TIO, TPresence>();
     private readonly _publicKey: PublicKey<TMetadata> | null = null;
     private readonly _reconnectTimeoutMs: ReconnectTimeoutMs;
-    private readonly _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
+    private readonly _router: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
     private readonly _stateNotifier = new StateNotifier<TIO, TPresence>();
     private readonly _storageStore: AbstractStorageStore;
     private readonly _subscriptions: InternalSubscriptions = {
@@ -242,7 +246,7 @@ export class PluvRoom<
     private _windowListeners: WindowListeners | null = null;
     private _wsListeners: WebSocketListeners | null = null;
 
-    constructor(room: string, options: RoomConfig<TIO, TMetadata, TPresence, TStorage, TEvents>) {
+    constructor(room: string, options: RoomConfig<TIO, TMetadata, TPresence, TCrdt, TEvents>) {
         const {
             addons = [],
             authEndpoint,
@@ -283,13 +287,14 @@ export class PluvRoom<
         };
 
         this._router =
-            router ?? (new PluvRouter({}) as PluvRouter<TIO, TPresence, TStorage, TEvents>);
+            router ??
+            (new PluvRouter({}) as PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>);
         this._usersManager = new UsersManager<TIO, TPresence>({
             initialPresence,
             limits: this._limits,
             presence,
         });
-        this._crdtManager = new CrdtManager<TStorage>({ initialStorage });
+        this._crdtManager = new CrdtManager<TCrdt>({ initialStorage });
     }
 
     public get storageLoaded(): boolean {
@@ -315,7 +320,7 @@ export class PluvRoom<
                 any,
                 any,
                 TPresence,
-                TStorage
+                InferStorage<TCrdt>
             > | null;
 
             if (!procedure?.config.broadcast) {
@@ -329,7 +334,7 @@ export class PluvRoom<
             if (!myself) return;
 
             const parsed = procedure.config.input ? procedure.config.input.parse(data) : data;
-            const context: EventResolverContext<TIO, TPresence, TStorage> = {
+            const context: EventResolverContext<TIO, TPresence, InferStorage<TCrdt>> = {
                 doc: this._crdtManager.doc,
                 others: this._usersManager.getOthers(),
                 room: this.id,
@@ -337,7 +342,13 @@ export class PluvRoom<
             };
 
             const output = await (
-                procedure.config.broadcast as EventResolver<TIO, any, any, TPresence, TStorage>
+                procedure.config.broadcast as EventResolver<
+                    TIO,
+                    any,
+                    any,
+                    TPresence,
+                    InferStorage<TCrdt>
+                >
             )(parsed, context);
 
             Object.entries(output).forEach(([_type, _data]) => {
@@ -485,7 +496,7 @@ export class PluvRoom<
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     };
 
-    public getDoc = (): CrdtDocLike<TStorage> => {
+    public getDoc = (): CrdtDocLike<InferStorage<TCrdt>> => {
         return this._crdtManager.doc;
     };
 
@@ -505,7 +516,9 @@ export class PluvRoom<
         return this._usersManager.getOthers();
     };
 
-    public getStorage = <TKey extends keyof TStorage>(type: TKey): TStorage[TKey] | null => {
+    public getStorage = <TKey extends keyof InferStorage<TCrdt>>(
+        type: TKey,
+    ): InferStorage<TCrdt>[TKey] | null => {
         const sharedType = this._crdtManager.get(type);
 
         if (typeof sharedType === "undefined") return null;
@@ -513,11 +526,11 @@ export class PluvRoom<
         return sharedType;
     };
 
-    public getStorageJson(): InferCrdtJson<TStorage> | null;
-    public getStorageJson<TKey extends keyof TStorage>(
+    public getStorageJson(): InferCrdtJson<InferStorage<TCrdt>> | null;
+    public getStorageJson<TKey extends keyof InferStorage<TCrdt>>(
         type: TKey,
-    ): InferCrdtJson<TStorage[TKey]> | null;
-    public getStorageJson<TKey extends keyof TStorage>(type?: TKey) {
+    ): InferCrdtJson<InferStorage<TCrdt>[TKey]> | null;
+    public getStorageJson<TKey extends keyof InferStorage<TCrdt>>(type?: TKey) {
         if (this._state.connection.id === null) return null;
 
         if (typeof type === "undefined") return this._crdtManager.doc.toJson();
@@ -544,16 +557,16 @@ export class PluvRoom<
         this._crdtManager.doc.redo();
     };
 
-    public storage = <TKey extends keyof TStorage>(
+    public storage = <TKey extends keyof InferStorage<TCrdt>>(
         key: TKey,
-        fn: (value: InferCrdtJson<TStorage[TKey]>) => void,
+        fn: (value: InferCrdtJson<InferStorage<TCrdt>[TKey]>) => void,
     ): (() => void) => {
         return this._crdtNotifier.subscribe(key, fn);
     };
 
     public storageRoot = (
         fn: (value: {
-            [P in keyof TStorage]: InferCrdtJson<TStorage[P]>;
+            [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]>;
         }) => void,
     ): (() => void) => {
         return this._crdtNotifier.subcribeRoot(fn);
@@ -566,7 +579,7 @@ export class PluvRoom<
         return this._stateNotifier.subscribe(name, callback);
     };
 
-    public transact = (fn: (storage: TStorage) => void, origin?: string): void => {
+    public transact = (fn: (storage: InferStorage<TCrdt>) => void, origin?: string): void => {
         const _origin = origin ?? this._state.connection.id;
 
         /**
@@ -709,7 +722,7 @@ export class PluvRoom<
 
                 return { ...acc, [prop]: serialized };
             },
-            {} as { [P in keyof TStorage]: InferCrdtJson<TStorage[P]> },
+            {} as { [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]> },
         );
 
         this._crdtNotifier.rootSubject.next(storageRoot);
@@ -733,9 +746,9 @@ export class PluvRoom<
     );
 
     private _getAddon = (
-        addons: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[],
-    ): PluvRoomAddon<TIO, TMetadata, TPresence, TStorage> => {
-        return addons.reduce<PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>>(
+        addons: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TCrdt>[],
+    ): PluvRoomAddon<TIO, TMetadata, TPresence, TCrdt> => {
+        return addons.reduce<PluvRoomAddon<TIO, TMetadata, TPresence, TCrdt>>(
             (acc, addon) => () => ({
                 ...acc({ room: this }),
                 ...addon({ room: this }),
@@ -1046,7 +1059,7 @@ export class PluvRoom<
                 return { ...acc, [prop]: serialized };
             },
             {} as {
-                [P in keyof TStorage]: InferCrdtJson<TStorage[P]>;
+                [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]>;
             },
         );
 

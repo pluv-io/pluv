@@ -1,8 +1,8 @@
-import type { AbstractCrdtDocFactory, CrdtDocLike, CrdtType } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, CrdtDocLike, CrdtType, InferStorage } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 
-export type CrdtManagerOptions<TStorage extends Record<string, CrdtType<any, any>> = {}> = {
-    initialStorage?: AbstractCrdtDocFactory<TStorage>;
+export type CrdtManagerOptions<TCrdt extends AbstractCrdtDocFactory<any>> = {
+    initialStorage?: TCrdt;
 };
 
 interface CrdtManagerInitializeParams {
@@ -15,14 +15,14 @@ interface ApplyUpdateParams {
     update: string | readonly string[];
 }
 
-export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
-    public doc: CrdtDocLike<TStorage>;
+export class CrdtManager<TCrdt extends AbstractCrdtDocFactory<any>> {
+    public doc: CrdtDocLike<InferStorage<TCrdt>>;
     public initialized: boolean = false;
 
-    private readonly _docFactory: AbstractCrdtDocFactory<TStorage>;
+    private readonly _docFactory: TCrdt;
 
-    constructor(options: CrdtManagerOptions<TStorage>) {
-        const { initialStorage = noop.doc({}) as AbstractCrdtDocFactory<TStorage> } = options;
+    constructor(options: CrdtManagerOptions<TCrdt>) {
+        const { initialStorage = noop.doc({}) as any } = options;
 
         this._docFactory = initialStorage;
         this.doc = initialStorage.getEmpty();
@@ -52,7 +52,7 @@ export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
         this.doc = this._docFactory.getEmpty();
     }
 
-    public get<TKey extends keyof TStorage>(key: TKey): TStorage[TKey] {
+    public get<TKey extends keyof InferStorage<TCrdt>>(key: TKey): InferStorage<TCrdt>[TKey] {
         return this.doc.get(key);
     }
 
@@ -110,10 +110,10 @@ export class CrdtManager<TStorage extends Record<string, CrdtType<any, any>>> {
     }
 
     private _applyDocUpdates(
-        doc: CrdtDocLike<TStorage>,
+        doc: CrdtDocLike<InferStorage<TCrdt>>,
         updates: readonly string[],
         origin?: string,
-    ): CrdtDocLike<TStorage> {
+    ): CrdtDocLike<InferStorage<TCrdt>> {
         doc.transact(() => {
             doc.batchApplyEncodedState({ origin, updates });
         }, origin);
