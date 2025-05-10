@@ -1,5 +1,16 @@
 # @pluv/client
 
+## 2.0.0
+
+### Patch Changes
+
+- 047a1d8: Moved several internal types to `@pluv/types`.
+- 0806212: Fix the room's id not being defined during the initialization of addons.
+- 3a34dbb: Fixed `initialStorage` on `PluvClient.createRoom` not overwriting the `initialStorage` from the `PluvClient` constructor.
+- Updated dependencies [047a1d8]
+  - @pluv/types@2.0.0
+  - @pluv/crdt@2.0.0
+
 ## 1.0.2
 
 ### Patch Changes

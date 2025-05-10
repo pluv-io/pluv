@@ -1,5 +1,11 @@
 # @pluv/types
 
+## 2.0.0
+
+### Patch Changes
+
+- 047a1d8: Moved several internal types to `@pluv/types`.
+
 ## 1.0.2
 
 ## 1.0.1
