@@ -30,8 +30,8 @@ export interface DocBatchApplyEncodedStateParams {
     updates?: Maybe<readonly Maybe<string | Uint8Array>[]>;
 }
 
-export interface DocSubscribeCallbackParams<T extends Record<string, CrdtType<any, any>>> {
-    doc: CrdtDocLike<T>;
+export interface DocSubscribeCallbackParams<TStorage extends Record<string, CrdtType<any, any>>> {
+    doc: CrdtDocLike<TStorage>;
     local: boolean;
     origin?: string | null;
     update: string;

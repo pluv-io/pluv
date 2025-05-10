@@ -1,10 +1,12 @@
 {
 	"extends": "@pluv/tsconfig/library.json",
-	"include": ["src/**/*.test.ts"],
+	"include": ["src/**/*.test.ts", "src/**/*.test.tsx"],
 	"exclude": ["node_modules"],
 	"compilerOptions": {
+		"lib": ["dom", "esnext"],
 		"noEmit": true,
 		"strict": true,
+		"jsx": "react-jsx",
 		"types": ["@cloudflare/workers-types"]
 	}
 }

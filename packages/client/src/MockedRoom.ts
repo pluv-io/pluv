@@ -1,4 +1,4 @@
-import type { CrdtType, InferCrdtJson } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, CrdtType, InferCrdtJson, InferStorage } from "@pluv/crdt";
 import type {
     CrdtDocLike,
     EventNotifierSubscriptionCallback,
@@ -42,32 +42,32 @@ export type MockedRoomEvents<TIO extends IOLike> = Partial<{
 
 export type MockedRoomConfig<
     TIO extends IOLike,
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
+    TPresence extends JsonObject,
+    TCrdt extends AbstractCrdtDocFactory<any>,
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>>,
 > = {
     events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
     limits?: PluvClientLimits;
-    router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
-} & Pick<CrdtManagerOptions<TStorage>, "initialStorage"> &
+    router?: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
+} & Pick<CrdtManagerOptions<TCrdt>, "initialStorage"> &
     Omit<UsersManagerConfig<TPresence>, "limits">;
 
 export class MockedRoom<
     TIO extends IOLike,
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
-> implements RoomLike<TIO, TPresence, TStorage>
+    TPresence extends JsonObject,
+    TCrdt extends AbstractCrdtDocFactory<any>,
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>>,
+> implements RoomLike<TIO, TPresence, InferStorage<TCrdt>>
 {
     public readonly id: string;
 
-    private readonly _crdtManager: CrdtManager<TStorage>;
-    private readonly _crdtNotifier = new CrdtNotifier<TStorage>();
+    private readonly _crdtManager: CrdtManager<TCrdt>;
+    private readonly _crdtNotifier = new CrdtNotifier<InferStorage<TCrdt>>();
     private readonly _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
     private readonly _events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
     private readonly _limits: PluvClientLimits;
     private readonly _otherNotifier = new OtherNotifier<TIO, TPresence>();
-    private readonly _router: PluvRouter<TIO, TPresence, TStorage, TEvents>;
+    private readonly _router: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
     private _state: WebSocketState<TIO> = {
         authorization: {
             token: null,
@@ -87,7 +87,7 @@ export class MockedRoom<
     };
     private readonly _usersManager: UsersManager<TIO, TPresence>;
 
-    constructor(room: string, options: MockedRoomConfig<TIO, TPresence, TStorage, TEvents>) {
+    constructor(room: string, options: MockedRoomConfig<TIO, TPresence, TCrdt, TEvents>) {
         const { events, initialPresence, initialStorage, limits, presence, router } = options;
 
         this.id = room;
@@ -98,14 +98,15 @@ export class MockedRoom<
             ...limits,
         };
         this._router =
-            router ?? (new PluvRouter({}) as PluvRouter<TIO, TPresence, TStorage, TEvents>);
+            router ??
+            (new PluvRouter({}) as PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>);
         this._usersManager = new UsersManager<TIO, TPresence>({
             initialPresence,
             limits: this._limits,
             presence,
         });
 
-        this._crdtManager = new CrdtManager<TStorage>({
+        this._crdtManager = new CrdtManager<TCrdt>({
             initialStorage,
         });
 
@@ -131,7 +132,7 @@ export class MockedRoom<
                 any,
                 any,
                 TPresence,
-                TStorage
+                InferStorage<TCrdt>
             > | null;
 
             if (!procedure?.config.broadcast) {
@@ -145,7 +146,7 @@ export class MockedRoom<
             if (!myself) return;
 
             const parsed = procedure.config.input ? procedure.config.input.parse(data) : data;
-            const context: EventResolverContext<TIO, TPresence, TStorage> = {
+            const context: EventResolverContext<TIO, TPresence, InferStorage<TCrdt>> = {
                 doc: this._crdtManager.doc,
                 others: this._usersManager.getOthers(),
                 room: this.id,
@@ -153,7 +154,13 @@ export class MockedRoom<
             };
 
             const output = await (
-                procedure.config.broadcast as EventResolver<TIO, any, any, TPresence, TStorage>
+                procedure.config.broadcast as EventResolver<
+                    TIO,
+                    any,
+                    any,
+                    TPresence,
+                    InferStorage<TCrdt>
+                >
             )(parsed, context);
 
             Object.entries(output).forEach(([_type, _data]) => {
@@ -210,7 +217,7 @@ export class MockedRoom<
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     };
 
-    public getDoc(): CrdtDocLike<TStorage> {
+    public getDoc(): CrdtDocLike<InferStorage<TCrdt>> {
         return this._crdtManager.doc;
     }
 
@@ -230,7 +237,9 @@ export class MockedRoom<
         return this._usersManager.getOthers();
     };
 
-    public getStorage = <TKey extends keyof TStorage>(type: TKey): TStorage[TKey] | null => {
+    public getStorage = <TKey extends keyof InferStorage<TCrdt>>(
+        type: TKey,
+    ): InferStorage<TCrdt>[TKey] | null => {
         const sharedType = this._crdtManager.get(type);
 
         if (typeof sharedType === "undefined") return null;
@@ -238,11 +247,11 @@ export class MockedRoom<
         return sharedType;
     };
 
-    public getStorageJson(): InferCrdtJson<TStorage> | null;
-    public getStorageJson<TKey extends keyof TStorage>(
+    public getStorageJson(): InferCrdtJson<InferStorage<TCrdt>> | null;
+    public getStorageJson<TKey extends keyof InferStorage<TCrdt>>(
         type: TKey,
-    ): InferCrdtJson<TStorage[TKey]> | null;
-    public getStorageJson<TKey extends keyof TStorage>(type?: TKey) {
+    ): InferCrdtJson<InferStorage<TCrdt>[TKey]> | null;
+    public getStorageJson<TKey extends keyof InferStorage<TCrdt>>(type?: TKey) {
         if (this._state.connection.id === null) return null;
 
         if (typeof type === "undefined") return this._crdtManager.doc.toJson();
@@ -265,16 +274,16 @@ export class MockedRoom<
         this._crdtManager.doc.redo();
     };
 
-    public storage = <TKey extends keyof TStorage>(
+    public storage = <TKey extends keyof InferStorage<TCrdt>>(
         key: TKey,
-        fn: (value: InferCrdtJson<TStorage[TKey]>) => void,
+        fn: (value: InferCrdtJson<InferStorage<TCrdt>[TKey]>) => void,
     ): (() => void) => {
         return this._crdtNotifier.subscribe(key, fn);
     };
 
     public storageRoot = (
         fn: (value: {
-            [P in keyof TStorage]: InferCrdtJson<TStorage[P]>;
+            [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]>;
         }) => void,
     ): (() => void) => {
         return this._crdtNotifier.subcribeRoot(fn);
@@ -287,7 +296,7 @@ export class MockedRoom<
         return this._stateNotifier.subscribe(name, callback);
     };
 
-    public transact = (fn: (storage: TStorage) => void, origin?: string): void => {
+    public transact = (fn: (storage: InferStorage<TCrdt>) => void, origin?: string): void => {
         const _origin = origin ?? this._state.connection.id;
         const crdtManager = this._crdtManager;
 
@@ -349,7 +358,7 @@ export class MockedRoom<
                     return { ...acc, [prop]: serialized };
                 },
                 {} as {
-                    [P in keyof TStorage]: InferCrdtJson<TStorage[P]>;
+                    [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]>;
                 },
             );
 

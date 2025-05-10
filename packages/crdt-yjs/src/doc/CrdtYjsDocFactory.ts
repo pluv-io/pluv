@@ -4,12 +4,12 @@ import { CrdtYjsDoc } from "./CrdtYjsDoc";
 import type { YjsBuilder } from "./builder";
 
 export class CrdtYjsDocFactory<
-    TStorage extends Record<string, YjsType<any, any>>,
+    TStorage extends Record<string, YjsType<any, any>> = {},
 > extends AbstractCrdtDocFactory<TStorage> {
-    private _initialStorage: (builder: YjsBuilder) => TStorage;
+    public readonly _initialStorage: (builder: YjsBuilder) => TStorage;
 
     constructor(initialStorage: (builder: YjsBuilder) => TStorage = () => ({}) as TStorage) {
-        super();
+        super(initialStorage);
 
         this._initialStorage = initialStorage;
     }
@@ -19,7 +19,7 @@ export class CrdtYjsDocFactory<
     }
 
     public getFactory(
-        initialStorage?: ((builder: YjsBuilder) => TStorage) | undefined,
+        initialStorage: (builder: YjsBuilder) => TStorage,
     ): CrdtYjsDocFactory<TStorage> {
         return new CrdtYjsDocFactory<TStorage>(initialStorage ?? this._initialStorage);
     }

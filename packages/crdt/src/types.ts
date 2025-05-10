@@ -1,4 +1,5 @@
 import type { Json } from "@pluv/types";
+import { AbstractCrdtDocFactory } from "./AbstractCrdtDocFactory";
 
 export type CrdtType<TValue extends unknown, TJson extends unknown = any> = Omit<
     TValue,
@@ -19,3 +20,14 @@ export type InferCrdtJson<T extends unknown> =
               : T extends Json
                 ? T
                 : string;
+
+export type InferInitialStorageFn<TFactory extends AbstractCrdtDocFactory<any>> =
+    TFactory["_initialStorage"];
+
+export type InferStorage<TFactory extends AbstractCrdtDocFactory<any>> = ReturnType<
+    InferInitialStorageFn<TFactory>
+>;
+
+export type InferBuilder<TFactory extends AbstractCrdtDocFactory<any>> = Parameters<
+    InferInitialStorageFn<TFactory>
+>[0];

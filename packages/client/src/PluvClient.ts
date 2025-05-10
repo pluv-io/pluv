@@ -1,4 +1,9 @@
-import type { AbstractCrdtDocFactory, CrdtType } from "@pluv/crdt";
+import type {
+    AbstractCrdtDocFactory,
+    CrdtType,
+    InferStorage,
+    NoopCrdtDocFactory,
+} from "@pluv/crdt";
 import type { InputZodLike, IOLike, JsonObject } from "@pluv/types";
 import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import type { InferCallback } from "./infer";
@@ -20,11 +25,11 @@ import type { PluvClientLimits, PublicKey, WithMetadata } from "./types";
 export type PluvClientOptions<
     TIO extends IOLike<any, any>,
     TPresence extends JsonObject,
-    TStorage extends Record<string, CrdtType<any, any>>,
+    TCrdt extends AbstractCrdtDocFactory<any>,
     TMetadata extends JsonObject,
 > = RoomEndpoints<TIO, TMetadata> & {
     debug?: boolean;
-    initialStorage?: AbstractCrdtDocFactory<TStorage>;
+    initialStorage?: TCrdt;
     /**
      * @description Configurable limits defined for client-side validation. You should only set
      * this if you control the server and have changed the limits there.
@@ -39,17 +44,17 @@ export type PluvClientOptions<
 export type CreateRoomOptions<
     TIO extends IOLike<any, any>,
     TPresence extends JsonObject,
-    TStorage extends Record<string, CrdtType<any, any>>,
+    TCrdt extends AbstractCrdtDocFactory<any>,
     TMetadata extends JsonObject,
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {},
+    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > = {
-    addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TStorage>[];
+    addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, InferStorage<TCrdt>>[];
     debug?: boolean | PluvRoomDebug<TIO>;
     initialPresence?: TPresence;
-    initialStorage?: AbstractCrdtDocFactory<TStorage>;
+    initialStorage?: TCrdt;
     onAuthorizationFail?: (error: Error) => void;
     reconnectTimeoutMs?: ReconnectTimeoutMs;
-    router?: PluvRouter<TIO, TPresence, TStorage, TEvents>;
+    router?: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
 };
 
 export type EnterRoomParams<TMetadata extends JsonObject = {}> = keyof TMetadata extends never
@@ -59,18 +64,18 @@ export type EnterRoomParams<TMetadata extends JsonObject = {}> = keyof TMetadata
 export class PluvClient<
     TIO extends IOLike<any, any>,
     TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
+    TCrdt extends AbstractCrdtDocFactory<any> = NoopCrdtDocFactory,
     TMetadata extends JsonObject = {},
 > {
     public readonly metadata?: InputZodLike<TMetadata>;
 
     private readonly _authEndpoint: AuthEndpoint<TMetadata> | undefined;
     private readonly _debug: boolean;
-    private readonly _initialStorage?: AbstractCrdtDocFactory<TStorage>;
+    private readonly _initialStorage?: TCrdt;
     private readonly _limits: PluvClientLimits;
     private readonly _presence?: InputZodLike<TPresence>;
     private readonly _publicKey: PublicKey<TMetadata> | null = null;
-    private readonly _rooms = new Map<string, PluvRoom<TIO, TMetadata, TPresence, TStorage, any>>();
+    private readonly _rooms = new Map<string, PluvRoom<TIO, TMetadata, TPresence, TCrdt, any>>();
     private readonly _wsEndpoint: WsEndpoint<TMetadata> | undefined;
 
     public get _defs() {
@@ -79,11 +84,11 @@ export class PluvClient<
         };
     }
 
-    public get procedure(): PluvProcedure<TIO, {}, {}, TPresence, TStorage> {
-        return new PluvProcedure<TIO, {}, {}, TPresence, TStorage>();
+    public get procedure(): PluvProcedure<TIO, {}, {}, TPresence, InferStorage<TCrdt>> {
+        return new PluvProcedure<TIO, {}, {}, TPresence, InferStorage<TCrdt>>();
     }
 
-    constructor(options: PluvClientOptions<TIO, TPresence, TStorage, TMetadata>) {
+    constructor(options: PluvClientOptions<TIO, TPresence, TCrdt, TMetadata>) {
         const {
             authEndpoint,
             debug = false,
@@ -110,15 +115,17 @@ export class PluvClient<
         if (!!publicKey) this._publicKey = publicKey;
     }
 
-    public createRoom = <TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
+    public createRoom = <
+        TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
+    >(
         room: string,
-        options: CreateRoomOptions<TIO, TPresence, TStorage, TMetadata, TEvents> = {},
-    ): PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents> => {
+        options: CreateRoomOptions<TIO, TPresence, TCrdt, TMetadata, TEvents> = {},
+    ): PluvRoom<TIO, TMetadata, TPresence, TCrdt, TEvents> => {
         const oldRoom = this.getRoom(room);
 
         if (oldRoom) return oldRoom;
 
-        const newRoom = new PluvRoom<TIO, TMetadata, TPresence, TStorage, TEvents>(room, {
+        const newRoom = new PluvRoom<TIO, TMetadata, TPresence, TCrdt, TEvents>(room, {
             addons: options.addons,
             authEndpoint: this._authEndpoint,
             debug: options.debug,
@@ -132,7 +139,7 @@ export class PluvClient<
             reconnectTimeoutMs: options.reconnectTimeoutMs,
             router: options.router,
             wsEndpoint: this._wsEndpoint,
-        } as RoomConfig<TIO, TMetadata, TPresence, TStorage, TEvents>);
+        } as RoomConfig<TIO, TMetadata, TPresence, TCrdt, TEvents>);
 
         this._rooms.set(room, newRoom);
 
@@ -144,7 +151,7 @@ export class PluvClient<
     public enter = async (
         room: string | PluvRoom<TIO, TMetadata, any, any, any>,
         ...args: EnterRoomParams<TMetadata>
-    ): Promise<PluvRoom<TIO, TMetadata, TPresence, TStorage, any>> => {
+    ): Promise<PluvRoom<TIO, TMetadata, TPresence, TCrdt, any>> => {
         const toEnter = typeof room === "string" ? this.getRoom(room) : room;
 
         if (!toEnter) throw new Error(`Could not find room: ${room}.`);
@@ -157,15 +164,15 @@ export class PluvClient<
         return toEnter;
     };
 
-    public getRoom = (room: string): PluvRoom<TIO, TMetadata, TPresence, TStorage, any> | null => {
+    public getRoom = (room: string): PluvRoom<TIO, TMetadata, TPresence, TCrdt, any> | null => {
         const found = this._rooms.get(room) as
-            | PluvRoom<TIO, TMetadata, TPresence, TStorage, any>
+            | PluvRoom<TIO, TMetadata, TPresence, TCrdt, any>
             | undefined;
 
         return found ?? null;
     };
 
-    public getRooms = (): readonly PluvRoom<TIO, TMetadata, TPresence, TStorage, any>[] => {
+    public getRooms = (): readonly PluvRoom<TIO, TMetadata, TPresence, TCrdt, any>[] => {
         return Array.from(this._rooms.values());
     };
 
@@ -181,16 +188,16 @@ export class PluvClient<
         this._logDebug(`Left and deleted room: ${room}`);
     };
 
-    public router<TEvents extends PluvRouterEventConfig<TIO, TPresence, TStorage> = {}>(
+    public router<TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {}>(
         events: TEvents,
-    ): PluvRouter<TIO, TPresence, TStorage, TEvents> {
+    ): PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents> {
         const invalidName = Object.keys(events).find((name) => name.includes("$"));
 
         if (typeof invalidName === "string") {
             throw new Error(`Invalid event name. Event names must not contain $: "${invalidName}"`);
         }
 
-        return new PluvRouter<TIO, TPresence, TStorage, TEvents>(events);
+        return new PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>(events);
     }
 
     private _logDebug(...data: any[]): void {

@@ -5,7 +5,7 @@
     "sideEffects": false,
     "private": true,
     "scripts": {
-        "test": "tsc"
+        "test": "tsc --noEmit"
     },
     "dependencies": {
         "@pluv/addon-indexeddb": "workspace:^",
