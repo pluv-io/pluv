@@ -83,7 +83,7 @@ const MyComponent: FC = () => {
             }}
             // Define the initial storage for the room
             initialStorage={(t) => ({
-                messages: t.array(),
+                messages: t.array("messages"),
             })}
             // The room's id
             room="my-mock-room"
@@ -124,7 +124,7 @@ const MyComponent: FC = () => {
             }}
             // Optional: Overwrite the initialStorage value from the client
             initialStorage={(t) => ({
-                messages: t.array(),
+                messages: t.array("messages"),
             })}
             // Optional: Emits an error whenever authorization fails (when
             // `authorize` is set on the PluvIO instance`)

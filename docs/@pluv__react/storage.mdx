@@ -85,7 +85,7 @@ export const MyPage: FC = () => {
         <PluvRoomProvider
             room="my-room-id"
             initialStorage={(t) => ({
-                messages: t.array(),
+                messages: t.array("messages"),
             })}
         >
             <MyRoom />
