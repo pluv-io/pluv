@@ -32,6 +32,8 @@ import { yjs } from "@pluv/crdt-yjs";
         // This simply returns the native Yjs shared-types (e.g. Y.Map), which
         // allows you operate on your yjs shared-typess in a more native way.
         topType: t.map("topType", [
+            // Declaring nested types should continue to use the `yjs` utilities
+            // you've used before
             ["key1", yjs.text("")],
             ["key2", yjs.text("")],
         ]),
