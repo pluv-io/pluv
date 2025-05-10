@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 2.0.1
+
+### Patch Changes
+
+- 1b93b18: Fixed `ConnectionState` not being exported.
+  - @pluv/crdt@2.0.1
+  - @pluv/types@2.0.1
+
 ## 2.0.0
 
 ### Patch Changes
