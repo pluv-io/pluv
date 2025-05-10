@@ -130,7 +130,7 @@ export class PluvClient<
             authEndpoint: this._authEndpoint,
             debug: options.debug,
             initialPresence: options.initialPresence,
-            initialStorage: this._initialStorage,
+            initialStorage: options.initialStorage ?? this._initialStorage,
             limits: this._limits,
             metadata: this.metadata,
             onAuthorizationFail: options.onAuthorizationFail,
