@@ -47,10 +47,10 @@ import { yjs } from "@pluv/crdt-yjs";
 // Before
 yjs.doc(() => ({
     // Declaring top fields via `yjs` functions was possible
-    topField: yjs.map(
+    topField: yjs.map([
         ["nested1", yjs.array<string>()],
         ["nested2", yjs.array<string>()],
-    ),
+    ]),
 }));
 
 // After
