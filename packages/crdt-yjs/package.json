@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/crdt-yjs",
-	"version": "2.0.1",
+	"version": "2.0.2",
 	"description": "yjs for @pluv/io",
 	"author": "leedavidcs",
 	"license": "MIT",
