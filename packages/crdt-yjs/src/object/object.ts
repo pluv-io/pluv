@@ -3,7 +3,7 @@ import type { YjsType } from "../types";
 import { YjsObject } from "./YjsObject";
 
 /**
- * @deprecated This will be removed in v2.0.0. Use yjs.map instead
+ * @deprecated This will be removed in v3.0.0. Use yjs.map instead
  * @description Creates a Yjs map, but declare it like it's an object
  * @date May 8, 2025
  */

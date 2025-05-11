@@ -67,9 +67,9 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             if (node instanceof YjsXmlElement) {
                 this._warn(oneLine`
                     Warning: You are using \`yjs.xmlElement\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
+                    Adding top-level values this way has been deprecated, to be removed in v3.
+                    Please follow the v3 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v3
                 `);
 
                 const yXmlElement = this.value.getXmlElement(key);
@@ -84,9 +84,9 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             if (node instanceof YjsXmlFragment) {
                 this._warn(oneLine`
                     Warning: You are using \`yjs.xmlFragment\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
+                    Adding top-level values this way has been deprecated, to be removed in v3.
+                    Please follow the v3 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v3
                 `);
 
                 const yXmlFragment = this.value.getXmlFragment(key);
@@ -101,9 +101,9 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             if (node instanceof YjsXmlText) {
                 this._warn(oneLine`
                     Warning: You are using \`yjs.xmlText\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
+                    Adding top-level values this way has been deprecated, to be removed in v3.
+                    Please follow the v3 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v3
                 `);
 
                 const yXmlText = this.value.get(key, YXmlText) as YXmlText;
@@ -114,9 +114,9 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             if (node instanceof YjsArray) {
                 this._warn(oneLine`
                     Warning: You are using \`yjs.array\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
+                    Adding top-level values this way has been deprecated, to be removed in v3.
+                    Please follow the v3 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v3
                 `);
 
                 const yArray = this.value.getArray(key);
@@ -129,9 +129,9 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             if (node instanceof YjsMap) {
                 this._warn(oneLine`
                     Warning: You are using \`yjs.map\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
+                    Adding top-level values this way has been deprecated, to be removed in v3.
+                    Please follow the v3 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v3
                 `);
 
                 const yMap = this.value.getMap(key);
@@ -146,9 +146,9 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             if (node instanceof YjsObject) {
                 this._warn(oneLine`
                     Warning: You are using \`yjs.object\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
+                    Adding top-level values this way has been deprecated, to be removed in v3.
+                    Please follow the v3 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v3
                 `);
 
                 const yMap = this.value.getMap(key);
@@ -163,9 +163,9 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             if (node instanceof YjsText) {
                 this._warn(oneLine`
                     Warning: You are using \`yjs.text\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
+                    Adding top-level values this way has been deprecated, to be removed in v3.
+                    Please follow the v3 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v3
                 `);
 
                 const yText = this.value.getText(key);
