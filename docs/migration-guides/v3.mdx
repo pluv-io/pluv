@@ -58,12 +58,12 @@ yjs.doc((t) => ({
     // Declaring top fields must now use the builder type, and must provide the
     // name that will be stored onto the document. This is simply syntax sugar
     // for doc.getMap("topField")
-    topField: t.map(
+    topField: t.map("topField", [
         // Nested fields must continue using the `yjs` functions. This is
         // simply syntax sugar for `new Y.Array()`.
         ["nested1", yjs.array<string>()],
         ["nested2", yjs.array<string>()],
-    ),
+    ]),
 }));
 ```
 
