@@ -58,9 +58,9 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
             if (node instanceof LoroCounter) {
                 this._warn(oneLine`
                     Warning: You are using \`loro.counter\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
+                    Adding top-level values this way has been deprecated, to be removed in v3.
+                    Please follow the v3 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v3
                 `);
 
                 const container = this.value.getCounter(key);
@@ -71,9 +71,9 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
             if (node instanceof LoroList) {
                 this._warn(oneLine`
                     Warning: You are using \`loro.list\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
+                    Adding top-level values this way has been deprecated, to be removed in v3.
+                    Please follow the v3 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v3
                 `);
 
                 const container = this.value.getList(key);
@@ -89,9 +89,9 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
             if (node instanceof LoroMap) {
                 this._warn(oneLine`
                     Warning: You are using \`loro.map\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
+                    Adding top-level values this way has been deprecated, to be removed in v3.
+                    Please follow the v3 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v3
                 `);
 
                 const container = this.value.getMap(key);
@@ -107,9 +107,9 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
             if (node instanceof LoroMovableList) {
                 this._warn(oneLine`
                     Warning: You are using \`loro.moveableList\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
+                    Adding top-level values this way has been deprecated, to be removed in v3.
+                    Please follow the v3 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v3
                 `);
 
                 const container = this.value.getMovableList(key);
@@ -125,9 +125,9 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
             if (node instanceof LoroText) {
                 this._warn(oneLine`
                     Warning: You are using \`loro.text\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
+                    Adding top-level values this way has been deprecated, to be removed in v3.
+                    Please follow the v3 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v3
                 `);
 
                 const container = this.value.getText(key);
@@ -140,9 +140,9 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
             if (node instanceof LoroTree) {
                 this._warn(oneLine`
                     Warning: You are using \`loro.tree\` to declare top-level storage value \`${key}\`.
-                    Adding top-level values this way has been deprecated, to be removed in v2.
-                    Please follow the v2 migration guide to declare top-level types correctly:
-                    https://pluv.io/docs/migration-guides/v2
+                    Adding top-level values this way has been deprecated, to be removed in v3.
+                    Please follow the v3 migration guide to declare top-level types correctly:
+                    https://pluv.io/docs/migration-guides/v3
                 `);
 
                 const container = this.value.getTree(key);
