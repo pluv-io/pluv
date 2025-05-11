@@ -1,0 +1,81 @@
+---
+title: "v3"
+description: "Migration guide from v2 to v3"
+---
+
+# v3
+
+## Breaking Changes
+
+### Declaring top-level storage fields via the `yjs` and `loro` utilities is no-longer supported
+
+In order to declare top-level types, you will need to use the builder type exposed in the `doc` function's parameters.
+
+```ts
+import { loro } from "@pluv/crdt-loro";
+import { yjs } from "@pluv/crdt-yjs";
+
+// Before
+loro.doc(() => ({
+    // Declaring top fields via `loro` functions was possible
+    topField: loro.map({
+        nested1: loro.list<string>(),
+        nested2: loro.list<string>(),
+    }),
+}));
+
+yjs.doc(() => ({
+    // Declaring top fields via `yjs` functions was possible
+    topField: yjs.map(
+        ["nested1", yjs.array<string>()],
+        ["nested2", yjs.array<string>()],
+    ),
+}));
+
+// After
+loro.doc((t) => ({
+    // Declaring top fields must now use the builder type, and must provide the
+    // name that will be stored onto the document. This is simply syntax sugar
+    // for doc.getMap("topField")
+    topField: t.map("topField", {
+        // Nested fields must continue using the `loro` functions. This is
+        // simply syntax sugar for `new LoroList()`.
+        nested1: loro.list<string>(),
+        nested2: loro.list<string>(),
+    }),
+}));
+
+yjs.doc((t) => ({
+    // Declaring top fields must now use the builder type, and must provide the
+    // name that will be stored onto the document. This is simply syntax sugar
+    // for doc.getMap("topField")
+    topField: t.map(
+        // Nested fields must continue using the `yjs` functions. This is
+        // simply syntax sugar for `new Y.Array()`.
+        ["nested1", yjs.array<string>()],
+        ["nested2", yjs.array<string>()],
+    ),
+}));
+```
+
+### yjs.object no-longer exists
+
+This was previously just syntax sugar for `yjs.map` so that the `Y.Map` shared-type could be declared like an object instead of an array of 2-tuples. In order to stay in-line with the shared-types that Yjs does provide, `yjs.object` has been removed since `Y.Object` does not exist.
+
+In order to migrate `yjs.object` to the equivalent `yjs.map` calls, you will need to update the parameters to be an array of 2-tuples (as in the `Y.Map` constructor).
+
+```ts
+import { yjs } from "@pluv/crdt-yjs";
+
+// Before
+yjs.object({
+    field1: "hello",
+    field2: "world",
+});
+
+// After
+yjs.map([
+    ["field1", "hello"],
+    ["field2", "world"],
+]);
+```
