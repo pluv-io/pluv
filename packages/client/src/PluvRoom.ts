@@ -1,6 +1,5 @@
 import type {
     AbstractCrdtDocFactory,
-    CrdtType,
     InferCrdtJson,
     InferStorage,
     NoopCrdtDocFactory,
@@ -8,9 +7,11 @@ import type {
 import type {
     BaseIOEventRecord,
     BaseUser,
+    BroadcastProxy,
     CrdtDocLike,
     EventMessage,
     EventNotifierSubscriptionCallback,
+    EventProxy,
     IOEventMessage,
     IOLike,
     Id,
@@ -23,6 +24,7 @@ import type {
     MergeEvents,
     OptionalProps,
     OtherNotifierSubscriptionCallback,
+    OthersNotifierSubscriptionCallback,
     RoomLike,
     UpdateMyPresenceAction,
     UserInfo,
@@ -34,7 +36,6 @@ import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
 import { EventNotifier } from "./EventNotifier";
-import { OtherNotifier } from "./OtherNotifier";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
@@ -53,6 +54,7 @@ import type {
 } from "./types";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
+import { UsersNotifier } from "./UsersNotifier";
 import { debounce } from "./utils";
 
 const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
@@ -214,7 +216,6 @@ export class PluvRoom<
     };
     private readonly _limits: PluvClientLimits;
     private readonly _listeners: InternalListeners;
-    private readonly _otherNotifier = new OtherNotifier<TIO, TPresence>();
     private readonly _publicKey: PublicKey<TMetadata> | null = null;
     private readonly _reconnectTimeoutMs: ReconnectTimeoutMs;
     private readonly _router: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
@@ -228,6 +229,7 @@ export class PluvRoom<
         reconnect: null,
     };
     private readonly _usersManager: UsersManager<TIO, TPresence>;
+    private readonly _usersNotifier = new UsersNotifier<TIO, TPresence>();
 
     private _lastMetadata: TMetadata | null = null;
     private _state: WebSocketState<TIO> = {
@@ -364,14 +366,7 @@ export class PluvRoom<
                 };
             },
         },
-    ) as (<TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
-        event: TEvent,
-        data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
-    ) => Promise<void>) & {
-        [PEvent in keyof InferIOInput<MergeEvents<TEvents, TIO>>]: (
-            data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[PEvent]>,
-        ) => Promise<void>;
-    };
+    ) as BroadcastProxy<TIO, TEvents>;
 
     public canRedo = (): boolean => {
         return !!this._crdtManager.doc.canRedo();
@@ -482,14 +477,7 @@ export class PluvRoom<
                 ): (() => void) => fn(prop as any, callback);
             },
         },
-    ) as (<TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
-        event: TEvent,
-        callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, TEvent>,
-    ) => () => void) & {
-        [PEvent in keyof InferIOOutput<MergeEvents<TEvents, TIO>>]: (
-            callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, PEvent>,
-        ) => () => void;
-    };
+    ) as EventProxy<TIO, TEvents>;
 
     public getConnection = (): WebSocketConnection => {
         // Create a read-only clone of the connection state
@@ -550,7 +538,7 @@ export class PluvRoom<
 
         if (!clientId) return () => undefined;
 
-        return this._otherNotifier.subscribe(clientId, callback);
+        return this._usersNotifier.subscribeOther(clientId, callback);
     };
 
     public redo = (): void => {
@@ -679,9 +667,10 @@ export class PluvRoom<
         this._detachWindowListeners();
         this._usersManager.removeMyself();
         this._usersManager.clearConnections();
-        this._otherNotifier.clear();
+        this._usersNotifier.clear();
         this._stateNotifier.subjects.myself.next(null);
         this._stateNotifier.subjects.others.next([]);
+        this._usersNotifier.others.next({ others: [], event: { kind: "clear" } });
         this._state.webSocket?.close();
 
         this._detachWsListeners();
@@ -841,13 +830,26 @@ export class PluvRoom<
 
         this._stateNotifier.subjects.others.next(others);
 
+        // Should not reach here
+        if (!deleted) {
+            console.warn("Could not identify exited connection");
+            return;
+        }
+
+        const { data: user, remaining } = deleted;
+
+        this._usersNotifier.others.next({
+            others,
+            event: { kind: "leave", user },
+        });
+
         /**
-         * @description A single user can have multiple connections. So we're checking that there
-         * isn't a remaining connection before choosing to delete that user for other connected
-         * participants.
+         * @description A single user can have multiple connections. So we're checking that
+         * there isn't a remaining connection before choosing to delete that user for other
+         * connected participants.
          * @date April 16, 2025
          */
-        if (!deleted?.remaining && !!clientId) this._otherNotifier.delete(clientId);
+        if (!remaining && !!clientId) this._usersNotifier.delete(clientId);
     }
 
     private _handlePresenceUpdatedMessage(message: IOEventMessage<TIO>): void {
@@ -887,7 +889,7 @@ export class PluvRoom<
         if (!!clientId) {
             const other = this._usersManager.getOther(connectionId);
 
-            this._otherNotifier.subject(clientId).next(other);
+            this._usersNotifier.other(clientId).next(other);
         } else {
             /**
              * !HACK
@@ -901,7 +903,7 @@ export class PluvRoom<
             });
             const other = this._usersManager.getOther(connectionId);
 
-            this._otherNotifier.subject(added.clientId).next(other);
+            this._usersNotifier.other(added.clientId).next(other);
         }
 
         const others = this._usersManager.getOthers();
@@ -931,12 +933,16 @@ export class PluvRoom<
             const clientId = result.clientId;
             const other = this._usersManager.getOther(connectionId);
 
-            this._otherNotifier.subject(clientId).next(other);
+            this._usersNotifier.other(clientId).next(other);
         });
 
         const others = this._usersManager.getOthers();
 
         this._stateNotifier.subjects.others.next(others);
+        this._usersNotifier.others.next({
+            others,
+            event: { kind: "sync", users: others },
+        });
     }
 
     private async _handleRegisteredMessage(message: IOEventMessage<TIO>): Promise<void> {
@@ -1083,6 +1089,13 @@ export class PluvRoom<
 
         quitters.forEach((quitter) => {
             this._usersManager.deleteConnection(quitter.connectionId);
+
+            const remaining = this._usersManager.getOthers();
+
+            this._usersNotifier.others.next({
+                others: remaining,
+                event: { kind: "leave", user: quitter },
+            });
         });
 
         const remaining = this._usersManager.getOthers();
@@ -1115,8 +1128,13 @@ export class PluvRoom<
         const other = this._usersManager.getOther(connectionId);
         const others = this._usersManager.getOthers();
 
-        this._otherNotifier.subject(added.clientId).next(other);
+        this._usersNotifier.other(added.clientId).next(other);
         this._stateNotifier.subjects.others.next(others);
+
+        this._usersNotifier.others.next({
+            others,
+            event: { kind: "enter", user: added.data },
+        });
     }
 
     private _heartbeat(): void {

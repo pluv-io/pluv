@@ -1,7 +1,9 @@
-import type { AbstractCrdtDocFactory, CrdtType, InferCrdtJson, InferStorage } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, InferCrdtJson, InferStorage } from "@pluv/crdt";
 import type {
+    BroadcastProxy,
     CrdtDocLike,
     EventNotifierSubscriptionCallback,
+    EventProxy,
     IOLike,
     Id,
     InferIOInput,
@@ -9,6 +11,7 @@ import type {
     JsonObject,
     MergeEvents,
     OtherNotifierSubscriptionCallback,
+    OthersNotifierSubscriptionCallback,
     RoomLike,
     UpdateMyPresenceAction,
     UserInfo,
@@ -19,7 +22,6 @@ import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
 import { EventNotifier } from "./EventNotifier";
-import { OtherNotifier } from "./OtherNotifier";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
@@ -27,6 +29,7 @@ import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifie
 import { StateNotifier } from "./StateNotifier";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
+import { UsersNotifier } from "./UsersNotifier";
 import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import type {
     EventResolver,
@@ -66,7 +69,7 @@ export class MockedRoom<
     private readonly _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
     private readonly _events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
     private readonly _limits: PluvClientLimits;
-    private readonly _otherNotifier = new OtherNotifier<TIO, TPresence>();
+    private readonly _usersNotifier = new UsersNotifier<TIO, TPresence>();
     private readonly _router: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
     private _state: WebSocketState<TIO> = {
         authorization: {
@@ -176,12 +179,7 @@ export class MockedRoom<
                 };
             },
         },
-    ) as (<TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
-        event: TEvent,
-        data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
-    ) => Promise<void>) & {
-        [event in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[event]>) => Promise<void>;
-    };
+    ) as BroadcastProxy<TIO, TEvents>;
 
     public canRedo = (): boolean => {
         return !!this._crdtManager.doc.canRedo();
@@ -203,14 +201,7 @@ export class MockedRoom<
                 ): (() => void) => fn(prop as any, callback);
             },
         },
-    ) as (<TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
-        event: TEvent,
-        callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, TEvent>,
-    ) => () => void) & {
-        [event in keyof InferIOOutput<MergeEvents<TEvents, TIO>>]: (
-            callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
-        ) => () => void;
-    };
+    ) as EventProxy<TIO, TEvents>;
 
     public getConnection = (): WebSocketConnection => {
         // Create a read-only clone of the connection state
@@ -267,7 +258,7 @@ export class MockedRoom<
 
         if (!clientId) return () => undefined;
 
-        return this._otherNotifier.subscribe(clientId, callback);
+        return this._usersNotifier.subscribeOther(clientId, callback);
     };
 
     public redo = (): void => {

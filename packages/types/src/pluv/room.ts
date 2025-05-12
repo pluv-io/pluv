@@ -27,6 +27,18 @@ export type OtherNotifierSubscriptionCallback<TIO extends IOLike, TPresence exte
     value: Id<UserInfo<TIO, TPresence>> | null,
 ) => void;
 
+export type OthersNotifierSubscriptionEvent<TIO extends IOLike, TPresence extends JsonObject> =
+    | { kind: "clear" }
+    | { kind: "enter"; user: Id<UserInfo<TIO, TPresence>> }
+    | { kind: "leave"; user: Id<UserInfo<TIO, TPresence>> }
+    | { kind: "sync"; users: readonly Id<UserInfo<TIO, TPresence>>[] }
+    | { kind: "update"; user: Id<UserInfo<TIO, TPresence>> };
+
+export type OthersNotifierSubscriptionCallback<TIO extends IOLike, TPresence extends JsonObject> = (
+    value: readonly Id<UserInfo<TIO, TPresence>>[],
+    events: OthersNotifierSubscriptionEvent<TIO, TPresence>,
+) => void;
+
 export interface StateNotifierSubjects<TIO extends IOLike, TPresence extends JsonObject> {
     connection: Subject<Id<WebSocketState<TIO>>>;
     "my-presence": Subject<TPresence | null>;
@@ -85,6 +97,28 @@ export interface WebSocketState<TIO extends IOLike> {
     webSocket: WebSocket | null;
 }
 
+export type BroadcastProxy<TIO extends IOLike, TEvents extends PluvRouterEventConfig> = (<
+    TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>,
+>(
+    event: TEvent,
+    data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
+) => Promise<void>) & {
+    [PEvent in keyof InferIOInput<MergeEvents<TEvents, TIO>>]: (
+        data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[PEvent]>,
+    ) => Promise<void>;
+};
+
+export type EventProxy<TIO extends IOLike, TEvents extends PluvRouterEventConfig> = (<
+    TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>,
+>(
+    event: TEvent,
+    callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, TEvent>,
+) => () => void) & {
+    [PEvent in keyof InferIOOutput<MergeEvents<TEvents, TIO>>]: (
+        callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, PEvent>,
+    ) => () => void;
+};
+
 export interface RoomLike<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
@@ -94,10 +128,7 @@ export interface RoomLike<
     id: string;
     storageLoaded: boolean;
 
-    broadcast<TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
-        event: TEvent,
-        data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
-    ): void;
+    broadcast: BroadcastProxy<TIO, TEvents>;
 
     canRedo(): boolean;
 
@@ -105,10 +136,7 @@ export interface RoomLike<
 
     getDoc(): CrdtDocLike<TStorage>;
 
-    event<TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
-        event: TEvent,
-        callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, TEvent>,
-    ): () => void;
+    event: EventProxy<TIO, TEvents>;
 
     getConnection(): WebSocketConnection;
 
