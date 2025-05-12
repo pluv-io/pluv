@@ -13,6 +13,7 @@ import type {
     OtherNotifierSubscriptionCallback,
     RoomLike,
     StorageProxy,
+    StorageRootSubscriptionCallback,
     StorageSubscriptionCallback,
     UpdateMyPresenceAction,
     UserInfo,
@@ -272,8 +273,15 @@ export class MockedRoom<
             callback: StorageSubscriptionCallback<InferStorage<TCrdt>, TKey>,
         ): (() => void) => this._crdtNotifier.subscribe(key, callback),
         {
-            get(fn, prop) {
+            get: (fn, prop) => {
                 type _Storage = InferStorage<TCrdt>;
+
+                if (!!prop) {
+                    return (callback: StorageRootSubscriptionCallback<_Storage>) => {
+                        return this._crdtNotifier.subcribeRoot(callback);
+                    };
+                }
+
                 return (callback: StorageSubscriptionCallback<_Storage, keyof _Storage>) => {
                     return fn(prop as keyof InferStorage<TCrdt>, callback);
                 };
