@@ -11,8 +11,9 @@ import type {
     JsonObject,
     MergeEvents,
     OtherNotifierSubscriptionCallback,
-    OthersNotifierSubscriptionCallback,
     RoomLike,
+    StorageProxy,
+    StorageSubscriptionCallback,
     UpdateMyPresenceAction,
     UserInfo,
     WebSocketState,
@@ -265,12 +266,20 @@ export class MockedRoom<
         this._crdtManager.doc.redo();
     };
 
-    public storage = <TKey extends keyof InferStorage<TCrdt>>(
-        key: TKey,
-        fn: (value: InferCrdtJson<InferStorage<TCrdt>[TKey]>) => void,
-    ): (() => void) => {
-        return this._crdtNotifier.subscribe(key, fn);
-    };
+    public storage = new Proxy(
+        <TKey extends keyof InferStorage<TCrdt>>(
+            key: TKey,
+            callback: StorageSubscriptionCallback<InferStorage<TCrdt>, TKey>,
+        ): (() => void) => this._crdtNotifier.subscribe(key, callback),
+        {
+            get(fn, prop) {
+                type _Storage = InferStorage<TCrdt>;
+                return (callback: StorageSubscriptionCallback<_Storage, keyof _Storage>) => {
+                    return fn(prop as keyof InferStorage<TCrdt>, callback);
+                };
+            },
+        },
+    ) as StorageProxy<InferStorage<TCrdt>>;
 
     public storageRoot = (
         fn: (value: {

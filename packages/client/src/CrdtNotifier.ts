@@ -1,4 +1,5 @@
 import type { CrdtType, InferCrdtJson } from "@pluv/crdt";
+import type { StorageSubscriptionCallback } from "@pluv/types";
 import type { Subject } from "wonka";
 import { makeSubject, subscribe } from "wonka";
 
@@ -36,7 +37,7 @@ export class CrdtNotifier<TStorage extends Record<string, CrdtType<any, any>>> {
 
     public subscribe<TKey extends keyof TStorage>(
         key: TKey,
-        callback: (value: InferCrdtJson<TStorage[TKey]>) => void,
+        callback: StorageSubscriptionCallback<TStorage, TKey>,
     ): () => void {
         const subject = this.subject(key);
 

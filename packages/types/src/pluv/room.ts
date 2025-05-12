@@ -1,7 +1,7 @@
 import type { Subject } from "wonka";
-import type { ConnectionState } from "./enums";
 import type { Id, JsonObject } from "../general";
 import type { CrdtDocLike, CrdtType, InferCrdtJson } from "./crdt";
+import type { ConnectionState } from "./enums";
 import type {
     InferIOAuthorize,
     InferIOAuthorizeUser,
@@ -119,6 +119,20 @@ export type EventProxy<TIO extends IOLike, TEvents extends PluvRouterEventConfig
     ) => () => void;
 };
 
+export type StorageSubscriptionCallback<
+    TStorage extends Record<string, CrdtType<any, any>>,
+    TKey extends keyof TStorage,
+> = (value: InferCrdtJson<TStorage[TKey]>) => void;
+
+export type StorageProxy<TStorage extends Record<string, CrdtType<any, any>>> = (<
+    TKey extends keyof TStorage,
+>(
+    key: TKey,
+    fn: StorageSubscriptionCallback<TStorage, TKey>,
+) => () => void) & {
+    [PKey in keyof TStorage]: (callback: StorageSubscriptionCallback<TStorage, PKey>) => () => void;
+};
+
 export interface RoomLike<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
@@ -160,10 +174,7 @@ export interface RoomLike<
 
     redo(): void;
 
-    storage<TKey extends keyof TStorage>(
-        key: TKey,
-        fn: (value: InferCrdtJson<TStorage[TKey]>) => void,
-    ): () => void;
+    storage: StorageProxy<TStorage>;
 
     storageRoot(
         fn: (value: {

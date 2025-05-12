@@ -51,6 +51,8 @@ export type {
     OthersNotifierSubscriptionEvent,
     ProcedureLike,
     RoomLike,
+    StorageProxy,
+    StorageSubscriptionCallback,
     UpdateMyPresenceAction,
     UserInfo,
     WebSocketConnection,
