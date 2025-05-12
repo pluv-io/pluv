@@ -26,6 +26,7 @@ import type {
     OtherNotifierSubscriptionCallback,
     RoomLike,
     StorageProxy,
+    StorageRootSubscriptionCallback,
     StorageSubscriptionCallback,
     UpdateMyPresenceAction,
     UserInfo,
@@ -552,8 +553,15 @@ export class PluvRoom<
             callback: StorageSubscriptionCallback<InferStorage<TCrdt>, TKey>,
         ): (() => void) => this._crdtNotifier.subscribe(key, callback),
         {
-            get(fn, prop) {
+            get: (fn, prop) => {
                 type _Storage = InferStorage<TCrdt>;
+
+                if (!!prop) {
+                    return (callback: StorageRootSubscriptionCallback<_Storage>) => {
+                        return this._crdtNotifier.subcribeRoot(callback);
+                    };
+                }
+
                 return (callback: StorageSubscriptionCallback<_Storage, keyof _Storage>) => {
                     return fn(prop as keyof InferStorage<TCrdt>, callback);
                 };
@@ -562,11 +570,11 @@ export class PluvRoom<
     ) as StorageProxy<InferStorage<TCrdt>>;
 
     public storageRoot = (
-        fn: (value: {
+        callback: (value: {
             [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]>;
         }) => void,
     ): (() => void) => {
-        return this._crdtNotifier.subcribeRoot(fn);
+        return this._crdtNotifier.subcribeRoot(callback);
     };
 
     public subscribe = <TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(

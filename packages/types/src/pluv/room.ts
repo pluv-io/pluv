@@ -18,11 +18,6 @@ export interface AuthorizationState<TIO extends IOLike> {
     user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>> | null;
 }
 
-export type EventNotifierSubscriptionCallback<
-    TIO extends IOLike<any, any>,
-    TEvent extends keyof InferIOOutput<TIO>,
-> = (value: Id<IOEventMessage<TIO, TEvent>>) => void;
-
 export type OtherNotifierSubscriptionCallback<TIO extends IOLike, TPresence extends JsonObject> = (
     value: Id<UserInfo<TIO, TPresence>> | null,
 ) => void;
@@ -108,12 +103,22 @@ export type BroadcastProxy<TIO extends IOLike, TEvents extends PluvRouterEventCo
     ) => Promise<void>;
 };
 
-export type EventProxy<TIO extends IOLike, TEvents extends PluvRouterEventConfig> = (<
+export type EventNotifierSubscriptionCallback<
+    TIO extends IOLike<any, any>,
+    TEvent extends keyof InferIOOutput<TIO>,
+> = (value: Id<IOEventMessage<TIO, TEvent>>) => void;
+
+export type EventSubscriptionFn<TIO extends IOLike, TEvents extends PluvRouterEventConfig> = <
     TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>,
 >(
     event: TEvent,
     callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, TEvent>,
-) => () => void) & {
+) => () => void;
+
+export type EventProxy<
+    TIO extends IOLike,
+    TEvents extends PluvRouterEventConfig,
+> = EventSubscriptionFn<TIO, TEvents> & {
     [PEvent in keyof InferIOOutput<MergeEvents<TEvents, TIO>>]: (
         callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, PEvent>,
     ) => () => void;
@@ -124,14 +129,27 @@ export type StorageSubscriptionCallback<
     TKey extends keyof TStorage,
 > = (value: InferCrdtJson<TStorage[TKey]>) => void;
 
-export type StorageProxy<TStorage extends Record<string, CrdtType<any, any>>> = (<
+export type StorageSubscriptionFn<TStorage extends Record<string, CrdtType<any, any>>> = <
     TKey extends keyof TStorage,
 >(
     key: TKey,
     fn: StorageSubscriptionCallback<TStorage, TKey>,
-) => () => void) & {
-    [PKey in keyof TStorage]: (callback: StorageSubscriptionCallback<TStorage, PKey>) => () => void;
-};
+) => () => void;
+
+export type StorageRootSubscriptionCallback<TStorage extends Record<string, CrdtType<any, any>>> =
+    (value: { [P in keyof TStorage]: InferCrdtJson<TStorage[P]> }) => void;
+
+export type StorageRootSubscriptionFn<TStorage extends Record<string, CrdtType<any, any>>> = (
+    callback: StorageRootSubscriptionCallback<TStorage>,
+) => () => void;
+
+export type StorageProxy<TStorage extends Record<string, CrdtType<any, any>>> =
+    StorageSubscriptionFn<TStorage> &
+        StorageRootSubscriptionFn<TStorage> & {
+            [PKey in keyof TStorage]: (
+                callback: StorageSubscriptionCallback<TStorage, PKey>,
+            ) => () => void;
+        };
 
 export interface RoomLike<
     TIO extends IOLike,
