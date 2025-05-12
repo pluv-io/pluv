@@ -69,6 +69,10 @@ room.storage("messages", (messages) => {
     expectTypeOf<typeof messages>().toEqualTypeOf<string[]>();
 });
 
+room.storage.messages((messages) => {
+    expectTypeOf<typeof messages>().toEqualTypeOf<string[]>();
+});
+
 const { PluvRoomProvider, useStorage } = createBundle(client);
 
 <PluvRoomProvider
