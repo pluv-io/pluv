@@ -232,6 +232,9 @@ importers:
       js-base64:
         specifier: ^3.7.7
         version: 3.7.7
+      lib0:
+        specifier: ^0.2.107
+        version: 0.2.107
     devDependencies:
       '@pluv/tsconfig':
         specifier: workspace:^
@@ -4779,6 +4782,7 @@ packages:
   wrangler@4.15.0:
     resolution: {integrity: sha512-1fCdp2BQ5OtoNQU63/tjLmikmHIB1Vjh2gCs6K+DPz0f1U9PpQusPkcDv0UVONtH82XSfZGNFHZ5s5jPzwHFjw==}
     engines: {node: '>=18.0.0'}
+    deprecated: Please downgrade to v4.14.4
     hasBin: true
     peerDependencies:
       '@cloudflare/workers-types': ^4.20250508.0

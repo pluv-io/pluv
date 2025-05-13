@@ -557,7 +557,7 @@ export class PluvRoom<
     };
 
     /**
-     * @deprecated To be removed in v3. To be removed in v3. Use PluvRoom.subscribe.storage instead
+     * @deprecated To be removed in v3. Use PluvRoom.subscribe.storage instead
      */
     public storage = new Proxy(
         <TKey extends keyof InferStorage<TCrdt>>(
