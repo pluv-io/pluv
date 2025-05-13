@@ -1,4 +1,5 @@
 import type { InputZodLike, IOLike, JsonObject, OptionalProps, UserInfo } from "@pluv/types";
+import { PLUV_PRESENCE_META_KEY } from "./constants";
 import type { PluvClientLimits } from "./types";
 import { pickBy } from "./utils";
 
@@ -209,6 +210,16 @@ export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}>
             ...cleanedPatch,
         } as TPresence;
         const validated = this._presence ? this._presence.parse(presence) : presence;
+
+        /**
+         * !HACK
+         * @description We're patching internal metadata back into the presence field so it doesn't
+         * get stripped from validation
+         * @date May 13, 2025
+         */
+        if (!!presence[PLUV_PRESENCE_META_KEY]) {
+            (validated as any)[PLUV_PRESENCE_META_KEY] = presence[PLUV_PRESENCE_META_KEY];
+        }
 
         this._others.set(clientId, { ...other, presence: validated });
 
