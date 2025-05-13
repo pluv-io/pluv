@@ -296,30 +296,6 @@ Returns `Promise<void>`
 
 Disconnects from the room if already connected.
 
-### PluvRoom.event
-
-Returns `() => void`
-
-Subscribes to an event. These events are defined by `PluvIO.procedure` and are emitted when other websockets emit events via `PluvRoom.broadcast`. Returns a function to unsubscribe from the event.
-
-```ts
-// Subscribe to receiveMessage messages
-
-// The below 2 statements are equivalent
-const unsubscribe = room.event("receiveMessage", ({ data }) => {
-    console.log(data);
-});
-
-const unsubscribe = room.event.receiveMessage(({ data }) => {
-    console.log(data);
-});
-
-// ...
-
-// Unsubscribe to the listener later on.
-unsubscribe();
-```
-
 ### PluvRoom.getConnection
 
 Returns `WebSocketConnection`
@@ -445,11 +421,110 @@ Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/client/ap
 room.redo();
 ```
 
-### PluvRoom.storage
+### PluvRoom.subscribe.connection
 
 Returns `() => void`
 
-Subscribes to a given root-level value in the room's document storage. The data in the callback will be a serialized value rather than the CRDT's instance. Returns a function to unsubscribe.
+Subscribes to the user's connection state. Returns a function to unsubscribe.
+
+```ts
+const unsubscribe = room.subscribe.connection(({
+    // The user's authorization state: { token, user }
+    authorization,
+    // The user's connection state: { id, state }
+    connection,
+    // The user's websocket
+    webSocket,
+}) => {
+    console.log(authorization, connection, webSocket);
+});
+
+// ...
+
+// Unsubscribe to the listener later on.
+unsubscribe();
+```
+
+### PluvRoom.subscribe.event
+
+Returns `() => void`
+
+Subscribes to an event. These events are defined by `PluvIO.procedure` and are emitted when other websockets emit events via `PluvRoom.broadcast`. Returns a function to unsubscribe from the event.
+
+```ts
+// Subscribe to receiveMessage messages
+
+// The below 2 statements are equivalent
+const unsubscribe = room.subscribe.event("receiveMessage", ({ data }) => {
+    console.log(data);
+});
+
+const unsubscribe = room.subscribe.event.receiveMessage(({ data }) => {
+    console.log(data);
+});
+
+// ...
+
+// Unsubscribe to the listener later on.
+unsubscribe();
+```
+
+### PluvRoom.subscribe.myPresence
+
+Returns `() => void`
+
+Subscribes to the user's presence state.
+
+```ts
+const unsubscribe = room.subscribe.myPresence((myPresence) => {
+    console.log(myPresence);
+});
+
+// ...
+
+// Unsubscribe to the listener later on.
+unsubscribe();
+```
+
+### PluvRoom.subscribe.myself
+
+Returns `() => void`
+
+Subscribes to the user's info object. Returns a function to unsubscribe.
+
+```ts
+const unsubscribe = room.subscribe.myself((myself) => {
+    console.log(myself);
+});
+
+// ...
+
+// Unsubscribe to the listener later on.
+unsubscribe();
+```
+
+### PluvRoom.subscribe.others
+
+Returns `() => void`
+
+Subscribes to the list of user info objects of the other connections that aren't the user's. Returns a function to unsubscribe.
+
+```ts
+const unsubscribe = room.subscribe.others((others) => {
+    console.log(others);
+});
+
+// ...
+
+// Unsubscribe to the listener later on.
+unsubscribe();
+```
+
+### PluvRoom.subscribe.storage
+
+Returns `() => void`
+
+Subscribes to a room's CRDT storage. The data in the callback will be a serialized value rather than the CRDT's instance. Returns a function to unsubscribe.
 
 ```ts
 // frontend/room.ts
@@ -469,9 +544,11 @@ const room = io.createRoom("my-example-room", {
     })),
 });
 
-const unsubscribe = room.storage("messages", (messages: string[]) => {
-    console.log(messages);
+// The following functions are equivalent
+room.subscribe.storage("messages", (messages: string[]) => {});
 
+const unsubscribe = room.subscribe.storage.messages((messages: string[]) => {
+    console.log(messages);
     // If the AbstractCrdtType is needed, you call call getStorage here.
     const sharedType = room.getStorage("messages");
 });
@@ -482,79 +559,28 @@ const unsubscribe = room.storage("messages", (messages: string[]) => {
 unsubscribe();
 ```
 
-### PluvRoom.subscribe("connection")
-
-Returns `() => void`
-
-Subscribes to the user's connection state. Returns a function to unsubscribe.
+If you wish to subscribe to the full storage value, do not provide the string accessor nor use the property accessor. Instead provide only the callback function.
 
 ```ts
-const unsubscribe = room.subscribe("connection", ({
-    // The user's authorization state: { token, user }
-    authorization,
-    // The user's connection state: { id, state }
-    connection,
-    // The user's websocket
-    webSocket,
-}) => {
-    console.log(authorization, connection, webSocket);
+// Access a top-level property
+room.subscribe.storage.messages((messages: string[]) => {});
+
+// Access to the entire storage object (serialized)
+room.subscribe.storage((storage) => {
+//                      ^? const storage: { messages: string[] };
 });
-
-// ...
-
-// Unsubscribe to the listener later on.
-unsubscribe();
 ```
 
-### PluvRoom.subscribe("my-presence")
+### PluvRoom.storage.storageLoaded
 
 Returns `() => void`
 
-Subscribes to the user's presence state.
+Subscribes to when storage is loaded for a room. Storage is loaded after the user connects, so it is recommended to use this if you need to identify when the storage was initialized for the current user.
 
 ```ts
-const unsubscribe = room.subscribe("my-presence", (myPresence) => {
-    console.log(myPresence);
+room.subscribe.storageLoaded(() => {
+    console.log("storage was loaded");
 });
-
-// ...
-
-// Unsubscribe to the listener later on.
-unsubscribe();
-```
-
-### PluvRoom.subscribe("myself")
-
-Returns `() => void`
-
-Subscribes to the user's info object. Returns a function to unsubscribe.
-
-```ts
-const unsubscribe = room.subscribe("myself", (myself) => {
-    console.log(myself);
-});
-
-// ...
-
-// Unsubscribe to the listener later on.
-unsubscribe();
-```
-
-### PluvRoom.subscribe("others")
-
-Returns `() => void`
-
-Subscribes to the list of user info objects of the other connections that aren't the user's. Returns a function to unsubscribe.
-
-```ts
-const unsubscribe = room.subscribe("others", (others) => {
-    console.log(others);
-});
-
-// ...
-
-// Unsubscribe to the listener later on.
-unsubscribe();
 ```
 
 ### PluvRoom.transact

@@ -88,3 +88,27 @@ yjs.map([
     ["field2", "world"],
 ]);
 ```
+
+### PluvRoom.subscribe must now use nested accessors
+
+This pertains to `@pluv/client` and not `@pluv/react`.
+
+Previously, to subscribe to such data as `myself` and `my-presence`, you could access these via a string parameter on a `PluvRoom.subscribe` function. These must now be accessed as a property on `PluvRoom.subscribe` instead.
+
+```ts
+const room = client.createRoom("example-room");
+
+// Before
+room.subscribe("connection", (state) => {});
+room.subscribe("my-presence", (myPresence) => {});
+room.subscribe("myself", (myself) => {});
+room.subscribe("others", (others) => {});
+room.subscribe("storage-loaded", (storageLoaded) => {});
+
+// After
+room.subscribe.connection((state) => {});
+room.subscribe.myPresence((myPresence) => {});
+room.subscribe.myself((myself) => {});
+room.subscribe.others((others) => {});
+room.subscribe.storageLoaded((storageLoaded) => {});
+```
