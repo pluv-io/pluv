@@ -77,6 +77,34 @@ room.storage((storage) => {
     expectTypeOf<typeof storage>().toEqualTypeOf<{ messages: string[] }>();
 });
 
+room.subscribe.connection((event) => {
+    expectTypeOf<typeof event.authorization.user>().toExtend<{ id: string } | null>();
+});
+room.subscribe.others((others, event) => {
+    expectTypeOf<(typeof others)[number]["user"]>().toExtend<{ id: string }>();
+    expectTypeOf<(typeof event)["kind"]>().toExtend<
+        "sync" | "clear" | "enter" | "leave" | "update"
+    >();
+});
+room.subscribe.event("receiveMessage", (event) => {
+    expectTypeOf<(typeof event)["data"]>().toEqualTypeOf<{ message: string }>();
+    expectTypeOf<(typeof event)["data"]>().toBeObject();
+    // @ts-expect-error
+    expectTypeOf<(typeof event)["data"]>().toEqualTypeOf<{}>();
+});
+room.subscribe.event.receiveMessage((event) => {
+    expectTypeOf<(typeof event)["data"]>().toEqualTypeOf<{ message: string }>();
+    expectTypeOf<(typeof event)["data"]>().toBeObject();
+    // @ts-expect-error
+    expectTypeOf<(typeof event)["data"]>().toEqualTypeOf<{}>();
+});
+room.subscribe.storage("messages", (messages) => {
+    expectTypeOf<typeof messages>().toEqualTypeOf<string[]>();
+});
+room.subscribe.storage.messages((messages) => {
+    expectTypeOf<typeof messages>().toEqualTypeOf<string[]>();
+});
+
 const { PluvRoomProvider, useStorage } = createBundle(client);
 
 <PluvRoomProvider
