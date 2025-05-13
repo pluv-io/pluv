@@ -10,7 +10,7 @@ import type {
     InferIOOutput,
     JsonObject,
     MergeEvents,
-    OtherNotifierSubscriptionCallback,
+    OtherSubscriptionCallback,
     OthersSubscriptionCallback,
     RoomLike,
     StorageProxy,
@@ -256,7 +256,7 @@ export class MockedRoom<
 
     public other = (
         connectionId: string,
-        callback: OtherNotifierSubscriptionCallback<TIO, TPresence>,
+        callback: OtherSubscriptionCallback<TIO, TPresence>,
     ): (() => void) => {
         const clientId = this._usersManager.getClientId(connectionId);
 
@@ -339,6 +339,7 @@ export class MockedRoom<
                 }
 
                 if (prop === "event") return this.event;
+                if (prop === "other") return this.other;
                 if (prop === "storage") return this.storage;
             },
         },

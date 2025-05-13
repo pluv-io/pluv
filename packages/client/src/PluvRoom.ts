@@ -23,7 +23,7 @@ import type {
     JsonObject,
     MergeEvents,
     OptionalProps,
-    OtherNotifierSubscriptionCallback,
+    OtherSubscriptionCallback,
     OthersSubscriptionCallback,
     RoomLike,
     StorageProxy,
@@ -536,7 +536,7 @@ export class PluvRoom<
 
     public other = (
         connectionId: string,
-        callback: OtherNotifierSubscriptionCallback<TIO, TPresence>,
+        callback: OtherSubscriptionCallback<TIO, TPresence>,
     ): (() => void) => {
         const clientId = this._usersManager.getClientId(connectionId);
 
@@ -619,6 +619,7 @@ export class PluvRoom<
                 }
 
                 if (prop === "event") return this.event;
+                if (prop === "other") return this.other;
                 if (prop === "storage") return this.storage;
             },
         },

@@ -18,9 +18,14 @@ export interface AuthorizationState<TIO extends IOLike> {
     user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>> | null;
 }
 
-export type OtherNotifierSubscriptionCallback<TIO extends IOLike, TPresence extends JsonObject> = (
+export type OtherSubscriptionCallback<TIO extends IOLike, TPresence extends JsonObject> = (
     value: Id<UserInfo<TIO, TPresence>> | null,
 ) => void;
+
+export type OtherSubscriptionFn<TIO extends IOLike, TPresence extends JsonObject> = (
+    connectionId: string,
+    callback: OtherSubscriptionCallback<TIO, TPresence>,
+) => () => void;
 
 export type OthersSubscriptionEvent<TIO extends IOLike, TPresence extends JsonObject> =
     | { kind: "clear" }
@@ -170,7 +175,8 @@ export type SubscribeProxy<
     event: EventProxy<TIO, TEvents>;
     myPresence: SubscribeFn<TPresence | null>;
     myself: SubscribeFn<Id<UserInfo<TIO>> | null>;
-    others: (callback: OthersSubscriptionCallback<TIO, TPresence>) => void;
+    other: OtherSubscriptionFn<TIO, TPresence>;
+    others: OthersSubscriptionFn<TIO, TPresence>;
     storage: StorageProxy<TStorage>;
     storageLoaded: SubscribeFn<boolean>;
 };
@@ -209,10 +215,7 @@ export interface RoomLike<
     getStorageJson(): InferCrdtJson<TStorage> | null;
     getStorageJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]> | null;
 
-    other(
-        connectionId: string,
-        callback: OtherNotifierSubscriptionCallback<TIO, TPresence>,
-    ): () => void;
+    other(connectionId: string, callback: OtherSubscriptionCallback<TIO, TPresence>): () => void;
 
     redo(): void;
 
