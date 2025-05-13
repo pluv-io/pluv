@@ -23,11 +23,15 @@ import type {
     JsonObject,
     MergeEvents,
     OptionalProps,
-    OtherNotifierSubscriptionCallback,
+    OtherSubscriptionCallback,
+    OthersSubscriptionCallback,
     RoomLike,
+    StateNotifierSubjects,
     StorageProxy,
     StorageRootSubscriptionCallback,
     StorageSubscriptionCallback,
+    SubscribeProxy,
+    SubscriptionCallback,
     UpdateMyPresenceAction,
     UserInfo,
     WebSocketState,
@@ -41,7 +45,6 @@ import { EventNotifier } from "./EventNotifier";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
-import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import { StorageStore } from "./StorageStore";
 import type {
@@ -534,7 +537,7 @@ export class PluvRoom<
 
     public other = (
         connectionId: string,
-        callback: OtherNotifierSubscriptionCallback<TIO, TPresence>,
+        callback: OtherSubscriptionCallback<TIO, TPresence>,
     ): (() => void) => {
         const clientId = this._usersManager.getClientId(connectionId);
 
@@ -577,12 +580,49 @@ export class PluvRoom<
         return this._crdtNotifier.subcribeRoot(callback);
     };
 
-    public subscribe = <TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
-        name: TSubject,
-        callback: SubscriptionCallback<TIO, TPresence, TSubject>,
-    ): (() => void) => {
-        return this._stateNotifier.subscribe(name, callback);
-    };
+    public subscribe = new Proxy(
+        <TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
+            name: TSubject,
+            callback: SubscriptionCallback<TIO, TPresence, TSubject>,
+        ): (() => void) => this._stateNotifier.subscribe(name, callback),
+        {
+            get: (fn, prop) => {
+                if (prop === "connection") {
+                    return (callback: SubscriptionCallback<TIO, TPresence, "connection">) => {
+                        return fn("connection", callback);
+                    };
+                }
+
+                if (prop === "myPresence") {
+                    return (callback: SubscriptionCallback<TIO, TPresence, "my-presence">) => {
+                        return fn("my-presence", callback);
+                    };
+                }
+
+                if (prop === "myself") {
+                    return (callback: SubscriptionCallback<TIO, TPresence, "myself">) => {
+                        return fn("myself", callback);
+                    };
+                }
+
+                if (prop === "others") {
+                    return (callback: OthersSubscriptionCallback<TIO, TPresence>) => {
+                        return this._usersNotifier.subscribeOthers(callback);
+                    };
+                }
+
+                if (prop === "storageLoaded") {
+                    return (callback: SubscriptionCallback<TIO, TPresence, "storage-loaded">) => {
+                        return fn("storage-loaded", callback);
+                    };
+                }
+
+                if (prop === "event") return this.event;
+                if (prop === "other") return this.other;
+                if (prop === "storage") return this.storage;
+            },
+        },
+    ) as SubscribeProxy<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
 
     public transact = (fn: (storage: InferStorage<TCrdt>) => void, origin?: string): void => {
         const _origin = origin ?? this._state.connection.id;
@@ -905,27 +945,41 @@ export class PluvRoom<
 
         if (!!clientId) {
             const other = this._usersManager.getOther(connectionId);
+            const others = this._usersManager.getOthers();
 
             this._usersNotifier.other(clientId).next(other);
-        } else {
-            /**
-             * !HACK
-             * @description User could not be found. Add the connection to keep others up-to-date
-             * @date April 19, 2025
-             */
-            const added = this._usersManager.addConnection({
-                connectionId,
-                presence: data.presence as TPresence,
-                user: message.user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>,
-            });
-            const other = this._usersManager.getOther(connectionId);
+            this._stateNotifier.subjects.others.next(others);
 
-            this._usersNotifier.other(added.clientId).next(other);
+            if (!!other) {
+                this._usersNotifier.others.next({
+                    others,
+                    event: { kind: "update", user: other },
+                });
+            }
+
+            return;
         }
 
+        /**
+         * !HACK
+         * @description User could not be found. Add the connection to keep others up-to-date
+         * @date April 19, 2025
+         */
+        const added = this._usersManager.addConnection({
+            connectionId,
+            presence: data.presence as TPresence,
+            user: message.user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>,
+        });
+        const other = this._usersManager.getOther(connectionId);
         const others = this._usersManager.getOthers();
 
+        this._usersNotifier.other(added.clientId).next(other);
         this._stateNotifier.subjects.others.next(others);
+
+        this._usersNotifier.others.next({
+            others,
+            event: { kind: "update", user: added.data },
+        });
     }
 
     private _handleReceiveOthers(message: IOEventMessage<TIO>): void {

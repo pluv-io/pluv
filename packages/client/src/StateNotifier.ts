@@ -1,14 +1,14 @@
-import type { Id, IOLike, JsonObject, UserInfo, WebSocketState } from "@pluv/types";
+import type {
+    Id,
+    IOLike,
+    JsonObject,
+    StateNotifierSubjects,
+    SubscriptionCallback,
+    UserInfo,
+    WebSocketState,
+} from "@pluv/types";
 import type { Subject } from "wonka";
 import { makeSubject, subscribe } from "wonka";
-
-export interface StateNotifierSubjects<TIO extends IOLike, TPresence extends JsonObject> {
-    connection: Subject<Id<WebSocketState<TIO>>>;
-    "my-presence": Subject<TPresence | null>;
-    myself: Subject<Readonly<Id<UserInfo<TIO>>> | null>;
-    others: Subject<readonly Id<UserInfo<TIO>>[]>;
-    "storage-loaded": Subject<boolean>;
-}
 
 type InferSubjectValue<
     TIO extends IOLike,
@@ -19,18 +19,12 @@ type InferSubjectValue<
         ? Id<IValue>
         : never;
 
-export type SubscriptionCallback<
-    TIO extends IOLike,
-    TPresence extends JsonObject,
-    TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
-> = (value: InferSubjectValue<TIO, TPresence, TSubject>) => void;
-
 export class StateNotifier<TIO extends IOLike, TPresence extends JsonObject = {}> {
     public subjects: StateNotifierSubjects<TIO, TPresence> = {
         connection: makeSubject<Id<WebSocketState<TIO>>>(),
         "my-presence": makeSubject<TPresence>(),
-        myself: makeSubject<Readonly<Id<UserInfo<TIO>>> | null>(),
-        others: makeSubject<readonly Id<UserInfo<TIO>>[]>(),
+        myself: makeSubject<Readonly<Id<UserInfo<TIO, TPresence>>> | null>(),
+        others: makeSubject<readonly Id<UserInfo<TIO, TPresence>>[]>(),
         "storage-loaded": makeSubject<true>(),
     };
 

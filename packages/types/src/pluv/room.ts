@@ -18,27 +18,36 @@ export interface AuthorizationState<TIO extends IOLike> {
     user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>> | null;
 }
 
-export type OtherNotifierSubscriptionCallback<TIO extends IOLike, TPresence extends JsonObject> = (
+export type OtherSubscriptionCallback<TIO extends IOLike, TPresence extends JsonObject> = (
     value: Id<UserInfo<TIO, TPresence>> | null,
 ) => void;
 
-export type OthersNotifierSubscriptionEvent<TIO extends IOLike, TPresence extends JsonObject> =
+export type OtherSubscriptionFn<TIO extends IOLike, TPresence extends JsonObject> = (
+    connectionId: string,
+    callback: OtherSubscriptionCallback<TIO, TPresence>,
+) => () => void;
+
+export type OthersSubscriptionEvent<TIO extends IOLike, TPresence extends JsonObject> =
     | { kind: "clear" }
     | { kind: "enter"; user: Id<UserInfo<TIO, TPresence>> }
     | { kind: "leave"; user: Id<UserInfo<TIO, TPresence>> }
     | { kind: "sync"; users: readonly Id<UserInfo<TIO, TPresence>>[] }
     | { kind: "update"; user: Id<UserInfo<TIO, TPresence>> };
 
-export type OthersNotifierSubscriptionCallback<TIO extends IOLike, TPresence extends JsonObject> = (
+export type OthersSubscriptionCallback<TIO extends IOLike, TPresence extends JsonObject> = (
     value: readonly Id<UserInfo<TIO, TPresence>>[],
-    events: OthersNotifierSubscriptionEvent<TIO, TPresence>,
+    event: OthersSubscriptionEvent<TIO, TPresence>,
 ) => void;
+
+export type OthersSubscriptionFn<TIO extends IOLike, TPresence extends JsonObject> = (
+    callback: OthersSubscriptionCallback<TIO, TPresence>,
+) => () => void;
 
 export interface StateNotifierSubjects<TIO extends IOLike, TPresence extends JsonObject> {
     connection: Subject<Id<WebSocketState<TIO>>>;
     "my-presence": Subject<TPresence | null>;
-    myself: Subject<Readonly<Id<UserInfo<TIO>>> | null>;
-    others: Subject<readonly Id<UserInfo<TIO>>[]>;
+    myself: Subject<Readonly<Id<UserInfo<TIO, TPresence>>> | null>;
+    others: Subject<readonly Id<UserInfo<TIO, TPresence>>[]>;
     "storage-loaded": Subject<boolean>;
 }
 
@@ -151,6 +160,27 @@ export type StorageProxy<TStorage extends Record<string, CrdtType<any, any>>> =
             ) => () => void;
         };
 
+export type SubscribeFn<TValue extends unknown> = (callback: (value: TValue) => void) => () => void;
+
+export type SubscribeProxy<
+    TIO extends IOLike,
+    TPresence extends JsonObject,
+    TStorage extends Record<string, CrdtType<any, any>>,
+    TEvents extends PluvRouterEventConfig,
+> = (<TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
+    name: TSubject,
+    callback: SubscriptionCallback<TIO, TPresence, TSubject>,
+) => () => void) & {
+    connection: SubscribeFn<Id<WebSocketState<TIO>>>;
+    event: EventProxy<TIO, TEvents>;
+    myPresence: SubscribeFn<TPresence | null>;
+    myself: SubscribeFn<Id<UserInfo<TIO>> | null>;
+    other: OtherSubscriptionFn<TIO, TPresence>;
+    others: OthersSubscriptionFn<TIO, TPresence>;
+    storage: StorageProxy<TStorage>;
+    storageLoaded: SubscribeFn<boolean>;
+};
+
 export interface RoomLike<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
@@ -185,10 +215,7 @@ export interface RoomLike<
     getStorageJson(): InferCrdtJson<TStorage> | null;
     getStorageJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]> | null;
 
-    other(
-        connectionId: string,
-        callback: OtherNotifierSubscriptionCallback<TIO, TPresence>,
-    ): () => void;
+    other(connectionId: string, callback: OtherSubscriptionCallback<TIO, TPresence>): () => void;
 
     redo(): void;
 
@@ -200,10 +227,7 @@ export interface RoomLike<
         }) => void,
     ): () => void;
 
-    subscribe<TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
-        name: TSubject,
-        callback: SubscriptionCallback<TIO, TPresence, TSubject>,
-    ): () => void;
+    subscribe: SubscribeProxy<TIO, TPresence, TStorage, TEvents>;
 
     transact(fn: (storage: TStorage) => void, origin?: string): void;
 

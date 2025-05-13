@@ -10,11 +10,15 @@ import type {
     InferIOOutput,
     JsonObject,
     MergeEvents,
-    OtherNotifierSubscriptionCallback,
+    OtherSubscriptionCallback,
+    OthersSubscriptionCallback,
     RoomLike,
+    StateNotifierSubjects,
     StorageProxy,
     StorageRootSubscriptionCallback,
     StorageSubscriptionCallback,
+    SubscribeProxy,
+    SubscriptionCallback,
     UpdateMyPresenceAction,
     UserInfo,
     WebSocketState,
@@ -27,7 +31,6 @@ import { EventNotifier } from "./EventNotifier";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
-import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
@@ -254,7 +257,7 @@ export class MockedRoom<
 
     public other = (
         connectionId: string,
-        callback: OtherNotifierSubscriptionCallback<TIO, TPresence>,
+        callback: OtherSubscriptionCallback<TIO, TPresence>,
     ): (() => void) => {
         const clientId = this._usersManager.getClientId(connectionId);
 
@@ -297,12 +300,51 @@ export class MockedRoom<
         return this._crdtNotifier.subcribeRoot(fn);
     };
 
-    public subscribe = <TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
-        name: TSubject,
-        callback: SubscriptionCallback<TIO, TPresence, TSubject>,
-    ): (() => void) => {
-        return this._stateNotifier.subscribe(name, callback);
-    };
+    public subscribe = new Proxy(
+        <TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
+            name: TSubject,
+            callback: SubscriptionCallback<TIO, TPresence, TSubject>,
+        ): (() => void) => {
+            return this._stateNotifier.subscribe(name, callback);
+        },
+        {
+            get: (fn, prop) => {
+                if (prop === "connection") {
+                    return (callback: SubscriptionCallback<TIO, TPresence, "connection">) => {
+                        return fn("connection", callback);
+                    };
+                }
+
+                if (prop === "myPresence") {
+                    return (callback: SubscriptionCallback<TIO, TPresence, "my-presence">) => {
+                        return fn("my-presence", callback);
+                    };
+                }
+
+                if (prop === "myself") {
+                    return (callback: SubscriptionCallback<TIO, TPresence, "myself">) => {
+                        return fn("myself", callback);
+                    };
+                }
+
+                if (prop === "others") {
+                    return (callback: OthersSubscriptionCallback<TIO, TPresence>) => {
+                        return this._usersNotifier.subscribeOthers(callback);
+                    };
+                }
+
+                if (prop === "storageLoaded") {
+                    return (callback: SubscriptionCallback<TIO, TPresence, "storage-loaded">) => {
+                        return fn("storage-loaded", callback);
+                    };
+                }
+
+                if (prop === "event") return this.event;
+                if (prop === "other") return this.other;
+                if (prop === "storage") return this.storage;
+            },
+        },
+    ) as SubscribeProxy<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
 
     public transact = (fn: (storage: InferStorage<TCrdt>) => void, origin?: string): void => {
         const _origin = origin ?? this._state.connection.id;
