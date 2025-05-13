@@ -14,12 +14,10 @@ const client = createClient({
 
 const room = client.createRoom("example-room");
 
-room.storage("messages", (value) => {
+room.storage("messages", (value) => {});
 //                        ^? const value: string[];
-});
 
 // You can now subscribe to the storage root when no key is provided
-room.storage((value) => {
+room.storage((value) => {});
 //            ^? const value: { messages: string[] };
-});
 ```
