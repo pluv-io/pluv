@@ -46,8 +46,8 @@ export type OthersSubscriptionFn<TIO extends IOLike, TPresence extends JsonObjec
 export interface StateNotifierSubjects<TIO extends IOLike, TPresence extends JsonObject> {
     connection: Subject<Id<WebSocketState<TIO>>>;
     "my-presence": Subject<TPresence | null>;
-    myself: Subject<Readonly<Id<UserInfo<TIO>>> | null>;
-    others: Subject<readonly Id<UserInfo<TIO>>[]>;
+    myself: Subject<Readonly<Id<UserInfo<TIO, TPresence>>> | null>;
+    others: Subject<readonly Id<UserInfo<TIO, TPresence>>[]>;
     "storage-loaded": Subject<boolean>;
 }
 

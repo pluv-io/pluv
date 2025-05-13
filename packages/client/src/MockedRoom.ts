@@ -13,10 +13,12 @@ import type {
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
     RoomLike,
+    StateNotifierSubjects,
     StorageProxy,
     StorageRootSubscriptionCallback,
     StorageSubscriptionCallback,
     SubscribeProxy,
+    SubscriptionCallback,
     UpdateMyPresenceAction,
     UserInfo,
     WebSocketState,
@@ -29,7 +31,6 @@ import { EventNotifier } from "./EventNotifier";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
-import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";

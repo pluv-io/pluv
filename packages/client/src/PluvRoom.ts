@@ -26,10 +26,12 @@ import type {
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
     RoomLike,
+    StateNotifierSubjects,
     StorageProxy,
     StorageRootSubscriptionCallback,
     StorageSubscriptionCallback,
     SubscribeProxy,
+    SubscriptionCallback,
     UpdateMyPresenceAction,
     UserInfo,
     WebSocketState,
@@ -43,7 +45,6 @@ import { EventNotifier } from "./EventNotifier";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
-import type { StateNotifierSubjects, SubscriptionCallback } from "./StateNotifier";
 import { StateNotifier } from "./StateNotifier";
 import { StorageStore } from "./StorageStore";
 import type {
@@ -583,9 +584,7 @@ export class PluvRoom<
         <TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
             name: TSubject,
             callback: SubscriptionCallback<TIO, TPresence, TSubject>,
-        ): (() => void) => {
-            return this._stateNotifier.subscribe(name, callback);
-        },
+        ): (() => void) => this._stateNotifier.subscribe(name, callback),
         {
             get: (fn, prop) => {
                 if (prop === "connection") {
@@ -608,7 +607,11 @@ export class PluvRoom<
 
                 if (prop === "others") {
                     return (callback: OthersSubscriptionCallback<TIO, TPresence>) => {
-                        return this._usersNotifier.subscribeOthers(callback);
+                        return this._stateNotifier.subscribe("others", (others) => {
+                            return callback(others, { kind: "clear" });
+                        });
+
+                        // return this._usersNotifier.subscribeOthers(callback);
                     };
                 }
 
