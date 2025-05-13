@@ -539,7 +539,7 @@ export class PluvRoom<
     }
 
     /**
-     * @deprecated Use PluvRoom.storage.other instead
+     * @deprecated Use PluvRoom.subscribe.other instead
      */
     public other = (
         connectionId: string,
