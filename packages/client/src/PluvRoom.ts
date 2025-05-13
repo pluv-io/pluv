@@ -471,7 +471,7 @@ export class PluvRoom<
     }
 
     /**
-     * @deprecated Use PluvRoom.subscribe.event instead
+     * @deprecated To be removed in v3. Use PluvRoom.subscribe.event instead
      */
     public event = new Proxy(
         <TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
@@ -539,7 +539,7 @@ export class PluvRoom<
     }
 
     /**
-     * @deprecated Use PluvRoom.subscribe.other instead
+     * @deprecated To be removed in v3. Use PluvRoom.subscribe.other instead
      */
     public other = (
         connectionId: string,
@@ -557,7 +557,7 @@ export class PluvRoom<
     };
 
     /**
-     * @deprecated Use PluvRoom.subscribe.storage instead
+     * @deprecated To be removed in v3. To be removed in v3. Use PluvRoom.subscribe.storage instead
      */
     public storage = new Proxy(
         <TKey extends keyof InferStorage<TCrdt>>(
@@ -582,7 +582,7 @@ export class PluvRoom<
     ) as StorageProxy<InferStorage<TCrdt>>;
 
     /**
-     * @deprecated Use PluvRoom.subscribe.storage instead
+     * @deprecated To be removed in v3. Use PluvRoom.subscribe.storage instead
      * @description Subscribes to the root storage object (serialized)
      */
     public storageRoot = (
