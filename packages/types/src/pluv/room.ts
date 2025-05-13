@@ -41,7 +41,7 @@ export type OthersSubscriptionCallback<TIO extends IOLike, TPresence extends Jso
 
 export type OthersSubscriptionFn<TIO extends IOLike, TPresence extends JsonObject> = (
     callback: OthersSubscriptionCallback<TIO, TPresence>,
-) => void;
+) => () => void;
 
 export interface StateNotifierSubjects<TIO extends IOLike, TPresence extends JsonObject> {
     connection: Subject<Id<WebSocketState<TIO>>>;
@@ -160,7 +160,7 @@ export type StorageProxy<TStorage extends Record<string, CrdtType<any, any>>> =
             ) => () => void;
         };
 
-export type SubscribeFn<TValue extends unknown> = (callback: (value: TValue) => void) => void;
+export type SubscribeFn<TValue extends unknown> = (callback: (value: TValue) => void) => () => void;
 
 export type SubscribeProxy<
     TIO extends IOLike,
