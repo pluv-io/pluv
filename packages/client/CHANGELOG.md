@@ -1,5 +1,102 @@
 # @pluv/client
 
+## 2.1.0
+
+### Minor Changes
+
+- e8d8fbc: **DEPRECATED** Subscribing to data via string parameters on `PluvRoom.subscribe` is deprecated, to be removed in v3. To subscribe to things such as `myself`, `my-presence` and `others`, you must now do so via nested properties on the `subscribe` object (see example below).
+
+  ```ts
+  const room = client.createRoom("example-room");
+
+  // Before (now deprecated)
+  room.subscribe("connection", (state) => {});
+  room.subscribe("my-presence", (myPresence) => {});
+  room.subscribe("myself", (myself) => {});
+  room.subscribe("others", (others) => {});
+  room.subscribe("storage-loaded", (storageLoaded) => {});
+
+  // After
+  room.subscribe.connection((state) => {});
+  room.subscribe.myPresence((myPresence) => {});
+  room.subscribe.myself((myself) => {});
+  room.subscribe.others((others) => {});
+  room.subscribe.storageLoaded((storageLoaded) => {});
+  ```
+
+- d5ac29e: **DEPRECATED** `PluvRoom.event`, `PluvRoom.storage`, `PluvRoom.storageRoot` and `PluvRoom.other` have all been deprecated, to be removed in v3. These now exist under `PluvRoom.subscribe` instead.
+
+  ```ts
+  const room = client.createRoom("example-room");
+
+  // Before (now deprecated)
+  room.event.receiveMessage((event) => {});
+  room.storage.messages((messages) => {});
+  room.storageRoot((storage) => {});
+  room.other(("id_...", other) => {});
+
+  // After
+  room.subscribe.event.receiveMessage((event) => {});
+  room.subscribe.storage.messages((messages) => {});
+  room.subscribe.storageRoot((storage) => {});
+  room.subscribe.other(("id_...", other) => {});
+  ```
+
+- 5ca5cb6: Updated `PluvRoom.storage` to also allow subscribing to storage fields as nested properties.
+
+  ```ts
+  const client = createClient({
+    // ...
+    initialStorage: yjs.doc((t) => ({
+      messages: yjs.array<string>(),
+    })),
+  });
+
+  const room = client.createRoom("example-room");
+
+  // The two statements below are equivalent.
+  room.storage("messages", (value) => {});
+
+  // You can now subscribe to storage fields as nested properties like so
+  room.storage.messages((value) => {});
+  ```
+
+- 4acbe1e: Updated `PluvRoom.storage` to also allow subscribing to the root storage when no field is provided.
+
+  ```ts
+  const client = createClient({
+    // ...
+    initialStorage: yjs.doc((t) => ({
+      messages: yjs.array<string>(),
+    })),
+  });
+
+  const room = client.createRoom("example-room");
+
+  room.storage("messages", (value) => {});
+  //                        ^? const value: string[];
+
+  // You can now subscribe to the storage root when no key is provided
+  room.storage((value) => {});
+  //            ^? const value: { messages: string[] };
+  ```
+
+- e8d8fbc: Updated `PluvRoom.subscribe` so that `PluvRoom.event` and `PluvRoom.storage` can be accessed as properties under `PluvRoom.subscribe`.
+
+  ```ts
+  const room = client.createRoom("example-room");
+
+  // These are now available under the subscribe object
+  room.subscribe.event.receiveEvent((event) => {});
+  room.subscribe.storage.messages((data) => {});
+  ```
+
+### Patch Changes
+
+- a86ff5e: Updated internal types to simplify the type for `PluvRoom.broadcast` and `PluvRoom.event`.
+  - @pluv/crdt@2.1.0
+  - @pluv/types@2.1.0
+
 ## 2.0.2
 
 ### Patch Changes

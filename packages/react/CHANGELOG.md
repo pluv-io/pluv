@@ -1,5 +1,24 @@
 # @pluv/react
 
+## 2.1.0
+
+### Minor Changes
+
+- 8931f7b: Moved `@pluv/client` from `peerDependencies` to `dependencies` due to an unfortunate [changesets design decision](https://github.com/changesets/changesets/issues/1011).
+
+### Patch Changes
+
+- e8d8fbc: Updated the internals of various hooks to use the new `PluvRoom.subscribe` object.
+- Updated dependencies [e8d8fbc]
+- Updated dependencies [a86ff5e]
+- Updated dependencies [d5ac29e]
+- Updated dependencies [5ca5cb6]
+- Updated dependencies [4acbe1e]
+- Updated dependencies [e8d8fbc]
+  - @pluv/client@2.1.0
+  - @pluv/crdt@2.1.0
+  - @pluv/types@2.1.0
+
 ## 2.0.2
 
 ### Patch Changes
