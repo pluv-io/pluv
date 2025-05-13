@@ -80,6 +80,11 @@ room.storage((storage) => {
 room.subscribe.connection((event) => {
     expectTypeOf<typeof event.authorization.user>().toExtend<{ id: string } | null>();
 });
+room.subscribe.other("example-connection-id", (value) => {
+    const user = value?.user ?? null;
+
+    expectTypeOf<typeof user>().toExtend<{ id: string } | null>();
+});
 room.subscribe.others((others, event) => {
     expectTypeOf<(typeof others)[number]["user"]>().toExtend<{ id: string }>();
     expectTypeOf<(typeof event)["kind"]>().toExtend<
