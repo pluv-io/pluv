@@ -607,11 +607,7 @@ export class PluvRoom<
 
                 if (prop === "others") {
                     return (callback: OthersSubscriptionCallback<TIO, TPresence>) => {
-                        return this._stateNotifier.subscribe("others", (others) => {
-                            return callback(others, { kind: "clear" });
-                        });
-
-                        // return this._usersNotifier.subscribeOthers(callback);
+                        return this._usersNotifier.subscribeOthers(callback);
                     };
                 }
 
@@ -949,27 +945,41 @@ export class PluvRoom<
 
         if (!!clientId) {
             const other = this._usersManager.getOther(connectionId);
+            const others = this._usersManager.getOthers();
 
             this._usersNotifier.other(clientId).next(other);
-        } else {
-            /**
-             * !HACK
-             * @description User could not be found. Add the connection to keep others up-to-date
-             * @date April 19, 2025
-             */
-            const added = this._usersManager.addConnection({
-                connectionId,
-                presence: data.presence as TPresence,
-                user: message.user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>,
-            });
-            const other = this._usersManager.getOther(connectionId);
+            this._stateNotifier.subjects.others.next(others);
 
-            this._usersNotifier.other(added.clientId).next(other);
+            if (!!other) {
+                this._usersNotifier.others.next({
+                    others,
+                    event: { kind: "update", user: other },
+                });
+            }
+
+            return;
         }
 
+        /**
+         * !HACK
+         * @description User could not be found. Add the connection to keep others up-to-date
+         * @date April 19, 2025
+         */
+        const added = this._usersManager.addConnection({
+            connectionId,
+            presence: data.presence as TPresence,
+            user: message.user as Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>,
+        });
+        const other = this._usersManager.getOther(connectionId);
         const others = this._usersManager.getOthers();
 
+        this._usersNotifier.other(added.clientId).next(other);
         this._stateNotifier.subjects.others.next(others);
+
+        this._usersNotifier.others.next({
+            others,
+            event: { kind: "update", user: added.data },
+        });
     }
 
     private _handleReceiveOthers(message: IOEventMessage<TIO>): void {

@@ -2,9 +2,9 @@ import type {
     Id,
     IOLike,
     JsonObject,
-    OtherNotifierSubscriptionCallback,
-    OthersNotifierSubscriptionCallback,
-    OthersNotifierSubscriptionEvent,
+    OtherSubscriptionCallback,
+    OthersSubscriptionCallback,
+    OthersSubscriptionEvent,
     UserInfo,
 } from "@pluv/types";
 import type { Subject } from "wonka";
@@ -13,7 +13,7 @@ import { makeSubject, subscribe, TypeOfSource } from "wonka";
 export class UsersNotifier<TIO extends IOLike, TPresence extends JsonObject = {}> {
     public readonly others = makeSubject<{
         others: readonly Id<UserInfo<TIO, TPresence>>[];
-        event: OthersNotifierSubscriptionEvent<TIO, TPresence>;
+        event: OthersSubscriptionEvent<TIO, TPresence>;
     }>();
 
     private _otherSubjects = new Map<
@@ -48,7 +48,7 @@ export class UsersNotifier<TIO extends IOLike, TPresence extends JsonObject = {}
 
     public subscribeOther(
         clientId: string,
-        callback: OtherNotifierSubscriptionCallback<TIO, TPresence>,
+        callback: OtherSubscriptionCallback<TIO, TPresence>,
     ): () => void {
         const source = this.other(clientId).source;
         const subscription = subscribe(callback)(source);
@@ -56,9 +56,7 @@ export class UsersNotifier<TIO extends IOLike, TPresence extends JsonObject = {}
         return subscription.unsubscribe;
     }
 
-    public subscribeOthers(
-        callback: OthersNotifierSubscriptionCallback<TIO, TPresence>,
-    ): () => void {
+    public subscribeOthers(callback: OthersSubscriptionCallback<TIO, TPresence>): () => void {
         const subscription = subscribe<TypeOfSource<typeof this.others.source>>(
             ({ others, event }) => callback(others, event),
         )(this.others.source);
