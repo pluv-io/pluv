@@ -1,4 +1,5 @@
 export { array } from "./array";
+export { awareness } from "./awareness";
 export { doc } from "./doc";
 export type { YjsBuilder } from "./doc";
 export { map } from "./map";
