@@ -531,6 +531,9 @@ importers:
 
   packages/react:
     dependencies:
+      '@pluv/client':
+        specifier: workspace:^
+        version: link:../client
       '@pluv/crdt':
         specifier: workspace:^
         version: link:../crdt
@@ -541,9 +544,6 @@ importers:
         specifier: ^3.1.3
         version: 3.1.3
     devDependencies:
-      '@pluv/client':
-        specifier: workspace:^
-        version: link:../client
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
