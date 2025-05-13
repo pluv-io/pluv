@@ -389,27 +389,6 @@ const messages: yjs.YjsArray<string> | null = room.getStorage("messages");
 const sharedType: YArray<string> | null = messages?.value;
 ```
 
-### PluvRoom.other
-
-Returns `() => void`
-
-Subscribes to a given user info object for a connection that isn't the current user's. Returns a function to unsubscribe.
-
-```ts
-// const connectionId = "some connection id of another connection"
-
-const unsubscribe = room.other(connectionId, (userInfo) => {
-    const { connectionId, presence, user } = userInfo;
-
-    console.log(connectionId, presence, user);
-});
-
-// ...
-
-// Unsubscribe to the listener later on.
-unsubscribe();
-```
-
 ### PluvRoom.redo
 
 Returns `void`
@@ -503,6 +482,27 @@ const unsubscribe = room.subscribe.myself((myself) => {
 unsubscribe();
 ```
 
+### PluvRoom.subscribe.other
+
+Returns `() => void`
+
+Subscribes to a given user info object. This only returns other users, not the currently connected user. Returns a function to unsubscribe.
+
+```ts
+// const connectionId = "some connection id of another connection"
+
+const unsubscribe = room.subscribe.other(connectionId, (userInfo) => {
+    const { connectionId, presence, user } = userInfo;
+
+    console.log(connectionId, presence, user);
+});
+
+// ...
+
+// Unsubscribe to the listener later on.
+unsubscribe();
+```
+
 ### PluvRoom.subscribe.others
 
 Returns `() => void`
@@ -562,7 +562,7 @@ unsubscribe();
 If you wish to subscribe to the full storage value, do not provide the string accessor nor use the property accessor. Instead provide only the callback function.
 
 ```ts
-// Access a top-level property
+// Access a top-level property (serialized)
 room.subscribe.storage.messages((messages: string[]) => {});
 
 // Access to the entire storage object (serialized)
