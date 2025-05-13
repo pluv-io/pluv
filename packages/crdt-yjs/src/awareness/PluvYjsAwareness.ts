@@ -60,6 +60,7 @@ export class PluvYjsAwareness extends ObservableV2<{
     public destroy(): void {
         this.emit("destroy", [this]);
         this._unsubscribe();
+        this.setLocalState(null);
         super.destroy();
     }
 
