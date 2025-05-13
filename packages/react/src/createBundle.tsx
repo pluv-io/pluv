@@ -269,7 +269,7 @@ export const createBundle = <
             });
 
             useEffect(() => {
-                const unsubscribe = room.subscribe("connection", () => {
+                const unsubscribe = room.subscribe.connection(() => {
                     rerender();
                 });
 
@@ -378,7 +378,7 @@ export const createBundle = <
         const room = useRoom();
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => room.storageRoot(onStoreChange),
+            (onStoreChange: () => void) => room.subscribe.storage(onStoreChange),
             [room],
         );
 
@@ -398,7 +398,7 @@ export const createBundle = <
         const room = useRoom();
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => room.storageRoot(onStoreChange),
+            (onStoreChange: () => void) => room.subscribe.storage(onStoreChange),
             [room],
         );
 
@@ -422,7 +422,7 @@ export const createBundle = <
 
         const subscribe = useCallback(
             (onStoreChange: () => void) => {
-                return room.subscribe("connection", onStoreChange);
+                return room.subscribe.connection(onStoreChange);
             },
             [room],
         );
@@ -456,7 +456,7 @@ export const createBundle = <
         const room = useRoom();
 
         useEffect(() => {
-            const unsubscribe = room.event(type, callback);
+            const unsubscribe = room.subscribe.event(type, callback);
 
             return () => {
                 unsubscribe();
@@ -497,7 +497,7 @@ export const createBundle = <
 
         const subscribe = useCallback(
             (onStoreChange: () => void) => {
-                return room.subscribe("my-presence", onStoreChange);
+                return room.subscribe.myPresence(onStoreChange);
             },
             [room],
         );
@@ -528,7 +528,7 @@ export const createBundle = <
 
         const subscribe = useCallback(
             (onStoreChange: () => void) => {
-                return room.subscribe("myself", onStoreChange);
+                return room.subscribe.myself(onStoreChange);
             },
             [room],
         );
@@ -559,9 +559,7 @@ export const createBundle = <
         const room = useRoom();
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => {
-                return room.other(connectionId, onStoreChange);
-            },
+            (onStoreChange: () => void) => room.subscribe.other(connectionId, onStoreChange),
             [room, connectionId],
         );
 
@@ -591,7 +589,7 @@ export const createBundle = <
 
         const subscribe = useCallback(
             (onStoreChange: () => void) => {
-                return room.subscribe("others", onStoreChange);
+                return room.subscribe.others(onStoreChange);
             },
             [room],
         );
@@ -639,12 +637,12 @@ export const createBundle = <
         const room = useRoom();
         const rerender = useRerender();
 
-        room.subscribe("storage-loaded", () => {
+        room.subscribe.storageLoaded(() => {
             rerender();
         });
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => room.storage(key, onStoreChange),
+            (onStoreChange: () => void) => room.subscribe.storage(key, onStoreChange),
             [key, room],
         );
 
