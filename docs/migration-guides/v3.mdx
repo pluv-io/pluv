@@ -112,3 +112,23 @@ room.subscribe.myself((myself) => {});
 room.subscribe.others((others) => {});
 room.subscribe.storageLoaded((storageLoaded) => {});
 ```
+
+### PluvRoom.event, PluvRoom.storage, PluvRoom.storageRoot and Pluvroom.other have been moved under PluvRoom.subscribe
+
+`PluvRoom.event`, `PluvRoom.storage`, `PluvRoom.storageRoot` and `PluvRoom.other` now exist under `PluvRoom.subscribe` instead.
+
+```ts
+const room = client.createRoom("example-room");
+
+// Before
+room.event.receiveMessage((event) => {});
+room.storage.messages((messages) => {});
+room.storageRoot((storage) => {});
+room.other(("id_...", other) => {});
+
+// After
+room.subscribe.event.receiveMessage((event) => {});
+room.subscribe.storage.messages((messages) => {});
+room.subscribe.storageRoot((storage) => {});
+room.subscribe.other(("id_...", other) => {});
+```
