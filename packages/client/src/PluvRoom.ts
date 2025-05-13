@@ -470,6 +470,9 @@ export class PluvRoom<
         this._stateNotifier.subjects["my-presence"].next(null);
     }
 
+    /**
+     * @deprecated To be removed in v3. Use PluvRoom.subscribe.event instead
+     */
     public event = new Proxy(
         <TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
             event: TEvent,
@@ -535,6 +538,9 @@ export class PluvRoom<
         return this._crdtManager.doc.toJson(type);
     }
 
+    /**
+     * @deprecated To be removed in v3. Use PluvRoom.subscribe.other instead
+     */
     public other = (
         connectionId: string,
         callback: OtherSubscriptionCallback<TIO, TPresence>,
@@ -550,6 +556,9 @@ export class PluvRoom<
         this._crdtManager.doc.redo();
     };
 
+    /**
+     * @deprecated To be removed in v3. To be removed in v3. Use PluvRoom.subscribe.storage instead
+     */
     public storage = new Proxy(
         <TKey extends keyof InferStorage<TCrdt>>(
             key: TKey,
@@ -572,6 +581,10 @@ export class PluvRoom<
         },
     ) as StorageProxy<InferStorage<TCrdt>>;
 
+    /**
+     * @deprecated To be removed in v3. Use PluvRoom.subscribe.storage instead
+     * @description Subscribes to the root storage object (serialized)
+     */
     public storageRoot = (
         callback: (value: {
             [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]>;
