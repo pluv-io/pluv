@@ -14,7 +14,6 @@ const client = createClient({
 
 const room = client.createRoom("example-room");
 
-// The two statements below are equivalent.
 room.storage("messages", (value) => {
 //                        ^? const value: string[];
 });
