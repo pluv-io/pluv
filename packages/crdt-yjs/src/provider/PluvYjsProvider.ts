@@ -1,4 +1,4 @@
-import type { RoomLike } from "@pluv/types";
+import type { CrdtType, IOLike, JsonObject, PluvRouterEventConfig, RoomLike } from "@pluv/types";
 import { StorageState } from "@pluv/types";
 import { ObservableV2 } from "lib0/observable";
 import type { Doc as YDoc } from "yjs";
@@ -6,9 +6,14 @@ import type { PluvYjsAwareness } from "../awareness";
 import { awareness } from "../awareness";
 import type { YjsProviderStatus } from "../types";
 
-export interface PluvYjsProviderParams {
+export interface PluvYjsProviderParams<
+    TIO extends IOLike,
+    TPresence extends JsonObject,
+    TStorage extends Record<string, CrdtType<any, any>>,
+    TEvents extends PluvRouterEventConfig,
+> {
     doc: YDoc;
-    room: RoomLike<any>;
+    room: RoomLike<TIO, TPresence, TStorage, TEvents>;
 }
 
 /**
@@ -17,22 +22,33 @@ export interface PluvYjsProviderParams {
  * Connections and document syncing are handled by the PluvRoom already.
  * @date May 13, 2025
  */
-export class PluvYjsProvider extends ObservableV2<{
-    "connection-close": (event: CloseEvent | null, provider: PluvYjsProvider) => void;
-    "connection-error": (event: Event, provider: PluvYjsProvider) => void;
+export class PluvYjsProvider<
+    TIO extends IOLike,
+    TPresence extends JsonObject,
+    TStorage extends Record<string, CrdtType<any, any>>,
+    TEvents extends PluvRouterEventConfig,
+> extends ObservableV2<{
+    "connection-close": (
+        event: CloseEvent | null,
+        provider: PluvYjsProvider<TIO, TPresence, TStorage, TEvents>,
+    ) => void;
+    "connection-error": (
+        event: Event,
+        provider: PluvYjsProvider<TIO, TPresence, TStorage, TEvents>,
+    ) => void;
     status: (event: { status: YjsProviderStatus }) => void;
     sync: (state: boolean) => void;
     synced: (state: boolean) => void;
 }> {
-    public readonly awareness: PluvYjsAwareness;
+    public readonly awareness: PluvYjsAwareness<TIO, TPresence, TStorage, TEvents>;
     public readonly doc: YDoc;
 
-    private readonly _room: RoomLike<any>;
+    private readonly _room: RoomLike<TIO, TPresence, TStorage, TEvents>;
     private readonly _unsubscribe: () => void;
 
     private _synced: boolean = false;
 
-    constructor(params: PluvYjsProviderParams) {
+    constructor(params: PluvYjsProviderParams<TIO, TPresence, TStorage, TEvents>) {
         super();
 
         const { doc, room } = params;
