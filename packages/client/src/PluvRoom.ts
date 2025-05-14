@@ -306,6 +306,13 @@ export class PluvRoom<
         this._crdtManager = new CrdtManager<TCrdt>({ initialStorage });
     }
 
+    /**
+     * @deprecated To be removed in v3. Use `getStorageLoaded` instead.
+     */
+    public get storageLoaded(): boolean {
+        return this.getStorageLoaded();
+    }
+
     public get webSocket(): WebSocket | null {
         return this._state.webSocket;
     }

@@ -186,6 +186,10 @@ export interface RoomLike<
 > {
     id: string;
     broadcast: BroadcastProxy<TIO, TEvents>;
+    /**
+     * @deprecated To be removed in v3. Use getStorageLoaded instead.
+     */
+    storageLoaded: boolean;
 
     canRedo(): boolean;
 

@@ -69,6 +69,11 @@ export class MockedRoom<
 {
     public readonly id: string;
 
+    /**
+     * @deprecated To be removed in v3. Use `getStorageLoaded` instead.
+     */
+    public readonly storageLoaded: boolean = true;
+
     private readonly _crdtManager: CrdtManager<TCrdt>;
     private readonly _crdtNotifier = new CrdtNotifier<InferStorage<TCrdt>>();
     private readonly _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
