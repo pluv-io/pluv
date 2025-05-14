@@ -52,6 +52,7 @@ export type {
     OtherSubscriptionCallback,
     OtherSubscriptionFn,
     ProcedureLike,
+    RoomEventListenerMap,
     RoomLike,
     StateNotifierSubjects,
     StorageInfo,

@@ -178,6 +178,13 @@ export type SubscribeProxy<
     storageLoaded: SubscribeFn<boolean>;
 };
 
+export interface RoomEventListenerMap {
+    close: (event: CloseEvent | null) => void;
+    error: (event: Event) => void;
+    message: (event: MessageEvent<any>) => void;
+    open: (event: Event) => void;
+}
+
 export interface RoomLike<
     TIO extends IOLike,
     TPresence extends JsonObject = {},
@@ -190,6 +197,11 @@ export interface RoomLike<
      * @deprecated To be removed in v3. Use getStorageLoaded instead.
      */
     storageLoaded: boolean;
+
+    addEventListener<TKind extends keyof RoomEventListenerMap>(
+        kind: TKind,
+        handler: RoomEventListenerMap[TKind],
+    ): () => void;
 
     canRedo(): boolean;
 

@@ -12,6 +12,7 @@ import type {
     MergeEvents,
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
+    RoomEventListenerMap,
     RoomLike,
     StateNotifierSubjects,
     StorageProxy,
@@ -126,6 +127,13 @@ export class MockedRoom<
         });
 
         this._observeCrdt();
+    }
+
+    public addEventListener<TKind extends keyof RoomEventListenerMap>(
+        kind: TKind,
+        handler: RoomEventListenerMap[TKind],
+    ): () => void {
+        return () => undefined;
     }
 
     public broadcast = new Proxy(
