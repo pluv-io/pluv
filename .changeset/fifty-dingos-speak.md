@@ -2,7 +2,7 @@
 "@pluv/crdt-yjs": minor
 ---
 
-Added an `awareness` function that satisfies Yjs's [awareness interface](https://github.com/yjs/y-protocols/blob/master/awareness.js).
+Added a `provider` function that satisfies Yjs's provider interface.
 
 ```ts
 import { createClient } from "@pluv/client";
@@ -14,5 +14,5 @@ const client = createClient({ /* ... */ });
 const room = client.createRoom("example-room");
 
 // Yjs Awareness
-yjs.awareness({ doc, room });
+yjs.provider({ doc, room });
 ```
