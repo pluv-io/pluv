@@ -185,8 +185,6 @@ export interface RoomLike<
     TEvents extends PluvRouterEventConfig = {},
 > {
     id: string;
-    storageLoaded: boolean;
-
     broadcast: BroadcastProxy<TIO, TEvents>;
 
     canRedo(): boolean;
@@ -211,6 +209,8 @@ export interface RoomLike<
 
     getStorageJson(): InferCrdtJson<TStorage> | null;
     getStorageJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]> | null;
+
+    getStorageLoaded: () => boolean;
 
     other(connectionId: string, callback: OtherSubscriptionCallback<TIO, TPresence>): () => void;
 

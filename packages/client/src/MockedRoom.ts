@@ -23,7 +23,7 @@ import type {
     UserInfo,
     WebSocketState,
 } from "@pluv/types";
-import { ConnectionState } from "@pluv/types";
+import { ConnectionState, StorageState } from "@pluv/types";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
@@ -83,9 +83,11 @@ export class MockedRoom<
         },
         connection: {
             attempts: 0,
-            count: 1,
             id: null,
             state: ConnectionState.Untouched,
+        },
+        storage: {
+            state: StorageState.Unavailable,
         },
         webSocket: null,
     };
@@ -119,10 +121,6 @@ export class MockedRoom<
         });
 
         this._observeCrdt();
-    }
-
-    public get storageLoaded(): boolean {
-        return true;
     }
 
     public broadcast = new Proxy(
@@ -249,10 +247,13 @@ export class MockedRoom<
     ): InferCrdtJson<InferStorage<TCrdt>[TKey]> | null;
     public getStorageJson<TKey extends keyof InferStorage<TCrdt>>(type?: TKey) {
         if (this._state.connection.id === null) return null;
-
         if (typeof type === "undefined") return this._crdtManager.doc.toJson();
 
         return this._crdtManager.doc.toJson(type);
+    }
+
+    public getStorageLoaded(): boolean {
+        return true;
     }
 
     public other = (

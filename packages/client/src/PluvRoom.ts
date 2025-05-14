@@ -306,13 +306,6 @@ export class PluvRoom<
         this._crdtManager = new CrdtManager<TCrdt>({ initialStorage });
     }
 
-    public get storageLoaded(): boolean {
-        return (
-            this._state.storage.state === StorageState.Offline ||
-            this._state.storage.state === StorageState.Synced
-        );
-    }
-
     public get webSocket(): WebSocket | null {
         return this._state.webSocket;
     }
@@ -538,7 +531,6 @@ export class PluvRoom<
     ): InferCrdtJson<InferStorage<TCrdt>[TKey]> | null;
     public getStorageJson<TKey extends keyof InferStorage<TCrdt>>(type?: TKey) {
         if (this._state.connection.id === null) return null;
-
         if (typeof type === "undefined") return this._crdtManager.doc.toJson();
 
         const sharedType = this._crdtManager.get(type);
@@ -547,6 +539,13 @@ export class PluvRoom<
 
         return this._crdtManager.doc.toJson(type);
     }
+
+    public getStorageLoaded = (): boolean => {
+        return (
+            this._state.storage.state === StorageState.Offline ||
+            this._state.storage.state === StorageState.Synced
+        );
+    };
 
     /**
      * @deprecated To be removed in v3. Use PluvRoom.subscribe.other instead
