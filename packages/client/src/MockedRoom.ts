@@ -1,4 +1,10 @@
-import type { AbstractCrdtDocFactory, InferCrdtJson, InferStorage } from "@pluv/crdt";
+import type {
+    AbstractCrdtDocFactory,
+    InferCrdtJson,
+    InferDoc,
+    InferDocLike,
+    InferStorage,
+} from "@pluv/crdt";
 import type {
     BroadcastProxy,
     CrdtDocLike,
@@ -52,7 +58,7 @@ export type MockedRoomEvents<TIO extends IOLike> = Partial<{
 export type MockedRoomConfig<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TCrdt extends AbstractCrdtDocFactory<any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>>,
 > = {
     events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
@@ -64,9 +70,9 @@ export type MockedRoomConfig<
 export class MockedRoom<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TCrdt extends AbstractCrdtDocFactory<any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>>,
-> implements RoomLike<TIO, TPresence, InferStorage<TCrdt>>
+> implements RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>>
 {
     public readonly id: string;
 
@@ -151,7 +157,8 @@ export class MockedRoom<
                 any,
                 any,
                 TPresence,
-                InferStorage<TCrdt>
+                TCrdt,
+                ""
             > | null;
 
             if (!procedure?.config.broadcast) {
@@ -165,7 +172,7 @@ export class MockedRoom<
             if (!myself) return;
 
             const parsed = procedure.config.input ? procedure.config.input.parse(data) : data;
-            const context: EventResolverContext<TIO, TPresence, InferStorage<TCrdt>> = {
+            const context: EventResolverContext<TIO, TPresence, InferDocLike<TCrdt>> = {
                 doc: this._crdtManager.doc,
                 others: this._usersManager.getOthers(),
                 room: this.id,
@@ -224,7 +231,7 @@ export class MockedRoom<
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     };
 
-    public getDoc(): CrdtDocLike<InferStorage<TCrdt>> {
+    public getDoc(): CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>> {
         return this._crdtManager.doc;
     }
 

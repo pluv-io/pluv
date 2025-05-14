@@ -1,7 +1,14 @@
-import type { AbstractCrdtDocFactory, CrdtDocLike, CrdtType, InferStorage } from "@pluv/crdt";
+import type {
+    AbstractCrdtDocFactory,
+    CrdtDocLike,
+    CrdtType,
+    InferDoc,
+    InferDocLike,
+    InferStorage,
+} from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 
-export type CrdtManagerOptions<TCrdt extends AbstractCrdtDocFactory<any>> = {
+export type CrdtManagerOptions<TCrdt extends AbstractCrdtDocFactory<any, any>> = {
     initialStorage?: TCrdt;
 };
 
@@ -15,8 +22,8 @@ interface ApplyUpdateParams {
     update: string | readonly string[];
 }
 
-export class CrdtManager<TCrdt extends AbstractCrdtDocFactory<any>> {
-    public doc: CrdtDocLike<InferStorage<TCrdt>>;
+export class CrdtManager<TCrdt extends AbstractCrdtDocFactory<any, any>> {
+    public doc: InferDocLike<TCrdt>;
     public initialized: boolean = false;
 
     private readonly _docFactory: TCrdt;
@@ -49,7 +56,7 @@ export class CrdtManager<TCrdt extends AbstractCrdtDocFactory<any>> {
     public destroy(): void {
         this.initialized = false;
         this.doc.destroy();
-        this.doc = this._docFactory.getEmpty();
+        this.doc = this._docFactory.getEmpty() as InferDocLike<TCrdt>;
     }
 
     public get<TKey extends keyof InferStorage<TCrdt>>(key: TKey): InferStorage<TCrdt>[TKey] {
@@ -98,7 +105,7 @@ export class CrdtManager<TCrdt extends AbstractCrdtDocFactory<any>> {
             this._docFactory.getEmpty(),
             updates,
             origin,
-        ).rebuildStorage(reference);
+        ).rebuildStorage(reference) as InferDocLike<TCrdt>;
         this.initialized = true;
         initialized.destroy();
 
@@ -110,10 +117,10 @@ export class CrdtManager<TCrdt extends AbstractCrdtDocFactory<any>> {
     }
 
     private _applyDocUpdates(
-        doc: CrdtDocLike<InferStorage<TCrdt>>,
+        doc: CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>>,
         updates: readonly string[],
         origin?: string,
-    ): CrdtDocLike<InferStorage<TCrdt>> {
+    ): CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>> {
         doc.transact(() => {
             doc.batchApplyEncodedState({ origin, updates });
         }, origin);

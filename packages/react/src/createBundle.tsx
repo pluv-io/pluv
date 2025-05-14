@@ -4,6 +4,7 @@ import type {
     MergeEvents,
     MockedRoomEvents,
     PluvClient,
+    PluvRoom,
     PluvRoomAddon,
     PluvRoomDebug,
     PluvRouter,
@@ -11,10 +12,11 @@ import type {
     UserInfo,
     WebSocketConnection,
 } from "@pluv/client";
-import { MockedRoom, PluvRoom } from "@pluv/client";
+import { MockedRoom } from "@pluv/client";
 import type {
     AbstractCrdtDocFactory,
     InferCrdtJson,
+    InferDoc,
     InferInitialStorageFn,
     InferStorage,
     NoopCrdtDocFactory,
@@ -48,7 +50,7 @@ export interface PluvProviderProps {
 
 type BaseRoomProviderProps<
     TPresence extends JsonObject,
-    TCrdt extends AbstractCrdtDocFactory<any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
 > = {
     children?: ReactNode;
     initialStorage?: keyof InferStorage<TCrdt> extends never ? never : InferInitialStorageFn<TCrdt>;
@@ -58,7 +60,7 @@ type BaseRoomProviderProps<
 export type MockedRoomProviderProps<
     TIO extends IOLike,
     TPresence extends JsonObject,
-    TCrdt extends AbstractCrdtDocFactory<any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > = BaseRoomProviderProps<TPresence, TCrdt> & {
     events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
@@ -72,7 +74,7 @@ export type PluvRoomProviderProps<
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject,
     TPresence extends JsonObject,
-    TCrdt extends AbstractCrdtDocFactory<any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
 > = BaseRoomProviderProps<TPresence, TCrdt> & {
     connect?: boolean;
     debug?: boolean | PluvRoomDebug<TIO>;
@@ -106,7 +108,7 @@ export interface CreateBundle<
     TIO extends IOLike,
     TMetadata extends JsonObject,
     TPresence extends JsonObject = {},
-    TCrdt extends AbstractCrdtDocFactory<any> = NoopCrdtDocFactory,
+    TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > {
     // components
@@ -126,7 +128,7 @@ export interface CreateBundle<
         selector: (connection: WebSocketConnection) => T,
         options?: SubscriptionHookOptions<Id<T>>,
     ) => Id<T>;
-    useDoc: () => CrdtDocLike<InferStorage<TCrdt>>;
+    useDoc: () => CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>>;
     useEvent: <TType extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
         type: TType,
         callback: (data: Id<IOEventMessage<MergeEvents<TEvents, TIO>, TType>>) => void,
@@ -149,7 +151,7 @@ export interface CreateBundle<
         options?: SubscriptionHookOptions<T>,
     ) => T;
     useRedo: () => () => void;
-    useRoom: () => RoomLike<TIO, TPresence, InferStorage<TCrdt>>;
+    useRoom: () => RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>>;
     useStorage: <
         TKey extends keyof InferStorage<TCrdt>,
         TData extends unknown = InferCrdtJson<InferStorage<TCrdt>[TKey]>,
@@ -166,7 +168,7 @@ export type CreateBundleOptions<
     TIO extends IOLike,
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
-    TCrdt extends AbstractCrdtDocFactory<any> = NoopCrdtDocFactory,
+    TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > = {
     addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TCrdt>[];
@@ -177,7 +179,7 @@ export const createBundle = <
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
-    TCrdt extends AbstractCrdtDocFactory<any> = NoopCrdtDocFactory,
+    TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 >(
     client: PluvClient<TIO, TPresence, TCrdt, TMetadata>,
@@ -197,13 +199,16 @@ export const createBundle = <
      * and let the users deal with it.
      * @date November 11, 2022
      */
-    const PluvRoomContext = createContext<RoomLike<TIO, TPresence, InferStorage<TCrdt>>>(
-        null as any,
-    );
+    const PluvRoomContext = createContext<
+        RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>>
+    >(null as any);
 
-    const MockedRoomContext = createContext<RoomLike<TIO, TPresence, InferStorage<TCrdt>> | null>(
-        null,
-    );
+    const MockedRoomContext = createContext<RoomLike<
+        TIO,
+        InferDoc<TCrdt>,
+        TPresence,
+        InferStorage<TCrdt>
+    > | null>(null);
 
     const MockedRoomProvider = memo<MockedRoomProviderProps<TIO, TPresence, TCrdt>>((props) => {
         const { children, events, initialPresence, initialStorage, room: _room } = props;

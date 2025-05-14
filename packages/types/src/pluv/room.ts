@@ -187,6 +187,7 @@ export interface RoomEventListenerMap {
 
 export interface RoomLike<
     TIO extends IOLike,
+    TDoc extends any,
     TPresence extends JsonObject = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
     TEvents extends PluvRouterEventConfig = {},
@@ -207,7 +208,7 @@ export interface RoomLike<
 
     canUndo(): boolean;
 
-    getDoc(): CrdtDocLike<TStorage>;
+    getDoc(): CrdtDocLike<TDoc, TStorage>;
 
     event: EventProxy<TIO, TEvents>;
 

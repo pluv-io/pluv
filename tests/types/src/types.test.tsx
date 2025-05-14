@@ -4,9 +4,10 @@ import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { createBundle } from "@pluv/react";
+import type { CrdtDocLike } from "@pluv/types";
 import { z } from "@zod/mini";
 import { expectTypeOf } from "expect-type";
-import type { Array as YArray } from "yjs";
+import type { Array as YArray, Doc as YDoc } from "yjs";
 
 const io = createIO(
     platformCloudflare({
@@ -110,7 +111,16 @@ room.subscribe.storage.messages((messages) => {
     expectTypeOf<typeof messages>().toEqualTypeOf<string[]>();
 });
 
-const { PluvRoomProvider, useStorage } = createBundle(client);
+expectTypeOf(room.getDoc()).toEqualTypeOf<
+    CrdtDocLike<
+        YDoc,
+        {
+            messages: yjs.YjsType<YArray<string>, string[]>;
+        }
+    >
+>();
+
+const { PluvRoomProvider, useDoc, useStorage } = createBundle(client);
 
 <PluvRoomProvider
     initialStorage={(t) => ({
@@ -135,3 +145,12 @@ const storageMessages = useStorage("messages");
 
 expectTypeOf(storageMessages[0]).toEqualTypeOf<string[] | null>();
 expectTypeOf(storageMessages[1]).toEqualTypeOf<yjs.YjsType<YArray<string>, string[]> | null>();
+
+expectTypeOf(useDoc()).toEqualTypeOf<
+    CrdtDocLike<
+        YDoc,
+        {
+            messages: yjs.YjsType<YArray<string>, string[]>;
+        }
+    >
+>();

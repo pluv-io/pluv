@@ -18,22 +18,22 @@ export interface AuthorizationState<TIO extends IOLike> {
 }
 
 export type EventResolver<
-    TIO extends IOLike = IOLike,
-    TInput extends JsonObject = {},
-    TOutput extends EventRecord<string, any> = {},
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
+    TIO extends IOLike,
+    TInput extends JsonObject,
+    TOutput extends EventRecord<string, any>,
+    TPresence extends JsonObject,
+    TDocLike extends CrdtDocLike<any, any>,
 > = (
     data: TInput,
-    context: EventResolverContext<TIO, TPresence, TStorage>,
+    context: EventResolverContext<TIO, TPresence, TDocLike>,
 ) => MaybePromise<TOutput | void>;
 
 export interface EventResolverContext<
-    TIO extends IOLike = IOLike,
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
+    TIO extends IOLike,
+    TPresence extends JsonObject,
+    TDocLike extends CrdtDocLike<any, any>,
 > {
-    doc: CrdtDocLike<TStorage>;
+    doc: TDocLike;
     others: readonly UserInfo<TIO, TPresence>[];
     room: string;
     user: UserInfo<TIO, TPresence>;

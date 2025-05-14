@@ -32,7 +32,7 @@ export type CrdtLoroDocParams<TStorage extends Record<string, LoroType<any, any>
 ) => TStorage;
 
 export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
-    implements CrdtDocLike<TStorage>
+    implements CrdtDocLike<LoroDoc, TStorage>
 {
     public value: LoroDoc = new LoroDoc();
 
@@ -287,7 +287,9 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
         return this;
     }
 
-    public subscribe(listener: (params: DocSubscribeCallbackParams<TStorage>) => void): () => void {
+    public subscribe(
+        listener: (params: DocSubscribeCallbackParams<LoroDoc, TStorage>) => void,
+    ): () => void {
         const fn = (event: LoroEventBatch) => {
             const update = fromUint8Array(this.value.export({ mode: "update" }));
 

@@ -87,7 +87,7 @@ export type IORoomConfig<
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
     authorize?: TAuthorize;
     context: TContext;
-    crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
+    crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     debug: boolean;
     platform: TPlatform;
     roomContext: InferRoomContextType<TPlatform>;
@@ -124,14 +124,14 @@ export class IORoom<
 {
     public readonly id: string;
 
-    private _doc: Promise<CrdtDocLike<any>>;
+    private _doc: Promise<CrdtDocLike<any, any>>;
     private _lastGarbageCollectMs: number = -1 * (GARBAGE_COLLECT_INTERVAL_MS + 1);
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
     private readonly _authorize: TAuthorize = null as TAuthorize;
     private readonly _context: TContext;
     private readonly _debug: boolean;
-    private readonly _docFactory: AbstractCrdtDocFactory<any>;
+    private readonly _docFactory: AbstractCrdtDocFactory<any, any>;
     private readonly _listeners: IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>;
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
@@ -626,7 +626,7 @@ export class IORoom<
         }
     }
 
-    private async _getInitialDoc(): Promise<CrdtDocLike<any>> {
+    private async _getInitialDoc(): Promise<CrdtDocLike<any, any>> {
         const doc = this._docFactory.getEmpty();
         const encodedState = await this._platform.persistence.getStorageState(this.id);
 

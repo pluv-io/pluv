@@ -50,7 +50,7 @@ export type PluvServerConfig<
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
     authorize?: TAuthorize;
     context?: PluvContext<TPlatform, TContext>;
-    crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any> };
+    crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     debug?: boolean;
     getInitialStorage?: GetInitialStorageFn<TContext>;
     limits: PluvIOLimits;
@@ -286,7 +286,7 @@ export class PluvServer<
         TPlatform,
         TContext
     >;
-    private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
+    private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     private readonly _debug: boolean;
     private readonly _getInitialStorage: GetInitialStorageFn<TContext> | null = null;
     private readonly _io: PluvIO<TPlatform, TAuthorize, TContext>;

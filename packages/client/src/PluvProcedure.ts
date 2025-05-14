@@ -1,29 +1,34 @@
-import type { CrdtType } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, InferDocLike } from "@pluv/crdt";
 import type { EventRecord, IOLike, InputZodLike, JsonObject, ProcedureLike } from "@pluv/types";
 import type { EventResolver, MergeEventRecords } from "./types";
 
 export interface PluvProcedureConfig<
-    TIO extends IOLike = IOLike,
-    TInput extends JsonObject = {},
-    TOutput extends EventRecord<string, any> = {},
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
+    TIO extends IOLike,
+    TInput extends JsonObject,
+    TOutput extends EventRecord<string, any>,
+    TPresence extends JsonObject,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
 > {
-    broadcast?: EventResolver<TIO, TInput, TOutput, TPresence, TStorage> | null;
+    broadcast?: EventResolver<TIO, TInput, TOutput, TPresence, InferDocLike<TCrdt>> | null;
     input?: InputZodLike<TInput>;
 }
 
 export class PluvProcedure<
-    TIO extends IOLike = IOLike,
-    TInput extends JsonObject = {},
-    TOutput extends EventRecord<string, any> = {},
-    TPresence extends JsonObject = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
-    TFilled extends "input" | "broadcast" | "" = "",
+    TIO extends IOLike,
+    TInput extends JsonObject,
+    TOutput extends EventRecord<string, any>,
+    TPresence extends JsonObject,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
+    TFilled extends "input" | "broadcast" | "",
 > implements ProcedureLike<TInput, TOutput>
 {
-    private _broadcast: EventResolver<TIO, TInput, Partial<TOutput>, TPresence, TStorage> | null =
-        null;
+    private _broadcast: EventResolver<
+        TIO,
+        TInput,
+        Partial<TOutput>,
+        TPresence,
+        InferDocLike<TCrdt>
+    > | null = null;
     private _input: InputZodLike<TInput> | null = null;
 
     public get config(): ProcedureLike<TInput, TOutput>["config"] {
@@ -34,7 +39,7 @@ export class PluvProcedure<
         } as ProcedureLike<TInput, TOutput>["config"];
     }
 
-    constructor(config: PluvProcedureConfig<TIO, TInput, TOutput, TPresence, TStorage> = {}) {
+    constructor(config: PluvProcedureConfig<TIO, TInput, TOutput, TPresence, TCrdt> = {}) {
         const { broadcast, input } = config;
 
         this._broadcast = broadcast ?? null;
@@ -42,14 +47,14 @@ export class PluvProcedure<
     }
 
     public broadcast<TResult extends EventRecord<string, any> = {}>(
-        resolver: EventResolver<TIO, TInput, TResult, TPresence, TStorage>,
+        resolver: EventResolver<TIO, TInput, TResult, TPresence, InferDocLike<TCrdt>>,
     ): Omit<
         PluvProcedure<
             TIO,
             TInput,
             MergeEventRecords<[TOutput, TResult]>,
             TPresence,
-            TStorage,
+            TCrdt,
             TFilled | "input" | "broadcast"
         >,
         TFilled | "input" | "broadcast"
@@ -63,7 +68,7 @@ export class PluvProcedure<
             TInput,
             MergeEventRecords<[TOutput, TResult]>,
             TPresence,
-            TStorage,
+            TCrdt,
             TFilled | "input" | "broadcast"
         >({
             ...(this.config as any),
@@ -73,14 +78,11 @@ export class PluvProcedure<
 
     public input<TData extends JsonObject>(
         input: InputZodLike<TData>,
-    ): Omit<
-        PluvProcedure<TIO, TData, {}, TPresence, TStorage, TFilled | "input">,
-        TFilled | "input"
-    > {
-        return new PluvProcedure<TIO, TData, {}, TPresence, TStorage, TFilled | "input">({ input });
+    ): Omit<PluvProcedure<TIO, TData, {}, TPresence, TCrdt, TFilled | "input">, TFilled | "input"> {
+        return new PluvProcedure<TIO, TData, {}, TPresence, TCrdt, TFilled | "input">({ input });
     }
 
-    private _resolver(): EventResolver<TIO, TInput, TOutput, TPresence, TStorage> {
+    private _resolver(): EventResolver<TIO, TInput, TOutput, TPresence, InferDocLike<TCrdt>> {
         return (data, context) => this._broadcast?.(data, context) as TOutput;
     }
 }

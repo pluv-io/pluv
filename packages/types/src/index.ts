@@ -32,6 +32,7 @@ export type {
     EventProxy,
     EventRecord,
     GetEventMessage,
+    InferCrdtJson,
     InferEventMessage,
     InferEventsInput,
     InferEventsOutput,

@@ -29,7 +29,7 @@ export type PluvContext<TPlatform extends AbstractPlatform, TContext extends Rec
     | ((params: InferRoomContextType<TPlatform>) => TContext);
 
 export interface CrdtLibraryType {
-    doc: (value: any) => AbstractCrdtDocFactory<any>;
+    doc: (value: any) => AbstractCrdtDocFactory<any, any>;
     kind: "loro" | "yjs";
 }
 
@@ -54,7 +54,7 @@ export interface EventResolverContext<
     TContext extends Record<string, any> = {},
 > {
     context: TContext;
-    doc: CrdtDocLike<any>;
+    doc: CrdtDocLike<any, any>;
     garbageCollect: () => Promise<void>;
     presence: JsonObject | null;
     room: string;

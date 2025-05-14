@@ -90,7 +90,7 @@ export class PluvIO<
         TPlatform,
         TContext
     >;
-    private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any> };
+    private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     private readonly _debug: boolean;
     private readonly _limits: PluvIOLimits;
     private readonly _platform: TPlatform;

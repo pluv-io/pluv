@@ -13,7 +13,7 @@ export interface PluvYjsProviderParams<
     TEvents extends PluvRouterEventConfig,
 > {
     doc: YDoc;
-    room: RoomLike<TIO, TPresence, TStorage, TEvents>;
+    room: RoomLike<TIO, YDoc, TPresence, TStorage, TEvents>;
 }
 
 /**
@@ -43,7 +43,7 @@ export class PluvYjsProvider<
     public readonly awareness: PluvYjsAwareness<TIO, TPresence, TStorage, TEvents>;
     public readonly doc: YDoc;
 
-    private readonly _room: RoomLike<TIO, TPresence, TStorage, TEvents>;
+    private readonly _room: RoomLike<TIO, YDoc, TPresence, TStorage, TEvents>;
     private readonly _unsubscribe: () => void;
 
     private _synced: boolean = false;

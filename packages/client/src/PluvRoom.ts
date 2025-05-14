@@ -1,6 +1,8 @@
 import type {
     AbstractCrdtDocFactory,
     InferCrdtJson,
+    InferDoc,
+    InferDocLike,
     InferStorage,
     NoopCrdtDocFactory,
 } from "@pluv/crdt";
@@ -44,6 +46,7 @@ import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
 import { EventNotifier } from "./EventNotifier";
+import { ListenerManager } from "./ListenerManager";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
@@ -62,7 +65,6 @@ import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
 import { UsersNotifier } from "./UsersNotifier";
 import { debounce } from "./utils";
-import { ListenerManager } from "./ListenerManager";
 
 const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
 const HEARTBEAT_INTERVAL_MS = 10_000;
@@ -88,7 +90,7 @@ export const DEFAULT_PLUV_CLIENT_ADDON = <
     TIO extends IOLike,
     TMetadata extends JsonObject,
     TPresence extends JsonObject,
-    TCrdt extends AbstractCrdtDocFactory<any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
 >(
     input: PluvRoomAddonInput<TIO, TMetadata, TPresence, TCrdt>,
 ): PluvRoomAddonResult => ({
@@ -146,14 +148,14 @@ export type PluvRoomAddon<
     TIO extends IOLike,
     TMetadata extends JsonObject,
     TPresence extends JsonObject,
-    TCrdt extends AbstractCrdtDocFactory<any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
 > = (input: PluvRoomAddonInput<TIO, TMetadata, TPresence, TCrdt>) => Partial<PluvRoomAddonResult>;
 
 export interface PluvRoomAddonInput<
     TIO extends IOLike,
     TMetadata extends JsonObject,
     TPresence extends JsonObject,
-    TCrdt extends AbstractCrdtDocFactory<any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
 > {
     room: PluvRoom<TIO, TMetadata, TPresence, TCrdt>;
 }
@@ -184,7 +186,7 @@ export type RoomConfig<
     TIO extends IOLike,
     TMetadata extends JsonObject,
     TPresence extends JsonObject,
-    TCrdt extends AbstractCrdtDocFactory<any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>>,
 > = Id<
     {
@@ -205,9 +207,9 @@ export class PluvRoom<
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
-    TCrdt extends AbstractCrdtDocFactory<any> = NoopCrdtDocFactory,
+    TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
-> implements RoomLike<TIO, TPresence, InferStorage<TCrdt>>
+> implements RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>>
 {
     readonly _endpoints: RoomEndpoints<TIO, TMetadata>;
 
@@ -342,7 +344,8 @@ export class PluvRoom<
                 any,
                 any,
                 TPresence,
-                InferStorage<TCrdt>
+                TCrdt,
+                ""
             > | null;
 
             if (!procedure?.config.broadcast) {
@@ -356,7 +359,7 @@ export class PluvRoom<
             if (!myself) return;
 
             const parsed = procedure.config.input ? procedure.config.input.parse(data) : data;
-            const context: EventResolverContext<TIO, TPresence, InferStorage<TCrdt>> = {
+            const context: EventResolverContext<TIO, TPresence, InferDocLike<TCrdt>> = {
                 doc: this._crdtManager.doc,
                 others: this._usersManager.getOthers(),
                 room: this.id,
@@ -512,7 +515,7 @@ export class PluvRoom<
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     };
 
-    public getDoc = (): CrdtDocLike<InferStorage<TCrdt>> => {
+    public getDoc = (): CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>> => {
         return this._crdtManager.doc;
     };
 
