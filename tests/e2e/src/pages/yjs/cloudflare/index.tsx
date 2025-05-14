@@ -6,6 +6,7 @@ export const Page: NextPage = () => {
         <div>
             <NextLink href="/yjs/cloudflare/presence">presence</NextLink>
             <NextLink href="/yjs/cloudflare/storage">storage</NextLink>
+            <NextLink href="/yjs/cloudflare/lexical">lexical</NextLink>
             <NextLink href="/yjs/cloudflare/slate">slate</NextLink>
         </div>
     );
