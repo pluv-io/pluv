@@ -13,7 +13,7 @@ import { PLUV_PRESENCE_META_KEY, PLUV_PRESENCE_Y_ID_KEY } from "../constants";
 import type { MetaClientState, YjsAwarenessUpdate } from "../types";
 
 export interface PluvYjsAwarenessParams<
-    TIO extends IOLike,
+    TIO extends IOLike<any>,
     TPresence extends JsonObject,
     TStorage extends Record<string, CrdtType<any, any>>,
     TEvents extends PluvRouterEventConfig,

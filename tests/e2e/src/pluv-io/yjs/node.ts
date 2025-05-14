@@ -50,6 +50,7 @@ export const {
     useCanUndo,
     useClient,
     useConnection,
+    useDoc,
     useEvent,
     useMyPresence,
     useMyself,

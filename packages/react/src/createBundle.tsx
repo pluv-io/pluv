@@ -105,7 +105,7 @@ export type EventProxy<TIO extends IOLike> = {
 };
 
 export interface CreateBundle<
-    TIO extends IOLike,
+    TIO extends IOLike<any>,
     TMetadata extends JsonObject,
     TPresence extends JsonObject = {},
     TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
@@ -151,7 +151,7 @@ export interface CreateBundle<
         options?: SubscriptionHookOptions<T>,
     ) => T;
     useRedo: () => () => void;
-    useRoom: () => RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>>;
+    useRoom: () => RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>, TEvents>;
     useStorage: <
         TKey extends keyof InferStorage<TCrdt>,
         TData extends unknown = InferCrdtJson<InferStorage<TCrdt>[TKey]>,
@@ -165,7 +165,7 @@ export interface CreateBundle<
 }
 
 export type CreateBundleOptions<
-    TIO extends IOLike,
+    TIO extends IOLike<any>,
     TMetadata extends JsonObject = {},
     TPresence extends JsonObject = {},
     TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
@@ -200,14 +200,15 @@ export const createBundle = <
      * @date November 11, 2022
      */
     const PluvRoomContext = createContext<
-        RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>>
+        RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>, TEvents>
     >(null as any);
 
     const MockedRoomContext = createContext<RoomLike<
         TIO,
         InferDoc<TCrdt>,
         TPresence,
-        InferStorage<TCrdt>
+        InferStorage<TCrdt>,
+        TEvents
     > | null>(null);
 
     const MockedRoomProvider = memo<MockedRoomProviderProps<TIO, TPresence, TCrdt>>((props) => {
