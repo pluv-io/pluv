@@ -25,6 +25,7 @@ import type {
     OptionalProps,
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
+    RoomEventListenerMap,
     RoomLike,
     StateNotifierSubjects,
     StorageProxy,
@@ -61,6 +62,7 @@ import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
 import { UsersNotifier } from "./UsersNotifier";
 import { debounce } from "./utils";
+import { ListenerManager } from "./ListenerManager";
 
 const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
 const HEARTBEAT_INTERVAL_MS = 10_000;
@@ -102,9 +104,9 @@ interface WindowListeners {
 
 interface WebSocketListeners {
     onClose: (event: CloseEvent) => void;
-    onError: () => void;
+    onError: (event: Event) => void;
     onMessage: (message: MessageEvent<string>) => void;
-    onOpen: () => void;
+    onOpen: (event: Event) => void;
 }
 
 interface IntervalIds {
@@ -220,6 +222,7 @@ export class PluvRoom<
         heartbeat: null,
     };
     private readonly _limits: PluvClientLimits;
+    private readonly _listenerManager = new ListenerManager();
     private readonly _listeners: InternalListeners;
     private readonly _publicKey: PublicKey<TMetadata> | null = null;
     private readonly _reconnectTimeoutMs: ReconnectTimeoutMs;
@@ -315,6 +318,13 @@ export class PluvRoom<
 
     public get webSocket(): WebSocket | null {
         return this._state.webSocket;
+    }
+
+    public addEventListener<TKind extends keyof RoomEventListenerMap>(
+        kind: TKind,
+        handler: RoomEventListenerMap[TKind],
+    ): () => void {
+        return this._listenerManager.subscribe(kind, handler as any);
     }
 
     public broadcast = new Proxy(
@@ -1304,6 +1314,8 @@ export class PluvRoom<
     }
 
     private async _onClose(event: CloseEvent): Promise<void> {
+        this._listenerManager.subjects.close.next(event);
+
         this._logDebug("WebSocket closed");
         if (!!event.reason) this._logDebug(event.reason);
 
@@ -1356,9 +1368,13 @@ export class PluvRoom<
      * @description Handle websocket errors in a meaningful way, should they occur
      * @date August 19, 2022
      */
-    private _onError(): void {}
+    private _onError(event: Event): void {
+        this._listenerManager.subjects.error.next(event);
+    }
 
     private _onMessage(event: MessageEvent<string>): void {
+        this._listenerManager.subjects.message.next(event);
+
         const message = this._parseMessage(event);
 
         if (!message) return;
@@ -1415,7 +1431,9 @@ export class PluvRoom<
         }
     }
 
-    private _onOpen(): void {
+    private _onOpen(event: Event): void {
+        this._listenerManager.subjects.open.next(event);
+
         if (this._state.connection.state !== ConnectionState.Connecting) return;
 
         this._logDebug("WebSocket connected");
