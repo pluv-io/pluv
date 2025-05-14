@@ -37,7 +37,7 @@
 		"@rollup/plugin-terser": "^0.4.4",
 		"@rollup/plugin-typescript": "^12.1.2",
 		"@types/fs-extra": "^11.0.4",
-		"@types/node": "^22.15.17",
+		"@types/node": "^22.15.18",
 		"@types/react": "^19.1.4",
 		"dotenv": "^16.5.0",
 		"execa": "^9.5.3",
