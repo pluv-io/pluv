@@ -1,6 +1,5 @@
 import type { CrdtType } from "@pluv/crdt";
 import type {
-    ConnectionState,
     CrdtDocLike,
     EventRecord,
     Id,
@@ -75,25 +74,6 @@ export interface PublicKeyParams<TMetadata extends JsonObject> {
 export type PublicKey<TMetadata extends JsonObject> =
     | string
     | ((params: PublicKeyParams<TMetadata>) => string);
-
-export interface WebSocketConnection {
-    /**
-     * @description How many times a connection attempt was made. This will increment upon each
-     * unsuccessful attempt, and will reset upon a successful connection.
-     * @date April 13, 2025
-     */
-    attempts: number;
-    /**
-     * @description How many times the user has connected to the room. This can be more than 1 in
-     * the case of reconnects. This is tracked because on the very first connection (i.e. when
-     * count is 0) we don't want to send the storage state as an update to the room and overwrite
-     * the upstream state.
-     * @date April 13, 2025
-     */
-    count: number;
-    id: string | null;
-    state: ConnectionState;
-}
 
 export type WithMetadata<TMetadata extends JsonObject = {}> = keyof TMetadata extends never
     ? { metadata?: undefined }

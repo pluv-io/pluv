@@ -34,6 +34,7 @@ import type {
     SubscriptionCallback,
     UpdateMyPresenceAction,
     UserInfo,
+    WebSocketConnection,
     WebSocketState,
 } from "@pluv/types";
 import { ConnectionState, StorageState } from "@pluv/types";
@@ -54,7 +55,6 @@ import type {
     InternalSubscriptions,
     PluvClientLimits,
     PublicKey,
-    WebSocketConnection,
     WithMetadata,
 } from "./types";
 import type { UsersManagerConfig } from "./UsersManager";

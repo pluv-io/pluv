@@ -21,6 +21,7 @@ import type {
     SubscriptionCallback,
     UpdateMyPresenceAction,
     UserInfo,
+    WebSocketConnection,
     WebSocketState,
 } from "@pluv/types";
 import { ConnectionState, StorageState } from "@pluv/types";
@@ -41,7 +42,6 @@ import type {
     EventResolverContext,
     InternalSubscriptions,
     PluvClientLimits,
-    WebSocketConnection,
 } from "./types";
 
 export type MockedRoomEvents<TIO extends IOLike> = Partial<{

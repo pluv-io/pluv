@@ -9,6 +9,7 @@ export type {
     MergeEvents,
     RoomLike,
     UserInfo,
+    WebSocketConnection,
     WebSocketState,
 } from "@pluv/types";
 export { AbstractStorageStore } from "./AbstractStorageStore";
@@ -32,4 +33,4 @@ export type {
 export type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 export { register } from "./register";
 export type { RegisterParams } from "./register";
-export type { InferMetadata, PublicKey, PublicKeyParams, WebSocketConnection } from "./types";
+export type { InferMetadata, PublicKey, PublicKeyParams } from "./types";
