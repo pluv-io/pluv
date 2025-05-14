@@ -51,6 +51,7 @@ export type {
     OthersSubscriptionFn,
     OtherSubscriptionCallback,
     OtherSubscriptionFn,
+    PluvRouterEventConfig,
     ProcedureLike,
     RoomEventListenerMap,
     RoomLike,

@@ -1,35 +1,52 @@
-import type { JsonObject, OthersSubscriptionEvent, RoomLike, UserInfo } from "@pluv/types";
+import type {
+    CrdtType,
+    IOLike,
+    JsonObject,
+    OthersSubscriptionEvent,
+    PluvRouterEventConfig,
+    RoomLike,
+    UserInfo,
+} from "@pluv/types";
 import { ObservableV2 } from "lib0/observable";
 import type { Doc as YDoc } from "yjs";
-import { PLUV_PRESENCE_META_KEY, PLUV_PRESENCE_Y_ID_KEY, PLUV_PRESENCE_Y_KEY } from "../constants";
-import { MetaClientState, YjsAwarenessUpdate } from "../types";
+import { PLUV_PRESENCE_META_KEY, PLUV_PRESENCE_Y_ID_KEY } from "../constants";
+import type { MetaClientState, YjsAwarenessUpdate } from "../types";
 
-export interface PluvYjsAwarenessParams {
+export interface PluvYjsAwarenessParams<
+    TIO extends IOLike,
+    TPresence extends JsonObject,
+    TStorage extends Record<string, CrdtType<any, any>>,
+    TEvents extends PluvRouterEventConfig,
+> {
     doc: YDoc;
-    room: RoomLike<any>;
+    room: RoomLike<TIO, TPresence, TStorage, TEvents>;
 }
 
-export class PluvYjsAwareness extends ObservableV2<{
+export class PluvYjsAwareness<
+    TIO extends IOLike,
+    TPresence extends JsonObject,
+    TStorage extends Record<string, CrdtType<any, any>>,
+    TEvents extends PluvRouterEventConfig,
+> extends ObservableV2<{
     change: (updates: YjsAwarenessUpdate, kind: "presence") => void;
-    destroy: (awareness: PluvYjsAwareness) => void;
+    destroy: (awareness: PluvYjsAwareness<TIO, TPresence, TStorage, TEvents>) => void;
     update: (updates: YjsAwarenessUpdate, kind: "local" | "presence") => void;
 }> {
     public readonly doc: YDoc;
 
-    // Unstructured presence data we aren't going to validate
     private readonly _idMap = new Map<[connectionId: string][0], [clientID: number][0]>();
-    private readonly _room: RoomLike<any>;
+    private readonly _room: RoomLike<TIO, TPresence, TStorage, TEvents>;
     private readonly _unsubscribe: () => void;
 
     public get clientID(): number {
         return this.doc.clientID;
     }
 
-    public get states(): Map<number, JsonObject> {
+    public get states(): Map<number, TPresence> {
         return this.getStates();
     }
 
-    constructor(params: PluvYjsAwarenessParams) {
+    constructor(params: PluvYjsAwarenessParams<TIO, TPresence, TStorage, TEvents>) {
         super();
 
         const { doc, room } = params;
@@ -45,7 +62,7 @@ export class PluvYjsAwareness extends ObservableV2<{
                 ...myMeta,
                 [PLUV_PRESENCE_Y_ID_KEY]: this.clientID,
             },
-        });
+        } as any);
 
         this._unsubscribe = this._room.subscribe.others((others, event) => {
             const updates = this._deriveUpdates(others, event);
@@ -60,66 +77,32 @@ export class PluvYjsAwareness extends ObservableV2<{
     public destroy(): void {
         this.emit("destroy", [this]);
         this._unsubscribe();
-        this.setLocalState(null);
         super.destroy();
     }
 
-    public getLocalState(): JsonObject | null {
-        const myPresence = this._room.getMyPresence() as any;
-        const myMeta = myPresence?.[PLUV_PRESENCE_META_KEY] || {};
-        const myState: JsonObject | undefined = myMeta[PLUV_PRESENCE_Y_KEY];
-
-        const hasPresence = !!Object.keys(myPresence ?? {}).length;
-        const hasState = typeof myState !== "undefined";
-
-        return hasPresence && hasState ? myState : null;
+    public getLocalState(): TPresence {
+        return this._room.getMyPresence();
     }
 
-    public setLocalState(state: JsonObject | null): void {
-        const myPresence = this._room.getMyPresence() as any;
-        const myMeta = myPresence?.[PLUV_PRESENCE_META_KEY] || {};
-        const myState: JsonObject | undefined = myMeta[PLUV_PRESENCE_Y_KEY];
+    public setLocalState(state: TPresence): void {
+        this._room.updateMyPresence(state);
 
-        if (state === null) {
-            // Skip extraneous presence update if we don't need it
-            if (typeof myPresence === "undefined") return;
-
-            this._room.updateMyPresence({
-                [PLUV_PRESENCE_META_KEY]: { ...myMeta, [PLUV_PRESENCE_Y_KEY]: null },
-            });
-            this.emit("update", [{ added: [], updated: [], removed: [this.clientID] }, "local"]);
-
-            return;
-        }
-
-        this._room.updateMyPresence({
-            [PLUV_PRESENCE_META_KEY]: {
-                ...myMeta,
-                [PLUV_PRESENCE_Y_KEY]: { ...myState, ...(state || {}) },
-            },
-        });
-
-        this.emit("update", [
-            {
-                added: typeof myState === "undefined" ? [this.clientID] : [],
-                updated: typeof myState !== "undefined" ? [this.clientID] : [],
-                removed: [],
-            },
-            "local",
-        ]);
+        this.emit("update", [{ added: [], updated: [this.clientID], removed: [] }, "local"]);
     }
 
-    public setLocalStateField(field: string, value: JsonObject | null): void {
-        const myPresence = this._room.getMyPresence() as any;
-        const myMeta = myPresence?.[PLUV_PRESENCE_META_KEY] || {};
-        const myState: JsonObject | undefined = myMeta[PLUV_PRESENCE_Y_KEY];
+    public setLocalStateField<TField extends keyof TPresence>(
+        field: TField,
+        value: TPresence[TField],
+    ): void {
+        /**
+         * !HACK
+         * @description Cast to unknown first, because field loses its type of TField when set in
+         * an object.
+         * @date May 14, 2025
+         */
+        const patch = { [field]: value } as unknown as Partial<TPresence>;
 
-        this._room.updateMyPresence({
-            [PLUV_PRESENCE_META_KEY]: {
-                ...myMeta,
-                [PLUV_PRESENCE_Y_KEY]: { ...myState, [field]: value },
-            },
-        });
+        this._room.updateMyPresence(patch);
     }
 
     /**
@@ -129,25 +112,22 @@ export class PluvYjsAwareness extends ObservableV2<{
      * @see https://github.com/yjs/y-protocols/blob/master/awareness.js
      * @date May 13, 2025
      */
-    public getStates(): Map<number, JsonObject> {
+    public getStates(): Map<number, TPresence> {
         const others = this._room.getOthers();
 
         const states = others.reduce((map, user) => {
             const presence = user.presence as any;
             const meta = presence?.[PLUV_PRESENCE_META_KEY] || {};
-            const state: JsonObject | undefined = meta[PLUV_PRESENCE_Y_KEY];
             const clientID: number | undefined = meta[PLUV_PRESENCE_Y_ID_KEY];
 
-            return typeof state !== "undefined" && typeof clientID !== "undefined"
-                ? map.set(clientID, state)
+            return typeof presence !== "undefined" && typeof clientID !== "undefined"
+                ? map.set(clientID, presence)
                 : map;
-        }, new Map<number, JsonObject>());
+        }, new Map<number, TPresence>());
 
-        const myPresence = this._room.getMyPresence() as any;
-        const myMeta = myPresence?.[PLUV_PRESENCE_META_KEY] || {};
-        const myState: JsonObject | undefined = myMeta[PLUV_PRESENCE_Y_KEY];
+        const myPresence = this._room.getMyPresence();
 
-        if (typeof myState !== "undefined") states.set(this.clientID, myState);
+        if (typeof myPresence !== "undefined") states.set(this.clientID, myPresence);
 
         return states;
     }
@@ -201,10 +181,11 @@ export class PluvYjsAwareness extends ObservableV2<{
 
     private _resetIdMap(others: readonly UserInfo<any, any>[]): Map<string, number> {
         this._idMap.clear();
+
         return others.reduce((map, other) => {
             const clientID = other.presence[PLUV_PRESENCE_META_KEY]?.[PLUV_PRESENCE_Y_ID_KEY];
 
-            if (!clientID) return map;
+            if (typeof clientID === "undefined") return map;
 
             return map.set(other.connectionId, clientID);
         }, this._idMap);
