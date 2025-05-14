@@ -25,7 +25,7 @@ import type { PluvClientLimits, PublicKey, WithMetadata } from "./types";
 export type PluvClientOptions<
     TIO extends IOLike<any, any>,
     TPresence extends JsonObject,
-    TCrdt extends AbstractCrdtDocFactory<any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
     TMetadata extends JsonObject,
 > = RoomEndpoints<TIO, TMetadata> & {
     debug?: boolean;
@@ -44,7 +44,7 @@ export type PluvClientOptions<
 export type CreateRoomOptions<
     TIO extends IOLike<any, any>,
     TPresence extends JsonObject,
-    TCrdt extends AbstractCrdtDocFactory<any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
     TMetadata extends JsonObject,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > = {
@@ -64,7 +64,7 @@ export type EnterRoomParams<TMetadata extends JsonObject = {}> = keyof TMetadata
 export class PluvClient<
     TIO extends IOLike<any, any>,
     TPresence extends JsonObject = {},
-    TCrdt extends AbstractCrdtDocFactory<any> = NoopCrdtDocFactory,
+    TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TMetadata extends JsonObject = {},
 > {
     public readonly metadata?: InputZodLike<TMetadata>;
@@ -84,8 +84,8 @@ export class PluvClient<
         };
     }
 
-    public get procedure(): PluvProcedure<TIO, {}, {}, TPresence, InferStorage<TCrdt>> {
-        return new PluvProcedure<TIO, {}, {}, TPresence, InferStorage<TCrdt>>();
+    public get procedure(): PluvProcedure<TIO, {}, {}, TPresence, TCrdt, ""> {
+        return new PluvProcedure<TIO, {}, {}, TPresence, TCrdt, "">();
     }
 
     constructor(options: PluvClientOptions<TIO, TPresence, TCrdt, TMetadata>) {

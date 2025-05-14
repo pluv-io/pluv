@@ -39,7 +39,7 @@ export type CrdtYjsDocParams<TStorage extends Record<string, YjsType<any, any>>>
 ) => TStorage;
 
 export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
-    implements CrdtDocLike<TStorage>
+    implements CrdtDocLike<YDoc, TStorage>
 {
     public value: YDoc = new YDoc();
 
@@ -285,7 +285,9 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
         return this;
     }
 
-    public subscribe(listener: (params: DocSubscribeCallbackParams<TStorage>) => void): () => void {
+    public subscribe(
+        listener: (params: DocSubscribeCallbackParams<YDoc, TStorage>) => void,
+    ): () => void {
         const fn = (update: Uint8Array, origin: any, doc: YDoc) => {
             listener({
                 doc: this,

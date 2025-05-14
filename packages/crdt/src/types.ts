@@ -1,33 +1,19 @@
-import type { Json } from "@pluv/types";
-import { AbstractCrdtDocFactory } from "./AbstractCrdtDocFactory";
+import type { AbstractCrdtDocFactory } from "./AbstractCrdtDocFactory";
 
-export type CrdtType<TValue extends unknown, TJson extends unknown = any> = Omit<
-    TValue,
-    "__pluvType"
-> & {
-    __pluvType: () => TJson;
-};
+export type InferDoc<TFactory extends AbstractCrdtDocFactory<any, any>> =
+    InferDocLike<TFactory>["value"];
 
-export type InferCrdtJson<T extends unknown> =
-    T extends CrdtType<any, infer IJson>
-        ? InferCrdtJson<IJson>
-        : T extends Record<string, any>
-          ? { [P in keyof T]: InferCrdtJson<T[P]> }
-          : T extends (infer IJson)[]
-            ? InferCrdtJson<IJson>[]
-            : T extends readonly (infer IJson)[]
-              ? readonly InferCrdtJson<IJson>[]
-              : T extends Json
-                ? T
-                : string;
+export type InferDocLike<TFactory extends AbstractCrdtDocFactory<any, any>> = ReturnType<
+    TFactory["getInitialized"]
+>;
 
-export type InferInitialStorageFn<TFactory extends AbstractCrdtDocFactory<any>> =
+export type InferInitialStorageFn<TFactory extends AbstractCrdtDocFactory<any, any>> =
     TFactory["_initialStorage"];
 
-export type InferStorage<TFactory extends AbstractCrdtDocFactory<any>> = ReturnType<
+export type InferStorage<TFactory extends AbstractCrdtDocFactory<any, any>> = ReturnType<
     InferInitialStorageFn<TFactory>
 >;
 
-export type InferBuilder<TFactory extends AbstractCrdtDocFactory<any>> = Parameters<
+export type InferBuilder<TFactory extends AbstractCrdtDocFactory<any, any>> = Parameters<
     InferInitialStorageFn<TFactory>
 >[0];

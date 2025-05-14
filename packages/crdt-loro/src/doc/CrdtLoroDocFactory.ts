@@ -1,11 +1,12 @@
 import { AbstractCrdtDocFactory } from "@pluv/crdt";
+import type { LoroDoc } from "loro-crdt";
 import type { LoroType } from "../types";
 import { CrdtLoroDoc } from "./CrdtLoroDoc";
 import type { LoroBuilder } from "./builder";
 
 export class CrdtLoroDocFactory<
     TStorage extends Record<string, LoroType<any, any>>,
-> extends AbstractCrdtDocFactory<TStorage> {
+> extends AbstractCrdtDocFactory<LoroDoc, TStorage> {
     public readonly _initialStorage: (builder: LoroBuilder) => TStorage;
 
     constructor(initialStorage: (builder: LoroBuilder) => TStorage = () => ({}) as TStorage) {

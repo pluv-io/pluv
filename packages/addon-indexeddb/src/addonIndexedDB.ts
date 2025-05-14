@@ -7,7 +7,7 @@ export interface AddonIndexedDBConfig<
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject,
     TPresence extends JsonObject,
-    TCrdt extends AbstractCrdtDocFactory<any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
 > {
     enabled?: boolean | ((room: PluvRoom<TIO, TMetadata, TPresence, TCrdt>) => boolean);
 }
@@ -16,7 +16,7 @@ export const addonIndexedDB = <
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject,
     TPresence extends JsonObject,
-    TCrdt extends AbstractCrdtDocFactory<any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any>,
 >(
     config?: AddonIndexedDBConfig<TIO, TMetadata, TPresence, TCrdt>,
 ): PluvRoomAddon<TIO, TMetadata, TPresence, TCrdt> => {

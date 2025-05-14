@@ -1,7 +1,7 @@
 import { AbstractCrdtDocFactory } from "./AbstractCrdtDocFactory";
 import { NoopCrdtDoc } from "./NoopCrdtDoc";
 
-export class NoopCrdtDocFactory extends AbstractCrdtDocFactory<any> {
+export class NoopCrdtDocFactory extends AbstractCrdtDocFactory<any, any> {
     constructor(initialStorage: () => {} = () => ({})) {
         super(initialStorage);
     }

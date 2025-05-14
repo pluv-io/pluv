@@ -30,14 +30,22 @@ export interface DocBatchApplyEncodedStateParams {
     updates?: Maybe<readonly Maybe<string | Uint8Array>[]>;
 }
 
-export interface DocSubscribeCallbackParams<TStorage extends Record<string, CrdtType<any, any>>> {
-    doc: CrdtDocLike<TStorage>;
+export interface DocSubscribeCallbackParams<
+    TDoc extends any,
+    TStorage extends Record<string, CrdtType<any, any>>,
+> {
+    doc: CrdtDocLike<TDoc, TStorage>;
     local: boolean;
     origin?: string | null;
     update: string;
 }
 
-export interface CrdtDocLike<TStorage extends Record<string, CrdtType<any, any>>> {
+export interface CrdtDocLike<
+    TDoc extends any,
+    TStorage extends Record<string, CrdtType<any, any>>,
+> {
+    value: TDoc;
+
     applyEncodedState(params: DocApplyEncodedStateParams): this;
     batchApplyEncodedState(params: DocBatchApplyEncodedStateParams): this;
     canRedo(): boolean;
@@ -49,7 +57,7 @@ export interface CrdtDocLike<TStorage extends Record<string, CrdtType<any, any>>
     isEmpty(): boolean;
     rebuildStorage(reference: TStorage): this;
     redo(): this;
-    subscribe(listener: (params: DocSubscribeCallbackParams<TStorage>) => void): () => void;
+    subscribe(listener: (params: DocSubscribeCallbackParams<TDoc, TStorage>) => void): () => void;
     toJson(): InferCrdtJson<TStorage>;
     toJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]>;
     track(): this;

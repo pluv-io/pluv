@@ -1,11 +1,12 @@
 import { AbstractCrdtDocFactory } from "@pluv/crdt";
+import type { Doc as YDoc } from "yjs";
 import type { YjsType } from "../types";
 import { CrdtYjsDoc } from "./CrdtYjsDoc";
 import type { YjsBuilder } from "./builder";
 
 export class CrdtYjsDocFactory<
     TStorage extends Record<string, YjsType<any, any>> = {},
-> extends AbstractCrdtDocFactory<TStorage> {
+> extends AbstractCrdtDocFactory<YDoc, TStorage> {
     public readonly _initialStorage: (builder: YjsBuilder) => TStorage;
 
     constructor(initialStorage: (builder: YjsBuilder) => TStorage = () => ({}) as TStorage) {

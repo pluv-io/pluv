@@ -19,7 +19,7 @@ export interface PluvYjsAwarenessParams<
     TEvents extends PluvRouterEventConfig,
 > {
     doc: YDoc;
-    room: RoomLike<TIO, TPresence, TStorage, TEvents>;
+    room: RoomLike<TIO, YDoc, TPresence, TStorage, TEvents>;
 }
 
 export class PluvYjsAwareness<
@@ -35,7 +35,7 @@ export class PluvYjsAwareness<
     public readonly doc: YDoc;
 
     private readonly _idMap = new Map<[connectionId: string][0], [clientID: number][0]>();
-    private readonly _room: RoomLike<TIO, TPresence, TStorage, TEvents>;
+    private readonly _room: RoomLike<TIO, YDoc, TPresence, TStorage, TEvents>;
     private readonly _unsubscribe: () => void;
 
     public get clientID(): number {
