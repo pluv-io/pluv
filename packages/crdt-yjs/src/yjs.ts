@@ -4,6 +4,7 @@ export { doc } from "./doc";
 export type { YjsBuilder } from "./doc";
 export { map } from "./map";
 export { object } from "./object";
+export { provider } from "./provider";
 export { text } from "./text";
 export type { YjsType } from "./types";
 export { xmlElement } from "./xmlElement";

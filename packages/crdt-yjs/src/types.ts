@@ -18,6 +18,8 @@ export interface YjsAwarenessUpdate {
     removed: number[];
 }
 
+export type YjsProviderStatus = "connecting" | "connected" | "disconnected";
+
 /**
  * @description Type internally defined by Yjs.Awareness
  * @see https://github.com/yjs/y-protocols/blob/master/awareness.js
