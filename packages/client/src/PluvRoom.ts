@@ -307,7 +307,10 @@ export class PluvRoom<
     }
 
     public get storageLoaded(): boolean {
-        return this._crdtManager.initialized;
+        return (
+            this._state.storage.state === StorageState.Offline ||
+            this._state.storage.state === StorageState.Synced
+        );
     }
 
     public get webSocket(): WebSocket | null {
