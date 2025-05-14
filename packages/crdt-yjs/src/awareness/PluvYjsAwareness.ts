@@ -212,7 +212,7 @@ export class PluvYjsAwareness extends ObservableV2<{
 
     /**
      * !HACK
-     * @description We dgaf about these fields. We're just mirroring the fields that exist in the
+     * @description We dgaf about these. We're just mirroring the fields that exist in the
      * og awareness to make sure everything aligns.
      * @see https://github.com/yjs/y-protocols/blob/master/awareness.js
      * @date May 13, 2025

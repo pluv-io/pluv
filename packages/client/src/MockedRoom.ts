@@ -21,9 +21,10 @@ import type {
     SubscriptionCallback,
     UpdateMyPresenceAction,
     UserInfo,
+    WebSocketConnection,
     WebSocketState,
 } from "@pluv/types";
-import { ConnectionState } from "@pluv/types";
+import { ConnectionState, StorageState } from "@pluv/types";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
@@ -41,7 +42,6 @@ import type {
     EventResolverContext,
     InternalSubscriptions,
     PluvClientLimits,
-    WebSocketConnection,
 } from "./types";
 
 export type MockedRoomEvents<TIO extends IOLike> = Partial<{
@@ -69,6 +69,11 @@ export class MockedRoom<
 {
     public readonly id: string;
 
+    /**
+     * @deprecated To be removed in v3. Use `getStorageLoaded` instead.
+     */
+    public readonly storageLoaded: boolean = true;
+
     private readonly _crdtManager: CrdtManager<TCrdt>;
     private readonly _crdtNotifier = new CrdtNotifier<InferStorage<TCrdt>>();
     private readonly _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
@@ -83,9 +88,11 @@ export class MockedRoom<
         },
         connection: {
             attempts: 0,
-            count: 1,
             id: null,
             state: ConnectionState.Untouched,
+        },
+        storage: {
+            state: StorageState.Unavailable,
         },
         webSocket: null,
     };
@@ -119,10 +126,6 @@ export class MockedRoom<
         });
 
         this._observeCrdt();
-    }
-
-    public get storageLoaded(): boolean {
-        return true;
     }
 
     public broadcast = new Proxy(
@@ -249,10 +252,13 @@ export class MockedRoom<
     ): InferCrdtJson<InferStorage<TCrdt>[TKey]> | null;
     public getStorageJson<TKey extends keyof InferStorage<TCrdt>>(type?: TKey) {
         if (this._state.connection.id === null) return null;
-
         if (typeof type === "undefined") return this._crdtManager.doc.toJson();
 
         return this._crdtManager.doc.toJson(type);
+    }
+
+    public getStorageLoaded(): boolean {
+        return true;
     }
 
     public other = (

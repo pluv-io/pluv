@@ -15,7 +15,7 @@ export type {
     SpreadProperties,
     UndefinedProps,
 } from "./general";
-export { ConnectionState } from "./pluv";
+export { ConnectionState, StorageState } from "./pluv";
 export type {
     BaseClientEventRecord,
     BaseClientMessage,
@@ -54,6 +54,7 @@ export type {
     ProcedureLike,
     RoomLike,
     StateNotifierSubjects,
+    StorageInfo,
     StorageProxy,
     StorageRootSubscriptionCallback,
     StorageRootSubscriptionFn,
