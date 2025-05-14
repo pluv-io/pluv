@@ -1,6 +1,6 @@
 import type { RoomLike } from "@pluv/types";
 import { StorageState } from "@pluv/types";
-import { ObservableV2 } from "lib0/observable.js";
+import { ObservableV2 } from "lib0/observable";
 import type { Doc as YDoc } from "yjs";
 import type { PluvYjsAwareness } from "../awareness";
 import { awareness } from "../awareness";
