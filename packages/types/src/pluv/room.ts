@@ -1,7 +1,7 @@
 import type { Subject } from "wonka";
 import type { Id, JsonObject } from "../general";
 import type { CrdtDocLike, CrdtType, InferCrdtJson } from "./crdt";
-import type { ConnectionState } from "./enums";
+import type { ConnectionState, StorageState } from "./enums";
 import type {
     InferIOAuthorize,
     InferIOAuthorizeUser,
@@ -83,21 +83,18 @@ export interface WebSocketConnection {
      * @date April 13, 2025
      */
     attempts: number;
-    /**
-     * @description How many times the user has connected to the room. This can be more than 1 in
-     * the case of reconnects. This is tracked because on the very first connection (i.e. when
-     * count is 0) we don't want to send the storage state as an update to the room and overwrite
-     * the upstream state.
-     * @date April 13, 2025
-     */
-    count: number;
     id: string | null;
     state: ConnectionState;
+}
+
+export interface StorageInfo {
+    state: StorageState;
 }
 
 export interface WebSocketState<TIO extends IOLike> {
     authorization: AuthorizationState<TIO>;
     connection: WebSocketConnection;
+    storage: StorageInfo;
     webSocket: WebSocket | null;
 }
 

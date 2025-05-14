@@ -36,7 +36,7 @@ import type {
     UserInfo,
     WebSocketState,
 } from "@pluv/types";
-import { ConnectionState } from "@pluv/types";
+import { ConnectionState, StorageState } from "@pluv/types";
 import type { AbstractStorageStore } from "./AbstractStorageStore";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
@@ -244,9 +244,11 @@ export class PluvRoom<
         },
         connection: {
             attempts: 0,
-            count: 0,
             id: null,
             state: ConnectionState.Untouched,
+        },
+        storage: {
+            state: StorageState.Unavailable,
         },
         webSocket: null,
     };
@@ -436,6 +438,7 @@ export class PluvRoom<
         this._updateState((oldState) => {
             oldState.connection.attempts = 0;
             oldState.authorization.token = authToken;
+            oldState.storage.state = StorageState.Loading;
             oldState.webSocket = webSocket;
 
             return oldState;
@@ -460,6 +463,10 @@ export class PluvRoom<
         this._updateState((oldState) => {
             oldState.authorization.token = null;
             oldState.connection.state = ConnectionState.Closed;
+            oldState.storage.state =
+                oldState.storage.state === StorageState.Synced
+                    ? StorageState.Offline
+                    : StorageState.Unavailable;
             oldState.webSocket = null;
 
             return oldState;
@@ -1041,7 +1048,6 @@ export class PluvRoom<
         const state = data.state;
 
         this._updateState((oldState) => {
-            oldState.connection.count += 1;
             oldState.connection.id = connectionId;
             oldState.authorization.user = user ?? null;
 
@@ -1115,6 +1121,11 @@ export class PluvRoom<
         this._emitSharedTypes();
         this._observeCrdt();
         this._stateNotifier.subjects["storage-loaded"].next(true);
+        this._updateState((oldState) => {
+            oldState.storage.state = StorageState.Synced;
+
+            return oldState;
+        });
 
         this._sendMessage({
             type: "$updateStorage",
@@ -1277,6 +1288,7 @@ export class PluvRoom<
 
         this._updateState((oldState) => {
             oldState.connection.state = ConnectionState.Unavailable;
+            oldState.storage.state = StorageState.Unavailable;
 
             return oldState;
         });
@@ -1312,6 +1324,10 @@ export class PluvRoom<
                    * @date April 28, 2025
                    */
                   ConnectionState.Closed;
+            oldState.storage.state =
+                oldState.storage.state === StorageState.Synced
+                    ? StorageState.Offline
+                    : StorageState.Unavailable;
             oldState.webSocket = null;
 
             return oldState;
@@ -1412,6 +1428,10 @@ export class PluvRoom<
 
         this._updateState((oldState) => {
             oldState.connection.state = ConnectionState.Unavailable;
+            oldState.storage.state =
+                oldState.storage.state === StorageState.Synced
+                    ? StorageState.Offline
+                    : StorageState.Unavailable;
 
             return oldState;
         });
@@ -1562,6 +1582,7 @@ export class PluvRoom<
             ...this._state,
             authorization,
             connection: JSON.parse(JSON.stringify(this._state.connection)),
+            storage: JSON.parse(JSON.stringify(this._state.storage)),
             webSocket: this._state.webSocket,
         };
 
