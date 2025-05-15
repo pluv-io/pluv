@@ -33,12 +33,12 @@
         "zod": "^3.24.4"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^4.20250514.0",
+        "@cloudflare/workers-types": "^4.20250515.0",
         "@pluv/tsconfig": "workspace:^",
         "eslint": "^9.26.0",
         "eslint-config-pluv": "workspace:^",
         "expect-type": "^1.2.1",
         "typescript": "^5.8.3",
-        "wrangler": "^4.15.0"
+        "wrangler": "^4.15.2"
     }
 }

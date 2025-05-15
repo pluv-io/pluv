@@ -233,8 +233,8 @@ importers:
         specifier: ^3.7.7
         version: 3.7.7
       lib0:
-        specifier: ^0.2.107
-        version: 0.2.107
+        specifier: ^0.2.108
+        version: 0.2.108
     devDependencies:
       '@pluv/tsconfig':
         specifier: workspace:^
@@ -344,8 +344,8 @@ importers:
         version: link:../types
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^4.20250514.0
-        version: 4.20250514.0
+        specifier: ^4.20250515.0
+        version: 4.20250515.0
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
@@ -409,8 +409,8 @@ importers:
         version: 8.2.0
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^4.20250514.0
-        version: 4.20250514.0
+        specifier: ^4.20250515.0
+        version: 4.20250515.0
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../tsconfig
@@ -741,8 +741,8 @@ importers:
         version: 3.24.4
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^4.20250514.0
-        version: 4.20250514.0
+        specifier: ^4.20250515.0
+        version: 4.20250515.0
       '@playwright/test':
         specifier: ^1.52.0
         version: 1.52.0
@@ -759,8 +759,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/eslint-config-pluv
       miniflare:
-        specifier: ^4.20250508.0
-        version: 4.20250508.0
+        specifier: ^4.20250508.2
+        version: 4.20250508.2
       prisma:
         specifier: ^6.5.0
         version: 6.5.0(typescript@5.8.3)
@@ -771,8 +771,8 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
       wrangler:
-        specifier: ^4.15.0
-        version: 4.15.0(@cloudflare/workers-types@4.20250514.0)
+        specifier: ^4.15.2
+        version: 4.15.2(@cloudflare/workers-types@4.20250515.0)
 
   tests/types:
     dependencies:
@@ -847,8 +847,8 @@ importers:
         version: 3.24.4
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^4.20250514.0
-        version: 4.20250514.0
+        specifier: ^4.20250515.0
+        version: 4.20250515.0
       '@pluv/tsconfig':
         specifier: workspace:^
         version: link:../../packages/tsconfig
@@ -865,8 +865,8 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
       wrangler:
-        specifier: ^4.15.0
-        version: 4.15.0(@cloudflare/workers-types@4.20250514.0)
+        specifier: ^4.15.2
+        version: 4.15.2(@cloudflare/workers-types@4.20250515.0)
 
 packages:
 
@@ -984,8 +984,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@cloudflare/workers-types@4.20250514.0':
-    resolution: {integrity: sha512-zjyqRjoFnAzg7n+mxMxJAbIeOggUXLJTXA8WyT+xGDE+6MF9bSf1ypEULu4DXQQYLf6nDM6NwzLex/8ABTH+Lw==}
+  '@cloudflare/workers-types@4.20250515.0':
+    resolution: {integrity: sha512-KoHFMH04gOXp3KEI+wrFIU+3ZfoSXnwqZTpybNQjalHoN3pWjtWBb/030cCRAZ639YX+DAHAxNF7AvEYGz1oaA==}
 
   '@commitlint/config-validator@19.5.0':
     resolution: {integrity: sha512-CHtj92H5rdhKt17RmgALhfQt95VayrUo2tSqY9g2w+laAXyk7K/Ef6uPm9tn5qSIwSmrLjKaXK9eiNuxmQrDBw==}
@@ -3654,8 +3654,8 @@ packages:
   lexical@0.31.1:
     resolution: {integrity: sha512-uS8yz3Soc+7h80OTXVhFSWflVJR6mqO7XoU8EXImDT1d8u8dVyitlCNs6kCz1HryTevcxHexHgGxf6kUg0IUgQ==}
 
-  lib0@0.2.107:
-    resolution: {integrity: sha512-2xih/AugT0dJSgeSfsW/bqIPILlsqzEtmw8hXzWEnMLrOz12DTK5z9rjNgUT21/HkBjHSznOQBr67bcZdc8Ltg==}
+  lib0@0.2.108:
+    resolution: {integrity: sha512-+3eK/B0SqYoZiQu9fNk4VEc6EX8cb0Li96tPGKgugzoGj/OdRdREtuTLvUW+mtinoB2mFiJjSqOJBIaMkAGhxQ==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -3775,8 +3775,8 @@ packages:
     resolution: {integrity: sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==}
     engines: {node: '>=6'}
 
-  miniflare@4.20250508.0:
-    resolution: {integrity: sha512-NvA1W8l7CRSOoaxKoRUpE4YfkNlalekShcV96o9KqGctWd9wydUXAhg4q0KqkDS04CjMNRSKG2kSI3B2BsOxXA==}
+  miniflare@4.20250508.2:
+    resolution: {integrity: sha512-+2XoHLSbY49LNQgZoAJRX+SyUwC767Cz46pgx4T/j1YGKSrMzAxCOk59b12QoFNnN50Gtd9HkT3ukZn2nzrIVw==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -4875,10 +4875,9 @@ packages:
     engines: {node: '>=16'}
     hasBin: true
 
-  wrangler@4.15.0:
-    resolution: {integrity: sha512-1fCdp2BQ5OtoNQU63/tjLmikmHIB1Vjh2gCs6K+DPz0f1U9PpQusPkcDv0UVONtH82XSfZGNFHZ5s5jPzwHFjw==}
+  wrangler@4.15.2:
+    resolution: {integrity: sha512-Rv7zP61DOVzIS3af+/1UzJkRVpqu6VDRi6uIVMiwD1LkXG5Ov08tv94jgnE9bSjVf0paQg3dl0E89h+wQ0x/Bw==}
     engines: {node: '>=18.0.0'}
-    deprecated: Please downgrade to v4.14.4
     hasBin: true
     peerDependencies:
       '@cloudflare/workers-types': ^4.20250508.0
@@ -5183,7 +5182,7 @@ snapshots:
   '@cloudflare/workerd-windows-64@1.20250508.0':
     optional: true
 
-  '@cloudflare/workers-types@4.20250514.0': {}
+  '@cloudflare/workers-types@4.20250515.0': {}
 
   '@commitlint/config-validator@19.5.0':
     dependencies:
@@ -7885,7 +7884,7 @@ snapshots:
 
   lexical@0.31.1: {}
 
-  lib0@0.2.107:
+  lib0@0.2.108:
     dependencies:
       isomorphic.js: 0.2.5
 
@@ -7976,7 +7975,7 @@ snapshots:
 
   mimic-fn@2.1.0: {}
 
-  miniflare@4.20250508.0:
+  miniflare@4.20250508.2:
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       acorn: 8.14.0
@@ -9266,18 +9265,18 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20250508.0
       '@cloudflare/workerd-windows-64': 1.20250508.0
 
-  wrangler@4.15.0(@cloudflare/workers-types@4.20250514.0):
+  wrangler@4.15.2(@cloudflare/workers-types@4.20250515.0):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@cloudflare/unenv-preset': 2.3.1(unenv@2.0.0-rc.15)(workerd@1.20250508.0)
       blake3-wasm: 2.1.5
       esbuild: 0.25.4
-      miniflare: 4.20250508.0
+      miniflare: 4.20250508.2
       path-to-regexp: 6.3.0
       unenv: 2.0.0-rc.15
       workerd: 1.20250508.0
     optionalDependencies:
-      '@cloudflare/workers-types': 4.20250514.0
+      '@cloudflare/workers-types': 4.20250515.0
       fsevents: 2.3.3
       sharp: 0.33.5
     transitivePeerDependencies:
@@ -9312,7 +9311,7 @@ snapshots:
 
   y-protocols@1.0.6(yjs@13.6.27):
     dependencies:
-      lib0: 0.2.107
+      lib0: 0.2.108
       yjs: 13.6.27
 
   y18n@5.0.8: {}
@@ -9334,7 +9333,7 @@ snapshots:
 
   yjs@13.6.27:
     dependencies:
-      lib0: 0.2.107
+      lib0: 0.2.108
 
   yn@3.1.1: {}
 
