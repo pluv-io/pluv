@@ -58,7 +58,7 @@ export const LexicalEditor: FC = () => {
 
             yjsDocMap.set(id, doc);
 
-            return yjs.provider({ doc, room });
+            return yjs.provider({ doc, field: "lexical", room });
         },
         [doc],
     );
@@ -88,7 +88,7 @@ export const LexicalEditor: FC = () => {
                 {/* With CollaborationPlugin - we MUST NOT use @lexical/react/LexicalHistoryPlugin */}
                 <CollaborationPlugin
                     id={room.id}
-                    providerFactory={providerFactory as any}
+                    providerFactory={providerFactory}
                     // Unless you have a way to avoid race condition between 2+ users trying to do bootstrap simultaneously
                     // you should never try to bootstrap on client. It's better to perform bootstrap within Yjs server.
                     shouldBootstrap={false}

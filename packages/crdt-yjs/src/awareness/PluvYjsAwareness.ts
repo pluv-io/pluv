@@ -1,7 +1,6 @@
 import type {
     CrdtType,
     IOLike,
-    JsonObject,
     OthersSubscriptionEvent,
     PluvRouterEventConfig,
     RoomLike,
@@ -10,15 +9,17 @@ import type {
 import { ObservableV2 } from "lib0/observable";
 import type { Doc as YDoc } from "yjs";
 import { PLUV_PRESENCE_META_KEY, PLUV_PRESENCE_Y_ID_KEY } from "../constants";
-import type { MetaClientState, YjsAwarenessUpdate } from "../types";
+import type { AwarenessPresence, MetaClientState, YjsAwarenessUpdate } from "../types";
 
 export interface PluvYjsAwarenessParams<
     TIO extends IOLike<any>,
     TPresence extends Record<string, any>,
     TStorage extends Record<string, CrdtType<any, any>>,
     TEvents extends PluvRouterEventConfig,
+    TField extends keyof TPresence | null = null,
 > {
     doc: YDoc;
+    field?: TField;
     room: RoomLike<TIO, YDoc, TPresence, TStorage, TEvents>;
 }
 
@@ -27,13 +28,15 @@ export class PluvYjsAwareness<
     TPresence extends Record<string, any>,
     TStorage extends Record<string, CrdtType<any, any>>,
     TEvents extends PluvRouterEventConfig,
+    TField extends keyof TPresence | null = null,
 > extends ObservableV2<{
     change: (updates: YjsAwarenessUpdate, kind: "presence") => void;
-    destroy: (awareness: PluvYjsAwareness<TIO, TPresence, TStorage, TEvents>) => void;
+    destroy: (awareness: PluvYjsAwareness<TIO, TPresence, TStorage, TEvents, TField>) => void;
     update: (updates: YjsAwarenessUpdate, kind: "local" | "presence") => void;
 }> {
     public readonly doc: YDoc;
 
+    private readonly _field: TField = null as TField;
     private readonly _idMap = new Map<[connectionId: string][0], [clientID: number][0]>();
     private readonly _room: RoomLike<TIO, YDoc, TPresence, TStorage, TEvents>;
     private readonly _unsubscribe: () => void;
@@ -46,13 +49,15 @@ export class PluvYjsAwareness<
         return this.getStates();
     }
 
-    constructor(params: PluvYjsAwarenessParams<TIO, TPresence, TStorage, TEvents>) {
+    constructor(params: PluvYjsAwarenessParams<TIO, TPresence, TStorage, TEvents, TField>) {
         super();
 
-        const { doc, room } = params;
+        const { doc, field, room } = params;
 
         this.doc = doc;
         this._room = room;
+
+        if (!!field) this._field = field;
 
         const myPresence: any = this._room.getMyPresence();
         const myMeta = myPresence?.[PLUV_PRESENCE_META_KEY] || {};
@@ -80,19 +85,25 @@ export class PluvYjsAwareness<
         super.destroy();
     }
 
-    public getLocalState(): TPresence {
-        return this._room.getMyPresence();
+    public getLocalState(): AwarenessPresence<TPresence, TField> {
+        return this._adaptPresence(this._room.getMyPresence());
     }
 
-    public setLocalState(state: TPresence): void {
-        this._room.updateMyPresence(state);
+    public setLocalState(state: AwarenessPresence<TPresence, TField>): void {
+        const patch = (!!this._field
+            ? { [this._field]: state }
+            : state) as unknown as Partial<TPresence>;
+
+        console.log("patch", patch);
+
+        this._room.updateMyPresence(patch);
 
         this.emit("update", [{ added: [], updated: [this.clientID], removed: [] }, "local"]);
     }
 
-    public setLocalStateField<TField extends keyof TPresence>(
-        field: TField,
-        value: TPresence[TField],
+    public setLocalStateField<TLocalField extends keyof AwarenessPresence<TPresence, TField>>(
+        field: TLocalField,
+        value: AwarenessPresence<TPresence, TField>[TLocalField],
     ): void {
         /**
          * !HACK
@@ -100,7 +111,11 @@ export class PluvYjsAwareness<
          * an object.
          * @date May 14, 2025
          */
-        const patch = { [field]: value } as unknown as Partial<TPresence>;
+        const patch = (!!this._field
+            ? { [this._field]: { ...this.getLocalState(), [field]: value } }
+            : { [field]: value }) as unknown as Partial<TPresence>;
+
+        console.log("patch", patch);
 
         this._room.updateMyPresence(patch);
     }
@@ -112,24 +127,31 @@ export class PluvYjsAwareness<
      * @see https://github.com/yjs/y-protocols/blob/master/awareness.js
      * @date May 13, 2025
      */
-    public getStates(): Map<number, TPresence> {
+    public getStates(): Map<number, AwarenessPresence<TPresence, TField>> {
         const others = this._room.getOthers();
 
-        const states = others.reduce((map, user) => {
-            const presence = user.presence as any;
-            const meta = presence?.[PLUV_PRESENCE_META_KEY] || {};
+        const states = others.reduce((map, other) => {
+            const presence = this._adaptPresence(other.presence);
+            const meta = other.presence?.[PLUV_PRESENCE_META_KEY] || {};
             const clientID: number | undefined = meta[PLUV_PRESENCE_Y_ID_KEY];
 
             return typeof presence !== "undefined" && typeof clientID !== "undefined"
                 ? map.set(clientID, presence)
                 : map;
-        }, new Map<number, TPresence>());
+        }, new Map<number, AwarenessPresence<TPresence, TField>>());
 
-        const myPresence = this._room.getMyPresence();
+        const myPresence = this.getLocalState();
 
         if (typeof myPresence !== "undefined") states.set(this.clientID, myPresence);
 
         return states;
+    }
+
+    private _adaptPresence(presence: TPresence): AwarenessPresence<TPresence, TField> {
+        return (!!this._field ? presence[this._field] : presence) as AwarenessPresence<
+            TPresence,
+            TField
+        >;
     }
 
     private _deriveUpdates(

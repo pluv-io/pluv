@@ -7,8 +7,9 @@ export const awareness = <
     TPresence extends Record<string, any>,
     TStorage extends Record<string, CrdtType<any, any>>,
     TEvents extends PluvRouterEventConfig,
+    TField extends keyof TPresence | null = null,
 >(
-    params: PluvYjsAwarenessParams<TIO, TPresence, TStorage, TEvents>,
-): PluvYjsAwareness<TIO, TPresence, TStorage, TEvents> => {
+    params: PluvYjsAwarenessParams<TIO, TPresence, TStorage, TEvents, TField>,
+): PluvYjsAwareness<TIO, TPresence, TStorage, TEvents, TField> => {
     return new PluvYjsAwareness(params);
 };
