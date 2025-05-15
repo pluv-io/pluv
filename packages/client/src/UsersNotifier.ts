@@ -10,7 +10,7 @@ import type {
 import type { Subject } from "wonka";
 import { makeSubject, subscribe, TypeOfSource } from "wonka";
 
-export class UsersNotifier<TIO extends IOLike, TPresence extends JsonObject = {}> {
+export class UsersNotifier<TIO extends IOLike, TPresence extends Record<string, any> = {}> {
     public readonly others = makeSubject<{
         others: readonly Id<UserInfo<TIO, TPresence>>[];
         event: OthersSubscriptionEvent<TIO, TPresence>;

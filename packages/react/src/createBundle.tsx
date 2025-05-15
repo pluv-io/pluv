@@ -49,7 +49,7 @@ export interface PluvProviderProps {
 }
 
 type BaseRoomProviderProps<
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
 > = {
     children?: ReactNode;
@@ -59,7 +59,7 @@ type BaseRoomProviderProps<
 
 export type MockedRoomProviderProps<
     TIO extends IOLike,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > = BaseRoomProviderProps<TPresence, TCrdt> & {
@@ -73,7 +73,7 @@ export type MetadataGetter<TMetadata extends JsonObject> =
 export type PluvRoomProviderProps<
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
 > = BaseRoomProviderProps<TPresence, TCrdt> & {
     connect?: boolean;
@@ -87,7 +87,7 @@ export interface SubscriptionHookOptions<T extends unknown> {
     isEqual?: (a: T, b: T) => boolean;
 }
 
-export type UpdateMyPresenceAction<TPresence extends JsonObject> =
+export type UpdateMyPresenceAction<TPresence extends Record<string, any>> =
     | Partial<TPresence>
     | ((oldPresence: TPresence | null) => Partial<TPresence>);
 
@@ -107,7 +107,7 @@ export type EventProxy<TIO extends IOLike> = {
 export interface CreateBundle<
     TIO extends IOLike<any>,
     TMetadata extends JsonObject,
-    TPresence extends JsonObject = {},
+    TPresence extends Record<string, any> = {},
     TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > {
@@ -167,7 +167,7 @@ export interface CreateBundle<
 export type CreateBundleOptions<
     TIO extends IOLike<any>,
     TMetadata extends JsonObject = {},
-    TPresence extends JsonObject = {},
+    TPresence extends Record<string, any> = {},
     TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > = {
@@ -178,7 +178,7 @@ export type CreateBundleOptions<
 export const createBundle = <
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject = {},
-    TPresence extends JsonObject = {},
+    TPresence extends Record<string, any> = {},
     TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 >(

@@ -5,26 +5,29 @@ import { pickBy } from "./utils";
 
 export type Presence = Record<string, unknown>;
 
-export type UsersManagerConfig<TPresence extends JsonObject = {}> = {
+export type UsersManagerConfig<TPresence extends Record<string, any> = {}> = {
     initialPresence?: TPresence;
     limits: PluvClientLimits;
     presence?: InputZodLike<TPresence>;
 };
 
-export type AddConnectionResult<TIO extends IOLike, TPresence extends JsonObject = {}> = {
+export type AddConnectionResult<TIO extends IOLike, TPresence extends Record<string, any> = {}> = {
     clientId: string;
     data: UserInfo<TIO, TPresence>;
     isMyself: boolean;
     remaining: number;
 };
 
-export type DeleteConnectionResult<TIO extends IOLike, TPresence extends JsonObject = {}> = {
+export type DeleteConnectionResult<
+    TIO extends IOLike,
+    TPresence extends Record<string, any> = {},
+> = {
     clientId: string;
     data: UserInfo<TIO, TPresence>;
     remaining: number;
 };
 
-export class UsersManager<TIO extends IOLike, TPresence extends JsonObject = {}> {
+export class UsersManager<TIO extends IOLike, TPresence extends Record<string, any> = {}> {
     public readonly initialPresence: TPresence;
 
     private readonly _idMap = {

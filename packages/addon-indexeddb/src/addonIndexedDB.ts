@@ -6,7 +6,7 @@ import { IndexedDBStorage } from "./IndexedDBStorage";
 export interface AddonIndexedDBConfig<
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
 > {
     enabled?: boolean | ((room: PluvRoom<TIO, TMetadata, TPresence, TCrdt>) => boolean);
@@ -15,7 +15,7 @@ export interface AddonIndexedDBConfig<
 export const addonIndexedDB = <
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
 >(
     config?: AddonIndexedDBConfig<TIO, TMetadata, TPresence, TCrdt>,

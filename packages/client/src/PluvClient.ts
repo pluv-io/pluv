@@ -24,7 +24,7 @@ import type { PluvClientLimits, PublicKey, WithMetadata } from "./types";
 
 export type PluvClientOptions<
     TIO extends IOLike<any, any>,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TMetadata extends JsonObject,
 > = RoomEndpoints<TIO, TMetadata> & {
@@ -43,7 +43,7 @@ export type PluvClientOptions<
 
 export type CreateRoomOptions<
     TIO extends IOLike<any, any>,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TMetadata extends JsonObject,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
@@ -63,7 +63,7 @@ export type EnterRoomParams<TMetadata extends JsonObject = {}> = keyof TMetadata
 
 export class PluvClient<
     TIO extends IOLike<any, any>,
-    TPresence extends JsonObject = {},
+    TPresence extends Record<string, any> = {},
     TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TMetadata extends JsonObject = {},
 > {

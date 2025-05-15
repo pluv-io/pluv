@@ -50,6 +50,9 @@ const client = createClient({
     initialStorage: yjs.doc((t) => ({
         messages: t.array<string>("messages"),
     })),
+    presence: z.object({
+        cursor: z.nullable(z.object({ x: z.number(), y: z.number() })),
+    }),
     types,
 });
 
@@ -110,6 +113,19 @@ room.subscribe.storage("messages", (messages) => {
 room.subscribe.storage.messages((messages) => {
     expectTypeOf<typeof messages>().toEqualTypeOf<string[]>();
 });
+room.subscribe.myPresence((myPresence) => {
+    expectTypeOf<typeof myPresence>().toEqualTypeOf<{
+        cursor: { x: number; y: number } | null;
+    } | null>();
+
+    // @ts-expect-error
+    expectTypeOf<typeof myPresence>().toEqualTypeOf<{
+        invalidKey: { x: number; y: number } | null;
+    } | null>();
+
+    // @ts-expect-error
+    expectTypeOf<typeof myPresence>().toEqualTypeOf<{ cursor: number }>();
+});
 
 expectTypeOf(room.getDoc()).toEqualTypeOf<
     CrdtDocLike<
@@ -123,6 +139,9 @@ expectTypeOf(room.getDoc()).toEqualTypeOf<
 const { PluvRoomProvider, useDoc, useStorage } = createBundle(client);
 
 <PluvRoomProvider
+    initialPresence={{
+        cursor: null,
+    }}
     initialStorage={(t) => ({
         messages: t.array("messages"),
     })}

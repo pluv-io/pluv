@@ -4,14 +4,14 @@ import type { PluvProcedure } from "./PluvProcedure";
 
 export type PluvRouterEventConfig<
     TIO extends IOLike,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
 > = { [P: string]: Pick<PluvProcedure<TIO, any, any, TPresence, TCrdt, "">, "config"> };
 
 export type MergedRouter<
     TRouters extends PluvRouter<TIO, TPresence, TCrdt, any>[],
     TIO extends IOLike,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TRoot extends TRouters[0]["_defs"]["events"],
 > = TRouters extends [
@@ -23,7 +23,7 @@ export type MergedRouter<
 
 export class PluvRouter<
     TIO extends IOLike,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, TCrdt> = {},
 > implements IORouterLike<TEvents>
@@ -45,7 +45,7 @@ export class PluvRouter<
     public static merge<
         TRouters extends PluvRouter<TIO, TPresence, TCrdt, any>[],
         TIO extends IOLike,
-        TPresence extends JsonObject,
+        TPresence extends Record<string, any>,
         TCrdt extends AbstractCrdtDocFactory<any, any>,
     >(...routers: TRouters): MergedRouter<TRouters, TIO, TPresence, TCrdt, {}> {
         const events = Object.assign(

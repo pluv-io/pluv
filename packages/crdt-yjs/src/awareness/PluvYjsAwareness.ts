@@ -14,7 +14,7 @@ import type { MetaClientState, YjsAwarenessUpdate } from "../types";
 
 export interface PluvYjsAwarenessParams<
     TIO extends IOLike<any>,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TStorage extends Record<string, CrdtType<any, any>>,
     TEvents extends PluvRouterEventConfig,
 > {
@@ -24,7 +24,7 @@ export interface PluvYjsAwarenessParams<
 
 export class PluvYjsAwareness<
     TIO extends IOLike,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TStorage extends Record<string, CrdtType<any, any>>,
     TEvents extends PluvRouterEventConfig,
 > extends ObservableV2<{
