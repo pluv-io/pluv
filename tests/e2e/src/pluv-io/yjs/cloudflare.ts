@@ -40,13 +40,8 @@ const client = createClient({
         authEndpoint: z.string().default("http://localhost:3101"),
     }),
     presence: z.object({
-        anchorPos: z.any().nullable().default(null),
         count: z.number(),
-        color: z.string().default("#000000"),
-        focusing: z.boolean().default(false),
-        focusPos: z.any().nullable().default(null),
-        name: z.string().default(""),
-        awarenessData: z.any().default({}),
+        lexical: z.any().default({}),
     }),
     types,
     wsEndpoint: ({ room }) => {
