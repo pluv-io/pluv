@@ -94,8 +94,6 @@ export class PluvYjsAwareness<
             ? { [this._field]: state }
             : state) as unknown as Partial<TPresence>;
 
-        console.log("patch", patch);
-
         this._room.updateMyPresence(patch);
 
         this.emit("update", [{ added: [], updated: [this.clientID], removed: [] }, "local"]);
@@ -114,8 +112,6 @@ export class PluvYjsAwareness<
         const patch = (!!this._field
             ? { [this._field]: { ...this.getLocalState(), [field]: value } }
             : { [field]: value }) as unknown as Partial<TPresence>;
-
-        console.log("patch", patch);
 
         this._room.updateMyPresence(patch);
     }
