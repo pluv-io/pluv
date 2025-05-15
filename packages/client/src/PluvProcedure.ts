@@ -6,7 +6,7 @@ export interface PluvProcedureConfig<
     TIO extends IOLike,
     TInput extends JsonObject,
     TOutput extends EventRecord<string, any>,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
 > {
     broadcast?: EventResolver<TIO, TInput, TOutput, TPresence, InferDocLike<TCrdt>> | null;
@@ -17,7 +17,7 @@ export class PluvProcedure<
     TIO extends IOLike,
     TInput extends JsonObject,
     TOutput extends EventRecord<string, any>,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TFilled extends "input" | "broadcast" | "",
 > implements ProcedureLike<TInput, TOutput>

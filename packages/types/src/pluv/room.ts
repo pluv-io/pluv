@@ -18,32 +18,35 @@ export interface AuthorizationState<TIO extends IOLike> {
     user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>> | null;
 }
 
-export type OtherSubscriptionCallback<TIO extends IOLike, TPresence extends JsonObject> = (
+export type OtherSubscriptionCallback<TIO extends IOLike, TPresence extends Record<string, any>> = (
     value: Id<UserInfo<TIO, TPresence>> | null,
 ) => void;
 
-export type OtherSubscriptionFn<TIO extends IOLike, TPresence extends JsonObject> = (
+export type OtherSubscriptionFn<TIO extends IOLike, TPresence extends Record<string, any>> = (
     connectionId: string,
     callback: OtherSubscriptionCallback<TIO, TPresence>,
 ) => () => void;
 
-export type OthersSubscriptionEvent<TIO extends IOLike, TPresence extends JsonObject> =
+export type OthersSubscriptionEvent<TIO extends IOLike, TPresence extends Record<string, any>> =
     | { kind: "clear" }
     | { kind: "enter"; user: Id<UserInfo<TIO, TPresence>> }
     | { kind: "leave"; user: Id<UserInfo<TIO, TPresence>> }
     | { kind: "sync"; users: readonly Id<UserInfo<TIO, TPresence>>[] }
     | { kind: "update"; user: Id<UserInfo<TIO, TPresence>> };
 
-export type OthersSubscriptionCallback<TIO extends IOLike, TPresence extends JsonObject> = (
+export type OthersSubscriptionCallback<
+    TIO extends IOLike,
+    TPresence extends Record<string, any>,
+> = (
     value: readonly Id<UserInfo<TIO, TPresence>>[],
     event: OthersSubscriptionEvent<TIO, TPresence>,
 ) => void;
 
-export type OthersSubscriptionFn<TIO extends IOLike, TPresence extends JsonObject> = (
+export type OthersSubscriptionFn<TIO extends IOLike, TPresence extends Record<string, any>> = (
     callback: OthersSubscriptionCallback<TIO, TPresence>,
 ) => () => void;
 
-export interface StateNotifierSubjects<TIO extends IOLike, TPresence extends JsonObject> {
+export interface StateNotifierSubjects<TIO extends IOLike, TPresence extends Record<string, any>> {
     connection: Subject<Id<WebSocketState<TIO>>>;
     "my-presence": Subject<TPresence | null>;
     myself: Subject<Readonly<Id<UserInfo<TIO, TPresence>>> | null>;
@@ -53,7 +56,7 @@ export interface StateNotifierSubjects<TIO extends IOLike, TPresence extends Jso
 
 type InferSubjectValue<
     TIO extends IOLike,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
 > =
     StateNotifierSubjects<TIO, TPresence>[TSubject] extends Subject<infer IValue>
@@ -62,15 +65,15 @@ type InferSubjectValue<
 
 export type SubscriptionCallback<
     TIO extends IOLike,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
 > = (value: InferSubjectValue<TIO, TPresence, TSubject>) => void;
 
-export type UpdateMyPresenceAction<TPresence extends JsonObject> =
+export type UpdateMyPresenceAction<TPresence extends Record<string, any>> =
     | Partial<TPresence>
     | ((oldPresence: TPresence | null) => Partial<TPresence>);
 
-export interface UserInfo<TIO extends IOLike, TPresence extends JsonObject = {}> {
+export interface UserInfo<TIO extends IOLike, TPresence extends Record<string, any> = {}> {
     connectionId: string;
     presence: TPresence;
     user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>;
@@ -161,7 +164,7 @@ export type SubscribeFn<TValue extends unknown> = (callback: (value: TValue) => 
 
 export type SubscribeProxy<
     TIO extends IOLike,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TStorage extends Record<string, CrdtType<any, any>>,
     TEvents extends PluvRouterEventConfig,
 > = (<TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
@@ -188,7 +191,7 @@ export interface RoomEventListenerMap {
 export interface RoomLike<
     TIO extends IOLike,
     TDoc extends any,
-    TPresence extends JsonObject = {},
+    TPresence extends Record<string, any> = {},
     TStorage extends Record<string, CrdtType<any, any>> = {},
     TEvents extends PluvRouterEventConfig = {},
 > {

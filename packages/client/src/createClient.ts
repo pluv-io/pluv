@@ -5,7 +5,7 @@ import { PluvClient } from "./PluvClient";
 
 export const createClient = <
     TIO extends IOLike<any, any>,
-    TPresence extends JsonObject = {},
+    TPresence extends Record<string, any> = {},
     TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TMetadata extends JsonObject = {},
 >(

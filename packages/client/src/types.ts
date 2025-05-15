@@ -21,7 +21,7 @@ export type EventResolver<
     TIO extends IOLike,
     TInput extends JsonObject,
     TOutput extends EventRecord<string, any>,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TDocLike extends CrdtDocLike<any, any>,
 > = (
     data: TInput,
@@ -30,7 +30,7 @@ export type EventResolver<
 
 export interface EventResolverContext<
     TIO extends IOLike,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TDocLike extends CrdtDocLike<any, any>,
 > {
     doc: TDocLike;

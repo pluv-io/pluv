@@ -57,7 +57,7 @@ export type MockedRoomEvents<TIO extends IOLike> = Partial<{
 
 export type MockedRoomConfig<
     TIO extends IOLike,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>>,
 > = {
@@ -69,7 +69,7 @@ export type MockedRoomConfig<
 
 export class MockedRoom<
     TIO extends IOLike,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>>,
 > implements RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>>

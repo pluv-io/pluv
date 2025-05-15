@@ -12,14 +12,14 @@ import { makeSubject, subscribe } from "wonka";
 
 type InferSubjectValue<
     TIO extends IOLike,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
 > =
     StateNotifierSubjects<TIO, TPresence>[TSubject] extends Subject<infer IValue>
         ? Id<IValue>
         : never;
 
-export class StateNotifier<TIO extends IOLike, TPresence extends JsonObject = {}> {
+export class StateNotifier<TIO extends IOLike, TPresence extends Record<string, any> = {}> {
     public subjects: StateNotifierSubjects<TIO, TPresence> = {
         connection: makeSubject<Id<WebSocketState<TIO>>>(),
         "my-presence": makeSubject<TPresence>(),

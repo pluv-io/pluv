@@ -89,7 +89,7 @@ declare global {
 export const DEFAULT_PLUV_CLIENT_ADDON = <
     TIO extends IOLike,
     TMetadata extends JsonObject,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
 >(
     input: PluvRoomAddonInput<TIO, TMetadata, TPresence, TCrdt>,
@@ -147,14 +147,14 @@ interface InternalListeners {
 export type PluvRoomAddon<
     TIO extends IOLike,
     TMetadata extends JsonObject,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
 > = (input: PluvRoomAddonInput<TIO, TMetadata, TPresence, TCrdt>) => Partial<PluvRoomAddonResult>;
 
 export interface PluvRoomAddonInput<
     TIO extends IOLike,
     TMetadata extends JsonObject,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
 > {
     room: PluvRoom<TIO, TMetadata, TPresence, TCrdt>;
@@ -185,7 +185,7 @@ export type ReconnectTimeoutMs = number | ((params: ReconnectTimeoutMsParams) =>
 export type RoomConfig<
     TIO extends IOLike,
     TMetadata extends JsonObject,
-    TPresence extends JsonObject,
+    TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>>,
 > = Id<
@@ -206,7 +206,7 @@ export type RoomConfig<
 export class PluvRoom<
     TIO extends IOLike<any, any>,
     TMetadata extends JsonObject = {},
-    TPresence extends JsonObject = {},
+    TPresence extends Record<string, any> = {},
     TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > implements RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>>
