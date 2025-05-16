@@ -5,7 +5,7 @@ import { openTestPage, waitMs } from "../../../../utils";
 const TEST_URL = "http://localhost:3100/yjs/cloudflare/blocknote";
 
 const stripUsername = (text: string): string => {
-    return text.replace(/\s*test\s*$/gi, "").trim();
+    return text.replace(/[\s\n\r]*test[\s\n\r]*$/gi, "").trim();
 };
 
 test.describe("CloudflareSQLite blocknote", () => {
@@ -30,7 +30,7 @@ test.describe("CloudflareSQLite blocknote", () => {
         await secondPage
             .locator(selector)
             .innerText()
-            .then((text) => expect(JSON.stringify(stripUsername(text))).toEqual("hello world"));
+            .then((text) => expect(stripUsername(text)).toEqual("hello world"));
         await waitMs(ms("0.25s"));
 
         await secondPage.locator(selector).fill("");
