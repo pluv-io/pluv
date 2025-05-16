@@ -9,7 +9,7 @@ export interface BlockNoteEditorProps {
 export const BlockNoteEditor: FC<BlockNoteEditorProps> = ({ userName }) => {
     return (
         <BlockNoteEditorProvider>
-            <BlockNoteEditorInner />
+            <BlockNoteEditorInner userName={userName} />
         </BlockNoteEditorProvider>
     );
 };
