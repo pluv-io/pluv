@@ -23,5 +23,5 @@ export const BlockNoteEditorInner: FC<BlockNoteEditorInnerProps> = () => {
         },
     });
 
-    return <BlockNoteView className="blocknote-editable" editor={editor} />;
+    return <BlockNoteView id="blocknote-editable" editor={editor} />;
 };
