@@ -14,6 +14,7 @@ export const Page: NextPage = () => {
     if (!router.isReady) return null;
 
     const roomId = (router.query.room as string) ?? "e2e-cloudflare-blocknote";
+    const userName = (router.query.user as string) ?? "";
 
     return noSsr(
         <div>
@@ -38,7 +39,7 @@ export const Page: NextPage = () => {
             <div>roomId: {roomId}</div>
             {enabled && (
                 <PluvRoomProvider debug initialPresence={{ count: 0 }} metadata={{}} room={roomId}>
-                    <BlockNoteEditor />
+                    <BlockNoteEditor userName={userName} />
                 </PluvRoomProvider>
             )}
         </div>,

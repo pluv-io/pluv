@@ -2,9 +2,11 @@ import type { FC } from "react";
 import { BlockNoteEditorInner } from "./BlockNoteEditorInner";
 import { BlockNoteEditorProvider } from "./BlockNoteEditorProvider";
 
-export interface BlockNoteEditorProps {}
+export interface BlockNoteEditorProps {
+    userName?: string;
+}
 
-export const BlockNoteEditor: FC<BlockNoteEditorProps> = () => {
+export const BlockNoteEditor: FC<BlockNoteEditorProps> = ({ userName }) => {
     return (
         <BlockNoteEditorProvider>
             <BlockNoteEditorInner />
