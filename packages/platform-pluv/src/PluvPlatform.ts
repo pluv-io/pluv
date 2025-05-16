@@ -265,7 +265,13 @@ export class PluvPlatform<
                         const user = data.user as any;
 
                         await Promise.resolve(
-                            this._listeners?.onUserConnected({ context, encodedState, platform: this, room, user }),
+                            this._listeners?.onUserConnected({
+                                context,
+                                encodedState,
+                                platform: this,
+                                room,
+                                user,
+                            }),
                         );
 
                         return createSuccessResponse(c, { event, room });

@@ -231,7 +231,10 @@ export type InferPlatformListeners<TPlatform extends AbstractPlatform<any, any, 
 export type InferPlatformRouter<TPlatform extends AbstractPlatform<any, any, any, any>> =
     InferPlatformConfig<TPlatform>["router"];
 
-export type IORoomListenerEvent<TPlatform extends AbstractPlatform<any, any, any, any>, TContext extends Record<string, any>> = {
+export type IORoomListenerEvent<
+    TPlatform extends AbstractPlatform<any, any, any, any>,
+    TContext extends Record<string, any>,
+> = {
     context: TContext;
     encodedState: string | null;
     platform: TPlatform;
