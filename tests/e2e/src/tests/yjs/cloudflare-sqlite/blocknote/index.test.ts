@@ -12,26 +12,26 @@ test.describe("CloudflareSQLite blocknote", () => {
         const secondPage = await openTestPage(testUrl);
 
         await Promise.all([
-            firstPage.waitForSelector("#blocknote-editable"),
-            secondPage.waitForSelector("#blocknote-editable"),
+            firstPage.waitForSelector('#blocknote-editable [contenteditable="true"]'),
+            secondPage.waitForSelector('#blocknote-editable [contenteditable="true"]'),
         ]);
 
         await waitMs(ms("1s"));
 
-        await firstPage.locator("#blocknote-editable").fill("hello world");
+        await firstPage.locator('#blocknote-editable [contenteditable="true"]').fill("hello world");
         await waitMs(ms("0.25s"));
 
         await secondPage
-            .locator("#blocknote-editable")
+            .locator('#blocknote-editable [contenteditable="true"]')
             .innerText()
             .then((text) => expect(text.trim()).toEqual("hello world"));
         await waitMs(ms("0.25s"));
 
-        await secondPage.locator("#blocknote-editable").clear();
+        await secondPage.locator('#blocknote-editable [contenteditable="true"]').clear();
         await waitMs(ms("0.25s"));
 
         await firstPage
-            .locator("#blocknote-editable")
+            .locator('#blocknote-editable [contenteditable="true"]')
             .innerText()
             .then((text) => expect(text.trim()).toEqual(""));
 
