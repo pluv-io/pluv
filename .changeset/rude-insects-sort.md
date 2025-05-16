@@ -7,5 +7,9 @@
 ```ts
 const room = client.createRoom("example-room");
 
-room.getStorageLoaded
+// Before
+room.storageLoaded
+
+// After
+room.getStorageLoaded()
 ```
