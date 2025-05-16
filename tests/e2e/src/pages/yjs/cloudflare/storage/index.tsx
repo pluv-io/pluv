@@ -10,7 +10,6 @@ export const Page: NextPage = () => {
     const router = useRouter();
 
     const [enabled, setEnabled] = useState<boolean>(true);
-
     const [room2Id, setRoom2Id] = useState<string | null>(null);
 
     if (!router.isReady) return null;
