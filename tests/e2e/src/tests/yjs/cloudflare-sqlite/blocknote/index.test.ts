@@ -27,7 +27,7 @@ test.describe("CloudflareSQLite blocknote", () => {
             .then((text) => expect(text.trim()).toEqual("hello world"));
         await waitMs(ms("0.25s"));
 
-        await secondPage.locator('#blocknote-editable [contenteditable="true"]').clear();
+        await secondPage.locator('#blocknote-editable [contenteditable="true"]').fill("");
         await waitMs(ms("0.25s"));
 
         await firstPage
