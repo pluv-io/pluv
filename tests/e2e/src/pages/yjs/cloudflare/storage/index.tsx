@@ -11,9 +11,12 @@ export const Page: NextPage = () => {
 
     const [enabled, setEnabled] = useState<boolean>(true);
 
+    const [room2Id, setRoom2Id] = useState<string | null>(null);
+
     if (!router.isReady) return null;
 
-    const roomId = (router.query.room as string) ?? "e2e-cloudflare-storage";
+    const queryRoomId = (router.query.room as string) ?? "e2e-cloudflare-storage";
+    const roomId = room2Id ?? queryRoomId;
 
     return noSsr(
         <div>
@@ -34,6 +37,15 @@ export const Page: NextPage = () => {
                 type="button"
             >
                 Disconnect
+            </button>
+            <button
+                id="toggle-room"
+                onClick={() => {
+                    setRoom2Id((prev) => (!!prev ? null : `${queryRoomId}_2`));
+                }}
+                type="button"
+            >
+                Toggle room 2
             </button>
             <div>roomId: {roomId}</div>
             {enabled && (

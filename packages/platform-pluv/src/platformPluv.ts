@@ -30,6 +30,6 @@ export const platformPluv = <
         context,
         crdt,
         debug,
-        platform: new PluvPlatform<TContext, TUser>(config),
+        platform: () => new PluvPlatform<TContext, TUser>(config),
     };
 };

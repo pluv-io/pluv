@@ -13,7 +13,7 @@ export type CreateIOParams<
     crdt?: CrdtLibraryType;
     debug?: boolean;
     limits?: PluvIOLimits;
-    platform: TPlatform;
+    platform: () => TPlatform;
 };
 
 export const createIO = <
