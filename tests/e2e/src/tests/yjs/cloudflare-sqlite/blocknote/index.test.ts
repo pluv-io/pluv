@@ -6,8 +6,8 @@ const TEST_URL = "http://localhost:3100/yjs/cloudflare/blocknote";
 
 const stripUsername = (text: string): string => {
     return text
-        .replace(/[\s\n\r]*test[\s\n\r]*/gi, "")
         .replace(/[\u200B-\u200D\u2060\uFEFF]/g, "")
+        .replace(/\s*test\s*$/gi, "")
         .trim();
 };
 
