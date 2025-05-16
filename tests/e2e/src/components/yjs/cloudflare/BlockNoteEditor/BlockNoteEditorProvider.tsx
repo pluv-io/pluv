@@ -10,12 +10,12 @@ export interface BlockNoteEditorProviderProps {
 
 export const BlockNoteEditorProvider: FC<BlockNoteEditorProviderProps> = ({ children }) => {
     const state = useConnection((connection) => connection.state);
-    const doc = useDoc().value;
+    const doc = useDoc()?.value ?? null;
     const room = useRoom();
     const [, fragment] = useStorage("blocknote", () => true);
 
     const value = useMemo(
-        () => (!!fragment ? { doc, fragment, room } : null),
+        () => (!!doc && !!fragment ? { doc, fragment, room } : null),
         [doc, fragment, room],
     );
 

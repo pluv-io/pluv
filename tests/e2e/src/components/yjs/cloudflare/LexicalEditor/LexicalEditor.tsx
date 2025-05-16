@@ -32,13 +32,13 @@ export const LexicalEditor: FC = () => {
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     const room = useRoom();
-    const roomDoc = useDoc();
+    const doc = useDoc()?.value ?? null;
     const connection = useConnection((connection) => connection.state);
-    const doc = roomDoc.value;
 
     const providerFactory = useCallback(
         (id: string, yjsDocMap: Map<string, YDoc>) => {
             if (id !== room.id) throw new Error("Unexpected room id");
+            if (!doc) throw new Error("Doc not initialized");
 
             yjsDocMap.set(id, doc);
 
@@ -48,6 +48,7 @@ export const LexicalEditor: FC = () => {
     );
 
     if (connection !== ConnectionState.Open) return null;
+    if (!doc) return null;
 
     return (
         <div ref={containerRef}>
