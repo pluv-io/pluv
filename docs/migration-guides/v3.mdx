@@ -132,3 +132,17 @@ room.subscribe.storage.messages((messages) => {});
 room.subscribe.storageRoot((storage) => {});
 room.subscribe.other(("id_...", other) => {});
 ```
+
+### PluvRoom.storageLoaded has been removed
+
+In order to get the `storageLoaded` state, use `PluvRoom.getStorageLoaded()` instead.
+
+```ts
+const room = client.createRoom("example-room");
+
+// Before
+const didLoad = room.storageLoaded;
+
+// After
+const didLoad = room.getStorageLoaded();
+```
