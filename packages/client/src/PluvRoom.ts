@@ -1142,12 +1142,12 @@ export class PluvRoom<
 
         this._emitSharedTypes();
         this._observeCrdt();
-        this._stateNotifier.subjects["storage-loaded"].next(true);
         this._updateState((oldState) => {
             oldState.storage.state = StorageState.Synced;
 
             return oldState;
         });
+        this._stateNotifier.subjects["storage-loaded"].next(true);
 
         this._sendMessage({
             type: "$updateStorage",
