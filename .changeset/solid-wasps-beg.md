@@ -7,7 +7,7 @@ Added a new type `InferBundleRoom` to get the type of the `PluvRoom` from the re
 ```ts
 import { createClient } from "@pluv/client";
 import type { InferBundleRoom } from "@pluv/react";
-import { InferBundleRoom } from "@pluv/react";
+import { createBundle } from "@pluv/react";
 
 const client = createclient({ /* ... */ });
 
