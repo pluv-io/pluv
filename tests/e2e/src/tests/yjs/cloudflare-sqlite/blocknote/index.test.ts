@@ -5,7 +5,7 @@ import { openTestPage, waitMs } from "../../../../utils";
 const TEST_URL = "http://localhost:3100/yjs/cloudflare/blocknote";
 
 const stripUsername = (text: string): string => {
-    return text.trim().replace(/\s+test$/gi, "");
+    return text.trim().replace(/\s*test\s*$/gi, "");
 };
 
 test.describe("CloudflareSQLite blocknote", () => {
