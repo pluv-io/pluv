@@ -1,4 +1,3 @@
-import type { CrdtType } from "@pluv/crdt";
 import type {
     CrdtDocLike,
     EventRecord,
