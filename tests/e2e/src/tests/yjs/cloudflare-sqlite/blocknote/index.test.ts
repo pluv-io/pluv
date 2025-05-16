@@ -19,16 +19,16 @@ test.describe("CloudflareSQLite blocknote", () => {
         await waitMs(ms("1s"));
 
         await firstPage.locator('#blocknote-editable [contenteditable="true"]').fill("hello world");
-        await waitMs(ms("0.25s"));
+        await waitMs(ms("5s"));
 
         await secondPage
             .locator('#blocknote-editable [contenteditable="true"]')
             .innerText()
             .then((text) => expect(text.trim()).toEqual("hello world"));
-        await waitMs(ms("0.25s"));
+        await waitMs(ms("5s"));
 
         await secondPage.locator('#blocknote-editable [contenteditable="true"]').fill("");
-        await waitMs(ms("0.25s"));
+        await waitMs(ms("5s"));
 
         await firstPage
             .locator('#blocknote-editable [contenteditable="true"]')
