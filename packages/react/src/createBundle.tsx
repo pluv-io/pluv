@@ -30,7 +30,16 @@ import type {
 } from "@pluv/types";
 import fastDeepEqual from "fast-deep-equal";
 import type { Dispatch } from "react";
-import { createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+    createContext,
+    memo,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+    useSyncExternalStore,
+} from "react";
 import {
     identity,
     shallowArrayEqual,
@@ -337,7 +346,16 @@ export const createBundle = <
     const useDoc = () => {
         const room = useRoom();
 
-        return room.getDoc();
+        const subscribe = useCallback(
+            (onStoreChange: () => void) => {
+                return room.subscribe.storageLoaded(onStoreChange);
+            },
+            [room],
+        );
+
+        const getSnapshot = room.getDoc;
+
+        return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
     };
 
     const useEvent = <TType extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
