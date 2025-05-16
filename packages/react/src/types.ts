@@ -106,7 +106,7 @@ export interface CreateBundle<
     useCanUndo: () => boolean;
     useClient: () => PluvClient<TIO, TPresence, TCrdt, TMetadata>;
     useConnection: <T extends unknown = WebSocketConnection>(
-        selector: (connection: WebSocketConnection) => T,
+        selector?: (connection: WebSocketConnection) => T,
         options?: SubscriptionHookOptions<Id<T>>,
     ) => Id<T>;
     useDoc: () => CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>> | null;
