@@ -21,6 +21,7 @@ const client = createClient({
         return url.toString();
     },
     initialStorage: yjs.doc((t) => ({
+        blocknote: t.xmlFragment("blocknote"),
         messages: t.array("messages", [
             yjs.object({
                 message: "hello",
@@ -40,6 +41,7 @@ const client = createClient({
         authEndpoint: z.string().default("http://localhost:3101"),
     }),
     presence: z.object({
+        blocknote: z.any().default({}),
         count: z.number(),
         lexical: z.any().default({}),
     }),
@@ -48,6 +50,8 @@ const client = createClient({
         return `ws://localhost:3101/api/pluv/room/${room}`;
     },
 });
+
+export const bundle = createBundle(client);
 
 export const {
     // proxies
@@ -74,4 +78,4 @@ export const {
     useStorage,
     useTransact,
     useUndo,
-} = createBundle(client);
+} = bundle;

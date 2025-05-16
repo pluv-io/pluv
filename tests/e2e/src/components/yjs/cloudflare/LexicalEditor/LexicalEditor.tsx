@@ -1,17 +1,14 @@
 import { CollaborationPlugin } from "@lexical/react/LexicalCollaborationPlugin";
 import type { InitialConfigType } from "@lexical/react/LexicalComposer";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
-import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { yjs } from "@pluv/crdt-yjs";
+import { ConnectionState } from "@pluv/types";
 import type { FC } from "react";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { Doc as YDoc } from "yjs";
 import { useConnection, useDoc, useRoom } from "../../../../pluv-io/yjs/cloudflare";
-import { ConnectionState } from "@pluv/types";
-import { getRandomUserProfile, UserProfile } from "./getRandomUserProfile";
 import Editor from "./Editor";
+import { getRandomUserProfile, UserProfile } from "./getRandomUserProfile";
 
 interface ActiveUserProfile extends UserProfile {
     userId: number;
@@ -37,19 +34,6 @@ export const LexicalEditor: FC = () => {
     const room = useRoom();
     const roomDoc = useDoc();
     const connection = useConnection((connection) => connection.state);
-
-    useEffect(() => {
-        const unsub = roomDoc.subscribe(({ doc }) => {
-            const yDoc = doc.value;
-
-            console.log(yDoc.share.entries());
-        });
-
-        return () => {
-            unsub();
-        };
-    }, [roomDoc]);
-
     const doc = roomDoc.value;
 
     const providerFactory = useCallback(
