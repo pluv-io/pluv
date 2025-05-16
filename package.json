@@ -39,6 +39,7 @@
             "core-js-pure",
             "esbuild",
             "prisma",
+            "sharp",
             "workerd"
         ]
     }
