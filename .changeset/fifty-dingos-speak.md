@@ -13,6 +13,6 @@ const doc = new YDoc();
 const client = createClient({ /* ... */ });
 const room = client.createRoom("example-room");
 
-// Yjs Awareness
+// Yjs Provider
 yjs.provider({ doc, room });
 ```
