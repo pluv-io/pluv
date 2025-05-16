@@ -30,7 +30,7 @@ test.describe("CloudflareSQLite blocknote", () => {
         await secondPage
             .locator(selector)
             .innerText()
-            .then((text) => expect(stripUsername(text)).toEqual("hello world"));
+            .then((text) => expect(JSON.stringify(stripUsername(text))).toEqual("hello world"));
         await waitMs(ms("0.25s"));
 
         await secondPage.locator(selector).fill("");
