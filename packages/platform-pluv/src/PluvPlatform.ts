@@ -81,7 +81,6 @@ export class PluvPlatform<
     public readonly _name = "platformPluv";
 
     private readonly _app: Hono;
-    private _authorize: any;
     private readonly _basePath: string;
     private readonly _context: any;
     private readonly _endpoints: PluvIOEndpoints | (() => MaybePromise<PluvIOEndpoints>);
@@ -92,7 +91,7 @@ export class PluvPlatform<
     private readonly _webhookSecret?: WebhookSecret;
 
     public _createToken = async (params: JWTEncodeParams<any, any>): Promise<string> => {
-        const parsed = this._authorize.user.parse(params.user);
+        const parsed = params.authorize.user.parse(params.user);
 
         const [endpoints, publicKey, secretKey] = await Promise.all([
             typeof this._endpoints === "object" ? this._endpoints : this._endpoints(),
@@ -192,13 +191,6 @@ export class PluvPlatform<
         if (!!config.onStorageUpdated)
             throw new Error("Config `onStorageUpdated` is not supported on `platformPluv`");
 
-        /**
-         * !HACK
-         * @description Assign these on the validation step, because we know this will happen on the
-         * server constructor internally.
-         * @date December 16, 2024
-         */
-        this._authorize = config.authorize;
         this._getInitialStorage = config.getInitialStorage;
         this._listeners = {
             onRoomDeleted: (event) => config.onRoomDeleted?.(event),

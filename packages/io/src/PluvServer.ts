@@ -7,6 +7,7 @@ import type {
     InferIOAuthorizeUser,
     JsonObject,
     Maybe,
+    NonNilProps,
 } from "@pluv/types";
 import colors from "kleur";
 import type {
@@ -95,21 +96,12 @@ export class PluvServer<
 {
     public readonly version: string = __PLUV_VERSION as any;
 
-    private readonly _authorize: TAuthorize = null as TAuthorize;
-    private readonly _context: PluvContext<TPlatform, TContext> = {} as PluvContext<
-        TPlatform,
-        TContext
+    private readonly _config: NonNilProps<
+        PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>
     >;
-    private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
-    private readonly _debug: boolean;
-    private readonly _getInitialStorage: GetInitialStorageFn<TContext> | null = null;
-    private readonly _io: PluvIO<TPlatform, TAuthorize, TContext>;
-    private readonly _limits: PluvIOLimits;
-    private readonly _platform: () => TPlatform;
-    private readonly _inputRouter: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
     public get fetch(): (...args: any[]) => Promise<any> {
-        const platform = this._platform();
+        const platform = this._config.platform();
 
         return ((...args: any[]): Promise<any> => {
             if (!platform._fetch)
@@ -126,10 +118,10 @@ export class PluvServer<
      */
     public get _defs() {
         return {
-            authorize: this._authorize,
-            context: this._context,
+            authorize: this._config.authorize,
+            context: this._config.context,
             events: this._router._defs.events,
-            platform: this._platform(),
+            platform: this._config.platform(),
         } as {
             authorize: TAuthorize;
             context: TContext;
@@ -139,6 +131,8 @@ export class PluvServer<
     }
 
     private get _baseRouter(): PluvRouter<TPlatform, TAuthorize, TContext, {}> {
+        const listeners = this._getListeners();
+
         return new PluvRouter({
             $getOthers: this._procedure.sync((data, { room, session, sessions }) => {
                 const currentTime = Date.now();
@@ -202,7 +196,10 @@ export class PluvServer<
                     const update = (data as any)?.update as Maybe<string>;
 
                     if (!oldState) {
-                        const loadedState = await this._getInitialStorage?.({ context, room });
+                        const loadedState = await this._config.getInitialStorage?.({
+                            context,
+                            room,
+                        });
 
                         if (!!loadedState) {
                             doc.applyEncodedState({ update: loadedState }).getEncodedState();
@@ -234,8 +231,8 @@ export class PluvServer<
                         const storageSize = new TextEncoder().encode(encodedState).length;
 
                         if (
-                            !!this._limits.storageMaxSize &&
-                            storageSize > this._limits.storageMaxSize
+                            !!this._config.limits.storageMaxSize &&
+                            storageSize > this._config.limits.storageMaxSize
                         ) {
                             throw new Error("Storage has exceeded the size limit");
                         }
@@ -246,7 +243,7 @@ export class PluvServer<
                                 this._logDebug(error);
                             });
 
-                        this._getListeners().onStorageUpdated({
+                        listeners.onStorageUpdated({
                             context,
                             encodedState,
                             platform,
@@ -293,7 +290,10 @@ export class PluvServer<
                 const updated = Object.assign(Object.create(null), session.presence, cleanedPatch);
                 const bytes = new TextEncoder().encode(JSON.stringify(updated)).length;
 
-                if (!!this._limits.presenceMaxSize && bytes > this._limits.presenceMaxSize) {
+                if (
+                    !!this._config.limits.presenceMaxSize &&
+                    bytes > this._config.limits.presenceMaxSize
+                ) {
                     throw new Error(
                         `Large presence. Presence must be at most 512 bytes. Current size: ${bytes.toLocaleString()}`,
                     );
@@ -318,12 +318,15 @@ export class PluvServer<
                 const encodedState = updated.getEncodedState();
                 const storageSize = new TextEncoder().encode(encodedState).length;
 
-                if (!!this._limits.storageMaxSize && storageSize > this._limits.storageMaxSize) {
+                if (
+                    !!this._config.limits.storageMaxSize &&
+                    storageSize > this._config.limits.storageMaxSize
+                ) {
                     throw new Error("Storage has exceeded the size limit");
                 }
 
                 platform.persistence.setStorageState(room, encodedState).then(() => {
-                    this._getListeners().onStorageUpdated({
+                    listeners.onStorageUpdated({
                         context,
                         encodedState,
                         platform,
@@ -342,24 +345,19 @@ export class PluvServer<
 
     private get _router(): PluvRouter<TPlatform, TAuthorize, TContext, TEvents> {
         return (
-            this._inputRouter
-                ? PluvRouter.merge(this._baseRouter, this._inputRouter)
+            this._config.router
+                ? PluvRouter.merge(this._baseRouter, this._config.router)
                 : this._baseRouter
         ) as PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
     }
 
     constructor(options: PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>) {
-        const {
-            authorize,
-            context,
-            crdt = noop,
-            debug = false,
-            getInitialStorage,
-            io,
-            limits,
-            platform,
-            router = new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>({} as TEvents),
-        } = options;
+        this._config = {
+            crdt: noop,
+            debug: false,
+            router: new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>({} as TEvents),
+            ...options,
+        } as NonNilProps<PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>>;
 
         const {
             onRoomDeleted,
@@ -368,19 +366,6 @@ export class PluvServer<
             onUserConnected,
             onUserDisconnected,
         } = options as Partial<BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>>;
-
-        platform().validateConfig(options);
-
-        this._crdt = crdt;
-        this._debug = debug;
-        this._inputRouter = router;
-        this._io = io;
-        this._limits = limits;
-        this._platform = platform;
-
-        if (authorize) this._authorize = authorize;
-        if (context) this._context = context;
-        if (getInitialStorage) this._getInitialStorage = getInitialStorage;
 
         (this as any)._listeners = {
             onRoomDeleted: (event) => onRoomDeleted?.(event),
@@ -398,7 +383,9 @@ export class PluvServer<
         const { _meta, debug, onDestroy, onMessage, ...platformRoomContext } = (options[0] ??
             {}) as CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>[0] & { _meta?: any };
 
-        const platform = this._platform();
+        const platform = this._config.platform();
+
+        platform.validateConfig(this._config);
 
         if (platform._config.handleMode !== "io") {
             throw new Error(`\`createRoom\` is unsupported for \`${platform._name}\``);
@@ -409,16 +396,18 @@ export class PluvServer<
 
         const roomContext = platformRoomContext as InferRoomContextType<TPlatform>;
         const context: TContext =
-            typeof this._context === "function" ? this._context(roomContext) : this._context;
+            typeof this._config.context === "function"
+                ? this._config.context(roomContext)
+                : this._config.context;
         const listeners = this._getListeners();
         const logDebug = this._logDebug.bind(this);
 
         const newRoom = new IORoom<TPlatform, TAuthorize, TContext, TEvents>(room, {
             ...(!!_meta ? { _meta } : {}),
-            authorize: this._authorize ?? undefined,
+            authorize: this._config.authorize ?? undefined,
             context,
-            crdt: this._crdt,
-            debug: debug ?? this._debug,
+            crdt: this._config.crdt,
+            debug: debug ?? this._config.debug,
             async onDestroy(event) {
                 logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
 
@@ -451,7 +440,7 @@ export class PluvServer<
     public async createToken(
         params: JWTEncodeParams<InferIOAuthorizeUser<InferIOAuthorize<this>>, TPlatform>,
     ): Promise<string> {
-        return await this._io.createToken(params);
+        return await this._config.io.createToken(params);
     }
 
     private _getListeners(): BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents> {
@@ -459,6 +448,6 @@ export class PluvServer<
     }
 
     private _logDebug(...data: any[]): void {
-        if (this._debug) console.log(...data);
+        if (this._config.debug) console.log(...data);
     }
 }

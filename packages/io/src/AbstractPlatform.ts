@@ -1,10 +1,11 @@
+import type { Maybe } from "@pluv/types";
 import type { AbstractPersistence } from "./AbstractPersistence";
 import type { AbstractPubSub } from "./AbstractPubSub";
 import type { AbstractWebSocket, InferWebSocketSource } from "./AbstractWebSocket";
 import type { JWTEncodeParams } from "./authorize";
 import { Persistence } from "./Persistence";
 import { PubSub } from "./PubSub";
-import type { PlatformConfig, WebSocketSerializedState } from "./types";
+import type { PlatformConfig, ResolvedPluvIOAuthorize, WebSocketSerializedState } from "./types";
 
 export type InferPlatformWebSocketType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<infer IAbstractWebSocket> ? IAbstractWebSocket : never;
@@ -44,7 +45,11 @@ export abstract class AbstractPlatform<
     public persistence: AbstractPersistence;
     public pubSub: AbstractPubSub;
 
-    public readonly _createToken?: (params: JWTEncodeParams<any, any>) => Promise<string>;
+    public readonly _createToken?: (
+        params: JWTEncodeParams<any, any> & {
+            authorize: Maybe<ResolvedPluvIOAuthorize<any, any>>;
+        },
+    ) => Promise<string>;
     public _fetch?: (...args: any[]) => Promise<any>;
     public abstract readonly _config: TConfig;
     public abstract readonly _name: string;
