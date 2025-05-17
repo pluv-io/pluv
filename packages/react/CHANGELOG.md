@@ -1,5 +1,62 @@
 # @pluv/react
 
+## 2.2.0
+
+### Minor Changes
+
+- 3ce1547: Updated typings for `useDoc` to be narrower to get the native doc type.
+
+  ```ts
+  import { createClient } from "@pluv/client";
+  import { yjs } from "@pluv/crdt-yjs";
+  import { createBundle } from "@pluv/react";
+  import type { Doc as YDoc } from "yjs";
+
+  const client = createClient({
+    // ...
+    crdt: yjs,
+  });
+  const { useDoc } = createBundle(client);
+
+  const doc = useDoc();
+
+  // This is now typed as the native YDoc
+  doc.value;
+  //  ^? const value: YDoc
+  ```
+
+- b999c1c: Added a new type `InferBundleRoom` to get the type of the `PluvRoom` from the react bundle that is created.
+
+  ```ts
+  import { createClient } from "@pluv/client";
+  import type { InferBundleRoom } from "@pluv/react";
+  import { createBundle } from "@pluv/react";
+
+  const client = createclient({
+    /* ... */
+  });
+
+  const bundle = createBundle(client);
+
+  type RoomType = InferBundleRoom<typeof bundle>;
+
+  const { useStorage } = bundle;
+  ```
+
+### Patch Changes
+
+- cb660cd: Fixed the room not changing if the room name was changed on the `PluvRoomProvider` without first unmounting the component.
+- 4916c27: Fixed `useConnection` requiring a selector function (this is now optional).
+- 48191fa: Fixed `useDoc` not returning a stable doc reference for a single connection.
+- Updated dependencies [3ce1547]
+- Updated dependencies [fd3bfe2]
+- Updated dependencies [aee40cb]
+- Updated dependencies [edd1789]
+- Updated dependencies [48191fa]
+  - @pluv/client@2.2.0
+  - @pluv/crdt@2.2.0
+  - @pluv/types@2.2.0
+
 ## 2.1.0
 
 ### Minor Changes

@@ -1,5 +1,82 @@
 # @pluv/crdt-yjs
 
+## 2.2.0
+
+### Minor Changes
+
+- 745f6df: Added a `provider` function that satisfies Yjs's provider interface.
+
+  ```ts
+  import { createClient } from "@pluv/client";
+  import { yjs } from "@pluv/crdt-yjs";
+
+  const client = createClient({
+    /* ... */
+  });
+  const room = client.createRoom("example-room");
+
+  // Yjs Provider
+  yjs.provider({ room });
+  ```
+
+- df4ceed: Update `yjs.awareness` and `yjs.provider` to allow for a `field` parameter to use awareness on a nested presence field.
+
+  ```ts
+  createClient({
+    presence: z.object({
+      topField: z.number(),
+      forAwareness: z.object({
+        nestedField: z.number(),
+      }),
+    }),
+  });
+
+  yjs.provider({
+    // ...
+    // Optional field to use a nested field, instead of the presence root
+    field: "forAwareness",
+  });
+
+  yjs.awareness({
+    // ...
+    // Optional field to use a nested field, instead of the presence root
+    field: "forAwareness",
+  });
+  ```
+
+  This allows better integrations with [lexical](https://lexical.dev), since they have their own presence types.
+
+  ```tsx
+  createClient({
+    presence: z.object({
+      topField: z.number(),
+      lexical: z.any(),
+    }),
+  });
+
+  yjs.provider({ field: "lexical" /* ... */ });
+  ```
+
+- 6323979: Added an `awareness` function that satisfies Yjs's [awareness interface](https://github.com/yjs/y-protocols/blob/master/awareness.js).
+
+  ```ts
+  import { createClient } from "@pluv/client";
+  import { yjs } from "@pluv/crdt-yjs";
+
+  const client = createClient({
+    /* ... */
+  });
+  const room = client.createRoom("example-room");
+
+  // Yjs Awareness
+  yjs.awareness({ room /* ... */ });
+  ```
+
+### Patch Changes
+
+- @pluv/crdt@2.2.0
+- @pluv/types@2.2.0
+
 ## 2.1.0
 
 ### Patch Changes
