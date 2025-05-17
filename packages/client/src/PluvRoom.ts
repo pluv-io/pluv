@@ -516,7 +516,7 @@ export class PluvRoom<
     };
 
     public getDoc = (): CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>> | null => {
-        return this.getStorageLoaded() ? this._crdtManager.doc : null;
+        return this._crdtManager.doc;
     };
 
     public getMyPresence = (): TPresence => {
