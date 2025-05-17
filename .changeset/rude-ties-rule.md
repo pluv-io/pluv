@@ -2,4 +2,4 @@
 "@pluv/client": patch
 ---
 
-Fixed `PluvRoom.getDoc` returning the doc instance before storage was initialized.
+Fixed `PluvRoom.getDoc` not returning a stable doc reference for a single connection.

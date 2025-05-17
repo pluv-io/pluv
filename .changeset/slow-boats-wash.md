@@ -2,4 +2,4 @@
 "@pluv/react": patch
 ---
 
-Fixed `useDoc` returning the doc instance before storage was initialized.
+Fixed `useDoc` not returning a stable doc reference for a single connection.
