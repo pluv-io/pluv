@@ -15,10 +15,7 @@ export const BlockNoteEditorInner: FC<BlockNoteEditorInnerProps> = ({ userName }
 
     const provider = useMemo(() => yjs.provider({ doc, field: "blocknote", room }), [doc, room]);
     const user = useMemo(
-        () => ({
-            ...getRandomUserProfile(),
-            ...(!!userName ? { name: userName } : {}),
-        }),
+        () => ({ ...getRandomUserProfile(), ...(!!userName ? { name: userName } : {}) }),
         [userName],
     );
 

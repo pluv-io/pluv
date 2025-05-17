@@ -14,7 +14,6 @@ import type {
     Id,
     InferIOInput,
     InferIOOutput,
-    JsonObject,
     MergeEvents,
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
@@ -231,8 +230,8 @@ export class MockedRoom<
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     };
 
-    public getDoc(): CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>> | null {
-        return this.getStorageLoaded() ? this._crdtManager.doc : null;
+    public getDoc(): CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>> {
+        return this._crdtManager.doc;
     }
 
     public getMyPresence = (): TPresence => {

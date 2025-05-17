@@ -15,7 +15,7 @@ export const BlockNoteEditorProvider: FC<BlockNoteEditorProviderProps> = ({ chil
     const [, fragment] = useStorage("blocknote", () => true);
 
     const value = useMemo(
-        () => (!!doc && !!fragment ? { doc, fragment, room } : null),
+        () => (!!fragment ? { doc, fragment, room } : null),
         [doc, fragment, room],
     );
 
