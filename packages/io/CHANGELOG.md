@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 2.2.0
+
+### Patch Changes
+
+- cb660cd: Fixed multiple Cloudflare Worker Durable Objects sharing references to the same I/O methods.
+  - @pluv/crdt@2.2.0
+  - @pluv/types@2.2.0
+
 ## 2.1.0
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @pluv/platform-node
 
+## 2.2.0
+
+### Patch Changes
+
+- Updated dependencies [cb660cd]
+  - @pluv/io@2.2.0
+  - @pluv/types@2.2.0
+
 ## 2.1.0
 
 ### Patch Changes

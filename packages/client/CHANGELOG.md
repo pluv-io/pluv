@@ -1,5 +1,49 @@
 # @pluv/client
 
+## 2.2.0
+
+### Minor Changes
+
+- 3ce1547: Updated typings for `PluvRoom.getDoc` to be narrower to get the native doc type.
+
+  ```ts
+  import { createClient } from "@pluv/client";
+  import { yjs } from "@pluv/crdt-yjs";
+  import type { Doc as YDoc } from "yjs";
+
+  const client = createClient({
+    // ...
+    crdt: yjs,
+  });
+  const room = client.createRoom("example-room");
+
+  const doc = room.getDoc();
+
+  // This is now typed as the native YDoc
+  doc.value;
+  //  ^? const value: YDoc
+  ```
+
+- fd3bfe2: Added the ability to listen to the room's underlying websocket's event listeners.
+- aee40cb: Updated `presence` types to be more lenient (i.e. no-longer extends `JsonObject`). This is to enable types like `.passthrough` with zod, which can be useful for integrating `yjs.awareness` with libraries such as [lexical](https://lexical.dev/).
+- edd1789: **DEPRECATED** `PluvRoom.storageLoaded` will be removed in v3. Added `PluvRoom.getStorageLoaded` with improved detection of when the storage was synced.
+
+  ```ts
+  const room = client.createRoom("example-room");
+
+  // Before
+  room.storageLoaded;
+
+  // After
+  room.getStorageLoaded();
+  ```
+
+### Patch Changes
+
+- 48191fa: Fixed `PluvRoom.getDoc` not returning a stable doc reference for a single connection.
+  - @pluv/crdt@2.2.0
+  - @pluv/types@2.2.0
+
 ## 2.1.0
 
 ### Minor Changes
