@@ -40,7 +40,7 @@ export const LexicalEditor: FC = () => {
 
             yjsDocMap.set(id, room.getDoc().value);
 
-            return yjs.provider({ field: "lexical", room });
+            return yjs.provider({ presenceField: "lexical", room });
         },
         [room],
     );
