@@ -1,0 +1,148 @@
+---
+title: "Slate"
+description: "Learn how to setup Slate.js for realtime collaboration with pluv.io"
+---
+
+# Slate
+
+> **Note**: pluv.io integrates with Slate only via Yjs (i.e. @pluv/crdt-yjs)
+
+> **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart/nextjs) to see how.
+
+[Slate](https://docs.slatejs.org) is a highly customizable framework for building rich text editors. It also has been designed to support realtime collaboration with [Yjs](https://yjs.dev) via [@slate-yjs/core](https://github.com/BitPhinix/slate-yjs). Because pluv.io's storage API is built around Yjs, we can simply connect a Slate editor to a `PluvRoom` by providing the necessary Yjs [shared-type](https://docs.yjs.dev/getting-started/working-with-shared-types) during the editor's initialization.
+
+## Installation
+
+To setup Slate for collaborative editing with pluv.io, the following packages will need to be installed:
+
+```bash
+# Slate packages
+npm install slate slate-react @slate-yjs/core
+
+# pluv.io packages
+npm install @pluv/crdt-yjs
+
+# Peer dependencies
+npm install yjs
+```
+
+## Enable Collaborative Editing
+
+> **Note**: Most of this documentation mirrors [Slate's official documentation on collaborative editing](https://docs.slatejs.org/walkthroughs/07-enabling-collaborative-editing). You can also follow the instructions there to get Slate connected with pluv.io.
+
+To start, we will need at least a basic Slate editor:
+
+```tsx
+import type { FC } from "react";
+import type { Descendant } from "slate";
+import { createEditor } from "slate";
+import { Editable, Slate, withReact } from "slate-react";
+
+export interface SlateEditorProps {}
+
+export const SlateEditor: FC<SlateEditorProps> = () => {
+  const [value, setValue] = useState<Descendant[]>([]);
+  const editor = useMemo(() => withReact(createEditor()), []);
+
+  return (
+    <Slate
+      editor={editor}
+      initialValue={value}
+      onChange={(newValue) => setValue(newValue)}
+    >
+      <Editable />
+    </Slate>
+  );
+};
+```
+
+Then we will need to setup Yjs storage on pluv.io, with a [Yjs.XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext) unto which Slate's contents will live.
+
+```ts
+// pluv.ts
+
+import { createClient } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
+import type { InferBundleRoom } from "@pluv/react";
+import { createBundle } from "@pluv/react";
+
+const io = createClient({
+  initialStorage: yjs.doc((t) => ({
+    myEditor: t.xmlText("myEditor"),
+  })),
+  // ... other pluv.io configs
+});
+
+const bundle = createBundle(io);
+
+export const {
+  // ... other utils
+  useStorage,
+} = bundle;
+
+export type PluvIORoom = InferBundleRoom<typeof bundle>;
+```
+
+Lastly, we will just need to forward this shared-type to our Slate editor initialization. The `@slate-yjs/core` API requires only a `Y.XmlText` shared-type. And since pluv.io also manages the connections and document syncing for you, we do not need a [Yjs connection provider](https://docs.yjs.dev/ecosystem/connection-provider) to enable collaboration on Slate.
+
+```tsx
+import { withYjs, YjsEditor } from "@slate-yjs/core";
+import type { FC } from "react";
+import type { Descendant, Node } from "slate";
+import { createEditor, Editor, Transforms } from "slate";
+import { Editable, Slate, withReact } from "slate-react";
+
+// From the bundle created above
+import { useStorage } from "./pluv";
+
+export interface SlateEditorProps {}
+
+export const SlateEditor: FC<SlateEditorProps> = () => {
+  const [, xmlText] = useStorage("myEditor");
+  const [value, setValue] = useState<Descendant[]>([]);
+
+  const editor = useMemo(() => {
+    // The xmlText will be null while pluv.io is still connecting
+    if (!xmlText) return null;
+
+    const e = withReact(withYjs(createEditor(), xmlText));
+
+    const { normalizeNode } = e;
+    // Slate's documentation specifies this is necessary to avoid
+    // an invalid state and crash
+    e.normalizeNode = (entry) => {
+      const [node] = entry;
+
+      if (!Editor.isEditor(node) || node.children.length > 0) {
+        return normalizeNode(entry);
+      }
+
+      const emptyNode = {
+        type: "paragraph",
+        children: [{ text: "" }],
+      } as Node;
+      Transforms.insertNodes(e, emptyNode, { at: [0] });
+    };
+
+    return e;
+  }, [xmlText]);
+
+  useEffect(() => {
+    if (!editor) return;
+    YjsEditor.connect(editor);
+    return () => YjsEditor.disconnect(editor);
+  }, [editor]);
+
+  return (
+    <Slate
+      editor={editor}
+      initialValue={value}
+      onChange={(newValue) => setValue(newValue)}
+    >
+      <Editable />
+    </Slate>
+  );
+};
+```
+
+That's all you need to enable realtime collaboration on Slate! From here on, you can further customize your Slate editor by following the official [Slate documentation](https://docs.slatejs.org). And you can persist the contents of your Slate editor by following pluv.io's documentation for [Loading Storage](/docs/io/loading-storage).

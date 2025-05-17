@@ -9,7 +9,7 @@ import { useStorage } from "../../../pluv-io/yjs/cloudflare";
 export interface SlateEditorProps {}
 
 export const SlateEditor: FC<SlateEditorProps> = () => {
-    const [content, sharedType] = useStorage("slate");
+    const [, sharedType] = useStorage("slate");
 
     const editor = useMemo(() => {
         if (!sharedType) return null;
