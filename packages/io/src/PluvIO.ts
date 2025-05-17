@@ -149,7 +149,9 @@ export class PluvIO<
          * to support platformPluv
          * @date December 15, 2024
          */
-        if (platform._createToken) return await platform._createToken(params as any);
+        if (platform._createToken) {
+            return await platform._createToken({ ...params, authorize: ioAuthorize });
+        }
 
         const secret = ioAuthorize?.secret ?? null;
 
