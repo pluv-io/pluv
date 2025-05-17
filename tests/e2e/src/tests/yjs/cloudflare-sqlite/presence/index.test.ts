@@ -319,7 +319,7 @@ test.describe("Cloudflare Presence", () => {
                 .then((text) => JSON.parse(text))
                 .then((others) => expect(others.length).toEqual(1));
 
-            await firstPage.locator("toggle-room").click();
+            await firstPage.locator("#toggle-room").click();
             await waitMs(ms("0.25s"));
 
             await firstPage
@@ -334,7 +334,7 @@ test.describe("Cloudflare Presence", () => {
                 .then((text) => JSON.parse(text))
                 .then((others) => expect(others.length).toEqual(0));
 
-            await secondPage.locator("toggle-room").click();
+            await secondPage.locator("#toggle-room").click();
             await waitMs(ms("0.25s"));
 
             await firstPage
@@ -349,7 +349,7 @@ test.describe("Cloudflare Presence", () => {
                 .then((text) => JSON.parse(text))
                 .then((others) => expect(others.length).toEqual(1));
 
-            await firstPage.locator("toggle-room").click();
+            await firstPage.locator("#toggle-room").click();
             await waitMs(ms("0.25s"));
 
             await firstPage
@@ -364,7 +364,7 @@ test.describe("Cloudflare Presence", () => {
                 .then((text) => JSON.parse(text))
                 .then((others) => expect(others.length).toEqual(0));
 
-            await secondPage.locator("toggle-room").click();
+            await secondPage.locator("#toggle-room").click();
             await waitMs(ms("0.25s"));
 
             await firstPage
