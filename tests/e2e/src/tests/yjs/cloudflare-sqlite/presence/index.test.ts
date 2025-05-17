@@ -295,7 +295,7 @@ test.describe("Cloudflare Presence", () => {
             verify others on 1 + 2
         `,
         async () => {
-            const testUrl = `${TEST_URL}?room=sqlite-e2e-presence-1`;
+            const testUrl = `${TEST_URL}?room=sqlite-e2e-presence-switch-rooms`;
 
             const firstPage = await openTestPage(testUrl);
             const secondPage = await openTestPage(testUrl);
