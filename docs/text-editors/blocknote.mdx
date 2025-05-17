@@ -1,0 +1,153 @@
+---
+title: "BlockNote"
+description: "Learn how to setup BlockNote for realtime collaboration with pluv.io"
+---
+
+# BlockNote
+
+> **Note**: pluv.io integrates with BlockNote only via Yjs (i.e. @pluv/crdt-yjs)
+
+> **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart/nextjs) to see how.
+
+[BlockNote](https://www.blocknotejs.org/) is a rich text editor focused on providing a great out-of-the-box experience with minimal setup. It also has been designed to support realtime collaboration with [Yjs](https://yjs.dev) via a `collaboration` config on the editor's initialization. Because pluv.io's storage API is built around Yjs, we can simply connect a BlockNote editor to a `PluvRoom` via pluv.io's [Yjs connection provider](https://docs.yjs.dev/ecosystem/connection-provider) to enable collaboration on BlockNote.
+
+## Installation
+
+To setup BlockNote for collaborative editing with pluv.io, the following packages will need to be installed:
+
+```bash
+# Blocknote packages
+npm install @blocknote/core @blocknote/mantine @blocknote/react
+
+# pluv.io packages
+npm install @pluv.io
+
+# Peer dependencies
+npm install yjs zod
+```
+
+## Enable Collaborative Editing
+
+> **Note**: Most of this documentation mirrors [BlockNote's official documentation on collaborative editing](https://www.blocknotejs.org/docs/collaboration/real-time-collaboration). You can also follow the instructions there to get BlockNote connected with pluv.io.
+
+To start, we will need at least a basic BlockNote editor:
+
+```tsx
+import { BlockNoteView } from "@blocknote/mantine";
+import { useCreateBlockNote } from "@blocknote/react";
+import type { FC } from "react";
+
+export interface BlockNoteEditorProps {}
+
+export const BlockNoteEditor: FC<BlockNoteEditorProps> = () => {
+  const editor = useCreateBlockNote();
+
+  return <BlockNoteView editor={editor} />;
+};
+```
+
+Then we will need to setup:
+1. Yjs storage on pluv.io with a [Yjs.XmlFragment](https://docs.yjs.dev/api/shared-types/y.xmlfragment) onto which BlockNote's editor contents will live.
+2. Presence onto which BlockNote's presence and awareness state will live.
+
+```ts
+import { createClient } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
+import type { InferBundleRoom } from "@pluv/react";
+import { createBundle } from "@pluv/react";
+import { z } from "zod";
+
+const io = createClient({
+  initialStorage: yjs.doc((t) => ({
+    myEditor: t.xmlFragment("myEditor"),
+  })),
+  presense: z.object({
+    // We'll put BlockNote's awareness data here.
+
+    // We recommend having this be `any`, as this data is internal to
+    // BlockNote and is complex
+
+    // The field name can be whatever you choose
+    myAwareness: z.any().default({}),
+  }),
+  // ... other pluv.io configs
+});
+
+const bundle = createBundle(io);
+
+export const {
+  // ... other utils
+  useRoom,
+  useStorage,
+} = bundle;
+
+export type PluvIORoom = InferBundleRoom<typeof bundle>;
+```
+
+Lastly, we will just need to define and forward BlockNote's Yjs connection provider to BlockNote's `useCreateBlockNote` hook to enable collaboration on BlockNote.
+
+The `useCreateBlockNote` hook takes in a `Y.XmlFragment` as an input; however, this Yjs shared-type will be null while pluv.io is still connecting. So we will need to create a nested component that is able to accept the `Y.XmlFragment` as an input prop.
+
+```tsx
+import { BlockNoteView } from "@blocknote/mantine";
+import { useCreateBlockNote } from "@blocknote/react";
+import { yjs } from "@pluv/crdt-yjs";
+import type { FC } from "react";
+import { useMemo } from "react";
+import type { XmlFragment as YXmlFragment } from "yjs";
+import { useRoom, useStorage } from "./pluv";
+
+const EXAMPLE_USER = { name: "john doe", color: "#6B5CFF" };
+
+interface BlockNoteEditorInnerProps {
+  fragment: YXmlFragment;
+}
+
+const BlockNoteEditorInner: FC<BlockNoteEditorInnerProps> = ({ fragment }) => {
+  const room = useRoom();
+
+  const provider = useMemo(() => {
+    return yjs.provider({
+      room,
+      // This is the field we created on createClient's presence.
+      // If this is not provided, all of the user awareness data will be
+      // attempted to be stored on the presence root (and fail if not handled
+      // in the presence schema).
+      presenceField: "myAwareness",
+    });
+  }, [room]);
+
+  const editor = useCreateBlockNote({
+    collaboration: {
+      provider,
+      fragment,
+
+      // This is used to show live text cursors
+      user: {
+        name: EXAMPLE_USER.name,
+        color: EXAMPLE_USER.color,
+      },
+      // When to show user labels on the collaboration cursor. Set by default
+      // to "activity" (show when the cursor moves), but can also be set to
+      // "always"
+      showCursorLabels: "activity",
+    },
+  });
+
+  return <BlockNoteView editor={editor} />;
+};
+
+export interface BlockNoteEditorProps {}
+
+export const BlockNoteEditor: FC<BlockNoteEditorProps> = () => {
+  const [, fragment] = useStorage("myEditor");
+
+  // While the fragment is still null (i.e. room is still connecting), we can
+  // show a loading state in the meantime
+  if (!fragment) return <div>Loading...</div>;
+
+  return <BlockNoteEditorInner fragment={fragment} />;
+};
+```
+
+That's all you need to enable realtime collaboration on BlockNote! From here on, you can further customize your BlockNote editor by following the official [BlockNote documentation](https://www.blocknotejs.org/docs). And you can persist the contents of your BlockNote editor by following pluv.io's documentation for [Loading Storage](/docs/io/loading-storage).

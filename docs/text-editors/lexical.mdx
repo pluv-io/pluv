@@ -89,7 +89,7 @@ const io = createClient({
     // Lexical and is complex
 
     // The field name can be whatever you choose
-    myLexical: z.any().default({}),
+    myAwareness: z.any().default({}),
   }),
   // ... other pluv.io configs
 });
@@ -155,7 +155,7 @@ export const LexicalEditor: FC<LexicalEditorProps> = () => {
         // If this is not provided, all of the user awareness data will be
         // attempted to be stored on the presence root (and fail if not handled
         // in the presence schema).
-        presenceField: "myLexical",
+        presenceField: "myAwareness",
       });
     },
     [room],
