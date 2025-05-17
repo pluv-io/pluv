@@ -515,8 +515,8 @@ export class PluvRoom<
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     };
 
-    public getDoc = (): CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>> | null => {
-        return this.getStorageLoaded() ? this._crdtManager.doc : null;
+    public getDoc = (): CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>> => {
+        return this._crdtManager.doc;
     };
 
     public getMyPresence = (): TPresence => {

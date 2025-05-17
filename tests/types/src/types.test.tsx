@@ -127,10 +127,14 @@ room.subscribe.myPresence((myPresence) => {
     expectTypeOf<typeof myPresence>().toEqualTypeOf<{ cursor: number }>();
 });
 
-expectTypeOf(room.getDoc()).toEqualTypeOf<CrdtDocLike<
-    YDoc,
-    { messages: yjs.YjsType<YArray<string>, string[]> }
-> | null>();
+expectTypeOf(room.getDoc()).toEqualTypeOf<
+    CrdtDocLike<
+        YDoc,
+        {
+            messages: yjs.YjsType<YArray<string>, string[]>;
+        }
+    >
+>();
 
 const { PluvRoomProvider, useDoc, useStorage } = createBundle(client);
 
@@ -161,7 +165,11 @@ const storageMessages = useStorage("messages");
 expectTypeOf(storageMessages[0]).toEqualTypeOf<string[] | null>();
 expectTypeOf(storageMessages[1]).toEqualTypeOf<yjs.YjsType<YArray<string>, string[]> | null>();
 
-expectTypeOf(useDoc()).toEqualTypeOf<CrdtDocLike<
-    YDoc,
-    { messages: yjs.YjsType<YArray<string>, string[]> }
-> | null>();
+expectTypeOf(useDoc()).toEqualTypeOf<
+    CrdtDocLike<
+        YDoc,
+        {
+            messages: yjs.YjsType<YArray<string>, string[]>;
+        }
+    >
+>();

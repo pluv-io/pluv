@@ -1,11 +1,4 @@
-import type {
-    AbstractCrdtDocFactory,
-    CrdtDocLike,
-    CrdtType,
-    InferDoc,
-    InferDocLike,
-    InferStorage,
-} from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, InferDocLike, InferStorage } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 
 export type CrdtManagerOptions<TCrdt extends AbstractCrdtDocFactory<any, any>> = {
@@ -32,7 +25,7 @@ export class CrdtManager<TCrdt extends AbstractCrdtDocFactory<any, any>> {
         const { initialStorage = noop.doc({}) as any } = options;
 
         this._docFactory = initialStorage;
-        this.doc = initialStorage.getEmpty();
+        this.doc = this._docFactory.getEmpty() as InferDocLike<TCrdt>;
     }
 
     /**
@@ -101,11 +94,7 @@ export class CrdtManager<TCrdt extends AbstractCrdtDocFactory<any, any>> {
         const initialized = this._docFactory.getInitialized();
         const reference = initialized.get();
 
-        this.doc = this._applyDocUpdates(
-            this._docFactory.getEmpty(),
-            updates,
-            origin,
-        ).rebuildStorage(reference) as InferDocLike<TCrdt>;
+        this.doc = this._applyDocUpdates(this.doc, updates, origin).rebuildStorage(reference);
         this.initialized = true;
         initialized.destroy();
 
@@ -117,10 +106,10 @@ export class CrdtManager<TCrdt extends AbstractCrdtDocFactory<any, any>> {
     }
 
     private _applyDocUpdates(
-        doc: CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>>,
+        doc: InferDocLike<TCrdt>,
         updates: readonly string[],
         origin?: string,
-    ): CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>> {
+    ): InferDocLike<TCrdt> {
         doc.transact(() => {
             doc.batchApplyEncodedState({ origin, updates });
         }, origin);

@@ -211,7 +211,7 @@ export interface RoomLike<
 
     canUndo(): boolean;
 
-    getDoc(): CrdtDocLike<TDoc, TStorage> | null;
+    getDoc(): CrdtDocLike<TDoc, TStorage>;
 
     event: EventProxy<TIO, TEvents>;
 

@@ -109,7 +109,7 @@ export interface CreateBundle<
         selector?: (connection: WebSocketConnection) => T,
         options?: SubscriptionHookOptions<Id<T>>,
     ) => Id<T>;
-    useDoc: () => CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>> | null;
+    useDoc: () => CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>>;
     useEvent: <TType extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
         type: TType,
         callback: (data: Id<IOEventMessage<MergeEvents<TEvents, TIO>, TType>>) => void,
