@@ -37,7 +37,7 @@ export type PluvIOConfig<
     crdt?: CrdtLibraryType;
     debug?: boolean;
     limits?: PluvIOLimits;
-    platform: TPlatform;
+    platform: () => TPlatform;
 };
 
 type ResolvedServerConfig<
@@ -93,7 +93,7 @@ export class PluvIO<
     private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     private readonly _debug: boolean;
     private readonly _limits: PluvIOLimits;
-    private readonly _platform: TPlatform;
+    private readonly _platform: () => TPlatform;
 
     public get procedure(): PluvProcedure<TPlatform, TAuthorize, TContext, {}, {}> {
         return new PluvProcedure();
@@ -141,19 +141,21 @@ export class PluvIO<
             );
         }
 
+        const platform = this._platform();
+
         /**
          * !HACK
          * @description Allow the platform to overwrite this behavior as needed. This is introduced
          * to support platformPluv
          * @date December 15, 2024
          */
-        if (this._platform._createToken) return await this._platform._createToken(params as any);
+        if (platform._createToken) return await platform._createToken(params as any);
 
         const secret = ioAuthorize?.secret ?? null;
 
         if (!secret) throw new Error("`authorize` was specified without a valid secret");
 
-        return await authorize({ platform: this._platform, secret }).encode(
+        return await authorize({ platform, secret }).encode(
             params as JWTEncodeParams<any, TPlatform>,
         );
     }

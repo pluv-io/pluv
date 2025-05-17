@@ -283,4 +283,104 @@ test.describe("Cloudflare Presence", () => {
             await thirdPage.close();
         },
     );
+
+    test(
+        oneLine`
+            connect 1 ->
+            connect 2 ->
+            verify others on 1 + 2 ->
+            connect 1 to room2 ->
+            verify others on 1 + 2 ->
+            connect 2 to room2 ->
+            verify others on 1 + 2
+        `,
+        async () => {
+            const testUrl = `${TEST_URL}?room=sqlite-e2e-presence-switch-rooms`;
+
+            const firstPage = await openTestPage(testUrl);
+            const secondPage = await openTestPage(testUrl);
+
+            await Promise.all([
+                firstPage.waitForSelector("#presence-room"),
+                secondPage.waitForSelector("#presence-room"),
+            ]);
+
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(1));
+
+            await secondPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(1));
+
+            await firstPage.locator("#toggle-room").click();
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(0));
+
+            await secondPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(0));
+
+            await secondPage.locator("#toggle-room").click();
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(1));
+
+            await secondPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(1));
+
+            await firstPage.locator("#toggle-room").click();
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(0));
+
+            await secondPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(0));
+
+            await secondPage.locator("#toggle-room").click();
+            await waitMs(ms("0.25s"));
+
+            await firstPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(1));
+
+            await secondPage
+                .locator("#others")
+                .innerText()
+                .then((text) => JSON.parse(text))
+                .then((others) => expect(others.length).toEqual(1));
+
+            await firstPage.close();
+            await secondPage.close();
+        },
+    );
 });

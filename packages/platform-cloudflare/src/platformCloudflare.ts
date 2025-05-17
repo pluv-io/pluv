@@ -52,6 +52,6 @@ export const platformCloudflare = <
         crdt,
         debug,
         limits,
-        platform: new CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>(config),
+        platform: () => new CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>(config),
     };
 };

@@ -60,7 +60,7 @@ export interface IORoomListeners<
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > {
-    onDestroy: (event: IORoomListenerEvent<TContext>) => void;
+    onDestroy: (event: IORoomListenerEvent<TPlatform, TContext>) => void;
     onMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
     onUserConnected: (event: IOUserConnectedEvent<TPlatform, TAuthorize, TContext>) => void;
     onUserDisconnected: (event: IOUserDisconnectedEvent<TPlatform, TAuthorize, TContext>) => void;
@@ -472,6 +472,7 @@ export class IORoom<
                     this._listeners.onUserDisconnected({
                         context: this._context,
                         encodedState,
+                        platform: this._platform,
                         room: this.id,
                         user,
                     }),
@@ -538,6 +539,7 @@ export class IORoom<
                 this._listeners.onUserConnected({
                     context: this._context,
                     encodedState,
+                    platform: this._platform,
                     room: this.id,
                     user,
                     webSocket: pluvWs.webSocket,
@@ -769,6 +771,7 @@ export class IORoom<
                             : {}),
                         context: this._context,
                         encodedState,
+                        platform: this._platform,
                         room: this.id,
                     }),
                 );
@@ -825,6 +828,7 @@ export class IORoom<
                 garbageCollect: async () => {
                     await this.garbageCollect();
                 },
+                platform: this._platform,
                 get presence() {
                     return session.presence as JsonObject | null;
                 },
@@ -864,6 +868,7 @@ export class IORoom<
                     InferEventsOutput<TEvents>,
                     keyof InferEventsOutput<TEvents>
                 >,
+                platform: this._platform,
                 room: this.id,
                 user: session.user,
                 webSocket: session.webSocket.webSocket,
@@ -1105,6 +1110,7 @@ export class IORoom<
             garbageCollect: async () => {
                 await this.garbageCollect();
             },
+            platform: this._platform,
             get presence() {
                 return null;
             },

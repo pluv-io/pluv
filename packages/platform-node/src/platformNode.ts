@@ -45,6 +45,6 @@ export const platformNode = <
         crdt,
         debug,
         limits,
-        platform: new NodePlatform<IOAuthorize<TUser, TContext>, TMeta>(config),
+        platform: () => new NodePlatform<IOAuthorize<TUser, TContext>, TMeta>(config),
     };
 };

@@ -1,7 +1,6 @@
 import type {
     BaseUser,
     GetInitialStorageFn,
-    IORoomListenerEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
 } from "@pluv/io";
@@ -20,6 +19,12 @@ import type {
 export interface PluvIOEndpoints {
     createToken: string;
 }
+
+export type IORoomListenerEvent<TContext extends Record<string, any>> = {
+    context: TContext;
+    encodedState: string | null;
+    room: string;
+};
 
 export type PluvIOListeners<
     TContext extends Record<string, any> = {},

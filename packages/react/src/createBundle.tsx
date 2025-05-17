@@ -153,7 +153,13 @@ export const createBundle = <
                 return !!room.metadata ? room.metadata.parse(resolved) : resolved;
             });
 
-            const [room] = useState<PluvRoom<TIO, TMetadata, TPresence, TCrdt, TEvents>>(() => {
+            const createRoom = useCallback((): PluvRoom<
+                TIO,
+                TMetadata,
+                TPresence,
+                TCrdt,
+                TEvents
+            > => {
                 return client.createRoom(_room, {
                     addons: options.addons,
                     debug,
@@ -166,7 +172,15 @@ export const createBundle = <
                     onAuthorizationFail,
                     router: options.router,
                 } as CreateRoomOptions<TIO, TPresence, TCrdt, TMetadata, TEvents>);
-            });
+            }, [_room, debug, initialPresence, initialStorage, metadata, onAuthorizationFail]);
+
+            const [room, setRoom] = useState(() => createRoom());
+
+            useEffect(() => {
+                if (room.id === _room) return;
+
+                setRoom(createRoom());
+            }, [_room, createRoom, room]);
 
             useEffect(() => {
                 const unsubscribe = room.subscribe.connection(() => {

@@ -55,7 +55,7 @@ export type PluvServerConfig<
     getInitialStorage?: GetInitialStorageFn<TContext>;
     limits: PluvIOLimits;
     io: PluvIO<TPlatform, TAuthorize, TContext>;
-    platform: TPlatform;
+    platform: () => TPlatform;
     router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 };
 
@@ -96,192 +96,6 @@ export class PluvServer<
     public readonly version: string = __PLUV_VERSION as any;
 
     private readonly _authorize: TAuthorize = null as TAuthorize;
-    private readonly _baseRouter: PluvRouter<TPlatform, TAuthorize, TContext, {}> = new PluvRouter({
-        $getOthers: this._procedure.sync((data, { room, session, sessions }) => {
-            const currentTime = Date.now();
-
-            const others = sessions
-                .filter((wsSession) => {
-                    if (wsSession.id === session?.id) return false;
-                    if (wsSession.quit) return false;
-                    if (currentTime - wsSession.timers.ping > PING_TIMEOUT_MS) return false;
-
-                    return true;
-                })
-                .reduce<{
-                    [connectionId: string]: {
-                        connectionId: string;
-                        room: string | null;
-                        user: JsonObject | null;
-                    };
-                }>(
-                    (acc, { id, presence, timers, user }) => ({
-                        ...acc,
-                        [id]: {
-                            connectionId: id,
-                            presence,
-                            room,
-                            timers: { presence: timers.presence },
-                            user,
-                        },
-                    }),
-                    {},
-                );
-
-            return { $othersReceived: { others } };
-        }),
-        $initializeSession: this._procedure
-            .broadcast((data, { session }) => {
-                const presence = (data as any)?.presence;
-                const timers = session.timers;
-
-                if (!session) return {};
-
-                session.presence = presence;
-
-                return {
-                    $userJoined: {
-                        connectionId: session.id,
-                        user: session.user,
-                        presence,
-                        timers: { presence: timers.presence },
-                    },
-                };
-            })
-            .self(async (data, { context, doc, room, session }) => {
-                const oldState = await this._platform.persistence.getStorageState(room);
-                /**
-                 * !HACK
-                 * @description This is the frontend's initialStorage. We only want to
-                 * apply this if the server's storage is empty (i.e. no initial storage
-                 * has been applied)
-                 */
-                const update = (data as any)?.update as Maybe<string>;
-
-                if (!oldState) {
-                    const loadedState = await this._getInitialStorage?.({ context, room });
-
-                    if (!!loadedState) {
-                        doc.applyEncodedState({ update: loadedState }).getEncodedState();
-                    }
-                }
-
-                /**
-                 * @description Storage was already initialized. Don't overwrite the current
-                 * storage state with the incoming initial storage. Return what the current state
-                 * is without changes.
-                 * @date May 7, 2025
-                 */
-                if (!doc.isEmpty()) {
-                    const encodedState = doc.getEncodedState();
-
-                    return { $storageReceived: { changeKind: "unchanged", state: encodedState } };
-                }
-
-                /**
-                 * @description Storage was never initialized, and there is an incoming
-                 * initialStorage from the client. Apply the initialStorage and persist the state
-                 * as an update.
-                 * @date May 7, 2025
-                 */
-                if (!!update) {
-                    const encodedState = doc.applyEncodedState({ update }).getEncodedState();
-                    const storageSize = new TextEncoder().encode(encodedState).length;
-
-                    if (
-                        !!this._limits.storageMaxSize &&
-                        storageSize > this._limits.storageMaxSize
-                    ) {
-                        throw new Error("Storage has exceeded the size limit");
-                    }
-
-                    await this._platform.persistence
-                        .setStorageState(room, encodedState)
-                        .catch((error) => {
-                            this._logDebug(error);
-                        });
-
-                    this._getListeners().onStorageUpdated({
-                        context,
-                        encodedState,
-                        room,
-                        user: session?.user,
-                        webSocket: session?.webSocket.webSocket,
-                    });
-
-                    return { $storageReceived: { changeKind: "initialized", state: encodedState } };
-                }
-
-                const encodedState = doc.getEncodedState();
-
-                return { $storageReceived: { changeKind: "empty", state: encodedState } };
-            }),
-        $ping: this._procedure.self((data, { session }) => {
-            if (!session) return {};
-
-            const currentTime = new Date().getTime();
-            const prevState = session.webSocket.state;
-
-            this._platform.setSerializedState(session.webSocket, {
-                ...prevState,
-                timers: {
-                    ...prevState.timers,
-                    ping: currentTime,
-                },
-            });
-
-            return { $pong: {} };
-        }),
-        $updatePresence: this._procedure.broadcast((data, context) => {
-            const presence = (data as any)?.presence;
-            const { session } = context;
-
-            if (!session) return {};
-
-            const cleanedPatch = pickBy(presence ?? {}, (value) => typeof value !== "undefined");
-            const updated = Object.assign(Object.create(null), session.presence, cleanedPatch);
-            const bytes = new TextEncoder().encode(JSON.stringify(updated)).length;
-
-            if (!!this._limits.presenceMaxSize && bytes > this._limits.presenceMaxSize) {
-                throw new Error(
-                    `Large presence. Presence must be at most 512 bytes. Current size: ${bytes.toLocaleString()}`,
-                );
-            }
-
-            context.presence = updated;
-
-            return {
-                $presenceUpdated: {
-                    presence: updated,
-                    timers: { presence: session.timers.presence },
-                },
-            };
-        }),
-        $updateStorage: this._procedure.broadcast((data, { context, doc, room }) => {
-            const origin = (data as any)?.origin as Maybe<string>;
-            const update: string | null = (data as any)?.update ?? null;
-
-            if (origin === "$initialized" && Object.keys(doc.toJson()).length) return {};
-
-            const updated = update === null ? doc : doc.applyEncodedState({ update });
-            const encodedState = updated.getEncodedState();
-            const storageSize = new TextEncoder().encode(encodedState).length;
-
-            if (!!this._limits.storageMaxSize && storageSize > this._limits.storageMaxSize) {
-                throw new Error("Storage has exceeded the size limit");
-            }
-
-            this._platform.persistence.setStorageState(room, encodedState).then(() => {
-                this._getListeners().onStorageUpdated({
-                    context,
-                    encodedState,
-                    room,
-                });
-            });
-
-            return { $storageUpdated: { state: encodedState } };
-        }),
-    });
     private readonly _context: PluvContext<TPlatform, TContext> = {} as PluvContext<
         TPlatform,
         TContext
@@ -291,16 +105,18 @@ export class PluvServer<
     private readonly _getInitialStorage: GetInitialStorageFn<TContext> | null = null;
     private readonly _io: PluvIO<TPlatform, TAuthorize, TContext>;
     private readonly _limits: PluvIOLimits;
-    private readonly _platform: TPlatform;
-    private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
+    private readonly _platform: () => TPlatform;
+    private readonly _inputRouter: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
     public get fetch(): (...args: any[]) => Promise<any> {
-        return ((...args: any[]): Promise<any> => {
-            if (!this._platform._fetch)
-                throw new Error(`\`${this._platform._name}\` does not support \`fetch\``);
+        const platform = this._platform();
 
-            return this._platform._fetch(...args);
-        }) as NonNullable<typeof this._platform._fetch>;
+        return ((...args: any[]): Promise<any> => {
+            if (!platform._fetch)
+                throw new Error(`\`${platform._name}\` does not support \`fetch\``);
+
+            return platform._fetch(...args);
+        }) as NonNullable<typeof platform._fetch>;
     }
 
     /**
@@ -313,7 +129,7 @@ export class PluvServer<
             authorize: this._authorize,
             context: this._context,
             events: this._router._defs.events,
-            platform: this._platform,
+            platform: this._platform(),
         } as {
             authorize: TAuthorize;
             context: TContext;
@@ -322,8 +138,214 @@ export class PluvServer<
         };
     }
 
+    private get _baseRouter(): PluvRouter<TPlatform, TAuthorize, TContext, {}> {
+        return new PluvRouter({
+            $getOthers: this._procedure.sync((data, { room, session, sessions }) => {
+                const currentTime = Date.now();
+
+                const others = sessions
+                    .filter((wsSession) => {
+                        if (wsSession.id === session?.id) return false;
+                        if (wsSession.quit) return false;
+                        if (currentTime - wsSession.timers.ping > PING_TIMEOUT_MS) return false;
+
+                        return true;
+                    })
+                    .reduce<{
+                        [connectionId: string]: {
+                            connectionId: string;
+                            room: string | null;
+                            user: JsonObject | null;
+                        };
+                    }>(
+                        (acc, { id, presence, timers, user }) => ({
+                            ...acc,
+                            [id]: {
+                                connectionId: id,
+                                presence,
+                                room,
+                                timers: { presence: timers.presence },
+                                user,
+                            },
+                        }),
+                        {},
+                    );
+
+                return { $othersReceived: { others } };
+            }),
+            $initializeSession: this._procedure
+                .broadcast((data, { session }) => {
+                    const presence = (data as any)?.presence;
+                    const timers = session.timers;
+
+                    if (!session) return {};
+
+                    session.presence = presence;
+
+                    return {
+                        $userJoined: {
+                            connectionId: session.id,
+                            user: session.user,
+                            presence,
+                            timers: { presence: timers.presence },
+                        },
+                    };
+                })
+                .self(async (data, { context, doc, platform, room, session }) => {
+                    const oldState = await platform.persistence.getStorageState(room);
+                    /**
+                     * !HACK
+                     * @description This is the frontend's initialStorage. We only want to
+                     * apply this if the server's storage is empty (i.e. no initial storage
+                     * has been applied)
+                     */
+                    const update = (data as any)?.update as Maybe<string>;
+
+                    if (!oldState) {
+                        const loadedState = await this._getInitialStorage?.({ context, room });
+
+                        if (!!loadedState) {
+                            doc.applyEncodedState({ update: loadedState }).getEncodedState();
+                        }
+                    }
+
+                    /**
+                     * @description Storage was already initialized. Don't overwrite the current
+                     * storage state with the incoming initial storage. Return what the current state
+                     * is without changes.
+                     * @date May 7, 2025
+                     */
+                    if (!doc.isEmpty()) {
+                        const encodedState = doc.getEncodedState();
+
+                        return {
+                            $storageReceived: { changeKind: "unchanged", state: encodedState },
+                        };
+                    }
+
+                    /**
+                     * @description Storage was never initialized, and there is an incoming
+                     * initialStorage from the client. Apply the initialStorage and persist the state
+                     * as an update.
+                     * @date May 7, 2025
+                     */
+                    if (!!update) {
+                        const encodedState = doc.applyEncodedState({ update }).getEncodedState();
+                        const storageSize = new TextEncoder().encode(encodedState).length;
+
+                        if (
+                            !!this._limits.storageMaxSize &&
+                            storageSize > this._limits.storageMaxSize
+                        ) {
+                            throw new Error("Storage has exceeded the size limit");
+                        }
+
+                        await platform.persistence
+                            .setStorageState(room, encodedState)
+                            .catch((error) => {
+                                this._logDebug(error);
+                            });
+
+                        this._getListeners().onStorageUpdated({
+                            context,
+                            encodedState,
+                            platform,
+                            room,
+                            user: session?.user,
+                            webSocket: session?.webSocket.webSocket,
+                        });
+
+                        return {
+                            $storageReceived: { changeKind: "initialized", state: encodedState },
+                        };
+                    }
+
+                    const encodedState = doc.getEncodedState();
+
+                    return { $storageReceived: { changeKind: "empty", state: encodedState } };
+                }),
+            $ping: this._procedure.self((data, { platform, session }) => {
+                if (!session) return {};
+
+                const currentTime = new Date().getTime();
+                const prevState = session.webSocket.state;
+
+                platform.setSerializedState(session.webSocket, {
+                    ...prevState,
+                    timers: {
+                        ...prevState.timers,
+                        ping: currentTime,
+                    },
+                });
+
+                return { $pong: {} };
+            }),
+            $updatePresence: this._procedure.broadcast((data, context) => {
+                const presence = (data as any)?.presence;
+                const { session } = context;
+
+                if (!session) return {};
+
+                const cleanedPatch = pickBy(
+                    presence ?? {},
+                    (value) => typeof value !== "undefined",
+                );
+                const updated = Object.assign(Object.create(null), session.presence, cleanedPatch);
+                const bytes = new TextEncoder().encode(JSON.stringify(updated)).length;
+
+                if (!!this._limits.presenceMaxSize && bytes > this._limits.presenceMaxSize) {
+                    throw new Error(
+                        `Large presence. Presence must be at most 512 bytes. Current size: ${bytes.toLocaleString()}`,
+                    );
+                }
+
+                context.presence = updated;
+
+                return {
+                    $presenceUpdated: {
+                        presence: updated,
+                        timers: { presence: session.timers.presence },
+                    },
+                };
+            }),
+            $updateStorage: this._procedure.broadcast((data, { context, doc, platform, room }) => {
+                const origin = (data as any)?.origin as Maybe<string>;
+                const update: string | null = (data as any)?.update ?? null;
+
+                if (origin === "$initialized" && Object.keys(doc.toJson()).length) return {};
+
+                const updated = update === null ? doc : doc.applyEncodedState({ update });
+                const encodedState = updated.getEncodedState();
+                const storageSize = new TextEncoder().encode(encodedState).length;
+
+                if (!!this._limits.storageMaxSize && storageSize > this._limits.storageMaxSize) {
+                    throw new Error("Storage has exceeded the size limit");
+                }
+
+                platform.persistence.setStorageState(room, encodedState).then(() => {
+                    this._getListeners().onStorageUpdated({
+                        context,
+                        encodedState,
+                        platform,
+                        room,
+                    });
+                });
+
+                return { $storageUpdated: { state: encodedState } };
+            }),
+        });
+    }
+
     private get _procedure(): PluvProcedure<TPlatform, TAuthorize, TContext, {}, {}> {
         return new PluvProcedure();
+    }
+
+    private get _router(): PluvRouter<TPlatform, TAuthorize, TContext, TEvents> {
+        return (
+            this._inputRouter
+                ? PluvRouter.merge(this._baseRouter, this._inputRouter)
+                : this._baseRouter
+        ) as PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
     }
 
     constructor(options: PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>) {
@@ -347,16 +369,14 @@ export class PluvServer<
             onUserDisconnected,
         } = options as Partial<BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>>;
 
-        platform.validateConfig(options);
+        platform().validateConfig(options);
 
         this._crdt = crdt;
         this._debug = debug;
+        this._inputRouter = router;
         this._io = io;
         this._limits = limits;
         this._platform = platform;
-        this._router = (
-            router ? PluvRouter.merge(this._baseRouter, router) : this._baseRouter
-        ) as PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
 
         if (authorize) this._authorize = authorize;
         if (context) this._context = context;
@@ -378,8 +398,10 @@ export class PluvServer<
         const { _meta, debug, onDestroy, onMessage, ...platformRoomContext } = (options[0] ??
             {}) as CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>[0] & { _meta?: any };
 
-        if (this._platform._config.handleMode !== "io") {
-            throw new Error(`\`createRoom\` is unsupported for \`${this._platform._name}\``);
+        const platform = this._platform();
+
+        if (platform._config.handleMode !== "io") {
+            throw new Error(`\`createRoom\` is unsupported for \`${platform._name}\``);
         }
 
         if (!/^[a-z0-9](?:[a-z0-9-_]*[a-z0-9])?$/i.test(room))
@@ -388,6 +410,8 @@ export class PluvServer<
         const roomContext = platformRoomContext as InferRoomContextType<TPlatform>;
         const context: TContext =
             typeof this._context === "function" ? this._context(roomContext) : this._context;
+        const listeners = this._getListeners();
+        const logDebug = this._logDebug.bind(this);
 
         const newRoom = new IORoom<TPlatform, TAuthorize, TContext, TEvents>(room, {
             ...(!!_meta ? { _meta } : {}),
@@ -395,26 +419,26 @@ export class PluvServer<
             context,
             crdt: this._crdt,
             debug: debug ?? this._debug,
-            onDestroy: async (event) => {
-                this._logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
+            async onDestroy(event) {
+                logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
 
                 await Promise.resolve(onDestroy?.(event));
-                await Promise.resolve(this._getListeners().onRoomDeleted(event));
-                await this._platform.persistence.deleteStorageState(room);
+                await Promise.resolve(listeners.onRoomDeleted(event));
+                await event.platform.persistence.deleteStorageState(room);
 
-                this._logDebug(`${colors.blue("Deleted room:")} ${room}`);
+                logDebug(`${colors.blue("Deleted room:")} ${room}`);
             },
-            onMessage: async (event) => {
+            async onMessage(event) {
                 await Promise.resolve(onMessage?.(event));
-                await Promise.resolve(this._getListeners().onRoomMessage(event));
+                await Promise.resolve(listeners.onRoomMessage(event));
             },
-            onUserConnected: async (event) => {
-                await Promise.resolve(this._getListeners().onUserConnected(event));
+            async onUserConnected(event) {
+                await Promise.resolve(listeners.onUserConnected(event));
             },
-            onUserDisconnected: async (event) => {
-                await Promise.resolve(this._getListeners().onUserDisconnected(event));
+            async onUserDisconnected(event) {
+                await Promise.resolve(listeners.onUserDisconnected(event));
             },
-            platform: this._platform,
+            platform,
             roomContext,
             router: this._router,
         });

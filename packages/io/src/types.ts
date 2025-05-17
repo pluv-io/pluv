@@ -56,6 +56,7 @@ export interface EventResolverContext<
     context: TContext;
     doc: CrdtDocLike<any, any>;
     garbageCollect: () => Promise<void>;
+    platform: TPlatform;
     presence: JsonObject | null;
     room: string;
     session: TKind extends "sync"
@@ -176,7 +177,7 @@ export type BasePluvIOListeners<
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = {
-    onRoomDeleted: (event: IORoomListenerEvent<TContext>) => void;
+    onRoomDeleted: (event: IORoomListenerEvent<TPlatform, TContext>) => void;
     onRoomMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
     onStorageUpdated: (event: IOStorageUpdatedEvent<TPlatform, TAuthorize, TContext>) => void;
     onUserConnected: (event: IOUserConnectedEvent<TPlatform, TAuthorize, TContext>) => void;
@@ -230,9 +231,13 @@ export type InferPlatformListeners<TPlatform extends AbstractPlatform<any, any, 
 export type InferPlatformRouter<TPlatform extends AbstractPlatform<any, any, any, any>> =
     InferPlatformConfig<TPlatform>["router"];
 
-export type IORoomListenerEvent<TContext extends Record<string, any>> = {
+export type IORoomListenerEvent<
+    TPlatform extends AbstractPlatform<any, any, any, any>,
+    TContext extends Record<string, any>,
+> = {
     context: TContext;
     encodedState: string | null;
+    platform: TPlatform;
     room: string;
 };
 
@@ -241,7 +246,7 @@ export type IORoomMessageEvent<
     TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> = IORoomListenerEvent<TContext> & {
+> = IORoomListenerEvent<TPlatform, TContext> & {
     message: InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>;
     user?: InferIOAuthorizeUser<TAuthorize>;
     webSocket?: InferPlatformWebSocketSource<TPlatform>;
@@ -251,7 +256,7 @@ export type IOStorageUpdatedEvent<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
-> = IORoomListenerEvent<TContext> & {
+> = IORoomListenerEvent<TPlatform, TContext> & {
     user?: InferIOAuthorizeUser<TAuthorize>;
     webSocket?: InferPlatformWebSocketSource<TPlatform>;
 };
@@ -260,7 +265,7 @@ export type IOUserConnectedEvent<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
-> = IORoomListenerEvent<TContext> & {
+> = IORoomListenerEvent<TPlatform, TContext> & {
     user?: InferIOAuthorizeUser<TAuthorize>;
     webSocket?: InferPlatformWebSocketSource<TPlatform>;
 };
@@ -269,7 +274,7 @@ export type IOUserDisconnectedEvent<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
-> = IORoomListenerEvent<TContext> & {
+> = IORoomListenerEvent<TPlatform, TContext> & {
     user?: InferIOAuthorizeUser<TAuthorize>;
 };
 
