@@ -11,9 +11,9 @@ export interface BlockNoteEditorInnerProps {
 }
 
 export const BlockNoteEditorInner: FC<BlockNoteEditorInnerProps> = ({ userName }) => {
-    const { doc, fragment, room } = useContext(BlockNoteEditorContext);
+    const { fragment, room } = useContext(BlockNoteEditorContext);
 
-    const provider = useMemo(() => yjs.provider({ doc, field: "blocknote", room }), [doc, room]);
+    const provider = useMemo(() => yjs.provider({ field: "blocknote", room }), [room]);
     const user = useMemo(
         () => ({ ...getRandomUserProfile(), ...(!!userName ? { name: userName } : {}) }),
         [userName],

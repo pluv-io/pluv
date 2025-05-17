@@ -32,18 +32,17 @@ export const LexicalEditor: FC = () => {
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     const room = useRoom();
-    const doc = useDoc().value;
     const connection = useConnection((connection) => connection.state);
 
     const providerFactory = useCallback(
         (id: string, yjsDocMap: Map<string, YDoc>) => {
             if (id !== room.id) throw new Error("Unexpected room id");
 
-            yjsDocMap.set(id, doc);
+            yjsDocMap.set(id, room.getDoc().value);
 
-            return yjs.provider({ doc, field: "lexical", room });
+            return yjs.provider({ field: "lexical", room });
         },
-        [doc],
+        [room],
     );
 
     if (connection !== ConnectionState.Open) return null;

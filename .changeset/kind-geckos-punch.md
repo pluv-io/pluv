@@ -37,5 +37,5 @@ createClient({
     }),
 });
 
-yjs.provider({ field: "lexical" });
+yjs.provider({ field: "lexical", /* ... */ });
 ```
