@@ -311,13 +311,6 @@ export class PluvRoom<
         this._crdtManager = new CrdtManager<TCrdt>({ initialStorage });
     }
 
-    /**
-     * @deprecated To be removed in v3. Use `getStorageLoaded` instead.
-     */
-    public get storageLoaded(): boolean {
-        return this.getStorageLoaded();
-    }
-
     public get webSocket(): WebSocket | null {
         return this._state.webSocket;
     }
@@ -493,23 +486,6 @@ export class PluvRoom<
         this._stateNotifier.subjects["my-presence"].next(null);
     }
 
-    /**
-     * @deprecated To be removed in v3. Use PluvRoom.subscribe.event instead
-     */
-    public event = new Proxy(
-        <TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
-            event: TEvent,
-            callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
-        ): (() => void) => this._eventNotifier.subscribe(event, callback),
-        {
-            get(fn, prop) {
-                return (
-                    callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
-                ): (() => void) => fn(prop as any, callback);
-            },
-        },
-    ) as EventProxy<TIO, TEvents>;
-
     public getConnection = (): WebSocketConnection => {
         // Create a read-only clone of the connection state
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
@@ -567,59 +543,8 @@ export class PluvRoom<
         );
     };
 
-    /**
-     * @deprecated To be removed in v3. Use PluvRoom.subscribe.other instead
-     */
-    public other = (
-        connectionId: string,
-        callback: OtherSubscriptionCallback<TIO, TPresence>,
-    ): (() => void) => {
-        const clientId = this._usersManager.getClientId(connectionId);
-
-        if (!clientId) return () => undefined;
-
-        return this._usersNotifier.subscribeOther(clientId, callback);
-    };
-
     public redo = (): void => {
         this._crdtManager.doc.redo();
-    };
-
-    /**
-     * @deprecated To be removed in v3. Use PluvRoom.subscribe.storage instead
-     */
-    public storage = new Proxy(
-        <TKey extends keyof InferStorage<TCrdt>>(
-            key: TKey,
-            callback: StorageSubscriptionCallback<InferStorage<TCrdt>, TKey>,
-        ): (() => void) => this._crdtNotifier.subscribe(key, callback),
-        {
-            get: (fn, prop) => {
-                type _Storage = InferStorage<TCrdt>;
-
-                if (!!prop) {
-                    return (callback: StorageRootSubscriptionCallback<_Storage>) => {
-                        return this._crdtNotifier.subcribeRoot(callback);
-                    };
-                }
-
-                return (callback: StorageSubscriptionCallback<_Storage, keyof _Storage>) => {
-                    return fn(prop as keyof InferStorage<TCrdt>, callback);
-                };
-            },
-        },
-    ) as StorageProxy<InferStorage<TCrdt>>;
-
-    /**
-     * @deprecated To be removed in v3. Use PluvRoom.subscribe.storage instead
-     * @description Subscribes to the root storage object (serialized)
-     */
-    public storageRoot = (
-        callback: (value: {
-            [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]>;
-        }) => void,
-    ): (() => void) => {
-        return this._crdtNotifier.subcribeRoot(callback);
     };
 
     public subscribe = new Proxy(
@@ -659,9 +584,9 @@ export class PluvRoom<
                     };
                 }
 
-                if (prop === "event") return this.event;
-                if (prop === "other") return this.other;
-                if (prop === "storage") return this.storage;
+                if (prop === "event") return this._event;
+                if (prop === "other") return this._other;
+                if (prop === "storage") return this._storage;
             },
         },
     ) as SubscribeProxy<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
@@ -815,6 +740,20 @@ export class PluvRoom<
 
         this._crdtNotifier.rootSubject.next(storageRoot);
     }
+
+    private _event = new Proxy(
+        <TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
+            event: TEvent,
+            callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
+        ): (() => void) => this._eventNotifier.subscribe(event, callback),
+        {
+            get(fn, prop) {
+                return (
+                    callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
+                ): (() => void) => fn(prop as any, callback);
+            },
+        },
+    ) as EventProxy<TIO, TEvents>;
 
     private _flattenStorageStore = debounce(
         async (): Promise<void> => {
@@ -1497,6 +1436,17 @@ export class PluvRoom<
         return await this._onVisibilityChange();
     }
 
+    private _other = (
+        connectionId: string,
+        callback: OtherSubscriptionCallback<TIO, TPresence>,
+    ): (() => void) => {
+        const clientId = this._usersManager.getClientId(connectionId);
+
+        if (!clientId) return () => undefined;
+
+        return this._usersNotifier.subscribeOther(clientId, callback);
+    };
+
     private _parseMessage(message: { data: string | ArrayBuffer }): IOEventMessage<TIO> | null {
         /**
          * !HACK
@@ -1596,6 +1546,28 @@ export class PluvRoom<
 
         return parsed;
     }
+
+    private _storage = new Proxy(
+        <TKey extends keyof InferStorage<TCrdt>>(
+            key: TKey,
+            callback: StorageSubscriptionCallback<InferStorage<TCrdt>, TKey>,
+        ): (() => void) => this._crdtNotifier.subscribe(key, callback),
+        {
+            get: (fn, prop) => {
+                type _Storage = InferStorage<TCrdt>;
+
+                if (!!prop) {
+                    return (callback: StorageRootSubscriptionCallback<_Storage>) => {
+                        return this._crdtNotifier.subcribeRoot(callback);
+                    };
+                }
+
+                return (callback: StorageSubscriptionCallback<_Storage, keyof _Storage>) => {
+                    return fn(prop as keyof InferStorage<TCrdt>, callback);
+                };
+            },
+        },
+    ) as StorageProxy<InferStorage<TCrdt>>;
 
     private _updateState(
         updater: (oldState: WebSocketState<TIO>) => WebSocketState<TIO>,

@@ -197,10 +197,6 @@ export interface RoomLike<
 > {
     id: string;
     broadcast: BroadcastProxy<TIO, TEvents>;
-    /**
-     * @deprecated To be removed in v3. Use getStorageLoaded instead.
-     */
-    storageLoaded: boolean;
 
     addEventListener<TKind extends keyof RoomEventListenerMap>(
         kind: TKind,
@@ -212,8 +208,6 @@ export interface RoomLike<
     canUndo(): boolean;
 
     getDoc(): CrdtDocLike<TDoc, TStorage>;
-
-    event: EventProxy<TIO, TEvents>;
 
     getConnection(): WebSocketConnection;
 
@@ -232,17 +226,7 @@ export interface RoomLike<
 
     getStorageLoaded: () => boolean;
 
-    other(connectionId: string, callback: OtherSubscriptionCallback<TIO, TPresence>): () => void;
-
     redo(): void;
-
-    storage: StorageProxy<TStorage>;
-
-    storageRoot(
-        fn: (value: {
-            [P in keyof TStorage]: InferCrdtJson<TStorage[P]>;
-        }) => void,
-    ): () => void;
 
     subscribe: SubscribeProxy<TIO, TPresence, TStorage, TEvents>;
 

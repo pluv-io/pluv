@@ -28,11 +28,7 @@ const port = parseInt(`${options.port}`, 10);
 if (Number.isNaN(port)) throw new Error("Port is not a number");
 
 const app = new Hono<{ Bindings: HttpBindings }>()
-    .use(
-        cors({
-            origin: "*",
-        }),
-    )
+    .use(cors({ origin: "*" }))
     .get("/api/pluv/authorize", async (c) => {
         const room = c.req.query("room") as string;
 
