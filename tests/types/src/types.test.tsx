@@ -62,22 +62,22 @@ const room = client.createRoom("test-room", {
     })),
 });
 
-room.event.receiveMessage((params) => {
+room.subscribe.event.receiveMessage((params) => {
     expectTypeOf<(typeof params)["data"]>().toEqualTypeOf<{ message: string }>();
     expectTypeOf<(typeof params)["data"]>().toBeObject();
     // @ts-expect-error
     expectTypeOf<(typeof params)["data"]>().toEqualTypeOf<{}>();
 });
 
-room.storage("messages", (messages) => {
+room.subscribe.storage("messages", (messages) => {
     expectTypeOf<typeof messages>().toEqualTypeOf<string[]>();
 });
 
-room.storage.messages((messages) => {
+room.subscribe.storage.messages((messages) => {
     expectTypeOf<typeof messages>().toEqualTypeOf<string[]>();
 });
 
-room.storage((storage) => {
+room.subscribe.storage((storage) => {
     expectTypeOf<typeof storage>().toEqualTypeOf<{ messages: string[] }>();
 });
 

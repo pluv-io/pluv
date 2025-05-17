@@ -14,10 +14,10 @@ const io = createClient({
     debug: true,
     initialStorage: yjs.doc((t) => ({
         messages: t.array("messages", [
-            yjs.object({
-                message: "hello",
-                name: "pluvrt",
-            }),
+            yjs.map([
+                ["message", "hello"],
+                ["name", "i3dly"],
+            ]),
         ]),
         slate: (() => {
             const type = t.xmlText("slate");
