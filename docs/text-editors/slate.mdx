@@ -1,6 +1,6 @@
 ---
 title: "Slate"
-description: "Learn how to setup Slate.js for realtime collaboration with pluv.io"
+description: "Learn how to setup Slate for realtime collaboration with pluv.io"
 ---
 
 # Slate
@@ -34,6 +34,7 @@ To start, we will need at least a basic Slate editor:
 
 ```tsx
 import type { FC } from "react";
+import { useMemo, useState } from "react";
 import type { Descendant } from "slate";
 import { createEditor } from "slate";
 import { Editable, Slate, withReact } from "slate-react";
@@ -56,7 +57,7 @@ export const SlateEditor: FC<SlateEditorProps> = () => {
 };
 ```
 
-Then we will need to setup Yjs storage on pluv.io, with a [Yjs.XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext) unto which Slate's contents will live.
+Then we will need to setup Yjs storage on pluv.io, with a [Yjs.XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext) onto which Slate's editor contents will live.
 
 ```ts
 // pluv.ts
@@ -88,6 +89,7 @@ Lastly, we will just need to forward this shared-type to our Slate editor initia
 ```tsx
 import { withYjs, YjsEditor } from "@slate-yjs/core";
 import type { FC } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Descendant, Node } from "slate";
 import { createEditor, Editor, Transforms } from "slate";
 import { Editable, Slate, withReact } from "slate-react";

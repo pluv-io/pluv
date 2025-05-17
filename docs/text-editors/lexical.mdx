@@ -1,0 +1,187 @@
+---
+title: "Lexical"
+description: "Learn how to setup Lexical for realtime collaboration with pluv.io"
+---
+
+# Lexical
+
+> **Note**: pluv.io integrates with Lexical only via Yjs (i.e. @pluv/crdt-yjs)
+
+> **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart/nextjs) to see how.
+
+[Lexical](https://lexical.dev/) is an extensible rich text editor that emphasizes reliability, accessibility and performance. It also has been designed to support realtime collaboration with [Yjs](https://yjs.dev) via [@lexical/yjs](https://lexical.dev/docs/api/modules/lexical_yjs). Because pluv.io's storage API is built around Yjs, we can simply connect a Lexical editor to a `PluvRoom` via pluv.io's [Yjs connection provider](https://docs.yjs.dev/ecosystem/connection-provider) to enable collaboration on Lexical.
+
+## Installation
+
+To setup Lexical for collaborative editing with pluv.io, the following packages will need to be installed:
+
+```bash
+# Lexical packages
+npm install lexical @lexical/react @lexical/yjs
+
+# pluv.io packages
+npm install @pluv/crdt-yjs
+
+# Peer dependencies
+npm install yjs zod
+```
+
+## Enable Collaborative Editing
+
+> **Note**: Most of this documentation mirrors [Lexical's official documentation on collaborative editing](https://lexical.dev/docs/collaboration/react). You can also follow the instructions there to get Lexical connected with pluv.io.
+
+To start, we will need at least a basic Lexical editor:
+
+```tsx
+import type { FC } from "react";
+import type { InitialConfigType } from "@lexical/react/LexicalComposer"
+import { LexicalComposer } from "lexical/react/LexicalComposer";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+
+export interface LexicalEditorProps {}
+
+const initialConfig: InitialConfigType = {
+  namespace: "Demo",
+  nodes: [],
+  onError: (error: Error) => {
+    throw error;
+  },
+  theme: {},
+};
+
+export const LexicalEditor: FC<LexicalEditorProps> = () => {
+  return (
+    <LexicalComposer initialConfig={initialConfig}>
+      <RichTextPlugin
+        contentEditable={<ContentEditable />}
+        ErrorBoundary={LexicalErrorBoundary}
+      />
+    </LexicalComposer>
+  );
+};
+```
+
+Then we will need to setup:
+1. Yjs storage on pluv.io with a [Yjs.XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext) onto which Lexical's editor contents will live.
+2. Presence onto which Lexical's presence and awareness state will live.
+
+> **Note**: Lexical internally depends on a `Y.XmlText` called `root` that must exist as a top-level type on the Yjs document. In order for pluv.io to correctly connect with Lexical, this will need to be declared exactly as below until [this GitHub issue](https://github.com/facebook/lexical/issues/7537) has a resolution (meanwhile, we would appreciate an upvote on the GitHub issue to boost visibility).
+
+```ts
+import { createClient } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
+import type { InferBundleRoom } from "@pluv/react";
+import { createBundle } from "@pluv/react";
+import { z } from "zod";
+
+const io = createClient({
+  initialStorage: yjs.doc((t) => ({
+    // IMPORTANT!
+    // Must be called "root" due to @lexical/yjs's internals!
+    root: t.xmlText("root"),
+  })),
+  presense: z.object({
+    // We'll put Lexical's awareness data here.
+
+    // We recommend having this be `any`, as this data is internal to
+    // Lexical and is complex
+
+    // The field name can be whatever you choose
+    myLexical: z.any().default({}),
+  }),
+  // ... other pluv.io configs
+});
+
+const bundle = createBundle(io);
+
+export const {
+  // ... other utils
+  useRoom,
+} = bundle;
+
+export type PluvIORoom = InferBundleRoom<typeof bundle>;
+```
+
+Lastly, we will just need to define and forward pluv.io's Yjs connection provider to Lexical's `CollaborationPlugin` to enable collaboration on Lexical.
+
+```tsx
+import { CollaborationPlugin } from "@lexical/react/LexicalCollaborationPlugin";
+import type { InitialConfigType } from "@lexical/react/LexicalComposer"
+import { LexicalComposer } from "lexical/react/LexicalComposer";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { yjs } from "@pluv/crdt-yjs";
+import type { FC } from "react";
+import { useCallback } from "react";
+import type { Doc as YDoc } from "yjs";
+import { useRoom } from "./pluv";
+
+export interface LexicalEditorProps {}
+
+const EXAMPLE_USER = { name: "john doe", color: "#6B5CFF" };
+
+const initialConfig: InitialConfigType = {
+  // NOTE: This is critical for collaboration plugin to set editor state to
+  // null. It would indicate that the editor should not try to set any default
+  // state (not even empty one), and let collaboration plugin do it instead
+  editorState: null,
+  namespace: "Demo",
+  nodes: [],
+  onError: (error: Error) => {
+    throw error;
+  },
+  theme: {},
+};
+
+export const LexicalEditor: FC<LexicalEditorProps> = () => {
+  const room = useRoom();
+
+  const providerFactory = useCallback(
+    (id: string, yjsDocMap: Map<string, YDoc>) => {
+      // We will let the `PluvRoom` provide the correct YDoc.
+      // This condition should never be reached, so long as the room's id is
+      // used as the id on the CollaborationPlugin below
+      if (id !== room.id) throw new Error("Unexpected room id");
+
+      const yDoc = room.getDoc().value;
+      yjsDocMap.set(id, yDoc);
+
+      return yjs.provider({
+        room,
+        // This is the field we created on createClient's presence.
+        // If this is not provided, all of the user awareness data will be
+        // attempted to be stored on the presence root (and fail if not handled
+        // in the presence schema).
+        presenceField: "myLexical",
+      });
+    },
+    [room],
+  );
+
+  return (
+    <LexicalComposer initialConfig={initialConfig}>
+      <RichTextPlugin
+        contentEditable={<ContentEditable />}
+        ErrorBoundary={LexicalErrorBoundary}
+      />
+      <CollaborationPlugin
+        // We recommend having this be the room's id
+        id={room.id}
+        providerFactory={providerFactory}
+
+        // We recommend to disable bootstrap
+        shouldBootstrap={false}
+
+        // If you want to view live text cursors while editing
+        username={EXAMPLE_USER.name}
+        cursorColor={EXAMPLE_USER.color}
+      />
+    </LexicalComposer>
+  );
+};
+```
+
+That's all you need to enable realtime collaboration on Lexical! From here on, you can further customize your Lexical editor by following the official [Lexical documentation](https://lexical.dev/docs/intro). And you can persist the contents of your Lexical editor by following pluv.io's documentation for [Loading Storage](/docs/io/loading-storage).
