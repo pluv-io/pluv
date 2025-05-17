@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 2.2.1
+
+### Patch Changes
+
+- 6563957: Fix `createToken` throwing a TypeError.
+  - @pluv/crdt@2.2.1
+  - @pluv/io@2.2.1
+  - @pluv/types@2.2.1
+
 ## 2.2.0
 
 ### Patch Changes
