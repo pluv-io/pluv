@@ -18,7 +18,6 @@ export interface PluvYjsAwarenessParams<
     TEvents extends PluvRouterEventConfig,
     TField extends keyof TPresence | null = null,
 > {
-    doc: YDoc;
     field?: TField;
     room: RoomLike<TIO, YDoc, TPresence, TStorage, TEvents>;
 }
@@ -52,9 +51,9 @@ export class PluvYjsAwareness<
     constructor(params: PluvYjsAwarenessParams<TIO, TPresence, TStorage, TEvents, TField>) {
         super();
 
-        const { doc, field, room } = params;
+        const { field, room } = params;
 
-        this.doc = doc;
+        this.doc = room.getDoc().value;
         this._room = room;
 
         if (!!field) this._field = field;

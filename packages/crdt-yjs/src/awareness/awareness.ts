@@ -1,4 +1,4 @@
-import type { CrdtType, IOLike, JsonObject, PluvRouterEventConfig } from "@pluv/types";
+import type { CrdtType, IOLike, PluvRouterEventConfig } from "@pluv/types";
 import type { PluvYjsAwarenessParams } from "./PluvYjsAwareness";
 import { PluvYjsAwareness } from "./PluvYjsAwareness";
 
