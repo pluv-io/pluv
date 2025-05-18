@@ -1,0 +1,249 @@
+---
+title: "Using Yjs"
+description: "Learn how to use pluv.io storage with the Yjs CRDT"
+---
+
+# Using Yjs
+
+> **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart/nextjs) to see how.
+
+[Yjs](https://yjs.dev/) is a high-performance CRDT for building collaborative applications that sync automatically. It is backed by a rich ecosystem of [connection providers](https://docs.yjs.dev/ecosystem/connection-provider), [text editors](https://docs.yjs.dev/ecosystem/editor-bindings) and other tools that make it a popular choice for solving data consistency. As such, pluv.io has built its storage API on top of Yjs to enable modifying shared data between multiple clients with strong eventual consistency via [@pluv/crdt-yjs](https://www.npmjs.com/package/@pluv/crdt-yjs).
+
+## Installation
+
+To get started with Yjs storage for pluv.io, the following packages will need to be installed:
+
+```bash
+# pluv.io packages
+npm install @pluv/crdt-yjs
+
+# Peer dependencies
+npm install yjs
+```
+
+## Enable Yjs Storage
+
+> **Note**: The following documentation will use `@pluv/platform-cloudflare`, but these instructions apply for all pluv.io platforms.
+
+To start, we will first need to specify on the server, which CRDT we intend for pluv.io to use.
+
+```ts
+// backend.ts
+import { createIO } from "@pluv/io";
+import { yjs } from "@pluv/crdt-yjs";
+import { platformCloudflare } from "@pluv/platform-cloudflare";
+
+const io = createIO(
+  platformCloudflare({
+    // ...
+    crdt: yjs,
+  }),
+);
+
+export const ioServer = io.server();
+```
+
+Then, on the frontend, we will need to specify the schema of the pluv.io storage via an `initialStorage`.
+
+```ts
+// frontend/pluv.ts
+
+import { createClient, infer } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
+import type { InferBundleRoom } from "@pluv/react";
+import { createBundle } from "@pluv/react";
+import type { ioServer } from "../backend";
+
+const types = infer((i) => ({ io: i<typeof ioServer> }));
+const io = createClient({
+  types,
+  initialStorage: yjs.doc((t) => {
+    // Create a Y.Array with the name "groceries", initialized with an
+    // empty array
+    groceries: t.array<string>("groceries", []),
+  }),
+});
+
+const bundle = createBundle(io);
+
+export const { PluvRoomProvider, useStorage } = bundle;
+
+export type PluvIORoom = InferBundleRoom<typeof bundle>;
+```
+
+Optionally, when we then wrap our room with the `PluvRoomProvider`, we can specify a different `initialStorage` for the room, so long as it adheres to the schema defined on `createClient`.
+
+```tsx
+// frontend/PluvRoom.tsx
+
+import { yjs } from "@pluv/crdt-yjs";
+import type { FC, ReactNode } from "react";
+import { PluvRoomProvider } from "./pluv";
+
+export interface PluvRoomProps {
+  children?: ReactNode;
+  id: string;
+}
+
+export const PluvRoom: FC = ({ children, id }) => {
+  return (
+    <PluvRoomProvider
+      room={id}
+      // This prop is optional. We only need this if we want to provide a
+      // different initialStorage value for the room
+      initialStorage={(t) => ({
+        // Create a Y.Array with the name "groceries", initialized with an
+        // array containing 3 items
+        groceries: t.array("groceries", ["bacon", "lettuce", "tomato"]),
+      })}
+    >
+      {children}
+    </PluvRoomProvider>
+  );
+};
+```
+
+Finally, we can then read and write to our [Yjs shared-type](https://docs.yjs.dev/getting-started/working-with-shared-types) via the `useStorage` hook we exported earlier.
+
+```tsx
+// frontend/GroceryList.tsx
+
+import type { FC } from "react";
+import { useStorage } from "./pluv";
+
+export interface GroceryListProps {}
+
+export const GroceryList: FC<GroceryListProps> = () => {
+  const [groceries, yArray] = useStorage("groceries");
+
+  // These values will be null while the room is still connecting
+  if (!groceries || !yArray) return <div>Loading...</div>
+
+  return (
+    <ul>
+      {/* groceries is the Y.Array JSON serialized (i.e. string[]) */}
+      {groceries.map((item, i) => <li key={i}>{item}</li>)}
+    </ul>
+  );
+};
+```
+
+To mutate the value of the `groceries` Y.Array, we simply need to perform a mutation to the shared-type. This will automatically update the shared-type for all connected peers.
+
+```tsx
+const [groceries, yArray] = useStorage("groceries");
+
+// These values will be null while the room is still connecting
+if (!groceries || !yArray) return <div>Loading...</div>;
+
+yArray.push(["bread"]);
+```
+
+## Nesting Yjs shared types
+
+It isn't so uncommon to want to create a nested structure containing multiple Yjs shared-types. It is important to keep in mind however, that declaring top-level shared-types onto the Document (i.e. Y.Doc) uses a different API than creating a shared-type to be nested under another shared-type ([example here](https://docs.yjs.dev/api/shared-types/y.map)). The same applies when using `@pluv/crdt-yjs`.
+
+To declare a top-level shared-type on the `Y.Doc`, you will need to use the builder that is exposed in the first positional argument of the `yjs.doc` function.
+
+```ts
+import { createClient } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
+import type { Text as YText } from "yjs";
+
+const io = createClient({
+  // ...
+  // See that we are using this `t` builder to create top-level types
+  // Note that top-level types require a name to be created (e.g. "groceries")
+  initialStorage: yjs.doc((t) => ({
+    groceries: t.array<string>("messages", []),
+    // Example of a top-level Y.Map named "chats" that will nest Y.Text items
+    chats: t.map<string, YText>("chats", []),
+  })),
+});
+```
+
+Then, to create a nested shared-type, you will need to create them via the `@pluv/crdt-yjs` functions (i.e. not via the builder that is exposed from `yjs.doc`).
+
+The functions that are available include the following (linked to their respective Yjs shared-type docs):
+1. [yjs.array](https://docs.yjs.dev/api/shared-types/y.array)
+2. [yjs.map](https://docs.yjs.dev/api/shared-types/y.map)
+3. [yjs.text](https://docs.yjs.dev/api/shared-types/y.text)
+4. [yjs.xmlFragment](https://docs.yjs.dev/api/shared-types/y.xmlfragment)
+5. [yjs.xmlElement](https://docs.yjs.dev/api/shared-types/y.xmlelement)
+6. [yjs.xmlText](https://docs.yjs.dev/api/shared-types/y.xmltext)
+
+```tsx
+import { yjs } from "@pluv/crdt-yjs";
+
+// initialStorage example
+<PluvRoomProvider
+  room="example-room"
+  initialStorage={(t) => ({
+    groceries: t.array<string>("messages", ["bacon", "lettuce", "tomato"]),
+    // chats is declared using `t` as a top-level type with a name
+    chats: t.map<string, YText>("chats", [
+      // The Y.Texts are declared using `yjs` as a nested item without names
+      // The texts below are initialized with a value of empty string
+      ["chat1", yjs.text("")],
+      ["chat2", yjs.text("")],
+    ]),
+  })}
+>
+  {children}
+</PluvRoomProvider>
+
+// useStorage example
+const [chats, yMap] = useStorage("chats");
+
+yMap.set("chat3", yjs.text("hello world!"));
+```
+
+## Yjs Provider
+
+Yjs defines a [connection provider](https://docs.yjs.dev/ecosystem/connection-provider) interface that many libraries (e.g. text editors) integrate with to enable collaborative editing. In order for pluv.io to also integrate with these libraries, pluv.io also provides its own Yjs connection provider via `yjs.provider`.
+
+```tsx
+import { createClient } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
+import { createBundle } from "@pluv/react";
+import { z } from "zod";
+
+const io = createClient({
+  // ...
+  presence: z.object({
+    // Many integrations will expect to read/write awareness data to
+    // some location. We are defining one here
+    myAwareness: z.any().default({}),
+  }),
+});
+const { useRoom } = createBundle(io);
+
+const room = useRoom();
+
+// This is our Yjs connection provider that satisfies their interface
+const provider = useMemo(() => {
+  return yjs.provider({
+    room,
+    // Specify which pluv.io presence field to read/write Yjs Awareness
+    // data to
+    presenceField: "myAwareness",
+  });
+}, [room]);
+```
+
+## Yjs Awareness
+
+> **Note**: Yjs Awareness is typically an implementation detail of the Yjs Provider. So you will likely not need to interace with this directly.
+
+Yjs also defines an [awareness](https://docs.yjs.dev/api/about-awareness) interface that many libraries also integrate with to enable collaborative editing. However, those libraries tend to do so by referencing the awareness instance that is defined as a public property on the Yjs connection provider. Therefore, this is not something that you typically will need to interface with directly.
+
+```tsx
+// ...
+import { yjs } from "@pluv/crdt-yjs";
+
+const room = useRoom();
+
+// Libraries will typically access this on the yjs.provider via
+// provider.awareness (i.e. it is a public property)
+const awareness = yjs.awareness({ room, presenceField: "myAwareness" });
+```
