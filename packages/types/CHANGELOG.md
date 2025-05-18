@@ -1,5 +1,7 @@
 # @pluv/types
 
+## 2.2.2
+
 ## 2.2.1
 
 ## 2.2.0
@@ -26,9 +28,9 @@
 
 - af94706: pluv.io is now stable and production ready!
 
-  With this v1 release, pluv.io will now follow [semantic versioning](https://semver.org/) with more comprehensive release notes for future changes to the library.
+    With this v1 release, pluv.io will now follow [semantic versioning](https://semver.org/) with more comprehensive release notes for future changes to the library.
 
-  Checkout the [full documentation here](https://pluv.io/docs/introduction) to get started today!
+    Checkout the [full documentation here](https://pluv.io/docs/introduction) to get started today!
 
 ## 0.44.2
 
@@ -206,95 +208,95 @@
 
 - 99b5ca9: ## Breaking Changes
 
-  - `@pluv/io` has been updated to introduce `PluvProcedure`, `PluvRouter` and `PluvServer`. This change is intended to improve the ergonomics of declaring events and simplifying inferences of event types.
+    - `@pluv/io` has been updated to introduce `PluvProcedure`, `PluvRouter` and `PluvServer`. This change is intended to improve the ergonomics of declaring events and simplifying inferences of event types.
 
-  ### Before:
+    ### Before:
 
-  ```ts
-  // backend/io.ts
+    ```ts
+    // backend/io.ts
 
-  import { createIO } from "@pluv/io";
-  import { createPluvHandler, platformNode } from "@pluv/platform-node";
-  import { z } from "zod";
+    import { createIO } from "@pluv/io";
+    import { createPluvHandler, platformNode } from "@pluv/platform-node";
+    import { z } from "zod";
 
-  export const io = createIO({
-    platform: platformNode(),
-  })
-    .event("SEND_MESSAGE", {
-      input: z.object({ message: z.string() }),
-      resolver: ({ message }) => ({ RECEIVE_MESSAGE: { message } }),
+    export const io = createIO({
+        platform: platformNode(),
     })
-    .event("DOUBLE_VALUE", {
-      input: z.object({ value: z.number() }),
-      resolver: ({ value }) => ({ VALUE_DOUBLED: { value: value * 2 } }),
+        .event("SEND_MESSAGE", {
+            input: z.object({ message: z.string() }),
+            resolver: ({ message }) => ({ RECEIVE_MESSAGE: { message } }),
+        })
+        .event("DOUBLE_VALUE", {
+            input: z.object({ value: z.number() }),
+            resolver: ({ value }) => ({ VALUE_DOUBLED: { value: value * 2 } }),
+        });
+
+    const Pluv = createPluvHandler({
+        io,
+        /* ... */
+    });
+    ```
+
+    ```ts
+    // frontend/pluv.ts
+
+    import { createClient } from "@pluv/react";
+    import type { io } from "../backend/io";
+
+    const client = createClient<typeof io>({
+        /* ... */
+    });
+    ```
+
+    ### Now:
+
+    ```ts
+    import { createIO } from "@pluv/io";
+    import { createPluvHandler, platformNode } from "@pluv/platform-node";
+    import { z } from "zod";
+
+    const io = createIO({
+        platform: platformNode(),
     });
 
-  const Pluv = createPluvHandler({
-    io,
-    /* ... */
-  });
-  ```
+    const router = io.router({
+        SEND_MESSAGE: io.procedure
+            .input(z.object({ message: z.string() }))
+            .broadcast(({ message }) => ({
+                RECEIVE_MESSAGE: { message },
+            })),
+        DOUBLE_VALUE: io.procedure
+            .input(z.object({ value: z.number() }))
+            .broadcast(({ value }) => ({
+                VALUE_DOUBLED: { value: value * 2 },
+            })),
+    });
 
-  ```ts
-  // frontend/pluv.ts
+    export const ioServer = io.server({ router });
 
-  import { createClient } from "@pluv/react";
-  import type { io } from "../backend/io";
+    const Pluv = createPluvHandler({
+        io: ioServer, // <- This uses the PluvServer now
+        /* ... */
+    });
+    ```
 
-  const client = createClient<typeof io>({
-    /* ... */
-  });
-  ```
+    ```ts
+    // frontend/pluv.ts
 
-  ### Now:
+    import { createClient } from "@pluv/react";
+    import type { ioServer } from "../backend/io";
 
-  ```ts
-  import { createIO } from "@pluv/io";
-  import { createPluvHandler, platformNode } from "@pluv/platform-node";
-  import { z } from "zod";
+    // This users the PluvServer type now
+    const client = createClient<typeof ioServer>({
+        /* ... */
+    });
+    ```
 
-  const io = createIO({
-    platform: platformNode(),
-  });
+    - `PluvRouter` instances can also be merged via the `mergeRouters` method, which effectively performs an `Object.assign` of the events object and returns a new `PluvRouter` with the correct types:
 
-  const router = io.router({
-    SEND_MESSAGE: io.procedure
-      .input(z.object({ message: z.string() }))
-      .broadcast(({ message }) => ({
-        RECEIVE_MESSAGE: { message },
-      })),
-    DOUBLE_VALUE: io.procedure
-      .input(z.object({ value: z.number() }))
-      .broadcast(({ value }) => ({
-        VALUE_DOUBLED: { value: value * 2 },
-      })),
-  });
-
-  export const ioServer = io.server({ router });
-
-  const Pluv = createPluvHandler({
-    io: ioServer, // <- This uses the PluvServer now
-    /* ... */
-  });
-  ```
-
-  ```ts
-  // frontend/pluv.ts
-
-  import { createClient } from "@pluv/react";
-  import type { ioServer } from "../backend/io";
-
-  // This users the PluvServer type now
-  const client = createClient<typeof ioServer>({
-    /* ... */
-  });
-  ```
-
-  - `PluvRouter` instances can also be merged via the `mergeRouters` method, which effectively performs an `Object.assign` of the events object and returns a new `PluvRouter` with the correct types:
-
-  ```ts
-  const router = io.mergeRouters(router1, router2);
-  ```
+    ```ts
+    const router = io.mergeRouters(router1, router2);
+    ```
 
 ## 0.17.3
 
@@ -309,48 +311,48 @@
 - 507bc00: _BREAKING_: The `authorize` config when calling `createIO` can now also be a function that exposes the platform context.
   This allows accessing the `env` in Cloudflare workers.
 
-  ```ts
-  import { createIO } from "@pluv/io";
-  import { platformCloudflare } from "@pluv/platform-cloudflare";
-  import { z } from "zod";
+    ```ts
+    import { createIO } from "@pluv/io";
+    import { platformCloudflare } from "@pluv/platform-cloudflare";
+    import { z } from "zod";
 
-  const io = createIO({
-    authorize: ({ env }) => ({
-      required: true,
-      secret: env.PLUV_AUTHORIZE_SECRET,
-      user: z.object({
-        id: z.string(),
-        name: z.string(),
-      }),
-    }),
-    platform: platformCloudflare<{ PLUV_AUTHORIZE_SECRET: string }>(),
-    // ...
-  });
-  ```
+    const io = createIO({
+        authorize: ({ env }) => ({
+            required: true,
+            secret: env.PLUV_AUTHORIZE_SECRET,
+            user: z.object({
+                id: z.string(),
+                name: z.string(),
+            }),
+        }),
+        platform: platformCloudflare<{ PLUV_AUTHORIZE_SECRET: string }>(),
+        // ...
+    });
+    ```
 
-  This also requires that the platform contexts are passed to `io.createToken`.
+    This also requires that the platform contexts are passed to `io.createToken`.
 
-  ```ts
-  // If using `platformNode`
-  await io.createToken({
-    req, // This `IncomingMessage` is now required
-    room,
-    user: {
-      id: "user_123",
-      name: "john doe",
-    },
-  });
+    ```ts
+    // If using `platformNode`
+    await io.createToken({
+        req, // This `IncomingMessage` is now required
+        room,
+        user: {
+            id: "user_123",
+            name: "john doe",
+        },
+    });
 
-  // If using `platformCloudflare`
-  await io.createToken({
-    env, // This env is now required from the handler's fetch function
-    room,
-    user: {
-      id: "user_123",
-      name: "john doe",
-    },
-  });
-  ```
+    // If using `platformCloudflare`
+    await io.createToken({
+        env, // This env is now required from the handler's fetch function
+        room,
+        user: {
+            id: "user_123",
+            name: "john doe",
+        },
+    });
+    ```
 
 ## 0.16.3
 

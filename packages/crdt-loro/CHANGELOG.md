@@ -1,5 +1,12 @@
 # @pluv/crdt-loro
 
+## 2.2.2
+
+### Patch Changes
+
+- @pluv/crdt@2.2.2
+- @pluv/types@2.2.2
+
 ## 2.2.1
 
 ### Patch Changes
@@ -27,10 +34,10 @@
 
 - 945c47d: Updated deprecation warnings to read that features will be removed in v3 instead of v2.
 
-  Due to an [extremely unfortunate bug in changesets](https://github.com/changesets/changesets/issues/1011), minor and patch changes will create major releases. This caused an unintended v2 release that had no breaking changes. To avoid backtracking and deleting deprecated functionalities right away, the deprecation warnings have been updated so that those APIs will be removed in v3 instead of v2.
+    Due to an [extremely unfortunate bug in changesets](https://github.com/changesets/changesets/issues/1011), minor and patch changes will create major releases. This caused an unintended v2 release that had no breaking changes. To avoid backtracking and deleting deprecated functionalities right away, the deprecation warnings have been updated so that those APIs will be removed in v3 instead of v2.
 
-  - @pluv/crdt@2.0.2
-  - @pluv/types@2.0.2
+    - @pluv/crdt@2.0.2
+    - @pluv/types@2.0.2
 
 ## 2.0.1
 
@@ -45,42 +52,42 @@
 
 - 0b234d1: **Deprecated** Declaring top-level types on your CRDT storage via the `loro` utility (e.g. `loro.list`) is now deprecated, to be removed in the next major release (v2). Continuing to use the `loro` utility to declare top-level types will log a warning to your console while in development mode (i.e. when `process.env.NODE_ENV === "development"`). To declare top-level types, you should now use the builder type exposed in the storage factory function. See the example below:
 
-  ```ts
-  import { loro } from "@pluv/crdt-loro";
+    ```ts
+    import { loro } from "@pluv/crdt-loro";
 
-  // Before
-  loro.doc(() => ({
-    // Using the `loro` utility (in this case `loro.map`) when declaring
-    // top-level types is now deprecated
-    topType: loro.map({
-      key1: loro.text(""),
-      key2: loro.text(""),
-    }),
-  }));
+    // Before
+    loro.doc(() => ({
+        // Using the `loro` utility (in this case `loro.map`) when declaring
+        // top-level types is now deprecated
+        topType: loro.map({
+            key1: loro.text(""),
+            key2: loro.text(""),
+        }),
+    }));
 
-  // After
-  loro.doc((t) => ({
-    // Top-level properties must now use the builder (in this case `t`).
-    // This effectively calls `loro.getMap("topType")` to instantiate the type on
-    // the root document.
-    // This simply returns the native Loro container type (e.g. LoroMap), which
-    // allows you operate on your loro container types in a more native way.
-    topType: t.map("topType", {
-      // Declaring nested types should continue to use the `loro` utilities
-      // you've used before
-      key1: loro.text(""),
-      key2: loro.text(""),
-    }),
-  }));
-  ```
+    // After
+    loro.doc((t) => ({
+        // Top-level properties must now use the builder (in this case `t`).
+        // This effectively calls `loro.getMap("topType")` to instantiate the type on
+        // the root document.
+        // This simply returns the native Loro container type (e.g. LoroMap), which
+        // allows you operate on your loro container types in a more native way.
+        topType: t.map("topType", {
+            // Declaring nested types should continue to use the `loro` utilities
+            // you've used before
+            key1: loro.text(""),
+            key2: loro.text(""),
+        }),
+    }));
+    ```
 
-  The functions on the builder type calls the native loro container instantiating methods and returns the native types (e.g. `t.map("topType")` is simply just a `LoroDoc.getMap("topType")`) call under the hood. This allows you to declare your type in a more loro-native and predictable way, and enables declaring more complex initial storage states if needed.
+    The functions on the builder type calls the native loro container instantiating methods and returns the native types (e.g. `t.map("topType")` is simply just a `LoroDoc.getMap("topType")`) call under the hood. This allows you to declare your type in a more loro-native and predictable way, and enables declaring more complex initial storage states if needed.
 
 ### Patch Changes
 
 - Updated dependencies [047a1d8]
-  - @pluv/types@2.0.0
-  - @pluv/crdt@2.0.0
+    - @pluv/types@2.0.0
+    - @pluv/crdt@2.0.0
 
 ## 1.0.2
 
@@ -102,15 +109,15 @@
 
 - af94706: pluv.io is now stable and production ready!
 
-  With this v1 release, pluv.io will now follow [semantic versioning](https://semver.org/) with more comprehensive release notes for future changes to the library.
+    With this v1 release, pluv.io will now follow [semantic versioning](https://semver.org/) with more comprehensive release notes for future changes to the library.
 
-  Checkout the [full documentation here](https://pluv.io/docs/introduction) to get started today!
+    Checkout the [full documentation here](https://pluv.io/docs/introduction) to get started today!
 
 ### Patch Changes
 
 - Updated dependencies [af94706]
-  - @pluv/crdt@1.0.0
-  - @pluv/types@1.0.0
+    - @pluv/crdt@1.0.0
+    - @pluv/types@1.0.0
 
 ## 0.44.2
 
@@ -341,8 +348,8 @@
 ### Patch Changes
 
 - Updated dependencies [f4ceca3]
-  - @pluv/types@0.38.0
-  - @pluv/crdt@0.38.0
+    - @pluv/types@0.38.0
+    - @pluv/crdt@0.38.0
 
 ## 0.37.7
 
@@ -419,16 +426,16 @@
 ### Patch Changes
 
 - 7c8e7ef: Upgraded `loro-crdt` from `1.3.1` to `1.3.2`.
-  - @pluv/crdt@0.35.3
-  - @pluv/types@0.35.3
+    - @pluv/crdt@0.35.3
+    - @pluv/types@0.35.3
 
 ## 0.35.2
 
 ### Patch Changes
 
 - Updated dependencies [81cb692]
-  - @pluv/types@0.35.2
-  - @pluv/crdt@0.35.2
+    - @pluv/types@0.35.2
+    - @pluv/crdt@0.35.2
 
 ## 0.35.1
 
@@ -436,8 +443,8 @@
 
 - 9822786: Added missing `Tree` and `MovableList` types.
 - 3cd6571: Added support for undo/redo for `@pluv/crdt-loro`.
-  - @pluv/crdt@0.35.1
-  - @pluv/types@0.35.1
+    - @pluv/crdt@0.35.1
+    - @pluv/types@0.35.1
 
 ## 0.35.0
 
@@ -469,16 +476,16 @@
 ### Patch Changes
 
 - f54d8ce: Update internal, deprecated `loro-crdt` methods.
-  - @pluv/crdt@0.33.0
-  - @pluv/types@0.33.0
+    - @pluv/crdt@0.33.0
+    - @pluv/types@0.33.0
 
 ## 0.32.9
 
 ### Patch Changes
 
 - cef5911: Bump `loro-crdt` from `0.16.12` to `1.0.8`.
-  - @pluv/crdt@0.32.9
-  - @pluv/types@0.32.9
+    - @pluv/crdt@0.32.9
+    - @pluv/types@0.32.9
 
 ## 0.32.8
 
@@ -569,8 +576,8 @@
 ### Patch Changes
 
 - 7246a9e: Added `CrdtLibraryType` so that `@pluv/crdt-yjs` and `@pluv/crdt-loro` export a new property `kind` containing an identifier for the crdt.
-  - @pluv/crdt@0.30.0
-  - @pluv/types@0.30.0
+    - @pluv/crdt@0.30.0
+    - @pluv/types@0.30.0
 
 ## 0.29.0
 
@@ -683,76 +690,76 @@
 
 - 9492085: **BREAKING**: `@pluv/crdt-yjs` and `@pluv/crdt-loro` have been updated so that the utilities to create shared-types/containers no-longer return a wrapper around the underlying shared-types and containers, but rather return the shared-types/containers directly.
 
-  This means that for methods such as `getStorage` from `@pluv/client` and `useStorage` from `@pluv/react`, the shared-types/containers are also returned instead of the wrapper types.
+    This means that for methods such as `getStorage` from `@pluv/client` and `useStorage` from `@pluv/react`, the shared-types/containers are also returned instead of the wrapper types.
 
-  The motivation for these changes are so that pluv.io is supplementary to `yjs` and `loro-crdt`, instead of having these libraries be an internal implementation of pluv.io.
+    The motivation for these changes are so that pluv.io is supplementary to `yjs` and `loro-crdt`, instead of having these libraries be an internal implementation of pluv.io.
 
-  ```ts
-  // Before
+    ```ts
+    // Before
 
-  import { yjs } from "@pluv/crdt-yjs";
+    import { yjs } from "@pluv/crdt-yjs";
 
-  yjs.array([]); // Returns CrdtYjsArray
-  yjs.object([]); // Returns CrdtYjsObject
+    yjs.array([]); // Returns CrdtYjsArray
+    yjs.object([]); // Returns CrdtYjsObject
 
-  const room: PluvRoom = /* ... */;
+    const room: PluvRoom = /* ... */;
 
-  room.getStorage("messages"); // Returns AbstractCrdtType
+    room.getStorage("messages"); // Returns AbstractCrdtType
 
-  const [, sharedType] = useStorage("messages"); // sharedType is an AbstractCrdtType
-  ```
+    const [, sharedType] = useStorage("messages"); // sharedType is an AbstractCrdtType
+    ```
 
-  ```ts
-  // Now
+    ```ts
+    // Now
 
-  import { yjs } from "@pluv/crdt-yjs";
+    import { yjs } from "@pluv/crdt-yjs";
 
-  yjs.array([]); // Returns yjs.Array
-  yjs.object([]); // Returns yjs.Map
+    yjs.array([]); // Returns yjs.Array
+    yjs.object([]); // Returns yjs.Map
 
-  const room: PluvRoom = /* ... */;
+    const room: PluvRoom = /* ... */;
 
-  room.getStorage("messages"); // Returns yjs.AbstractType
+    room.getStorage("messages"); // Returns yjs.AbstractType
 
-  const [, sharedType] = useStorage("messages"); // sharedType is a yjs.AbstractType
-  ```
+    const [, sharedType] = useStorage("messages"); // sharedType is a yjs.AbstractType
+    ```
 
-  For `@pluv/crdt-loro` specifically, `@pluv/client` relies on [loro events and subscriptions](https://www.loro.dev/docs/tutorial/get_started#event) to detect changes. The `AbstractLoroCrdt` types previously called `Loro.commit` after each change as an abstraction, but now this no-longer happens. To ensure that changes to loro containers are properly handled in `@pluv/react`, make sure to commit your changes whenever possible:
+    For `@pluv/crdt-loro` specifically, `@pluv/client` relies on [loro events and subscriptions](https://www.loro.dev/docs/tutorial/get_started#event) to detect changes. The `AbstractLoroCrdt` types previously called `Loro.commit` after each change as an abstraction, but now this no-longer happens. To ensure that changes to loro containers are properly handled in `@pluv/react`, make sure to commit your changes whenever possible:
 
-  ```ts
-  // Before
+    ```ts
+    // Before
 
-  const [data, container] = useStorage("messages");
+    const [data, container] = useStorage("messages");
 
-  // This automatically called Loro.commit under the hood and rerendered the page with updated data.
-  container.push(loro.object({ name: "John Doe", age: 35 }));
-  ```
-
-  ```ts
-  // Now
-
-  const [data, container] = useStorage("messages");
-
-  const doc = useDoc();
-  const transact = useTransact();
-
-  // Updates need to be committed back to the doc whenever the changes need to be emitted to other users
-  // The returned data also will not update until the changes are commited
-
-  // The two operations below are functionally equivalent
-  transact(() => {
+    // This automatically called Loro.commit under the hood and rerendered the page with updated data.
     container.push(loro.object({ name: "John Doe", age: 35 }));
-  });
+    ```
 
-  container.push(loro.object({ name: "John Doe", age: 35 }));
-  doc.value.commit();
-  ```
+    ```ts
+    // Now
+
+    const [data, container] = useStorage("messages");
+
+    const doc = useDoc();
+    const transact = useTransact();
+
+    // Updates need to be committed back to the doc whenever the changes need to be emitted to other users
+    // The returned data also will not update until the changes are commited
+
+    // The two operations below are functionally equivalent
+    transact(() => {
+        container.push(loro.object({ name: "John Doe", age: 35 }));
+    });
+
+    container.push(loro.object({ name: "John Doe", age: 35 }));
+    doc.value.commit();
+    ```
 
 ### Patch Changes
 
 - Updated dependencies [9492085]
-  - @pluv/crdt@0.20.0
-  - @pluv/types@0.20.0
+    - @pluv/crdt@0.20.0
+    - @pluv/types@0.20.0
 
 ## 0.19.0
 
@@ -766,8 +773,8 @@
 ### Patch Changes
 
 - Updated dependencies [99b5ca9]
-  - @pluv/types@0.18.0
-  - @pluv/crdt@0.18.0
+    - @pluv/types@0.18.0
+    - @pluv/crdt@0.18.0
 
 ## 0.17.3
 
@@ -795,8 +802,8 @@
 ### Patch Changes
 
 - Updated dependencies [507bc00]
-  - @pluv/types@0.17.0
-  - @pluv/crdt@0.17.0
+    - @pluv/types@0.17.0
+    - @pluv/crdt@0.17.0
 
 ## 0.16.3
 
