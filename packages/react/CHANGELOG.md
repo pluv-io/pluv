@@ -1,5 +1,13 @@
 # @pluv/react
 
+## 2.2.2
+
+### Patch Changes
+
+- @pluv/client@2.2.2
+- @pluv/crdt@2.2.2
+- @pluv/types@2.2.2
+
 ## 2.2.1
 
 ### Patch Changes
@@ -14,42 +22,42 @@
 
 - 3ce1547: Updated typings for `useDoc` to be narrower to get the native doc type.
 
-  ```ts
-  import { createClient } from "@pluv/client";
-  import { yjs } from "@pluv/crdt-yjs";
-  import { createBundle } from "@pluv/react";
-  import type { Doc as YDoc } from "yjs";
+    ```ts
+    import { createClient } from "@pluv/client";
+    import { yjs } from "@pluv/crdt-yjs";
+    import { createBundle } from "@pluv/react";
+    import type { Doc as YDoc } from "yjs";
 
-  const client = createClient({
-    // ...
-    crdt: yjs,
-  });
-  const { useDoc } = createBundle(client);
+    const client = createClient({
+        // ...
+        crdt: yjs,
+    });
+    const { useDoc } = createBundle(client);
 
-  const doc = useDoc();
+    const doc = useDoc();
 
-  // This is now typed as the native YDoc
-  doc.value;
-  //  ^? const value: YDoc
-  ```
+    // This is now typed as the native YDoc
+    doc.value;
+    //  ^? const value: YDoc
+    ```
 
 - b999c1c: Added a new type `InferBundleRoom` to get the type of the `PluvRoom` from the react bundle that is created.
 
-  ```ts
-  import { createClient } from "@pluv/client";
-  import type { InferBundleRoom } from "@pluv/react";
-  import { createBundle } from "@pluv/react";
+    ```ts
+    import { createClient } from "@pluv/client";
+    import type { InferBundleRoom } from "@pluv/react";
+    import { createBundle } from "@pluv/react";
 
-  const client = createclient({
-    /* ... */
-  });
+    const client = createclient({
+        /* ... */
+    });
 
-  const bundle = createBundle(client);
+    const bundle = createBundle(client);
 
-  type RoomType = InferBundleRoom<typeof bundle>;
+    type RoomType = InferBundleRoom<typeof bundle>;
 
-  const { useStorage } = bundle;
-  ```
+    const { useStorage } = bundle;
+    ```
 
 ### Patch Changes
 
@@ -61,9 +69,9 @@
 - Updated dependencies [aee40cb]
 - Updated dependencies [edd1789]
 - Updated dependencies [48191fa]
-  - @pluv/client@2.2.0
-  - @pluv/crdt@2.2.0
-  - @pluv/types@2.2.0
+    - @pluv/client@2.2.0
+    - @pluv/crdt@2.2.0
+    - @pluv/types@2.2.0
 
 ## 2.1.0
 
@@ -80,9 +88,9 @@
 - Updated dependencies [5ca5cb6]
 - Updated dependencies [4acbe1e]
 - Updated dependencies [e8d8fbc]
-  - @pluv/client@2.1.0
-  - @pluv/crdt@2.1.0
-  - @pluv/types@2.1.0
+    - @pluv/client@2.1.0
+    - @pluv/crdt@2.1.0
+    - @pluv/types@2.1.0
 
 ## 2.0.2
 
@@ -97,9 +105,9 @@
 ### Patch Changes
 
 - Updated dependencies [1b93b18]
-  - @pluv/client@2.0.1
-  - @pluv/crdt@2.0.1
-  - @pluv/types@2.0.1
+    - @pluv/client@2.0.1
+    - @pluv/crdt@2.0.1
+    - @pluv/types@2.0.1
 
 ## 2.0.0
 
@@ -107,73 +115,73 @@
 
 - 5cec54a: **Deprecated** Declaring top-level types on your CRDT storage via the `yjs` or `loro` utility (e.g. `yjs.array` or `loro.list`) for the `initialStorage` prop on `PluvRoomProvider` is now deprecated, to be removed in the next major release (v2). Continuing to use the `yjs` or `loro` utilities to declare top-level types will log a warning to your console while in development mode (i.e. when `process.env.NODE_ENV === "development"`). To declare top-level types, you should now use the builder type exposed in the `initialStorage` function. See the example below:
 
-  ```tsx
-  import { yjs } from "@pluv/crdt-yjs";
+    ```tsx
+    import { yjs } from "@pluv/crdt-yjs";
 
-  // Before
-  <PluvRoomProvider
-      room="example-room"
-      initialStorage={() => ({
-          // Using the `yjs` or `loro` utility (in this case `yjs.map`) when
-          // declaring top-level types is now deprecated
-          topType: yjs.map([
-              ["key1", yjs.text("")],
-              ["key2", yjs.text("")],
-          ]),
-      })}
-  >
-      <div />
-  </PluvRoomProvider>
+    // Before
+    <PluvRoomProvider
+        room="example-room"
+        initialStorage={() => ({
+            // Using the `yjs` or `loro` utility (in this case `yjs.map`) when
+            // declaring top-level types is now deprecated
+            topType: yjs.map([
+                ["key1", yjs.text("")],
+                ["key2", yjs.text("")],
+            ]),
+        })}
+    >
+        <div />
+    </PluvRoomProvider>
 
-  // After
-  <PluvRoomProvider
-      room="example-room"
-      initialStorage={(t) => ({
-          // Top-level properties must now use the builder (in this case `t`).
-          // This effectively calls `yjs.getMap("topType")` to instantiate the type on
-          // the root document.
-          // This simply returns the native Yjs shared-types (e.g. Y.Map), which
-          // allows you operate on your yjs shared-typess in a more native way.
-          topType: t.map("topType", [
-              // Declaring nested types should continue to use the `yjs` utilities
-              // you've used before
-              ["key1", yjs.text("")],
-              ["key2", yjs.text("")],
-          ]),
-      })}
-  >
-      <div />
-  </PluvRoomProvider>
-  ```
+    // After
+    <PluvRoomProvider
+        room="example-room"
+        initialStorage={(t) => ({
+            // Top-level properties must now use the builder (in this case `t`).
+            // This effectively calls `yjs.getMap("topType")` to instantiate the type on
+            // the root document.
+            // This simply returns the native Yjs shared-types (e.g. Y.Map), which
+            // allows you operate on your yjs shared-typess in a more native way.
+            topType: t.map("topType", [
+                // Declaring nested types should continue to use the `yjs` utilities
+                // you've used before
+                ["key1", yjs.text("")],
+                ["key2", yjs.text("")],
+            ]),
+        })}
+    >
+        <div />
+    </PluvRoomProvider>
+    ```
 
-  The functions on the builder type calls the native yjs shared-type (or loro container type) instantiating methods and returns the native types (e.g. `t.map("topType")` is simply just a `Y.Doc.getMap("topType")`) call under the hood. This allows you to declare your type in a more yjs-native and predictable way, and enables declaring more complex initial storage states if needed.
+    The functions on the builder type calls the native yjs shared-type (or loro container type) instantiating methods and returns the native types (e.g. `t.map("topType")` is simply just a `Y.Doc.getMap("topType")`) call under the hood. This allows you to declare your type in a more yjs-native and predictable way, and enables declaring more complex initial storage states if needed.
 
 ### Patch Changes
 
 - Updated dependencies [047a1d8]
 - Updated dependencies [0806212]
 - Updated dependencies [3a34dbb]
-  - @pluv/client@2.0.0
-  - @pluv/types@2.0.0
-  - @pluv/crdt@2.0.0
+    - @pluv/client@2.0.0
+    - @pluv/types@2.0.0
+    - @pluv/crdt@2.0.0
 
 ## 1.0.2
 
 ### Patch Changes
 
 - Updated dependencies [d87159c]
-  - @pluv/client@1.0.2
-  - @pluv/crdt@1.0.2
-  - @pluv/types@1.0.2
+    - @pluv/client@1.0.2
+    - @pluv/crdt@1.0.2
+    - @pluv/types@1.0.2
 
 ## 1.0.1
 
 ### Patch Changes
 
 - Updated dependencies [c583be9]
-  - @pluv/client@1.0.1
-  - @pluv/crdt@1.0.1
-  - @pluv/types@1.0.1
+    - @pluv/client@1.0.1
+    - @pluv/crdt@1.0.1
+    - @pluv/types@1.0.1
 
 ## 1.0.0
 
@@ -182,34 +190,34 @@
 - 4c8b203: **BREAKING** `@pluv/client` is now a peer dependency of `@pluv/react`.
 - af94706: pluv.io is now stable and production ready!
 
-  With this v1 release, pluv.io will now follow [semantic versioning](https://semver.org/) with more comprehensive release notes for future changes to the library.
+    With this v1 release, pluv.io will now follow [semantic versioning](https://semver.org/) with more comprehensive release notes for future changes to the library.
 
-  Checkout the [full documentation here](https://pluv.io/docs/introduction) to get started today!
+    Checkout the [full documentation here](https://pluv.io/docs/introduction) to get started today!
 
 ### Patch Changes
 
 - Updated dependencies [af94706]
-  - @pluv/client@1.0.0
-  - @pluv/crdt@1.0.0
-  - @pluv/types@1.0.0
+    - @pluv/client@1.0.0
+    - @pluv/crdt@1.0.0
+    - @pluv/types@1.0.0
 
 ## 0.44.2
 
 ### Patch Changes
 
 - Updated dependencies [6cfd36f]
-  - @pluv/client@0.44.2
-  - @pluv/crdt@0.44.2
-  - @pluv/types@0.44.2
+    - @pluv/client@0.44.2
+    - @pluv/crdt@0.44.2
+    - @pluv/types@0.44.2
 
 ## 0.44.1
 
 ### Patch Changes
 
 - Updated dependencies [67c081d]
-  - @pluv/client@0.44.1
-  - @pluv/crdt@0.44.1
-  - @pluv/types@0.44.1
+    - @pluv/client@0.44.1
+    - @pluv/crdt@0.44.1
+    - @pluv/types@0.44.1
 
 ## 0.44.0
 
@@ -218,27 +226,27 @@
 - Updated dependencies [fba9354]
 - Updated dependencies [bc2d684]
 - Updated dependencies [c9fcea5]
-  - @pluv/client@0.44.0
-  - @pluv/crdt@0.44.0
-  - @pluv/types@0.44.0
+    - @pluv/client@0.44.0
+    - @pluv/crdt@0.44.0
+    - @pluv/types@0.44.0
 
 ## 0.43.0
 
 ### Patch Changes
 
 - Updated dependencies [65d9172]
-  - @pluv/client@0.43.0
-  - @pluv/crdt@0.43.0
-  - @pluv/types@0.43.0
+    - @pluv/client@0.43.0
+    - @pluv/crdt@0.43.0
+    - @pluv/types@0.43.0
 
 ## 0.42.0
 
 ### Patch Changes
 
 - Updated dependencies [7ae56bf]
-  - @pluv/client@0.42.0
-  - @pluv/crdt@0.42.0
-  - @pluv/types@0.42.0
+    - @pluv/client@0.42.0
+    - @pluv/crdt@0.42.0
+    - @pluv/types@0.42.0
 
 ## 0.41.7
 
@@ -253,18 +261,18 @@
 ### Patch Changes
 
 - Updated dependencies [71642fa]
-  - @pluv/client@0.41.6
-  - @pluv/crdt@0.41.6
-  - @pluv/types@0.41.6
+    - @pluv/client@0.41.6
+    - @pluv/crdt@0.41.6
+    - @pluv/types@0.41.6
 
 ## 0.41.5
 
 ### Patch Changes
 
 - Updated dependencies [b3b7b30]
-  - @pluv/client@0.41.5
-  - @pluv/crdt@0.41.5
-  - @pluv/types@0.41.5
+    - @pluv/client@0.41.5
+    - @pluv/crdt@0.41.5
+    - @pluv/types@0.41.5
 
 ## 0.41.4
 
@@ -279,18 +287,18 @@
 ### Patch Changes
 
 - Updated dependencies [49051c0]
-  - @pluv/client@0.41.3
-  - @pluv/crdt@0.41.3
-  - @pluv/types@0.41.3
+    - @pluv/client@0.41.3
+    - @pluv/crdt@0.41.3
+    - @pluv/types@0.41.3
 
 ## 0.41.2
 
 ### Patch Changes
 
 - Updated dependencies [37956d3]
-  - @pluv/client@0.41.2
-  - @pluv/crdt@0.41.2
-  - @pluv/types@0.41.2
+    - @pluv/client@0.41.2
+    - @pluv/crdt@0.41.2
+    - @pluv/types@0.41.2
 
 ## 0.41.1
 
@@ -308,18 +316,18 @@
 - Updated dependencies [eb2d903]
 - Updated dependencies [555b88d]
 - Updated dependencies [555b88d]
-  - @pluv/client@0.41.0
-  - @pluv/crdt@0.41.0
-  - @pluv/types@0.41.0
+    - @pluv/client@0.41.0
+    - @pluv/crdt@0.41.0
+    - @pluv/types@0.41.0
 
 ## 0.40.2
 
 ### Patch Changes
 
 - Updated dependencies [6fbc2fe]
-  - @pluv/client@0.40.2
-  - @pluv/crdt@0.40.2
-  - @pluv/types@0.40.2
+    - @pluv/client@0.40.2
+    - @pluv/crdt@0.40.2
+    - @pluv/types@0.40.2
 
 ## 0.40.1
 
@@ -342,9 +350,9 @@
 ### Patch Changes
 
 - 36606b4: Fix `PluvRoomProvider` never connecting when `metadata` is a function.
-  - @pluv/client@0.39.1
-  - @pluv/crdt@0.39.1
-  - @pluv/types@0.39.1
+    - @pluv/client@0.39.1
+    - @pluv/crdt@0.39.1
+    - @pluv/types@0.39.1
 
 ## 0.39.0
 
@@ -352,13 +360,13 @@
 
 - ca160f5: **BREAKING** Update the context value of `MockedRoomContext` to mirror the same shape as `PluvRoomContext`. i.e. the value of `MockedRoomContext` is now the room itself, rather than an object containing the room. This should not be breaking in most cases. If you happen to be using `useContext(MockedRoomContext)`, those will need to be updated as shown below:
 
-  ```tsx
-  // Before
-  const { room } = useContext(MockedRoomContext);
+    ```tsx
+    // Before
+    const { room } = useContext(MockedRoomContext);
 
-  // After
-  const room = useContext(MockedRoomContext);
-  ```
+    // After
+    const room = useContext(MockedRoomContext);
+    ```
 
 ### Patch Changes
 
@@ -366,39 +374,39 @@
 - e6ddddc: (Internal) Update how `PluvRoomProvider` handles the `metadata` prop internally to be updated to how `PluvClient` now handles this (i.e. moved to `PluvClient.enter`, from `PluvClient.createRoom`).
 - e6ddddc: Add support for a passing either a function or object for the `metadata` prop on `PluvRoomProvider`. When a function is used, the `metadata` will be gotten at the moment of connection (internally this is a `useEffect`, so browser APIs can be used such as `document`, `window` and `localStorage`).
 
-  ```tsx
-  // Both of these work
-  <PluvRoomProvider metadata={{ hello: "world" }}>
-      {children}
-  </PluvRoomProvider>
+    ```tsx
+    // Both of these work
+    <PluvRoomProvider metadata={{ hello: "world" }}>
+        {children}
+    </PluvRoomProvider>
 
-  <PluvRoomProvider
-      metadata={() => {
-          const value = localStorage.get(MY_LOCALSTORAGE_KEY);
+    <PluvRoomProvider
+        metadata={() => {
+            const value = localStorage.get(MY_LOCALSTORAGE_KEY);
 
-          return { hello: value };
-      }}
-  >
-      {children}
-  </PluvRoomProvider>
-  ```
+            return { hello: value };
+        }}
+    >
+        {children}
+    </PluvRoomProvider>
+    ```
 
 - Updated dependencies [e6ddddc]
 - Updated dependencies [e6ddddc]
 - Updated dependencies [2cfb68d]
 - Updated dependencies [e6ddddc]
-  - @pluv/client@0.39.0
-  - @pluv/crdt@0.39.0
-  - @pluv/types@0.39.0
+    - @pluv/client@0.39.0
+    - @pluv/crdt@0.39.0
+    - @pluv/types@0.39.0
 
 ## 0.38.14
 
 ### Patch Changes
 
 - Updated dependencies [886a1f9]
-  - @pluv/client@0.38.14
-  - @pluv/crdt@0.38.14
-  - @pluv/types@0.38.14
+    - @pluv/client@0.38.14
+    - @pluv/crdt@0.38.14
+    - @pluv/types@0.38.14
 
 ## 0.38.13
 
@@ -413,27 +421,27 @@
 ### Patch Changes
 
 - Updated dependencies [b617726]
-  - @pluv/client@0.38.12
-  - @pluv/crdt@0.38.12
-  - @pluv/types@0.38.12
+    - @pluv/client@0.38.12
+    - @pluv/crdt@0.38.12
+    - @pluv/types@0.38.12
 
 ## 0.38.11
 
 ### Patch Changes
 
 - Updated dependencies [5ac1aba]
-  - @pluv/client@0.38.11
-  - @pluv/crdt@0.38.11
-  - @pluv/types@0.38.11
+    - @pluv/client@0.38.11
+    - @pluv/crdt@0.38.11
+    - @pluv/types@0.38.11
 
 ## 0.38.10
 
 ### Patch Changes
 
 - Updated dependencies [cadd963]
-  - @pluv/client@0.38.10
-  - @pluv/crdt@0.38.10
-  - @pluv/types@0.38.10
+    - @pluv/client@0.38.10
+    - @pluv/crdt@0.38.10
+    - @pluv/types@0.38.10
 
 ## 0.38.9
 
@@ -488,18 +496,18 @@
 ### Patch Changes
 
 - Updated dependencies [8346273]
-  - @pluv/client@0.38.3
-  - @pluv/crdt@0.38.3
-  - @pluv/types@0.38.3
+    - @pluv/client@0.38.3
+    - @pluv/crdt@0.38.3
+    - @pluv/types@0.38.3
 
 ## 0.38.2
 
 ### Patch Changes
 
 - Updated dependencies [de35f0b]
-  - @pluv/client@0.38.2
-  - @pluv/crdt@0.38.2
-  - @pluv/types@0.38.2
+    - @pluv/client@0.38.2
+    - @pluv/crdt@0.38.2
+    - @pluv/types@0.38.2
 
 ## 0.38.1
 
@@ -514,9 +522,9 @@
 ### Patch Changes
 
 - Updated dependencies [f4ceca3]
-  - @pluv/client@0.38.0
-  - @pluv/types@0.38.0
-  - @pluv/crdt@0.38.0
+    - @pluv/client@0.38.0
+    - @pluv/types@0.38.0
+    - @pluv/crdt@0.38.0
 
 ## 0.37.7
 
@@ -547,9 +555,9 @@
 ### Patch Changes
 
 - Updated dependencies [a9c3d17]
-  - @pluv/client@0.37.4
-  - @pluv/crdt@0.37.4
-  - @pluv/types@0.37.4
+    - @pluv/client@0.37.4
+    - @pluv/crdt@0.37.4
+    - @pluv/types@0.37.4
 
 ## 0.37.3
 
@@ -557,27 +565,27 @@
 
 - dff89ff: Added an error message for when `createBundle` functions are used outside of `PluvRoomProvider`.
 - Updated dependencies [9ae837b]
-  - @pluv/client@0.37.3
-  - @pluv/crdt@0.37.3
-  - @pluv/types@0.37.3
+    - @pluv/client@0.37.3
+    - @pluv/crdt@0.37.3
+    - @pluv/types@0.37.3
 
 ## 0.37.2
 
 ### Patch Changes
 
 - Updated dependencies [11920af]
-  - @pluv/client@0.37.2
-  - @pluv/crdt@0.37.2
-  - @pluv/types@0.37.2
+    - @pluv/client@0.37.2
+    - @pluv/crdt@0.37.2
+    - @pluv/types@0.37.2
 
 ## 0.37.1
 
 ### Patch Changes
 
 - Updated dependencies [e923a8d]
-  - @pluv/client@0.37.1
-  - @pluv/crdt@0.37.1
-  - @pluv/types@0.37.1
+    - @pluv/client@0.37.1
+    - @pluv/crdt@0.37.1
+    - @pluv/types@0.37.1
 
 ## 0.37.0
 
@@ -593,25 +601,25 @@
 
 - 2a84951: **BREAKING**
 
-  Removed re-exports of `@pluv/client` and `@pluv/crdt` parts from `@pluv/react`.
+    Removed re-exports of `@pluv/client` and `@pluv/crdt` parts from `@pluv/react`.
 
-  ```ts
-  // Before
+    ```ts
+    // Before
 
-  import { createBundle, createClient } from "@pluv/react";
+    import { createBundle, createClient } from "@pluv/react";
 
-  // After
+    // After
 
-  import { createClient } from "@pluv/client";
-  import { createBundle } from "@pluv/react";
-  ```
+    import { createClient } from "@pluv/client";
+    import { createBundle } from "@pluv/react";
+    ```
 
 ### Patch Changes
 
 - Updated dependencies [4518b6d]
-  - @pluv/client@0.36.0
-  - @pluv/crdt@0.36.0
-  - @pluv/types@0.36.0
+    - @pluv/client@0.36.0
+    - @pluv/crdt@0.36.0
+    - @pluv/types@0.36.0
 
 ## 0.35.4
 
@@ -634,9 +642,9 @@
 ### Patch Changes
 
 - Updated dependencies [81cb692]
-  - @pluv/types@0.35.2
-  - @pluv/client@0.35.2
-  - @pluv/crdt@0.35.2
+    - @pluv/types@0.35.2
+    - @pluv/client@0.35.2
+    - @pluv/crdt@0.35.2
 
 ## 0.35.1
 
@@ -687,9 +695,9 @@
 ### Patch Changes
 
 - 89d004d: Fix event proxy types for client-side events.
-  - @pluv/client@0.32.9
-  - @pluv/crdt@0.32.9
-  - @pluv/types@0.32.9
+    - @pluv/client@0.32.9
+    - @pluv/crdt@0.32.9
+    - @pluv/types@0.32.9
 
 ## 0.32.8
 
@@ -737,9 +745,9 @@
 
 - 75e992f: Export `register` helper in `@pluv/react`.
 - Updated dependencies [b18230f]
-  - @pluv/client@0.32.3
-  - @pluv/crdt@0.32.3
-  - @pluv/types@0.32.3
+    - @pluv/client@0.32.3
+    - @pluv/crdt@0.32.3
+    - @pluv/types@0.32.3
 
 ## 0.32.2
 
@@ -794,9 +802,9 @@
 ### Patch Changes
 
 - Updated dependencies [cff933a]
-  - @pluv/client@0.30.0
-  - @pluv/crdt@0.30.0
-  - @pluv/types@0.30.0
+    - @pluv/client@0.30.0
+    - @pluv/crdt@0.30.0
+    - @pluv/types@0.30.0
 
 ## 0.29.0
 
@@ -804,75 +812,75 @@
 
 - 525aeae: **BREAKING**
 
-  Merge `createBundle` with `createRoomBundle`.
+    Merge `createBundle` with `createRoomBundle`.
 
-  ```ts
-  // Before
-  const {
-    createRoomBundle,
+    ```ts
+    // Before
+    const {
+        createRoomBundle,
 
-    // components
-    PluvProvider,
+        // components
+        PluvProvider,
 
-    // hooks
-    useClient,
-  } = createBundle(client);
+        // hooks
+        useClient,
+    } = createBundle(client);
 
-  export const {
-    // components
-    MockedRoomProvider,
-    PluvRoomProvider,
+    export const {
+        // components
+        MockedRoomProvider,
+        PluvRoomProvider,
 
-    // utils
-    event,
+        // utils
+        event,
 
-    // hooks
-    useBroadcast,
-    useCanRedo,
-    useCanUndo,
-    useConnection,
-    useDoc,
-    useEvent,
-    useMyPresence,
-    useMyself,
-    useOther,
-    useOthers,
-    useRedo,
-    useRoom,
-    useStorage,
-    useTransact,
-    useUndo,
-  } = createRoomBundle({});
+        // hooks
+        useBroadcast,
+        useCanRedo,
+        useCanUndo,
+        useConnection,
+        useDoc,
+        useEvent,
+        useMyPresence,
+        useMyself,
+        useOther,
+        useOthers,
+        useRedo,
+        useRoom,
+        useStorage,
+        useTransact,
+        useUndo,
+    } = createRoomBundle({});
 
-  // After
-  const {
-    // components
-    MockedRoomProvider,
-    PluvProvider,
-    PluvRoomProvider,
+    // After
+    const {
+        // components
+        MockedRoomProvider,
+        PluvProvider,
+        PluvRoomProvider,
 
-    // utils
-    event,
+        // utils
+        event,
 
-    // hooks
-    useBroadcast,
-    useCanRedo,
-    useCanUndo,
-    useClient,
-    useConnection,
-    useDoc,
-    useEvent,
-    useMyPresence,
-    useMyself,
-    useOther,
-    useOthers,
-    useRedo,
-    useRoom,
-    useStorage,
-    useTransact,
-    useUndo,
-  } = createBundle(client);
-  ```
+        // hooks
+        useBroadcast,
+        useCanRedo,
+        useCanUndo,
+        useClient,
+        useConnection,
+        useDoc,
+        useEvent,
+        useMyPresence,
+        useMyself,
+        useOther,
+        useOthers,
+        useRedo,
+        useRoom,
+        useStorage,
+        useTransact,
+        useUndo,
+    } = createBundle(client);
+    ```
 
 ### Patch Changes
 
@@ -898,119 +906,119 @@
 
 - 19ed36c: Updated `createClient` and `createRoomBundle` object params to better support automatic type inference.
 
-  ```ts
-  // Before
-  import { createClient } from "@pluv/react";
-  import { yjs } from "@pluv/crdt-yjs";
-  import { z } from "zod";
-  import type { ioServer } from "./server/ioServer";
+    ```ts
+    // Before
+    import { createClient } from "@pluv/react";
+    import { yjs } from "@pluv/crdt-yjs";
+    import { z } from "zod";
+    import type { ioServer } from "./server/ioServer";
 
-  const client = createClient<typeof ioServer>({
-    authEndpoint: ({ room }) => "MY_AUTH_URL",
-    wsEndpoint: ({ room }) => "MY_WEBSOCKET_URL",
-  });
+    const client = createClient<typeof ioServer>({
+        authEndpoint: ({ room }) => "MY_AUTH_URL",
+        wsEndpoint: ({ room }) => "MY_WEBSOCKET_URL",
+    });
 
-  client.createRoom("my-example-room", {
-    presence: z.object({
-      selectionId: z.string().nullish(),
-    }),
-    initialPresence: {
-      selectionId: null,
-    },
-    initialStorage: yjs.doc(() => ({
-      messages: yjs.array<string>([]),
-    })),
-  });
+    client.createRoom("my-example-room", {
+        presence: z.object({
+            selectionId: z.string().nullish(),
+        }),
+        initialPresence: {
+            selectionId: null,
+        },
+        initialStorage: yjs.doc(() => ({
+            messages: yjs.array<string>([]),
+        })),
+    });
 
-  // After
+    // After
 
-  import { createBundle, createClient } from "@pluv/react";
+    import { createBundle, createClient } from "@pluv/react";
 
-  const client = createClient({
-    authEndpoint: ({ room }) => "MY_AUTH_URL",
-    wsEndpoint: ({ room }) => "MY_WEBSOCKET_URL",
-    /**
-     * @description The ioServer type now needs to be inferred on this property
-     * instead of within the generic on `createClient`. This is because of
-     * limitations with TypeScript not yet supporting partial type-inference
-     * for generics. Ensure to no-loonger include any generics on `createClient`
-     */
-    infer: (i) => ({ io: i<typeof ioServer> }),
-    // Now moved to `createClient` from `PluvClient.createRoom`
-    presence: z.object({
-      selectionId: z.string().nullish(),
-    }),
-    /**
-     * @description Now added to `createClient` to specify defaults for all
-     * rooms, and to infer types for storage. This value will be overwritten by
-     * `PluvClient.createRoom`.
-     */
-    initialStorage: yjs.doc(() => ({
-      messages: yjs.array<string>([]),
-    })),
-  });
+    const client = createClient({
+        authEndpoint: ({ room }) => "MY_AUTH_URL",
+        wsEndpoint: ({ room }) => "MY_WEBSOCKET_URL",
+        /**
+         * @description The ioServer type now needs to be inferred on this property
+         * instead of within the generic on `createClient`. This is because of
+         * limitations with TypeScript not yet supporting partial type-inference
+         * for generics. Ensure to no-loonger include any generics on `createClient`
+         */
+        infer: (i) => ({ io: i<typeof ioServer> }),
+        // Now moved to `createClient` from `PluvClient.createRoom`
+        presence: z.object({
+            selectionId: z.string().nullish(),
+        }),
+        /**
+         * @description Now added to `createClient` to specify defaults for all
+         * rooms, and to infer types for storage. This value will be overwritten by
+         * `PluvClient.createRoom`.
+         */
+        initialStorage: yjs.doc(() => ({
+            messages: yjs.array<string>([]),
+        })),
+    });
 
-  const { createRoomBundle } = createBundle(client);
-  const pluv = createRoomBundle({});
-  ```
+    const { createRoomBundle } = createBundle(client);
+    const pluv = createRoomBundle({});
+    ```
 
 ### Patch Changes
 
 - 19ed36c: Added client-side event router. This more-or-less mirrors the server-side event router. You can use both the server-side and client-side router simultaneously, but you should generally prefer only using one or the other.
 
-  ```ts
-  // Backend Server
-  import { createIO } from "@pluv/io";
+    ```ts
+    // Backend Server
+    import { createIO } from "@pluv/io";
 
-  const io = createIO({ /* ... */ });
-  const ioServer = io.server({
-      router: io.router({
-          multiply2: io.procedure
-              .input(z.object({ value: z.number() }))
-              .broadcast(({ value }) => ({
-                  multiplied2: { value: value * 2 },
-              })),
-      }),
-  });
+    const io = createIO({ /* ... */ });
+    const ioServer = io.server({
+        router: io.router({
+            multiply2: io.procedure
+                .input(z.object({ value: z.number() }))
+                .broadcast(({ value }) => ({
+                    multiplied2: { value: value * 2 },
+                })),
+        }),
+    });
 
-  // Frontend Client
-  import { createBundle createClient } from "@pluv/react";
+    // Frontend Client
+    import { createBundle createClient } from "@pluv/react";
 
-  const io = createClient({ /* ... */ });
+    const io = createClient({ /* ... */ });
 
-  const { createRoomBundle } = createBundle(io);
-  const pluv = createRoomBundle({
-      // ...
-      router: io.router({
-          add5: io.procedure
-              .input(z.object({ value: z.number() }))
-              .broadcast(({ value }) => ({
-                  /**
-                   * @description Because `ioServer` does not specify `added5`,
-                   * this will be forwarded to connected peers.
-                   */
-                  added5: { value: value + 5 },
-              })),
-          /**
-           * @description This is possible, but not recommended to do. Because
-           * `multiply2` is a procedure on `ioServer`, this will trigger the
-           * `multiply2` procedure on `ioServer`. Connected peers will not
-           * receive `multiply2`, but rather `multipled2`.
-           */
-          subtract5Multiply2: io.procedure
-              .input(z.object({ value: z.number() }))
-              .broadcast(({ value }) => ({
-                  multiply2: { value: value - 5 },
-              })),
-      }),
-  });
-  ```
+    const { createRoomBundle } = createBundle(io);
+    const pluv = createRoomBundle({
+        // ...
+        router: io.router({
+            add5: io.procedure
+                .input(z.object({ value: z.number() }))
+                .broadcast(({ value }) => ({
+                    /**
+                     * @description Because `ioServer` does not specify `added5`,
+                     * this will be forwarded to connected peers.
+                     */
+                    added5: { value: value + 5 },
+                })),
+            /**
+             * @description This is possible, but not recommended to do. Because
+             * `multiply2` is a procedure on `ioServer`, this will trigger the
+             * `multiply2` procedure on `ioServer`. Connected peers will not
+             * receive `multiply2`, but rather `multipled2`.
+             */
+            subtract5Multiply2: io.procedure
+                .input(z.object({ value: z.number() }))
+                .broadcast(({ value }) => ({
+                    multiply2: { value: value - 5 },
+                })),
+        }),
+    });
+    ```
 
 - Updated dependencies [19ed36c]
 - Updated dependencies [19ed36c]
-  - @pluv/client@0.27.0
-  - @pluv/crdt@0.27.0
-  - @pluv/types@0.27.0
+    - @pluv/client@0.27.0
+    - @pluv/crdt@0.27.0
+    - @pluv/types@0.27.0
 
 ## 0.26.0
 
@@ -1019,54 +1027,54 @@
 - 19e5dda: **BREAKING**
   Update `authEndpoint` and `wsEndpoint` to now use a parameterized object that passes through additional data via a `metadata` property.
 
-  ```tsx
-  // Before
+    ```tsx
+    // Before
 
-  import { env } from "./env";
-  import type { ioServer } from "./server";
+    import { env } from "./env";
+    import type { ioServer } from "./server";
 
-  const client = createClient<typeof ioServer>({
-      authEndpoint: (room: string) => `${env.API_URL}}/room/${room}`,
-      wsEndpoint: (room: string) => `${env.WS_URL}/room/${room}`,
-  });
+    const client = createClient<typeof ioServer>({
+        authEndpoint: (room: string) => `${env.API_URL}}/room/${room}`,
+        wsEndpoint: (room: string) => `${env.WS_URL}/room/${room}`,
+    });
 
-  // After
+    // After
 
-  const client = createClient<
-      typeof ioServer,
-      // Optional: You can specify types for metadata here. This is useful for Cloudflare Pages
-      { apiUrl: string; wsUrl: string }
-  >({
-      authEndpoint: ({ metadata, room }) => `${metadata.apiUrl}}/room/${room}`,
-      wsEndpoint: ({ metadata, room }) => `${{ metadata.wsUrl }}/room/${room}`,
-  });
+    const client = createClient<
+        typeof ioServer,
+        // Optional: You can specify types for metadata here. This is useful for Cloudflare Pages
+        { apiUrl: string; wsUrl: string }
+    >({
+        authEndpoint: ({ metadata, room }) => `${metadata.apiUrl}}/room/${room}`,
+        wsEndpoint: ({ metadata, room }) => `${{ metadata.wsUrl }}/room/${room}`,
+    });
 
-  client.createRoom("my-room", {
-      // This property exists when the `metadata` generic type is defined above
-      metadata: {
-          apiUrl: "https://example.com/api",
-          wsUrl: "wss://example.com/api",
-      },
-      // ...
-  });
+    client.createRoom("my-room", {
+        // This property exists when the `metadata` generic type is defined above
+        metadata: {
+            apiUrl: "https://example.com/api",
+            wsUrl: "wss://example.com/api",
+        },
+        // ...
+    });
 
-  <PluvRoomProvider
-      // This property exists when the `metadata` generic type is defined above
-      metadata={{
-          apiUrl: "https://example.com/api",
-          wsUrl: "wss://example.com/api",
-      }}
-  >
-      {/* ... */}
-  </PluvRoomProvider>
-  ```
+    <PluvRoomProvider
+        // This property exists when the `metadata` generic type is defined above
+        metadata={{
+            apiUrl: "https://example.com/api",
+            wsUrl: "wss://example.com/api",
+        }}
+    >
+        {/* ... */}
+    </PluvRoomProvider>
+    ```
 
 ### Patch Changes
 
 - Updated dependencies [19e5dda]
-  - @pluv/client@0.26.0
-  - @pluv/crdt@0.26.0
-  - @pluv/types@0.26.0
+    - @pluv/client@0.26.0
+    - @pluv/crdt@0.26.0
+    - @pluv/types@0.26.0
 
 ## 0.25.4
 
@@ -1113,9 +1121,9 @@
 ### Patch Changes
 
 - Updated dependencies [ba299e2]
-  - @pluv/client@0.24.1
-  - @pluv/crdt@0.24.1
-  - @pluv/types@0.24.1
+    - @pluv/client@0.24.1
+    - @pluv/crdt@0.24.1
+    - @pluv/types@0.24.1
 
 ## 0.24.0
 
@@ -1154,9 +1162,9 @@
 ### Patch Changes
 
 - Updated dependencies [b98ab6b]
-  - @pluv/client@0.21.0
-  - @pluv/crdt@0.21.0
-  - @pluv/types@0.21.0
+    - @pluv/client@0.21.0
+    - @pluv/crdt@0.21.0
+    - @pluv/types@0.21.0
 
 ## 0.20.0
 
@@ -1164,77 +1172,77 @@
 
 - 9492085: **BREAKING**: `@pluv/crdt-yjs` and `@pluv/crdt-loro` have been updated so that the utilities to create shared-types/containers no-longer return a wrapper around the underlying shared-types and containers, but rather return the shared-types/containers directly.
 
-  This means that for methods such as `getStorage` from `@pluv/client` and `useStorage` from `@pluv/react`, the shared-types/containers are also returned instead of the wrapper types.
+    This means that for methods such as `getStorage` from `@pluv/client` and `useStorage` from `@pluv/react`, the shared-types/containers are also returned instead of the wrapper types.
 
-  The motivation for these changes are so that pluv.io is supplementary to `yjs` and `loro-crdt`, instead of having these libraries be an internal implementation of pluv.io.
+    The motivation for these changes are so that pluv.io is supplementary to `yjs` and `loro-crdt`, instead of having these libraries be an internal implementation of pluv.io.
 
-  ```ts
-  // Before
+    ```ts
+    // Before
 
-  import { yjs } from "@pluv/crdt-yjs";
+    import { yjs } from "@pluv/crdt-yjs";
 
-  yjs.array([]); // Returns CrdtYjsArray
-  yjs.object([]); // Returns CrdtYjsObject
+    yjs.array([]); // Returns CrdtYjsArray
+    yjs.object([]); // Returns CrdtYjsObject
 
-  const room: PluvRoom = /* ... */;
+    const room: PluvRoom = /* ... */;
 
-  room.getStorage("messages"); // Returns AbstractCrdtType
+    room.getStorage("messages"); // Returns AbstractCrdtType
 
-  const [, sharedType] = useStorage("messages"); // sharedType is an AbstractCrdtType
-  ```
+    const [, sharedType] = useStorage("messages"); // sharedType is an AbstractCrdtType
+    ```
 
-  ```ts
-  // Now
+    ```ts
+    // Now
 
-  import { yjs } from "@pluv/crdt-yjs";
+    import { yjs } from "@pluv/crdt-yjs";
 
-  yjs.array([]); // Returns yjs.Array
-  yjs.object([]); // Returns yjs.Map
+    yjs.array([]); // Returns yjs.Array
+    yjs.object([]); // Returns yjs.Map
 
-  const room: PluvRoom = /* ... */;
+    const room: PluvRoom = /* ... */;
 
-  room.getStorage("messages"); // Returns yjs.AbstractType
+    room.getStorage("messages"); // Returns yjs.AbstractType
 
-  const [, sharedType] = useStorage("messages"); // sharedType is a yjs.AbstractType
-  ```
+    const [, sharedType] = useStorage("messages"); // sharedType is a yjs.AbstractType
+    ```
 
-  For `@pluv/crdt-loro` specifically, `@pluv/client` relies on [loro events and subscriptions](https://www.loro.dev/docs/tutorial/get_started#event) to detect changes. The `AbstractLoroCrdt` types previously called `Loro.commit` after each change as an abstraction, but now this no-longer happens. To ensure that changes to loro containers are properly handled in `@pluv/react`, make sure to commit your changes whenever possible:
+    For `@pluv/crdt-loro` specifically, `@pluv/client` relies on [loro events and subscriptions](https://www.loro.dev/docs/tutorial/get_started#event) to detect changes. The `AbstractLoroCrdt` types previously called `Loro.commit` after each change as an abstraction, but now this no-longer happens. To ensure that changes to loro containers are properly handled in `@pluv/react`, make sure to commit your changes whenever possible:
 
-  ```ts
-  // Before
+    ```ts
+    // Before
 
-  const [data, container] = useStorage("messages");
+    const [data, container] = useStorage("messages");
 
-  // This automatically called Loro.commit under the hood and rerendered the page with updated data.
-  container.push(loro.object({ name: "John Doe", age: 35 }));
-  ```
-
-  ```ts
-  // Now
-
-  const [data, container] = useStorage("messages");
-
-  const doc = useDoc();
-  const transact = useTransact();
-
-  // Updates need to be committed back to the doc whenever the changes need to be emitted to other users
-  // The returned data also will not update until the changes are commited
-
-  // The two operations below are functionally equivalent
-  transact(() => {
+    // This automatically called Loro.commit under the hood and rerendered the page with updated data.
     container.push(loro.object({ name: "John Doe", age: 35 }));
-  });
+    ```
 
-  container.push(loro.object({ name: "John Doe", age: 35 }));
-  doc.value.commit();
-  ```
+    ```ts
+    // Now
+
+    const [data, container] = useStorage("messages");
+
+    const doc = useDoc();
+    const transact = useTransact();
+
+    // Updates need to be committed back to the doc whenever the changes need to be emitted to other users
+    // The returned data also will not update until the changes are commited
+
+    // The two operations below are functionally equivalent
+    transact(() => {
+        container.push(loro.object({ name: "John Doe", age: 35 }));
+    });
+
+    container.push(loro.object({ name: "John Doe", age: 35 }));
+    doc.value.commit();
+    ```
 
 ### Patch Changes
 
 - Updated dependencies [9492085]
-  - @pluv/client@0.20.0
-  - @pluv/crdt@0.20.0
-  - @pluv/types@0.20.0
+    - @pluv/client@0.20.0
+    - @pluv/crdt@0.20.0
+    - @pluv/types@0.20.0
 
 ## 0.19.0
 
@@ -1248,9 +1256,9 @@
 - 607afe3: Update the `updateMyPresence` function from `useMyPresence` to simply forward the function from the `PluvRoom`. This means all `updateMyPresence` functions should be the same underlying reference across all `useMyPresence` hooks.
 - Updated dependencies [137444b]
 - Updated dependencies [f5e4370]
-  - @pluv/client@0.19.0
-  - @pluv/crdt@0.19.0
-  - @pluv/types@0.19.0
+    - @pluv/client@0.19.0
+    - @pluv/crdt@0.19.0
+    - @pluv/types@0.19.0
 
 ## 0.18.0
 
@@ -1258,156 +1266,156 @@
 
 - 99b5ca9: ## Breaking Changes
 
-  - `@pluv/io` has been updated to introduce `PluvProcedure`, `PluvRouter` and `PluvServer`. This change is intended to improve the ergonomics of declaring events and simplifying inferences of event types.
+    - `@pluv/io` has been updated to introduce `PluvProcedure`, `PluvRouter` and `PluvServer`. This change is intended to improve the ergonomics of declaring events and simplifying inferences of event types.
 
-  ### Before:
+    ### Before:
 
-  ```ts
-  // backend/io.ts
+    ```ts
+    // backend/io.ts
 
-  import { createIO } from "@pluv/io";
-  import { createPluvHandler, platformNode } from "@pluv/platform-node";
-  import { z } from "zod";
+    import { createIO } from "@pluv/io";
+    import { createPluvHandler, platformNode } from "@pluv/platform-node";
+    import { z } from "zod";
 
-  export const io = createIO({
-    platform: platformNode(),
-  })
-    .event("SEND_MESSAGE", {
-      input: z.object({ message: z.string() }),
-      resolver: ({ message }) => ({ RECEIVE_MESSAGE: { message } }),
+    export const io = createIO({
+        platform: platformNode(),
     })
-    .event("DOUBLE_VALUE", {
-      input: z.object({ value: z.number() }),
-      resolver: ({ value }) => ({ VALUE_DOUBLED: { value: value * 2 } }),
+        .event("SEND_MESSAGE", {
+            input: z.object({ message: z.string() }),
+            resolver: ({ message }) => ({ RECEIVE_MESSAGE: { message } }),
+        })
+        .event("DOUBLE_VALUE", {
+            input: z.object({ value: z.number() }),
+            resolver: ({ value }) => ({ VALUE_DOUBLED: { value: value * 2 } }),
+        });
+
+    const Pluv = createPluvHandler({
+        io,
+        /* ... */
+    });
+    ```
+
+    ```ts
+    // frontend/pluv.ts
+
+    import { createClient } from "@pluv/react";
+    import type { io } from "../backend/io";
+
+    const client = createClient<typeof io>({
+        /* ... */
+    });
+    ```
+
+    ### Now:
+
+    ```ts
+    import { createIO } from "@pluv/io";
+    import { createPluvHandler, platformNode } from "@pluv/platform-node";
+    import { z } from "zod";
+
+    const io = createIO({
+        platform: platformNode(),
     });
 
-  const Pluv = createPluvHandler({
-    io,
-    /* ... */
-  });
-  ```
+    const router = io.router({
+        SEND_MESSAGE: io.procedure
+            .input(z.object({ message: z.string() }))
+            .broadcast(({ message }) => ({
+                RECEIVE_MESSAGE: { message },
+            })),
+        DOUBLE_VALUE: io.procedure
+            .input(z.object({ value: z.number() }))
+            .broadcast(({ value }) => ({
+                VALUE_DOUBLED: { value: value * 2 },
+            })),
+    });
 
-  ```ts
-  // frontend/pluv.ts
+    export const ioServer = io.server({ router });
 
-  import { createClient } from "@pluv/react";
-  import type { io } from "../backend/io";
+    const Pluv = createPluvHandler({
+        io: ioServer, // <- This uses the PluvServer now
+        /* ... */
+    });
+    ```
 
-  const client = createClient<typeof io>({
-    /* ... */
-  });
-  ```
+    ```ts
+    // frontend/pluv.ts
 
-  ### Now:
+    import { createClient } from "@pluv/react";
+    import type { ioServer } from "../backend/io";
 
-  ```ts
-  import { createIO } from "@pluv/io";
-  import { createPluvHandler, platformNode } from "@pluv/platform-node";
-  import { z } from "zod";
+    // This users the PluvServer type now
+    const client = createClient<typeof ioServer>({
+        /* ... */
+    });
+    ```
 
-  const io = createIO({
-    platform: platformNode(),
-  });
+    - `PluvRouter` instances can also be merged via the `mergeRouters` method, which effectively performs an `Object.assign` of the events object and returns a new `PluvRouter` with the correct types:
 
-  const router = io.router({
-    SEND_MESSAGE: io.procedure
-      .input(z.object({ message: z.string() }))
-      .broadcast(({ message }) => ({
-        RECEIVE_MESSAGE: { message },
-      })),
-    DOUBLE_VALUE: io.procedure
-      .input(z.object({ value: z.number() }))
-      .broadcast(({ value }) => ({
-        VALUE_DOUBLED: { value: value * 2 },
-      })),
-  });
-
-  export const ioServer = io.server({ router });
-
-  const Pluv = createPluvHandler({
-    io: ioServer, // <- This uses the PluvServer now
-    /* ... */
-  });
-  ```
-
-  ```ts
-  // frontend/pluv.ts
-
-  import { createClient } from "@pluv/react";
-  import type { ioServer } from "../backend/io";
-
-  // This users the PluvServer type now
-  const client = createClient<typeof ioServer>({
-    /* ... */
-  });
-  ```
-
-  - `PluvRouter` instances can also be merged via the `mergeRouters` method, which effectively performs an `Object.assign` of the events object and returns a new `PluvRouter` with the correct types:
-
-  ```ts
-  const router = io.mergeRouters(router1, router2);
-  ```
+    ```ts
+    const router = io.mergeRouters(router1, router2);
+    ```
 
 - 07a7725: Added broadcast proxy as a new way to broadcast events to other users.
 
-  ```tsx
-  // backend
+    ```tsx
+    // backend
 
-  const router = io.router({
-    SEND_MESSAGE: io.procedure
-      .input(z.object({ message: z.string() }))
-      .broadcast(({ message }) => ({ RECEIVE_MESSAGE: { message } })),
-  });
+    const router = io.router({
+        SEND_MESSAGE: io.procedure
+            .input(z.object({ message: z.string() }))
+            .broadcast(({ message }) => ({ RECEIVE_MESSAGE: { message } })),
+    });
 
-  // frontend
-  const pluv = createRoomBundle(/* ... */);
+    // frontend
+    const pluv = createRoomBundle(/* ... */);
 
-  const broadcast = pluv.useBroadcast();
+    const broadcast = pluv.useBroadcast();
 
-  // Both of the examples below are equivalent.
+    // Both of the examples below are equivalent.
 
-  broadcast("SEND_MESSAGE", { message: "Hello world~!" });
+    broadcast("SEND_MESSAGE", { message: "Hello world~!" });
 
-  broadcast.SEND_MESSAGE({ message: "Hello world~!" });
-  ```
+    broadcast.SEND_MESSAGE({ message: "Hello world~!" });
+    ```
 
 ### Patch Changes
 
 - e587c18: Added event proxy as a new way to listen to events.
 
-  ```tsx
-  // backend
+    ```tsx
+    // backend
 
-  const router = io.router({
-    SEND_MESSAGE: io.procedure
-      .input(z.object({ message: z.string() }))
-      .broadcast(({ message }) => ({ RECEIVE_MESSAGE: { message } })),
-  });
+    const router = io.router({
+        SEND_MESSAGE: io.procedure
+            .input(z.object({ message: z.string() }))
+            .broadcast(({ message }) => ({ RECEIVE_MESSAGE: { message } })),
+    });
 
-  // frontend
-  const pluv = createRoomBundle(/* ... */);
+    // frontend
+    const pluv = createRoomBundle(/* ... */);
 
-  // Both of the examples below are equivalent.
+    // Both of the examples below are equivalent.
 
-  pluv.useEvent("RECEIVE_MESSAGE", ({ data }) => {
-    const { message } = data;
+    pluv.useEvent("RECEIVE_MESSAGE", ({ data }) => {
+        const { message } = data;
 
-    console.log(message);
-  });
+        console.log(message);
+    });
 
-  pluv.event.RECEIVE_MESSAGE.useEvent(({ data }) => {
-    const { message } = data;
+    pluv.event.RECEIVE_MESSAGE.useEvent(({ data }) => {
+        const { message } = data;
 
-    console.log(message);
-  });
-  ```
+        console.log(message);
+    });
+    ```
 
 - Updated dependencies [06c67be]
 - Updated dependencies [99b5ca9]
 - Updated dependencies [df1342c]
-  - @pluv/client@0.18.0
-  - @pluv/types@0.18.0
-  - @pluv/crdt@0.18.0
+    - @pluv/client@0.18.0
+    - @pluv/types@0.18.0
+    - @pluv/crdt@0.18.0
 
 ## 0.17.3
 
@@ -1438,9 +1446,9 @@
 ### Patch Changes
 
 - Updated dependencies [507bc00]
-  - @pluv/types@0.17.0
-  - @pluv/client@0.17.0
-  - @pluv/crdt@0.17.0
+    - @pluv/types@0.17.0
+    - @pluv/client@0.17.0
+    - @pluv/crdt@0.17.0
 
 ## 0.16.3
 
@@ -1472,165 +1480,163 @@
 
 - 995aa9c: Renamed all hooks from `@pluv/react` to be simply prefixed with `use` instead of `usePluv` (e.g. `usePluvStorage` is now just `useStorage`).
 
-  Hooks can be aliased to retain the same names if preferred:
+    Hooks can be aliased to retain the same names if preferred:
 
-  ```ts
-  export const {
-    // ...
-    useStorage: usePluvStorage,
-    useTransact: usePluvTransact,
-    // ...
-  } = createRoomBundle(/* */);
-  ```
+    ```ts
+    export const {
+        // ...
+        useStorage: usePluvStorage,
+        useTransact: usePluvTransact,
+        // ...
+    } = createRoomBundle(/* */);
+    ```
 
 - 4280220: ## Breaking Changes
 
-  - Storage types are now kept on the root of the document.
-    - Previously, `@pluv/crdt-yjs` kept all shared-types on a hidden Yjs Map called `storage` on the root of the Yjs Doc. Now all shared-types are kept on the root of the Yjs Doc instead. This behavior should be more in-line with how shared-types are documented to be used from Yjs.
-  - `@pluv/client` and `@pluv/react` no-longer re-export `@pluv/crdt-yjs`. This package will now need to be installed separately.
+    - Storage types are now kept on the root of the document.
+        - Previously, `@pluv/crdt-yjs` kept all shared-types on a hidden Yjs Map called `storage` on the root of the Yjs Doc. Now all shared-types are kept on the root of the Yjs Doc instead. This behavior should be more in-line with how shared-types are documented to be used from Yjs.
+    - `@pluv/client` and `@pluv/react` no-longer re-export `@pluv/crdt-yjs`. This package will now need to be installed separately.
 
-    ```bash
-    # if installing @pluv/client
-    npm install @pluv/client @pluv/crdt-yjs
-    # if installing @pluv/react
-    npm install @pluv/react @pluv/crdt-yjs
-    ```
+        ```bash
+        # if installing @pluv/client
+        npm install @pluv/client @pluv/crdt-yjs
+        # if installing @pluv/react
+        npm install @pluv/react @pluv/crdt-yjs
+        ```
 
-    ```ts
-    // Before:
-    import { createClient, y } from "@pluv/client";
-    // After:
-    import { createClient } from "@pluv/client";
-    import { yjs } from "@pluv/crdt-yjs"; // y renamed to yjs
-    ```
+        ```ts
+        // Before:
+        import { createClient, y } from "@pluv/client";
+        // After:
+        import { createClient } from "@pluv/client";
+        import { yjs } from "@pluv/crdt-yjs"; // y renamed to yjs
+        ```
 
-  - The `y` import has been renamed to `yjs`.
-    ```ts
-    // Before:
-    import { y } from "@pluv/crdt-yjs";
-    // After:
-    import { yjs } from "@pluv/crdt-yjs";
-    ```
-  - `@pluv/crdt-yjs` functions no-longer return Yjs shared-types directly, but instead return an `AbstractCrdtType` from `@pluv/crdt` (new package). This also affects methods that return storage shared types in both `@pluv/client` and `@pluv/react` from functions like `PluvRoom.getStorage` and `PluvRoom.useStorage`.
+    - The `y` import has been renamed to `yjs`.
+        ```ts
+        // Before:
+        import { y } from "@pluv/crdt-yjs";
+        // After:
+        import { yjs } from "@pluv/crdt-yjs";
+        ```
+    - `@pluv/crdt-yjs` functions no-longer return Yjs shared-types directly, but instead return an `AbstractCrdtType` from `@pluv/crdt` (new package). This also affects methods that return storage shared types in both `@pluv/client` and `@pluv/react` from functions like `PluvRoom.getStorage` and `PluvRoom.useStorage`.
 
-    ```ts
-    // Before:
-    import { y } from "@pluv/crdt-yjs";
-    import type { Array as YArray, Map as YMap } from "yjs";
+        ```ts
+        // Before:
+        import { y } from "@pluv/crdt-yjs";
+        import type { Array as YArray, Map as YMap } from "yjs";
 
-    const array: YArray<YMap<{ message: string }>> = y.array([
-      y.object({ message: "Hello" }),
-    ]);
+        const array: YArray<YMap<{ message: string }>> = y.array([y.object({ message: "Hello" })]);
 
-    array.push([y.object({ message: "World!" })]);
+        array.push([y.object({ message: "World!" })]);
 
-    // After:
-    import type { CrdtYjsArray, CrdtYjsObject } from "@pluv/crdt-yjs";
-    import { yjs } from "@pluv/crdt-yjs";
-    import type { Array as YArray } from "yjs";
+        // After:
+        import type { CrdtYjsArray, CrdtYjsObject } from "@pluv/crdt-yjs";
+        import { yjs } from "@pluv/crdt-yjs";
+        import type { Array as YArray } from "yjs";
 
-    const array: CrdtYjsArray<CrdtYjsObject<{ message: string }>> = yjs.array([
-      yjs.object({ message: "Hello" }),
-    ]);
+        const array: CrdtYjsArray<CrdtYjsObject<{ message: string }>> = yjs.array([
+            yjs.object({ message: "Hello" }),
+        ]);
 
-    array.push(yjs.object({ message: "World!" }));
+        array.push(yjs.object({ message: "World!" }));
 
-    // use .value to get the underlying yjs type
-    const yarray: YArray<YMap<{ message: string }>> = array.value;
-    ```
+        // use .value to get the underlying yjs type
+        const yarray: YArray<YMap<{ message: string }>> = array.value;
+        ```
 
-  - `initialStorage` must now use the `doc` function from `@pluv/crdt-yjs` to be defined. This also affects `@pluv/react`.
+    - `initialStorage` must now use the `doc` function from `@pluv/crdt-yjs` to be defined. This also affects `@pluv/react`.
 
-    ```ts
-    // Before:
-    import { createClient, y } from "@pluv/client";
+        ```ts
+        // Before:
+        import { createClient, y } from "@pluv/client";
 
-    const client = createClient({
-      /* ... */
-    });
+        const client = createClient({
+            /* ... */
+        });
 
-    client.createRoom({
-      // ...
-      initialStorage: () => ({
-        messages: y.array([y.object({ message: "Hello world!" })]),
-      }),
-    });
+        client.createRoom({
+            // ...
+            initialStorage: () => ({
+                messages: y.array([y.object({ message: "Hello world!" })]),
+            }),
+        });
 
-    // After:
-    import { createClient } from "@pluv/client";
-    // This is now imported separately
-    import { yjs } from "@pluv/crdt-yjs";
+        // After:
+        import { createClient } from "@pluv/client";
+        // This is now imported separately
+        import { yjs } from "@pluv/crdt-yjs";
 
-    const client = createClient({
-      /* ... */
-    });
+        const client = createClient({
+            /* ... */
+        });
 
-    client.createRoom({
-      // ...
-      initialStorage: yjs.doc(() => ({
-        messages: yjs.array([yjs.object({ message: "Hello world!" })]),
-      })),
-    });
-    ```
+        client.createRoom({
+            // ...
+            initialStorage: yjs.doc(() => ({
+                messages: yjs.array([yjs.object({ message: "Hello world!" })]),
+            })),
+        });
+        ```
 
-  - `@pluv/client` can now instead use [loro](https://github.com/loro-dev/loro) instead of [yjs](https://github.com/yjs/yjs).
-    ```bash
-    npm install @pluv/client @pluv/crdt-loro loro-crdt
-    ```
-  - If you are using storage features with pluv, `@pluv/io` must now specify which crdt library (i.e. `@pluv/crdt-yjs` or `@pluv/crdt-loro`) it is meant to use.
+    - `@pluv/client` can now instead use [loro](https://github.com/loro-dev/loro) instead of [yjs](https://github.com/yjs/yjs).
+        ```bash
+        npm install @pluv/client @pluv/crdt-loro loro-crdt
+        ```
+    - If you are using storage features with pluv, `@pluv/io` must now specify which crdt library (i.e. `@pluv/crdt-yjs` or `@pluv/crdt-loro`) it is meant to use.
 
-    ```ts
-    import { loro } from "@pluv/crdt-loro";
-    import { yjs } from "@pluv/crdt-yjs";
-    import { createIO } from "@pluv/io";
+        ```ts
+        import { loro } from "@pluv/crdt-loro";
+        import { yjs } from "@pluv/crdt-yjs";
+        import { createIO } from "@pluv/io";
 
-    const io = createIO({
-      // ...
-      // If using loro
-      crdt: loro,
-      // If using yjs
-      crdt: yjs,
-    });
-    ```
+        const io = createIO({
+            // ...
+            // If using loro
+            crdt: loro,
+            // If using yjs
+            crdt: yjs,
+        });
+        ```
 
-  - `PluvRoom.getDoc()` from `@pluv/client` no-longer returns the Yjs Doc instance, but rather a `AbstractCrdtDoc` instance from `@pluv/crdt`. This also affects the hook from `@pluv/react`.
+    - `PluvRoom.getDoc()` from `@pluv/client` no-longer returns the Yjs Doc instance, but rather a `AbstractCrdtDoc` instance from `@pluv/crdt`. This also affects the hook from `@pluv/react`.
 
-    ```ts
-    // Before:
-    import { Doc as YDoc } from "yjs";
+        ```ts
+        // Before:
+        import { Doc as YDoc } from "yjs";
 
-    const room: PluvRoom = client.createRoom({
-      /* ... */
-    });
+        const room: PluvRoom = client.createRoom({
+            /* ... */
+        });
 
-    const doc: YDoc = room.getDoc();
+        const doc: YDoc = room.getDoc();
 
-    // After:
-    import { CrdtYjsDoc } from "@pluv/crdt-yjs";
-    import { Doc as YDoc } from "yjs";
+        // After:
+        import { CrdtYjsDoc } from "@pluv/crdt-yjs";
+        import { Doc as YDoc } from "yjs";
 
-    const room: PluvRoom = client.createRoom({
-      /* ... */
-    });
+        const room: PluvRoom = client.createRoom({
+            /* ... */
+        });
 
-    const doc: CrdtYjsDoc<any> = room.getDoc();
-    const ydoc: YDoc = doc.value;
-    ```
+        const doc: CrdtYjsDoc<any> = room.getDoc();
+        const ydoc: YDoc = doc.value;
+        ```
 
-  - `@pluv/client` and `@pluv/react` now may return `null` when retrieving storage while storage is being initialized.
+    - `@pluv/client` and `@pluv/react` now may return `null` when retrieving storage while storage is being initialized.
 
-    ```ts
-    const sharedType = room.getStorage("messages"); // This may be null
+        ```ts
+        const sharedType = room.getStorage("messages"); // This may be null
 
-    const [data, sharedType] = useStorage("messages"); // data and sharedType may both be null
-    ```
+        const [data, sharedType] = useStorage("messages"); // data and sharedType may both be null
+        ```
 
 ### Patch Changes
 
 - Updated dependencies [4280220]
-  - @pluv/client@0.16.0
-  - @pluv/crdt@0.16.0
-  - @pluv/types@0.16.0
+    - @pluv/client@0.16.0
+    - @pluv/crdt@0.16.0
+    - @pluv/types@0.16.0
 
 ## 0.15.0
 
@@ -1659,17 +1665,17 @@
 
 - 4c4b47f: Added `useDoc` to access the root Yjs doc.
 
-  ```ts
-  import type { Doc } from "yjs";
+    ```ts
+    import type { Doc } from "yjs";
 
-  const doc: Doc = useDoc();
-  ```
+    const doc: Doc = useDoc();
+    ```
 
 ### Patch Changes
 
 - Updated dependencies [1126215]
-  - @pluv/client@0.13.0
-  - @pluv/types@0.13.0
+    - @pluv/client@0.13.0
+    - @pluv/types@0.13.0
 
 ## 0.12.3
 
@@ -1677,8 +1683,8 @@
 
 - da9f600: Upgraded dependencies
 - Updated dependencies [da9f600]
-  - @pluv/client@0.12.3
-  - @pluv/types@0.12.3
+    - @pluv/client@0.12.3
+    - @pluv/types@0.12.3
 
 ## 0.12.2
 
@@ -1692,8 +1698,8 @@
 
 - cae08aa: Updated storage from `getStorage` to never return null
 - Updated dependencies [cae08aa]
-  - @pluv/client@0.12.1
-  - @pluv/types@0.12.1
+    - @pluv/client@0.12.1
+    - @pluv/types@0.12.1
 
 ## 0.12.0
 
@@ -1701,239 +1707,238 @@
 
 - 436040b: Added ability to undo and redo changes to storage.
 
-  ## @pluv/crdt-yjs
+    ## @pluv/crdt-yjs
 
-  `@pluv/crdt-yjs` now exposes 5 new methods: `canRedo`, `canUndo`, `redo`, `undo` and `trackOrigins`.
+    `@pluv/crdt-yjs` now exposes 5 new methods: `canRedo`, `canUndo`, `redo`, `undo` and `trackOrigins`.
 
-  Refer to the code-example below to better understand how to undo and redo with your doc.
+    Refer to the code-example below to better understand how to undo and redo with your doc.
 
-  ```ts
-  // Example
-  import { array, doc } from "@pluv/crdt-yjs";
+    ```ts
+    // Example
+    import { array, doc } from "@pluv/crdt-yjs";
 
-  // Create your doc with your shared-types
-  const myDoc = doc({
-    messages: array<string>([]),
-  });
-
-  /**
-   * @description Track origins to enable undos and redos for your document.
-   * trackOrigins must be called before any storage mutations, to enable those
-   * mutations to be undone/redone.
-   */
-  myDoc.trackOrigins({
-    /**
-     * @description This is the same `captureTimeout` option from yjs's UndoManager.
-     * This specifies a number in ms, during which edits are merged together to be
-     * undone together. Set this to 0, to track each transacted change individually.
-     * @see (@link https://docs.yjs.dev/api/undo-manager)
-     * @default 500
-     */
-    captureTimeout: 500,
-    /**
-     * @desription This is the same `trackedOrigins` option from yjs's UndoManager.
-     * This specifies transaction origins (strings only) to filter which transactions
-     * can be undone.
-     * @see (@link https://docs.yjs.dev/api/undo-manager)
-     * @default undefined
-     */
-    trackedOrigins: ["user-123"],
-  });
-
-  /**
-   * @description Check whether calling undo will mutate storage
-   * @returns boolean
-   */
-  myDoc.canUndo();
-  /**
-   * @description Check whether calling redo will mutate storage
-   * @returns boolean
-   */
-  myDoc.canRedo();
-
-  // Perform a storage mutation within a transaction so that it can be affected
-  // by undo/redo operations.
-  myDoc.transact(() => {
-    myDoc.get("messages").push(["hello world!"]);
-  }, "user-123");
-
-  /**
-   * @description Undoes the last valid mutation to storage
-   */
-  myDoc.undo();
-
-  /**
-   * @description Re-applies the last undone mutation to storage
-   */
-  myDoc.redo();
-  ```
-
-  ## @pluv/client
-
-  `@pluv/client`'s `PluvRoom` and `MockedRoom` now exposes 5 new methods: `canRedo`, `canUndo`, `redo`, `undo` and `transact`.
-
-  Refer to the code-example below to better understand how to undo and redo with your `PluvRoom`.
-
-  ```ts
-  import { createClient, y } from "@pluv/client";
-
-  const client = createClient({});
-
-  /**
-   * @description When a room is created, undo/redo will automatically
-   * be configured to filter for changes made by the connected user
-   * (so that users only undo/redo their changes).
-   */
-  const room = client.createRoom("my-room", {
-    initialStorage: () => ({
-      messages: y.array<string>([]),
-    }),
-    /**
-     * @description This is the same `captureTimeout` option from yjs's UndoManager.
-     * This specifies a number in ms, during which edits are merged together to be
-     * undone together. Set this to 0, to track each transacted change individually.
-     * @see (@link https://docs.yjs.dev/api/undo-manager)
-     * @default 500
-     */
-    captureTimeout: 500,
-    /**
-     * @desription This is the same `trackedOrigins` option from yjs's UndoManager.
-     * This specifies transaction origins (strings only) to filter which transactions
-     * can be undone.
-     * When omitted, the user's connection id will be tracked. When provided,
-     * specifies additional tracked origins besides the user's connection id.
-     * @see (@link https://docs.yjs.dev/api/undo-manager)
-     * @default undefined
-     */
-    trackedOrigins: ["user-123"],
-  });
-
-  /**
-   * @description Check whether calling undo will mutate storage
-   * @returns boolean
-   */
-  room.canUndo();
-  /**
-   * @description Check whether calling redo will mutate storage
-   * @returns boolean
-   */
-  room.canRedo();
-
-  /**
-   * @description Calling transact will enable a storage mutation to be undone/redone.
-   * When called without an origin, the origin will default to the user's connection
-   * id.
-   *
-   * You can specify a 2nd parameter to transact with a different transaction origin.
-   */
-  room.transact(() => {
-    room.get("messages").push(["hello world!"]);
-  });
-
-  // This will also be undoable because `"user-123"` is a tracked origin.
-  room.transact(() => {
-    room.get("messages").push(["hello world!"]);
-  }, "user-123");
-
-  /**
-   * @description Undoes the last valid mutation to storage
-   */
-  room.undo();
-
-  /**
-   * @description Re-applies the last undone mutation to storage
-   */
-  room.redo();
-  ```
-
-  ## @pluv/react
-
-  `@pluv/react`'s `createRoomBundle` now exposes 5 new react hooks: `useCanRedo`, `useCanUndo`, `useRedo`, `useUndo` and `useTransact`.
-
-  Refer to the code-example below to better understand how to undo and redo with your `createRoomBundle`.
-
-  ```tsx
-  import { createBundle, createClient, y } from "@pluv/react";
-  import { type io } from "./io";
-
-  const client = createClient<typeof io>();
-
-  const { createRoomBundle } = createBundle(client);
-
-  const { useCanRedo, useCanUndo, useRedo, useStorage, useTransact, useUndo } =
-    createRoomBundle({
-      initialStorage: () => ({
-        messages: y.array<string>([]),
-      }),
-      /**
-       * @description This is the same `captureTimeout` option from yjs's UndoManager.
-       * This specifies a number in ms, during which edits are merged together to be
-       * undone together. Set this to 0, to track each transacted change individually.
-       * @see (@link https://docs.yjs.dev/api/undo-manager)
-       * @default 500
-       */
-      captureTimeout: 500,
-      /**
-       * @desription This is the same `trackedOrigins` option from yjs's UndoManager.
-       * This specifies transaction origins (strings only) to filter which transactions
-       * can be undone.
-       * When omitted, the user's connection id will be tracked. When provided,
-       * specifies additional tracked origins besides the user's connection id.
-       * @see (@link https://docs.yjs.dev/api/undo-manager)
-       * @default undefined
-       */
-      trackedOrigins: ["user-123"],
+    // Create your doc with your shared-types
+    const myDoc = doc({
+        messages: array<string>([]),
     });
 
-  /**
-   * @description Check whether calling undo will mutate storage
-   */
-  const canUndo: boolean = useCanUndo();
-  /**
-   * @description Check whether calling redo will mutate storage
-   */
-  const canRedo: boolean = useCanRedo();
+    /**
+     * @description Track origins to enable undos and redos for your document.
+     * trackOrigins must be called before any storage mutations, to enable those
+     * mutations to be undone/redone.
+     */
+    myDoc.trackOrigins({
+        /**
+         * @description This is the same `captureTimeout` option from yjs's UndoManager.
+         * This specifies a number in ms, during which edits are merged together to be
+         * undone together. Set this to 0, to track each transacted change individually.
+         * @see (@link https://docs.yjs.dev/api/undo-manager)
+         * @default 500
+         */
+        captureTimeout: 500,
+        /**
+         * @desription This is the same `trackedOrigins` option from yjs's UndoManager.
+         * This specifies transaction origins (strings only) to filter which transactions
+         * can be undone.
+         * @see (@link https://docs.yjs.dev/api/undo-manager)
+         * @default undefined
+         */
+        trackedOrigins: ["user-123"],
+    });
 
-  const [messages, sharedType] = useStorage("messages");
+    /**
+     * @description Check whether calling undo will mutate storage
+     * @returns boolean
+     */
+    myDoc.canUndo();
+    /**
+     * @description Check whether calling redo will mutate storage
+     * @returns boolean
+     */
+    myDoc.canRedo();
 
-  /**
-   * @description Calling transact will enable a storage mutation to be undone/redone.
-   * When called without an origin, the origin will default to the user's connection
-   * id.
-   *
-   * You can specify a 2nd parameter to transact with a different transaction origin.
-   */
-  const transact = useTransact();
+    // Perform a storage mutation within a transaction so that it can be affected
+    // by undo/redo operations.
+    myDoc.transact(() => {
+        myDoc.get("messages").push(["hello world!"]);
+    }, "user-123");
 
-  transact(() => {
-    sharedType.push(["hello world!"]);
-  });
+    /**
+     * @description Undoes the last valid mutation to storage
+     */
+    myDoc.undo();
 
-  // This will also be undoable because `"user-123"` is a tracked origin.
-  transact(() => {
-    sharedType.push(["hello world!"]);
-  }, "user-123");
+    /**
+     * @description Re-applies the last undone mutation to storage
+     */
+    myDoc.redo();
+    ```
 
-  /**
-   * @description Undoes the last valid mutation to storage
-   */
-  const undo = useUndo();
+    ## @pluv/client
 
-  undo();
+    `@pluv/client`'s `PluvRoom` and `MockedRoom` now exposes 5 new methods: `canRedo`, `canUndo`, `redo`, `undo` and `transact`.
 
-  /**
-   * @description Re-applies the last undone mutation to storage
-   */
-  const redo = useRedo();
+    Refer to the code-example below to better understand how to undo and redo with your `PluvRoom`.
 
-  redo();
-  ```
+    ```ts
+    import { createClient, y } from "@pluv/client";
+
+    const client = createClient({});
+
+    /**
+     * @description When a room is created, undo/redo will automatically
+     * be configured to filter for changes made by the connected user
+     * (so that users only undo/redo their changes).
+     */
+    const room = client.createRoom("my-room", {
+        initialStorage: () => ({
+            messages: y.array<string>([]),
+        }),
+        /**
+         * @description This is the same `captureTimeout` option from yjs's UndoManager.
+         * This specifies a number in ms, during which edits are merged together to be
+         * undone together. Set this to 0, to track each transacted change individually.
+         * @see (@link https://docs.yjs.dev/api/undo-manager)
+         * @default 500
+         */
+        captureTimeout: 500,
+        /**
+         * @desription This is the same `trackedOrigins` option from yjs's UndoManager.
+         * This specifies transaction origins (strings only) to filter which transactions
+         * can be undone.
+         * When omitted, the user's connection id will be tracked. When provided,
+         * specifies additional tracked origins besides the user's connection id.
+         * @see (@link https://docs.yjs.dev/api/undo-manager)
+         * @default undefined
+         */
+        trackedOrigins: ["user-123"],
+    });
+
+    /**
+     * @description Check whether calling undo will mutate storage
+     * @returns boolean
+     */
+    room.canUndo();
+    /**
+     * @description Check whether calling redo will mutate storage
+     * @returns boolean
+     */
+    room.canRedo();
+
+    /**
+     * @description Calling transact will enable a storage mutation to be undone/redone.
+     * When called without an origin, the origin will default to the user's connection
+     * id.
+     *
+     * You can specify a 2nd parameter to transact with a different transaction origin.
+     */
+    room.transact(() => {
+        room.get("messages").push(["hello world!"]);
+    });
+
+    // This will also be undoable because `"user-123"` is a tracked origin.
+    room.transact(() => {
+        room.get("messages").push(["hello world!"]);
+    }, "user-123");
+
+    /**
+     * @description Undoes the last valid mutation to storage
+     */
+    room.undo();
+
+    /**
+     * @description Re-applies the last undone mutation to storage
+     */
+    room.redo();
+    ```
+
+    ## @pluv/react
+
+    `@pluv/react`'s `createRoomBundle` now exposes 5 new react hooks: `useCanRedo`, `useCanUndo`, `useRedo`, `useUndo` and `useTransact`.
+
+    Refer to the code-example below to better understand how to undo and redo with your `createRoomBundle`.
+
+    ```tsx
+    import { createBundle, createClient, y } from "@pluv/react";
+    import { type io } from "./io";
+
+    const client = createClient<typeof io>();
+
+    const { createRoomBundle } = createBundle(client);
+
+    const { useCanRedo, useCanUndo, useRedo, useStorage, useTransact, useUndo } = createRoomBundle({
+        initialStorage: () => ({
+            messages: y.array<string>([]),
+        }),
+        /**
+         * @description This is the same `captureTimeout` option from yjs's UndoManager.
+         * This specifies a number in ms, during which edits are merged together to be
+         * undone together. Set this to 0, to track each transacted change individually.
+         * @see (@link https://docs.yjs.dev/api/undo-manager)
+         * @default 500
+         */
+        captureTimeout: 500,
+        /**
+         * @desription This is the same `trackedOrigins` option from yjs's UndoManager.
+         * This specifies transaction origins (strings only) to filter which transactions
+         * can be undone.
+         * When omitted, the user's connection id will be tracked. When provided,
+         * specifies additional tracked origins besides the user's connection id.
+         * @see (@link https://docs.yjs.dev/api/undo-manager)
+         * @default undefined
+         */
+        trackedOrigins: ["user-123"],
+    });
+
+    /**
+     * @description Check whether calling undo will mutate storage
+     */
+    const canUndo: boolean = useCanUndo();
+    /**
+     * @description Check whether calling redo will mutate storage
+     */
+    const canRedo: boolean = useCanRedo();
+
+    const [messages, sharedType] = useStorage("messages");
+
+    /**
+     * @description Calling transact will enable a storage mutation to be undone/redone.
+     * When called without an origin, the origin will default to the user's connection
+     * id.
+     *
+     * You can specify a 2nd parameter to transact with a different transaction origin.
+     */
+    const transact = useTransact();
+
+    transact(() => {
+        sharedType.push(["hello world!"]);
+    });
+
+    // This will also be undoable because `"user-123"` is a tracked origin.
+    transact(() => {
+        sharedType.push(["hello world!"]);
+    }, "user-123");
+
+    /**
+     * @description Undoes the last valid mutation to storage
+     */
+    const undo = useUndo();
+
+    undo();
+
+    /**
+     * @description Re-applies the last undone mutation to storage
+     */
+    const redo = useRedo();
+
+    redo();
+    ```
 
 ### Patch Changes
 
 - Updated dependencies [436040b]
-  - @pluv/client@0.12.0
-  - @pluv/types@0.12.0
+    - @pluv/client@0.12.0
+    - @pluv/types@0.12.0
 
 ## 0.11.1
 
@@ -1941,8 +1946,8 @@
 
 - 74b3061: Bumped minor and patch dependencies.
 - Updated dependencies [74b3061]
-  - @pluv/client@0.11.1
-  - @pluv/types@0.11.1
+    - @pluv/client@0.11.1
+    - @pluv/types@0.11.1
 
 ## 0.11.0
 
@@ -1971,8 +1976,8 @@
 
 - 885835d: remove unnecessary dependency
 - Updated dependencies [885835d]
-  - @pluv/client@0.10.1
-  - @pluv/types@0.10.1
+    - @pluv/client@0.10.1
+    - @pluv/types@0.10.1
 
 ## 0.10.0
 
@@ -1983,8 +1988,8 @@
 ### Patch Changes
 
 - Updated dependencies [f43f1cc]
-  - @pluv/client@0.10.0
-  - @pluv/types@0.10.0
+    - @pluv/client@0.10.0
+    - @pluv/types@0.10.0
 
 ## 0.6.2
 
@@ -1992,21 +1997,21 @@
 
 - f4317ba: \* Renamed type `unstable_YObjectValue` to `YObjectValue`;
 
-  - Renamed type `unstable_YObject` to `YObject`.
-  - Re-exported `xmlElement`, `xmlFragment` and `xmlText` from `@pluv/client`.
+    - Renamed type `unstable_YObject` to `YObject`.
+    - Re-exported `xmlElement`, `xmlFragment` and `xmlText` from `@pluv/client`.
 
-    ```ts
-    import { y } from "@pluv/client";
-    // or
-    import { y } from "@pluv/react";
+        ```ts
+        import { y } from "@pluv/client";
+        // or
+        import { y } from "@pluv/react";
 
-    y.xmlElement("MyElement", {});
-    y.xmlFragment({});
-    y.xmlText("hello world");
-    ```
+        y.xmlElement("MyElement", {});
+        y.xmlFragment({});
+        y.xmlText("hello world");
+        ```
 
 - Updated dependencies [f4317ba]
-  - @pluv/client@0.9.2
+    - @pluv/client@0.9.2
 
 ## 0.6.1
 
@@ -2016,8 +2021,8 @@
 - 8997c65: bumped dependencies
 - Updated dependencies [8fba48b]
 - Updated dependencies [8997c65]
-  - @pluv/client@0.9.1
-  - @pluv/types@0.2.2
+    - @pluv/client@0.9.1
+    - @pluv/types@0.2.2
 
 ## 0.6.0
 
@@ -2025,49 +2030,49 @@
 
 - 829d31b: Added support for defining persistant frontend storage for rooms via a new `addons` option on rooms.
 
-  This also introduces the first new addon `@pluv/addon-indexeddb`, which is more-or-less the equivalent to `y-indexeddb` which you can install like so:
+    This also introduces the first new addon `@pluv/addon-indexeddb`, which is more-or-less the equivalent to `y-indexeddb` which you can install like so:
 
-  ```
-  npm install @pluv/addon-indexeddb
-  ```
+    ```
+    npm install @pluv/addon-indexeddb
+    ```
 
-  To use this new addon, simply pass it to options when creating a room:
+    To use this new addon, simply pass it to options when creating a room:
 
-  ```ts
-  import { addonIndexedDB } from "@pluv/addon-indexeddb";
-  import { createClient } from "@pluv/client";
+    ```ts
+    import { addonIndexedDB } from "@pluv/addon-indexeddb";
+    import { createClient } from "@pluv/client";
 
-  const client = createClient({
-    // ...
-  });
+    const client = createClient({
+        // ...
+    });
 
-  const room = client.createRoom("my-new-room", {
-    addons: [
-      // Define your addons in an array like so
-      addonIndexedDB(),
-    ],
-  });
-  ```
+    const room = client.createRoom("my-new-room", {
+        addons: [
+            // Define your addons in an array like so
+            addonIndexedDB(),
+        ],
+    });
+    ```
 
-  Or when using `@pluv/react`:
+    Or when using `@pluv/react`:
 
-  ```ts
-  const PluvRoom = createRoomBundle({
-    // ...
-    addons: [
-      // Define your addons in an array like so
-      addonIndexedDB(),
-    ],
-  });
-  ```
+    ```ts
+    const PluvRoom = createRoomBundle({
+        // ...
+        addons: [
+            // Define your addons in an array like so
+            addonIndexedDB(),
+        ],
+    });
+    ```
 
 ### Patch Changes
 
 - 8d11672: bumped dependencies to latest
 - Updated dependencies [8d11672]
 - Updated dependencies [829d31b]
-  - @pluv/client@0.9.0
-  - @pluv/types@0.2.1
+    - @pluv/client@0.9.0
+    - @pluv/types@0.2.1
 
 ## 0.5.11
 
@@ -2075,7 +2080,7 @@
 
 - 2c9c5c3: changed my-presence to be non-nullable
 - Updated dependencies [2c9c5c3]
-  - @pluv/client@0.8.1
+    - @pluv/client@0.8.1
 
 ## 0.5.10
 
@@ -2086,8 +2091,8 @@
 - Updated dependencies [5bbfb98]
 - Updated dependencies [b85a232]
 - Updated dependencies [fde89cf]
-  - @pluv/client@0.8.0
-  - @pluv/types@0.2.0
+    - @pluv/client@0.8.0
+    - @pluv/types@0.2.0
 
 ## 0.5.9
 
@@ -2099,8 +2104,8 @@
 - Updated dependencies [ae679a8]
 - Updated dependencies [bb2886b]
 - Updated dependencies [3518a83]
-  - @pluv/client@0.7.0
-  - @pluv/types@0.2.0
+    - @pluv/client@0.7.0
+    - @pluv/types@0.2.0
 
 ## 0.5.8
 
@@ -2109,8 +2114,8 @@
 - 7ad4967: fixed user's presence not updating locally while offline
 - Updated dependencies [7ad4967]
 - Updated dependencies [4535687]
-  - @pluv/client@0.6.5
-  - @pluv/types@0.1.6
+    - @pluv/client@0.6.5
+    - @pluv/types@0.1.6
 
 ## 0.5.7
 
@@ -2118,7 +2123,7 @@
 
 - 78fd644: updated readmes with links to the documentation website
 - Updated dependencies [78fd644]
-  - @pluv/client@0.6.4
+    - @pluv/client@0.6.4
 
 ## 0.5.6
 
@@ -2126,8 +2131,8 @@
 
 - 850626e: bumped dependencies
 - Updated dependencies [850626e]
-  - @pluv/client@0.6.3
-  - @pluv/types@0.1.6
+    - @pluv/client@0.6.3
+    - @pluv/types@0.1.6
 
 ## 0.5.5
 
@@ -2135,7 +2140,7 @@
 
 - 9ae251d: bumped dependencies
 - Updated dependencies [9ae251d]
-  - @pluv/client@0.6.2
+    - @pluv/client@0.6.2
 
 ## 0.5.4
 
@@ -2146,16 +2151,16 @@
 - 74870ee: bumped dependencies
 - Updated dependencies [19433af]
 - Updated dependencies [74870ee]
-  - @pluv/client@0.6.1
-  - @pluv/types@0.1.5
+    - @pluv/client@0.6.1
+    - @pluv/types@0.1.5
 
 ## 0.5.3
 
 ### Patch Changes
 
 - 57ae13f: bumped dependencies
-  - @pluv/client@0.6.0
-  - @pluv/types@0.1.4
+    - @pluv/client@0.6.0
+    - @pluv/types@0.1.4
 
 ## 0.5.2
 
@@ -2171,8 +2176,8 @@
 - Updated dependencies [7b6da1c]
 - Updated dependencies [e9c1514]
 - Updated dependencies [9d1829c]
-  - @pluv/client@0.6.0
-  - @pluv/types@0.1.4
+    - @pluv/client@0.6.0
+    - @pluv/types@0.1.4
 
 ## 0.5.1
 
@@ -2182,8 +2187,8 @@
 - f6c0e65: bumped dependencies
 - Updated dependencies [161e00e]
 - Updated dependencies [f6c0e65]
-  - @pluv/client@0.5.1
-  - @pluv/types@0.1.3
+    - @pluv/client@0.5.1
+    - @pluv/types@0.1.3
 
 ## 0.5.0
 
@@ -2206,8 +2211,8 @@
 - Updated dependencies [b1cb325]
 - Updated dependencies [327a6ef]
 - Updated dependencies [8e97fb2]
-  - @pluv/client@0.5.0
-  - @pluv/types@0.1.3
+    - @pluv/client@0.5.0
+    - @pluv/types@0.1.3
 
 ## 0.4.0
 
@@ -2219,7 +2224,7 @@
 
 - 93f8c54: chore(deps): update dependency @types/react to v18.0.27
 - Updated dependencies [595e66f]
-  - @pluv/client@0.4.0
+    - @pluv/client@0.4.0
 
 ## 0.3.0
 
@@ -2231,7 +2236,7 @@
 
 - 93f8c54: chore(deps): update dependency @types/react to v18.0.27
 - Updated dependencies [595e66f]
-  - @pluv/client@0.3.0
+    - @pluv/client@0.3.0
 
 ## 0.2.0
 
@@ -2242,8 +2247,8 @@
 ### Patch Changes
 
 - Updated dependencies [95b5ef8]
-  - @pluv/client@0.2.0
-  - @pluv/types@0.1.2
+    - @pluv/client@0.2.0
+    - @pluv/types@0.1.2
 
 ## 0.1.3
 
@@ -2251,8 +2256,8 @@
 
 - fe80d7b: added preview disclaimer about breaking changes in the readme
 - Updated dependencies [fe80d7b]
-  - @pluv/client@0.1.3
-  - @pluv/types@0.1.2
+    - @pluv/client@0.1.3
+    - @pluv/types@0.1.2
 
 ## 0.1.2
 
@@ -2267,8 +2272,8 @@
 - 24016e6: Updated dependencies
 - Updated dependencies [23a7382]
 - Updated dependencies [24016e6]
-  - @pluv/client@0.1.1
-  - @pluv/types@0.1.1
+    - @pluv/client@0.1.1
+    - @pluv/types@0.1.1
 
 ## 0.1.0
 
@@ -2279,5 +2284,5 @@
 ### Patch Changes
 
 - Updated dependencies [a22f525]
-  - @pluv/client@0.1.0
-  - @pluv/types@0.1.0
+    - @pluv/client@0.1.0
+    - @pluv/types@0.1.0

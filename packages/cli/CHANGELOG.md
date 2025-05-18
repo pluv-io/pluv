@@ -1,5 +1,7 @@
 # pluv
 
+## 2.2.2
+
 ## 2.2.1
 
 ## 2.2.0
@@ -22,9 +24,9 @@
 
 - af94706: pluv.io is now stable and production ready!
 
-  With this v1 release, pluv.io will now follow [semantic versioning](https://semver.org/) with more comprehensive release notes for future changes to the library.
+    With this v1 release, pluv.io will now follow [semantic versioning](https://semver.org/) with more comprehensive release notes for future changes to the library.
 
-  Checkout the [full documentation here](https://pluv.io/docs/introduction) to get started today!
+    Checkout the [full documentation here](https://pluv.io/docs/introduction) to get started today!
 
 ## 0.44.2
 
@@ -224,21 +226,21 @@
 
 - 59b5d26: Added support for .env files.
 
-  `pluv.config.js`
+    `pluv.config.js`
 
-  ```js
-  module.exports = {
-    // Use key-value pairs
-    env: {
-      MY_SECRET_KEY: "abc123",
-    },
+    ```js
+    module.exports = {
+        // Use key-value pairs
+        env: {
+            MY_SECRET_KEY: "abc123",
+        },
 
-    // Alternatively, use a file path to a .env file
-    env: "./.env",
+        // Alternatively, use a file path to a .env file
+        env: "./.env",
 
-    // Or don't provide an env property in your config at all. Defaults to "./.env"
-  };
-  ```
+        // Or don't provide an env property in your config at all. Defaults to "./.env"
+    };
+    ```
 
 ## 0.14.1
 
@@ -252,18 +254,18 @@
 
 - b23e57f: Added support for environment variables in the pluv cli.
 
-  Example `pluv.config.json` file:
+    Example `pluv.config.json` file:
 
-  ```json
-  {
-    "env": {
-      "MY_SECRET_KEY": "abc123",
-      "MY_OTHER_SECRET_KEY": "def456"
-    },
-    "input": "./pluv.ts",
-    "outDir": "./.pluv"
-  }
-  ```
+    ```json
+    {
+        "env": {
+            "MY_SECRET_KEY": "abc123",
+            "MY_OTHER_SECRET_KEY": "def456"
+        },
+        "input": "./pluv.ts",
+        "outDir": "./.pluv"
+    }
+    ```
 
 ## 0.13.0
 
@@ -309,8 +311,8 @@
 
 - 6d03186: Rebuilt the pluv cli.
 
-  - Removed existing `create-pluv-app` functionality.
-  - Added new `build` command to support eventual hosting.
+    - Removed existing `create-pluv-app` functionality.
+    - Added new `build` command to support eventual hosting.
 
 ## 0.6.1
 
@@ -320,7 +322,7 @@
 - 8997c65: bumped dependencies
 - Updated dependencies [8fba48b]
 - Updated dependencies [8997c65]
-  - @pluv/types@0.2.2
+    - @pluv/types@0.2.2
 
 ## 0.6.0
 
@@ -328,47 +330,47 @@
 
 - 829d31b: Added support for defining persistant frontend storage for rooms via a new `addons` option on rooms.
 
-  This also introduces the first new addon `@pluv/addon-indexeddb`, which is more-or-less the equivalent to `y-indexeddb` which you can install like so:
+    This also introduces the first new addon `@pluv/addon-indexeddb`, which is more-or-less the equivalent to `y-indexeddb` which you can install like so:
 
-  ```
-  npm install @pluv/addon-indexeddb
-  ```
+    ```
+    npm install @pluv/addon-indexeddb
+    ```
 
-  To use this new addon, simply pass it to options when creating a room:
+    To use this new addon, simply pass it to options when creating a room:
 
-  ```ts
-  import { addonIndexedDB } from "@pluv/addon-indexeddb";
-  import { createClient } from "@pluv/client";
+    ```ts
+    import { addonIndexedDB } from "@pluv/addon-indexeddb";
+    import { createClient } from "@pluv/client";
 
-  const client = createClient({
-    // ...
-  });
+    const client = createClient({
+        // ...
+    });
 
-  const room = client.createRoom("my-new-room", {
-    addons: [
-      // Define your addons in an array like so
-      addonIndexedDB(),
-    ],
-  });
-  ```
+    const room = client.createRoom("my-new-room", {
+        addons: [
+            // Define your addons in an array like so
+            addonIndexedDB(),
+        ],
+    });
+    ```
 
-  Or when using `@pluv/react`:
+    Or when using `@pluv/react`:
 
-  ```ts
-  const PluvRoom = createRoomBundle({
-    // ...
-    addons: [
-      // Define your addons in an array like so
-      addonIndexedDB(),
-    ],
-  });
-  ```
+    ```ts
+    const PluvRoom = createRoomBundle({
+        // ...
+        addons: [
+            // Define your addons in an array like so
+            addonIndexedDB(),
+        ],
+    });
+    ```
 
 ### Patch Changes
 
 - 8d11672: bumped dependencies to latest
 - Updated dependencies [8d11672]
-  - @pluv/types@0.2.1
+    - @pluv/types@0.2.1
 
 ## 0.5.0
 
@@ -388,7 +390,7 @@
 
 - f2c3707: fix(deps): update dependency @pluv/io to ^0.4.0
 - b85a232: bumped dependencies
-  - @pluv/types@0.2.0
+    - @pluv/types@0.2.0
 
 ## 0.4.4
 
@@ -400,7 +402,7 @@
 - Updated dependencies [0dd847e]
 - Updated dependencies [bb2886b]
 - Updated dependencies [ae679a8]
-  - @pluv/types@0.2.0
+    - @pluv/types@0.2.0
 
 ## 0.4.3
 
@@ -414,7 +416,7 @@
 
 - 850626e: bumped dependencies
 - Updated dependencies [850626e]
-  - @pluv/types@0.1.6
+    - @pluv/types@0.1.6
 
 ## 0.4.1
 
@@ -422,7 +424,7 @@
 
 - 9fd8779: chore(deps): update nextjs monorepo to v13.3.0
 - 77069a1: replaced chalk for kleur
-  - @pluv/types@0.1.5
+    - @pluv/types@0.1.5
 
 ## 0.4.0
 
@@ -434,14 +436,14 @@
 
 - 74870ee: bumped dependencies
 - Updated dependencies [74870ee]
-  - @pluv/types@0.1.5
+    - @pluv/types@0.1.5
 
 ## 0.3.4
 
 ### Patch Changes
 
 - 57ae13f: bumped dependencies
-  - @pluv/types@0.1.4
+    - @pluv/types@0.1.4
 
 ## 0.3.3
 
@@ -454,7 +456,7 @@
 - Updated dependencies [9516a4e]
 - Updated dependencies [7b6da1c]
 - Updated dependencies [e9c1514]
-  - @pluv/types@0.1.4
+    - @pluv/types@0.1.4
 
 ## 0.3.2
 
@@ -463,7 +465,7 @@
 - 9c30e96: bumped dependencies
 - 161e00e: fixed links to other pluv packages in readmes
 - f6c0e65: bumped dependencies
-  - @pluv/types@0.1.3
+    - @pluv/types@0.1.3
 
 ## 0.3.1
 
@@ -492,7 +494,7 @@
 - Updated dependencies [8bf62cb]
 - Updated dependencies [7e52685]
 - Updated dependencies [8e97fb2]
-  - @pluv/types@0.1.3
+    - @pluv/types@0.1.3
 
 ## 0.2.3
 
@@ -518,7 +520,7 @@
 
 - fe80d7b: added preview disclaimer about breaking changes in the readme
 - Updated dependencies [fe80d7b]
-  - @pluv/types@0.1.2
+    - @pluv/types@0.1.2
 
 ## 0.2.0
 
@@ -532,7 +534,7 @@
 
 - 24016e6: Updated dependencies
 - Updated dependencies [24016e6]
-  - @pluv/types@0.1.1
+    - @pluv/types@0.1.1
 
 ## 0.1.0
 
@@ -543,4 +545,4 @@
 ### Patch Changes
 
 - Updated dependencies [a22f525]
-  - @pluv/types@0.1.0
+    - @pluv/types@0.1.0
