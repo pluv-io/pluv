@@ -28,11 +28,11 @@
 		"path-to-regexp": "^8.2.0"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20250515.0",
+		"@cloudflare/workers-types": "^4.20250517.0",
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^9.26.0",
+		"eslint": "^9.27.0",
 		"eslint-config-pluv": "workspace:^",
-		"tsup": "^8.4.0",
+		"tsup": "^8.5.0",
 		"typescript": "^5.8.3"
 	}
 }
