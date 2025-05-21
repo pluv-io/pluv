@@ -120,8 +120,9 @@ export class PluvIO<
     public async createToken(
         params: JWTEncodeParams<InferIOAuthorizeUser<TAuthorize>, TPlatform>,
     ): Promise<string> {
-        if (!this._authorize)
+        if (!this._authorize) {
             throw new Error("IO does not specify authorize during initialization.");
+        }
 
         const ioAuthorize = this._getIOAuthorize(params);
         const user = params.user as BaseUser;
