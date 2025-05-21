@@ -29,6 +29,7 @@ export interface PluvPlatformConfig<TContext extends Record<string, any> = {}> {
      * @deprecated Internal use only. Changes to this will never be marked as breaking.
      */
     _defs?: {
+        debug?: boolean;
         endpoints?: PluvIOEndpoints | (() => MaybePromise<PluvIOEndpoints>);
     };
     basePath: string;
@@ -83,6 +84,7 @@ export class PluvPlatform<
     private readonly _app: Hono;
     private readonly _basePath: string;
     private readonly _context: any;
+    private readonly _debug: boolean;
     private readonly _endpoints: PluvIOEndpoints | (() => MaybePromise<PluvIOEndpoints>);
     private _getInitialStorage?: GetInitialStorageFn<{}>;
     private _listeners?: PluvIOListeners;
@@ -99,6 +101,8 @@ export class PluvPlatform<
             typeof this._secretKey === "string" ? this._secretKey : this._secretKey(),
         ]);
 
+        this._logDebug({ endpoints, publicKey, secretKey });
+
         const res = await fetch(endpoints.createToken, {
             headers: { "content-type": "application/json" },
             method: "post",
@@ -109,7 +113,11 @@ export class PluvPlatform<
                 secretKey,
                 user: parsed,
             }),
-        }).catch(() => null);
+        }).catch((error) => {
+            this._logDebug(error);
+
+            return null;
+        });
 
         if (!res || !res.ok || res.status !== 200) {
             throw new Error("Authorization failed");
@@ -125,10 +133,11 @@ export class PluvPlatform<
     constructor(params: PluvPlatformConfig) {
         super();
 
-        const { _defs, context, basePath, publicKey, secretKey, webhookSecret } = params;
+        const { _defs, basePath, context, publicKey, secretKey, webhookSecret } = params;
 
         this._basePath = basePath;
         this._context = typeof context === "function" ? context(this._roomContext) : context;
+        this._debug = _defs?.debug ?? false;
         this._endpoints = _defs?.endpoints ?? {
             createToken: "https://rooms.pluv.io/api/room/token",
         };
@@ -296,4 +305,10 @@ export class PluvPlatform<
                 return createErrorResponse(c, { message }, status);
             }
         });
+
+    private _logDebug(...args: any[]): void {
+        if (!this._debug) return;
+
+        console.log(...args);
+    }
 }
