@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/react",
-	"version": "2.2.2",
+	"version": "2.2.3",
 	"description": "@pluv/client React.js bindings",
 	"author": "leedavidcs",
 	"license": "MIT",

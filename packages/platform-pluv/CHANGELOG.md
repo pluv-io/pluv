@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 2.2.3
+
+### Patch Changes
+
+- feeae21: Added debug logging.
+    - @pluv/crdt@2.2.3
+    - @pluv/io@2.2.3
+    - @pluv/types@2.2.3
+
 ## 2.2.2
 
 ### Patch Changes

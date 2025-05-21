@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/platform-pluv",
-	"version": "2.2.2",
+	"version": "2.2.3",
 	"description": "@pluv/io adapter for pluv.io",
 	"author": "leedavidcs",
 	"license": "MIT",
