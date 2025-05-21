@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 2.2.4
+
+### Patch Changes
+
+- 113ec6c: Updated internal logging.
+    - @pluv/crdt@2.2.4
+    - @pluv/io@2.2.4
+    - @pluv/types@2.2.4
+
 ## 2.2.3
 
 ### Patch Changes
