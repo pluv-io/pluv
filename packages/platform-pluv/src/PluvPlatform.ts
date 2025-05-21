@@ -119,11 +119,15 @@ export class PluvPlatform<
             return null;
         });
 
+        this._logDebug({ response: { status: res?.status ?? null } });
+
         if (!res || !res.ok || res.status !== 200) {
             throw new Error("Authorization failed");
         }
 
         const token = await res.text().catch(() => null);
+
+        this._logDebug({ token });
 
         if (typeof token !== "string") throw new Error("Authorization failed");
 
@@ -309,6 +313,6 @@ export class PluvPlatform<
     private _logDebug(...args: any[]): void {
         if (!this._debug) return;
 
-        console.log(...args);
+        console.log("[PLATFORM PLUV]", ...args);
     }
 }
