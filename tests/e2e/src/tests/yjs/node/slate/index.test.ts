@@ -19,16 +19,16 @@ test.describe("Node Slate", () => {
         await waitMs(ms("1s"));
 
         await firstPage.locator("#slate-editable").fill("hello world");
-        await waitMs(ms("0.25s"));
+        await waitMs(ms("1s"));
 
         await secondPage
             .locator("#slate-editable")
             .innerText()
             .then((text) => expect(text.trim()).toEqual("hello world"));
-        await waitMs(ms("0.25s"));
+        await waitMs(ms("1s"));
 
         await secondPage.locator("#slate-editable").clear();
-        await waitMs(ms("0.25s"));
+        await waitMs(ms("1s"));
 
         await firstPage
             .locator("#slate-editable")
