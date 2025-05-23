@@ -44,6 +44,7 @@ import type {
     WebSocketSession,
     WebSocketType,
 } from "./types";
+import { oneLine } from "./utils";
 
 type BroadcastMessage<TIO extends IORoom<any, any, any, any>> =
     | InferEventMessage<InferIOInput<TIO>>
@@ -407,7 +408,10 @@ export class IORoom<
         const size = this.getSize();
 
         this._logDebug(
-            `${colors.blue(`Registered connection for room ${this.id}:`)} ${pluvWs.sessionId}`,
+            `${colors.blue(oneLine`
+                Registered connection for room ${this.id}:`)}
+                ${pluvWs.sessionId}
+            `,
         );
         this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
     }

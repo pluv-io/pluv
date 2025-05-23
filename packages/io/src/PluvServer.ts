@@ -31,7 +31,7 @@ import type {
     PluvIOLimits,
     PluvIOListeners,
 } from "./types";
-import { pickBy } from "./utils";
+import { oneLine, pickBy } from "./utils";
 import { __PLUV_VERSION } from "./version";
 
 export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
@@ -294,9 +294,11 @@ export class PluvServer<
                     !!this._config.limits.presenceMaxSize &&
                     bytes > this._config.limits.presenceMaxSize
                 ) {
-                    throw new Error(
-                        `Large presence. Presence must be at most 512 bytes. Current size: ${bytes.toLocaleString()}`,
-                    );
+                    throw new Error(oneLine`
+                        Large presence. Presence must be at most
+                        ${this._config.limits.presenceMaxSize.toLocaleString()} bytes.
+                        Current size: ${bytes.toLocaleString()} bytes
+                    `);
                 }
 
                 context.presence = updated;
@@ -322,7 +324,11 @@ export class PluvServer<
                     !!this._config.limits.storageMaxSize &&
                     storageSize > this._config.limits.storageMaxSize
                 ) {
-                    throw new Error("Storage has exceeded the size limit");
+                    throw new Error(oneLine`
+                        Large Storage. Storage must be at most
+                        ${this._config.limits.storageMaxSize.toLocaleString()} bytes.
+                        Current size: ${storageSize.toLocaleString()} bytes
+                    `);
                 }
 
                 platform.persistence.setStorageState(room, encodedState).then(() => {
