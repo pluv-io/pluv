@@ -58,7 +58,11 @@ export class CloudflarePlatform<
         super({
             ...config,
             ...(config.roomContext && config.mode === "detached"
-                ? { persistence: new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" }) }
+                ? {
+                      persistence:
+                          config.persistence ??
+                          new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" }),
+                  }
                 : {}),
         });
 
@@ -155,6 +159,8 @@ export class CloudflarePlatform<
         config: AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>>,
     ): this {
         const ctx = config.roomContext ?? { ...this._roomContext };
+
+        console.log("platform initialized");
 
         if (!ctx.env || !ctx.state) throw new Error("Could not derive platform roomContext");
 
