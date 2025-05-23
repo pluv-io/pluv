@@ -95,7 +95,7 @@ export abstract class AbstractPlatform<
 
     public validateConfig(config: any): void {}
 
-    protected _initialize(): this {
+    protected _initialize(): typeof this {
         if (this._initialized) throw new Error("Platform is already initialized");
 
         this._initialized = true;

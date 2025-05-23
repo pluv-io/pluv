@@ -24,6 +24,7 @@ export class PersistenceRedis extends AbstractPersistence {
         const { client } = options;
 
         this._client = client;
+        this._initialized = (options as any)._initialized;
     }
 
     public async addUser(
@@ -143,10 +144,11 @@ export class PersistenceRedis extends AbstractPersistence {
         return await this._client.scard(this._getRoomUsersKey(room));
     }
 
-    public initialize(roomContext: {}): this {
-        this._initialized = Promise.resolve(true as const);
-
-        return this;
+    public initialize(roomContext: {}): typeof this {
+        return new PersistenceRedis({
+            client: this._client,
+            ...{ _initialized: Promise.resolve(true as const) },
+        }) as typeof this;
     }
 
     private _getClusterKey(key: string): string {
