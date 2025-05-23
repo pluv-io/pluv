@@ -50,6 +50,7 @@ export class CloudflarePlatform<
         router: true;
     }
 > {
+    public readonly id = crypto.randomUUID();
     public readonly _config;
     public readonly _name = "platformCloudflare";
 

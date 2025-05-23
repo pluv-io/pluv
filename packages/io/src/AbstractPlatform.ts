@@ -45,6 +45,7 @@ export abstract class AbstractPlatform<
     public persistence: AbstractPersistence;
     public pubSub: AbstractPubSub;
 
+    public abstract readonly id: string;
     public readonly _createToken?: (
         params: JWTEncodeParams<any, any> & {
             authorize: Maybe<ResolvedPluvIOAuthorize<any, any>>;

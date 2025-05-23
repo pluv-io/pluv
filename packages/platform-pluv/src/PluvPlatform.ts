@@ -63,6 +63,7 @@ export class PluvPlatform<
         router: false;
     }
 > {
+    public readonly id = Math.random().toString();
     public readonly _config = {
         authorize: {
             secret: false as const,
