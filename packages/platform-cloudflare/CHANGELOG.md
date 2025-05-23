@@ -1,5 +1,14 @@
 # @pluv/platform-cloudflare
 
+## 2.2.5
+
+### Patch Changes
+
+- 02b401c: Fixed storage state not being written into transactional storage.
+    - @pluv/io@2.2.5
+    - @pluv/persistence-cloudflare-transactional-storage@2.2.5
+    - @pluv/types@2.2.5
+
 ## 2.2.4
 
 ### Patch Changes
