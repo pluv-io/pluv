@@ -28,6 +28,7 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
 
         const { mode } = config;
 
+        this._initialized = (config as any)._initialized;
         this._mode = mode;
     }
 
@@ -287,8 +288,8 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
         }
     }
 
-    public initialize(roomContext: { state: DurableObjectState }): this {
-        this._initialized = (async () => {
+    public initialize(roomContext: { state: DurableObjectState }): typeof this {
+        const initialized = (async () => {
             const { state } = roomContext;
 
             this._state = state;
@@ -311,7 +312,10 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
             return true as const;
         })();
 
-        return this;
+        return new PersistenceCloudflareTransactionalStorage({
+            mode: this._mode,
+            ...{ _initialized: initialized },
+        }) as typeof this;
     }
 
     public async setStorageState(room: string, state: string): Promise<void> {
