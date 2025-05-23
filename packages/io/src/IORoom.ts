@@ -407,12 +407,10 @@ export class IORoom<
 
         const size = this.getSize();
 
-        this._logDebug(
-            `${colors.blue(oneLine`
-                Registered connection for room ${this.id}:`)}
-                ${pluvWs.sessionId}
-            `,
-        );
+        this._logDebug(oneLine`
+            ${colors.blue(`Registered connection for room ${this.id}:`)}
+            ${pluvWs.sessionId}
+        `);
         this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
     }
 
