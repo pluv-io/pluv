@@ -160,8 +160,6 @@ export class CloudflarePlatform<
     ): this {
         const ctx = config.roomContext ?? { ...this._roomContext };
 
-        console.log("platform initialized");
-
         if (!ctx.env || !ctx.state) throw new Error("Could not derive platform roomContext");
 
         const roomContext = {
