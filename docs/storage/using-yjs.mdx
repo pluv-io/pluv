@@ -127,15 +127,31 @@ export const GroceryList: FC<GroceryListProps> = () => {
 };
 ```
 
-To mutate the value of the `groceries` Y.Array, we simply need to perform a mutation to the shared-type. This will automatically update the shared-type for all connected peers.
+### Updating storage values
+
+To mutate the value of `groceries`, we simply need to perform a mutation to the [yjs shared-type](https://docs.yjs.dev/getting-started/working-with-shared-types). This will automatically update the shared-type for all connected peers.
 
 ```tsx
+import { yjs } from "@pluv/crdt-yjs";
+import { Array as YArray, Map as YMap, Text as YText } from "yjs";
+import { useStorage } from "./pluv";
+
+// "groceries" is a key from the root properties of `initialStorage`
+// yArray is a shared-type from Yjs
 const [groceries, yArray] = useStorage("groceries");
-
-// These values will be null while the room is still connecting
-if (!groceries || !yArray) return <div>Loading...</div>;
-
+//                ^? const yArray: YArray<string> | null
 yArray.push(["bread"]);
+
+// "chats" is a key from the root properties of `initialStorage`
+// yMap is a shared-type from Yjs
+const [chats, yMap] = useStorage("chats");
+//            ^? const yMap: YMap<string, YText> | null
+
+// The `yjs` module from @pluv/crdt-yjs returns the native Yjs shared-types
+// Therefore these are equivalent statements
+yMap?.set("chat3", yjs.text("hello world"));
+yMap?.set("chat3". new YText("hello world"));
+
 ```
 
 ## Nesting Yjs shared types
@@ -190,16 +206,13 @@ import { yjs } from "@pluv/crdt-yjs";
 >
   {children}
 </PluvRoomProvider>
-
-// useStorage example
-const [chats, yMap] = useStorage("chats");
-
-yMap.set("chat3", yjs.text("hello world!"));
 ```
 
 ## Yjs Provider
 
 Yjs defines a [connection provider](https://docs.yjs.dev/ecosystem/connection-provider) interface that many libraries (e.g. text editors) integrate with to enable collaborative editing. In order for pluv.io to also integrate with these libraries, pluv.io also provides its own Yjs connection provider via `yjs.provider`.
+
+See our docs for [BlockNote](/docs/text-editors/blocknote), [Lexical](/docs/text-editors/lexical) and [Slate](/docs/text-editors/slate) to learn more.
 
 ```tsx
 import { createClient } from "@pluv/client";
@@ -234,7 +247,7 @@ const provider = useMemo(() => {
 
 > **Note**: Yjs Awareness is typically an implementation detail of the Yjs Provider. So you will likely not need to interace with this directly.
 
-Yjs also defines an [awareness](https://docs.yjs.dev/api/about-awareness) interface that many libraries also integrate with to enable collaborative editing. However, those libraries tend to do so by referencing the awareness instance that is defined as a public property on the Yjs connection provider. Therefore, this is not something that you typically will need to interface with directly.
+Yjs also defines an [awareness](https://docs.yjs.dev/api/about-awareness) interface that many libraries also integrate with to enable collaborative editing. However, those libraries tend to do so by referencing the awareness instance that is defined as a public property on the Yjs connection provider (e.g. `provider.awareness`). Therefore, this is not something that you typically will need to interface with directly.
 
 ```tsx
 // ...

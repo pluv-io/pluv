@@ -127,30 +127,48 @@ export const GroceryList: FC<GroceryListProps> = () => {
 };
 ```
 
-To mutate the value of the `groceries` LoroList, we simply need to perform a mutation to the container type. This will automatically update the container type for all connected peers.
+### Updating storage values
+
+To mutate the value of `groceries`, we simply need to perform a mutation to the [loro container type](https://loro.dev/docs/tutorial/loro_doc#container-types). This will automaticaly update the container-type for all connected peers.
 
 > **Note**: It is necessary to wrap mutations to Loro container types with the `transact` function, as Loro requires explicitly committing changes to the doc to register and observe changes.
 
 ```tsx
+import { loro } from "@pluv/crdt-loro";
+import { LoroList, LoroMap, LoroText } from "loro-crdt";
 import { useStorage, useTransact } from "./pluv";
 
-const [groceries, loroList] = useStorage("groceries");
 const transact = useTransact();
 
-// These values will be null while the room is still connecting
-if (!groceries || !loroList) return <div>Loading...</div>;
+// "groceries" is a key from the root properties of `initialStorage`
+// loroList is a container-type from loro
+const [groceries, loroList] = useStorage("groceries");
+//                ^? const loroList: LoroList<string> | null
 
 // IMPORTANT!
 // Loro requires explicitly committing changes to the doc to register changes.
 // Therefore, mutations will need to be wrapped in a `transact` function call.
 transact(() => {
-  loroList.push("bread");
+    loroList.push("bread");
 });
-
 // You can also just reference the container type from the transact function
 // like so.
 transact((tx) => {
   tx.groceries.push("bread");
+});
+
+// "chats" is a key from the root properties of `initialStorage`
+// loroMap is a container-type from Loro
+const [chats, loroMap] = useStorage("chats");
+//            ^? const loroMap: LoroMap<Record<string, LoroText>> | null
+
+
+transact(() => {
+    // The `loro` module from @pluv/crdt-loro returns the native
+    // Loro container-types
+    // Therefore these are equivalent statements
+    loroMap?.set("chat3", loro.text("hello world!"));
+    loroMap?.set("chat3", new LoroText("hello world!"));
 });
 ```
 
@@ -207,9 +225,4 @@ import { loro } from "@pluv/crdt-loro";
 >
   {children}
 </PluvRoomProvider>
-
-// useStorage example
-const [chats, loroMap] = useStorage("chats");
-
-loroMap.set("chat3", loro.text("hello world!"));
 ```
