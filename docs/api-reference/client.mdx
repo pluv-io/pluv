@@ -1,9 +1,9 @@
 ---
-title: "API Reference"
-description: "@pluv/client API Reference"
+title: "@pluv/client"
+description: "API Reference for @pluv/client"
 ---
 
-# API Reference
+# @pluv/client
 
 ## createClient
 
@@ -96,7 +96,7 @@ See the [Create Rooms](/docs/client/create-rooms) docs for more details.
 
 ```ts
 export const io = createClient({
-    // Optional: Define the initial storage for rooms. This will 
+    // Optional: Define the initial storage for rooms. This will
     initialStorage: yjs.doc((t) => ({
         messages: t.array<string>("messages", []),
     })),
