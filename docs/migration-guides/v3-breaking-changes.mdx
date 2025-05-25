@@ -3,15 +3,13 @@ title: "v3"
 description: "Migration guide from v2 to v3"
 ---
 
-# v3
+# v3 Breaking Changes
 
-## Breaking Changes
-
-### Declaring top-level storage fields via the yjs and loro utilities is no-longer supported
+## Declaring top-level storage fields via the yjs and loro utilities is no-longer supported
 
 In order to declare top-level types, you will need to use the builder type exposed in the `doc` function's parameters.
 
-#### Loro Example
+### Loro Example
 
 ```ts
 import { loro } from "@pluv/crdt-loro";
@@ -39,7 +37,7 @@ loro.doc((t) => ({
 }));
 ```
 
-#### Yjs Example
+### Yjs Example
 
 ```ts
 import { yjs } from "@pluv/crdt-yjs";
@@ -67,7 +65,7 @@ yjs.doc((t) => ({
 }));
 ```
 
-### yjs.object no-longer exists
+## yjs.object no-longer exists
 
 This was previously just syntax sugar for `yjs.map` so that the `Y.Map` shared-type could be declared like an object instead of an array of 2-tuples. In order to stay in-line with the shared-types that Yjs does provide, `yjs.object` has been removed since `Y.Object` does not exist.
 
@@ -89,7 +87,7 @@ yjs.map([
 ]);
 ```
 
-### PluvRoom.subscribe must now use nested accessors
+## PluvRoom.subscribe must now use nested accessors
 
 This pertains to `@pluv/client` and not `@pluv/react`.
 
@@ -113,7 +111,7 @@ room.subscribe.others((others) => {});
 room.subscribe.storageLoaded((storageLoaded) => {});
 ```
 
-### PluvRoom's .event, .storage, .storageRoot and .other have been moved under .subscribe
+## PluvRoom's subscription methods have been moved under .subscribe
 
 `PluvRoom.event`, `PluvRoom.storage`, `PluvRoom.storageRoot` and `PluvRoom.other` now exist under `PluvRoom.subscribe` instead.
 
@@ -133,7 +131,7 @@ room.subscribe.storageRoot((storage) => {});
 room.subscribe.other(("id_...", other) => {});
 ```
 
-### PluvRoom.storageLoaded has been removed
+## PluvRoom.storageLoaded has been removed
 
 In order to get the `storageLoaded` state, use `PluvRoom.getStorageLoaded()` instead.
 
