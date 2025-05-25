@@ -28,22 +28,22 @@ import { z } from "zod";
 // TypeScript inferrence limitations
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const io = createClient({
-    types,
-    // Optional: Define the initial storage for rooms. This will set
-    // the types for storage when using it in your application. Don't
-    // worry about the value, as this can be overwritten when creating
-    // a room via `client.createRoom`.
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array<string>("messages", []),
-    })),
-    // Optional: Define your presence schema
-    presence: z.object({
-        selectionId: z.string().nullable(),
-    }),
-    // Required if you are using `@pluv/platform-pluv`: This is the
-    // publishable-key that was created for your project on pluv.io
-    // This can either be a string or a function returning a string
-    publicKey: "pk_...",
+  types,
+  // Optional: Define the initial storage for rooms. This will set
+  // the types for storage when using it in your application. Don't
+  // worry about the value, as this can be overwritten when creating
+  // a room via `client.createRoom`.
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array<string>("messages", []),
+  })),
+  // Optional: Define your presence schema
+  presence: z.object({
+    selectionId: z.string().nullable(),
+  }),
+  // Required if you are using `@pluv/platform-pluv`: This is the
+  // publishable-key that was created for your project on pluv.io
+  // This can either be a string or a function returning a string
+  publicKey: "pk_...",
 });
 ```
 
@@ -55,8 +55,8 @@ If your `PluvIO` implements auth, you will need to specify an `authEndpoint` on 
 import { createClient } from "@pluv/client";
 
 const io = createClient({
-    authEndpoint: ({ room }) => `/api/room/auth?room=${room}`,
-    // ...
+  authEndpoint: ({ room }) => `/api/room/auth?room=${room}`,
+  // ...
 });
 ```
 
@@ -70,15 +70,15 @@ If you need to use a POST request or specify additional headers, you can return 
 import { createClient } from "@pluv/client";
 
 const io = createClient({
-    authEndpoint: ({ room }) => ({
-        url: "/api/room/auth",
-        // specify fetch options here
-        options: {
-            method: "post",
-            body: JSON.stringify({ room }),
-        },
-    }),
-    // ...
+  authEndpoint: ({ room }) => ({
+    url: "/api/room/auth",
+    // specify fetch options here
+    options: {
+      method: "post",
+      body: JSON.stringify({ room }),
+    },
+  }),
+  // ...
 });
 ```
 
@@ -96,27 +96,27 @@ See the [Create Rooms](/docs/create-rooms/client-rooms) docs for more details.
 
 ```ts
 export const io = createClient({
-    // Optional: Define the initial storage for rooms. This will
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array<string>("messages", []),
-    })),
-    // Optional: Define your presence schema
-    presence: z.object({
-        selectionId: z.string().nullable(),
-    }),
-    // ...
+  // Optional: Define the initial storage for rooms. This will
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array<string>("messages", []),
+  })),
+  // Optional: Define your presence schema
+  presence: z.object({
+    selectionId: z.string().nullable(),
+  }),
+  // ...
 });
 
 const room = io.createRoom("my-example-room", {
-    // Required (if presence is defined on the client): Define
-    // the user's initial presence value
-    initialPresence: {
-        selectionId: null,
-    },
-    // Optional: Overwrite initial storage from client
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array("messages", ["hello world!"]),
-    })),
+  // Required (if presence is defined on the client): Define
+  // the user's initial presence value
+  initialPresence: {
+    selectionId: null,
+  },
+  // Optional: Overwrite initial storage from client
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array("messages", ["hello world!"]),
+  })),
 });
 ```
 
@@ -134,12 +134,12 @@ const room = io.createRoom("my-example-room", { /* ... */})
 
 // Enter room by room name
 io.enter("my-example-room").then(() => {
-    console.log("Connected to: my-example-room");
+  console.log("Connected to: my-example-room");
 });
 
 // Alternatively, you can pass the PluvRoom instance
 io.enter(room).then(() => {
-    console.log("Connected to: my-example-room");
+  console.log("Connected to: my-example-room");
 });
 ```
 
@@ -191,15 +191,15 @@ import { z } from "zod";
 const io = createClient({ /* ... */ });
 
 const sendMessage = io.procedure
-    .input(z.object({ message: z.string() }))
-    .broadcast(({ message }) => ({ receiveMessage: { message } }));
+  .input(z.object({ message: z.string() }))
+  .broadcast(({ message }) => ({ receiveMessage: { message } }));
 
 const doubleValue = io.procedure
-    .input(z.object({ value: z.number() }))
-    .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
+  .input(z.object({ value: z.number() }))
+  .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
 
 const wave = io.procedure
-    .broadcast(() => ({ receiveMessage: { message: "hello world!" } }));
+  .broadcast(() => ({ receiveMessage: { message: "hello world!" } }));
 ```
 
 ### PluvClient.router
@@ -213,20 +213,20 @@ import { z } from "zod";
 const io = createClient({ /* ... */ });
 
 const sendMessage = io.procedure
-    .input(z.object({ message: z.string() }))
-    .broadcast(({ message }) => ({ receiveMessage: { message } }));
+  .input(z.object({ message: z.string() }))
+  .broadcast(({ message }) => ({ receiveMessage: { message } }));
 
 const doubleValue = io.procedure
-    .input(z.object({ value: z.number() }))
-    .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
+  .input(z.object({ value: z.number() }))
+  .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
 
 const wave = io.procedure
-    .broadcast(() => ({ receiveMessage: { message: "hello world!" } }));
+  .broadcast(() => ({ receiveMessage: { message: "hello world!" } }));
 
 const router = io.router({
-    sendMessage,
-    doubleValue,
-    wave,
+  sendMessage,
+  doubleValue,
+  wave,
 });
 ```
 
@@ -286,7 +286,7 @@ Connects to the room if not connected to already. If an `authEndpoint` is config
 ```ts
 // frontend/room.ts
 room.connect().then(() => {
-    console.log(`Connected to room: ${room.id}`);
+  console.log(`Connected to room: ${room.id}`);
 });
 ```
 
@@ -375,13 +375,13 @@ import { z } from "zod";
 // const io = ...
 
 const room = io.createRoom("my-example-room", {
-    initialPresence: {
-        selectionId: null,
-    },
-    // Define the initial storage for the room
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array("messages", ["hello world!"]),
-    })),
+  initialPresence: {
+    selectionId: null,
+  },
+  // Define the initial storage for the room
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array("messages", ["hello world!"]),
+  })),
 });
 
 // Get messages as defined from the `createRoom` config
@@ -408,14 +408,14 @@ Subscribes to the user's connection state. Returns a function to unsubscribe.
 
 ```ts
 const unsubscribe = room.subscribe.connection(({
-    // The user's authorization state: { token, user }
-    authorization,
-    // The user's connection state: { id, state }
-    connection,
-    // The user's websocket
-    webSocket,
+  // The user's authorization state: { token, user }
+  authorization,
+  // The user's connection state: { id, state }
+  connection,
+  // The user's websocket
+  webSocket,
 }) => {
-    console.log(authorization, connection, webSocket);
+  console.log(authorization, connection, webSocket);
 });
 
 // ...
@@ -435,11 +435,11 @@ Subscribes to an event. These events are defined by `PluvIO.procedure` and are e
 
 // The below 2 statements are equivalent
 const unsubscribe = room.subscribe.event("receiveMessage", ({ data }) => {
-    console.log(data);
+  console.log(data);
 });
 
 const unsubscribe = room.subscribe.event.receiveMessage(({ data }) => {
-    console.log(data);
+  console.log(data);
 });
 
 // ...
@@ -456,7 +456,7 @@ Subscribes to the user's presence state.
 
 ```ts
 const unsubscribe = room.subscribe.myPresence((myPresence) => {
-    console.log(myPresence);
+  console.log(myPresence);
 });
 
 // ...
@@ -473,7 +473,7 @@ Subscribes to the user's info object. Returns a function to unsubscribe.
 
 ```ts
 const unsubscribe = room.subscribe.myself((myself) => {
-    console.log(myself);
+  console.log(myself);
 });
 
 // ...
@@ -492,9 +492,9 @@ Subscribes to a given user info object. This only returns other users, not the c
 // const connectionId = "some connection id of another connection"
 
 const unsubscribe = room.subscribe.other(connectionId, (userInfo) => {
-    const { connectionId, presence, user } = userInfo;
+  const { connectionId, presence, user } = userInfo;
 
-    console.log(connectionId, presence, user);
+  console.log(connectionId, presence, user);
 });
 
 // ...
@@ -511,7 +511,7 @@ Subscribes to the list of user info objects of the other connections that aren't
 
 ```ts
 const unsubscribe = room.subscribe.others((others) => {
-    console.log(others);
+  console.log(others);
 });
 
 // ...
@@ -534,23 +534,23 @@ import { z } from "zod";
 // const io = ...
 
 const room = io.createRoom("my-example-room", {
-    // Define the user's initial presence
-    initialPresence: {
-        selectionId: null,
-    },
-    // Override initialStorage defined in createClient
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array("messages", ["hello world!"]),
-    })),
+  // Define the user's initial presence
+  initialPresence: {
+    selectionId: null,
+  },
+  // Override initialStorage defined in createClient
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array("messages", ["hello world!"]),
+  })),
 });
 
 // The following functions are equivalent
 room.subscribe.storage("messages", (messages: string[]) => {});
 
 const unsubscribe = room.subscribe.storage.messages((messages: string[]) => {
-    console.log(messages);
-    // If the AbstractCrdtType is needed, you call call getStorage here.
-    const sharedType = room.getStorage("messages");
+  console.log(messages);
+  // If the AbstractCrdtType is needed, you call call getStorage here.
+  const sharedType = room.getStorage("messages");
 });
 
 // ...
@@ -579,7 +579,7 @@ Subscribes to when storage is loaded for a room. Storage is loaded after the use
 
 ```ts
 room.subscribe.storageLoaded(() => {
-    console.log("storage was loaded");
+  console.log("storage was loaded");
 });
 ```
 
@@ -595,15 +595,15 @@ You can specify a 2nd parameter to transact with a different transaction origin.
 ```ts
 // frontend/transact
 room.transact((tx) => {
-    room.get("messages").push(["hello world!"]);
+  room.get("messages").push(["hello world!"]);
 
-    // Alternatively, access your storage from here
-    tx.messages.push(["hello world!"]);
+  // Alternatively, access your storage from here
+  tx.messages.push(["hello world!"]);
 });
 
 // This will also be undoable if `"user-123"` is a tracked origin.
 room.transact(() => {
-    room.get("messages").push(["hello world!"]);
+  room.get("messages").push(["hello world!"]);
 }, "user-123");
 ```
 
@@ -627,15 +627,15 @@ Updates the user's own presence and broadcasts the update to all connected parti
 ```ts
 // frontend/room.ts
 const client = createClient({
-    // ...
-    presence: z.object({
-        selectionId: z.string().nullable(),
-    }),
+  // ...
+  presence: z.object({
+    selectionId: z.string().nullable(),
+  }),
 });
 
 const room = client.createRoom("my-example-room", {
-    // ...
-    initialPresence: { selectionId: null },
+  // ...
+  initialPresence: { selectionId: null },
 });
 
 room.updateMyPresence({ selectionId: "id_..." });

@@ -15,37 +15,35 @@ Creates a bundle to be able to access the `PluvClient` and `PluvRoom` from vario
 import { createBundle createClient } from "@pluv/react";
 import { yjs } from "@pluv/crdt-yjs";
 
-const io = createClient({
-    // ...
-});
+const io = createClient({/* ... */});
 
 // Destructured room bundle
 export const {
-    // components
-    MockedRoomProvider,
-    PluvProvider,
-    PluvRoomProvider,
+  // components
+  MockedRoomProvider,
+  PluvProvider,
+  PluvRoomProvider,
 
-    // utils
-    event,
+  // utils
+  event,
 
-    // hooks
-    useBroadcast,
-    useCanRedo,
-    useCanUndo,
-    useClient,
-    useConnection,
-    useDoc,
-    useEvent,
-    useMyPresence,
-    useMyself,
-    useOther,
-    useOthers,
-    useRedo,
-    useRoom,
-    useStorage,
-    useTransact,
-    useUndo,
+  // hooks
+  useBroadcast,
+  useCanRedo,
+  useCanUndo,
+  useClient,
+  useConnection,
+  useDoc,
+  useEvent,
+  useMyPresence,
+  useMyself,
+  useOther,
+  useOthers,
+  useRedo,
+  useRoom,
+  useStorage,
+  useTransact,
+  useUndo,
 } = createBundle(io);
 
 // If you defined a client-side custom events router, you can pass
@@ -69,28 +67,28 @@ import { yjs } from "@pluv/crdt-yjs";
 import { MockedRoomProvider } from "./io";
 
 const MyComponent: FC = () => {
-    return (
-        <MockedRoomProvider
-            // Mock events sent and received for hooks in child components
-            events={{
-                EMIT_EMOJI: ({ emojiCode }) => ({
-                    EMOJI_RECEIVED: { emojiCode },
-                }),
-            }}
-            // Define your initial presence
-            initialPresence={{
-                selectionId: null,
-            }}
-            // Define the initial storage for the room
-            initialStorage={(t) => ({
-                messages: t.array("messages"),
-            })}
-            // The room's id
-            room="my-mock-room"
-        >
-            {children}
-        </MockedRoomProvider>
-    );
+  return (
+    <MockedRoomProvider
+      // Mock events sent and received for hooks in child components
+      events={{
+        EMIT_EMOJI: ({ emojiCode }) => ({
+          EMOJI_RECEIVED: { emojiCode },
+        }),
+      }}
+      // Define your initial presence
+      initialPresence={{
+        selectionId: null,
+      }}
+      // Define the initial storage for the room
+      initialStorage={(t) => ({
+        messages: t.array("messages"),
+      })}
+      // The room's id
+      room="my-mock-room"
+    >
+      {children}
+    </MockedRoomProvider>
+  );
 };
 ```
 
@@ -111,32 +109,32 @@ import { yjs } from "@pluv/crdt-yjs";
 import { MockedRoomProvider } from "./io";
 
 const MyComponent: FC = () => {
-    return (
-        <PluvRoomProvider
-            // Optional: Set the value of `connect` to trigger a connect or
-            // disconnect of the room.
-            // Default: true
-            connect={true}
-            // Required if `presence` was set on the client: Define the user's
-            // initial presence value
-            initialPresence={{
-                selectionId: null,
-            }}
-            // Optional: Overwrite the initialStorage value from the client
-            initialStorage={(t) => ({
-                messages: t.array("messages"),
-            })}
-            // Optional: Emits an error whenever authorization fails (when
-            // `authorize` is set on the PluvIO instance`)
-            onAuthorizationFail={(error: Error) => {
-                console.error(error);
-            }}
-            // Required: The room's id
-            room="my-room-id"
-        >
-            {children}
-        </PluvRoomProvider>
-    );
+  return (
+    <PluvRoomProvider
+      // Optional: Set the value of `connect` to trigger a connect or
+      // disconnect of the room.
+      // Default: true
+      connect={true}
+      // Required if `presence` was set on the client: Define the user's
+      // initial presence value
+      initialPresence={{
+        selectionId: null,
+      }}
+      // Optional: Overwrite the initialStorage value from the client
+      initialStorage={(t) => ({
+        messages: t.array("messages"),
+      })}
+      // Optional: Emits an error whenever authorization fails (when
+      // `authorize` is set on the PluvIO instance`)
+      onAuthorizationFail={(error: Error) => {
+        console.error(error);
+      }}
+      // Required: The room's id
+      room="my-room-id"
+    >
+      {children}
+    </PluvRoomProvider>
+  );
 };
 ```
 
@@ -149,11 +147,11 @@ Defines an event listener client for events broadcasted by connected clients. Se
 ```tsx
 // The below 2 statements are equivalent
 useEvent("receiveMessage", ({ data }) => {
-    console.log(data.message);
+  console.log(data.message);
 });
 
 event.receiveMessage.useEvent(({ data }) => {
-    console.log(data.message);
+  console.log(data.message);
 });
 ```
 
@@ -234,7 +232,7 @@ Defines a listener for events broadcasted by connected clients. This is type-saf
 
 ```tsx
 useEvent("messageReceived", ({ message }) => {
-    console.log(message);
+  console.log(message);
 });
 ```
 
@@ -246,11 +244,11 @@ Returns the current user's presence, and a function to update the user's presenc
 
 ```tsx
 const io = createClient({
-    presence: z.object({
-        selectionId: z.string().nullable(),
-        selectionColor: z.string(),
-    }),
-    // ...
+  presence: z.object({
+    selectionId: z.string().nullable(),
+    selectionColor: z.string(),
+  }),
+  // ...
 });
 
 // ...
@@ -258,10 +256,10 @@ const io = createClient({
 const { useMyPresence } = createBundle(io);
 
 const [
-    // the user's presence
-    myPresence,
-    // a presence updater function
-    updateMyPresence
+  // the user's presence
+  myPresence,
+  // a presence updater function
+  updateMyPresence
 ] = useMyPresence();
 
 // update individual base properties
@@ -270,8 +268,8 @@ updateMyPresence({ selectionColor: "#123456" });
 
 // update multiple base properties
 updateMyPresence({
-    selectionId: "name-input",
-    selectionColor: "#123456",
+  selectionId: "name-input",
+  selectionColor: "#123456",
 });
 
 // if you only need a partial presence
@@ -279,8 +277,8 @@ const [myPresence] = useMyPresence(({ selectionId }) => selectionId);
 
 // if you don't need presence, and just want the updater
 const [, updateMyPresence] = useMyPresence(
-    // set selector to return a stable value
-    () => true
+  // set selector to return a stable value
+  () => true
 );
 ```
 
@@ -324,7 +322,7 @@ const others = useOthers();
 
 // if you want to just pull out connectionId properties
 const connectionIds = useOthers((others) => {
-    return others.map(({ connectionId }) => connectionId);
+  return others.map(({ connectionId }) => connectionId);
 });
 ```
 
@@ -353,10 +351,10 @@ initializing its storage.
 import { yjs } from "@pluv/crdt-yjs";
 
 const io = createClient({
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array("messages", ["hello"]),
-    })),
-    // ...
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array("messages", ["hello"]),
+  })),
+  // ...
 });
 
 // ...
@@ -385,15 +383,15 @@ const [messages, sharedType] = useStorage("messages");
 const transact = useTransact();
 
 transact((tx) => {
-    sharedType.push(["hello world!"]);
+  sharedType.push(["hello world!"]);
 
-    // Alternatively, access your storage from here
-    tx.messages.push(["hello world!"]);
+  // Alternatively, access your storage from here
+  tx.messages.push(["hello world!"]);
 });
 
 // This will also be undoable if `"user-123"` is a tracked origin.
 transact(() => {
-    sharedType.push(["hello world!"]);
+  sharedType.push(["hello world!"]);
 }, "user-123");
 ```
 
