@@ -141,17 +141,6 @@ import { useStorage } from "./pluv";
 const [groceries, yArray] = useStorage("groceries");
 //                ^? const yArray: YArray<string> | null
 yArray.push(["bread"]);
-
-// "chats" is a key from the root properties of `initialStorage`
-// yMap is a shared-type from Yjs
-const [chats, yMap] = useStorage("chats");
-//            ^? const yMap: YMap<string, YText> | null
-
-// The `yjs` module from @pluv/crdt-yjs returns the native Yjs shared-types
-// Therefore these are equivalent statements
-yMap?.set("chat3", yjs.text("hello world"));
-yMap?.set("chat3". new YText("hello world"));
-
 ```
 
 ## Nesting Yjs shared types
@@ -206,6 +195,16 @@ import { yjs } from "@pluv/crdt-yjs";
 >
   {children}
 </PluvRoomProvider>
+
+// "chats" is a key from the root properties of `initialStorage`
+// yMap is a shared-type from Yjs
+const [chats, yMap] = useStorage("chats");
+//            ^? const yMap: YMap<string, YText> | null
+
+// The `yjs` module from @pluv/crdt-yjs returns the native Yjs shared-types
+// Therefore these are equivalent statements
+yMap?.set("chat3", yjs.text("hello world"));
+yMap?.set("chat3". new YText("hello world"));
 ```
 
 ## Yjs Provider

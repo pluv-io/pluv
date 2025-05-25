@@ -61,9 +61,6 @@ const io = createClient({
     // Create a LoroList with the name "groceries", initialized with an
     // empty array
     groceries: t.list<string>("groceries", []),
-    // Example of a top-level LoroMap named "chats" that will nest
-    // LoroText items
-    chats: t.map<string, LoroText>("chats", []),
   }),
 });
 
@@ -79,6 +76,7 @@ Optionally, when we then wrap our room with the `PluvRoomProvider`, we can speci
 ```tsx
 // frontend/PluvRoom.tsx
 
+import { loro } from "@pluv/crdt-loro";
 import type { FC, ReactNode } from "react";
 import { PluvRoomProvider } from "./pluv";
 
@@ -97,12 +95,6 @@ export const PluvRoom: FC = ({ children, id }) => {
         // Create a LoroList with the name "groceries", initialized with an
         // array containing 3 items
         groceries: t.list("groceries", ["bacon", "lettuce", "tomato"]),
-        // The LoroTexts are declared using `loro` as a nested item without names
-        // The texts below are initialized with a value of empty string
-        chats: t.map<string, LoroText>("chats", [
-            ["chat1", loro.text("")],
-            ["chat2", loro.text("")],
-        ]),
       })}
     >
       {children}
@@ -165,20 +157,6 @@ transact(() => {
 transact((tx) => {
   tx.groceries.push("bread");
 });
-
-// "chats" is a key from the root properties of `initialStorage`
-// loroMap is a container-type from Loro
-const [chats, loroMap] = useStorage("chats");
-//            ^? const loroMap: LoroMap<Record<string, LoroText>> | null
-
-
-transact(() => {
-    // The `loro` module from @pluv/crdt-loro returns the native
-    // Loro container-types
-    // Therefore these are equivalent statements
-    loroMap?.set("chat3", loro.text("hello world!"));
-    loroMap?.set("chat3", new LoroText("hello world!"));
-});
 ```
 
 ## Nesting Loro container types
@@ -200,7 +178,7 @@ const io = createClient({
     groceries: t.list<string>("messages", []),
     // Example of a top-level LoroMap named "chats" that will nest
     // LoroText items
-    chats: t.map<Record<string, LoroText>>("chats", {}),
+    chats: t.map<Record<string, LoroText>>("chats", []),
   })),
 });
 ```
@@ -234,4 +212,17 @@ import { loro } from "@pluv/crdt-loro";
 >
   {children}
 </PluvRoomProvider>
+
+// "chats" is a key from the root properties of `initialStorage`
+// loroMap is a container-type from Loro
+const [chats, loroMap] = useStorage("chats");
+//            ^? const loroMap: LoroMap<Record<string, LoroText>> | null
+
+transact(() => {
+    // The `loro` module from @pluv/crdt-loro returns the native
+    // Loro container-types
+    // Therefore these are equivalent statements
+    loroMap?.set("chat3", loro.text("hello world!"));
+    loroMap?.set("chat3", new LoroText("hello world!"));
+});
 ```
