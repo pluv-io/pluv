@@ -9,7 +9,7 @@ Rooms are the channels that WebSockets can enter and leave (i.e. connect and dis
 
 ## Creating a PluvRoom
 
-To create a `PluvRoom`, you must first have a `PluvClient` defined. Refer to the [create client](/docs/client/create-client) documentation to do so.
+To create a `PluvRoom`, you must first have a `PluvClient` defined. Refer to the [create client](/docs/create-client) documentation to do so.
 
 ```ts
 // frontend/room.ts
@@ -27,7 +27,7 @@ import type { ioServer } from "./server/pluv-io";
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 export const client = createClient({
     types,
-    // Optional: Define the initial storage for rooms. This will 
+    // Optional: Define the initial storage for rooms. This will
     initialStorage: yjs.doc((t) => ({
         messages: t.array<string>("messages", []),
     })),
