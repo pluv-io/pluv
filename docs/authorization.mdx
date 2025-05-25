@@ -5,6 +5,8 @@ description: "Learn how to add custom authorization to rooms in @pluv/io"
 
 # Authorization
 
+> **Note**: Authorization is required when using `@pluv/platform-pluv`.
+
 pluv.io uses JWTs to authorize access to rooms on a new connection. To generate a JWT, you will need to setup an authentication endpoint to determine if the user should have access to the room.
 
 The examples below will use [hono](https://hono.dev), but so long as you can create an http endpoint that can return text responses, the documentation below should still be relevant.
