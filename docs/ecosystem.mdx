@@ -51,3 +51,46 @@ const { useRoom } = createBundle(client, {
     addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],
 });
 ```
+
+## @pluv/pubsub-redis + @pluv/persistence-redis
+
+> **Note**: Currently PubSubs are supported for Node.js only.
+
+> **Note**: PubSub support has been only moderately tested. So consider support to currently be experimental.
+
+You may want to run a single room across multiple servers to horizontally scale your API. For that a PubSub will be necessary to share the events, and Persistence will be necessary for syncing storage state across servers.
+
+### Installation
+
+```bash
+# For the server
+npm install @pluv/pubsub-redis @pluv/persistence-redis
+# Peer-dependencies
+npm install ioredis
+```
+
+### Usage
+
+```ts
+// server/io.ts
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { PubSubRedis } from "@pluv/pubsub-redis";
+import { PersistenceRedis } from "@pluv/persistence-redis";
+import { Redis } from "ioredis";
+
+// Setup redis. You can also use a Redis Cluster
+const redis = new Redis({
+    /* redis config here */
+});
+
+export const io = createIO(
+    platformNode({
+        persistence: new PersistenceRedis({ client: redis }),
+        pubSub: new PubSubRedis({
+            publisher: redis,
+            subscriber: redis,
+        }),
+    })
+);
+```
