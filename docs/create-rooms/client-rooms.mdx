@@ -1,9 +1,9 @@
 ---
-title: "Create Rooms"
+title: "@pluv/client Rooms"
 description: "Learn how to create and connect to rooms with @pluv/client"
 ---
 
-# Creating Rooms
+# @pluv/client Rooms
 
 Rooms are the channels that WebSockets can enter and leave (i.e. connect and disconnect). Events emitted by sockets in a room will be broadcasted only to other sockets within the same room.
 
@@ -26,39 +26,39 @@ import type { ioServer } from "./server/pluv-io";
 // TypeScript inferrence limitations
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 export const client = createClient({
-    types,
-    // Optional: Define the initial storage for rooms. This will
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array<string>("messages", []),
-    })),
-    // Optional: Define your presence schema
-    presence: z.object({
-        selectionId: z.string().nullable(),
-    }),
-    // Other fields here ...
+  types,
+  // Optional: Define the initial storage for rooms. This will
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array<string>("messages", []),
+  })),
+  // Optional: Define your presence schema
+  presence: z.object({
+    selectionId: z.string().nullable(),
+  }),
+  // Other fields here ...
 });
 
 const room = client.createRoom("my-test-room", {
-    // Required (if presence is defined on the client): Define
-    // the user's initial presence value
-    initialPresence: {
-        selectionId: null,
-    },
-    // Optional: Overwrite initial storage from client
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array("messages", ["hello world!"]),
-    })),
-    // Optional: Handler when a user fails authorization
-    // This only matters if `authorize` has been configured on
-    // your `createIO` instance
-    onAuthorizationFail: (error: Error) => {
-        console.error(error);
-    },
-    // Optional: Whenever a connection drops, how much time before
-    // attempting to reconnect. `attempts` is the count of already
-    // failed reconnect attempts, starting from zero.
-    // Default: 30_000
-    reconnectTimeoutMs: ({ attempts }) => attempts * 1_000,
+  // Required (if presence is defined on the client): Define
+  // the user's initial presence value
+  initialPresence: {
+    selectionId: null,
+  },
+  // Optional: Overwrite initial storage from client
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array("messages", ["hello world!"]),
+  })),
+  // Optional: Handler when a user fails authorization
+  // This only matters if `authorize` has been configured on
+  // your `createIO` instance
+  onAuthorizationFail: (error: Error) => {
+    console.error(error);
+  },
+  // Optional: Whenever a connection drops, how much time before
+  // attempting to reconnect. `attempts` is the count of already
+  // failed reconnect attempts, starting from zero.
+  // Default: 30_000
+  reconnectTimeoutMs: ({ attempts }) => attempts * 1_000,
 });
 ```
 
@@ -66,6 +66,8 @@ const room = client.createRoom("my-test-room", {
 
 ```ts
 import { client } from "./io";
+
+const ROOM_NAME = "example-room";
 
 // connect by room name
 await client.enter(ROOM_NAME);
@@ -82,6 +84,8 @@ await client.enter(room, { metadata });
 
 ```ts
 import { client } from "./io";
+
+const ROOM_NAME = "example-room";
 
 // leave by room name
 client.leave(ROOM_NAME);
