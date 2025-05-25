@@ -1,9 +1,9 @@
 ---
-title: "Define Events"
+title: "Server Events"
 description: "Define events in pluv.io by simply defining event procedures as JavaScript functions"
 ---
 
-# Define Events
+# Server Events
 
 > **Note**: Custom server events are only available when pluv.io is self-hosted.
 
@@ -20,30 +20,31 @@ const io = createIO(platformNode());
 
 // Create your custom events as procedures
 const sendMessage = io.procedure
-    .input(z.object({ message: z.string() }))
-    .broadcast(({ message }) => ({
-        receiveMessage: { message },
-    }));
+  .input(z.object({ message: z.string() }))
+  .broadcast(({ message }) => ({
+    receiveMessage: { message },
+  }));
 
 const doubleValue = io.procedure
-    .input(z.object({ value: z.number() }))
-    .broadcast(({ value }) => ({
-        receiveValue: { value: value * 2 },
-    }));
+  .input(z.object({ value: z.number() }))
+  .broadcast(({ value }) => ({
+    receiveValue: { value: value * 2 },
+  }));
 
 const wave = io.procedure
-    .broadcast(() => ({
-        receiveMessage: { message: "Hello world!" },
-    }));
+  .broadcast(() => ({
+    receiveMessage: { message: "Hello world!" },
+  }));
 
 // Then add the procedures to your router
 const router = io.router({
-    sendMessage,
-    doubleValue,
-    wave,
+  sendMessage,
+  doubleValue,
+  wave,
 });
 
-// Lastly, add the router to your server, so that it can begin accepting custom events
+// Lastly, add the router to your server, so that it can begin accepting
+// custom events
 const server = io.server({ router });
 ```
 
