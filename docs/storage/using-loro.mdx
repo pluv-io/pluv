@@ -150,7 +150,7 @@ const [groceries, loroList] = useStorage("groceries");
 // Loro requires explicitly committing changes to the doc to register changes.
 // Therefore, mutations will need to be wrapped in a `transact` function call.
 transact(() => {
-    loroList.push("bread");
+  loroList.push("bread");
 });
 // You can also just reference the container type from the transact function
 // like so.
