@@ -51,7 +51,7 @@ import { infer, platformCloudflare } from "@pluv/platform-cloudflare";
 import { Database } from "./db";
 
 export type Env = {
-    DB: D1Database;
+  DB: D1Database;
 };
 
 /**
@@ -61,62 +61,62 @@ export type Env = {
  */
 const types = infer((i) => ({ env: i<Env> }));
 export const io = createIO(
-    platformCloudflare({
-        // Provide the `env` type
-        types,
-        // Optional: Authorization is optional for `@pluv/platform-cloudflare`
-        // If excluded, your `user` will be `null` on the frontend.
-        authorize: ({ env }) => ({
-            // Your own secret for generating JWTs
-            secret: env.PLUV_AUTH_SECRET,
-            // The shape of your user object. `id` must be provided
-            user: z.object({
-                id: z.string(),
-                // Here is an additional field we can add
-                name: z.string(),
-            }),
-        }),
-        // Optional: Context that will be made available in event
-        // handlers and procedures
-        context: ({ env }) => ({
-            db: new Database(env.DATABASE_URL),
-        }),
-        // Optional: Only if you want to use CRDT storage features
-        crdt: yjs,
-        // Optional: If you want to enable development logging
-        debug: true,
-        /**
-         * Optional: Specify whether WebSocket event listeners should be
-         * "attached" to or "detached" from the WebSocket upon registration.
-         * 
-         * Event listeners should be "detached" to use Cloudflare's WebSocket
-         * hibernation.
-         */
-        mode: "detached", // @default = "detached"
-        types,
-    })
+  platformCloudflare({
+    // Provide the `env` type
+    types,
+    // Optional: Authorization is optional for `@pluv/platform-cloudflare`
+    // If excluded, your `user` will be `null` on the frontend.
+    authorize: ({ env }) => ({
+      // Your own secret for generating JWTs
+      secret: env.PLUV_AUTH_SECRET,
+      // The shape of your user object. `id` must be provided
+      user: z.object({
+        id: z.string(),
+        // Here is an additional field we can add
+        name: z.string(),
+      }),
+    }),
+    // Optional: Context that will be made available in event
+    // handlers and procedures
+    context: ({ env }) => ({
+      db: new Database(env.DATABASE_URL),
+    }),
+    // Optional: Only if you want to use CRDT storage features
+    crdt: yjs,
+    // Optional: If you want to enable development logging
+    debug: true,
+    /**
+     * Optional: Specify whether WebSocket event listeners should be
+     * "attached" to or "detached" from the WebSocket upon registration.
+     *
+     * Event listeners should be "detached" to use Cloudflare's WebSocket
+     * hibernation.
+     */
+    mode: "detached", // @default = "detached"
+    types,
+  })
 );
 
 export const ioServer = io.server({
-    // Optional: Only if you're using storage, and persisting
-    // to a database
-    getInitialStorage: async ({ room, context }) => {
-        const { db } = context;
+  // Optional: Only if you're using storage, and persisting
+  // to a database
+  getInitialStorage: async ({ room, context }) => {
+    const { db } = context;
 
-        // Stubbed example DB query
-        const rows = await db.sql(
-            "SELECT storage FROM room WHERE name = ?;",
-            [room]
-        );
-        const storage = rows[0]?.storage ?? null;
+    // Stubbed example DB query
+    const rows = await db.sql(
+      "SELECT storage FROM room WHERE name = ?;",
+      [room]
+    );
+    const storage = rows[0]?.storage ?? null;
 
-        return storage;
-    },
-    // Optional: Only if you want to run code when a room
-    // is deleted, such as saving the last storage state
-    onRoomDeleted: async ({ room, encodedState, context }) => {
-        // Upsert the db room with last storage state
-    },
+    return storage;
+  },
+  // Optional: Only if you want to run code when a room
+  // is deleted, such as saving the last storage state
+  onRoomDeleted: async ({ room, encodedState, context }) => {
+    // Upsert the db room with last storage state
+  },
 });
 ```
 
@@ -132,67 +132,67 @@ import { DurableObject } from "cloudflare:workers";
 import { Env, ioServer } from "./io";
 
 export class RoomDurableObject extends DurableObject<Env> {
-    private _room: InferIORoom<typeof ioServer>;
+  private _room: InferIORoom<typeof ioServer>;
 
-    constructor(state: DurableObjectState, env: Env) {
-        this._room = ioServer.createRoom(state.id.toString(), { env, state });
+  constructor(state: DurableObjectState, env: Env) {
+    this._room = ioServer.createRoom(state.id.toString(), { env, state });
+  }
+
+  // Only needed if using "detached" mode (i.e. hibernation)
+  public async webSocketClose(
+    ws: WebSocket,
+    code: number,
+    reason: string
+  ): Promise<void> {
+    const handler = this._room.onClose(ws);
+
+    await handler({ code, reason });
+  }
+
+  // Only needed if using "detached" mode (i.e. hibernation)
+  public async webSocketError(
+    ws: WebSocket,
+    error: unknown
+  ): Promise<void> {
+    const handler = this._room.onError(ws);
+    const eventError = error instanceof Error ? error : new Error("Internal Error");
+
+    await handler({ error: eventError, message: eventError.message });
+  }
+
+  // Only needed if using "detached" mode (i.e. hibernation)
+  public async webSocketMessage(
+    ws: WebSocket,
+    message: string | ArrayBuffer
+  ): Promise<void> {
+    const handler = this._room.onMessage(ws);
+
+    await handler({ data: message });
+  }
+
+  async fetch(request: Request) {
+    if (request.headers.get("Upgrade") !== "websocket") {
+      return new Response("Expected WebSocket", { status: 400 });
     }
 
-    // Only needed if using "detached" mode (i.e. hibernation)
-    public async webSocketClose(
-        ws: WebSocket,
-        code: number,
-        reason: string
-    ): Promise<void> {
-        const handler = this._room.onClose(ws);
+    const alarm = await this.ctx.storage.getAlarm();
+    if (alarm !== null) await this.ctx.storage.setAlarm(Date.now() + 60_000);
 
-        await handler({ code, reason });
-    }
+    const { 0: client, 1: server } = new WebSocketPair();
 
-    // Only needed if using "detached" mode (i.e. hibernation)
-    public async webSocketError(
-        ws: WebSocket,
-        error: unknown
-    ): Promise<void> {
-        const handler = this._room.onError(ws);
-        const eventError = error instanceof Error ? error : new Error("Internal Error");
+    // Only needed if you have specified authorize
+    const token = new URL(request.url).searchParams.get("token");
+    await this._room.register(server, { request, token });
 
-        await handler({ error: eventError, message: eventError.message });
-    }
+    return new Response(null, { status: 101, webSocket: client });
+  }
 
-    // Only needed if using "detached" mode (i.e. hibernation)
-    public async webSocketMessage(
-        ws: WebSocket,
-        message: string | ArrayBuffer
-    ): Promise<void> {
-        const handler = this._room.onMessage(ws);
-
-        await handler({ data: message });
-    }
-
-    async fetch(request: Request) {
-        if (request.headers.get("Upgrade") !== "websocket") {
-            return new Response("Expected WebSocket", { status: 400 });
-        }
-
-        const alarm = await this.ctx.storage.getAlarm();
-        if (alarm !== null) await this.ctx.storage.setAlarm(Date.now() + 60_000);
-
-        const { 0: client, 1: server } = new WebSocketPair();
-
-        // Only needed if you have specified authorize
-        const token = new URL(request.url).searchParams.get("token");
-        await this._room.register(server, { request, token });
-
-        return new Response(null, { status: 101, webSocket: client });
-    }
-
-    // Recommended to run garbage collection periodically due to edge cases around
-    // WebSocket hibernation
-    public async alarm(alarmInfo?: AlarmInvocationInfo): Promise<void> {
-        await this._room.garbageCollect();
-        await this.ctx.storage.setAlarm(Date.now() + 60_000);
-    }
+  // Recommended to run garbage collection periodically due to edge cases around
+  // WebSocket hibernation
+  public async alarm(alarmInfo?: AlarmInvocationInfo): Promise<void> {
+    await this._room.garbageCollect();
+    await this.ctx.storage.setAlarm(Date.now() + 60_000);
+  }
 }
 ```
 
@@ -210,39 +210,39 @@ export { RoomDurableObject } from "./RoomDurableObject";
 
 // Stub example to get roomId from url
 const parseRoomId = (url: string): string => {
-    /* get room from req.url */
+  /* get room from req.url */
 };
 
 const app = new Hono<{ Bindings: Env }>()
-    // Only if you specified `authorize` on @pluv/io
-    .get("/api/pluv/auth", async (c) => {
-        const room = c.req.query("room") as string;
+  // Only if you specified `authorize` on @pluv/io
+  .get("/api/pluv/auth", async (c) => {
+    const room = c.req.query("room") as string;
 
-        const request = c.req.raw;
-        // Example stub. However you get the authed user here
-        const user = await getUser(request);
-        const token = await ioServer.createToken({
-            user,
-            env: c.env,
-            request,
-            room
-        });
-
-        return c.text(token, 200);
-    })
-    // Setup your websocket request handler
-    .get("/api/pluv/room". async (c) => {
-        const env = c.env;
-        const roomId = c.req.query("room") as string;
-
-        // Assuming wrangler.toml:
-        // [durable_objects]
-        // bindings = [{ name = "rooms", class_name = "RoomDurableObject" }]
-        const durableObjectId = c.env.rooms.idFromName(roomId);
-        const room = c.env.rooms.get(durableObjectId);
-
-        return room.fetch(request);
+    const request = c.req.raw;
+    // Example stub. However you get the authed user here
+    const user = await getUser(request);
+    const token = await ioServer.createToken({
+      user,
+      env: c.env,
+      request,
+      room
     });
+
+    return c.text(token, 200);
+  })
+  // Setup your websocket request handler
+  .get("/api/pluv/room". async (c) => {
+    const env = c.env;
+    const roomId = c.req.query("room") as string;
+
+    // Assuming wrangler.toml:
+    // [durable_objects]
+    // bindings = [{ name = "rooms", class_name = "RoomDurableObject" }]
+    const durableObjectId = c.env.rooms.idFromName(roomId);
+    const room = c.env.rooms.get(durableObjectId);
+
+    return room.fetch(request);
+  });
 
 export default { fetch: app.fetch };
 ```
@@ -268,35 +268,35 @@ const types = infer((i) => ({ io: i<typeof ioServer> }));
 // Note that the `wsEndpoint` param is omitted when using
 // `@pluv/platform-pluv`
 export const client = createClient({
-    types,
-    // Wherever your auth endpoint was
-    authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,
-    wsEndpoint: ({ room }) => {
-        const host = document.location.host;
-        const protocol = document.location.protocol;
-        const wsProtocol = protocol.includes("https") ? "wss:" : "ws:";
+  types,
+  // Wherever your auth endpoint was
+  authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,
+  wsEndpoint: ({ room }) => {
+    const host = document.location.host;
+    const protocol = document.location.protocol;
+    const wsProtocol = protocol.includes("https") ? "wss:" : "ws:";
 
-        return `${wsProtocol}//${host}/api/pluv/room?room=${room}`;
-    },
+    return `${wsProtocol}//${host}/api/pluv/room?room=${room}`;
+  },
 });
 
 // Destructure the bundle, as the app router will not allow accessing
 // properties of objects within server components (e.g. you are unable to
 // write pluv.PluvRoomProvider in a layout that is a server component)
 export const {
-    PluvRoomProvider,
+  PluvRoomProvider,
 
-    useStorage,
-    useMyself,
-    useOthers,
-    useRoom,
-    useTransact,
+  useStorage,
+  useMyself,
+  useOthers,
+  useRoom,
+  useTransact,
 
-    // ... Other values as needed
+  // ... Other values as needed
 
-    // Alternatively for things that will only be used in client components
-    // (i.e. not server components)
-    ...pluv,
+  // Alternatively for things that will only be used in client components
+  // (i.e. not server components)
+  ...pluv,
 } = createBundle(client);
 ```
 
@@ -308,18 +308,18 @@ At the route the room's layout will be defined, wrap the page with the `PluvRoom
 import type { FC, ReactNode } from "react";
 
 interface PageProps {
-    children?: ReactNode;
-    params: Promise<{ room: string }>;
+  children?: ReactNode;
+  params: Promise<{ room: string }>;
 }
 
 const Page: FC<PageProps> = async (props) => {
-    const { room } = await params;
+  const { room } = await params;
 
-    return (
-        <PluvRoomProvider room={room}>
-            {children}
-        </PluvRoomProvider>
-    );
+  return (
+    <PluvRoomProvider room={room}>
+      {children}
+    </PluvRoomProvider>
+  );
 };
 
 export default Page;

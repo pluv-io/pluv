@@ -54,48 +54,48 @@ import type { ioServer } from "./server/pluv-io";
 // TypeScript inferrence limitations
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 export const client = createClient({
-    types,
-    // Optional: Define the initial storage for rooms. This will set
-    // the types for storage when using it in your application. Don't
-    // worry about the value, as this can be overwritten when creating
-    // a room via `client.createRoom`.
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array<string>("messages", []),
-    })),
-    // Optional: Define your presence schema
-    presence: z.object({
-        selectionId: z.string().nullable(),
-    }),
+  types,
+  // Optional: Define the initial storage for rooms. This will set
+  // the types for storage when using it in your application. Don't
+  // worry about the value, as this can be overwritten when creating
+  // a room via `client.createRoom`.
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array<string>("messages", []),
+  })),
+  // Optional: Define your presence schema
+  presence: z.object({
+    selectionId: z.string().nullable(),
+  }),
 
-    // Optional: Provide additional data at the point of connecting to
-    // to the room for use in `publicKey`, `wsEndpoint` or `authEndpoint`.
-    // This is particularly useful for Cloudflare Pages where accessing
-    // environment variables can be difficult
-    metadata: z.object({
-        secret: z.string(),
-    }),
+  // Optional: Provide additional data at the point of connecting to
+  // to the room for use in `publicKey`, `wsEndpoint` or `authEndpoint`.
+  // This is particularly useful for Cloudflare Pages where accessing
+  // environment variables can be difficult
+  metadata: z.object({
+    secret: z.string(),
+  }),
 
-    // Required if you are using `@pluv/platform-pluv`: This is the
-    // publishable-key that was created for your project on pluv.io
-    publicKey: ({ metadata }) => "pk_...",
+  // Required if you are using `@pluv/platform-pluv`: This is the
+  // publishable-key that was created for your project on pluv.io
+  publicKey: ({ metadata }) => "pk_...",
 
-    // Optional: If a `publicKey` is provided, the `PluvRoom` will
-    // automatically point to the pluv.io network. However, this
-    // can be provided manually if you are self-hosting pluv.io
-    wsEndpoint: ({ metadata, room }): string => {
-        // Specify the ws endpoint to connect to
-        return `ws://localhost:3000/api/room?room=${room}`;
-    },
+  // Optional: If a `publicKey` is provided, the `PluvRoom` will
+  // automatically point to the pluv.io network. However, this
+  // can be provided manually if you are self-hosting pluv.io
+  wsEndpoint: ({ metadata, room }): string => {
+    // Specify the ws endpoint to connect to
+    return `ws://localhost:3000/api/room?room=${room}`;
+  },
 
-    // Required if `authorize` was specified on `createIO`: This is
-    // the endpoint where you've defined your own authorization
-    // for your room's participants
-    authEndpoint: ({ metadata, room }) => {
-        // This can either return a url string, or an object
-        // containing a url and options (fetch options) if
-        // you need to customize the API request
-        return `https://localhost:3000/api/pluv/auth?room=${room}`;
-    },
+  // Required if `authorize` was specified on `createIO`: This is
+  // the endpoint where you've defined your own authorization
+  // for your room's participants
+  authEndpoint: ({ metadata, room }) => {
+    // This can either return a url string, or an object
+    // containing a url and options (fetch options) if
+    // you need to customize the API request
+    return `https://localhost:3000/api/pluv/auth?room=${room}`;
+  },
 });
 ```
 

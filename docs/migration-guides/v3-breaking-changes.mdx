@@ -16,24 +16,24 @@ import { loro } from "@pluv/crdt-loro";
 
 // Before
 loro.doc(() => ({
-    // Declaring top fields via `loro` functions was possible
-    topField: loro.map({
-        nested1: loro.list<string>(),
-        nested2: loro.list<string>(),
-    }),
+  // Declaring top fields via `loro` functions was possible
+  topField: loro.map({
+    nested1: loro.list<string>(),
+    nested2: loro.list<string>(),
+  }),
 }));
 
 // After
 loro.doc((t) => ({
-    // Declaring top fields must now use the builder type, and must provide the
-    // name that will be stored onto the document. This is simply syntax sugar
-    // for doc.getMap("topField")
-    topField: t.map("topField", {
-        // Nested fields must continue using the `loro` functions. This is
-        // simply syntax sugar for `new LoroList()`.
-        nested1: loro.list<string>(),
-        nested2: loro.list<string>(),
-    }),
+  // Declaring top fields must now use the builder type, and must provide the
+  // name that will be stored onto the document. This is simply syntax sugar
+  // for doc.getMap("topField")
+  topField: t.map("topField", {
+    // Nested fields must continue using the `loro` functions. This is
+    // simply syntax sugar for `new LoroList()`.
+    nested1: loro.list<string>(),
+    nested2: loro.list<string>(),
+  }),
 }));
 ```
 
@@ -44,24 +44,24 @@ import { yjs } from "@pluv/crdt-yjs";
 
 // Before
 yjs.doc(() => ({
-    // Declaring top fields via `yjs` functions was possible
-    topField: yjs.map([
-        ["nested1", yjs.array<string>()],
-        ["nested2", yjs.array<string>()],
-    ]),
+  // Declaring top fields via `yjs` functions was possible
+  topField: yjs.map([
+    ["nested1", yjs.array<string>()],
+    ["nested2", yjs.array<string>()],
+  ]),
 }));
 
 // After
 yjs.doc((t) => ({
-    // Declaring top fields must now use the builder type, and must provide the
-    // name that will be stored onto the document. This is simply syntax sugar
-    // for doc.getMap("topField")
-    topField: t.map("topField", [
-        // Nested fields must continue using the `yjs` functions. This is
-        // simply syntax sugar for `new Y.Array()`.
-        ["nested1", yjs.array<string>()],
-        ["nested2", yjs.array<string>()],
-    ]),
+  // Declaring top fields must now use the builder type, and must provide the
+  // name that will be stored onto the document. This is simply syntax sugar
+  // for doc.getMap("topField")
+  topField: t.map("topField", [
+    // Nested fields must continue using the `yjs` functions. This is
+    // simply syntax sugar for `new Y.Array()`.
+    ["nested1", yjs.array<string>()],
+    ["nested2", yjs.array<string>()],
+  ]),
 }));
 ```
 
@@ -76,14 +76,14 @@ import { yjs } from "@pluv/crdt-yjs";
 
 // Before
 yjs.object({
-    field1: "hello",
-    field2: "world",
+  field1: "hello",
+  field2: "world",
 });
 
 // After
 yjs.map([
-    ["field1", "hello"],
-    ["field2", "world"],
+  ["field1", "hello"],
+  ["field2", "world"],
 ]);
 ```
 

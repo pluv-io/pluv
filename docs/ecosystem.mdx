@@ -29,11 +29,11 @@ import type { io } from "../server/io";
 const client = createClient<typeof io>();
 
 const room = client.createRoom("my-room", {
-    // ... other configs here,
-    // ...
-    addons: [addonIndexedDB({ enabled: true })],
-    // Alternatively
-    addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],
+  // ... other configs here,
+  // ...
+  addons: [addonIndexedDB({ enabled: true })],
+  // Alternatively
+  addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],
 });
 
 // Using @pluv/react
@@ -44,11 +44,11 @@ import { createBundle, createClient } from "@pluv/react";
 const client = createClient<typeof io>();
 
 const { useRoom } = createBundle(client, {
-    // ... other configs here,
-    // ...
-    addons: [addonIndexedDB({ enabled: true })],
-        // Alternatively
-    addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],
+  // ... other configs here,
+  // ...
+  addons: [addonIndexedDB({ enabled: true })],
+  // Alternatively
+  addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],
 });
 ```
 
@@ -80,17 +80,15 @@ import { PersistenceRedis } from "@pluv/persistence-redis";
 import { Redis } from "ioredis";
 
 // Setup redis. You can also use a Redis Cluster
-const redis = new Redis({
-    /* redis config here */
-});
+const redis = new Redis({ /* redis config here */ });
 
 export const io = createIO(
-    platformNode({
-        persistence: new PersistenceRedis({ client: redis }),
-        pubSub: new PubSubRedis({
-            publisher: redis,
-            subscriber: redis,
-        }),
-    })
+  platformNode({
+    persistence: new PersistenceRedis({ client: redis }),
+    pubSub: new PubSubRedis({
+      publisher: redis,
+      subscriber: redis,
+    }),
+  })
 );
 ```

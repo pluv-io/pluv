@@ -90,35 +90,35 @@ import { z } from "zod";
 import { db } from "./database";
 
 export const io = createIO(
-    platformPluv({
-        // Required: Authorization is required for `@pluv/platform-pluv`
-        authorize: {
-            // Required: The user schema
-            // Note: Must be JSON serializable
-            // Note: Keep this schema lean (i.e. < 1,024 bytes) else errors
-            // may be encountered
-            user: z.object({
-                // Required: id field is required
-                id: z.string(),
-                // All other fields are optional (whatever is needed to
-                // represent users in the app)
-                name: z.string(),
-            }),
-        },
-        // Optional: Context that will be accessable from server event
-        // listeners
-        context: () => ({
-            db,
-        }),
-        // Optional: Only if you require CRDT features
-        // It must match what was configured when your project was created
-        crdt: yjs,
-        // Required: The API keys saved from the previous step
-        publicKey: process.env.PLUV_PUBLISHABLE_KEY!,
-        secretKey: process.env.PLUV_SECRET_KEY!,
-        // Required: The route where your pluv webhooks will be located
-        basePath: "/api/pluv",
+  platformPluv({
+    // Required: Authorization is required for `@pluv/platform-pluv`
+    authorize: {
+      // Required: The user schema
+      // Note: Must be JSON serializable
+      // Note: Keep this schema lean (i.e. < 1,024 bytes) else errors
+      // may be encountered
+      user: z.object({
+        // Required: id field is required
+        id: z.string(),
+        // All other fields are optional (whatever is needed to
+        // represent users in the app)
+        name: z.string(),
+      }),
+    },
+    // Optional: Context that will be accessable from server event
+    // listeners
+    context: () => ({
+      db,
     }),
+    // Optional: Only if you require CRDT features
+    // It must match what was configured when your project was created
+    crdt: yjs,
+    // Required: The API keys saved from the previous step
+    publicKey: process.env.PLUV_PUBLISHABLE_KEY!,
+    secretKey: process.env.PLUV_SECRET_KEY!,
+    // Required: The route where your pluv webhooks will be located
+    basePath: "/api/pluv",
+  }),
 );
 
 export const ioServer = io.server();
@@ -137,33 +137,32 @@ import { ioServer } from "./backend/pluv";
 import { getSession } from "./backend/auth";
 
 export const GET = async (request: Request) => {
-    const url = new URL(request.url);
+  const url = new URL(request.url);
+  const { session } = await getSession(request);
 
-    const { session } = await getSession(request);
+  if (!session) {
+    // If authorization fails, return any non-200 status code
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401 },
+    );
+  }
 
-    if (!session) {
-        // If authorization fails, return any non-200 status code
-        return new Response(
-            JSON.stringify({ error: "Unauthorized" }),
-            { status: 401 },
-        );
-    }
+  const room = url.searchParams.get("room");
 
-    const room = url.searchParams.get("room");
+  // ... Implement your custom authorization here
 
-    // ... Implement your custom authorization here
+  const token = await ioServer.createToken({
+    room,
+    user: {
+      id: session.user.id,
+      user: session.user.name,
+    },
+  });
 
-    const token = await ioServer.createToken({
-        room,
-        user: {
-            id: session.user.id,
-            user: session.user.name,
-        },
-    });
-
-    // If authorization succeeds, return the token as a text response
-    // with a 200 status code
-    return new Response(token, { status: 200 });
+  // If authorization succeeds, return the token as a text response
+  // with a 200 status code
+  return new Response(token, { status: 200 });
 };
 ```
 
@@ -186,62 +185,62 @@ The example below sets the `webhookSecret` on the `createIO` function and sets a
 // backend/pluv.ts
 
 export const io = createIO(
-    platformPluv({
-        // ...
-        webhookSecret: process.env.PLUV_WEBHOOK_SECRET!,
-        // ...
-    }),
+  platformPluv({
+    // ...
+    webhookSecret: process.env.PLUV_WEBHOOK_SECRET!,
+    // ...
+  }),
 );
 
 export const ioServer = io.server({
-    // Optional: This handler is called when a room is created
-    getInitialStorage: async ({ context, room }) => {
-        const { db } = context;
+  // Optional: This handler is called when a room is created
+  getInitialStorage: async ({ context, room }) => {
+    const { db } = context;
 
-        // Mock example mirroring drizzle-orm
-        const encodedState = await db
-            .select({ encodedState: room.encodedState })
-            .where(eq(room.name, room))
-            .limit(1)
-            .then((result) => result[0]?.encodedState ?? null);
+    // Mock example mirroring drizzle-orm
+    const encodedState = await db
+      .select({ encodedState: room.encodedState })
+      .where(eq(room.name, room))
+      .limit(1)
+      .then((result) => result[0]?.encodedState ?? null);
 
-        return encodedState;
-    },
-    // Optional: This handler is called when a room is destroyed.
-    // Rooms are destroyed when they are empty (i.e. no more active
-    // connections)
-    onRoomDeleted: async ({ context, encodedState, room }) => {
-        const { db } = context;
+    return encodedState;
+  },
+  // Optional: This handler is called when a room is destroyed.
+  // Rooms are destroyed when they are empty (i.e. no more active
+  // connections)
+  onRoomDeleted: async ({ context, encodedState, room }) => {
+    const { db } = context;
 
-        // Mock example mirroring drizzle-orm
-        const roomId = const existing = await db
-            .select()
-            .where(eq(room.name, room))
-            .limit(1)
-            .then((result) => result[0]?.id ?? null);
+    // Mock example mirroring drizzle-orm
+    const roomId = const existing = await db
+      .select()
+      .where(eq(room.name, room))
+      .limit(1)
+      .then((result) => result[0]?.id ?? null);
 
-        if (roomId === null) {
-            await db
-                .insert(room)
-                .values({ encodedState, name: room });
+    if (roomId === null) {
+      await db
+        .insert(room)
+        .values({ encodedState, name: room });
 
-            return;
-        }
+      return;
+    }
 
-        await db
-            .update(room)
-            .where(eq(room.id, roomId))
-            .set({ encodedState });
-    },
-    // Optional: This handler is called after a new connection is
-    // established
-    onUserConnected: async ({ context, encodedState, room, user }) => {
-        // ...
-    },
-    // Optional: This handler is called after a connection is closed
-    onUserDisconnected: async ({ context, encodedState, room, user }) => {
-        // ...
-    },
+    await db
+      .update(room)
+      .where(eq(room.id, roomId))
+      .set({ encodedState });
+  },
+  // Optional: This handler is called after a new connection is
+  // established
+  onUserConnected: async ({ context, encodedState, room, user }) => {
+    // ...
+  },
+  // Optional: This handler is called after a connection is closed
+  onUserDisconnected: async ({ context, encodedState, room, user }) => {
+    // ...
+  },
 });
 ```
 
@@ -266,29 +265,29 @@ const types = infer((i) => ({ io: i<typeof ioServer> }));
 // Note that the `wsEndpoint` param is omitted when using
 // `@pluv/platform-pluv`
 export const client = createClient({
-    types,
-    // Wherever your auth endpoint was
-    authEndpoint: ({ room }) => `/api/auth/pluv?room=${room}`,
-    publicKey: process.env.PLUV_PUBLISHABLE_KEY!,
+  types,
+  // Wherever your auth endpoint was
+  authEndpoint: ({ room }) => `/api/auth/pluv?room=${room}`,
+  publicKey: process.env.PLUV_PUBLISHABLE_KEY!,
 });
 
 // Destructure the bundle, as the app router will not allow accessing
 // properties of objects within server components (e.g. you are unable to
 // write pluv.PluvRoomProvider in a layout that is a server component)
 export const {
-    PluvRoomProvider,
+  PluvRoomProvider,
 
-    useStorage,
-    useMyself,
-    useOthers,
-    useRoom,
-    useTransact,
+  useStorage,
+  useMyself,
+  useOthers,
+  useRoom,
+  useTransact,
 
-    // ... Other values as needed
+  // ... Other values as needed
 
-    // Alternatively for things that will only be used in client components
-    // (i.e. not server components)
-    ...pluv,
+  // Alternatively for things that will only be used in client components
+  // (i.e. not server components)
+  ...pluv,
 } = createBundle(client);
 ```
 
@@ -302,18 +301,18 @@ At the route the room's layout will be defined, wrap the page with the `PluvRoom
 import type { FC, ReactNode } from "react";
 
 interface PageProps {
-    children?: ReactNode;
-    params: Promise<{ room: string }>;
+  children?: ReactNode;
+  params: Promise<{ room: string }>;
 }
 
 const Page: FC<PageProps> = async (props) => {
-    const { room } = await params;
+  const { room } = await params;
 
-    return (
-        <PluvRoomProvider room={room}>
-            {children}
-        </PluvRoomProvider>
-    );
+  return (
+    <PluvRoomProvider room={room}>
+      {children}
+    </PluvRoomProvider>
+  );
 };
 
 export default Page;

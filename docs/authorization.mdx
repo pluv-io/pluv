@@ -130,30 +130,28 @@ import { ioServer } from "./io";
 const PORT = 3000;
 
 const app = new Hono<{ Bindings: HttpBindings }>()
-    // Only if you specified `authorize` on @pluv/io
-    .get("/api/pluv/auth", async (c) => {
-        // ...
-        return c.text(token, 200);
-    });
+  // Only if you specified `authorize` on @pluv/io
+  .get("/api/pluv/auth", async (c) => {
+    // ...
+    return c.text(token, 200);
+  });
 
 const parseRoomId = (url: string): string => {
-    /* get room from req.url */
+  /* get room from req.url */
 };
 
 const parseToken = (url: string): string => {
-    /* get token from query parameters of req.url */
+  /* get token from query parameters of req.url */
 };
 
-const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
-    // ...
-};
+const getRoom = (roomId: string): InferIORoom<typeof ioServer> => { /* ... */};
 
 wsServer.on("connection", async (ws, req) => {
-    const roomId = parseRoomId(req.url);
-    const token = parseToken(req.url);
-    const room = getRoom(roomId);
+  const roomId = parseRoomId(req.url);
+  const token = parseToken(req.url);
+  const room = getRoom(roomId);
 
-    // Pass in the token from query params
-    await room.register(ws, { req, token });
+  // Pass in the token from query params
+  await room.register(ws, { req, token });
 });
 ```

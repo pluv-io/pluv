@@ -24,7 +24,7 @@ import { createIO } from "@pluv/io";
 import { platformPluv } from "@pluv/platform-pluv";
 
 export const io = createIO(
-    platformPluv({ /* ... */})
+  platformPluv({ /* ... */})
 );
 
 // Export the ioServer, so that this can be type-imported on the frontend
@@ -48,31 +48,31 @@ const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = clientClient({ /* ... */});
 
 export const {
-    // components
-    MockedRoomProvider,
-    PluvProvider,
-    PluvRoomProvider,
+  // components
+  MockedRoomProvider,
+  PluvProvider,
+  PluvRoomProvider,
 
-    // utils
-    event,
+  // utils
+  event,
 
-    // hooks
-    useBroadcast,
-    useCanRedo,
-    useCanUndo,
-    useClient,
-    useConnection,
-    useDoc,
-    useEvent,
-    useMyPresence,
-    useMyself,
-    useOther,
-    useOthers,
-    useRedo,
-    useRoom,
-    useStorage,
-    useTransact,
-    useUndo,
+  // hooks
+  useBroadcast,
+  useCanRedo,
+  useCanUndo,
+  useClient,
+  useConnection,
+  useDoc,
+  useEvent,
+  useMyPresence,
+  useMyself,
+  useOther,
+  useOthers,
+  useRedo,
+  useRoom,
+  useStorage,
+  useTransact,
+  useUndo,
 } = createBundle(client);
 ```
 

@@ -50,29 +50,29 @@ import { z } from "zod";
 import { Database } from "./db";
 
 export const io = createIO(
-    platformNode({
-        // Optional: Authorization is optional for `@pluv/platform-node`
-        // If excluded, your `user` will be `null` on the frontend.
-        authorize: {
-            // Your own secret for generating JWTs
-            secret: process.env.PLUV_AUTH_SECRET!,
-            // The shape of your user object. `id` must be provided
-            user: z.object({
-                id: z.string(),
-                // Here is an additional field we can add
-                name: z.string(),
-            }),
-        },
-        // Optional: Context that will be made available in event
-        // handlers and procedures
-        context: () => ({
-            db: new Database(process.env.DATABASE_URL),
-        }),
-        // Optional: Only if you want to use CRDT storage features
-        crdt: yjs,
-        // Optional: If you want to enable development logging
-        debug: process.env.NODE_ENV === "development",
-    })
+  platformNode({
+    // Optional: Authorization is optional for `@pluv/platform-node`
+    // If excluded, your `user` will be `null` on the frontend.
+    authorize: {
+      // Your own secret for generating JWTs
+      secret: process.env.PLUV_AUTH_SECRET!,
+      // The shape of your user object. `id` must be provided
+      user: z.object({
+        id: z.string(),
+        // Here is an additional field we can add
+        name: z.string(),
+      }),
+    },
+    // Optional: Context that will be made available in event
+    // handlers and procedures
+    context: () => ({
+      db: new Database(process.env.DATABASE_URL),
+    }),
+    // Optional: Only if you want to use CRDT storage features
+    crdt: yjs,
+    // Optional: If you want to enable development logging
+    debug: process.env.NODE_ENV === "development",
+  })
 );
 
 export const ioServer = io.server({
@@ -116,21 +116,21 @@ const PORT = 3000;
 
 // Stub example to get roomId from url
 const parseRoomId = (url: string): string => {
-    /* get room from req.url */
+  /* get room from req.url */
 };
 
 const app = new Hono<{ Bindings: HttpBindings }>()
-    // Only if you specified `authorize` on @pluv/io
-    .get("/api/pluv/auth", async (c) => {
-        const room = c.req.query("room") as string;
+  // Only if you specified `authorize` on @pluv/io
+  .get("/api/pluv/auth", async (c) => {
+    const room = c.req.query("room") as string;
 
-        const req: Http.IncomingMessage = c.env.incoming;
-        // Example stub. However you get the authed user here
-        const user = await getUser(req);
-        const token = await ioServer.createToken({ user, req, room });
+    const req: Http.IncomingMessage = c.env.incoming;
+    // Example stub. However you get the authed user here
+    const user = await getUser(req);
+    const token = await ioServer.createToken({ user, req, room });
 
-        return c.text(token, 200);
-    });
+    return c.text(token, 200);
+  });
 
 const server = serve({ fetch: app.fetch, port: PORT }) as Http.Server;
 const wsServer = new Ws.WebSocketServer({ server });
@@ -138,27 +138,27 @@ const wsServer = new Ws.WebSocketServer({ server });
 // Manage rooms in-memory
 const rooms = new Map<string, InferIORoom<typeof ioServer>>();
 const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
-    const existing = rooms.get(roomId);
-    if (existing) return existing;
+  const existing = rooms.get(roomId);
+  if (existing) return existing;
 
-    const newRoom = ioServer.createRoom(roomId, {
-        onDestroy: (event) => {
-            rooms.delete(event.room);
-        },
-    });
-    rooms.set(roomId, newRoom);
+  const newRoom = ioServer.createRoom(roomId, {
+    onDestroy: (event) => {
+      rooms.delete(event.room);
+    },
+  });
+  rooms.set(roomId, newRoom);
 
-    return newRoom;
+  return newRoom;
 };
 
 // Setup your websocket request handler
 wsServer.on("connection", async (ws, req) => {
-    const roomId = parseRoomId(req.url);
-    const room = getRoom(roomId);
+  const roomId = parseRoomId(req.url);
+  const room = getRoom(roomId);
 
-    // Token is only needed if you have configured authorization
-    const token = new URL(req.url).searchParams.get("token");
-    await room.register(ws, { req, token });
+  // Token is only needed if you have configured authorization
+  const token = new URL(req.url).searchParams.get("token");
+  await room.register(ws, { req, token });
 });
 ```
 
@@ -183,36 +183,36 @@ const types = infer((i) => ({ io: i<typeof ioServer> }));
 // Note that the `wsEndpoint` param is omitted when using
 // `@pluv/platform-pluv`
 export const client = createClient({
-    types,
-    // Wherever your auth endpoint was
-    authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,
-    wsEndpoint: ({ room }) => {
-        const host = document.location.host;
-        const protocol = document.location.protocol;
-        const wsProtocol = protocol.includes("https") ? "wss:" : "ws:";
+  types,
+  // Wherever your auth endpoint was
+  authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,
+  wsEndpoint: ({ room }) => {
+    const host = document.location.host;
+    const protocol = document.location.protocol;
+    const wsProtocol = protocol.includes("https") ? "wss:" : "ws:";
 
-        // Or wherever you intend to receive the connection requests from
-        return `${wsProtocol}//${host}/api/pluv/room?room=${room}`;
-    },
+    // Or wherever you intend to receive the connection requests from
+    return `${wsProtocol}//${host}/api/pluv/room?room=${room}`;
+  },
 });
 
 // Destructure the bundle, as the app router will not allow accessing
 // properties of objects within server components (e.g. you are unable to
 // write pluv.PluvRoomProvider in a layout that is a server component)
 export const {
-    PluvRoomProvider,
+  PluvRoomProvider,
 
-    useStorage,
-    useMyself,
-    useOthers,
-    useRoom,
-    useTransact,
+  useStorage,
+  useMyself,
+  useOthers,
+  useRoom,
+  useTransact,
 
-    // ... Other values as needed
+  // ... Other values as needed
 
-    // Alternatively for things that will only be used in client components
-    // (i.e. not server components)
-    ...pluv,
+  // Alternatively for things that will only be used in client components
+  // (i.e. not server components)
+  ...pluv,
 } = createBundle(client);
 ```
 
@@ -224,18 +224,18 @@ At the route the room's layout will be defined, wrap the page with the `PluvRoom
 import type { FC, ReactNode } from "react";
 
 interface PageProps {
-    children?: ReactNode;
-    params: Promise<{ room: string }>;
+  children?: ReactNode;
+  params: Promise<{ room: string }>;
 }
 
 const Page: FC<PageProps> = async (props) => {
-    const { room } = await params;
+  const { room } = await params;
 
-    return (
-        <PluvRoomProvider room={room}>
-            {children}
-        </PluvRoomProvider>
-    );
+  return (
+    <PluvRoomProvider room={room}>
+      {children}
+    </PluvRoomProvider>
+  );
 };
 
 export default Page;

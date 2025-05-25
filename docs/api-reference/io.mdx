@@ -19,19 +19,19 @@ import { z } from "zod";
 import { Database } from "./db";
 
 const io = createIO(
-    platformNode({
-        authorize: {
-            secret: process.env.PLUV_AUTH_SECRET!,
-            user: z.object({
-                id: z.string(),
-                name: z.string(),
-            }),
-        },
-        context: () => ({
-            db: new Database(process.env.DATABASE_URL!),
-        }),
-        crdt: yjs,
-    })
+  platformNode({
+    authorize: {
+      secret: process.env.PLUV_AUTH_SECRET!,
+      user: z.object({
+        id: z.string(),
+        name: z.string(),
+      }),
+    },
+    context: () => ({
+      db: new Database(process.env.DATABASE_URL!),
+    }),
+    crdt: yjs,
+  })
 );
 ```
 
@@ -54,17 +54,17 @@ const token = await io.createToken({
 
 // If using `@pluv/platform-cloudflare
 const token = await io.createToken({
-    env: env as Env,
-    request: request as Request,
-    room: "my-example-room",
-    user: { id: "...", name: "..." },
+  env: env as Env,
+  request: request as Request,
+  room: "my-example-room",
+  user: { id: "...", name: "..." },
 });
 
 // If using `@pluv/platform-node`
 const token = await io.createToken({
-    req: req as Http.IncomingMessage,
-    room: "my-example-room",
-    user: { id: "...", name: "..." },
+  req: req as Http.IncomingMessage,
+  room: "my-example-room",
+  user: { id: "...", name: "..." },
 });
 ```
 
@@ -80,15 +80,15 @@ import { z } from "zod";
 const io = createIO(platformNode());
 
 const sendMessage = io.procedure
-    .input(z.object({ message: z.string() }))
-    .broadcast(({ message }) => ({ receiveMessage: { message } }));
+  .input(z.object({ message: z.string() }))
+  .broadcast(({ message }) => ({ receiveMessage: { message } }));
 
 const doubleValue = io.procedure
-    .input(z.object({ value: z.number() }))
-    .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
+  .input(z.object({ value: z.number() }))
+  .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
 
 const wave = io.procedure
-    .broadcast(() => ({ receiveMessage: { message: "Hello world!" } }));
+  .broadcast(() => ({ receiveMessage: { message: "Hello world!" } }));
 ```
 
 ### router
@@ -103,20 +103,20 @@ import { z } from "zod";
 const io = createIO(platformNode());
 
 const sendMessage = io.procedure
-    .input(z.object({ message: z.string() }))
-    .broadcast(({ message }) => ({ receiveMessage: { message } }));
+  .input(z.object({ message: z.string() }))
+  .broadcast(({ message }) => ({ receiveMessage: { message } }));
 
 const doubleValue = io.procedure
-    .input(z.object({ value: z.number() }))
-    .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
+  .input(z.object({ value: z.number() }))
+  .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
 
 const wave = io.procedure
-    .broadcast(() => ({ receiveMessage: { message: "Hello world!" } }));
+  .broadcast(() => ({ receiveMessage: { message: "Hello world!" } }));
 
 const router = io.router({
-    sendMessage,
-    doubleValue,
-    wave,
+  sendMessage,
+  doubleValue,
+  wave,
 });
 ```
 
@@ -135,48 +135,48 @@ const io = createIO(platformNode());
 const router = io.router({ /* ... */ });
 
 const server = io.server({
-    // Optional: Triggered when a room is freshly created. If the room existed
-    // before, you can load the storage state for the room by returning it here
-    getInitialStorage: async ({ context, room }) => {
-        const { db } = context;
-        const existingRoom = await db.room.findUnique({ where: { room } });
+  // Optional: Triggered when a room is freshly created. If the room existed
+  // before, you can load the storage state for the room by returning it here
+  getInitialStorage: async ({ context, room }) => {
+    const { db } = context;
+    const existingRoom = await db.room.findUnique({ where: { room } });
 
-        return existingRoom?.encodedState ?? null;
-    },
-    // Optional: Triggered when a room is deleted. Callback includes the last
-    // value for the room's state for persisting purposes
-    onRoomDeleted: async ({ context, encodedState, room }) => {
-        const { db } = context;
+    return existingRoom?.encodedState ?? null;
+  },
+  // Optional: Triggered when a room is deleted. Callback includes the last
+  // value for the room's state for persisting purposes
+  onRoomDeleted: async ({ context, encodedState, room }) => {
+    const { db } = context;
 
-        await db.room.upsert({
-            where: { room },
-            create: { encodedState, room },
-            update: { encodedState },
-        });
-    },
-    // Optional: Triggered each time any participant sends a new message to
-    // other participants
-    // It is advised not to perform any heavy operations in this listener
-    // due to the frequency of invocations
-    onRoomMessage: async ({ context, encodedState, room }) => {
-        // ...
-    },
-    // Optional: Triggered each time the room's storage is updated.
-    // It is advised not to perform any heavy operations in this listener
-    // due to the frequency of invocations
-    onStorageUpdated: ({ context, encodedState, room }) => {
-        // ...
-    },
-    // Optional: Triggered each time a user connects to a room
-    onUserConnected: ({ context, encodedState, room, user }) => {
-        // ...
-    },
-    // Optional: Triggered each time a user disconnects from a room
-    onUserDisconnected: ({ context, encodedState, room, user }) => {
-        // ...
-    },
-    // Optional. Only needed if specifying events
-    router,
+    await db.room.upsert({
+      where: { room },
+      create: { encodedState, room },
+      update: { encodedState },
+    });
+  },
+  // Optional: Triggered each time any participant sends a new message to
+  // other participants
+  // It is advised not to perform any heavy operations in this listener
+  // due to the frequency of invocations
+  onRoomMessage: async ({ context, encodedState, room }) => {
+    // ...
+  },
+  // Optional: Triggered each time the room's storage is updated.
+  // It is advised not to perform any heavy operations in this listener
+  // due to the frequency of invocations
+  onStorageUpdated: ({ context, encodedState, room }) => {
+    // ...
+  },
+  // Optional: Triggered each time a user connects to a room
+  onUserConnected: ({ context, encodedState, room, user }) => {
+    // ...
+  },
+  // Optional: Triggered each time a user disconnects from a room
+  onUserDisconnected: ({ context, encodedState, room, user }) => {
+    // ...
+  },
+  // Optional. Only needed if specifying events
+  router,
 });
 
 // Can also be created without a router, if events are unneeded
@@ -273,13 +273,13 @@ Registers a websocket to the room. Accepts a secondary options parameter to pass
 
 // For @pluv/platform-cloudflare
 room.register(webSocket, {
-    env: env as Env,
-    request: request as Request,
-    token,
+  env: env as Env,
+  request: request as Request,
+  token,
 });
 // For @pluv/platform-node
 room.register(webSocket, {
-    req: req as Http.IncomingMessage,
-    token,
+  req: req as Http.IncomingMessage,
+  token,
 });
 ```

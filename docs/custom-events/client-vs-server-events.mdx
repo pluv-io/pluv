@@ -28,52 +28,52 @@ import { platformNode } from "@pluv/platform-node";
 import { db } from "./db";
 
 const io = createIO(
-    platformNode({
-        // Provide a context object that can be accessed from any of the event procedures
-        context: { db },
-    })
+  platformNode({
+    // Provide a context object that can be accessed from any of the event procedures
+    context: { db },
+  })
 );
 
 // You can define events as procedures that can exist in separate or the same file.
 const sendHelloWorld = io.procedure
-    .broadcast(() => ({ receiveHelloWorld: "hello world!" }));
+  .broadcast(() => ({ receiveHelloWorld: "hello world!" }));
 
 const sendGreeting = io.procedure
-    // Optional: You can specify inputs for the procedure if needed
-    .input(z.object({ name: z.string() }))
-    .broadcast(({ name }) => ({ receiveGreeting: `Hi my name is ${name}!` }));
+  // Optional: You can specify inputs for the procedure if needed
+  .input(z.object({ name: z.string() }))
+  .broadcast(({ name }) => ({ receiveGreeting: `Hi my name is ${name}!` }));
 
 const doubleNumber = io.procedure
-    .input(z.object({ value: z.number() }))
-    .broadcast(({ value }) => ({ numberDoubled: value * 2 }));
+  .input(z.object({ value: z.number() }))
+  .broadcast(({ value }) => ({ numberDoubled: value * 2 }));
 
 const serverExample = io.procedure
-    .input(z.object({ data: z.any() }))
-    .broadcast((
-        { data },
-        {
-            // The room's context from `createIO`. Also may contain platform-specific values like
-            // Cloudflare Worker's env and state
-            context,
-            // The room's copy of the CRDT state
-            doc,
-            // The id (string) of the room
-            room,
-            // The session of the connection that is invoking this procedure
-            session,
-            // A list of all sessions connected to this room on this server
-            // This includes the emitter's session as well
-            sessions,
-        }
-    ) => ({ finishExample: data }));
+  .input(z.object({ data: z.any() }))
+  .broadcast((
+    { data },
+    {
+      // The room's context from `createIO`. Also may contain platform-specific values like
+      // Cloudflare Worker's env and state
+      context,
+      // The room's copy of the CRDT state
+      doc,
+      // The id (string) of the room
+      room,
+      // The session of the connection that is invoking this procedure
+      session,
+      // A list of all sessions connected to this room on this server
+      // This includes the emitter's session as well
+      sessions,
+    }
+  ) => ({ finishExample: data }));
 
 export const ioServer = io.server({
-    // Register your procedures to the PluvServer via `router`
-    router: io.router({
-        sendHelloWorld,
-        sendGreeting,
-        doubleNumber,
-    }),
+  // Register your procedures to the PluvServer via `router`
+  router: io.router({
+    sendHelloWorld,
+    sendGreeting,
+    doubleNumber,
+  }),
 });
 ```
 
@@ -90,37 +90,37 @@ const io = createClient({ types });
 
 // Basic example of a procedure, that works like a server procedure
 const add5 = io.procedure
-    // Optional: Input is optional like in the server example
-    .input(z.object({ value: z.number() }))
-    .broadcast(({ value }) => ({ numberIncreased: value + 5 }));
+  // Optional: Input is optional like in the server example
+  .input(z.object({ value: z.number() }))
+  .broadcast(({ value }) => ({ numberIncreased: value + 5 }));
 
 const subtract5 = io.procedure
-    .input(z.object({ value: z.number() }))
-    // This procedure returns an event that is caught by the above
-    // server's router. This will first subtract 5, then double the
-    // result on the server
-    .broadcast(({ value }) => ({ doubleNumber: value - 5 }));
+  .input(z.object({ value: z.number() }))
+  // This procedure returns an event that is caught by the above
+  // server's router. This will first subtract 5, then double the
+  // result on the server
+  .broadcast(({ value }) => ({ doubleNumber: value - 5 }));
 
 const clientExample = io.procedure
-    .input(z.object({ data: z.any() }))
-    .broadcast((
-        { data },
-        {
-            // The room's copy of the CRDT state
-            doc,
-            // A list of all other connected peers
-            others,
-            // The id (string) of the room
-            room,
-            // The current connected user
-            user,
-        }
-    ) => ({ finishExample: data }))
+  .input(z.object({ data: z.any() }))
+  .broadcast((
+    { data },
+    {
+      // The room's copy of the CRDT state
+      doc,
+      // A list of all other connected peers
+      others,
+      // The id (string) of the room
+      room,
+      // The current connected user
+      user,
+    }
+  ) => ({ finishExample: data }))
 
 const room = io.createRoom("my-custom-room", {
-    router: io.router({
-        add5,
-        subtract5,
-    }),
+  router: io.router({
+    add5,
+    subtract5,
+  }),
 });
 ```

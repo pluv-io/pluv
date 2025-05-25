@@ -222,10 +222,10 @@ const [chats, loroMap] = useStorage("chats");
 //            ^? const loroMap: LoroMap<Record<string, LoroText>> | null
 
 transact(() => {
-    // The `loro` module from @pluv/crdt-loro returns the native
-    // Loro container-types
-    // Therefore these are equivalent statements
-    loroMap?.set("chat3", loro.text("hello world!"));
-    loroMap?.set("chat3", new LoroText("hello world!"));
+  // The `loro` module from @pluv/crdt-loro returns the native
+  // Loro container-types
+  // Therefore these are equivalent statements
+  loroMap?.set("chat3", loro.text("hello world!"));
+  loroMap?.set("chat3", new LoroText("hello world!"));
 });
 ```

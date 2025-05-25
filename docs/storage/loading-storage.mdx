@@ -55,38 +55,38 @@ Our recommendation is to save your room's storage state in `onRoomDeleted`. And 
 ```ts
 // ...
 export const ioServer = io.server({
-    // ...
-    // Optional: Triggered when a room is deleted. Callback includes the last
-    // value for the room's state for persisting purposes
-    onRoomDeleted: async ({ context, encodedState, room }) => {
-        const { db } = context;
+  // ...
+  // Optional: Triggered when a room is deleted. Callback includes the last
+  // value for the room's state for persisting purposes
+  onRoomDeleted: async ({ context, encodedState, room }) => {
+    const { db } = context;
 
-        await db.room.upsert({
-            where: { room },
-            create: { encodedState, room },
-            update: { encodedState },
-        });
-    },
-    // Optional: Triggered each time any participant sends a new message to
-    // other participants
-    // It is advised not to perform any heavy operations in this listener
-    // due to the frequency of invocations
-    onRoomMessage: async ({ context, encodedState, room }) => {
-        // ...
-    },
-    // Optional: Triggered each time the room's storage is updated.
-    // It is advised not to perform any heavy operations in this listener
-    // due to the frequency of invocations
-    onStorageUpdated: ({ context, encodedState, room }) => {
-        // ...
-    },
-    // Optional: Triggered each time a user connects to a room
-    onUserConnected: ({ context, encodedState, room, user }) => {
-        // ...
-    },
-    // Optional: Triggered each time a user disconnects from a room
-    onUserDisconnected: ({ context, encodedState, room, user }) => {
-        // ...
-    },
+    await db.room.upsert({
+      where: { room },
+      create: { encodedState, room },
+      update: { encodedState },
+    });
+  },
+  // Optional: Triggered each time any participant sends a new message to
+  // other participants
+  // It is advised not to perform any heavy operations in this listener
+  // due to the frequency of invocations
+  onRoomMessage: async ({ context, encodedState, room }) => {
+    // ...
+  },
+  // Optional: Triggered each time the room's storage is updated.
+  // It is advised not to perform any heavy operations in this listener
+  // due to the frequency of invocations
+  onStorageUpdated: ({ context, encodedState, room }) => {
+    // ...
+  },
+  // Optional: Triggered each time a user connects to a room
+  onUserConnected: ({ context, encodedState, room, user }) => {
+    // ...
+  },
+  // Optional: Triggered each time a user disconnects from a room
+  onUserDisconnected: ({ context, encodedState, room, user }) => {
+    // ...
+  },
 });
 ```
