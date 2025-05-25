@@ -83,7 +83,7 @@ export const client = createClient({
     // automatically point to the pluv.io network. However, this
     // can be provided manually if you are self-hosting pluv.io
     wsEndpoint: ({ metadata, room }): string => {
-        // Specify the ws endpoint to connect to 
+        // Specify the ws endpoint to connect to
         return `ws://localhost:3000/api/room?room=${room}`;
     },
 
@@ -101,5 +101,5 @@ export const client = createClient({
 
 ## Related
 
-* [Enable authorization](/docs/io/authorization)
+* [Enable authorization](/docs/authorization)
 * [Create rooms](/docs/client/create-rooms)

@@ -9,7 +9,7 @@ description: "API reference for @pluv/io"
 
 Returns a `PluvIO` instance.
 
-Creates a server-side `PluvIO` client that can be used to create event procedures, routers and servers. Below is an example configuration for `createIO`. To learn more about `createIO`, read [Authorization](/docs/io/authorization), [Cloudflare Workers](/docs/quickstart/cloudflare-workers) and [Node.js](/docs/quickstart/node.js).
+Creates a server-side `PluvIO` client that can be used to create event procedures, routers and servers. Below is an example configuration for `createIO`. To learn more about `createIO`, read [Authorization](/docs/authorization), [Cloudflare Workers](/docs/quickstart/cloudflare-workers) and [Node.js](/docs/quickstart/node.js).
 
 ```ts
 import { yjs } from "@pluv/crdt-yjs";
@@ -43,7 +43,7 @@ This is the client returned by `createIO`.
 
 Returns `Promise<string>`.
 
-Creates a JWT for a user trying to connect to a room. This should be called within a custom authentication endpoint you define. See [Authorization](/docs/io/authorization) for more information.
+Creates a JWT for a user trying to connect to a room. This should be called within a custom authentication endpoint you define. See [Authorization](/docs/authorization) for more information.
 
 ```ts
 // If using `@pluv/platform-pluv`
@@ -266,7 +266,7 @@ const roomId = room.id;
 
 Returns `Promise<void>`.
 
-Registers a websocket to the room. Accepts a secondary options parameter to pass-in a token for authorizing the room. Read [Cloudflare Workers](/docs/quickstart/cloudflar-workers), [Node.js](/docs/quickstart/nodejs) and [Authorization](/docs/io/authorization) to learn more.
+Registers a websocket to the room. Accepts a secondary options parameter to pass-in a token for authorizing the room. Read [Cloudflare Workers](/docs/quickstart/cloudflar-workers), [Node.js](/docs/quickstart/nodejs) and [Authorization](/docs/authorization) to learn more.
 
 ```ts
 // const token: string = ...
