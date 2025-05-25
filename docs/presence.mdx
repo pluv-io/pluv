@@ -19,19 +19,19 @@ import type { ioServer } from "./backend/io";
 
 const types = infer((i) => ({ io: i<typeof iServer> }));
 const client = createClient({
-    types,
-    presence: z.object({
-        selectionId: z.string().nullable(),
-    }),
-    // ...
+  types,
+  presence: z.object({
+    selectionId: z.string().nullable(),
+  }),
+  // ...
 });
 
 export const {
-    PluvRoomProvider,
-    useMyPresence,
-    useMyself,
-    useOther,
-    useOthers,
+  PluvRoomProvider,
+  useMyPresence,
+  useMyself,
+  useOther,
+  useOthers,
 } = createBundle(client);
 ```
 
@@ -39,20 +39,20 @@ export const {
 
 ```tsx
 import type { FC } from "react";
-import { pluv } from "./frontend/io";
+import { PluvRoomProvider } from "./frontend/io";
 
 const Room: FC = () => {
-    return (
-        <PluvRoomProvider
-            // Specify the initial presence for each newly connected user
-            initialPresence={{
-                selectionId: null,
-            }}
-            room="my-example-room"
-        >
-            <ChatRoom />
-        </PluvRoomProvider>
-    );
+  return (
+    <PluvRoomProvider
+      // Specify the initial presence for each newly connected user
+      initialPresence={{
+        selectionId: null,
+      }}
+      room="my-example-room"
+    >
+      <ChatRoom />
+    </PluvRoomProvider>
+  );
 };
 ```
 
@@ -89,7 +89,7 @@ const mySelectionId = useMyself(({ presence }) => presence.selectionId);
 
 // Updating the current user's presence
 const selectInput = useCallback((selectionId: string) => {
-    updateMyPresence(selectionId);
+  updateMyPresence(selectionId);
 }, [updateMyPresence]);
 ```
 
@@ -109,7 +109,7 @@ const others = useOthers();
 // in another component
 const others = useOthers((others) => {
 //    ^? const others: readonly string[] | null;
-    return others.map((other) => other.connectionId);
+  return others.map((other) => other.connectionId);
 });
 
 const other = useOther(connectionId);
@@ -121,6 +121,6 @@ const other = useOther(connectionId);
 
 // Example with selector
 const other = useOther(connectionId, (other) => {
-    return other.presence.selectionId;
+  return other.presence.selectionId;
 });
 ```

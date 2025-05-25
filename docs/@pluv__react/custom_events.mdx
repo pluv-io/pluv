@@ -31,7 +31,7 @@ const wave = io.broadcast(() => ({ receiveWave: {} }));
 const router = io.router({ sendMessage, wave });
 ```
 
-Then include the `router` we created above into [createBundle](/docs/react/create-bundle) to connect the events to your frontend bundle.
+Then include the `router` we created above into [createBundle](/docs/create-bundle) to connect the events to your frontend bundle.
 
 ```ts
 import { createBundle } from "@pluv/react";

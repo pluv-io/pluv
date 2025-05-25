@@ -17,7 +17,7 @@ This will allow users to apply undos and redos to Pluv storage mutations.
 * [useCanRedo](/docs/api-reference/react#useCanRedo)
 * [useCanUndo](/docs/api-reference/react#useCanUndo)
 * [useRedo](/docs/api-reference/react#useRedo)
-* [useTransact](/docs/api-reference/react#useTransact)
+* [useStorage](/docs/api-reference/react#useStorage)
 * [useUndo](/docs/api-reference/react#useUndo)
 
 ## Undoing a storage mutation
@@ -29,45 +29,38 @@ import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 
 const client = createClient({
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array("messages", [
-            yjs.map([
-                ["message", "hello"],
-                ["name", "i3dly"],
-            ]),
-        ]),
-    })),
-    // ...
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array<string>("messages", []),
+  })),
+  // ...
 });
 
-export const pluv = createBundle(client);
+export const {
+  useCanRedo,
+  useCanUndo,
+  useUndo,
+  useStorage,
+  useRedo,
+} = createBundle(client);
 ```
 
-To undo a storage mutation, you will need to wrap your mutation with a transaction.
+To get started with modifying your storage history, first make storage mutations.
 
 ```ts
-const transact = pluv.useTransact();
-const [messages, sharedType] = pluv.useStorage();
+const [messages, yArray] = useStorage();
 
-// We can undo this
-transact(() => {
-    sharedType.push(["world!"]);
-});
-
-// We can also access all shared types to undo like this
-transact((tx) => {
-    tx.messages.push(["world!"]);
-});
-
-// We cannot undo this
-sharedType.push(["world!"]);
+yArray?.push(["hello"]);
+yArray?.push(["world"]);
 ```
 
-Then from anywhere within the `PluvRoomProvider`, you can undo your last transacted operation.
+Then from anywhere within the `PluvRoomProvider`, you can undo your transacted operations.
 
 ```ts
-const undo = pluv.useUndo();
-const redo = pluv.useRedo();
+const canUndo: boolean =  useCanUndo();
+const canRedo: boolean = useCanRedo();
+
+const undo = useUndo();
+const redo = useRedo();
 
 undo();
 redo();
@@ -76,3 +69,4 @@ redo();
 ## References
 
 * [Yjs UndoManager](https://docs.yjs.dev/api/undo-manager)
+* [Loro Undo](https://loro.dev/docs/advanced/undo)
