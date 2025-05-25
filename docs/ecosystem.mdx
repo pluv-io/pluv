@@ -11,13 +11,13 @@ Below are some optional packages that work alongside pluv.
 
 Use IndexedDB to persist room storage so that when the page is reloaded, the room will load from IndexedDB on the browser. This enables offline editing.
 
-### Installation
+**Installation**
 
 ```bash
 npm install @pluv/addon-indexeddb
 ```
 
-### Usage
+**Usage**
 
 ```tsx
 // Using @pluv/client
@@ -60,7 +60,7 @@ const { useRoom } = createBundle(client, {
 
 You may want to run a single room across multiple servers to horizontally scale your API. For that a PubSub will be necessary to share the events, and Persistence will be necessary for syncing storage state across servers.
 
-### Installation
+**Installation**
 
 ```bash
 # For the server
@@ -69,7 +69,7 @@ npm install @pluv/pubsub-redis @pluv/persistence-redis
 npm install ioredis
 ```
 
-### Usage
+**Usage**
 
 ```ts
 // server/io.ts
