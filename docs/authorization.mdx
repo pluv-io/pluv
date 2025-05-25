@@ -28,18 +28,18 @@ import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
 export const io = createIO(
-    platformNode({
-        authorize: {
-            // The secret for generating your JWT
-            secret: process.env.PLUV_AUTH_SECRET!,
-            // The shape of your user object. `id` must always be required.
-            user: z.object({
-                id: z.string(),
-                // Here is an additional field we wish to add.
-                name: z.string(),
-            }),
-        },
-    })
+  platformNode({
+    authorize: {
+      // The secret for generating your JWT
+      secret: process.env.PLUV_AUTH_SECRET!,
+      // The shape of your user object. `id` must always be required.
+      user: z.object({
+        id: z.string(),
+        // Here is an additional field we wish to add.
+        name: z.string(),
+      }),
+    },
+  })
 );
 
 export const ioServer = io.server();
@@ -59,20 +59,20 @@ import { ioServer } from "./io";
 const PORT = 3000;
 
 const app = new Hono<{ Bindings: HttpBindings }>()
-    // Only if you specified `authorize` on @pluv/io
-    .get("/api/pluv/auth", async (c) => {
-        const room = c.req.query("room") as string;
-        const req: Http.IncomingMessage = c.env.incoming;
+  // Only if you specified `authorize` on @pluv/io
+  .get("/api/pluv/auth", async (c) => {
+    const room = c.req.query("room") as string;
+    const req: Http.IncomingMessage = c.env.incoming;
 
-        // Implement your custom authorization here
-        // ...
+    // Implement your custom authorization here
+    // ...
 
-        // Example stub. However you get the authed user here
-        const user = await getUser(req);
-        const token = await ioServer.createToken({ user, req, room });
+    // Example stub. However you get the authed user here
+    const user = await getUser(req);
+    const token = await ioServer.createToken({ user, req, room });
 
-        return c.text(token, 200);
-    });
+    return c.text(token, 200);
+  });
 
 const server = serve({ fetch: app.fetch, port: PORT }) as Http.Server;
 const wsServer = new Ws.WebSocketServer({ server });
@@ -88,12 +88,12 @@ import { createClient } from "@pluv/react";
 import type { ioServer } from "server/io";
 
 const client = createClient<typeof ioServer>({
-    // Specify your auth endpoint here
-    // Set to `true` if you have authorization on your io instance, and you
-    // want to use the default of (room) => `/api/pluv/authorize?room=${room}`
-    // This is the default from `createPluvHandler`
-    authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,
-    // ...
+  // Specify your auth endpoint here
+  // Set to `true` if you have authorization on your io instance, and you
+  // want to use the default of (room) => `/api/pluv/authorize?room=${room}`
+  // This is the default from `createPluvHandler`
+  authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,
+  // ...
 });
 ```
 
@@ -105,15 +105,15 @@ import { createClient } from "@pluv/react";
 import type { ioServer } from "server/io";
 
 const client = createClient<typeof ioServer>({
-    authEndpoint: ({ room }) => ({
-        url: "/api/authorize",
-        // You can use fetch options as well like so
-        options: {
-            method: "POST",
-            body: JSON.stringify({ room }),
-        },
-    }),
-    // ...
+  authEndpoint: ({ room }) => ({
+    url: "/api/authorize",
+    // You can use fetch options as well like so
+    options: {
+      method: "POST",
+      body: JSON.stringify({ room }),
+    },
+  }),
+  // ...
 });
 ```
 
