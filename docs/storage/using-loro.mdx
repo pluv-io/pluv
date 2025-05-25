@@ -195,6 +195,8 @@ The functions that are available include the following (linked to their respecti
 
 ```tsx
 import { loro } from "@pluv/crdt-loro";
+import { LoroText } from "loro-crdt";
+import { PluvRoomProvider, useStorage, useTransact } from "./pluv";
 
 // initialStorage example
 <PluvRoomProvider
@@ -213,6 +215,7 @@ import { loro } from "@pluv/crdt-loro";
   {children}
 </PluvRoomProvider>
 
+const transact = useTransact();
 // "chats" is a key from the root properties of `initialStorage`
 // loroMap is a container-type from Loro
 const [chats, loroMap] = useStorage("chats");
