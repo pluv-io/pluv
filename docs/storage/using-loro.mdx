@@ -61,6 +61,9 @@ const io = createClient({
     // Create a LoroList with the name "groceries", initialized with an
     // empty array
     groceries: t.list<string>("groceries", []),
+    // Example of a top-level LoroMap named "chats" that will nest
+    // LoroText items
+    chats: t.map<string, LoroText>("chats", []),
   }),
 });
 
@@ -94,6 +97,12 @@ export const PluvRoom: FC = ({ children, id }) => {
         // Create a LoroList with the name "groceries", initialized with an
         // array containing 3 items
         groceries: t.list("groceries", ["bacon", "lettuce", "tomato"]),
+        // The LoroTexts are declared using `loro` as a nested item without names
+        // The texts below are initialized with a value of empty string
+        chats: t.map<string, LoroText>("chats", [
+            ["chat1", loro.text("")],
+            ["chat2", loro.text("")],
+        ]),
       })}
     >
       {children}
