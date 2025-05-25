@@ -259,7 +259,7 @@ room.broadcast.sendMessage({ message: "hello world!" });
 
 Returns `boolean`
 
-Checks whether calling [PluvRoom.redo](/docs/client/api-reference#PluvRoom.redo) will mutate storage.
+Checks whether calling [PluvRoom.redo](/docs/api-reference/client#PluvRoom.redo) will mutate storage.
 
 ```ts
 // frontend/room.ts
@@ -270,7 +270,7 @@ const canRedo: boolean = room.canRedo();
 
 Returns `boolean`
 
-Checks whether calling [PluvRoom.undo](/docs/client/api-reference#PluvRoom.undo) will mutate storage.
+Checks whether calling [PluvRoom.undo](/docs/api-reference/client#PluvRoom.undo) will mutate storage.
 
 ```ts
 // frontend/room.ts
@@ -393,7 +393,7 @@ const sharedType: YArray<string> | null = messages?.value;
 
 Returns `void`
 
-Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/client/api-reference#PluvRoom.undo).
+Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/api-reference/client#PluvRoom.undo).
 
 ```ts
 // frontend/room.ts
@@ -611,7 +611,7 @@ room.transact(() => {
 
 Returns `void`
 
-Undoes the last mutation that was applied via [PluvRoom.transact](/docs/client/api-reference#PluvRoom.transact).
+Undoes the last mutation that was applied via [PluvRoom.transact](/docs/api-reference/client#PluvRoom.transact).
 
 ```ts
 // frontend/room.ts

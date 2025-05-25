@@ -104,7 +104,7 @@ React provider component to allow the `PluvClient` created by `createClient` to 
 
 ### PluvRoomProvider
 
-React provider component to enable `CreateBundle` hooks within child components. Mounting this component connects to a real-time room with other connected users. Unmounting this component will disconnect the room. See [Create Rooms](/docs/react/api-reference) for more details.
+React provider component to enable `CreateBundle` hooks within child components. Mounting this component connects to a real-time room with other connected users. Unmounting this component will disconnect the room. See [Create Rooms](/docs/api-reference/react) for more details.
 
 ```tsx
 import { yjs } from "@pluv/crdt-yjs";
@@ -144,7 +144,7 @@ const MyComponent: FC = () => {
 
 typeof `EventProxy`
 
-Defines an event listener client for events broadcasted by connected clients. See [useEvent](/docs/react/api-reference#useEvent) for more details.
+Defines an event listener client for events broadcasted by connected clients. See [useEvent](/docs/api-reference/react#useEvent) for more details.
 
 ```tsx
 // The below 2 statements are equivalent
@@ -176,7 +176,7 @@ broadcast.sendMessage({ message: "Hello world~!" });
 
 Returns `boolean`
 
-Checks whether calling [PluvRoom.redo](/docs/react/api-reference#useRedo) will mutate storage.
+Checks whether calling [PluvRoom.redo](/docs/api-reference/react#useRedo) will mutate storage.
 
 ```ts
 const canRedo: boolean = useCanRedo();
@@ -186,7 +186,7 @@ const canRedo: boolean = useCanRedo();
 
 Returns `boolean`
 
-Checks whether calling [PluvRoom.undo](/docs/react/api-reference#useUndo) will mutate storage.
+Checks whether calling [PluvRoom.undo](/docs/api-reference/react#useUndo) will mutate storage.
 
 ```ts
 const canUndo: boolean = useCanUndo();
@@ -332,7 +332,7 @@ const connectionIds = useOthers((others) => {
 
 Returns `void`
 
-Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/react/api-reference#useUndo).
+Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/api-reference/react#useUndo).
 
 For more information see: [History](/docs/react/history)
 
@@ -401,7 +401,7 @@ transact(() => {
 
 Returns `void`
 
-Undoes the last mutation that was applied via [PluvRoom.transact](/docs/react/api-reference#useTransact).
+Undoes the last mutation that was applied via [PluvRoom.transact](/docs/api-reference/react#useTransact).
 
 For more information see: [History](/docs/react/history)
 
