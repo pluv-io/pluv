@@ -234,7 +234,7 @@ const { useRoom } = createBundle(io);
 
 const room = useRoom();
 
-// This is our Yjs connection provider that satisfies their interface
+// This is our Yjs connection provider
 const provider = useMemo(() => {
   return yjs.provider({
     room,
