@@ -223,6 +223,7 @@ import { z } from "zod";
 
 const io = createClient({
   // ...
+  initialStorage: yjs.doc((t) => ({ /* ... */ })),
   presence: z.object({
     // Many integrations will expect to read/write awareness data to
     // some location. We are defining one here
