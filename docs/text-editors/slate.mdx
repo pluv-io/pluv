@@ -57,7 +57,7 @@ export const SlateEditor: FC<SlateEditorProps> = () => {
 };
 ```
 
-Then we will need to setup Yjs storage on pluv.io, with a [Yjs.XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext) onto which Slate's editor contents will live.
+Then we will need to setup Yjs storage on pluv.io, with a [Yjs.XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext) onto which Slate's editor contents will live. Note that the [slate-yjs docs](https://docs.slate-yjs.dev/walkthroughs/installation) do require that the YXmlText receive an initial transformation when initialized via [slateNodesToInsertDelta](https://docs.slate-yjs.dev/api/slate-yjs-core/utils) from `@slate-yjs/core`. So we can use an [IIFE](https://developer.mozilla.org/en-US/docs/Glossary/IIFE) when declaring the client's `initialStorage`.
 
 ```ts
 // pluv.ts
@@ -66,10 +66,15 @@ import { createClient } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import type { InferBundleRoom } from "@pluv/react";
 import { createBundle } from "@pluv/react";
+import { slateNodesToInsertDelta } from "@slate-yjs/core";
 
 const io = createClient({
   initialStorage: yjs.doc((t) => ({
-    myEditor: t.xmlText("myEditor"),
+    myEditor: (() => {
+        const type = t.xmlText("myEditor");
+        type.applyDelta(slateNodesToInsertDelta([]));
+        return type;
+    })(),
   })),
   // ... other pluv.io configs
 });
