@@ -118,7 +118,7 @@ The full documentation is available at [pluv.io](https://pluv.io/docs/introducti
 - ✅ Awareness + Presence
 - ✅ [CRDTs](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)
     - ✅ [Yjs](https://docs.yjs.dev/)
-        - ⬜ [Provider](https://github.com/yjs/yjs?tab=readme-ov-file#providers) (Coming soon!)
+        - ✅ [Provider](https://github.com/yjs/yjs?tab=readme-ov-file#providers)
         - ✅ **Shared Types**
             - ✅ [Map](https://docs.yjs.dev/api/shared-types/y.map)
             - ✅ [Array](https://docs.yjs.dev/api/shared-types/y.array)
