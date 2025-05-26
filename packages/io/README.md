@@ -128,10 +128,12 @@ The full documentation is available at [pluv.io](https://pluv.io/docs/introducti
             - ✅ [XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext)
     - ✅ [Loro](https://loro.dev/) (preview)
         - ✅ **Containers**
+            - ✅ Counter
             - ✅ List
             - ✅ Map
+            - ✅ Moveable List
             - ✅ Text
-            - ⬜ Tree
+            - ✅ Tree
 - ⬜ Studio (admin & developer panel)
 
 ## Runtimes
