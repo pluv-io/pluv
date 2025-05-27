@@ -370,6 +370,8 @@ export class PluvPlatform<
                 const message = error instanceof Error ? error.message : "Unexpected error";
                 const status = error instanceof HttpError ? error.status : 500;
 
+                this._logDebug("Uncaught error: ", message);
+
                 return createErrorResponse(c, { message }, status);
             }
         });
