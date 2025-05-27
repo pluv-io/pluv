@@ -101,15 +101,15 @@ export class PluvServer<
     >;
 
     public get fetch(): (...args: any[]) => Promise<any> {
-        const platform = this._config.platform();
-        platform.validateConfig(this._config);
+        return (...args: any[]): Promise<any> => {
+            const platform = this._config.platform();
+            platform.validateConfig(this._config);
 
-        return ((...args: any[]): Promise<any> => {
             if (!platform._fetch)
                 throw new Error(`\`${platform._name}\` does not support \`fetch\``);
 
             return platform._fetch(...args);
-        }) as NonNullable<typeof platform._fetch>;
+        };
     }
 
     /**

@@ -199,12 +199,17 @@ export class PluvPlatform<
     }
 
     public validateConfig(config: any): void {
-        if (!config.authorize)
+        this._logDebug("validating config with properties:", Object.keys(config ?? {}));
+
+        if (!config.authorize) {
             throw new Error("Config `authorize` must be provided to `platformPluv`");
-        if (!!config.onRoomMessage)
+        }
+        if (!!config.onRoomMessage) {
             throw new Error("Config `onRoomMessage` is not supported on `platformPluv`");
-        if (!!config.onStorageUpdated)
+        }
+        if (!!config.onStorageUpdated) {
             throw new Error("Config `onStorageUpdated` is not supported on `platformPluv`");
+        }
 
         this._getInitialStorage = config.getInitialStorage;
         this._listeners = {
