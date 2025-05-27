@@ -1,5 +1,12 @@
 # @pluv/pubsub-redis
 
+## 2.2.8
+
+### Patch Changes
+
+- Updated dependencies [b60ccd8]
+    - @pluv/io@2.2.8
+
 ## 2.2.7
 
 ### Patch Changes
