@@ -31,10 +31,10 @@ export const StorageRoom: FC<StorageRoomProps> = () => {
                     onClick={() => {
                         transact(() => {
                             sharedType?.push([
-                                yjs.object({
-                                    message: `new message ${messages?.length ?? 0}`,
-                                    name: "John Doe",
-                                }),
+                                yjs.map([
+                                    ["message", `new message ${messages?.length ?? 0}`],
+                                    ["name", "John Doe"],
+                                ]),
                             ]);
                         });
                     }}

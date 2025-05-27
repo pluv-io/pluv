@@ -75,11 +75,6 @@ export class MockedRoom<
 {
     public readonly id: string;
 
-    /**
-     * @deprecated To be removed in v3. Use `getStorageLoaded` instead.
-     */
-    public readonly storageLoaded: boolean = true;
-
     private readonly _crdtManager: CrdtManager<TCrdt>;
     private readonly _crdtNotifier = new CrdtNotifier<InferStorage<TCrdt>>();
     private readonly _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
@@ -211,20 +206,6 @@ export class MockedRoom<
         return !!this._crdtManager.doc.canUndo();
     };
 
-    public event = new Proxy(
-        <TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
-            event: TEvent,
-            callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
-        ): (() => void) => this._eventNotifier.subscribe(event, callback),
-        {
-            get(fn, prop) {
-                return (
-                    callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
-                ): (() => void) => fn(prop as any, callback);
-            },
-        },
-    ) as EventProxy<TIO, TEvents>;
-
     public getConnection = (): WebSocketConnection => {
         // Create a read-only clone of the connection state
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
@@ -275,42 +256,9 @@ export class MockedRoom<
         return true;
     }
 
-    public other = (
-        connectionId: string,
-        callback: OtherSubscriptionCallback<TIO, TPresence>,
-    ): (() => void) => {
-        const clientId = this._usersManager.getClientId(connectionId);
-
-        if (!clientId) return () => undefined;
-
-        return this._usersNotifier.subscribeOther(clientId, callback);
-    };
-
     public redo = (): void => {
         this._crdtManager.doc.redo();
     };
-
-    public storage = new Proxy(
-        <TKey extends keyof InferStorage<TCrdt>>(
-            key: TKey,
-            callback: StorageSubscriptionCallback<InferStorage<TCrdt>, TKey>,
-        ): (() => void) => this._crdtNotifier.subscribe(key, callback),
-        {
-            get: (fn, prop) => {
-                type _Storage = InferStorage<TCrdt>;
-
-                if (!!prop) {
-                    return (callback: StorageRootSubscriptionCallback<_Storage>) => {
-                        return this._crdtNotifier.subcribeRoot(callback);
-                    };
-                }
-
-                return (callback: StorageSubscriptionCallback<_Storage, keyof _Storage>) => {
-                    return fn(prop as keyof InferStorage<TCrdt>, callback);
-                };
-            },
-        },
-    ) as StorageProxy<InferStorage<TCrdt>>;
 
     public storageRoot = (
         fn: (value: {
@@ -359,9 +307,9 @@ export class MockedRoom<
                     };
                 }
 
-                if (prop === "event") return this.event;
-                if (prop === "other") return this.other;
-                if (prop === "storage") return this.storage;
+                if (prop === "event") return this._event;
+                if (prop === "other") return this._other;
+                if (prop === "storage") return this._storage;
             },
         },
     ) as SubscribeProxy<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
@@ -404,6 +352,20 @@ export class MockedRoom<
         if (!!myself) this._stateNotifier.subjects["myself"].next(myself);
     };
 
+    private _event = new Proxy(
+        <TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
+            event: TEvent,
+            callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
+        ): (() => void) => this._eventNotifier.subscribe(event, callback),
+        {
+            get(fn, prop) {
+                return (
+                    callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
+                ): (() => void) => fn(prop as any, callback);
+            },
+        },
+    ) as EventProxy<TIO, TEvents>;
+
     private _observeCrdt(): void {
         this._subscriptions.observeCrdt?.();
 
@@ -438,6 +400,17 @@ export class MockedRoom<
         this._subscriptions.observeCrdt = unsubscribe;
     }
 
+    private _other = (
+        connectionId: string,
+        callback: OtherSubscriptionCallback<TIO, TPresence>,
+    ): (() => void) => {
+        const clientId = this._usersManager.getClientId(connectionId);
+
+        if (!clientId) return () => undefined;
+
+        return this._usersNotifier.subscribeOther(clientId, callback);
+    };
+
     private _simulateEvent<TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
         event: TEvent,
         data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
@@ -460,4 +433,26 @@ export class MockedRoom<
             this._eventNotifier.subject(_type).next(data);
         });
     }
+
+    private _storage = new Proxy(
+        <TKey extends keyof InferStorage<TCrdt>>(
+            key: TKey,
+            callback: StorageSubscriptionCallback<InferStorage<TCrdt>, TKey>,
+        ): (() => void) => this._crdtNotifier.subscribe(key, callback),
+        {
+            get: (fn, prop) => {
+                type _Storage = InferStorage<TCrdt>;
+
+                if (!!prop) {
+                    return (callback: StorageRootSubscriptionCallback<_Storage>) => {
+                        return this._crdtNotifier.subcribeRoot(callback);
+                    };
+                }
+
+                return (callback: StorageSubscriptionCallback<_Storage, keyof _Storage>) => {
+                    return fn(prop as keyof InferStorage<TCrdt>, callback);
+                };
+            },
+        },
+    ) as StorageProxy<InferStorage<TCrdt>>;
 }
