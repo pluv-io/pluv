@@ -102,6 +102,7 @@ export class PluvServer<
 
     public get fetch(): (...args: any[]) => Promise<any> {
         const platform = this._config.platform();
+        platform.validateConfig(this._config);
 
         return ((...args: any[]): Promise<any> => {
             if (!platform._fetch)
