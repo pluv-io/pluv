@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 2.3.1
+
+### Patch Changes
+
+- 824c98b: Added more webhook logging.
+    - @pluv/crdt@2.3.1
+    - @pluv/io@2.3.1
+    - @pluv/types@2.3.1
+
 ## 2.3.0
 
 ### Minor Changes
