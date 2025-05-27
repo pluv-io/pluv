@@ -202,12 +202,15 @@ export class PluvPlatform<
         this._logDebug("validating config with properties:", Object.keys(config ?? {}));
 
         if (!config.authorize) {
+            this._logDebug("Config `authorize` must be provided to `platformPluv`");
             throw new Error("Config `authorize` must be provided to `platformPluv`");
         }
         if (!!config.onRoomMessage) {
+            this._logDebug("Config `onRoomMessage` is not supported on `platformPluv`");
             throw new Error("Config `onRoomMessage` is not supported on `platformPluv`");
         }
         if (!!config.onStorageUpdated) {
+            this._logDebug("Config `onStorageUpdated` is not supported on `platformPluv`");
             throw new Error("Config `onStorageUpdated` is not supported on `platformPluv`");
         }
 
@@ -225,28 +228,62 @@ export class PluvPlatform<
             const [algorithm, signature] = c.req.header(SIGNATURE_HEADER)?.split("=") ?? [];
 
             try {
-                if (!this._webhookSecret) throw new HttpError("Unauthorized", 401);
-                if (algorithm !== SIGNATURE_ALGORITHM) throw new HttpError("Unauthorized", 401);
-                if (!signature) throw new HttpError("Unauthorized", 401);
+                if (!this._webhookSecret) {
+                    this._logDebug("Missing webhook secret");
+                    throw new HttpError("Unauthorized", 401);
+                }
+                if (algorithm !== SIGNATURE_ALGORITHM) {
+                    this._logDebug(
+                        `Verification algorithm is not ${SIGNATURE_ALGORITHM}. Found: `,
+                        algorithm,
+                    );
+                    throw new HttpError("Unauthorized", 401);
+                }
+                if (!signature) {
+                    this._logDebug("Missing webhook signature");
+                    throw new HttpError("Unauthorized", 401);
+                }
 
                 const [payload, webhookSecret] = await Promise.all([
                     c.req.json(),
                     typeof this._webhookSecret === "string"
                         ? this._webhookSecret
                         : await this._webhookSecret(),
-                ]);
+                ]).catch((error) => {
+                    this._logDebug(
+                        "Could not derive webhook secret: ",
+                        error instanceof Error ? error.message : "Unexpected error",
+                    );
+                    throw error;
+                });
 
                 const verified = await verifyWebhook({
                     payload: stringify(payload),
                     signature,
                     secret: webhookSecret,
+                }).catch((error) => {
+                    this._logDebug(
+                        "Error while verifying webhook: ",
+                        error instanceof Error ? error.message : "Unexpected error",
+                    );
+
+                    return false;
                 });
 
-                if (!verified) throw new HttpError("Unauthorized", 401);
+                if (!verified) {
+                    this._logDebug("Failed to verify webhook");
+                    throw new HttpError("Unauthorized", 401);
+                }
 
                 const parsed = ZodEvent.safeParse(payload);
 
-                if (!parsed.success) throw new HttpError("Invalid request", 400);
+                if (!parsed.success) {
+                    this._logDebug(
+                        "Failed to validate event payload:",
+                        JSON.stringify(parsed.data ?? {}, null, 4),
+                    );
+                    throw new HttpError("Invalid request", 400);
+                }
 
                 const { event, data } = parsed.data;
                 const context = this._getContext();
@@ -259,7 +296,12 @@ export class PluvPlatform<
                                 ? ((await this._getInitialStorage?.({ context, room })) ?? null)
                                 : null;
 
-                        return createSuccessResponse(c, { event, room, storage });
+                        try {
+                            return createSuccessResponse(c, { event, room, storage });
+                        } catch (error) {
+                            this._logDebug("Could not create getInitialStorage response");
+                            throw error;
+                        }
                     }
                     case "room-deleted": {
                         const room = data.room;
@@ -269,7 +311,12 @@ export class PluvPlatform<
                             this._listeners?.onRoomDeleted({ context, encodedState, room }),
                         );
 
-                        return createSuccessResponse(c, { event, room });
+                        try {
+                            return createSuccessResponse(c, { event, room });
+                        } catch (error) {
+                            this._logDebug("Could not create onRoomDeleted response");
+                            throw error;
+                        }
                     }
                     case "user-connected": {
                         const room = data.room;
@@ -286,7 +333,12 @@ export class PluvPlatform<
                             }),
                         );
 
-                        return createSuccessResponse(c, { event, room });
+                        try {
+                            return createSuccessResponse(c, { event, room });
+                        } catch (error) {
+                            this._logDebug("Could not create onUserConnected response");
+                            throw error;
+                        }
                     }
                     case "user-disconnected": {
                         const room = data.room;
@@ -303,7 +355,12 @@ export class PluvPlatform<
                             }),
                         );
 
-                        return createSuccessResponse(c, { event, room });
+                        try {
+                            return createSuccessResponse(c, { event, room });
+                        } catch (error) {
+                            this._logDebug("Could not create onUserDisconnected response");
+                            throw error;
+                        }
                     }
                     default: {
                         throw new HttpError("Unknown event", 400);
