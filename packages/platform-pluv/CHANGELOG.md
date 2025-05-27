@@ -1,5 +1,17 @@
 # @pluv/platform-pluv
 
+## 2.3.0
+
+### Minor Changes
+
+- e48e5d8: Added webhook debug logging.
+
+### Patch Changes
+
+- @pluv/crdt@2.3.0
+- @pluv/io@2.3.0
+- @pluv/types@2.3.0
+
 ## 2.2.8
 
 ### Patch Changes
