@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 2.2.6
+
+### Patch Changes
+
+- d5837ce: Fixed the context in `platformPluv` being declared immediately, instead of when the event listeners ran (causing errors in Cloudflare Workers).
+    - @pluv/crdt@2.2.6
+    - @pluv/io@2.2.6
+    - @pluv/types@2.2.6
+
 ## 2.2.5
 
 ### Patch Changes
