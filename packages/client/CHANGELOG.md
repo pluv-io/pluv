@@ -1,5 +1,16 @@
 # @pluv/client
 
+## 3.0.0
+
+### Major Changes
+
+- bc1ae91: **BREAKING** Removed deprecated `event`, `others`, `storageLoaded`, `storageRoot` and `storage` methods on `PluvRoom`. These methods now exist under `PluvRoom.subscribe`.
+
+### Patch Changes
+
+- @pluv/crdt@3.0.0
+- @pluv/types@3.0.0
+
 ## 2.3.1
 
 ### Patch Changes
