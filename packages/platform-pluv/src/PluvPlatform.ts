@@ -5,6 +5,7 @@ import type {
     ConvertWebSocketConfig,
     GetInitialStorageFn,
     JWTEncodeParams,
+    PluvContext,
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
@@ -33,7 +34,7 @@ export interface PluvPlatformConfig<TContext extends Record<string, any> = {}> {
         endpoints?: PluvIOEndpoints | (() => MaybePromise<PluvIOEndpoints>);
     };
     basePath: string;
-    context?: TContext;
+    context?: PluvContext<any, TContext>;
     publicKey: PublicKey;
     secretKey: SecretKey;
     webhookSecret?: WebhookSecret;
@@ -84,7 +85,7 @@ export class PluvPlatform<
 
     private readonly _app: Hono;
     private readonly _basePath: string;
-    private readonly _context: any;
+    private readonly _context: PluvContext<this, TContext>;
     private readonly _debug: boolean;
     private readonly _endpoints: PluvIOEndpoints | (() => MaybePromise<PluvIOEndpoints>);
     private _getInitialStorage?: GetInitialStorageFn<{}>;
@@ -141,7 +142,7 @@ export class PluvPlatform<
         const { _defs, basePath, context, publicKey, secretKey, webhookSecret } = params;
 
         this._basePath = basePath;
-        this._context = typeof context === "function" ? context(this._roomContext) : context;
+        this._context = (context ?? {}) as TContext;
         this._debug = _defs?.debug ?? false;
         this._endpoints = _defs?.endpoints ?? {
             createToken: "https://rooms.pluv.io/api/room/token",
@@ -243,7 +244,7 @@ export class PluvPlatform<
                 if (!parsed.success) throw new HttpError("Invalid request", 400);
 
                 const { event, data } = parsed.data;
-                const context = this._context;
+                const context = this._getContext();
 
                 switch (event) {
                     case "initial-storage": {
@@ -310,6 +311,12 @@ export class PluvPlatform<
                 return createErrorResponse(c, { message }, status);
             }
         });
+
+    private _getContext(): TContext {
+        return typeof this._context === "function"
+            ? this._context(this._roomContext as any)
+            : this._context;
+    }
 
     private _logDebug(...args: any[]): void {
         if (!this._debug) return;
