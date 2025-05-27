@@ -1,5 +1,17 @@
 # @pluv/crdt-yjs
 
+## 3.0.0
+
+### Major Changes
+
+- bc1ae91: **BREAKING** Removed deprecated `yjs.object`. These must now be switched over to `yjs.map`.
+- bc1ae91: **BREAKING** Removed deprecated ability to set top-level document types via the yjs shared-type and loro container type utilities (e.g. `yjs.array`, `loro.list`). These must now use the builder type provided in the 1st positional parameter of `yjs.doc` and `loro.doc`.
+
+### Patch Changes
+
+- @pluv/crdt@3.0.0
+- @pluv/types@3.0.0
+
 ## 2.3.1
 
 ### Patch Changes

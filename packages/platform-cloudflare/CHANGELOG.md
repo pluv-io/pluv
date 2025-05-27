@@ -1,5 +1,17 @@
 # @pluv/platform-cloudflare
 
+## 3.0.0
+
+### Major Changes
+
+- bc1ae91: **BREAKING** Removed deprecated `createPluvHandler`.
+
+### Patch Changes
+
+- @pluv/io@3.0.0
+- @pluv/persistence-cloudflare-transactional-storage@3.0.0
+- @pluv/types@3.0.0
+
 ## 2.3.1
 
 ### Patch Changes
