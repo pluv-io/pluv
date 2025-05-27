@@ -1,5 +1,11 @@
 # @pluv/pubsub-redis
 
+## 2.3.0
+
+### Patch Changes
+
+- @pluv/io@2.3.0
+
 ## 2.2.8
 
 ### Patch Changes
