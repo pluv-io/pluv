@@ -105,8 +105,9 @@ export class PluvServer<
             const platform = this._config.platform();
             platform.validateConfig(this._config);
 
-            if (!platform._fetch)
+            if (!platform._fetch) {
                 throw new Error(`\`${platform._name}\` does not support \`fetch\``);
+            }
 
             return platform._fetch(...args);
         };
