@@ -1,3 +1,4 @@
+import type { CrdtLibraryType } from "@pluv/crdt";
 import type { CreateIOParams, InferInitContextType, PluvContext, PluvIOAuthorize } from "@pluv/io";
 import type { BaseUser, Id, IOAuthorize, Json } from "@pluv/types";
 import type { CloudflarePlatformConfig } from "./CloudflarePlatform";
@@ -9,13 +10,15 @@ export type PlatformCloudflareCreateIOParams<
     TMeta extends Record<string, Json> = {},
     TContext extends Record<string, any> = {},
     TUser extends BaseUser | null = null,
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
 > = Id<
     CloudflarePlatformConfig<TEnv, TMeta> &
         Omit<
             CreateIOParams<
                 CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>,
                 TContext,
-                TUser
+                TUser,
+                TCrdt
             >,
             "authorize" | "context" | "platform"
         > & {
@@ -37,12 +40,14 @@ export const platformCloudflare = <
     TMeta extends Record<string, Json> = {},
     TContext extends Record<string, any> = {},
     TUser extends BaseUser | null = null,
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
 >(
-    config: PlatformCloudflareCreateIOParams<TEnv, TMeta, TContext, TUser> = {},
+    config: PlatformCloudflareCreateIOParams<TEnv, TMeta, TContext, TUser, TCrdt> = {},
 ): CreateIOParams<
     CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>,
     TContext,
-    TUser
+    TUser,
+    TCrdt
 > => {
     const { authorize, context, crdt, debug, limits } = config;
 

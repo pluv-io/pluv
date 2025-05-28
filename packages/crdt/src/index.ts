@@ -11,6 +11,7 @@ export { noop } from "./noop";
 export { NoopCrdtDoc } from "./NoopCrdtDoc";
 export { NoopCrdtDocFactory } from "./NoopCrdtDocFactory";
 export type {
+    CrdtLibraryType,
     InferBuilder,
     InferDoc,
     InferDocLike,

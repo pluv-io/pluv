@@ -1,10 +1,5 @@
-import type {
-    CreateIOParams,
-    InferInitContextType,
-    PluvContext,
-    PluvIOAuthorize,
-    PluvIOLimits,
-} from "@pluv/io";
+import type { CrdtLibraryType } from "@pluv/crdt";
+import type { CreateIOParams, InferInitContextType, PluvContext, PluvIOAuthorize } from "@pluv/io";
 import type { BaseUser, Id, IOAuthorize, Json } from "@pluv/types";
 import type { NodePlatformConfig } from "./NodePlatform";
 import { NodePlatform } from "./NodePlatform";
@@ -14,10 +9,16 @@ export type PlatformNodeCreateIOParams<
     TMeta extends Record<string, Json> = {},
     TContext extends Record<string, any> = {},
     TUser extends BaseUser | null = null,
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
 > = Id<
     NodePlatformConfig<TMeta> &
         Omit<
-            CreateIOParams<NodePlatform<IOAuthorize<TUser, TContext>, TMeta>, TContext, TUser>,
+            CreateIOParams<
+                NodePlatform<IOAuthorize<TUser, TContext>, TMeta>,
+                TContext,
+                TUser,
+                TCrdt
+            >,
             "authorize" | "context" | "platform"
         > & {
             authorize?: PluvIOAuthorize<
@@ -34,9 +35,10 @@ export const platformNode = <
     TMeta extends Record<string, Json> = {},
     TContext extends Record<string, any> = {},
     TUser extends BaseUser | null = null,
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
 >(
-    config: PlatformNodeCreateIOParams<TMeta, TContext, TUser> = {},
-): CreateIOParams<NodePlatform<IOAuthorize<TUser, TContext>, TMeta>, TContext, TUser> => {
+    config: PlatformNodeCreateIOParams<TMeta, TContext, TUser, TCrdt> = {},
+): CreateIOParams<NodePlatform<IOAuthorize<TUser, TContext>, TMeta>, TContext, TUser, TCrdt> => {
     const { authorize, context, crdt, debug, limits } = config;
 
     return {

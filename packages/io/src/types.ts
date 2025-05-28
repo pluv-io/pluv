@@ -28,11 +28,6 @@ export type PluvContext<TPlatform extends AbstractPlatform, TContext extends Rec
     | TContext
     | ((params: InferRoomContextType<TPlatform>) => TContext);
 
-export interface CrdtLibraryType {
-    doc: (value: any) => AbstractCrdtDocFactory<any, any>;
-    kind: "loro" | "yjs";
-}
-
 export type EventResolverKind = "broadcast" | "self" | "sync";
 
 export type EventResolver<

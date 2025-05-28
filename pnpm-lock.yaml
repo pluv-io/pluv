@@ -395,6 +395,9 @@ importers:
 
   packages/platform-cloudflare:
     dependencies:
+      '@pluv/crdt':
+        specifier: workspace:^
+        version: link:../crdt
       '@pluv/io':
         specifier: workspace:^
         version: link:../io
@@ -429,6 +432,9 @@ importers:
 
   packages/platform-node:
     dependencies:
+      '@pluv/crdt':
+        specifier: workspace:^
+        version: link:../crdt
       '@pluv/io':
         specifier: workspace:^
         version: link:../io
