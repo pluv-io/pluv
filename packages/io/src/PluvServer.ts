@@ -39,10 +39,10 @@ export type InferIORoom<TServer extends PluvServer<any, any, any, any, any>> =
         infer IPlatform,
         infer IAuthorize,
         infer IContext,
-        any,
+        infer ICrdt,
         infer IEvents
     >
-        ? IORoom<IPlatform, IAuthorize, IContext, IEvents>
+        ? IORoom<IPlatform, IAuthorize, IContext, ICrdt, IEvents>
         : never;
 
 export type PluvServerConfig<
@@ -101,7 +101,7 @@ export class PluvServer<
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> implements IOLike<TAuthorize, TEvents>
+> implements IOLike<TAuthorize, TCrdt, TEvents>
 {
     public readonly version: string = __PLUV_VERSION as any;
 
@@ -131,11 +131,13 @@ export class PluvServer<
         return {
             authorize: this._config.authorize,
             context: this._config.context,
+            crdt: this._config.crdt,
             events: this._router._defs.events,
             platform: this._config.platform(),
         } as {
             authorize: TAuthorize;
             context: TContext;
+            crdt: TCrdt;
             events: TEvents;
             platform: TPlatform;
         };
@@ -397,7 +399,7 @@ export class PluvServer<
     public createRoom(
         room: string,
         ...options: CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>
-    ): IORoom<TPlatform, TAuthorize, TContext, TEvents> {
+    ): IORoom<TPlatform, TAuthorize, TContext, TCrdt, TEvents> {
         const { _meta, debug, onDestroy, onMessage, ...platformRoomContext } = (options[0] ??
             {}) as CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>[0] & { _meta?: any };
 
@@ -420,7 +422,7 @@ export class PluvServer<
         const listeners = this._getListeners();
         const logDebug = this._logDebug.bind(this);
 
-        const newRoom = new IORoom<TPlatform, TAuthorize, TContext, TEvents>(room, {
+        const newRoom = new IORoom<TPlatform, TAuthorize, TContext, TCrdt, TEvents>(room, {
             ...(!!_meta ? { _meta } : {}),
             authorize: this._config.authorize ?? undefined,
             context,

@@ -4,7 +4,7 @@ import type { IOLike, JsonObject } from "@pluv/types";
 import { IndexedDBStorage } from "./IndexedDBStorage";
 
 export interface AddonIndexedDBConfig<
-    TIO extends IOLike<any, any>,
+    TIO extends IOLike<any, any, any>,
     TMetadata extends JsonObject,
     TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
@@ -13,7 +13,7 @@ export interface AddonIndexedDBConfig<
 }
 
 export const addonIndexedDB = <
-    TIO extends IOLike<any, any>,
+    TIO extends IOLike<any, any, any>,
     TMetadata extends JsonObject,
     TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,

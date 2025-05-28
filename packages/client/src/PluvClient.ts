@@ -23,7 +23,7 @@ import { PluvRouter } from "./PluvRouter";
 import type { PluvClientLimits, PublicKey, WithMetadata } from "./types";
 
 export type PluvClientOptions<
-    TIO extends IOLike<any, any>,
+    TIO extends IOLike<any, any, any>,
     TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TMetadata extends JsonObject,
@@ -42,7 +42,7 @@ export type PluvClientOptions<
 };
 
 export type CreateRoomOptions<
-    TIO extends IOLike<any, any>,
+    TIO extends IOLike<any, any, any>,
     TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TMetadata extends JsonObject,
@@ -62,7 +62,7 @@ export type EnterRoomParams<TMetadata extends JsonObject = {}> = keyof TMetadata
     : [WithMetadata<TMetadata>];
 
 export class PluvClient<
-    TIO extends IOLike<any, any>,
+    TIO extends IOLike<any, any, any>,
     TPresence extends Record<string, any> = {},
     TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TMetadata extends JsonObject = {},
