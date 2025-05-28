@@ -1,4 +1,4 @@
-import type { AbstractCrdtDocFactory } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, CrdtLibraryType, NoopCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type {
     IOLike,
@@ -34,8 +34,14 @@ import type {
 import { oneLine, pickBy } from "./utils";
 import { __PLUV_VERSION } from "./version";
 
-export type InferIORoom<TServer extends PluvServer<any, any, any, any>> =
-    TServer extends PluvServer<infer IPlatform, infer IAuthorize, infer IContext, infer IEvents>
+export type InferIORoom<TServer extends PluvServer<any, any, any, any, any>> =
+    TServer extends PluvServer<
+        infer IPlatform,
+        infer IAuthorize,
+        infer IContext,
+        any,
+        infer IEvents
+    >
         ? IORoom<IPlatform, IAuthorize, IContext, IEvents>
         : never;
 
@@ -47,18 +53,20 @@ export type PluvServerConfig<
         InferInitContextType<TPlatform>
     > | null = any,
     TContext extends Record<string, any> = {},
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
     authorize?: TAuthorize;
     context?: PluvContext<TPlatform, TContext>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     debug?: boolean;
-    getInitialStorage?: GetInitialStorageFn<TContext>;
     limits: PluvIOLimits;
     io: PluvIO<TPlatform, TAuthorize, TContext>;
     platform: () => TPlatform;
     router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
-};
+} & (TCrdt extends CrdtLibraryType<NoopCrdtDocFactory>
+        ? { getInitialStorage?: "[ERROR]: Must specify crdt to use getInitialStorage" }
+        : { getInitialStorage: GetInitialStorageFn<TContext> });
 
 type BaseCreateRoomOptions<
     TPlatform extends AbstractPlatform<any, any>,
@@ -91,13 +99,14 @@ export class PluvServer<
         InferInitContextType<TPlatform>
     > | null = any,
     TContext extends Record<string, any> = {},
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > implements IOLike<TAuthorize, TEvents>
 {
     public readonly version: string = __PLUV_VERSION as any;
 
     private readonly _config: NonNilProps<
-        PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>
+        PluvServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>
     >;
 
     public get fetch(): (...args: any[]) => Promise<any> {
@@ -198,10 +207,11 @@ export class PluvServer<
                     const update = (data as any)?.update as Maybe<string>;
 
                     if (!oldState) {
-                        const loadedState = await this._config.getInitialStorage?.({
-                            context,
-                            room,
-                        });
+                        const getInitialStorage: GetInitialStorageFn<TContext> =
+                            typeof this._config.getInitialStorage === "function"
+                                ? this._config.getInitialStorage
+                                : () => null;
+                        const loadedState = await getInitialStorage({ context, room });
 
                         if (!!loadedState) {
                             doc.applyEncodedState({ update: loadedState }).getEncodedState();
@@ -359,13 +369,13 @@ export class PluvServer<
         ) as PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
     }
 
-    constructor(options: PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>) {
+    constructor(options: PluvServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>) {
         this._config = {
             crdt: noop,
             debug: false,
             router: new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>({} as TEvents),
             ...options,
-        } as NonNilProps<PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>>;
+        } as NonNilProps<PluvServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>>;
 
         const {
             onRoomDeleted,

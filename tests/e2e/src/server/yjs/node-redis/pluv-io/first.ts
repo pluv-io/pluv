@@ -33,4 +33,7 @@ const router = io.router({
         .broadcast(({ message }) => ({ RECEIVE_MESSAGE: { message } })),
 });
 
-export const ioServer = io.server({ router });
+export const ioServer = io.server({
+    getInitialStorage: () => null,
+    router,
+});

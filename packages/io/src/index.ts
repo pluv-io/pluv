@@ -1,3 +1,4 @@
+export type { CrdtLibraryType } from "@pluv/crdt";
 export type { BaseUser, EventMessage, EventRecord, IOEventMessage } from "@pluv/types";
 export { AbstractPersistence } from "./AbstractPersistence";
 export { AbstractPlatform } from "./AbstractPlatform";
@@ -35,7 +36,6 @@ export type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 export { PluvServer } from "./PluvServer";
 export type { CreateRoomOptions, InferIORoom, PluvServerConfig } from "./PluvServer";
 export type {
-    CrdtLibraryType,
     GetInitialStorageFn,
     HandleMode,
     IORoomListenerEvent,

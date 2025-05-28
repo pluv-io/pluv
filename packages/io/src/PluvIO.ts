@@ -1,4 +1,4 @@
-import type { AbstractCrdtDocFactory } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, CrdtLibraryType, NoopCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type { BaseUser, IOAuthorize, InferIOAuthorizeUser } from "@pluv/types";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
@@ -16,7 +16,6 @@ import {
     MAX_USER_SIZE_BYTES,
 } from "./constants";
 import type {
-    CrdtLibraryType,
     GetInitialStorageFn,
     PluvContext,
     PluvIOAuthorize,
@@ -31,10 +30,11 @@ export type PluvIOConfig<
     TPlatform extends AbstractPlatform<any>,
     TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
 > = {
     authorize?: TAuthorize;
     context?: PluvContext<TPlatform, TContext>;
-    crdt?: CrdtLibraryType;
+    crdt?: TCrdt;
     debug?: boolean;
     limits?: PluvIOLimits;
     platform: () => TPlatform;
@@ -48,11 +48,13 @@ type ResolvedServerConfig<
         InferInitContextType<TPlatform>
     > | null = any,
     TContext extends Record<string, any> = {},
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> &
-    PluvIORouter<TPlatform, TAuthorize, TContext, TEvents> & {
-        getInitialStorage?: GetInitialStorageFn<TContext>;
-    };
+    PluvIORouter<TPlatform, TAuthorize, TContext, TEvents> &
+    (TCrdt extends CrdtLibraryType<NoopCrdtDocFactory>
+        ? { getInitialStorage?: "[ERROR]: Must specify crdt to use getInitialStorage" }
+        : { getInitialStorage: GetInitialStorageFn<TContext> });
 
 export type ServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -62,16 +64,18 @@ export type ServerConfig<
         InferInitContextType<TPlatform>
     > | null = any,
     TContext extends Record<string, any> = {},
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = {
     [P in keyof ResolvedServerConfig<
         TPlatform,
         TAuthorize,
         TContext,
+        TCrdt,
         TEvents
-    > as ResolvedServerConfig<TPlatform, TAuthorize, TContext, TEvents>[P] extends undefined
+    > as ResolvedServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>[P] extends undefined
         ? never
-        : P]: ResolvedServerConfig<TPlatform, TAuthorize, TContext, TEvents>[P];
+        : P]: ResolvedServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>[P];
 };
 
 export class PluvIO<
@@ -82,6 +86,7 @@ export class PluvIO<
         InferInitContextType<TPlatform>
     > | null = any,
     TContext extends Record<string, any> = {},
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
 > {
     public readonly version: string = __PLUV_VERSION as any;
 
@@ -99,10 +104,10 @@ export class PluvIO<
         return new PluvProcedure();
     }
 
-    constructor(options: PluvIOConfig<TPlatform, TAuthorize, TContext>) {
+    constructor(options: PluvIOConfig<TPlatform, TAuthorize, TContext, TCrdt>) {
         const { authorize, context, crdt = noop, debug = false, limits, platform } = options;
 
-        this._crdt = crdt;
+        this._crdt = crdt as CrdtLibraryType<any>;
         this._debug = debug;
         this._limits = {
             presenceMaxSize: MAX_PRESENCE_SIZE_BYTES,
@@ -182,14 +187,15 @@ export class PluvIO<
     }
 
     public server<TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {}>(
-        config: ServerConfig<TPlatform, TAuthorize, TContext, TEvents> = {} as ServerConfig<
+        config: ServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents> = {} as ServerConfig<
             TPlatform,
             TAuthorize,
             TContext,
+            TCrdt,
             TEvents
         >,
-    ): PluvServer<TPlatform, TAuthorize, TContext, TEvents> {
-        return new PluvServer<TPlatform, TAuthorize, TContext, TEvents>({
+    ): PluvServer<TPlatform, TAuthorize, TContext, TCrdt, TEvents> {
+        return new PluvServer<TPlatform, TAuthorize, TContext, TCrdt, TEvents>({
             ...config,
             authorize: this._authorize ?? undefined,
             context: this._context,
@@ -198,7 +204,7 @@ export class PluvIO<
             io: this as PluvIO<TPlatform, TAuthorize, TContext>,
             limits: this._limits,
             platform: this._platform,
-        } as PluvServerConfig<TPlatform, TAuthorize, TContext, TEvents>);
+        } as PluvServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>);
     }
 
     private _getIOAuthorize(

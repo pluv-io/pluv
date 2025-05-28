@@ -25,4 +25,7 @@ const router = io.router({
         .self(({ value }) => ({ DOUBLED_VALUE: { value: value * 2 } })),
 });
 
-export const ioServer = io.server({ router });
+export const ioServer = io.server({
+    getInitialStorage: () => null,
+    router,
+});
