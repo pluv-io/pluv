@@ -7,7 +7,7 @@ import { awareness } from "../awareness";
 import type { YjsProviderStatus } from "../types";
 
 export interface PluvYjsProviderParams<
-    TIO extends IOLike<any>,
+    TIO extends IOLike<any, any, any>,
     TPresence extends Record<string, any>,
     TStorage extends Record<string, CrdtType<any, any>>,
     TEvents extends PluvRouterEventConfig,
@@ -24,7 +24,7 @@ export interface PluvYjsProviderParams<
  * @date May 13, 2025
  */
 export class PluvYjsProvider<
-    TIO extends IOLike<any>,
+    TIO extends IOLike<any, any, any>,
     TPresence extends Record<string, any>,
     TStorage extends Record<string, CrdtType<any, any>>,
     TEvents extends PluvRouterEventConfig,

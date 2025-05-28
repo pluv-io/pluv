@@ -1,4 +1,5 @@
 import type { Id, JsonObject, MaybePromise, UnionToIntersection } from "../general";
+import { CrdtLibraryType } from "./crdt";
 
 export type BaseUser = {
     id: string;
@@ -84,8 +85,8 @@ export type GetEventMessage<
     TEvent extends keyof T,
 > = TEvent extends string ? EventMessage<TEvent, T[TEvent]> : never;
 
-export type InferIOAuthorize<TIO extends IOLike<any, any>> =
-    TIO extends IOLike<infer IAuthorize> ? IAuthorize : never;
+export type InferIOAuthorize<TIO extends IOLike<any, any, any>> =
+    TIO extends IOLike<infer IAuthorize, any, any> ? IAuthorize : never;
 
 export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any> | null> =
     TAuthorize extends IOAuthorize<infer IUser, any> ? IUser : null;
@@ -139,10 +140,12 @@ export interface IORouterLike<TEvents extends Record<string, ProcedureLike<any, 
 
 export interface IOLike<
     TAuthorize extends IOAuthorize<any, any> | null = null,
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends Record<string, ProcedureLike<any, any>> = {},
 > extends IORouterLike<TEvents> {
     _defs: {
         authorize: TAuthorize;
+        crdt: TCrdt;
         events: TEvents;
     };
 }
@@ -175,7 +178,7 @@ export type InferEventMessage<
         : never;
 
 export type IOEventMessage<
-    TIO extends IOLike<any, any>,
+    TIO extends IOLike<any, any, any>,
     TEvent extends keyof InferIOOutput<TIO> = keyof InferIOOutput<TIO>,
 > = Id<
     { room: string } & InferEventMessage<InferIOOutput<TIO>, TEvent> &
@@ -188,11 +191,12 @@ export type PluvRouterEventConfig = { [P: string]: Pick<ProcedureLike<any, any>,
 
 export type MergeEvents<
     TClientEvents extends PluvRouterEventConfig,
-    TServerIO extends IOLike<any, any>,
+    TServerIO extends IOLike<any, any, any>,
 > =
-    TServerIO extends IOLike<infer IAuthorize, infer IServerEvents>
+    TServerIO extends IOLike<infer IAuthorize, infer ICrdt, infer IServerEvents>
         ? IOLike<
               IAuthorize,
+              ICrdt,
               {
                   [P in keyof TClientEvents]: TClientEvents[P] extends ProcedureLike<
                       infer IClientInput,

@@ -4,6 +4,7 @@ import type {
     BaseIOEventRecord,
     BaseUser,
     CrdtDocLike,
+    CrdtLibraryType,
     EventMessage,
     IOEventMessage,
     IOLike,
@@ -46,11 +47,11 @@ import type {
 } from "./types";
 import { oneLine } from "./utils";
 
-type BroadcastMessage<TIO extends IORoom<any, any, any, any>> =
+type BroadcastMessage<TIO extends IORoom<any, any, any, any, any>> =
     | InferEventMessage<InferIOInput<TIO>>
     | InferEventMessage<BaseIOEventRecord<InferIOAuthorize<TIO>>>;
 
-interface BroadcastParams<TIO extends IORoom<any, any, any, any>> {
+interface BroadcastParams<TIO extends IORoom<any, any, any, any, any>> {
     message: BroadcastMessage<TIO>;
     senderId?: string;
 }
@@ -67,7 +68,7 @@ export interface IORoomListeners<
     onUserDisconnected: (event: IOUserDisconnectedEvent<TPlatform, TAuthorize, TContext>) => void;
 }
 
-export type BroadcastProxy<TIO extends IORoom<any, any, any, any>> = (<
+export type BroadcastProxy<TIO extends IORoom<any, any, any, any, any>> = (<
     TEvent extends keyof InferIOInput<TIO>,
 >(
     event: TEvent,
@@ -120,8 +121,9 @@ export class IORoom<
         InferInitContextType<TPlatform>
     > | null = null,
     TContext extends Record<string, any> = {},
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> implements IOLike<TAuthorize, TEvents>
+> implements IOLike<TAuthorize, TCrdt, TEvents>
 {
     public readonly id: string;
 
@@ -131,6 +133,7 @@ export class IORoom<
 
     private readonly _authorize: TAuthorize = null as TAuthorize;
     private readonly _context: TContext;
+    private readonly _crdt: TCrdt;
     private readonly _debug: boolean;
     private readonly _docFactory: AbstractCrdtDocFactory<any, any>;
     private readonly _listeners: IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>;
@@ -151,11 +154,13 @@ export class IORoom<
         return {
             authorize: this._authorize,
             context: this._context,
+            crdt: this._crdt,
             events: this._router._defs.events,
             platform: this._platform,
         } as {
             authorize: TAuthorize;
             context: TContext;
+            crdt: TCrdt;
             events: TEvents;
             platform: TPlatform;
         };
@@ -201,6 +206,7 @@ export class IORoom<
         this.id = id;
 
         this._context = context;
+        this._crdt = crdt as TCrdt;
         this._debug = debug;
         this._docFactory = crdt.doc(() => ({}));
         this._router = router;
