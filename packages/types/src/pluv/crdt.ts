@@ -5,8 +5,8 @@ export interface CrdtDocFactory<
     TStorage extends Record<string, CrdtType<any, any>>,
 > {
     _initialStorage: (builder: any) => TStorage;
-
     getEmpty(): CrdtDocLike<TDoc, TStorage>;
+    getFactory(initialStorage?: (builder: any) => TStorage): CrdtDocFactory<TDoc, TStorage>;
     getInitialized(initialStorage?: (builder: any) => TStorage): CrdtDocLike<TDoc, TStorage>;
 }
 

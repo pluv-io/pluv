@@ -150,6 +150,13 @@ export interface IOLike<
     };
 }
 
+export type InferIOCrdtKind<TIO extends IOLike<any, any, any>> =
+    TIO extends IOLike<any, infer ICrdt, any>
+        ? ICrdt extends CrdtLibraryType<infer IDoc>
+            ? IDoc
+            : never
+        : never;
+
 export type InferEventsInput<TEvents extends Record<string, ProcedureLike<any, any>>> = {
     [P in keyof TEvents]: TEvents[P] extends ProcedureLike<infer IInput, any> ? IInput : never;
 };

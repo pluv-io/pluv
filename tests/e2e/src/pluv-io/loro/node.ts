@@ -2,7 +2,7 @@ import { createClient, infer } from "@pluv/client";
 import { loro } from "@pluv/crdt-loro";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
-import type { ioServer } from "../../server/yjs/node";
+import type { ioServer } from "../../server/loro/node";
 
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = createClient({

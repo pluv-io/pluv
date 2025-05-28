@@ -1,10 +1,5 @@
-import type {
-    AbstractCrdtDocFactory,
-    CrdtType,
-    InferStorage,
-    NoopCrdtDocFactory,
-} from "@pluv/crdt";
-import type { InputZodLike, IOLike, JsonObject } from "@pluv/types";
+import type { AbstractCrdtDocFactory, InferStorage, NoopCrdtDocFactory } from "@pluv/crdt";
+import type { InferIOCrdtKind, InputZodLike, IOLike, JsonObject } from "@pluv/types";
 import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import type { InferCallback } from "./infer";
 import { PluvProcedure } from "./PluvProcedure";
@@ -25,11 +20,10 @@ import type { PluvClientLimits, PublicKey, WithMetadata } from "./types";
 export type PluvClientOptions<
     TIO extends IOLike<any, any, any>,
     TPresence extends Record<string, any>,
-    TCrdt extends AbstractCrdtDocFactory<any, any>,
+    TCrdt extends InferIOCrdtKind<TIO>,
     TMetadata extends JsonObject,
 > = RoomEndpoints<TIO, TMetadata> & {
     debug?: boolean;
-    initialStorage?: TCrdt;
     /**
      * @description Configurable limits defined for client-side validation. You should only set
      * this if you control the server and have changed the limits there.
@@ -39,7 +33,9 @@ export type PluvClientOptions<
     presence?: InputZodLike<TPresence>;
     publicKey?: PublicKey<TMetadata>;
     types: InferCallback<TIO>;
-};
+} & (InferIOCrdtKind<TIO> extends NoopCrdtDocFactory
+        ? { initialStorage?: "[ERROR]: Must provide crdt to createIO to use storage" }
+        : { initialStorage?: TCrdt });
 
 export type CreateRoomOptions<
     TIO extends IOLike<any, any, any>,
@@ -64,7 +60,7 @@ export type EnterRoomParams<TMetadata extends JsonObject = {}> = keyof TMetadata
 export class PluvClient<
     TIO extends IOLike<any, any, any>,
     TPresence extends Record<string, any> = {},
-    TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
+    TCrdt extends InferIOCrdtKind<TIO> = InferIOCrdtKind<TIO>,
     TMetadata extends JsonObject = {},
 > {
     public readonly metadata?: InputZodLike<TMetadata>;
@@ -104,7 +100,7 @@ export class PluvClient<
 
         this._authEndpoint = authEndpoint as AuthEndpoint<TMetadata>;
         this._debug = debug;
-        this._initialStorage = initialStorage;
+        this._initialStorage = initialStorage as TCrdt;
         this._limits = {
             presenceMaxSize: MAX_PRESENCE_SIZE_BYTES,
             ...limits,
