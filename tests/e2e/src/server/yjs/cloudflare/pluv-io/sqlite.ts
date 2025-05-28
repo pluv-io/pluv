@@ -25,7 +25,10 @@ export const io = createIO(
 const router = io.router({
     SEND_MESSAGE: io.procedure
         .input(z.object({ message: z.string() }))
-        .broadcast(({ message }, ctx) => ({ RECEIVE_MESSAGE: { message: ctx.session.user } })),
+        .broadcast(({ message }, ctx) => ({ RECEIVE_MESSAGE: { message } })),
 });
 
-export const ioServer = io.server({ router });
+export const ioServer = io.server({
+    getInitialStorage: () => null,
+    router,
+});
