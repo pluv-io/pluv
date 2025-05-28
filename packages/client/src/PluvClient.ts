@@ -35,7 +35,7 @@ export type PluvClientOptions<
     types: InferCallback<TIO>;
 } & (InferIOCrdtKind<TIO> extends NoopCrdtDocFactory
         ? { initialStorage?: "[ERROR]: Must provide crdt to createIO to use storage" }
-        : { initialStorage: TCrdt });
+        : { initialStorage?: TCrdt });
 
 export type CreateRoomOptions<
     TIO extends IOLike<any, any, any>,
