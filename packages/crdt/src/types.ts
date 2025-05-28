@@ -1,11 +1,6 @@
 import type { AbstractCrdtDocFactory } from "./AbstractCrdtDocFactory";
 
-export interface CrdtLibraryType<
-    TDoc extends AbstractCrdtDocFactory<any, any> = AbstractCrdtDocFactory<any, any>,
-> {
-    doc: (value: any) => TDoc;
-    kind: "loro" | "yjs";
-}
+export type { CrdtLibraryType } from "@pluv/types";
 
 export type InferDoc<TFactory extends AbstractCrdtDocFactory<any, any>> =
     InferDocLike<TFactory>["value"];

@@ -1,9 +1,10 @@
-import type { CrdtDocLike, CrdtType } from "@pluv/types";
+import type { CrdtDocFactory, CrdtDocLike, CrdtType } from "@pluv/types";
 
 export abstract class AbstractCrdtDocFactory<
     TDoc extends any,
     TStorage extends Record<string, CrdtType<any, any>>,
-> {
+> implements CrdtDocFactory<TDoc, TStorage>
+{
     public _initialStorage: (builder: any) => TStorage;
 
     constructor(initialStorage: (builder: any) => TStorage) {

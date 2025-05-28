@@ -1,5 +1,5 @@
 import type { Subject } from "wonka";
-import type { Id, JsonObject } from "../general";
+import type { Id } from "../general";
 import type { CrdtDocLike, CrdtType, InferCrdtJson } from "./crdt";
 import type { ConnectionState, StorageState } from "./enums";
 import type {
