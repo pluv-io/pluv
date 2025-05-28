@@ -1,5 +1,20 @@
 import type { Json, Maybe } from "../general";
 
+export interface CrdtDocFactory<
+    TDoc extends any,
+    TStorage extends Record<string, CrdtType<any, any>>,
+> {
+    _initialStorage: (builder: any) => TStorage;
+
+    getEmpty(): CrdtDocLike<TDoc, TStorage>;
+    getInitialized(initialStorage?: (builder: any) => TStorage): CrdtDocLike<TDoc, TStorage>;
+}
+
+export interface CrdtLibraryType<TDoc extends CrdtDocFactory<any, any> = CrdtDocFactory<any, any>> {
+    doc: (value: any) => TDoc;
+    kind: "loro" | "yjs";
+}
+
 export type CrdtType<TValue extends unknown, TJson extends unknown = any> = Omit<
     TValue,
     "__pluvType"
