@@ -1,4 +1,4 @@
-import type { CrdtLibraryType } from "@pluv/crdt";
+import type { CrdtLibraryType, NoopCrdtDocFactory } from "@pluv/crdt";
 import type { CreateIOParams, InferInitContextType, PluvContext, PluvIOAuthorize } from "@pluv/io";
 import type { BaseUser, Id, IOAuthorize, Json } from "@pluv/types";
 import type { CloudflarePlatformConfig } from "./CloudflarePlatform";
@@ -10,7 +10,7 @@ export type PlatformCloudflareCreateIOParams<
     TMeta extends Record<string, Json> = {},
     TContext extends Record<string, any> = {},
     TUser extends BaseUser | null = null,
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
 > = Id<
     CloudflarePlatformConfig<TEnv, TMeta> &
         Omit<
@@ -40,7 +40,7 @@ export const platformCloudflare = <
     TMeta extends Record<string, Json> = {},
     TContext extends Record<string, any> = {},
     TUser extends BaseUser | null = null,
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
 >(
     config: PlatformCloudflareCreateIOParams<TEnv, TMeta, TContext, TUser, TCrdt> = {},
 ): CreateIOParams<

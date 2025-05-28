@@ -9,17 +9,18 @@ import { z } from "@zod/mini";
 import { expectTypeOf } from "expect-type";
 import type { Array as YArray, Doc as YDoc } from "yjs";
 
-const platform = platformCloudflare({
-    authorize: {
-        secret: "",
-        user: z.object({
-            id: z.string(),
-        }),
-    },
-    context: ({ env, meta, state }) => ({ env, meta, state }),
-    crdt: yjs,
-});
-const io = createIO(platform);
+const io = createIO(
+    platformCloudflare({
+        authorize: {
+            secret: "",
+            user: z.object({
+                id: z.string(),
+            }),
+        },
+        context: ({ env, meta, state }) => ({ env, meta, state }),
+        crdt: yjs,
+    }),
+);
 
 const router = io.router({
     sendMessage: io.procedure

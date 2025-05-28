@@ -13,11 +13,11 @@ import type {
     InferDoc,
     InferInitialStorageFn,
     InferStorage,
-    NoopCrdtDocFactory,
 } from "@pluv/crdt";
 import type {
     CrdtDocLike,
     Id,
+    InferIOCrdtKind,
     InferIOInput,
     InferIOOutput,
     IOEventMessage,
@@ -89,7 +89,7 @@ export interface CreateBundle<
     TIO extends IOLike<any, any, any>,
     TMetadata extends JsonObject,
     TPresence extends Record<string, any> = {},
-    TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
+    TCrdt extends InferIOCrdtKind<TIO> = InferIOCrdtKind<TIO>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > {
     // components

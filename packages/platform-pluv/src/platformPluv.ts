@@ -1,4 +1,4 @@
-import type { CrdtLibraryType } from "@pluv/crdt";
+import type { CrdtLibraryType, NoopCrdtDocFactory } from "@pluv/crdt";
 import type { CreateIOParams, InferInitContextType, PluvContext, PluvIOAuthorize } from "@pluv/io";
 import type { BaseUser, Id } from "@pluv/types";
 import type { PluvPlatformConfig } from "./PluvPlatform";
@@ -7,7 +7,7 @@ import { PluvPlatform } from "./PluvPlatform";
 export type PlatformPluvCreateIOParams<
     TContext extends Record<string, any> = {},
     TUser extends BaseUser = BaseUser,
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
 > = Id<
     PluvPlatformConfig &
         Omit<
@@ -22,7 +22,7 @@ export type PlatformPluvCreateIOParams<
 export const platformPluv = <
     TContext extends Record<string, any> = {},
     TUser extends BaseUser = BaseUser,
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
 >(
     config: PlatformPluvCreateIOParams<TContext, TUser, TCrdt>,
 ): CreateIOParams<PluvPlatform<TContext, TUser>, TContext, TUser, TCrdt> => {

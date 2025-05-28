@@ -40,6 +40,7 @@ export type {
     InferEventsOutput,
     InferIOAuthorize,
     InferIOAuthorizeUser,
+    InferIOCrdtKind,
     InferIOInput,
     InferIOOutput,
     InputZodLike,

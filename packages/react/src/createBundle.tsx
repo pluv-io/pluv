@@ -11,15 +11,10 @@ import type {
     WebSocketConnection,
 } from "@pluv/client";
 import { MockedRoom } from "@pluv/client";
-import type {
-    AbstractCrdtDocFactory,
-    InferCrdtJson,
-    InferDoc,
-    InferStorage,
-    NoopCrdtDocFactory,
-} from "@pluv/crdt";
+import type { InferCrdtJson, InferDoc, InferStorage } from "@pluv/crdt";
 import type {
     Id,
+    InferIOCrdtKind,
     InferIOInput,
     InferIOOutput,
     IOEventMessage,
@@ -62,7 +57,7 @@ export type CreateBundleOptions<
     TIO extends IOLike<any, any, any>,
     TMetadata extends JsonObject = {},
     TPresence extends Record<string, any> = {},
-    TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
+    TCrdt extends InferIOCrdtKind<TIO> = InferIOCrdtKind<TIO>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > = {
     addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TCrdt>[];
@@ -73,7 +68,7 @@ export const createBundle = <
     TIO extends IOLike<any, any, any>,
     TMetadata extends JsonObject = {},
     TPresence extends Record<string, any> = {},
-    TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
+    TCrdt extends InferIOCrdtKind<TIO> = InferIOCrdtKind<TIO>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 >(
     client: PluvClient<TIO, TPresence, TCrdt, TMetadata>,
@@ -178,7 +173,6 @@ export const createBundle = <
 
             useEffect(() => {
                 if (room.id === _room) return;
-
                 setRoom(createRoom());
             }, [_room, createRoom, room]);
 
