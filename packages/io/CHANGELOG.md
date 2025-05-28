@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 3.1.0
+
+### Patch Changes
+
+- a40f4dc: Fixed `getInitialStorage` not being required when `crdt` is provided.
+    - @pluv/crdt@3.1.0
+    - @pluv/types@3.1.0
+
 ## 3.0.0
 
 ### Patch Changes
