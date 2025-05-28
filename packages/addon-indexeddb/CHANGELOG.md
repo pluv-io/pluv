@@ -1,5 +1,13 @@
 # @pluv/addon-indexeddb
 
+## 3.1.0
+
+### Patch Changes
+
+- Updated dependencies [022857d]
+    - @pluv/client@3.1.0
+    - @pluv/crdt@3.1.0
+
 ## 3.0.0
 
 ### Patch Changes

@@ -1,5 +1,42 @@
 # @pluv/client
 
+## 3.1.0
+
+### Minor Changes
+
+- 022857d: TypeScript will now emit an error if `initialStorage` was provided to `createClient` while `createIO` was not provided a `crdt`.
+
+    ```ts
+    import { createClient, infer } from "@pluv/client";
+    import { yjs } from "@pluv/crdt-yjs";
+    import { createIO } from "@pluv/io";
+    import { platformCloudflare } from "@pluv/platform-cloudflare";
+
+    const io = createIO(
+        // Assume no crdt was provided here
+        platformCloudflare({
+            /* ... */
+        }),
+    );
+
+    const ioServer = io.server();
+
+    const types = infer((i) => ({ io: i<typeof ioServer> }));
+    const client = createClient({
+        types,
+        // This will now emit a TypeScript error, because `crdt` was not provided to
+        // `createIO` above
+        initialStorage: yjs.doc((t) => ({
+            groceries: t.array<string>("groceries"),
+        })),
+    });
+    ```
+
+### Patch Changes
+
+- @pluv/crdt@3.1.0
+- @pluv/types@3.1.0
+
 ## 3.0.0
 
 ### Major Changes
