@@ -11,6 +11,8 @@ Listen to when a room is deleted so that when the same room is re-created, users
 
 Every time a room is freshly created, the `getInitialStorage` listener will run, and the return value of this function will set the initial value of the room's storage. If this function returns `null`, it is assumed that no storage was found, and a blank storage will be initialized.
 
+The `getInitialStorage` function is required if `crdt` is provided to `createIO` to prevent cases of lost storage data on intermittent client connections.
+
 ```ts
 // server/io.ts
 import { yjs } from "@pluv/crdt-yjs";
@@ -27,7 +29,7 @@ export const io = createIO(
 );
 
 export const ioServer = io.server({
-  // Optional: Triggered when a room is freshly created. If the room existed
+  // Triggered when a room is freshly created. If the room existed
   // before, you can load the storage state for the room by returning it here
   getInitialStorage: async ({ context, room }) => {
     const { db } = context;
