@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 3.1.1
+
+### Patch Changes
+
+- 7b719bf: Fixed `PluvIO.server` not requiring input parameters (i.e. was optional) when `createIO` specified `crdt`.
+    - @pluv/crdt@3.1.1
+    - @pluv/types@3.1.1
+
 ## 3.1.0
 
 ### Patch Changes
