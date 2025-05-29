@@ -211,7 +211,14 @@ export class PluvServer<
                     if (!oldState) {
                         const loadedState = await this._getInitialStorage({ context, room });
 
-                        if (!!loadedState) {
+                        const checkDoc = this._config.crdt
+                            .doc(() => ({}))
+                            .getEmpty()
+                            .applyEncodedState({ update: loadedState });
+                        const isEmpty = checkDoc.isEmpty();
+                        checkDoc.destroy();
+
+                        if (!!loadedState && !isEmpty) {
                             doc.applyEncodedState({ update: loadedState }).getEncodedState();
                         }
                     }
