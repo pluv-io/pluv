@@ -2,6 +2,7 @@ export type {
     Constructable,
     DeepPartial,
     DeepWriteable,
+    HasRequiredProperty,
     Id,
     Json,
     JsonObject,

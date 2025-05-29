@@ -1,5 +1,11 @@
 export type Constructable = { new (...args: any[]): any };
 
+export type HasRequiredProperty<T> = {
+    [K in keyof T]-?: {} extends Pick<T, K> ? never : K;
+}[keyof T] extends never
+    ? false
+    : true;
+
 export type Maybe<T> = T | Nil;
 export type MaybePromise<T> = Promise<T> | T;
 export type MaybeReadonlyArray<T> = T[] | readonly T[];
