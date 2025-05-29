@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 3.1.2
+
+### Patch Changes
+
+- 8f138aa: Fixed `getInitialStorage` not being applied.
+    - @pluv/crdt@3.1.2
+    - @pluv/types@3.1.2
+
 ## 3.1.1
 
 ### Patch Changes
