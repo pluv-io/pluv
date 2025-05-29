@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 3.1.3
+
+### Patch Changes
+
+- 651a9f8: Fixed applying `getInitialStorage` if the initial storage state is empty.
+    - @pluv/crdt@3.1.3
+    - @pluv/types@3.1.3
+
 ## 3.1.2
 
 ### Patch Changes
