@@ -41,6 +41,11 @@ Create your pluv.io backend
 const io = createIO(platformNode({ crdt: yjs }));
 
 export const ioServer = io.server({
+  getInitialStorage: async ({ context: { db }, room }) => {
+    return await db.room
+      .findUnique({ where: { id: room } })
+      .then((result) => result?.encodedState ?? null);
+  },
   router: io.router({
     sendGreeting: io.procedure
       .input(z.object({ message: z.string() }))
