@@ -24,6 +24,7 @@ import type {
     PluvIORouter,
     ResolvedPluvIOAuthorize,
 } from "./types";
+import { oneLine } from "./utils";
 import { __PLUV_VERSION } from "./version";
 
 export type PluvIOConfig<
@@ -151,17 +152,19 @@ export class PluvIO<
         const parsed = !!ioAuthorize ? ioAuthorize.user.parse(user) : user;
 
         if (!!this._limits.userIdMaxLength && user.id.length > this._limits.userIdMaxLength) {
-            throw new Error(
-                `createToken was called with a long user id. User ID must be at most 128 characters. Current length: ${user.id.length.toLocaleString()}`,
-            );
+            throw new Error(oneLine`
+                createToken was called with a long user id. User ID must be at
+                most 128 characters. Current length: ${user.id.length.toLocaleString()}
+            `);
         }
 
         const bytes = new TextEncoder().encode(JSON.stringify(parsed)).length;
 
         if (!!this._limits.userMaxSize && bytes > this._limits.userMaxSize) {
-            throw new Error(
-                `createToken called with large payload. User must be at most 512 bytes. Current size: ${bytes.toLocaleString()}`,
-            );
+            throw new Error(oneLine`
+                createToken called with large payload. User must be at most 512
+                bytes. Current size: ${bytes.toLocaleString()}
+            `);
         }
 
         const platform = this._platform();
@@ -197,7 +200,9 @@ export class PluvIO<
         const invalidName = Object.keys(events).find((name) => name.includes("$"));
 
         if (typeof invalidName === "string") {
-            throw new Error(`Invalid event name. Event names must not contain $: "${invalidName}"`);
+            throw new Error(oneLine`
+                Invalid event name. Event names must not contain $: "${invalidName}"
+            `);
         }
 
         return new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>(events);
@@ -206,14 +211,16 @@ export class PluvIO<
     public server<TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {}>(
         ...config: ServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>
     ): PluvServer<TPlatform, TAuthorize, TContext, TCrdt, TEvents> {
+        const serverConfig = (config[0] ?? {}) as PluvServerConfig<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TCrdt,
+            TEvents
+        >;
+
         return new PluvServer<TPlatform, TAuthorize, TContext, TCrdt, TEvents>({
-            ...((config[0] ?? {}) as PluvServerConfig<
-                TPlatform,
-                TAuthorize,
-                TContext,
-                TCrdt,
-                TEvents
-            >),
+            ...serverConfig,
             authorize: this._authorize ?? undefined,
             context: this._context,
             crdt: this._crdt,

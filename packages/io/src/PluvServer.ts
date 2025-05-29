@@ -209,11 +209,7 @@ export class PluvServer<
                     const update = (data as any)?.update as Maybe<string>;
 
                     if (!oldState) {
-                        const getInitialStorage: GetInitialStorageFn<TContext> =
-                            typeof this._config.getInitialStorage === "function"
-                                ? this._config.getInitialStorage
-                                : () => null;
-                        const loadedState = await getInitialStorage({ context, room });
+                        const loadedState = await this._getInitialStorage({ context, room });
 
                         if (!!loadedState) {
                             doc.applyEncodedState({ update: loadedState }).getEncodedState();
@@ -462,6 +458,16 @@ export class PluvServer<
     ): Promise<string> {
         return await this._config.io.createToken(params);
     }
+
+    private _getInitialStorage: GetInitialStorageFn<TContext> = (...args) => {
+        const getInitialStorage =
+            typeof this._config.getInitialStorage !== "string"
+                ? (this._config.getInitialStorage ??
+                  ((() => null) as GetInitialStorageFn<TContext>))
+                : ((() => null) as GetInitialStorageFn<TContext>);
+
+        return getInitialStorage(...args);
+    };
 
     private _getListeners(): BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents> {
         return (this as any)._listeners;
