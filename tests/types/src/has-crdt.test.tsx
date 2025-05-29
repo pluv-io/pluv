@@ -4,17 +4,21 @@ import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 
-const io = createIO(platformCloudflare({}));
+const io = createIO(platformCloudflare({ crdt: yjs }));
 
-const ioServer = io.server({
-    // @ts-expect-error
+// @ts-expect-error
+const ioServer = io.server();
+// @ts-expect-error
+io.server({});
+
+// Should not error. getInitialStorage is required.
+io.server({
     getInitialStorage: () => null,
 });
 
 const types = clientInfer((i) => ({ io: i<typeof ioServer> }));
 createClient({
     types,
-    // @ts-expect-error
     initialStorage: yjs.doc((t) => ({
         messages: t.array<string>("messages"),
     })),
