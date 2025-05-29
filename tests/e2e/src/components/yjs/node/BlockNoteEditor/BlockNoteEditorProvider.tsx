@@ -1,7 +1,7 @@
 import { ConnectionState } from "@pluv/types";
 import type { FC, ReactNode } from "react";
 import { useMemo } from "react";
-import { useConnection, useRoom, useStorage } from "../../../../pluv-io/yjs/cloudflare";
+import { useConnection, useRoom, useStorage } from "../../../../pluv-io/yjs/node";
 import { BlockNoteEditorContext } from "./context";
 
 export interface BlockNoteEditorProviderProps {
