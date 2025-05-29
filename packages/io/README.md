@@ -38,7 +38,12 @@ Create your pluv.io backend
 
 ```ts
 // backend
-const io = createIO(platformNode({ crdt: yjs }));
+const io = createIO(
+  platformNode({
+    context: () => ({ db }),
+    crdt: yjs,
+  })
+);
 
 export const ioServer = io.server({
   getInitialStorage: async ({ context: { db }, room }) => {
