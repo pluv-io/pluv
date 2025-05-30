@@ -36,6 +36,7 @@ import { GARBAGE_COLLECT_INTERVAL_MS, PING_TIMEOUT_MS } from "./constants";
 import type {
     EventResolverContext,
     EventResolverKind,
+    GetInitialStorageFn,
     IORoomListenerEvent,
     IORoomMessageEvent,
     IOUserConnectedEvent,
@@ -91,6 +92,7 @@ export type IORoomConfig<
     context: TContext;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     debug: boolean;
+    getInitialStorage: GetInitialStorageFn<TContext>;
     platform: TPlatform;
     roomContext: InferRoomContextType<TPlatform>;
     router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
@@ -136,6 +138,7 @@ export class IORoom<
     private readonly _crdt: TCrdt;
     private readonly _debug: boolean;
     private readonly _docFactory: AbstractCrdtDocFactory<any, any>;
+    private readonly _getInitialStorage: GetInitialStorageFn<TContext>;
     private readonly _listeners: IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>;
     private readonly _platform: TPlatform;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
@@ -194,6 +197,7 @@ export class IORoom<
             context,
             crdt = noop,
             debug,
+            getInitialStorage,
             onDestroy,
             onMessage,
             onUserConnected,
@@ -209,6 +213,7 @@ export class IORoom<
         this._crdt = crdt as TCrdt;
         this._debug = debug;
         this._docFactory = crdt.doc(() => ({}));
+        this._getInitialStorage = getInitialStorage;
         this._router = router;
         this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), roomContext });
 
@@ -639,6 +644,24 @@ export class IORoom<
     private async _getInitialDoc(): Promise<CrdtDocLike<any, any>> {
         const doc = this._docFactory.getEmpty();
         const encodedState = await this._platform.persistence.getStorageState(this.id);
+
+        if (!encodedState) {
+            const loadedState = await this._getInitialStorage({
+                context: this._context,
+                room: this.id,
+            });
+
+            const checkDoc = this._crdt
+                .doc(() => ({}))
+                .getEmpty()
+                .applyEncodedState({ update: loadedState });
+            const isEmpty = checkDoc.isEmpty();
+            checkDoc.destroy();
+
+            if (!!loadedState && !isEmpty) {
+                doc.applyEncodedState({ update: loadedState }).getEncodedState();
+            }
+        }
 
         if (typeof encodedState === "string") doc.applyEncodedState({ update: encodedState });
 
