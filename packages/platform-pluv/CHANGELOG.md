@@ -1,5 +1,13 @@
 # @pluv/platform-pluv
 
+## 3.1.4
+
+### Patch Changes
+
+- @pluv/crdt@3.1.4
+- @pluv/io@3.1.4
+- @pluv/types@3.1.4
+
 ## 3.1.3
 
 ### Patch Changes
