@@ -1,5 +1,13 @@
 # @pluv/client
 
+## 3.1.4
+
+### Patch Changes
+
+- e443b66: Fixed a case where an empty storage store (e.g. @pluv/addon-indexeddb) would result in an empty initial storage, even when an initial storage was defined.
+    - @pluv/crdt@3.1.4
+    - @pluv/types@3.1.4
+
 ## 3.1.3
 
 ### Patch Changes
