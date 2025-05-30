@@ -1028,10 +1028,24 @@ export class PluvRoom<
         this._stateNotifier.subjects["my-presence"].next(presence);
         this._stateNotifier.subjects.myself.next(myself);
 
-        const update = !state
-            ? (this._crdtManager.resolveEncodedState(await this._storageStore.getUpdates()) ??
-              this._crdtManager.getInitialState())
-            : this._crdtManager.getInitialState();
+        const update = await (async () => {
+            if (!!state) {
+                this._logDebug("Retrieving initial state");
+                return this._crdtManager.getInitialState();
+            }
+
+            const resolved = this._crdtManager.resolveEncodedState(
+                await this._storageStore.getUpdates(),
+            );
+
+            if (!!resolved) {
+                this._logDebug("Retrieving storage store state");
+                return resolved;
+            }
+
+            this._logDebug("Retrieving initial state");
+            return this._crdtManager.getInitialState();
+        })();
 
         this._sendMessage({
             type: "$initializeSession",
