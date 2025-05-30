@@ -110,7 +110,7 @@ export const createBundle = <
                 initialStorage:
                     typeof initialStorage === "function"
                         ? (client._defs.initialStorage?.getFactory(initialStorage) as TCrdt)
-                        : client._defs.initialStorage,
+                        : undefined,
             });
         });
 
@@ -329,9 +329,7 @@ export const createBundle = <
         const room = useRoom();
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => {
-                return room.subscribe.connection(onStoreChange);
-            },
+            (onStoreChange: () => void) => room.subscribe.connection(onStoreChange),
             [room],
         );
 
@@ -355,9 +353,7 @@ export const createBundle = <
         const room = useRoom();
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => {
-                return room.subscribe.storageLoaded(onStoreChange);
-            },
+            (onStoreChange: () => void) => room.subscribe.storageLoaded(onStoreChange),
             [room],
         );
 
@@ -413,9 +409,7 @@ export const createBundle = <
         const room = useRoom();
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => {
-                return room.subscribe.myPresence(onStoreChange);
-            },
+            (onStoreChange: () => void) => room.subscribe.myPresence(onStoreChange),
             [room],
         );
 
@@ -444,9 +438,7 @@ export const createBundle = <
         const room = useRoom();
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => {
-                return room.subscribe.myself(onStoreChange);
-            },
+            (onStoreChange: () => void) => room.subscribe.myself(onStoreChange),
             [room],
         );
 
@@ -505,9 +497,7 @@ export const createBundle = <
         const room = useRoom();
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => {
-                return room.subscribe.others(onStoreChange);
-            },
+            (onStoreChange: () => void) => room.subscribe.others(onStoreChange),
             [room],
         );
 
@@ -554,9 +544,15 @@ export const createBundle = <
         const room = useRoom();
         const rerender = useRerender();
 
-        room.subscribe.storageLoaded(() => {
-            rerender();
-        });
+        useEffect(() => {
+            const unsubscribe = room.subscribe.storageLoaded(() => {
+                rerender();
+            });
+
+            return () => {
+                unsubscribe();
+            };
+        }, [rerender, room]);
 
         const subscribe = useCallback(
             (onStoreChange: () => void) => room.subscribe.storage(key, onStoreChange),
