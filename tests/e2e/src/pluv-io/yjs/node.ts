@@ -38,6 +38,26 @@ const io = createClient({
     },
 });
 
+export const bundle = createBundle(io, {
+    addons: [
+        addonIndexedDB({
+            enabled: (room) => room.id === "e2e-node-storage-addon-indexeddb",
+        }),
+    ],
+    router: io.router({
+        subtract5: io.procedure
+            .input(
+                z.object({
+                    value: z.number(),
+                }),
+            )
+            .broadcast(({ value }) => ({
+                doubleNumber: { value: value - 5 },
+                subtractedNumber: { value: value - 5 },
+            })),
+    }),
+});
+
 export const {
     // proxies
     event,
@@ -63,22 +83,4 @@ export const {
     useStorage,
     useTransact,
     useUndo,
-} = createBundle(io, {
-    addons: [
-        addonIndexedDB({
-            enabled: (room) => room.id === "e2e-node-storage-addon-indexeddb",
-        }),
-    ],
-    router: io.router({
-        subtract5: io.procedure
-            .input(
-                z.object({
-                    value: z.number(),
-                }),
-            )
-            .broadcast(({ value }) => ({
-                doubleNumber: { value: value - 5 },
-                subtractedNumber: { value: value - 5 },
-            })),
-    }),
-});
+} = bundle;
