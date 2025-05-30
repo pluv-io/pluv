@@ -108,6 +108,7 @@ export class PluvServer<
     private readonly _config: NonNilProps<
         PluvServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>
     >;
+    private readonly _docFactory: AbstractCrdtDocFactory<any, any>;
 
     public get fetch(): (...args: any[]) => Promise<any> {
         return (...args: any[]): Promise<any> => {
@@ -211,15 +212,8 @@ export class PluvServer<
                     if (!oldState) {
                         const loadedState = await this._getInitialStorage({ context, room });
 
-                        const checkDoc = this._config.crdt
-                            .doc(() => ({}))
-                            .getEmpty()
-                            .applyEncodedState({ update: loadedState });
-                        const isEmpty = checkDoc.isEmpty();
-                        checkDoc.destroy();
-
-                        if (!!loadedState && !isEmpty) {
-                            doc.applyEncodedState({ update: loadedState }).getEncodedState();
+                        if (!!loadedState && !this._docFactory.isEmpty(loadedState)) {
+                            doc.applyEncodedState({ update: loadedState });
                         }
                     }
 
@@ -390,6 +384,7 @@ export class PluvServer<
             onUserDisconnected,
         } = options as Partial<BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>>;
 
+        this._docFactory = this._config.crdt.doc(() => ({}));
         (this as any)._listeners = {
             onRoomDeleted: (event) => onRoomDeleted?.(event),
             onRoomMessage: (event) => onRoomMessage?.(event),
