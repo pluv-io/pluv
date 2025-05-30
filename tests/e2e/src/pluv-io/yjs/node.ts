@@ -13,6 +13,7 @@ const io = createClient({
     },
     debug: true,
     initialStorage: yjs.doc((t) => ({
+        blocknote: t.xmlFragment("blocknote"),
         messages: t.array("messages", [
             yjs.map([
                 ["message", "hello"],
@@ -28,12 +29,33 @@ const io = createClient({
         })(),
     })),
     presence: z.object({
+        blocknote: z.any().default({}),
         count: z.number(),
     }),
     types,
     wsEndpoint: ({ room }) => {
         return `ws://localhost:3102/api/pluv/room/${room}`;
     },
+});
+
+export const bundle = createBundle(io, {
+    addons: [
+        addonIndexedDB({
+            enabled: (room) => room.id === "e2e-node-storage-addon-indexeddb",
+        }),
+    ],
+    router: io.router({
+        subtract5: io.procedure
+            .input(
+                z.object({
+                    value: z.number(),
+                }),
+            )
+            .broadcast(({ value }) => ({
+                doubleNumber: { value: value - 5 },
+                subtractedNumber: { value: value - 5 },
+            })),
+    }),
 });
 
 export const {
@@ -61,22 +83,4 @@ export const {
     useStorage,
     useTransact,
     useUndo,
-} = createBundle(io, {
-    addons: [
-        addonIndexedDB({
-            enabled: (room) => room.id === "e2e-node-storage-addon-indexeddb",
-        }),
-    ],
-    router: io.router({
-        subtract5: io.procedure
-            .input(
-                z.object({
-                    value: z.number(),
-                }),
-            )
-            .broadcast(({ value }) => ({
-                doubleNumber: { value: value - 5 },
-                subtractedNumber: { value: value - 5 },
-            })),
-    }),
-});
+} = bundle;

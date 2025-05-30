@@ -21,8 +21,18 @@ export abstract class AbstractCrdtDocFactory<
 
     public resolveEncodedState(updates: string | string[] | readonly string[]): string | null {
         if (typeof updates === "string") return updates;
-        if (!updates.length) return null;
+        if (Array.isArray(updates) && !updates.length) return null;
 
-        return this.getEmpty().batchApplyEncodedState({ updates }).getEncodedState();
+        const applied = this.getEmpty().batchApplyEncodedState({ updates });
+
+        if (applied.isEmpty()) {
+            applied.destroy();
+            return null;
+        }
+
+        const encodedState = applied.getEncodedState();
+        applied.destroy();
+
+        return encodedState;
     }
 }
