@@ -17,15 +17,14 @@ import {
     LoroText,
     LoroTree,
     UndoManager,
-    isContainer,
 } from "loro-crdt";
 import type { LoroType } from "../types";
-import { oneLine } from "../utils";
 import type { LoroBuilder } from "./builder";
 import { builder } from "./builder";
 
 const MAX_UNDO_STEPS = 100;
 const MERGE_INTERVAL_MS = 1_000;
+const PLUV_ID_FIELD = "__$pluv";
 
 export type CrdtLoroDocParams<TStorage extends Record<string, LoroType<any, any>>> = (
     builder: LoroBuilder,
@@ -51,6 +50,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
             (acc, [key, node]) => (keys.has(key) ? { ...acc, [key]: node } : acc),
             {} as TStorage,
         );
+        if (!!Object.keys(storage).length) this._setPluvId();
 
         this.value.commit();
     }
@@ -248,6 +248,13 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
         this._undoManager?.undo();
 
         return this;
+    }
+
+    private _setPluvId() {
+        const text = this.value.getText(PLUV_ID_FIELD);
+        const id = typeof crypto !== "undefined" ? crypto.randomUUID() : Math.random().toString();
+
+        text.insert(0, id);
     }
 
     private _warn(...data: any[]) {
