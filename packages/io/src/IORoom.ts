@@ -3,6 +3,7 @@ import { noop } from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
     BaseUser,
+    CrdtDocFactory,
     CrdtDocLike,
     CrdtLibraryType,
     EventMessage,
@@ -651,15 +652,8 @@ export class IORoom<
                 room: this.id,
             });
 
-            const checkDoc = this._crdt
-                .doc(() => ({}))
-                .getEmpty()
-                .applyEncodedState({ update: loadedState });
-            const isEmpty = checkDoc.isEmpty();
-            checkDoc.destroy();
-
-            if (!!loadedState && !isEmpty) {
-                doc.applyEncodedState({ update: loadedState }).getEncodedState();
+            if (!!loadedState && !this._docFactory.isEmpty(loadedState)) {
+                doc.applyEncodedState({ update: loadedState });
             }
         }
 

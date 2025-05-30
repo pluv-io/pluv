@@ -8,6 +8,7 @@ export interface CrdtDocFactory<
     getEmpty(): CrdtDocLike<TDoc, TStorage>;
     getFactory(initialStorage?: (builder: any) => TStorage): CrdtDocFactory<TDoc, TStorage>;
     getInitialized(initialStorage?: (builder: any) => TStorage): CrdtDocLike<TDoc, TStorage>;
+    isEmpty(initialStorage: Maybe<string>): boolean;
 }
 
 export interface CrdtLibraryType<TDoc extends CrdtDocFactory<any, any> = CrdtDocFactory<any, any>> {

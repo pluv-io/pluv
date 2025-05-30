@@ -1,4 +1,4 @@
-import type { CrdtDocFactory, CrdtDocLike, CrdtType } from "@pluv/types";
+import type { CrdtDocFactory, CrdtDocLike, CrdtType, Maybe } from "@pluv/types";
 
 export abstract class AbstractCrdtDocFactory<
     TDoc extends any,
@@ -18,6 +18,14 @@ export abstract class AbstractCrdtDocFactory<
     public abstract getInitialized(
         initialStorage?: (builder: any) => TStorage,
     ): CrdtDocLike<TDoc, TStorage>;
+
+    public isEmpty(initialState: Maybe<string>): boolean {
+        const doc = this.getEmpty().applyEncodedState({ update: initialState });
+        const isEmpty = doc.isEmpty();
+        doc.destroy();
+
+        return isEmpty;
+    }
 
     public resolveEncodedState(updates: string | string[] | readonly string[]): string | null {
         if (typeof updates === "string") return updates;
