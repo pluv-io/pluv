@@ -1,5 +1,14 @@
 # @pluv/platform-node
 
+## 3.1.7
+
+### Patch Changes
+
+- Updated dependencies [f1d56d9]
+    - @pluv/io@3.1.7
+    - @pluv/crdt@3.1.7
+    - @pluv/types@3.1.7
+
 ## 3.1.6
 
 ### Patch Changes

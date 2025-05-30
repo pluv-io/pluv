@@ -1,5 +1,13 @@
 # @pluv/io
 
+## 3.1.7
+
+### Patch Changes
+
+- f1d56d9: Fixed a case where in Cloudflare Durable Objects, the CRDT storage would clear upon hibernation.
+    - @pluv/crdt@3.1.7
+    - @pluv/types@3.1.7
+
 ## 3.1.6
 
 ### Patch Changes
