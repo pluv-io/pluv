@@ -76,25 +76,24 @@ export const io = createIO(
 );
 
 export const ioServer = io.server({
-    // Optional: Only if you're using storage, and persisting
-    // to a database
-    getInitialStorage: async ({ room, context }) => {
-        const { db } = context;
+  // Only if you're using storage (i.e. crdt)
+  getInitialStorage: async ({ room, context }) => {
+    const { db } = context;
 
-        // Stubbed example DB query
-        const rows = await db.sql(
-            "SELECT storage FROM room WHERE name = ?;",
-            [room]
-        );
-        const storage = rows[0]?.storage;
+    // Stubbed example DB query
+    const rows = await db.sql(
+      "SELECT storage FROM room WHERE name = ?;",
+      [room]
+    );
+    const storage = rows[0]?.storage;
 
-        return storage;
-    },
-    // Optional: Only if you want to run code when a room
-    // is deleted, such as saving the last storage state
-    onRoomDeleted: async ({ room, encodedState, context }) => {
-        // Upsert the db room with last storage state
-    },
+    return storage;
+  },
+  // Optional: Only if you want to run code when a room
+  // is deleted, such as saving the last storage state
+  onRoomDeleted: async ({ room, encodedState, context }) => {
+    // Upsert the db room with last storage state
+  },
 });
 ```
 
