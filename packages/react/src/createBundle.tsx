@@ -162,7 +162,7 @@ export const createBundle = <
                     initialStorage:
                         typeof initialStorage === "function"
                             ? client._defs.initialStorage?.getFactory(initialStorage)
-                            : client._defs.initialStorage,
+                            : undefined,
                     metadata,
                     onAuthorizationFail,
                     router: options.router,

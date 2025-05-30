@@ -20,18 +20,12 @@ import {
     encodeStateAsUpdate,
     mergeUpdates,
 } from "yjs";
-import { YjsArray } from "../array/YjsArray";
-import { YjsMap } from "../map/YjsMap";
-import { YjsText } from "../text/YjsText";
 import type { YjsType } from "../types";
-import { oneLine } from "../utils";
-import { YjsXmlElement } from "../xmlElement/YjsXmlElement";
-import { YjsXmlFragment } from "../xmlFragment/YjsXmlFragment";
-import { YjsXmlText } from "../xmlText/YjsXmlText";
 import type { YjsBuilder } from "./builder";
 import { builder } from "./builder";
 
 const MERGE_INTERVAL_MS = 1_000;
+const PLUV_ID_FIELD = "__$pluv";
 
 export type CrdtYjsDocParams<TStorage extends Record<string, YjsType<any, any>>> = (
     builder: YjsBuilder,
@@ -53,6 +47,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             (acc, [key, node]) => (keys.has(key) ? { ...acc, [key]: node } : acc),
             {} as TStorage,
         );
+        if (!!Object.keys(storage).length) this._setPluvId();
     }
 
     public applyEncodedState(params: DocApplyEncodedStateParams): this {
@@ -234,6 +229,13 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
         this._undoManager?.undo();
 
         return this;
+    }
+
+    private _setPluvId() {
+        const text = this.value.getText(PLUV_ID_FIELD);
+        const id = typeof crypto !== "undefined" ? crypto.randomUUID() : Math.random().toString();
+
+        text.insert(0, id);
     }
 
     private _warn(...data: any[]) {
