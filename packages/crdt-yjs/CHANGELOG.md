@@ -1,5 +1,13 @@
 # @pluv/crdt-yjs
 
+## 3.1.5
+
+### Patch Changes
+
+- 6d43c08: Fixed CRDT docs being considered as `empty` even when there are properties (i.e. yjs shared types and loro container types) on the document when they have not been modified.
+    - @pluv/crdt@3.1.5
+    - @pluv/types@3.1.5
+
 ## 3.1.4
 
 ### Patch Changes
