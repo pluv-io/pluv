@@ -431,6 +431,7 @@ export class PluvServer<
             context,
             crdt: this._config.crdt,
             debug: debug ?? this._config.debug,
+            getInitialStorage: this._getInitialStorage,
             async onDestroy(event) {
                 logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
 
