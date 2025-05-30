@@ -31,6 +31,8 @@ export const io = createIO(
 export const ioServer = io.server({
   // Triggered when a room is freshly created. If the room existed
   // before, you can load the storage state for the room by returning it here
+  // This is required if `crdt` has been defined on `createIO`. This is to
+  // prevent storage data loss on intermittent connections
   getInitialStorage: async ({ context, room }) => {
     const { db } = context;
     const existingRoom = await db.room.findUnique({ where: { room } });
