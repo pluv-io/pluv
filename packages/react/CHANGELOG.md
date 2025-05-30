@@ -1,5 +1,14 @@
 # @pluv/react
 
+## 3.1.6
+
+### Patch Changes
+
+- fd8d314: Fix creating excessive storage subscriptions.
+    - @pluv/client@3.1.6
+    - @pluv/crdt@3.1.6
+    - @pluv/types@3.1.6
+
 ## 3.1.5
 
 ### Patch Changes
