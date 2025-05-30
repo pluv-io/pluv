@@ -8,9 +8,12 @@
 			{ "name": "rooms_sqlite", "class_name": "RoomSQLiteDurableObject" }
 		]
 	},
+	"kv_namespaces": [
+    { "binding": "pluv_kv", "id": "1ccd1ee2a212420195e07a5c822491d5" }
+  ],
 	"migrations": [
 		{ "tag": "v1", "new_classes": ["RoomDurableObject"] },
-		{ 
+		{
 			"tag": "v2",
 			"renamed_classes": [{ "from": "RoomDurableObject", "to": "RoomKVDurableObject" }],
 			"new_sqlite_classes": ["RoomSQLiteDurableObject"]
