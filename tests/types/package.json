@@ -20,25 +20,25 @@
         "@pluv/pubsub-redis": "workspace:^",
         "@pluv/react": "workspace:^",
         "@pluv/types": "workspace:^",
-        "@types/node": "^22.15.21",
-        "@types/react": "^19.1.5",
+        "@types/node": "^22.15.29",
+        "@types/react": "^19.1.6",
         "@types/react-dom": "^19.1.5",
         "@types/ws": "^8.18.1",
         "@zod/mini": "4.0.0-beta.0",
-        "loro-crdt": "^1.5.6",
+        "loro-crdt": "^1.5.7",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
         "ws": "^8.18.2",
         "yjs": "^13.6.27",
-        "zod": "^3.25.17"
+        "zod": "^3.25.42"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^4.20250521.0",
+        "@cloudflare/workers-types": "^4.20250531.0",
         "@pluv/tsconfig": "workspace:^",
-        "eslint": "^9.27.0",
+        "eslint": "^9.28.0",
         "eslint-config-pluv": "workspace:^",
         "expect-type": "^1.2.1",
         "typescript": "^5.8.3",
-        "wrangler": "^4.16.0"
+        "wrangler": "^4.18.0"
     }
 }
