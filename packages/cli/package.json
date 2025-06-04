@@ -50,7 +50,7 @@
 		"rollup-plugin-node-polyfills": "^0.2.1",
 		"tslib": "^2.8.1",
 		"typescript": "^5.8.3",
-		"zod": "^3.25.42"
+		"zod": "^3.25.51"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
