@@ -35,7 +35,7 @@
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^9.28.0",
 		"eslint-config-pluv": "workspace:^",
-		"loro-crdt": "^1.5.7",
+		"loro-crdt": "^1.5.8",
 		"tsup": "^8.5.0",
 		"typescript": "^5.8.3"
 	}
