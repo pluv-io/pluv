@@ -137,7 +137,7 @@ export class PluvServer<
             platform: this._config.platform(),
         } as {
             authorize: TAuthorize;
-            context: TContext;
+            context: PluvContext<TPlatform, TContext>;
             crdt: TCrdt;
             events: TEvents;
             platform: TPlatform;
@@ -413,17 +413,13 @@ export class PluvServer<
             throw new Error("Unsupported room name");
 
         const roomContext = platformRoomContext as InferRoomContextType<TPlatform>;
-        const context: TContext =
-            typeof this._config.context === "function"
-                ? this._config.context(roomContext)
-                : this._config.context;
         const listeners = this._getListeners();
         const logDebug = this._logDebug.bind(this);
 
         const newRoom = new IORoom<TPlatform, TAuthorize, TContext, TCrdt, TEvents>(room, {
             ...(!!_meta ? { _meta } : {}),
             authorize: this._config.authorize ?? undefined,
-            context,
+            context: this._config.context,
             crdt: this._config.crdt,
             debug: debug ?? this._config.debug,
             getInitialStorage: this._getInitialStorage,

@@ -25,8 +25,8 @@ import type { AbstractWebSocket } from "./AbstractWebSocket";
 import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 
 export type PluvContext<TPlatform extends AbstractPlatform, TContext extends Record<string, any>> =
-    | TContext
-    | ((params: InferRoomContextType<TPlatform>) => TContext);
+    | MaybePromise<TContext>
+    | ((params: InferRoomContextType<TPlatform>) => MaybePromise<TContext>);
 
 export type EventResolverKind = "broadcast" | "self" | "sync";
 
