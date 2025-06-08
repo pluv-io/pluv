@@ -1,5 +1,16 @@
 # @pluv/io
 
+## 3.2.0
+
+### Minor Changes
+
+- 6d2b257: Support async `context` parameter in `createIO`.
+
+### Patch Changes
+
+- @pluv/crdt@3.2.0
+- @pluv/types@3.2.0
+
 ## 3.1.7
 
 ### Patch Changes
