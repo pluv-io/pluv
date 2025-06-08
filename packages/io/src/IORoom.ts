@@ -3,7 +3,6 @@ import { noop } from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
     BaseUser,
-    CrdtDocFactory,
     CrdtDocLike,
     CrdtLibraryType,
     EventMessage,
@@ -42,6 +41,7 @@ import type {
     IORoomMessageEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
+    PluvContext,
     PluvIOAuthorize,
     ResolvedPluvIOAuthorize,
     WebSocketSession,
@@ -90,7 +90,7 @@ export type IORoomConfig<
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
     authorize?: TAuthorize;
-    context: TContext;
+    context: PluvContext<TPlatform, TContext>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     debug: boolean;
     getInitialStorage: GetInitialStorageFn<TContext>;
@@ -135,13 +135,14 @@ export class IORoom<
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
     private readonly _authorize: TAuthorize = null as TAuthorize;
-    private readonly _context: TContext;
+    private readonly _context: PluvContext<TPlatform, TContext>;
     private readonly _crdt: TCrdt;
     private readonly _debug: boolean;
     private readonly _docFactory: AbstractCrdtDocFactory<any, any>;
     private readonly _getInitialStorage: GetInitialStorageFn<TContext>;
     private readonly _listeners: IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>;
     private readonly _platform: TPlatform;
+    private readonly _roomContext: InferRoomContextType<TPlatform>;
     private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
     private readonly _sessions = new Map<
         [sessionId: string][0],
@@ -215,6 +216,7 @@ export class IORoom<
         this._debug = debug;
         this._docFactory = crdt.doc(() => ({}));
         this._getInitialStorage = getInitialStorage;
+        this._roomContext = roomContext;
         this._router = router;
         this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), roomContext });
 
@@ -479,12 +481,12 @@ export class IORoom<
             if (!!user) this._removeUserSession(user.id, sessionId);
 
             try {
-                const doc = await this._doc;
+                const [doc, context] = await Promise.all([this._doc, this._getContext()]);
                 const encodedState = doc.getEncodedState();
 
                 await Promise.resolve(
                     this._listeners.onUserDisconnected({
-                        context: this._context,
+                        context,
                         encodedState,
                         platform: this._platform,
                         room: this.id,
@@ -532,7 +534,7 @@ export class IORoom<
         const presence = session.presence;
         const user = session.user;
 
-        const doc = await this._doc;
+        const [doc, context] = await Promise.all([this._doc, this._getContext()]);
         const encodedState = doc.isEmpty() ? null : doc.getEncodedState();
 
         await this._sendSelfMessage(
@@ -551,7 +553,7 @@ export class IORoom<
         try {
             await Promise.resolve(
                 this._listeners.onUserConnected({
-                    context: this._context,
+                    context,
                     encodedState,
                     platform: this._platform,
                     room: this.id,
@@ -642,13 +644,23 @@ export class IORoom<
         }
     }
 
+    private async _getContext(): Promise<TContext> {
+        return typeof this._context === "function"
+            ? await Promise.resolve(this._context(this._roomContext))
+            : await Promise.resolve(this._context);
+    }
+
     private async _getInitialDoc(): Promise<CrdtDocLike<any, any>> {
         const doc = this._docFactory.getEmpty();
-        const encodedState = await this._platform.persistence.getStorageState(this.id);
+
+        const [encodedState, context] = await Promise.all([
+            this._platform.persistence.getStorageState(this.id),
+            this._getContext(),
+        ]);
 
         if (!encodedState) {
             const loadedState = await this._getInitialStorage({
-                context: this._context,
+                context,
                 room: this.id,
             });
 
@@ -783,7 +795,7 @@ export class IORoom<
             const uninitialize = async () => {
                 this._platform.pubSub.unsubscribe(pubSubId);
 
-                const doc = await this._doc;
+                const [doc, context] = await Promise.all([this._doc, this._getContext()]);
                 const encodedState = doc.getEncodedState();
 
                 doc.destroy();
@@ -794,7 +806,7 @@ export class IORoom<
                         ...("_meta" in this._platform && !!this._platform._meta
                             ? { _meta: this._platform._meta }
                             : {}),
-                        context: this._context,
+                        context,
                         encodedState,
                         platform: this._platform,
                         room: this.id,
@@ -841,14 +853,14 @@ export class IORoom<
                 this._setPresence.bind(this)(params);
             };
 
-            const doc = await this._doc;
+            const [doc, context] = await Promise.all([this._doc, this._getContext()]);
             const eventContext: EventResolverContext<
                 EventResolverKind,
                 TPlatform,
                 TAuthorize,
                 TContext
             > = {
-                context: this._context,
+                context,
                 doc,
                 garbageCollect: async () => {
                     await this.garbageCollect();
@@ -887,7 +899,7 @@ export class IORoom<
                 ...("_meta" in this._platform && !!this._platform._meta
                     ? { _meta: this._platform._meta }
                     : {}),
-                context: this._context,
+                context,
                 encodedState: doc.getEncodedState(),
                 message: message as InferEventMessage<
                     InferEventsOutput<TEvents>,
@@ -1128,9 +1140,9 @@ export class IORoom<
 
         if (typeof connectionId !== "string") return;
 
-        const doc = await this._doc;
-        const context: EventResolverContext<"sync", TPlatform, TAuthorize, TContext> = {
-            context: this._context,
+        const [doc, context] = await Promise.all([this._doc, this._getContext()]);
+        const resolverCtx: EventResolverContext<"sync", TPlatform, TAuthorize, TContext> = {
+            context,
             doc,
             garbageCollect: async () => {
                 await this.garbageCollect();
@@ -1160,7 +1172,7 @@ export class IORoom<
             return;
         }
 
-        Promise.resolve(resolver(inputs, context)).then((output) => {
+        Promise.resolve(resolver(inputs, resolverCtx)).then((output) => {
             if (!output) return;
 
             Object.keys(output).forEach((type: string) => {

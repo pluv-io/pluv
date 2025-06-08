@@ -286,7 +286,7 @@ export class PluvPlatform<
                 }
 
                 const { event, data } = parsed.data;
-                const context = this._getContext();
+                const context = await this._getContext();
 
                 switch (event) {
                     case "initial-storage": {
@@ -376,10 +376,10 @@ export class PluvPlatform<
             }
         });
 
-    private _getContext(): TContext {
+    private async _getContext(): Promise<TContext> {
         return typeof this._context === "function"
-            ? this._context(this._roomContext as any)
-            : this._context;
+            ? await Promise.resolve(this._context(this._roomContext as any))
+            : await Promise.resolve(this._context);
     }
 
     private _logDebug(...args: any[]): void {
