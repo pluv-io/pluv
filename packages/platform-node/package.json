@@ -26,13 +26,13 @@
         "@pluv/crdt": "workspace:^",
         "@pluv/io": "workspace:^",
         "@pluv/types": "workspace:^",
-        "@types/node": "^22.15.30",
+        "@types/node": "^24.0.1",
         "@types/ws": "^8.18.1",
         "path-to-regexp": "^8.2.0"
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
-        "eslint": "^9.28.0",
+        "eslint": "^9.29.0",
         "eslint-config-pluv": "workspace:^",
         "tsup": "^8.5.0",
         "typescript": "^5.8.3",

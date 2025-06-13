@@ -34,8 +34,8 @@
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"@types/react": "^19.1.6",
-		"eslint": "^9.28.0",
+		"@types/react": "^19.1.8",
+		"eslint": "^9.29.0",
 		"eslint-config-pluv": "workspace:^",
 		"react": "^19.1.0",
 		"tsup": "^8.5.0",

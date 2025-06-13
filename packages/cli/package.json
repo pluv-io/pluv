@@ -37,8 +37,8 @@
 		"@rollup/plugin-terser": "^0.4.4",
 		"@rollup/plugin-typescript": "^12.1.2",
 		"@types/fs-extra": "^11.0.4",
-		"@types/node": "^22.15.30",
-		"@types/react": "^19.1.6",
+		"@types/node": "^24.0.1",
+		"@types/react": "^19.1.8",
 		"dotenv": "^16.5.0",
 		"execa": "^9.6.0",
 		"fs-extra": "^11.3.0",
@@ -46,15 +46,15 @@
 		"ink-spinner": "^5.0.0",
 		"pastel": "^3.0.0",
 		"react": "^19.1.0",
-		"rollup": "^4.42.0",
+		"rollup": "^4.43.0",
 		"rollup-plugin-node-polyfills": "^0.2.1",
 		"tslib": "^2.8.1",
 		"typescript": "^5.8.3",
-		"zod": "^3.25.56"
+		"zod": "^3.25.64"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^9.28.0",
+		"eslint": "^9.29.0",
 		"eslint-config-pluv": "workspace:^"
 	}
 }
