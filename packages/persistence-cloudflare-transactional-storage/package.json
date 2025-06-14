@@ -3,9 +3,9 @@
 	"version": "3.2.0",
 	"description": "@pluv/io crdt storage persistence for cloudflare via transactional storage",
 	"author": {
-  	"email": "david@pluv.io",
-  	"name": "i3dly",
-  	"url": "https://github.com/i3dly"
+		"email": "david@pluv.io",
+		"name": "i3dly",
+		"url": "https://github.com/i3dly"
 	},
 	"license": "MIT",
 	"homepage": "https://github.com/pluv-io/pluv",
@@ -31,7 +31,7 @@
 		"@pluv/types": "workspace:^"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20250613.0",
+		"@cloudflare/workers-types": "^4.20250614.0",
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^9.29.0",
 		"eslint-config-pluv": "workspace:^",

@@ -3,10 +3,10 @@
     "version": "3.2.0",
     "description": "@pluv/io adapter for cloudflare workers",
     "author": {
-     	"email": "david@pluv.io",
-     	"name": "i3dly",
-     	"url": "https://github.com/i3dly"
-	},
+        "email": "david@pluv.io",
+        "name": "i3dly",
+        "url": "https://github.com/i3dly"
+    },
     "license": "MIT",
     "homepage": "https://github.com/pluv-io/pluv",
     "repository": {
@@ -33,7 +33,7 @@
         "path-to-regexp": "^8.2.0"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^4.20250613.0",
+        "@cloudflare/workers-types": "^4.20250614.0",
         "@pluv/tsconfig": "workspace:^",
         "eslint": "^9.29.0",
         "eslint-config-pluv": "workspace:^",

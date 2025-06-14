@@ -74,14 +74,14 @@
 		"path-to-regexp": "^8.2.0",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
-		"slate": "^0.117.0",
-		"slate-react": "^0.117.1",
+		"slate": "^0.115.1",
+		"slate-react": "^0.114.2",
 		"ws": "^8.18.2",
 		"yjs": "^13.6.27",
 		"zod": "^3.25.64"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20250613.0",
+		"@cloudflare/workers-types": "^4.20250614.0",
 		"@playwright/test": "^1.53.0",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^9.1.2",
