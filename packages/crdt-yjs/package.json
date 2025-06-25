@@ -3,9 +3,9 @@
 	"version": "3.2.0",
 	"description": "yjs for @pluv/io",
 	"author": {
-  	"email": "david@pluv.io",
-  	"name": "i3dly",
-  	"url": "https://github.com/i3dly"
+		"email": "david@pluv.io",
+		"name": "i3dly",
+		"url": "https://github.com/i3dly"
 	},
 	"license": "MIT",
 	"homepage": "https://github.com/pluv-io/pluv",
@@ -29,9 +29,9 @@
 	"dependencies": {
 		"@pluv/crdt": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^24.0.1",
+		"@types/node": "^24.0.4",
 		"js-base64": "^3.7.7",
-		"lib0": "^0.2.108"
+		"lib0": "^0.2.109"
 	},
 	"peerDependencies": {
 		"yjs": "^13.0.0"
