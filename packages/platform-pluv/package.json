@@ -30,14 +30,14 @@
 		"@pluv/crdt": "workspace:^",
 		"@pluv/io": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^24.0.4",
+		"@types/node": "^24.0.8",
 		"fast-json-stable-stringify": "^2.1.0",
 		"hono": "^4.8.3",
 		"zod": "^3.25.67"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^9.29.0",
+		"eslint": "^9.30.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.5.0",
 		"typescript": "^5.8.3"

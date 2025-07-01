@@ -3,9 +3,9 @@
 	"version": "3.2.0",
 	"description": "@pluv/client React.js bindings",
 	"author": {
-  	"email": "david@pluv.io",
-  	"name": "i3dly",
-  	"url": "https://github.com/i3dly"
+		"email": "david@pluv.io",
+		"name": "i3dly",
+		"url": "https://github.com/i3dly"
 	},
 	"license": "MIT",
 	"homepage": "https://github.com/pluv-io/pluv",
@@ -39,7 +39,7 @@
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
 		"@types/react": "^19.1.8",
-		"eslint": "^9.29.0",
+		"eslint": "^9.30.0",
 		"eslint-config-pluv": "workspace:^",
 		"react": "^19.1.0",
 		"tsup": "^8.5.0",
