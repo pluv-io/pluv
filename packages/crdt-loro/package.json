@@ -29,7 +29,7 @@
 	"dependencies": {
 		"@pluv/crdt": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^24.0.4",
+		"@types/node": "^24.0.8",
 		"js-base64": "^3.7.7"
 	},
 	"peerDependencies": {
@@ -37,7 +37,7 @@
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^9.29.0",
+		"eslint": "^9.30.0",
 		"eslint-config-pluv": "workspace:^",
 		"loro-crdt": "^1.5.9",
 		"tsup": "^8.5.0",

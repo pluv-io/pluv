@@ -3,9 +3,9 @@
 	"version": "3.2.0",
 	"description": "@pluv/io shared types",
 	"author": {
-  	"email": "david@pluv.io",
-  	"name": "i3dly",
-  	"url": "https://github.com/i3dly"
+		"email": "david@pluv.io",
+		"name": "i3dly",
+		"url": "https://github.com/i3dly"
 	},
 	"license": "MIT",
 	"homepage": "https://github.com/pluv-io/pluv",
@@ -27,7 +27,7 @@
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^9.29.0",
+		"eslint": "^9.30.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.5.0",
 		"typescript": "^5.8.3"
