@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/addon-indexeddb",
-	"version": "3.2.1",
+	"version": "3.2.2",
 	"description": "@pluv/io indexeddb for client storage persistence",
 	"author": {
 		"email": "david@pluv.io",

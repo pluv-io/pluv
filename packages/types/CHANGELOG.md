@@ -1,5 +1,11 @@
 # @pluv/types
 
+## 3.2.2
+
+### Patch Changes
+
+- 8665dbe: Updated types of `createClient` so that the types inferred from `createClient` are flattened and no-longer depend on `@pluv/server`.
+
 ## 3.2.1
 
 ## 3.2.0

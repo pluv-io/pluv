@@ -1,6 +1,6 @@
 {
   "name": "@pluv/tsconfig",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "@pluv/io internal tsconfigs",
   "author": {
     "email": "david@pluv.io",
