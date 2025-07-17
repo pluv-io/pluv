@@ -1,5 +1,12 @@
 # @pluv/crdt
 
+## 3.2.2
+
+### Patch Changes
+
+- Updated dependencies [8665dbe]
+    - @pluv/types@3.2.2
+
 ## 3.2.1
 
 ### Patch Changes
