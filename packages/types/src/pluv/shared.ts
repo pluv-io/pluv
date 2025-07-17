@@ -86,7 +86,11 @@ export type GetEventMessage<
 > = TEvent extends string ? EventMessage<TEvent, T[TEvent]> : never;
 
 export type InferIOAuthorize<TIO extends IOLike<any, any, any>> =
-    TIO extends IOLike<infer IAuthorize, any, any> ? IAuthorize : never;
+    TIO extends IOLike<infer IAuthorize, any, any>
+        ? InferIOAuthorizeUser<IAuthorize> extends BaseUser
+            ? { user: InputZodLike<InferIOAuthorizeUser<IAuthorize>> }
+            : null
+        : never;
 
 export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any> | null> =
     TAuthorize extends IOAuthorize<infer IUser, any> ? IUser : null;
@@ -108,7 +112,7 @@ export type IOAuthorize<
     | ((context: TContext) => TUser extends BaseUser
           ? {
                 secret?: string;
-                user: TUser extends BaseUser ? InputZodLike<TUser> : null;
+                user: InputZodLike<TUser>;
             }
           : null);
 
