@@ -29,16 +29,16 @@
 	"dependencies": {
 		"@pluv/crdt": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^24.0.8",
+		"@types/node": "^24.0.14",
 		"js-base64": "^3.7.7",
-		"lib0": "^0.2.109"
+		"lib0": "^0.2.114"
 	},
 	"peerDependencies": {
 		"yjs": "^13.0.0"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^9.30.0",
+		"eslint": "^9.31.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsup": "^8.5.0",
 		"typescript": "^5.8.3",

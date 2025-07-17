@@ -30,7 +30,7 @@
         "commitizen": "^4.3.1",
         "cz-conventional-changelog": "^3.3.0",
         "prettier": "^3.6.2",
-        "turbo": "^2.5.4"
+        "turbo": "^2.5.5"
     },
     "pnpm": {
         "onlyBuiltDependencies": [
