@@ -50,7 +50,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
             (acc, [key, node]) => (keys.has(key) ? { ...acc, [key]: node } : acc),
             {} as TStorage,
         );
-        if (!!Object.keys(storage).length) this._setPluvId();
+        if (!!Object.keys(storage).length) this.#_setPluvId();
 
         this.value.commit();
     }
@@ -250,7 +250,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
         return this;
     }
 
-    private _setPluvId() {
+    #_setPluvId() {
         const text = this.value.getText(PLUV_ID_FIELD);
         const id = typeof crypto !== "undefined" ? crypto.randomUUID() : Math.random().toString();
 

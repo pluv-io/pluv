@@ -47,7 +47,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
             (acc, [key, node]) => (keys.has(key) ? { ...acc, [key]: node } : acc),
             {} as TStorage,
         );
-        if (!!Object.keys(storage).length) this._setPluvId();
+        if (!!Object.keys(storage).length) this.#_setPluvId();
     }
 
     public applyEncodedState(params: DocApplyEncodedStateParams): this {
@@ -231,7 +231,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
         return this;
     }
 
-    private _setPluvId() {
+    #_setPluvId() {
         const text = this.value.getText(PLUV_ID_FIELD);
         const id = typeof crypto !== "undefined" ? crypto.randomUUID() : Math.random().toString();
 
