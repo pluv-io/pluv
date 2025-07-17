@@ -118,7 +118,7 @@ export type IOAuthorizeEventMessage<TIO extends IOLike> = {
 };
 
 export type ProcedureLike<
-    TInput extends JsonObject = {},
+    TInput extends Record<string, any> = {},
     TOutput extends EventRecord<string, any> = {},
 > = {
     config: {
@@ -157,15 +157,34 @@ export type InferIOCrdtKind<TIO extends IOLike<any, any, any>> =
             : never
         : never;
 
+export type InferIOCrdt<TIO extends IOLike<any, any, any>> =
+    TIO extends IOLike<any, infer ICrdt, any> ? ICrdt : never;
+
+export type InferIOEvents<TIO extends IOLike<any, any, any>> =
+    TIO extends IOLike<any, any, infer IEvents>
+        ? {
+              [P in keyof IEvents]: ProcedureLike<
+                  InferIOProcedureInput<IEvents[P]>,
+                  InferIOProcedureOutput<IEvents[P]>
+              >;
+          }
+        : never;
+
+export type InferIOProcedureInput<TProcedure extends ProcedureLike<any, any>> =
+    TProcedure extends ProcedureLike<infer IInput, any> ? Id<IInput> : never;
+
+export type InferIOProcedureOutput<TProcedure extends ProcedureLike<any, any>> =
+    TProcedure extends ProcedureLike<any, infer IOutput> ? Id<IOutput> : never;
+
 export type InferEventsInput<TEvents extends Record<string, ProcedureLike<any, any>>> = {
-    [P in keyof TEvents]: TEvents[P] extends ProcedureLike<infer IInput, any> ? IInput : never;
+    [P in keyof TEvents]: TEvents[P] extends ProcedureLike<infer IInput, any> ? Id<IInput> : never;
 };
 
 export type InferEventsOutput<TEvents extends Record<string, ProcedureLike<any, any>>> =
     UnionToIntersection<
         {
             [P in keyof TEvents]: TEvents[P] extends ProcedureLike<any, infer IOutput>
-                ? IOutput
+                ? Id<IOutput>
                 : never;
         }[keyof TEvents]
     >;
