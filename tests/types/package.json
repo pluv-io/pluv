@@ -20,7 +20,7 @@
         "@pluv/pubsub-redis": "workspace:^",
         "@pluv/react": "workspace:^",
         "@pluv/types": "workspace:^",
-        "@types/node": "^24.0.8",
+        "@types/node": "^24.0.14",
         "@types/react": "^19.1.8",
         "@types/react-dom": "^19.1.6",
         "@types/ws": "^8.18.1",
@@ -30,15 +30,15 @@
         "react-dom": "^19.1.0",
         "ws": "^8.18.3",
         "yjs": "^13.6.27",
-        "zod": "^3.25.67"
+        "zod": "^3.25.76"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^4.20250701.0",
+        "@cloudflare/workers-types": "^4.20250715.0",
         "@pluv/tsconfig": "workspace:^",
-        "eslint": "^9.30.0",
+        "eslint": "^9.31.0",
         "eslint-config-pluv": "workspace:^",
-        "expect-type": "^1.2.1",
+        "expect-type": "^1.2.2",
         "typescript": "^5.8.3",
-        "wrangler": "^4.22.0"
+        "wrangler": "^4.25.0"
     }
 }
