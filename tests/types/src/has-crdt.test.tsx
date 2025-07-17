@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { infer as clientInfer, createClient } from "@pluv/client";
+import { infer, createClient } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
@@ -16,7 +16,7 @@ io.server({
     getInitialStorage: () => null,
 });
 
-const types = clientInfer((i) => ({ io: i<typeof ioServer> }));
+const types = infer((i) => ({ io: i<typeof ioServer> }));
 createClient({
     types,
     initialStorage: yjs.doc((t) => ({

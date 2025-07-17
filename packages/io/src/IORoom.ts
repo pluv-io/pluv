@@ -603,14 +603,19 @@ export class IORoom<
         return sessions.find((pluvWs) => pluvWs.webSocket === webSocket) ?? null;
     }
 
+    /**
+     * TODO
+     * @description Revisit any cast types
+     * @date July 17, 2025
+     */
     private async _getAuthorizedUser(
         token: Maybe<string>,
         options: WebSocketRegisterConfig<TPlatform>,
     ): Promise<InferIOAuthorizeUser<TAuthorize>> {
         const ioAuthorize = this._getIOAuthorize(options);
 
-        if (!ioAuthorize) return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
-        if (!token) return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
+        if (!ioAuthorize) return null as any;
+        if (!token) return null as any;
 
         if (!ioAuthorize.secret)
             throw new Error("`authorize` was specified without a valid secret");
@@ -624,7 +629,7 @@ export class IORoom<
             this._logDebug(colors.blue("Could not decode token:"));
             this._logDebug(token);
 
-            return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
+            return null as any;
         }
 
         if (payload.room !== this.id) {
@@ -632,7 +637,7 @@ export class IORoom<
             this._logDebug(colors.blue("Received:"), payload.room);
             this._logDebug(token);
 
-            return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
+            return null as any;
         }
 
         try {
@@ -640,7 +645,7 @@ export class IORoom<
         } catch {
             this._logDebug(`${colors.blue("Token fails validation:")} ${token}`);
 
-            return null as InferIOAuthorizeUser<InferIOAuthorize<this>>;
+            return null as any;
         }
     }
 
@@ -1184,7 +1189,7 @@ export class IORoom<
                     options: { type: "self" },
                     room: this.id,
                     type,
-                    user: sender.user ?? null,
+                    user: (sender.user ?? null) as BaseUser | null,
                 });
             });
         });

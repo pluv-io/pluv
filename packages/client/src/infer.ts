@@ -1,4 +1,4 @@
-import type { IOLike } from "@pluv/types";
+import type { InferIOAuthorize, InferIOCrdt, InferIOEvents, IOLike } from "@pluv/types";
 import type { identity } from "./utils";
 
 export type InferCallback<TIO extends IOLike<any, any, any>> = (i: typeof identity) => {
@@ -7,4 +7,6 @@ export type InferCallback<TIO extends IOLike<any, any, any>> = (i: typeof identi
 
 export const infer = <TIO extends IOLike<any, any, any>>(
     callback: InferCallback<TIO>,
-): InferCallback<TIO> => callback;
+): InferCallback<IOLike<InferIOAuthorize<TIO>, InferIOCrdt<TIO>, InferIOEvents<TIO>>> => {
+    return callback as any;
+};
