@@ -1,5 +1,14 @@
 # @pluv/react
 
+## 3.2.1
+
+### Patch Changes
+
+- Updated dependencies [1e0c886]
+    - @pluv/client@3.2.1
+    - @pluv/crdt@3.2.1
+    - @pluv/types@3.2.1
+
 ## 3.2.0
 
 ### Patch Changes
@@ -1413,7 +1422,6 @@
 ### Minor Changes
 
 - 99b5ca9: ## Breaking Changes
-
     - `@pluv/io` has been updated to introduce `PluvProcedure`, `PluvRouter` and `PluvServer`. This change is intended to improve the ergonomics of declaring events and simplifying inferences of event types.
 
     ### Before:
@@ -1640,7 +1648,6 @@
     ```
 
 - 4280220: ## Breaking Changes
-
     - Storage types are now kept on the root of the document.
         - Previously, `@pluv/crdt-yjs` kept all shared-types on a hidden Yjs Map called `storage` on the root of the Yjs Doc. Now all shared-types are kept on the root of the Yjs Doc instead. This behavior should be more in-line with how shared-types are documented to be used from Yjs.
     - `@pluv/client` and `@pluv/react` no-longer re-export `@pluv/crdt-yjs`. This package will now need to be installed separately.
@@ -2144,7 +2151,6 @@
 ### Patch Changes
 
 - f4317ba: \* Renamed type `unstable_YObjectValue` to `YObjectValue`;
-
     - Renamed type `unstable_YObject` to `YObject`.
     - Re-exported `xmlElement`, `xmlFragment` and `xmlText` from `@pluv/client`.
 

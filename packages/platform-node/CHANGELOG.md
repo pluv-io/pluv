@@ -1,5 +1,13 @@
 # @pluv/platform-node
 
+## 3.2.1
+
+### Patch Changes
+
+- @pluv/crdt@3.2.1
+- @pluv/io@3.2.1
+- @pluv/types@3.2.1
+
 ## 3.2.0
 
 ### Patch Changes
@@ -1153,7 +1161,6 @@
 ### Minor Changes
 
 - 99b5ca9: ## Breaking Changes
-
     - `@pluv/io` has been updated to introduce `PluvProcedure`, `PluvRouter` and `PluvServer`. This change is intended to improve the ergonomics of declaring events and simplifying inferences of event types.
 
     ### Before:

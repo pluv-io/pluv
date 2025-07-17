@@ -1,5 +1,7 @@
 # @pluv/tsconfig
 
+## 3.2.1
+
 ## 3.2.0
 
 ## 3.1.7
@@ -285,7 +287,6 @@
 ### Minor Changes
 
 - 6d03186: Rebuilt the pluv cli.
-
     - Removed existing `create-pluv-app` functionality.
     - Added new `build` command to support eventual hosting.
 

@@ -1,5 +1,12 @@
 # @pluv/io
 
+## 3.2.1
+
+### Patch Changes
+
+- @pluv/crdt@3.2.1
+- @pluv/types@3.2.1
+
 ## 3.2.0
 
 ### Minor Changes
@@ -1135,11 +1142,9 @@
 ### Minor Changes
 
 - 6ac8a46: \* Fixed errors thrown when using Cloudflare's websocket hibernation API caused by rooms being re-used between different instances of DurableObjects.
-
     - Add configurable `onDelete` and `onMessage` event listeners that can be set when rooms are created.
 
     **BREAKING**
-
     - Changed `PluvServer.getRoom` to `PluvServer.createRoom`. This means `PluvServer` only handles room creation. Room management must now be handled manually. This mainly affects manually creating rooms with `@pluv/platform-node`, and will likely not affect you if you are either using `createPluvHandler` on any platform, or if you are using `@pluv/platform-cloudflare`.
 
     ```ts
@@ -1452,7 +1457,6 @@
 
 - 329dbcd: Narrowed types for `user` within the session object of an event resolver.
 - 99b5ca9: ## Breaking Changes
-
     - `@pluv/io` has been updated to introduce `PluvProcedure`, `PluvRouter` and `PluvServer`. This change is intended to improve the ergonomics of declaring events and simplifying inferences of event types.
 
     ### Before:
@@ -1655,7 +1659,6 @@
 ### Minor Changes
 
 - 4280220: ## Breaking Changes
-
     - Storage types are now kept on the root of the document.
         - Previously, `@pluv/crdt-yjs` kept all shared-types on a hidden Yjs Map called `storage` on the root of the Yjs Doc. Now all shared-types are kept on the root of the Yjs Doc instead. This behavior should be more in-line with how shared-types are documented to be used from Yjs.
     - `@pluv/client` and `@pluv/react` no-longer re-export `@pluv/crdt-yjs`. This package will now need to be installed separately.

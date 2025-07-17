@@ -1,12 +1,12 @@
 {
   "name": "@pluv/tsconfig",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "@pluv/io internal tsconfigs",
   "author": {
-   	"email": "david@pluv.io",
-   	"name": "i3dly",
-   	"url": "https://github.com/i3dly"
-	},
+    "email": "david@pluv.io",
+    "name": "i3dly",
+    "url": "https://github.com/i3dly"
+  },
   "license": "MIT",
   "homepage": "https://github.com/pluv-io/pluv",
   "repository": {
