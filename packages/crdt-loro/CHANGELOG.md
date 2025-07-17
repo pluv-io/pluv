@@ -1,5 +1,13 @@
 # @pluv/crdt-loro
 
+## 3.2.1
+
+### Patch Changes
+
+- 1e0c886: Updated crdt internal private properties to use native [private elements](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements).
+    - @pluv/crdt@3.2.1
+    - @pluv/types@3.2.1
+
 ## 3.2.0
 
 ### Patch Changes
@@ -166,7 +174,6 @@
 - 945c47d: Updated deprecation warnings to read that features will be removed in v3 instead of v2.
 
     Due to an [extremely unfortunate bug in changesets](https://github.com/changesets/changesets/issues/1011), minor and patch changes will create major releases. This caused an unintended v2 release that had no breaking changes. To avoid backtracking and deleting deprecated functionalities right away, the deprecation warnings have been updated so that those APIs will be removed in v3 instead of v2.
-
     - @pluv/crdt@2.0.2
     - @pluv/types@2.0.2
 
