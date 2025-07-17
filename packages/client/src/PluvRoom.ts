@@ -78,7 +78,6 @@ const ORIGIN_INITIALIZED = "$initialized";
 const ORIGIN_STORAGE_UPDATED = "$storageUpdated";
 
 declare global {
-    // eslint-disable-next-line no-var
     var process: {
         env: {
             [key: string]: string | undefined;
@@ -586,7 +585,7 @@ export class PluvRoom<
 
                 if (prop === "event") return this._event;
                 if (prop === "other") return this._other;
-                if (prop === "storage") return this._storage;
+                if (prop === "storage") return this.#_storage;
             },
         },
     ) as SubscribeProxy<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
@@ -1561,7 +1560,7 @@ export class PluvRoom<
         return parsed;
     }
 
-    private _storage = new Proxy(
+    #_storage = new Proxy(
         <TKey extends keyof InferStorage<TCrdt>>(
             key: TKey,
             callback: StorageSubscriptionCallback<InferStorage<TCrdt>, TKey>,

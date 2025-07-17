@@ -309,7 +309,7 @@ export class MockedRoom<
 
                 if (prop === "event") return this._event;
                 if (prop === "other") return this._other;
-                if (prop === "storage") return this._storage;
+                if (prop === "storage") return this.#_storage;
             },
         },
     ) as SubscribeProxy<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
@@ -434,7 +434,7 @@ export class MockedRoom<
         });
     }
 
-    private _storage = new Proxy(
+    #_storage = new Proxy(
         <TKey extends keyof InferStorage<TCrdt>>(
             key: TKey,
             callback: StorageSubscriptionCallback<InferStorage<TCrdt>, TKey>,

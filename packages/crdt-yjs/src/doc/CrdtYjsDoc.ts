@@ -36,14 +36,14 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
 {
     public value: YDoc = new YDoc();
 
-    private _storage: TStorage;
-    private _undoManager: UndoManager | null = null;
+    #_storage: TStorage;
+    #_undoManager: UndoManager | null = null;
 
     constructor(params: CrdtYjsDocParams<TStorage> = () => ({}) as TStorage) {
         const storage = params(builder(this.value));
         const keys = this.value.share.keys().reduce((set, key) => set.add(key), new Set<string>());
 
-        this._storage = Object.entries(storage).reduce(
+        this.#_storage = Object.entries(storage).reduce(
             (acc, [key, node]) => (keys.has(key) ? { ...acc, [key]: node } : acc),
             {} as TStorage,
         );
@@ -90,24 +90,24 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
     }
 
     public canRedo(): boolean {
-        return !!this._undoManager?.canRedo();
+        return !!this.#_undoManager?.canRedo();
     }
 
     public canUndo(): boolean {
-        return !!this._undoManager?.canUndo();
+        return !!this.#_undoManager?.canUndo();
     }
 
     public destroy(): void {
-        this._undoManager?.destroy();
+        this.#_undoManager?.destroy();
         this.value.destroy();
     }
 
     public get(key?: undefined): TStorage;
     public get<TKey extends keyof TStorage>(type: TKey): TStorage[TKey];
     public get<TKey extends keyof TStorage>(type?: TKey): TStorage | TStorage[TKey] {
-        if (typeof type === "undefined") return this._storage;
+        if (typeof type === "undefined") return this.#_storage;
 
-        return this._storage[type as TKey];
+        return this.#_storage[type as TKey];
     }
 
     public getEncodedState(): string {
@@ -119,14 +119,14 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
     }
 
     public rebuildStorage(reference: TStorage): this {
-        const isBuilt = !!Object.keys(this._storage).length;
+        const isBuilt = !!Object.keys(this.#_storage).length;
 
         if (isBuilt) {
             console.warn("Attempted to rebuild storage multiple times");
             return this;
         }
 
-        this._storage = Object.entries(reference).reduce((acc, [key, node]) => {
+        this.#_storage = Object.entries(reference).reduce((acc, [key, node]) => {
             /**
              * @description It is important that the XML shared-types be checked before the others
              * because they extend off the non-xml types (thereby you can mistakenly identify the
@@ -151,7 +151,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
     }
 
     public redo(): this {
-        this._undoManager?.redo();
+        this.#_undoManager?.redo();
 
         return this;
     }
@@ -176,9 +176,9 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
     }
 
     public track(): this {
-        if (this._undoManager) this._undoManager.destroy();
+        if (this.#_undoManager) this.#_undoManager.destroy();
 
-        const sharedTypes = Object.values(this._storage).reduce<YjsType<AbstractType<any>, any>[]>(
+        const sharedTypes = Object.values(this.#_storage).reduce<YjsType<AbstractType<any>, any>[]>(
             (acc, type) => {
                 if (
                     type instanceof YArray ||
@@ -197,13 +197,13 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
         );
 
         if (!sharedTypes.length) {
-            this._undoManager?.destroy();
-            this._undoManager = null;
+            this.#_undoManager?.destroy();
+            this.#_undoManager = null;
 
             return this;
         }
 
-        this._undoManager = new UndoManager(sharedTypes, { captureTimeout: MERGE_INTERVAL_MS });
+        this.#_undoManager = new UndoManager(sharedTypes, { captureTimeout: MERGE_INTERVAL_MS });
 
         return this;
     }
@@ -217,16 +217,16 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
     public toJson(): InferCrdtJson<TStorage>;
     public toJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]>;
     public toJson<TKey extends keyof TStorage>(type?: TKey) {
-        if (typeof type === "string") return this._storage[type].toJSON();
+        if (typeof type === "string") return this.#_storage[type].toJSON();
 
-        return Object.entries(this._storage).reduce(
+        return Object.entries(this.#_storage).reduce(
             (acc, [key, value]) => ({ ...(acc as any), [key]: value.toJSON() }),
             {} as InferCrdtJson<TStorage>,
         );
     }
 
     public undo(): this {
-        this._undoManager?.undo();
+        this.#_undoManager?.undo();
 
         return this;
     }
@@ -236,11 +236,5 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
         const id = typeof crypto !== "undefined" ? crypto.randomUUID() : Math.random().toString();
 
         text.insert(0, id);
-    }
-
-    private _warn(...data: any[]) {
-        if (typeof process === "undefined") return;
-        if (process.env?.NODE_ENV === "production") return;
-        console.log(...data);
     }
 }
