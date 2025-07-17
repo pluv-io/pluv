@@ -35,8 +35,8 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
 {
     public value: LoroDoc = new LoroDoc();
 
-    private _storage: TStorage;
-    private _undoManager: UndoManager | null = null;
+    #_storage: TStorage;
+    #_undoManager: UndoManager | null = null;
 
     constructor(params: CrdtLoroDocParams<TStorage> = () => ({}) as TStorage) {
         const storage = params(builder(this.value));
@@ -46,11 +46,11 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
             new Set<string>(),
         );
 
-        this._storage = Object.entries(storage).reduce(
+        this.#_storage = Object.entries(storage).reduce(
             (acc, [key, node]) => (keys.has(key) ? { ...acc, [key]: node } : acc),
             {} as TStorage,
         );
-        if (!!Object.keys(storage).length) this._setPluvId();
+        if (!!Object.keys(storage).length) this.#_setPluvId();
 
         this.value.commit();
     }
@@ -101,15 +101,15 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
     }
 
     public canRedo(): boolean {
-        if (!this._undoManager) return false;
+        if (!this.#_undoManager) return false;
 
-        return this._undoManager.canRedo();
+        return this.#_undoManager.canRedo();
     }
 
     public canUndo(): boolean {
-        if (!this._undoManager) return false;
+        if (!this.#_undoManager) return false;
 
-        return this._undoManager.canUndo();
+        return this.#_undoManager.canUndo();
     }
 
     public destroy(): void {
@@ -119,9 +119,9 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
     public get(key?: undefined): TStorage;
     public get<TKey extends keyof TStorage>(key: TKey): TStorage[TKey];
     public get<TKey extends keyof TStorage>(key?: TKey): TStorage | TStorage[TKey] {
-        if (typeof key === "undefined") return this._storage;
+        if (typeof key === "undefined") return this.#_storage;
 
-        return this._storage[key as TKey];
+        return this.#_storage[key as TKey];
     }
 
     public getEncodedState(): string {
@@ -132,7 +132,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
     public toJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]>;
     public toJson<TKey extends keyof TStorage>(type?: TKey) {
         if (typeof type === "string") {
-            const container = this._storage[type] as unknown as Container;
+            const container = this.#_storage[type] as unknown as Container;
 
             return container instanceof LoroText
                 ? container.toString()
@@ -141,7 +141,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
                   : container.toJSON!();
         }
 
-        return Object.entries(this._storage).reduce(
+        return Object.entries(this.#_storage).reduce(
             (acc, [key, value]) => ({
                 ...(acc as any),
                 [key]: value instanceof LoroText ? value.toString() : value.toJSON!(),
@@ -157,14 +157,14 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
     }
 
     public rebuildStorage(reference: TStorage): this {
-        const isBuilt = !!Object.keys(this._storage).length;
+        const isBuilt = !!Object.keys(this.#_storage).length;
 
         if (isBuilt) {
             console.warn("Attempted to rebuild storage multiple times");
             return this;
         }
 
-        this._storage = Object.entries(reference).reduce((acc, [key, node]) => {
+        this.#_storage = Object.entries(reference).reduce((acc, [key, node]) => {
             if (node instanceof LoroCounter) return { ...acc, [key]: this.value.getCounter(key) };
             if (node instanceof LoroList) return { ...acc, [key]: this.value.getList(key) };
             if (node instanceof LoroMap) return { ...acc, [key]: this.value.getMap(key) };
@@ -181,7 +181,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
     }
 
     public redo(): this {
-        this._undoManager?.redo();
+        this.#_undoManager?.redo();
 
         return this;
     }
@@ -200,7 +200,7 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
             });
         };
 
-        const unsubcribeAll = Object.values(this._storage).reduce<() => void>(
+        const unsubcribeAll = Object.values(this.#_storage).reduce<() => void>(
             (acc, crdtType) => {
                 const container = crdtType as unknown as Container;
                 const unsubscribe = container.subscribe(fn);
@@ -217,14 +217,14 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
     }
 
     public track(): this {
-        if (this._undoManager) {
-            this._undoManager.clear();
-            this._undoManager.free();
+        if (this.#_undoManager) {
+            this.#_undoManager.clear();
+            this.#_undoManager.free();
 
-            this._undoManager = null;
+            this.#_undoManager = null;
         }
 
-        this._undoManager = new UndoManager(this.value, {
+        this.#_undoManager = new UndoManager(this.value, {
             maxUndoSteps: MAX_UNDO_STEPS,
             mergeInterval: MERGE_INTERVAL_MS,
         });
@@ -245,21 +245,15 @@ export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
     }
 
     public undo(): this {
-        this._undoManager?.undo();
+        this.#_undoManager?.undo();
 
         return this;
     }
 
-    private _setPluvId() {
+    #_setPluvId() {
         const text = this.value.getText(PLUV_ID_FIELD);
         const id = typeof crypto !== "undefined" ? crypto.randomUUID() : Math.random().toString();
 
         text.insert(0, id);
-    }
-
-    private _warn(...data: any[]) {
-        if (typeof process === "undefined") return;
-        if (process.env?.NODE_ENV === "production") return;
-        console.log(...data);
     }
 }
