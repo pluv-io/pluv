@@ -1,9 +1,0 @@
-{
-	"extends": "@pluv/tsconfig/cli.json",
-	"include": ["src"],
-	"exclude": ["node_modules"],
-	"compilerOptions": {
-		"types": ["@types/node"],
-		"outDir": "./dist"
-	}
-}
