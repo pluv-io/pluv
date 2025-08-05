@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { infer, createClient } from "@pluv/client";
+import { createClient, infer } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { createBundle } from "@pluv/react";
-import type { CrdtDocLike, InferIOAuthorize } from "@pluv/types";
-import { z } from "@zod/mini";
+import type { CrdtDocLike } from "@pluv/types";
 import { expectTypeOf } from "expect-type";
 import type { Array as YArray, Doc as YDoc } from "yjs";
+import { z } from "zod";
 
 const io = createIO(
     platformCloudflare({

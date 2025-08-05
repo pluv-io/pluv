@@ -24,13 +24,12 @@
         "@types/react": "^19.1.9",
         "@types/react-dom": "^19.1.7",
         "@types/ws": "^8.18.1",
-        "@zod/mini": "4.0.0-beta.0",
         "loro-crdt": "^1.5.9",
         "react": "^19.1.1",
         "react-dom": "^19.1.1",
         "ws": "^8.18.3",
         "yjs": "^13.6.27",
-        "zod": "^3.25.76"
+        "zod": "^4.0.14"
     },
     "devDependencies": {
         "@cloudflare/workers-types": "^4.20250805.0",
