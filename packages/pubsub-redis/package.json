@@ -28,14 +28,14 @@
 	},
 	"dependencies": {
 		"@pluv/io": "workspace:^",
-		"@types/node": "^24.2.0"
+		"@types/node": "^24.2.1"
 	},
 	"peerDependencies": {
 		"ioredis": "^5.0.0"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^9.32.0",
+		"eslint": "^9.33.0",
 		"eslint-config-pluv": "workspace:^",
 		"ioredis": "^5.7.0",
 		"tsup": "^8.5.0",
