@@ -410,7 +410,7 @@ importers:
         version: 2.1.0
       hono:
         specifier: ^4.9.6
-        version: 4.9.6
+        version: 4.9.7
       zod:
         specifier: ^4.1.5
         version: 4.1.5
@@ -533,7 +533,7 @@ importers:
         version: 0.37.0(@types/hast@3.0.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@hono/node-server':
         specifier: ^1.19.1
-        version: 1.19.1(hono@4.9.6)
+        version: 1.19.1(hono@4.9.7)
       '@lexical/react':
         specifier: ^0.34.0
         version: 0.34.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(yjs@13.6.27)
@@ -632,7 +632,7 @@ importers:
         version: 5.1.0
       hono:
         specifier: ^4.9.6
-        version: 4.9.6
+        version: 4.9.7
       ioredis:
         specifier: ^5.7.0
         version: 5.7.0
@@ -3141,8 +3141,8 @@ packages:
     resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
     engines: {node: '>=0.10.0'}
 
-  hono@4.9.6:
-    resolution: {integrity: sha512-doVjXhSFvYZ7y0dNokjwwSahcrAfdz+/BCLvAMa/vHLzjj8+CFyV5xteThGUsKdkaasgN+gF2mUxao+SGLpUeA==}
+  hono@4.9.7:
+    resolution: {integrity: sha512-t4Te6ERzIaC48W3x4hJmBwgNlLhmiEdEE5ViYb02ffw4ignHNHa5IBtPjmbKstmtKa8X6C35iWwK4HaqvrzG9w==}
     engines: {node: '>=16.9.0'}
 
   html-void-elements@3.0.0:
@@ -4484,6 +4484,7 @@ packages:
   source-map@0.8.0-beta.0:
     resolution: {integrity: sha512-2ymg6oRBpebeZi9UUNsgQ89bhx01TcTkmNTGnNO88imTmbSgy4nfujrgVEFKWpMTEGA11EDkTt7mqObTPdigIA==}
     engines: {node: '>= 8'}
+    deprecated: The work that was done in this beta branch won't be included in future versions
 
   space-separated-tokens@2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
@@ -5559,9 +5560,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@hono/node-server@1.19.1(hono@4.9.6)':
+  '@hono/node-server@1.19.1(hono@4.9.7)':
     dependencies:
-      hono: 4.9.6
+      hono: 4.9.7
 
   '@humanfs/core@0.19.1': {}
 
@@ -7745,7 +7746,7 @@ snapshots:
     dependencies:
       parse-passwd: 1.0.0
 
-  hono@4.9.6: {}
+  hono@4.9.7: {}
 
   html-void-elements@3.0.0: {}
 
