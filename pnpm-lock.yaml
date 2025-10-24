@@ -410,7 +410,7 @@ importers:
         version: 2.1.0
       hono:
         specifier: ^4.9.8
-        version: 4.10.2
+        version: 4.10.3
       zod:
         specifier: ^4.1.11
         version: 4.1.11
@@ -533,7 +533,7 @@ importers:
         version: 0.39.1(@floating-ui/dom@1.7.4)(@tiptap/extensions@3.4.4(@tiptap/core@3.4.4(@tiptap/pm@3.4.4))(@tiptap/pm@3.4.4))(@types/hast@3.0.4)(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@hono/node-server':
         specifier: ^1.19.3
-        version: 1.19.3(hono@4.10.2)
+        version: 1.19.3(hono@4.10.3)
       '@lexical/react':
         specifier: ^0.35.0
         version: 0.35.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(yjs@13.6.27)
@@ -632,7 +632,7 @@ importers:
         version: 5.1.0
       hono:
         specifier: ^4.9.8
-        version: 4.10.2
+        version: 4.10.3
       ioredis:
         specifier: ^5.7.0
         version: 5.7.0
@@ -3137,8 +3137,8 @@ packages:
     resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
     engines: {node: '>=0.10.0'}
 
-  hono@4.10.2:
-    resolution: {integrity: sha512-p6fyzl+mQo6uhESLxbF5WlBOAJMDh36PljwlKtP5V1v09NxlqGru3ShK+4wKhSuhuYf8qxMmrivHOa/M7q0sMg==}
+  hono@4.10.3:
+    resolution: {integrity: sha512-2LOYWUbnhdxdL8MNbNg9XZig6k+cZXm5IjHn2Aviv7honhBMOHb+jxrKIeJRZJRmn+htUCKhaicxwXuUDlchRA==}
     engines: {node: '>=16.9.0'}
 
   html-void-elements@3.0.0:
@@ -5595,9 +5595,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@hono/node-server@1.19.3(hono@4.10.2)':
+  '@hono/node-server@1.19.3(hono@4.10.3)':
     dependencies:
-      hono: 4.10.2
+      hono: 4.10.3
 
   '@humanfs/core@0.19.1': {}
 
@@ -7784,7 +7784,7 @@ snapshots:
     dependencies:
       parse-passwd: 1.0.0
 
-  hono@4.10.2: {}
+  hono@4.10.3: {}
 
   html-void-elements@3.0.0: {}
 
