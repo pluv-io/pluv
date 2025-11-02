@@ -140,14 +140,6 @@ export const createBundle = <
             const rerender = useRerender();
             const mockedRoom = useContext(MockedRoomContext);
 
-            const resolvedMeta = useDeepAsyncMemo(async () => {
-                const resolved = await Promise.resolve(
-                    typeof metadata === "function" ? metadata() : metadata,
-                );
-
-                return !!room.metadata ? room.metadata.parse(resolved) : resolved;
-            });
-
             const createRoom = useCallback((): PluvRoom<
                 TIO,
                 TMetadata,
@@ -173,8 +165,17 @@ export const createBundle = <
 
             useEffect(() => {
                 if (room.id === _room) return;
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setRoom(createRoom());
             }, [_room, createRoom, room]);
+
+            const resolvedMeta = useDeepAsyncMemo(async () => {
+                const resolved = await Promise.resolve(
+                    typeof metadata === "function" ? metadata() : metadata,
+                );
+
+                return !!room.metadata ? room.metadata.parse(resolved) : resolved;
+            });
 
             useEffect(() => {
                 const unsubscribe = room.subscribe.connection(() => {
