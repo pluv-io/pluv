@@ -52,5 +52,6 @@ export const useSyncExternalStoreWithSelector = <TSnapshot, TSelection>(
 
     const result = useSyncExternalStore(subscribe, _getClientSnapshot, _getServerSnapshot);
 
+    // eslint-disable-next-line react-hooks/refs
     return typeof window !== "undefined" ? noSsr(result, _getServerSnapshot?.()) : result;
 };
