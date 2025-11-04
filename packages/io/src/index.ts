@@ -38,6 +38,7 @@ export type { CreateRoomOptions, InferIORoom, PluvServerConfig } from "./PluvSer
 export type {
     GetInitialStorageFn,
     HandleMode,
+    IORoomDestroyedEvent,
     IORoomListenerEvent,
     IORoomMessageEvent,
     IOStorageUpdatedEvent,

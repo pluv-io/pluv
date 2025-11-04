@@ -42,6 +42,7 @@ export class NodePlatform<
         listeners: {
             onRoomDeleted: true;
             onRoomMessage: true;
+            onStorageDestroyed: true;
             onStorageUpdated: true;
             onUserConnected: true;
             onUserDisconnected: true;
@@ -71,6 +72,7 @@ export class NodePlatform<
             listeners: {
                 onRoomDeleted: true as const,
                 onRoomMessage: true as const,
+                onStorageDestroyed: true as const,
                 onStorageUpdated: true as const,
                 onUserConnected: true as const,
                 onUserDisconnected: true as const,
