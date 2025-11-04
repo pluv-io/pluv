@@ -681,7 +681,16 @@ export class IORoom<
             }
         }
 
-        if (typeof encodedState === "string") doc.applyEncodedState({ update: encodedState });
+        if (typeof encodedState === "string") {
+            doc.applyEncodedState({ update: encodedState });
+
+            // If we loaded storage from persistence and it's non-empty, storage was previously initialized.
+            // This handles hibernation wake-up: restore the initialization state so that onStorageDestroyed
+            // will fire correctly when the room is destroyed.
+            if (!doc.isEmpty()) {
+                this._storageInitializedViaSession = true;
+            }
+        }
 
         return doc;
     }
