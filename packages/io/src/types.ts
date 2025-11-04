@@ -122,6 +122,7 @@ export interface PlatformConfig {
     listeners: {
         onRoomDeleted?: boolean;
         onRoomMessage?: boolean;
+        onStorageDestroyed?: boolean;
         onStorageUpdated?: boolean;
         onUserConnected?: boolean;
         onUserDisconnected?: boolean;
@@ -172,8 +173,9 @@ export type BasePluvIOListeners<
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = {
-    onRoomDeleted: (event: IORoomListenerEvent<TPlatform, TContext>) => void;
+    onRoomDeleted: (event: IORoomDestroyedEvent<TPlatform, TContext>) => void;
     onRoomMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
+    onStorageDestroyed: (event: IORoomListenerEvent<TPlatform, TContext>) => void;
     onStorageUpdated: (event: IOStorageUpdatedEvent<TPlatform, TAuthorize, TContext>) => void;
     onUserConnected: (event: IOUserConnectedEvent<TPlatform, TAuthorize, TContext>) => void;
     onUserDisconnected: (event: IOUserDisconnectedEvent<TPlatform, TAuthorize, TContext>) => void;
@@ -232,6 +234,15 @@ export type IORoomListenerEvent<
 > = {
     context: TContext;
     encodedState: string | null;
+    platform: TPlatform;
+    room: string;
+};
+
+export type IORoomDestroyedEvent<
+    TPlatform extends AbstractPlatform<any, any, any, any>,
+    TContext extends Record<string, any>,
+> = {
+    context: TContext;
     platform: TPlatform;
     room: string;
 };

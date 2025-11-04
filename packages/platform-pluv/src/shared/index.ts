@@ -1,5 +1,4 @@
 export { createErrorResponse } from "./createErrorResponse";
-export type { CreateErrorResponseParams } from "./createErrorResponse";
 export { createHmac } from "./createHmac";
 export type { CreateHmacParams } from "./createHmac";
 export { createSuccessResponse } from "./createSuccessResponse";
