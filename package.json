@@ -22,6 +22,7 @@
         "test": "turbo run test",
         "test:e2e": "turbo run test --filter=@pluv-tests/e2e...",
         "test:types": "turbo run test --filter=@pluv-tests/types...",
+        "typecheck": "turbo run typecheck",
         "turbo": "turbo",
         "version-packages": "changeset version"
     },

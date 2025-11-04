@@ -49,6 +49,12 @@
       "env": [
         "CI"
       ]
+    },
+    "typecheck": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
     }
   }
 }

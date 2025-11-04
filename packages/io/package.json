@@ -24,6 +24,7 @@
 		"build": "pnpm run version && tsup src/index.ts --format esm,cjs --dts",
 		"dev": "tsup src/index.ts --format esm,cjs --watch --dts",
 		"lint": "eslint \"src/**/*.ts*\" --fix --max-warnings 0",
+		"typecheck": "tsc --noEmit",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
 		"version": "genversion ./src/version.generated.ts --esm"
 	},
