@@ -41,8 +41,8 @@ export const ioServer = io.server({
 
         return storage ?? null;
     },
-    onRoomDeleted: async ({ context, room: name, encodedState: storage }) => {
-        if (name !== SAVED_ROOM_NAME) return null;
+    onStorageDestroyed: async ({ context, room: name, encodedState: storage }) => {
+        if (name !== SAVED_ROOM_NAME) return;
 
         const { env } = context;
         if (!!storage) {

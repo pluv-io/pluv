@@ -39,7 +39,7 @@ export const ioServer = io.server({
 
         return storage;
     },
-    onRoomDeleted: async ({ room: name, encodedState: storage }) => {
+    onStorageDestroyed: async ({ room: name, encodedState: storage }) => {
         if (name !== "e2e-node-storage-saved") return;
 
         await prisma.room.upsert({
