@@ -59,7 +59,7 @@ const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
     if (existing) return existing;
 
     const newRoom = ioServer.createRoom(roomId, {
-        onDestroy: (event) => {
+        onRoomDestroyed: (event) => {
             rooms.delete(event.room);
         },
     });
