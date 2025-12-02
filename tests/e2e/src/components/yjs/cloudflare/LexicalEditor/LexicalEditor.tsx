@@ -6,13 +6,10 @@ import { ConnectionState } from "@pluv/types";
 import type { FC } from "react";
 import { useCallback, useRef, useState } from "react";
 import type { Doc as YDoc } from "yjs";
-import { useConnection, useDoc, useRoom } from "../../../../pluv-io/yjs/cloudflare";
+import { useConnection, useRoom } from "../../../../pluv-io/yjs/cloudflare";
+import { LexicalCollaboration } from "@lexical/react/LexicalCollaborationContext";
 import Editor from "./Editor";
-import { getRandomUserProfile, UserProfile } from "./getRandomUserProfile";
-
-interface ActiveUserProfile extends UserProfile {
-    userId: number;
-}
+import { getRandomUserProfile } from "./getRandomUserProfile";
 
 const initialConfig: InitialConfigType = {
     // NOTE: This is critical for collaboration plugin to set editor state to null. It
@@ -66,20 +63,22 @@ export const LexicalEditor: FC = () => {
                     }
                 />
             </p>
-            <LexicalComposer initialConfig={initialConfig}>
-                {/* With CollaborationPlugin - we MUST NOT use @lexical/react/LexicalHistoryPlugin */}
-                <CollaborationPlugin
-                    id={room.id}
-                    providerFactory={providerFactory}
-                    // Unless you have a way to avoid race condition between 2+ users trying to do bootstrap simultaneously
-                    // you should never try to bootstrap on client. It's better to perform bootstrap within Yjs server.
-                    shouldBootstrap={false}
-                    username={userProfile.name}
-                    cursorColor={userProfile.color}
-                    cursorsContainerRef={containerRef}
-                />
-                <Editor />
-            </LexicalComposer>
+            <LexicalCollaboration>
+                <LexicalComposer initialConfig={initialConfig}>
+                    {/* With CollaborationPlugin - we MUST NOT use @lexical/react/LexicalHistoryPlugin */}
+                    <CollaborationPlugin
+                        id={room.id}
+                        providerFactory={providerFactory}
+                        // Unless you have a way to avoid race condition between 2+ users trying to do bootstrap simultaneously
+                        // you should never try to bootstrap on client. It's better to perform bootstrap within Yjs server.
+                        shouldBootstrap={false}
+                        username={userProfile.name}
+                        cursorColor={userProfile.color}
+                        cursorsContainerRef={containerRef}
+                    />
+                    <Editor />
+                </LexicalComposer>
+            </LexicalCollaboration>
         </div>
     );
 };
