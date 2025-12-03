@@ -8,6 +8,7 @@ export default defineConfig({
     target: "esnext",
     sourcemap: true,
     clean: true,
+    external: ["react", "react-dom"],
     exports: {
         all: true,
     },
