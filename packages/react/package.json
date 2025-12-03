@@ -42,7 +42,7 @@
 		"@types/react": "^19.2.7",
 		"eslint": "^9.39.1",
 		"eslint-config-pluv": "workspace:^",
-		"react": "^19.2.0",
+		"react": "^19.2.1",
 		"tsdown": "^0.17.0-beta.5",
 		"typescript": "^5.9.3"
 	},
