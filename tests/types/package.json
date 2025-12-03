@@ -25,8 +25,8 @@
         "@types/react-dom": "^19.2.3",
         "@types/ws": "^8.18.1",
         "loro-crdt": "^1.10.2",
-        "react": "^19.2.0",
-        "react-dom": "^19.2.0",
+        "react": "^19.2.1",
+        "react-dom": "^19.2.1",
         "ws": "^8.18.3",
         "yjs": "^13.6.27",
         "zod": "^4.1.13"
@@ -38,6 +38,6 @@
         "eslint-config-pluv": "workspace:^",
         "expect-type": "^1.2.2",
         "typescript": "^5.9.3",
-        "wrangler": "^4.51.0"
+        "wrangler": "^4.52.1"
     }
 }
