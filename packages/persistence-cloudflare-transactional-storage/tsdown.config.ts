@@ -8,4 +8,8 @@ export default defineConfig({
     target: "esnext",
     sourcemap: true,
     clean: true,
+    external: ["cloudflare:workers"],
+    exports: {
+        all: true,
+    },
 });

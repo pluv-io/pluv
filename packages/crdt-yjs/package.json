@@ -14,9 +14,9 @@
 		"url": "git+https://github.com/pluv-io/pluv.git",
 		"directory": "packages/crdt-yjs"
 	},
-	"main": "./dist/index.js",
+	"main": "./dist/index.cjs",
 	"module": "./dist/index.mjs",
-	"types": "./dist/index.d.ts",
+	"types": "./dist/index.d.cts",
 	"publishConfig": {
 		"access": "public"
 	},
@@ -44,5 +44,12 @@
 		"tsdown": "^0.17.0-beta.5",
 		"typescript": "^5.9.3",
 		"yjs": "^13.6.27"
+	},
+	"exports": {
+		".": {
+			"require": "./dist/index.cjs",
+			"import": "./dist/index.mjs"
+		},
+		"./*": "./*"
 	}
 }

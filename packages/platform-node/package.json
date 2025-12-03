@@ -14,9 +14,9 @@
         "url": "git+https://github.com/pluv-io/pluv.git",
         "directory": "packages/platform-node"
     },
-    "main": "./dist/index.js",
+    "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
-    "types": "./dist/index.d.ts",
+    "types": "./dist/index.d.cts",
     "publishConfig": {
         "access": "public"
     },
@@ -45,5 +45,12 @@
     },
     "peerDependencies": {
         "ws": "^8.0.0"
+    },
+    "exports": {
+        ".": {
+            "require": "./dist/index.cjs",
+            "import": "./dist/index.mjs"
+        },
+        "./*": "./*"
     }
 }

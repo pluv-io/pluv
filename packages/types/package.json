@@ -14,8 +14,8 @@
 		"url": "git+https://github.com/pluv-io/pluv.git",
 		"directory": "packages/types"
 	},
-	"main": "./dist/index.js",
-	"types": "./dist/index.d.ts",
+	"main": "./dist/index.cjs",
+	"types": "./dist/index.d.cts",
 	"publishConfig": {
 		"access": "public"
 	},
@@ -35,5 +35,13 @@
 	},
 	"dependencies": {
 		"wonka": "^6.3.5"
+	},
+	"module": "./dist/index.mjs",
+	"exports": {
+		".": {
+			"require": "./dist/index.cjs",
+			"import": "./dist/index.mjs"
+		},
+		"./*": "./*"
 	}
 }

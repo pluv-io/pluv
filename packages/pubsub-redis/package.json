@@ -14,9 +14,9 @@
 		"url": "git+https://github.com/pluv-io/pluv.git",
 		"directory": "packages/pubsub-redis"
 	},
-	"main": "./dist/index.js",
+	"main": "./dist/index.cjs",
 	"module": "./dist/index.mjs",
-	"types": "./dist/index.d.ts",
+	"types": "./dist/index.d.cts",
 	"publishConfig": {
 		"access": "public"
 	},
@@ -41,5 +41,12 @@
 		"ioredis": "^5.8.2",
 		"tsdown": "^0.17.0-beta.5",
 		"typescript": "^5.9.3"
+	},
+	"exports": {
+		".": {
+			"require": "./dist/index.cjs",
+			"import": "./dist/index.mjs"
+		},
+		"./*": "./*"
 	}
 }

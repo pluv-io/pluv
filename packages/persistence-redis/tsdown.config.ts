@@ -8,4 +8,7 @@ export default defineConfig({
     target: "esnext",
     sourcemap: true,
     clean: true,
+    exports: {
+        all: true,
+    },
 });
