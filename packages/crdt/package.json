@@ -14,15 +14,15 @@
 		"url": "git+https://github.com/pluv-io/pluv.git",
 		"directory": "packages/crdt"
 	},
-	"main": "./dist/index.js",
+	"main": "./dist/index.cjs",
 	"module": "./dist/index.mjs",
-	"types": "./dist/index.d.ts",
+	"types": "./dist/index.d.cts",
 	"publishConfig": {
 		"access": "public"
 	},
 	"scripts": {
-		"build": "tsup src/index.ts --format esm,cjs --dts",
-		"dev": "tsup src/index.ts --format esm,cjs --watch --dts",
+		"build": "tsdown",
+		"dev": "tsdown --watch",
 		"lint": "eslint \"src/**/*.ts*\" --fix --max-warnings 0",
 		"typecheck": "tsc --noEmit",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
@@ -34,7 +34,14 @@
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^9.39.1",
 		"eslint-config-pluv": "workspace:^",
-		"tsup": "^8.5.0",
+		"tsdown": "^0.17.0-beta.5",
 		"typescript": "^5.9.3"
+	},
+	"exports": {
+		".": {
+			"require": "./dist/index.cjs",
+			"import": "./dist/index.mjs"
+		},
+		"./*": "./*"
 	}
 }
