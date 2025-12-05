@@ -83,11 +83,8 @@ export type BroadcastProxy<TIO extends IORoom<any, any, any, any, any>> = (<
 
 export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<
-        TPlatform,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null =
         any,
-        InferInitContextType<TPlatform>
-    > | null = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -120,16 +117,12 @@ export type WebSocketRegisterConfig<
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<
-        TPlatform,
-        any,
-        InferInitContextType<TPlatform>
-    > | null = null,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null =
+        null,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> implements IOLike<TAuthorize, TCrdt, TEvents>
-{
+> implements IOLike<TAuthorize, TCrdt, TEvents> {
     public readonly id: string;
 
     private _doc: Promise<CrdtDocLike<any, any>>;
@@ -851,6 +844,8 @@ export class IORoom<
                             room: this.id,
                         }),
                     );
+
+                    this._storageInitializedViaSession = false;
                 }
 
                 this._uninitialize = null;
