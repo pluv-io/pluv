@@ -1,9 +1,9 @@
 {
     "name": "@pluv-tests/types",
     "version": "0.0.0",
-    "main": "./index.js",
     "sideEffects": false,
     "private": true,
+    "type": "module",
     "scripts": {
         "test": "tsc --noEmit"
     },
