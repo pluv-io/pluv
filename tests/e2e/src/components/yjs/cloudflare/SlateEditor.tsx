@@ -1,64 +1,57 @@
-import { withYjs, YjsEditor } from "@slate-yjs/core";
+import { yjs } from "@pluv/crdt-yjs";
+import { withCursors, withYjs, YjsEditor } from "@slate-yjs/core";
 import type { FC } from "react";
 import { useEffect, useMemo, useState } from "react";
-import type { Descendant, Node } from "slate";
+import type { Descendant } from "slate";
 import { createEditor, Editor, Transforms } from "slate";
 import { Editable, Slate, withReact } from "slate-react";
-import { useStorage } from "../../../pluv-io/yjs/cloudflare";
+import { useRoom, useStorage } from "../../../pluv-io/yjs/cloudflare";
+
+const INITIAL_VALUE: Descendant = {
+    children: [{ text: "" }],
+};
 
 export interface SlateEditorProps {}
 
-export const SlateEditor: FC<SlateEditorProps> = () => {
-    const [, sharedType] = useStorage("slate");
+type SharedType = NonNullable<ReturnType<typeof useStorage<"slate">>[1]>;
+type Provider = ReturnType<typeof yjs.provider>;
 
+interface SlateEditableProps {
+    provider: Provider;
+    sharedType: SharedType;
+}
+
+const SlateEditable: FC<SlateEditableProps> = ({ provider, sharedType }) => {
     const editor = useMemo(() => {
-        if (!sharedType) return null;
-
-        const e = withReact(withYjs(createEditor(), sharedType));
+        const e = withCursors(
+            withReact(withYjs(createEditor(), sharedType)),
+            provider.awareness as any,
+            { data: { name: "John Doe", color: "#00ff00" } },
+        );
         const { normalizeNode } = e;
 
-        e.normalizeNode = (entry) => {
+        e.normalizeNode = (entry, options) => {
             const [node] = entry;
 
             if (!Editor.isEditor(node) || node.children.length > 0) {
-                return normalizeNode(entry);
+                return normalizeNode(entry, options);
             }
 
-            Transforms.insertNodes(
-                e,
-                {
-                    type: "paragraph",
-                    children: [{ text: "" }],
-                } as Node,
-                { at: [0] },
-            );
+            Transforms.insertNodes(e, INITIAL_VALUE, { at: [0] });
         };
 
         return e;
     }, [sharedType]);
 
     useEffect(() => {
-        if (!editor) return;
-
         YjsEditor.connect(editor);
-
         return () => {
             YjsEditor.disconnect(editor);
         };
     }, [editor]);
 
-    const [value, setValue] = useState<Descendant[]>([]);
-
-    if (!editor) return null;
-
     return (
-        <Slate
-            editor={editor}
-            initialValue={value}
-            onChange={(newValue) => {
-                setValue(newValue);
-            }}
-        >
+        <Slate editor={editor} initialValue={[INITIAL_VALUE]}>
             <Editable
                 id="slate-editable"
                 style={{
@@ -69,4 +62,29 @@ export const SlateEditor: FC<SlateEditorProps> = () => {
             />
         </Slate>
     );
+};
+
+export const SlateEditor: FC<SlateEditorProps> = () => {
+    const [, sharedType] = useStorage("slate");
+    const room = useRoom();
+    const [provider, setProvider] = useState<Provider | null>(null);
+    const [connected, setConnected] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (!sharedType || !room) return;
+
+        const yProvider = yjs.provider({ room });
+
+        setProvider(yProvider as any);
+        yProvider.on("sync", setConnected);
+
+        return () => {
+            yProvider.off("sync", setConnected);
+            yProvider.destroy();
+        };
+    }, [sharedType, room]);
+
+    if (!connected || !provider || !sharedType) return null;
+
+    return <SlateEditable provider={provider} sharedType={sharedType} />;
 };
