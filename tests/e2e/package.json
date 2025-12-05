@@ -8,11 +8,11 @@
 		"cf:typegen": "wrangler types --env-interface CloudflareEnv ./cf.d.ts",
 		"dev": "concurrently \"pnpm:dev:client\" \"pnpm:dev:noop:server:node\" \"pnpm:dev:yjs:server:cloudflare\" \"pnpm:dev:yjs:server:node\" \"pnpm:dev:yjs:server:node-redis\"",
 		"dev:client": "next dev --port 3100",
-		"dev:loro:server:node": "vite-node --project ./src/server/loro/node/tsconfig.json ./src/server/loro/node/index.ts --port 3112",
-		"dev:noop:server:node": "vite-node --project ./src/server/noop/node/tsconfig.json ./src/server/noop/node/index.ts --port 3122",
+		"dev:loro:server:node": "tsx --tsconfig ./src/server/loro/node/tsconfig.json ./src/server/loro/node/index.ts --port 3112",
+		"dev:noop:server:node": "tsx --tsconfig ./src/server/noop/node/tsconfig.json ./src/server/noop/node/index.ts --port 3122",
 		"dev:yjs:server:cloudflare": "wrangler dev --port 3101",
-		"dev:yjs:server:node": "vite-node --project ./src/server/yjs/node/tsconfig.json ./src/server/yjs/node/index.ts -- --port 3102",
-		"dev:yjs:server:node-redis": "vite-node --project ./src/server/yjs/node-redis/tsconfig.json ./src/server/yjs/node-redis/index.ts -- --port 3103",
+		"dev:yjs:server:node": "tsx --tsconfig ./src/server/yjs/node/tsconfig.json ./src/server/yjs/node/index.ts -- --port 3102",
+		"dev:yjs:server:node-redis": "tsx --tsconfig ./src/server/yjs/node-redis/tsconfig.json ./src/server/yjs/node-redis/index.ts -- --port 3103",
 		"lint": "eslint \"src/**/*.ts*\" --fix --max-warnings 0",
 		"migrate:dev": "prisma migrate dev",
 		"prisma": "prisma",
@@ -83,8 +83,8 @@
 		"eslint-config-pluv": "workspace:^",
 		"miniflare": "^4.20251202.1",
 		"prisma": "^6.18.0",
+		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
-		"vite-node": "^5.2.0",
 		"wrangler": "^4.53.0"
 	}
 }
