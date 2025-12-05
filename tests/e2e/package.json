@@ -80,16 +80,16 @@
 		"zod": "^4.1.13"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20251202.0",
+		"@cloudflare/workers-types": "^4.20251205.0",
 		"@playwright/test": "^1.57.0",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^9.2.1",
 		"eslint": "^9.39.1",
 		"eslint-config-pluv": "workspace:^",
-		"miniflare": "^4.20251202.0",
+		"miniflare": "^4.20251202.1",
 		"prisma": "^6.18.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.9.3",
-		"wrangler": "^4.52.1"
+		"wrangler": "^4.53.0"
 	}
 }
