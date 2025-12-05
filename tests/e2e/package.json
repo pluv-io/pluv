@@ -19,14 +19,14 @@
 		"prisma": "prisma",
 		"playwright": "playwright",
 		"start": "next start",
-		"test": "pnpm tsc:check && playwright test",
+		"test": "playwright test",
 		"test:noop:node": "playwright test ./src/tests/noop/node/**/*",
 		"test:loro:node": "playwright test ./src/tests/loro/node/**/*",
 		"test:yjs:cloudflare-kv": "wrangler deploy --dry-run && playwright test ./src/tests/yjs/cloudflare-kv/**/*",
 		"test:yjs:cloudflare-sqlite": "wrangler deploy --dry-run && playwright test ./src/tests/yjs/cloudflare-sqlite/**/*",
 		"test:yjs:node": "prisma migrate reset --force && playwright test ./src/tests/yjs/node/**/*",
 		"test:yjs:node-redis": "playwright test ./src/tests/yjs/node-redis/**/*",
-		"tsc:check": "tsc --noEmit"
+		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
 		"@blocknote/core": "^0.44.0",
