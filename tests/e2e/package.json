@@ -4,6 +4,7 @@
 	"main": "./index.js",
 	"sideEffects": false,
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"cf:typegen": "wrangler types --env-interface CloudflareEnv ./cf.d.ts",
 		"dev": "concurrently \"pnpm:dev:client\" \"pnpm:dev:noop:server:node\" \"pnpm:dev:yjs:server:cloudflare\" \"pnpm:dev:yjs:server:node\" \"pnpm:dev:yjs:server:node-redis\"",
