@@ -37,6 +37,7 @@ import type {
     EventResolverContext,
     EventResolverKind,
     GetInitialStorageFn,
+    IORoomDestroyedEvent,
     IORoomListenerEvent,
     IORoomMessageEvent,
     IOUserConnectedEvent,
@@ -64,7 +65,8 @@ export interface IORoomListeners<
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > {
-    onDestroy: (event: IORoomListenerEvent<TPlatform, TContext>) => void;
+    onRoomDestroyed: (event: IORoomDestroyedEvent<TPlatform, TContext>) => void;
+    onStorageDestroyed: (event: IORoomListenerEvent<TPlatform, TContext>) => void;
     onMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
     onUserConnected: (event: IOUserConnectedEvent<TPlatform, TAuthorize, TContext>) => void;
     onUserDisconnected: (event: IOUserDisconnectedEvent<TPlatform, TAuthorize, TContext>) => void;
@@ -81,11 +83,8 @@ export type BroadcastProxy<TIO extends IORoom<any, any, any, any, any>> = (<
 
 export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<
-        TPlatform,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null =
         any,
-        InferInitContextType<TPlatform>
-    > | null = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -118,16 +117,12 @@ export type WebSocketRegisterConfig<
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<
-        TPlatform,
-        any,
-        InferInitContextType<TPlatform>
-    > | null = null,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null =
+        null,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> implements IOLike<TAuthorize, TCrdt, TEvents>
-{
+> implements IOLike<TAuthorize, TCrdt, TEvents> {
     public readonly id: string;
 
     private _doc: Promise<CrdtDocLike<any, any>>;
@@ -149,6 +144,9 @@ export class IORoom<
         AbstractWebSocket<any, TAuthorize>
     >();
     private readonly _userSessionss = new Map<[userId: string][0], Set<[sessionId: string][0]>>();
+
+    private _wasDocEmptyOnInit: boolean = true;
+    private _storageInitializedViaSession: boolean = false;
 
     /**
      * @ignore
@@ -200,7 +198,8 @@ export class IORoom<
             crdt = noop,
             debug,
             getInitialStorage,
-            onDestroy,
+            onRoomDestroyed,
+            onStorageDestroyed,
             onMessage,
             onUserConnected,
             onUserDisconnected,
@@ -221,7 +220,8 @@ export class IORoom<
         this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), roomContext });
 
         this._listeners = {
-            onDestroy: (event) => onDestroy?.(event),
+            onRoomDestroyed: (event) => onRoomDestroyed?.(event),
+            onStorageDestroyed: (event) => onStorageDestroyed?.(event),
             onMessage: (event) => onMessage?.(event),
             onUserConnected: (event) => onUserConnected?.(event),
             onUserDisconnected: (event) => onUserDisconnected?.(event),
@@ -674,7 +674,16 @@ export class IORoom<
             }
         }
 
-        if (typeof encodedState === "string") doc.applyEncodedState({ update: encodedState });
+        if (typeof encodedState === "string") {
+            doc.applyEncodedState({ update: encodedState });
+
+            // If we loaded storage from persistence and it's non-empty, storage was previously initialized.
+            // This handles hibernation wake-up: restore the initialization state so that onStorageDestroyed
+            // will fire correctly when the room is destroyed.
+            if (!doc.isEmpty()) {
+                this._storageInitializedViaSession = true;
+            }
+        }
 
         return doc;
     }
@@ -797,6 +806,10 @@ export class IORoom<
             );
 
             const doc = await this._getInitialDoc();
+
+            // Track if doc was empty when room was first initialized
+            this._wasDocEmptyOnInit = doc.isEmpty();
+
             const uninitialize = async () => {
                 this._platform.pubSub.unsubscribe(pubSubId);
 
@@ -806,17 +819,34 @@ export class IORoom<
                 doc.destroy();
                 this._doc = Promise.resolve(this._docFactory.getEmpty());
 
+                // Always emit onRoomDestroyed
                 await Promise.resolve(
-                    this._listeners.onDestroy({
+                    this._listeners.onRoomDestroyed({
                         ...("_meta" in this._platform && !!this._platform._meta
                             ? { _meta: this._platform._meta }
                             : {}),
                         context,
-                        encodedState,
                         platform: this._platform,
                         room: this.id,
                     }),
                 );
+
+                // Only emit onStorageDestroyed if storage was initialized via initializeSession
+                if (this._storageInitializedViaSession) {
+                    await Promise.resolve(
+                        this._listeners.onStorageDestroyed({
+                            ...("_meta" in this._platform && !!this._platform._meta
+                                ? { _meta: this._platform._meta }
+                                : {}),
+                            context,
+                            encodedState,
+                            platform: this._platform,
+                            room: this.id,
+                        }),
+                    );
+
+                    this._storageInitializedViaSession = false;
+                }
 
                 this._uninitialize = null;
             };
@@ -991,6 +1021,10 @@ export class IORoom<
 
                 await Promise.all([handleBroadcast(), handleSelf(), handleSync()]);
             });
+
+            // After processing messages that might update storage (like $initializeSession),
+            // check if storage was initialized via initializeSession
+            await this._checkStorageInitializedViaSession();
         };
     }
 
@@ -1059,6 +1093,19 @@ export class IORoom<
         this._userSessionss.delete(userId);
 
         return set;
+    }
+
+    private async _checkStorageInitializedViaSession(): Promise<void> {
+        if (this._storageInitializedViaSession) return;
+
+        // Only mark as initialized if:
+        // 1. Doc was empty when room was first initialized
+        // 2. Doc is now non-empty
+        // 3. At least one session has been registered
+        const doc = await this._doc;
+        if (this._wasDocEmptyOnInit && !doc.isEmpty() && this._sessions.size > 0) {
+            this._storageInitializedViaSession = true;
+        }
     }
 
     private async _sendMessage(

@@ -46,7 +46,7 @@ const getRoom1 = (roomId: string): ReturnType<typeof ioServer1st.createRoom> => 
     if (existing) return existing;
 
     const newRoom = ioServer1st.createRoom(roomId, {
-        onDestroy: (event) => {
+        onRoomDestroyed: (event) => {
             rooms1.delete(event.room);
         },
     });
@@ -66,7 +66,7 @@ const getRoom2 = (roomId: string): ReturnType<typeof ioServer2nd.createRoom> => 
     if (existing) return existing;
 
     const newRoom = ioServer2nd.createRoom(roomId, {
-        onDestroy: (event) => {
+        onRoomDestroyed: (event) => {
             rooms2.delete(event.room);
         },
     });
