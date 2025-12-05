@@ -6,7 +6,7 @@ import express from "express";
 import Http from "http";
 import { match } from "path-to-regexp";
 import Url from "url";
-import WebSocket from "ws";
+import { WebSocketServer } from "ws";
 import { cluster } from "./cluster";
 import { io1st, ioServer1st, ioServer2nd } from "./pluv-io";
 
@@ -31,7 +31,7 @@ if (Number.isNaN(port)) {
 
 const app = express();
 const server = Http.createServer(app);
-const wsServer = new WebSocket.Server({ server });
+const wsServer = new WebSocketServer({ server });
 
 const rooms1 = new Map<string, ReturnType<typeof ioServer1st.createRoom>>();
 const rooms2 = new Map<string, ReturnType<typeof ioServer2nd.createRoom>>();
