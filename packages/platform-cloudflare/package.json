@@ -1,6 +1,6 @@
 {
     "name": "@pluv/platform-cloudflare",
-    "version": "3.2.2",
+    "version": "4.0.0",
     "description": "@pluv/io adapter for cloudflare workers",
     "author": {
         "email": "david@pluv.io",
