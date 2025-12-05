@@ -1,11 +1,11 @@
-import bodyParser from "body-parser";
+import { serve, type HttpBindings } from "@hono/node-server";
 import { Option, program } from "commander";
-import cors from "cors";
 import Crypto, { randomBytes } from "crypto";
-import express from "express";
-import Http from "http";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import Http from "node:http";
+import Url from "node:url";
 import { match } from "path-to-regexp";
-import Url from "url";
 import { WebSocketServer } from "ws";
 import { cluster } from "./cluster";
 import { io1st, ioServer1st, ioServer2nd } from "./pluv-io";
@@ -29,8 +29,53 @@ if (Number.isNaN(port)) {
     throw new Error("Port is not a number");
 }
 
-const app = express();
-const server = Http.createServer(app);
+const app = new Hono<{ Bindings: HttpBindings }>()
+    .use(cors({ origin: "*" }))
+    .get("/ok", (c) => {
+        return c.text("ok", 200);
+    })
+    .get("/api/authorize", async (c) => {
+        const roomId = c.req.query("roomName") as string;
+
+        if (!roomId) {
+            return c.json({ error: `Room does not exist: ${roomId}` }, 404);
+        }
+
+        const id = Crypto.randomUUID();
+        const token = await io1st.createToken({
+            req: c.env.incoming,
+            room: roomId,
+            user: { id, name: `user:${id}` },
+        });
+
+        return c.text(token, 200);
+    })
+    .post("/api/room", (c) => {
+        return c.text(randomBytes(48).toString("hex"), 200);
+    });
+
+try {
+    cluster.disconnect();
+} catch {
+    console.log("Cluster did not disconnect");
+}
+
+console.log("Connecting to cluster");
+cluster.on("connect", () => {
+    console.log("Cluster connected");
+});
+
+await cluster.connect();
+
+const server = serve(
+    {
+        fetch: app.fetch,
+        port,
+    },
+    () => {
+        console.log(`Server is listening on port: ${port}`);
+    },
+) as Http.Server;
 const wsServer = new WebSocketServer({ server });
 
 const rooms1 = new Map<string, ReturnType<typeof ioServer1st.createRoom>>();
@@ -97,40 +142,4 @@ wsServer.on("connection", async (ws, req) => {
     const room = !io ? getRoom1(roomId) : getRoom2(roomId);
 
     await room.register(ws, { req, token });
-});
-
-app.use(bodyParser.json());
-app.use(cors({ origin: "*" }));
-
-app.get("/ok", (req, res) => {
-    res.send("ok").status(200);
-});
-
-app.get("/api/authorize", async (req, res) => {
-    const roomId = req.query.roomName as string;
-
-    if (!roomId) {
-        res.json({ error: `Room does not exist: ${roomId}` }).status(404);
-
-        return;
-    }
-
-    const id = Crypto.randomUUID();
-    const token = await io1st.createToken({
-        req,
-        room: roomId,
-        user: { id, name: `user:${id}` },
-    });
-
-    res.send(token).status(200);
-});
-
-app.post("/api/room", (req, res) => {
-    res.send(randomBytes(48).toString("hex")).status(200);
-});
-
-cluster.once("connect", () => {
-    server.listen(port, () => {
-        console.log(`Server is listening on port: ${port}`);
-    });
 });
