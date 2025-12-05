@@ -47,11 +47,8 @@ export type InferIORoom<TServer extends PluvServer<any, any, any, any, any>> =
 
 export type PluvServerConfig<
     TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<
-        TPlatform,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null =
         any,
-        InferInitContextType<TPlatform>
-    > | null = any,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
@@ -93,16 +90,12 @@ export type CreateRoomOptions<
 
 export class PluvServer<
     TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<
-        TPlatform,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null =
         any,
-        InferInitContextType<TPlatform>
-    > | null = any,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> implements IOLike<TAuthorize, TCrdt, TEvents>
-{
+> implements IOLike<TAuthorize, TCrdt, TEvents> {
     public readonly version: string = __PLUV_VERSION as any;
 
     private readonly _config: NonNilProps<
@@ -440,7 +433,6 @@ export class PluvServer<
 
                 await Promise.resolve(onRoomDestroyed?.(event));
                 await Promise.resolve(listeners.onRoomDeleted(event));
-                await event.platform.persistence.deleteStorageState(room);
 
                 logDebug(`${colors.blue("Deleted room:")} ${room}`);
             },
@@ -448,6 +440,8 @@ export class PluvServer<
                 logDebug(`${colors.blue("Destroying storage for room:")} ${room}`);
 
                 await Promise.resolve(onStorageDestroyed?.(event));
+                await Promise.resolve(listeners.onStorageDestroyed(event));
+                await event.platform.persistence.deleteStorageState(room);
 
                 logDebug(`${colors.blue("Destroyed storage for room:")} ${room}`);
             },
