@@ -5,7 +5,7 @@
 	"compilerOptions": {
 		"lib": ["esnext"],
 		"module": "esnext",
-		"target": "es6",
+		"target": "esnext",
 		"isolatedModules": true,
 		"moduleResolution": "bundler"
 	},

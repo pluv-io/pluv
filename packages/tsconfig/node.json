@@ -3,7 +3,7 @@
 	"display": "Node",
 	"extends": "./base.json",
 	"compilerOptions": {
-		"target": "es5",
+		"target": "esnext",
 		"lib": ["esnext"],
 		"allowJs": true,
 		"skipLibCheck": true,
@@ -12,7 +12,8 @@
 		"noEmit": true,
 		"incremental": true,
 		"esModuleInterop": true,
-		"module": "commonjs",
+		"moduleResolution": "bundler",
+		"module": "esnext",
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"jsx": "preserve"

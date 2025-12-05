@@ -14,6 +14,7 @@
         "url": "git+https://github.com/pluv-io/pluv.git",
         "directory": "packages/platform-cloudflare"
     },
+    "type": "module",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.mts",
     "publishConfig": {
@@ -38,7 +39,7 @@
         "@pluv/tsconfig": "workspace:^",
         "eslint": "^9.39.1",
         "eslint-config-pluv": "workspace:^",
-        "tsdown": "^0.17.0-beta.5",
+        "tsdown": "^0.17.0",
         "typescript": "^5.9.3"
     },
     "main": "./dist/index.mjs",

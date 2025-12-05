@@ -8,7 +8,7 @@ import { cors } from "hono/cors";
 import Http from "node:http";
 import Url from "node:url";
 import { match } from "path-to-regexp";
-import Ws from "ws";
+import { WebSocketServer } from "ws";
 import { ioServer } from "./pluv-io";
 
 export type { ioServer } from "./pluv-io";
@@ -54,7 +54,7 @@ const server = serve(
     },
 ) as Http.Server;
 
-const wsServer = new Ws.WebSocketServer({ server });
+const wsServer = new WebSocketServer({ server });
 
 const rooms = new Map<string, InferIORoom<typeof ioServer>>();
 
