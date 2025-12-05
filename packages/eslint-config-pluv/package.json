@@ -8,16 +8,16 @@
     "url": "https://github.com/i3dly"
   },
   "license": "MIT",
-  "type": "module",
   "homepage": "https://github.com/pluv-io/pluv",
-  "exports": {
-    "./base": "./base.js",
-    "./react": "./react.js"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pluv-io/pluv.git",
     "directory": "packages/eslint-config-pluv"
+  },
+  "type": "module",
+  "exports": {
+    "./base": "./base.js",
+    "./react": "./react.js"
   },
   "publishConfig": {
     "access": "public"

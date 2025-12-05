@@ -14,8 +14,9 @@
 		"url": "git+https://github.com/pluv-io/pluv.git",
 		"directory": "packages/types"
 	},
-	"main": "./dist/index.cjs",
-	"types": "./dist/index.d.cts",
+	"type": "module",
+	"main": "./dist/index.mjs",
+	"types": "./dist/index.d.mts",
 	"publishConfig": {
 		"access": "public"
 	},
@@ -30,7 +31,7 @@
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^9.39.1",
 		"eslint-config-pluv": "workspace:^",
-		"tsdown": "^0.17.0-beta.5",
+		"tsdown": "^0.17.0",
 		"typescript": "^5.9.3"
 	},
 	"dependencies": {
@@ -38,10 +39,7 @@
 	},
 	"module": "./dist/index.mjs",
 	"exports": {
-		".": {
-			"require": "./dist/index.cjs",
-			"import": "./dist/index.mjs"
-		},
+		".": "./dist/index.mjs",
 		"./*": "./*"
 	}
 }
