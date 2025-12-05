@@ -33,8 +33,6 @@ const SlateEditable: FC<{ sharedType: SharedType }> = ({ sharedType }) => {
     }, [sharedType]);
 
     useEffect(() => {
-        if (!editor) return;
-
         YjsEditor.connect(editor);
         return () => {
             YjsEditor.disconnect(editor);
