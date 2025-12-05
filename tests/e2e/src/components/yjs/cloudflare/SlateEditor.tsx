@@ -1,37 +1,32 @@
 import { withYjs, YjsEditor } from "@slate-yjs/core";
 import type { FC } from "react";
-import { useEffect, useMemo, useState } from "react";
-import type { Descendant, Node } from "slate";
+import { useEffect, useMemo } from "react";
+import type { Descendant } from "slate";
 import { createEditor, Editor, Transforms } from "slate";
 import { Editable, Slate, withReact } from "slate-react";
 import { useStorage } from "../../../pluv-io/yjs/cloudflare";
 
+const INITIAL_VALUE: Descendant = {
+    children: [{ text: "" }],
+};
+
 export interface SlateEditorProps {}
 
-export const SlateEditor: FC<SlateEditorProps> = () => {
-    const [, sharedType] = useStorage("slate");
+type SharedType = NonNullable<ReturnType<typeof useStorage<"slate">>[1]>;
 
+const SlateEditable: FC<{ sharedType: SharedType }> = ({ sharedType }) => {
     const editor = useMemo(() => {
-        if (!sharedType) return null;
-
         const e = withReact(withYjs(createEditor(), sharedType));
         const { normalizeNode } = e;
 
-        e.normalizeNode = (entry) => {
+        e.normalizeNode = (entry, options) => {
             const [node] = entry;
 
             if (!Editor.isEditor(node) || node.children.length > 0) {
-                return normalizeNode(entry);
+                return normalizeNode(entry, options);
             }
 
-            Transforms.insertNodes(
-                e,
-                {
-                    type: "paragraph",
-                    children: [{ text: "" }],
-                } as Node,
-                { at: [0] },
-            );
+            Transforms.insertNodes(e, INITIAL_VALUE, { at: [0] });
         };
 
         return e;
@@ -41,24 +36,13 @@ export const SlateEditor: FC<SlateEditorProps> = () => {
         if (!editor) return;
 
         YjsEditor.connect(editor);
-
         return () => {
             YjsEditor.disconnect(editor);
         };
     }, [editor]);
 
-    const [value, setValue] = useState<Descendant[]>([]);
-
-    if (!editor) return null;
-
     return (
-        <Slate
-            editor={editor}
-            initialValue={value}
-            onChange={(newValue) => {
-                setValue(newValue);
-            }}
-        >
+        <Slate editor={editor} initialValue={[INITIAL_VALUE]}>
             <Editable
                 id="slate-editable"
                 style={{
@@ -69,4 +53,12 @@ export const SlateEditor: FC<SlateEditorProps> = () => {
             />
         </Slate>
     );
+};
+
+export const SlateEditor: FC<SlateEditorProps> = () => {
+    const [, sharedType] = useStorage("slate");
+
+    if (!sharedType) return null;
+
+    return <SlateEditable sharedType={sharedType} />;
 };
