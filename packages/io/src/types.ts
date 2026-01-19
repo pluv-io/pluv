@@ -247,6 +247,11 @@ export type IORoomDestroyedEvent<
     TContext extends Record<string, any>,
 > = {
     context: TContext;
+    // DEPRECATED_ONROOMDELETED:
+    /**
+     * @deprecated This property is deprecated. Use `onStorageDestroyed` to access `encodedState`. This will be removed in a future version.
+     */
+    encodedState?: string | null;
     platform: TPlatform;
     room: string;
 };

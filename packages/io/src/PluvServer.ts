@@ -453,20 +453,19 @@ export class PluvServer<
                 await Promise.resolve(onRoomDestroyed?.(event));
 
                 // DEPRECATED_ONROOMDELETED:
-                // Note: Getting encodedState from destroyed doc (which is now empty) is deprecated.
+                // Note: encodedState from onRoomDestroyed event is deprecated.
                 // encodedState should only be accessed via onStorageDestroyed, not onRoomDestroyed/onRoomDeleted.
                 // This is only here for backward compatibility with onRoomDeleted.
-                const doc = await (newRoom as any)._doc;
-                const encodedState = doc.getEncodedState();
-                
                 // DEPRECATED_ONROOMDELETED:
                 await Promise.resolve(
                     listeners.onRoomDeleted({
-                        ...("_meta" in event.platform && "_meta" in (event.platform as any) && !!(event.platform as any)._meta
+                        ...("_meta" in event.platform &&
+                        "_meta" in (event.platform as any) &&
+                        !!(event.platform as any)._meta
                             ? { _meta: (event.platform as any)._meta }
                             : {}),
                         context: event.context,
-                        encodedState, // Deprecated: Use onStorageDestroyed for encodedState instead
+                        encodedState: event.encodedState ?? null, // Get from event instead of destroyed doc
                         platform: event.platform,
                         room: event.room,
                     }),

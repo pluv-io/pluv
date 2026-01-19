@@ -847,6 +847,8 @@ export class IORoom<
                             ? { _meta: this._platform._meta }
                             : {}),
                         context,
+                        // DEPRECATED_ONROOMDELETED: Include encodedState for backward compatibility with onRoomDeleted
+                        encodedState, // Deprecated: Use onStorageDestroyed for encodedState
                         platform: this._platform,
                         room: this.id,
                     }),
