@@ -15,7 +15,6 @@
 		"directory": "packages/types"
 	},
 	"type": "module",
-	"main": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
 	"publishConfig": {
 		"access": "public"
@@ -37,7 +36,6 @@
 	"dependencies": {
 		"wonka": "^6.3.5"
 	},
-	"module": "./dist/index.mjs",
 	"exports": {
 		".": "./dist/index.mjs",
 		"./*": "./*"

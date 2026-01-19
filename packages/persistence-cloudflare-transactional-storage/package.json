@@ -15,8 +15,6 @@
 		"directory": "packages/persistence-cloudflare-transactional-storage"
 	},
 	"type": "module",
-	"main": "./dist/index.mjs",
-	"module": "./dist/index.mjs",
 	"types": "./dist/index.d.mts",
 	"publishConfig": {
 		"access": "public"

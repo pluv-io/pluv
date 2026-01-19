@@ -15,7 +15,6 @@
         "directory": "packages/platform-cloudflare"
     },
     "type": "module",
-    "module": "./dist/index.mjs",
     "types": "./dist/index.d.mts",
     "publishConfig": {
         "access": "public"
@@ -42,7 +41,6 @@
         "tsdown": "0.20.0-beta.3",
         "typescript": "^5.9.3"
     },
-    "main": "./dist/index.mjs",
     "exports": {
         ".": "./dist/index.mjs",
         "./*": "./*"
