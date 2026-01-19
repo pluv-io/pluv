@@ -215,6 +215,6 @@ export class PluvYjsAwareness<
      * @see https://github.com/yjs/y-protocols/blob/master/awareness.js
      * @date May 13, 2025
      */
-    public readonly meta = new Map<string, MetaClientState>();
+    public readonly meta = new Map<any, MetaClientState>();
     public readonly _checkInterval: number = 0;
 }
