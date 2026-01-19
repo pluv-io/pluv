@@ -369,7 +369,9 @@ export class PluvServer<
             ...options,
         } as NonNilProps<PluvServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>>;
 
+        // DEPRECATED_ONDESTROY:
         const {
+            onDestroy,
             onRoomDeleted,
             onRoomMessage,
             onStorageDestroyed,
@@ -378,8 +380,17 @@ export class PluvServer<
             onUserDisconnected,
         } = options as Partial<BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>>;
 
+        // DEPRECATED_ONDESTROY:
+        if (onDestroy) {
+            console.warn(
+                "onDestroy is deprecated. Use onRoomDeleted (via onRoomDestroyed) and onStorageDestroyed instead. See migration guide for details.",
+            );
+        }
+
         this._docFactory = this._config.crdt.doc(() => ({}));
+        // DEPRECATED_ONDESTROY:
         (this as any)._listeners = {
+            onDestroy: onDestroy ? (event) => onDestroy(event) : undefined,
             onRoomDeleted: (event) => onRoomDeleted?.(event),
             onRoomMessage: (event) => onRoomMessage?.(event),
             onStorageDestroyed: (event) => onStorageDestroyed?.(event),
@@ -393,18 +404,28 @@ export class PluvServer<
         room: string,
         ...options: CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>
     ): IORoom<TPlatform, TAuthorize, TContext, TCrdt, TEvents> {
+        // DEPRECATED_ONDESTROY:
         const {
             _meta,
             debug,
+            onDestroy,
             onRoomDestroyed,
             onStorageDestroyed,
             onMessage,
             ...platformRoomContext
         } = (options[0] ?? {}) as CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>[0] & {
             _meta?: any;
+            onDestroy?: (event: any) => void | Promise<void>;
             onRoomDestroyed?: (event: any) => void | Promise<void>;
             onStorageDestroyed?: (event: any) => void | Promise<void>;
         };
+
+        // DEPRECATED_ONDESTROY:
+        if (onDestroy) {
+            console.warn(
+                "onDestroy is deprecated. Use onRoomDestroyed and onStorageDestroyed instead. See migration guide for details.",
+            );
+        }
 
         const platform = this._config.platform();
 
@@ -428,6 +449,8 @@ export class PluvServer<
             crdt: this._config.crdt,
             debug: debug ?? this._config.debug,
             getInitialStorage: this._getInitialStorage,
+            // DEPRECATED_ONDESTROY:
+            onDestroy,
             async onRoomDestroyed(event) {
                 logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
 

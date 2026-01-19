@@ -65,6 +65,11 @@ export interface IORoomListeners<
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > {
+    // DEPRECATED_ONDESTROY:
+    /**
+     * @deprecated Use `onRoomDestroyed` and `onStorageDestroyed` instead. This callback will be removed in a future version.
+     */
+    onDestroy?: (event: IORoomListenerEvent<TPlatform, TContext>) => void | Promise<void>;
     onRoomDestroyed: (event: IORoomDestroyedEvent<TPlatform, TContext>) => void;
     onStorageDestroyed: (event: IORoomListenerEvent<TPlatform, TContext>) => void;
     onMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
@@ -198,6 +203,8 @@ export class IORoom<
             crdt = noop,
             debug,
             getInitialStorage,
+            // DEPRECATED_ONDESTROY:
+            onDestroy,
             onRoomDestroyed,
             onStorageDestroyed,
             onMessage,
@@ -207,6 +214,18 @@ export class IORoom<
             roomContext,
             router,
         } = config as IORoomConfig<TPlatform, TAuthorize, TContext, TEvents> & { _meta?: any };
+
+        // DEPRECATED_ONDESTROY:
+        if (onDestroy) {
+            console.warn(
+                "onDestroy is deprecated. Use onRoomDestroyed and onStorageDestroyed instead. See migration guide for details.",
+            );
+            if (onRoomDestroyed) {
+                console.warn(
+                    "Both onDestroy and onRoomDestroyed are provided. onDestroy will still fire for backward compatibility, but consider migrating to onRoomDestroyed.",
+                );
+            }
+        }
 
         this.id = id;
 
@@ -219,7 +238,9 @@ export class IORoom<
         this._router = router;
         this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), roomContext });
 
+        // DEPRECATED_ONDESTROY:
         this._listeners = {
+            onDestroy: onDestroy ? (event) => onDestroy(event) : undefined,
             onRoomDestroyed: (event) => onRoomDestroyed?.(event),
             onStorageDestroyed: (event) => onStorageDestroyed?.(event),
             onMessage: (event) => onMessage?.(event),
@@ -830,6 +851,21 @@ export class IORoom<
                         room: this.id,
                     }),
                 );
+
+                // DEPRECATED_ONDESTROY:
+                if (this._listeners.onDestroy) {
+                    await Promise.resolve(
+                        this._listeners.onDestroy({
+                            ...("_meta" in this._platform && !!this._platform._meta
+                                ? { _meta: this._platform._meta }
+                                : {}),
+                            context,
+                            encodedState, // Include encodedState for backward compatibility
+                            platform: this._platform,
+                            room: this.id,
+                        }),
+                    );
+                }
 
                 // Only emit onStorageDestroyed if storage was initialized via initializeSession
                 if (this._storageInitializedViaSession) {
