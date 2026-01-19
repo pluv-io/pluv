@@ -378,6 +378,13 @@ export class PluvServer<
             onUserDisconnected,
         } = options as Partial<BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>>;
 
+        // DEPRECATED_ONROOMDELETED:
+        if (onRoomDeleted) {
+            console.warn(
+                "onRoomDeleted with encodedState is deprecated. Use onRoomDestroyed (no encodedState) and onStorageDestroyed (with encodedState) instead. See migration guide for details.",
+            );
+        }
+
         this._docFactory = this._config.crdt.doc(() => ({}));
         (this as any)._listeners = {
             onRoomDeleted: (event) => onRoomDeleted?.(event),
@@ -393,18 +400,28 @@ export class PluvServer<
         room: string,
         ...options: CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>
     ): IORoom<TPlatform, TAuthorize, TContext, TCrdt, TEvents> {
+        // DEPRECATED_ONDESTROY:
         const {
             _meta,
             debug,
+            onDestroy,
             onRoomDestroyed,
             onStorageDestroyed,
             onMessage,
             ...platformRoomContext
         } = (options[0] ?? {}) as CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>[0] & {
             _meta?: any;
+            onDestroy?: (event: any) => void | Promise<void>;
             onRoomDestroyed?: (event: any) => void | Promise<void>;
             onStorageDestroyed?: (event: any) => void | Promise<void>;
         };
+
+        // DEPRECATED_ONDESTROY:
+        if (onDestroy) {
+            console.warn(
+                "onDestroy is deprecated. Use onRoomDestroyed and onStorageDestroyed instead. See migration guide for details.",
+            );
+        }
 
         const platform = this._config.platform();
 
@@ -428,11 +445,31 @@ export class PluvServer<
             crdt: this._config.crdt,
             debug: debug ?? this._config.debug,
             getInitialStorage: this._getInitialStorage,
+            // DEPRECATED_ONDESTROY:
+            onDestroy,
             async onRoomDestroyed(event) {
                 logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
 
                 await Promise.resolve(onRoomDestroyed?.(event));
-                await Promise.resolve(listeners.onRoomDeleted(event));
+
+                // DEPRECATED_ONROOMDELETED:
+                // Note: encodedState from onRoomDestroyed event is deprecated.
+                // encodedState should only be accessed via onStorageDestroyed, not onRoomDestroyed/onRoomDeleted.
+                // This is only here for backward compatibility with onRoomDeleted.
+                // DEPRECATED_ONROOMDELETED:
+                await Promise.resolve(
+                    listeners.onRoomDeleted({
+                        ...("_meta" in event.platform &&
+                        "_meta" in (event.platform as any) &&
+                        !!(event.platform as any)._meta
+                            ? { _meta: (event.platform as any)._meta }
+                            : {}),
+                        context: event.context,
+                        encodedState: event.encodedState ?? null, // Get from event instead of destroyed doc
+                        platform: event.platform,
+                        room: event.room,
+                    }),
+                );
 
                 logDebug(`${colors.blue("Deleted room:")} ${room}`);
             },
