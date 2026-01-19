@@ -173,12 +173,11 @@ export type BasePluvIOListeners<
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = {
-    // DEPRECATED_ONDESTROY:
+    // DEPRECATED_ONROOMDELETED:
     /**
-     * @deprecated Use `onRoomDeleted` (via `onRoomDestroyed`) and `onStorageDestroyed` instead. This callback will be removed in a future version.
+     * @deprecated `onRoomDeleted` with `encodedState` is deprecated. Use `onRoomDestroyed` (no `encodedState`) and `onStorageDestroyed` (with `encodedState`) instead. This callback will be removed in a future version.
      */
-    onDestroy?: (event: IORoomListenerEvent<TPlatform, TContext>) => void | Promise<void>;
-    onRoomDeleted: (event: IORoomDestroyedEvent<TPlatform, TContext>) => void;
+    onRoomDeleted: (event: IORoomListenerEvent<TPlatform, TContext>) => void;
     onRoomMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
     onStorageDestroyed: (event: IORoomListenerEvent<TPlatform, TContext>) => void;
     onStorageUpdated: (event: IOStorageUpdatedEvent<TPlatform, TAuthorize, TContext>) => void;

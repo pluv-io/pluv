@@ -369,9 +369,7 @@ export class PluvServer<
             ...options,
         } as NonNilProps<PluvServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>>;
 
-        // DEPRECATED_ONDESTROY:
         const {
-            onDestroy,
             onRoomDeleted,
             onRoomMessage,
             onStorageDestroyed,
@@ -380,17 +378,15 @@ export class PluvServer<
             onUserDisconnected,
         } = options as Partial<BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>>;
 
-        // DEPRECATED_ONDESTROY:
-        if (onDestroy) {
+        // DEPRECATED_ONROOMDELETED:
+        if (onRoomDeleted) {
             console.warn(
-                "onDestroy is deprecated. Use onRoomDeleted (via onRoomDestroyed) and onStorageDestroyed instead. See migration guide for details.",
+                "onRoomDeleted with encodedState is deprecated. Use onRoomDestroyed (no encodedState) and onStorageDestroyed (with encodedState) instead. See migration guide for details.",
             );
         }
 
         this._docFactory = this._config.crdt.doc(() => ({}));
-        // DEPRECATED_ONDESTROY:
         (this as any)._listeners = {
-            onDestroy: onDestroy ? (event) => onDestroy(event) : undefined,
             onRoomDeleted: (event) => onRoomDeleted?.(event),
             onRoomMessage: (event) => onRoomMessage?.(event),
             onStorageDestroyed: (event) => onStorageDestroyed?.(event),
@@ -455,7 +451,26 @@ export class PluvServer<
                 logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
 
                 await Promise.resolve(onRoomDestroyed?.(event));
-                await Promise.resolve(listeners.onRoomDeleted(event));
+
+                // DEPRECATED_ONROOMDELETED:
+                // Note: Getting encodedState from destroyed doc (which is now empty) is deprecated.
+                // encodedState should only be accessed via onStorageDestroyed, not onRoomDestroyed/onRoomDeleted.
+                // This is only here for backward compatibility with onRoomDeleted.
+                const doc = await (newRoom as any)._doc;
+                const encodedState = doc.getEncodedState();
+                
+                // DEPRECATED_ONROOMDELETED:
+                await Promise.resolve(
+                    listeners.onRoomDeleted({
+                        ...("_meta" in event.platform && "_meta" in (event.platform as any) && !!(event.platform as any)._meta
+                            ? { _meta: (event.platform as any)._meta }
+                            : {}),
+                        context: event.context,
+                        encodedState, // Deprecated: Use onStorageDestroyed for encodedState instead
+                        platform: event.platform,
+                        room: event.room,
+                    }),
+                );
 
                 logDebug(`${colors.blue("Deleted room:")} ${room}`);
             },
