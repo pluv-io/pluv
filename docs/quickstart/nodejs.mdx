@@ -89,9 +89,10 @@ export const ioServer = io.server({
 
     return storage;
   },
-  // Optional: Only if you want to run code when a room
-  // is deleted, such as saving the last storage state
-  onRoomDeleted: async ({ room, encodedState, context }) => {
+  // Optional: Only if you want to run code when storage is destroyed,
+  // such as saving the last storage state. Only fires when storage was
+  // initialized via initializeSession
+  onStorageDestroyed: async ({ room, encodedState, context }) => {
     // Upsert the db room with last storage state
   },
 });
@@ -141,8 +142,14 @@ const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
   if (existing) return existing;
 
   const newRoom = ioServer.createRoom(roomId, {
-    onDestroy: (event) => {
-      rooms.delete(event.room);
+    onRoomDestroyed: ({ room }) => {
+      // Room destroyed - use for cleanup if needed
+      rooms.delete(room);
+    },
+    onStorageDestroyed: async ({ room, encodedState }) => {
+      // Only fires when storage was initialized via initializeSession
+      // Safe to save to database
+      // ... save storage if needed
     },
   });
   rooms.set(roomId, newRoom);
