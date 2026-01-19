@@ -35,11 +35,11 @@
         "path-to-regexp": "^8.3.0"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^4.20251205.0",
+        "@cloudflare/workers-types": "^4.20260118.0",
         "@pluv/tsconfig": "workspace:^",
-        "eslint": "^9.39.1",
+        "eslint": "^9.39.2",
         "eslint-config-pluv": "workspace:^",
-        "tsdown": "^0.18.0",
+        "tsdown": "0.20.0-beta.3",
         "typescript": "^5.9.3"
     },
     "main": "./dist/index.mjs",

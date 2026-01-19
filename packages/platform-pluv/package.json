@@ -32,16 +32,16 @@
 		"@pluv/crdt": "workspace:^",
 		"@pluv/io": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^24.10.1",
+		"@types/node": "^25.0.9",
 		"fast-json-stable-stringify": "^2.1.0",
-		"hono": "^4.10.7",
-		"zod": "^4.1.13"
+		"hono": "^4.11.4",
+		"zod": "^4.3.5"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^9.39.1",
+		"eslint": "^9.39.2",
 		"eslint-config-pluv": "workspace:^",
-		"tsdown": "^0.18.0",
+		"tsdown": "0.20.0-beta.3",
 		"typescript": "^5.9.3"
 	},
 	"exports": {
