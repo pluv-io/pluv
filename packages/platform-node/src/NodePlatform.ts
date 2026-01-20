@@ -40,7 +40,7 @@ export class NodePlatform<
         requireAuth: false;
         registrationMode: WebSocketRegistrationMode;
         listeners: {
-            onRoomDeleted: true;
+            onRoomDestroyed: true;
             onRoomMessage: true;
             onStorageDestroyed: true;
             onStorageUpdated: true;
@@ -70,7 +70,7 @@ export class NodePlatform<
             registrationMode: mode,
             requireAuth: false as const,
             listeners: {
-                onRoomDeleted: true as const,
+                onRoomDestroyed: true as const,
                 onRoomMessage: true as const,
                 onStorageDestroyed: true as const,
                 onStorageUpdated: true as const,

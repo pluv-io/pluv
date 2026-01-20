@@ -41,7 +41,7 @@ export class CloudflarePlatform<
         requireAuth: false;
         registrationMode: WebSocketRegistrationMode;
         listeners: {
-            onRoomDeleted: true;
+            onRoomDestroyed: true;
             onRoomMessage: true;
             onStorageDestroyed: true;
             onStorageUpdated: true;
@@ -75,7 +75,7 @@ export class CloudflarePlatform<
             registrationMode: config.mode ?? DEFAULT_REGISTRATION_MODE,
             requireAuth: false as const,
             listeners: {
-                onRoomDeleted: true as const,
+                onRoomDestroyed: true as const,
                 onRoomMessage: true as const,
                 onStorageDestroyed: true as const,
                 onStorageUpdated: true as const,

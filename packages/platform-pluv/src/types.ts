@@ -31,7 +31,7 @@ export type PluvIOListeners<
     TUser extends BaseUser = BaseUser,
 > = {
     getInitialStorage?: GetInitialStorageFn<TContext>;
-    onRoomDeleted: (event: IORoomListenerEvent<TContext>) => void;
+    onRoomDestroyed: (event: { context: TContext; room: string }) => void;
     onUserConnected: (
         event: IOUserConnectedEvent<
             PluvPlatform<TContext>,

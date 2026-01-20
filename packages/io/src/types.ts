@@ -120,7 +120,7 @@ export interface PlatformConfig {
     handleMode: HandleMode;
     registrationMode: WebSocketRegistrationMode;
     listeners: {
-        onRoomDeleted?: boolean;
+        onRoomDestroyed?: boolean;
         onRoomMessage?: boolean;
         onStorageDestroyed?: boolean;
         onStorageUpdated?: boolean;
@@ -173,11 +173,7 @@ export type BasePluvIOListeners<
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = {
-    // DEPRECATED_ONROOMDELETED:
-    /**
-     * @deprecated `onRoomDeleted` with `encodedState` is deprecated. Use `onRoomDestroyed` (no `encodedState`) and `onStorageDestroyed` (with `encodedState`) instead. This callback will be removed in a future version.
-     */
-    onRoomDeleted: (event: IORoomListenerEvent<TPlatform, TContext>) => void;
+    onRoomDestroyed: (event: IORoomDestroyedEvent<TPlatform, TContext>) => void;
     onRoomMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
     onStorageDestroyed: (event: IORoomListenerEvent<TPlatform, TContext>) => void;
     onStorageUpdated: (event: IOStorageUpdatedEvent<TPlatform, TAuthorize, TContext>) => void;
@@ -247,11 +243,6 @@ export type IORoomDestroyedEvent<
     TContext extends Record<string, any>,
 > = {
     context: TContext;
-    // DEPRECATED_ONROOMDELETED:
-    /**
-     * @deprecated This property is deprecated. Use `onStorageDestroyed` to access `encodedState`. This will be removed in a future version.
-     */
-    encodedState?: string | null;
     platform: TPlatform;
     room: string;
 };

@@ -55,7 +55,7 @@ export class PluvPlatform<
         registrationMode: "attached";
         requireAuth: true;
         listeners: {
-            onRoomDeleted: true;
+            onRoomDestroyed: true;
             onRoomMessage: false;
             onStorageUpdated: false;
             onUserConnected: true;
@@ -73,7 +73,7 @@ export class PluvPlatform<
         registrationMode: "attached" as const,
         requireAuth: true as const,
         listeners: {
-            onRoomDeleted: true as const,
+            onRoomDestroyed: true as const,
             onRoomMessage: false as const,
             onStorageUpdated: false as const,
             onUserConnected: true as const,
@@ -216,7 +216,7 @@ export class PluvPlatform<
 
         this._getInitialStorage = config.getInitialStorage;
         this._listeners = {
-            onRoomDeleted: (event) => config.onRoomDeleted?.(event),
+            onRoomDestroyed: (event) => config.onRoomDestroyed?.(event),
             onUserConnected: (event) => config.onUserConnected?.(event),
             onUserDisconnected: (event) => config.onUserDisconnected?.(event),
         };
@@ -305,16 +305,15 @@ export class PluvPlatform<
                     }
                     case "room-deleted": {
                         const room = data.room;
-                        const encodedState = data.storage;
 
                         await Promise.resolve(
-                            this._listeners?.onRoomDeleted({ context, encodedState, room }),
+                            this._listeners?.onRoomDestroyed({ context, room }),
                         );
 
                         try {
                             return createSuccessResponse(c, { event, room });
                         } catch (error) {
-                            this._logDebug("Could not create onRoomDeleted response");
+                            this._logDebug("Could not create onRoomDestroyed response");
                             throw error;
                         }
                     }

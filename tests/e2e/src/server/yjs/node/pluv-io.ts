@@ -1,5 +1,5 @@
 import { yjs } from "@pluv/crdt-yjs";
-import { createIO } from "@pluv/io";
+import { createIO, InferIORoom } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 import { prisma } from "../../../prisma";
@@ -29,6 +29,7 @@ const router = io.router({
         .self(({ value }) => ({ doubledNumber: { value: value * 2 } })),
 });
 
+export const rooms = new Map<string, InferIORoom<typeof ioServer>>();
 export const ioServer = io.server({
     router,
     getInitialStorage: async ({ room: name }) => {
@@ -47,5 +48,8 @@ export const ioServer = io.server({
             create: { name, storage },
             update: { storage },
         });
+    },
+    onRoomDestroyed: (event) => {
+        rooms.delete(event.room);
     },
 });
