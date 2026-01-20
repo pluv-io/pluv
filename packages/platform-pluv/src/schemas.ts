@@ -2,7 +2,8 @@ import { z } from "zod";
 
 export const ZodEventKind = z.union([
     z.literal("initial-storage"),
-    z.literal("room-deleted"),
+    z.literal("room-destroyed"),
+    z.literal("storage-destroyed"),
     z.literal("user-connected"),
     z.literal("user-disconnected"),
 ]);
@@ -14,8 +15,15 @@ export const ZodEventInitialStorage = z.object({
     }),
 });
 
-export const ZodEventRoomDeleted = z.object({
-    event: z.literal("room-deleted"),
+export const ZodEventRoomDestroyed = z.object({
+    event: z.literal("room-destroyed"),
+    data: z.object({
+        room: z.string(),
+    }),
+});
+
+export const ZodEventStorageDestroyed = z.object({
+    event: z.literal("storage-destroyed"),
     data: z.object({
         room: z.string(),
         storage: z.string().nullable(),
@@ -50,7 +58,8 @@ export const ZodEventUserDisconnected = z.object({
 
 export const ZodEvent = z.discriminatedUnion("event", [
     ZodEventInitialStorage,
-    ZodEventRoomDeleted,
+    ZodEventRoomDestroyed,
+    ZodEventStorageDestroyed,
     ZodEventUserConnected,
     ZodEventUserDisconnected,
 ]);
@@ -61,8 +70,13 @@ export const ZodInitialStorageResponse = z.object({
     storage: z.string().nullable(),
 });
 
-export const ZodRoomDeletedResponse = z.object({
-    event: z.literal("room-deleted"),
+export const ZodRoomDestroyedResponse = z.object({
+    event: z.literal("room-destroyed"),
+    room: z.string(),
+});
+
+export const ZodStorageDestroyedResponse = z.object({
+    event: z.literal("storage-destroyed"),
     room: z.string(),
 });
 
@@ -78,7 +92,8 @@ export const ZodUserDisconnectedResponse = z.object({
 
 export const ZodEventResponse = z.discriminatedUnion("event", [
     ZodInitialStorageResponse,
-    ZodRoomDeletedResponse,
+    ZodRoomDestroyedResponse,
+    ZodStorageDestroyedResponse,
     ZodUserConnectedResponse,
     ZodUserDisconnectedResponse,
 ]);

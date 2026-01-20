@@ -57,6 +57,7 @@ export class PluvPlatform<
         listeners: {
             onRoomDestroyed: true;
             onRoomMessage: false;
+            onStorageDestroyed: true;
             onStorageUpdated: false;
             onUserConnected: true;
             onUserDisconnected: true;
@@ -75,6 +76,7 @@ export class PluvPlatform<
         listeners: {
             onRoomDestroyed: true as const,
             onRoomMessage: false as const,
+            onStorageDestroyed: true as const,
             onStorageUpdated: false as const,
             onUserConnected: true as const,
             onUserDisconnected: true as const,
@@ -217,6 +219,7 @@ export class PluvPlatform<
         this._getInitialStorage = config.getInitialStorage;
         this._listeners = {
             onRoomDestroyed: (event) => config.onRoomDestroyed?.(event),
+            onStorageDestroyed: (event) => config.onStorageDestroyed?.(event),
             onUserConnected: (event) => config.onUserConnected?.(event),
             onUserDisconnected: (event) => config.onUserDisconnected?.(event),
         };
@@ -303,17 +306,41 @@ export class PluvPlatform<
                             throw error;
                         }
                     }
-                    case "room-deleted": {
+                    case "room-destroyed": {
                         const room = data.room;
 
                         await Promise.resolve(
-                            this._listeners?.onRoomDestroyed({ context, room }),
+                            this._listeners?.onRoomDestroyed({
+                                context,
+                                platform: this,
+                                room,
+                            }),
                         );
 
                         try {
                             return createSuccessResponse(c, { event, room });
                         } catch (error) {
                             this._logDebug("Could not create onRoomDestroyed response");
+                            throw error;
+                        }
+                    }
+                    case "storage-destroyed": {
+                        const room = data.room;
+                        const encodedState = data.storage;
+
+                        await Promise.resolve(
+                            this._listeners?.onStorageDestroyed({
+                                context,
+                                encodedState,
+                                platform: this,
+                                room,
+                            }),
+                        );
+
+                        try {
+                            return createSuccessResponse(c, { event, room });
+                        } catch (error) {
+                            this._logDebug("Could not create onStorageDestroyed response");
                             throw error;
                         }
                     }
