@@ -52,7 +52,7 @@ If you are using `@pluv/platform-pluv`, listeners are webhooks under-the-hood. S
 
 Beyond this, the `PluvServer` provides several event listeners in which you can hook into and save the room's current storage state. It is recommended that you do not save your room's storage state in a handler that runs too frequently so that your database isn't overly written to.
 
-Our recommendation is to save your room's storage state in `onRoomDeleted`. And if you need more saves beyond that, to throttle writes per room in event listeners such as `onStorageUpdated` or `onRoomMessage`.
+Our recommendation is to save your room's storage state in `onStorageDestroyed`. This handler only fires when the storage document is about to be destroyed after it has been initialized via `initializeSession`, ensuring you only save storage that was actually used. And if you need more saves beyond that, to throttle writes per room in event listeners such as `onStorageUpdated` or `onRoomMessage`.
 
 > **Note**: Not all event listeners are available when using `@pluv/platform-pluv`. To learn more, please checkout the [quickstart guide](/docs/quickstart/nextjs).
 
@@ -60,9 +60,10 @@ Our recommendation is to save your room's storage state in `onRoomDeleted`. And 
 // ...
 export const ioServer = io.server({
   // ...
-  // Optional: Triggered when a room is deleted. Callback includes the last
-  // value for the room's state for persisting purposes
-  onRoomDeleted: async ({ context, encodedState, room }) => {
+  // Optional: Triggered when storage is about to be destroyed. Only fires
+  // when storage was initialized via initializeSession. Callback includes
+  // the last value for the room's state for persisting purposes
+  onStorageDestroyed: async ({ context, encodedState, room }) => {
     const { db } = context;
 
     await db.room.upsert({
@@ -93,4 +94,7 @@ export const ioServer = io.server({
     // ...
   },
 });
+```
+
+> **Deprecated**: `onRoomDeleted` is deprecated. Use `onStorageDestroyed` instead. `onRoomDeleted` will be removed in a future version.
 ```

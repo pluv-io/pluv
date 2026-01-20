@@ -111,9 +111,10 @@ export const ioServer = io.server({
 
     return storage;
   },
-  // Optional: Only if you want to run code when a room
-  // is deleted, such as saving the last storage state
-  onRoomDeleted: async ({ room, encodedState, context }) => {
+  // Optional: Only if you want to run code when storage is destroyed,
+  // such as saving the last storage state. Only fires when storage was
+  // initialized via initializeSession
+  onStorageDestroyed: async ({ room, encodedState, context }) => {
     // Upsert the db room with last storage state
   },
 });
