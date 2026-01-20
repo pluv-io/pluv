@@ -75,7 +75,7 @@
 		"zod": "^4.3.5"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20260118.0",
+		"@cloudflare/workers-types": "^4.20260120.0",
 		"@playwright/test": "^1.57.0",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^9.2.1",
