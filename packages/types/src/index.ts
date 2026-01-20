@@ -1,4 +1,5 @@
 export type {
+    AreAllOptional,
     Constructable,
     DeepPartial,
     DeepWriteable,
