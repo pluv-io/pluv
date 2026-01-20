@@ -1,5 +1,5 @@
 import { yjs } from "@pluv/crdt-yjs";
-import { createIO } from "@pluv/io";
+import { createIO, InferIORoom } from "@pluv/io";
 import { PersistenceRedis } from "@pluv/persistence-redis";
 import { platformNode } from "@pluv/platform-node";
 import { PubSubRedis } from "@pluv/pubsub-redis";
@@ -33,7 +33,11 @@ const router = io.router({
         .broadcast(({ message }) => ({ RECEIVE_MESSAGE: { message } })),
 });
 
+export const rooms = new Map<string, InferIORoom<typeof ioServer>>();
 export const ioServer = io.server({
     getInitialStorage: () => null,
     router,
+    onRoomDestroyed: (event) => {
+        rooms.delete(event.room);
+    },
 });

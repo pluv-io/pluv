@@ -145,6 +145,12 @@ const server = io.server({
 
     return existingRoom?.encodedState ?? null;
   },
+  // Optional: Triggered when a room is destroyed. Use for cleanup if needed.
+  // This event does NOT include encodedState to prevent accidentally saving
+  // empty or uninitialized storage data.
+  onRoomDestroyed: async ({ context, room }) => {
+    // Room destroyed - use for cleanup if needed
+  },
   // Optional: Triggered when storage is about to be destroyed. Only fires
   // when storage was initialized via initializeSession. Callback includes
   // the last value for the room's state for persisting purposes
@@ -192,11 +198,17 @@ const server = io.server();
 
 Returns `IORoom`.
 
-Creates a room with the specified id.
+Creates a room with the specified id. For platforms that require room context (e.g., Cloudflare requires `env` and `state`), these must be provided as the second argument.
 
 ```ts
+// For platforms without required room context (e.g., Node.js)
 const room = server.createRoom("my-example-room");
+
+// For platforms with required room context (e.g., Cloudflare)
+const room = server.createRoom("my-example-room", { env, state });
 ```
+
+> **Note**: All event listeners (e.g., `onRoomDestroyed`, `onStorageDestroyed`) are configured at the server level via `io.server()`, not when creating individual rooms.
 
 ## IORoom
 

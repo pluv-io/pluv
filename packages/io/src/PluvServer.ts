@@ -1,6 +1,7 @@
 import type { AbstractCrdtDocFactory, CrdtLibraryType, NoopCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type {
+    AreAllOptional,
     IOLike,
     Id,
     InferIOAuthorize,
@@ -15,7 +16,6 @@ import type {
     InferInitContextType,
     InferRoomContextType,
 } from "./AbstractPlatform";
-import type { IORoomListeners } from "./IORoom";
 import { IORoom } from "./IORoom";
 import type { PluvIO } from "./PluvIO";
 import { PluvProcedure } from "./PluvProcedure";
@@ -70,7 +70,7 @@ type BaseCreateRoomOptions<
     TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
+> = {
     debug?: boolean;
 };
 
@@ -79,7 +79,7 @@ export type CreateRoomOptions<
     TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> = keyof InferRoomContextType<TPlatform> extends never
+> = keyof Omit<InferRoomContextType<TPlatform>, "meta"> extends never
     ? [BaseCreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>] | []
     : [
           Id<
@@ -370,7 +370,7 @@ export class PluvServer<
         } as NonNilProps<PluvServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>>;
 
         const {
-            onRoomDeleted,
+            onRoomDestroyed,
             onRoomMessage,
             onStorageDestroyed,
             onStorageUpdated,
@@ -378,16 +378,9 @@ export class PluvServer<
             onUserDisconnected,
         } = options as Partial<BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>>;
 
-        // DEPRECATED_ONROOMDELETED:
-        if (onRoomDeleted) {
-            console.warn(
-                "onRoomDeleted with encodedState is deprecated. Use onRoomDestroyed (no encodedState) and onStorageDestroyed (with encodedState) instead. See migration guide for details.",
-            );
-        }
-
         this._docFactory = this._config.crdt.doc(() => ({}));
         (this as any)._listeners = {
-            onRoomDeleted: (event) => onRoomDeleted?.(event),
+            onRoomDestroyed: (event) => onRoomDestroyed?.(event),
             onRoomMessage: (event) => onRoomMessage?.(event),
             onStorageDestroyed: (event) => onStorageDestroyed?.(event),
             onStorageUpdated: (event) => onStorageUpdated?.(event),
@@ -400,28 +393,14 @@ export class PluvServer<
         room: string,
         ...options: CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>
     ): IORoom<TPlatform, TAuthorize, TContext, TCrdt, TEvents> {
-        // DEPRECATED_ONDESTROY:
-        const {
-            _meta,
-            debug,
-            onDestroy,
-            onRoomDestroyed,
-            onStorageDestroyed,
-            onMessage,
-            ...platformRoomContext
-        } = (options[0] ?? {}) as CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>[0] & {
+        const { _meta, debug, ...platformRoomContext } = (options[0] ?? {}) as CreateRoomOptions<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TEvents
+        >[0] & {
             _meta?: any;
-            onDestroy?: (event: any) => void | Promise<void>;
-            onRoomDestroyed?: (event: any) => void | Promise<void>;
-            onStorageDestroyed?: (event: any) => void | Promise<void>;
         };
-
-        // DEPRECATED_ONDESTROY:
-        if (onDestroy) {
-            console.warn(
-                "onDestroy is deprecated. Use onRoomDestroyed and onStorageDestroyed instead. See migration guide for details.",
-            );
-        }
 
         const platform = this._config.platform();
 
@@ -445,45 +424,25 @@ export class PluvServer<
             crdt: this._config.crdt,
             debug: debug ?? this._config.debug,
             getInitialStorage: this._getInitialStorage,
-            // DEPRECATED_ONDESTROY:
-            onDestroy,
             async onRoomDestroyed(event) {
                 logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
 
-                await Promise.resolve(onRoomDestroyed?.(event));
-
-                // DEPRECATED_ONROOMDELETED:
-                // Note: encodedState from onRoomDestroyed event is deprecated.
-                // encodedState should only be accessed via onStorageDestroyed, not onRoomDestroyed/onRoomDeleted.
-                // This is only here for backward compatibility with onRoomDeleted.
-                // DEPRECATED_ONROOMDELETED:
-                await Promise.resolve(
-                    listeners.onRoomDeleted({
-                        ...("_meta" in event.platform &&
-                        "_meta" in (event.platform as any) &&
-                        !!(event.platform as any)._meta
-                            ? { _meta: (event.platform as any)._meta }
-                            : {}),
-                        context: event.context,
-                        encodedState: event.encodedState ?? null, // Get from event instead of destroyed doc
-                        platform: event.platform,
-                        room: event.room,
-                    }),
-                );
+                // Always fire server-level onRoomDestroyed
+                await Promise.resolve(listeners.onRoomDestroyed(event));
 
                 logDebug(`${colors.blue("Deleted room:")} ${room}`);
             },
             async onStorageDestroyed(event) {
                 logDebug(`${colors.blue("Destroying storage for room:")} ${room}`);
 
-                await Promise.resolve(onStorageDestroyed?.(event));
+                // Always fire server-level onStorageDestroyed
                 await Promise.resolve(listeners.onStorageDestroyed(event));
+
                 await event.platform.persistence.deleteStorageState(room);
 
                 logDebug(`${colors.blue("Destroyed storage for room:")} ${room}`);
             },
             async onMessage(event) {
-                await Promise.resolve(onMessage?.(event));
                 await Promise.resolve(listeners.onRoomMessage(event));
             },
             async onUserConnected(event) {

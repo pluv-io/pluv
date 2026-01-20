@@ -64,7 +64,7 @@ In order for pluv.io to identify your project when using the `@pluv/io` library,
 
 ### Project Webhooks
 
-On `@pluv/platform-pluv`, server event listeners (i.e. `getInitialStorage`, `onStorageDestroyed`, `onUserConnected` and `onUserDisconnected`) are webhooks that require a webhook secret key to use. To create this, navigate to the **Webhooks** page, from the sidebar of the project dashboard, and click on the "**Create webhook**" button. This webhook secret key must be copied and saved as an environment variable for your app.
+On `@pluv/platform-pluv`, server event listeners (i.e. `getInitialStorage`, `onRoomDestroyed`, `onStorageDestroyed`, `onUserConnected` and `onUserDisconnected`) are webhooks that require a webhook secret key to use. To create this, navigate to the **Webhooks** page, from the sidebar of the project dashboard, and click on the "**Create webhook**" button. This webhook secret key must be copied and saved as an environment variable for your app.
 
 <img className="mx-auto" width="100%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/master/assets/create_webhook_dashboard.png" alt="Create webhook dashboard" loading="lazy" />
 
@@ -134,6 +134,12 @@ export const ioServer = io.server({
     const storage = rows[0]?.storage ?? null;
 
     return storage;
+  },
+  // Optional: Triggered when a room is destroyed. Use for cleanup if needed.
+  // This event does NOT include encodedState to prevent accidentally saving
+  // empty or uninitialized storage data.
+  onRoomDestroyed: async ({ room }) => {
+    // Room destroyed - use for cleanup if needed
   },
   // Optional: Only if you want to run code when storage is destroyed,
   // such as saving the last storage state. Only fires when storage was
@@ -225,6 +231,12 @@ export const ioServer = io.server({
       .then((result) => result[0]?.encodedState ?? null);
 
     return encodedState;
+  },
+  // Optional: This handler is called when a room is destroyed. Use for
+  // cleanup if needed. This event does NOT include encodedState to prevent
+  // accidentally saving empty or uninitialized storage data.
+  onRoomDestroyed: async ({ room }) => {
+    // Room destroyed - use for cleanup if needed
   },
   // Optional: This handler is called when storage is about to be destroyed.
   // Only fires when storage was initialized via initializeSession.

@@ -1,6 +1,8 @@
 import type {
     BaseUser,
     GetInitialStorageFn,
+    IORoomDestroyedEvent,
+    IORoomListenerEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
 } from "@pluv/io";
@@ -11,7 +13,8 @@ import type {
     ZodEventKind,
     ZodEventResponse,
     ZodInitialStorageResponse,
-    ZodRoomDeletedResponse,
+    ZodRoomDestroyedResponse,
+    ZodStorageDestroyedResponse,
     ZodUserConnectedResponse,
     ZodUserDisconnectedResponse,
 } from "./schemas";
@@ -20,18 +23,17 @@ export interface PluvIOEndpoints {
     createToken: string;
 }
 
-export type IORoomListenerEvent<TContext extends Record<string, any>> = {
-    context: TContext;
-    encodedState: string | null;
-    room: string;
-};
-
 export type PluvIOListeners<
     TContext extends Record<string, any> = {},
     TUser extends BaseUser = BaseUser,
 > = {
     getInitialStorage?: GetInitialStorageFn<TContext>;
-    onRoomDeleted: (event: IORoomListenerEvent<TContext>) => void;
+    onRoomDestroyed: (
+        event: IORoomDestroyedEvent<PluvPlatform<TContext>, TContext>,
+    ) => void;
+    onStorageDestroyed: (
+        event: IORoomListenerEvent<PluvPlatform<TContext>, TContext>,
+    ) => void;
     onUserConnected: (
         event: IOUserConnectedEvent<
             PluvPlatform<TContext>,
@@ -51,7 +53,8 @@ export type PluvIOListeners<
 export type EventKind = z.output<typeof ZodEventKind>;
 
 export type InitialStorageResponse = z.output<typeof ZodInitialStorageResponse>;
-export type RoomDeletedResponse = z.output<typeof ZodRoomDeletedResponse>;
+export type RoomDestroyedResponse = z.output<typeof ZodRoomDestroyedResponse>;
+export type StorageDestroyedResponse = z.output<typeof ZodStorageDestroyedResponse>;
 export type UserConnectedResponse = z.output<typeof ZodUserConnectedResponse>;
 export type UserDisconnectedResponse = z.output<typeof ZodUserDisconnectedResponse>;
 

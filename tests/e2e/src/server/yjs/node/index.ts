@@ -8,7 +8,7 @@ import Http from "node:http";
 import Url from "node:url";
 import { match } from "path-to-regexp";
 import { WebSocketServer } from "ws";
-import { ioServer } from "./pluv-io";
+import { ioServer, rooms } from "./pluv-io";
 
 export type { ioServer } from "./pluv-io";
 
@@ -51,17 +51,11 @@ const server = serve(
 ) as Http.Server;
 const wsServer = new WebSocketServer({ server });
 
-const rooms = new Map<string, InferIORoom<typeof ioServer>>();
-
 const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
     const existing = rooms.get(roomId);
     if (existing) return existing;
 
-    const newRoom = ioServer.createRoom(roomId, {
-        onRoomDestroyed: (event) => {
-            rooms.delete(event.room);
-        },
-    });
+    const newRoom = ioServer.createRoom(roomId);
     rooms.set(roomId, newRoom);
 
     return newRoom;

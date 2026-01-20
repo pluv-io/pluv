@@ -8,7 +8,7 @@ import Url from "node:url";
 import { match } from "path-to-regexp";
 import { WebSocketServer } from "ws";
 import { cluster } from "./cluster";
-import { io1st, ioServer1st, ioServer2nd } from "./pluv-io";
+import { io1st, ioServer1st, ioServer2nd, rooms1, rooms2 } from "./pluv-io";
 
 export type { ioServer1st as ioServer } from "./pluv-io";
 
@@ -78,9 +78,6 @@ const server = serve(
 ) as Http.Server;
 const wsServer = new WebSocketServer({ server });
 
-const rooms1 = new Map<string, ReturnType<typeof ioServer1st.createRoom>>();
-const rooms2 = new Map<string, ReturnType<typeof ioServer2nd.createRoom>>();
-
 const getRoom1 = (roomId: string): ReturnType<typeof ioServer1st.createRoom> => {
     Array.from(rooms1.values()).forEach((room) => {
         if (!room.getSize()) rooms1.delete(room.id);
@@ -90,11 +87,7 @@ const getRoom1 = (roomId: string): ReturnType<typeof ioServer1st.createRoom> => 
 
     if (existing) return existing;
 
-    const newRoom = ioServer1st.createRoom(roomId, {
-        onRoomDestroyed: (event) => {
-            rooms1.delete(event.room);
-        },
-    });
+    const newRoom = ioServer1st.createRoom(roomId);
 
     rooms1.set(roomId, newRoom);
 
@@ -110,11 +103,7 @@ const getRoom2 = (roomId: string): ReturnType<typeof ioServer2nd.createRoom> => 
 
     if (existing) return existing;
 
-    const newRoom = ioServer2nd.createRoom(roomId, {
-        onRoomDestroyed: (event) => {
-            rooms2.delete(event.room);
-        },
-    });
+    const newRoom = ioServer2nd.createRoom(roomId);
 
     rooms2.set(roomId, newRoom);
 

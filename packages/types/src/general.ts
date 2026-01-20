@@ -76,3 +76,15 @@ export type UnionToIntersection<U> = (U extends any ? (arg: U) => any : never) e
 ) => void
     ? I
     : never;
+
+// Check if all properties in T are optional
+// - If T is {} (no keys), all properties are optional (none exist)
+// - Use HasRequiredProperty which properly handles intersection types
+// - If HasRequiredProperty<T> is false, then all properties are optional
+export type AreAllOptional<T> = [T] extends [{}]
+    ? keyof T extends never
+        ? true // T is {} - no properties, so all are "optional" (none exist)
+        : HasRequiredProperty<T> extends true
+          ? false // T has at least one required property
+          : true // T has no required properties, so all are optional
+    : false;

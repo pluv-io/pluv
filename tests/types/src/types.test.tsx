@@ -37,7 +37,7 @@ const router = io.router({
 const ioServer = io.server({
     getInitialStorage: () => null,
     router,
-    onRoomDeleted: async ({ context }) => {
+    onRoomDestroyed: async ({ context }) => {
         expectTypeOf<typeof context>().toEqualTypeOf<{
             env: {};
             meta: undefined;
