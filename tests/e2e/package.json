@@ -54,7 +54,7 @@
 		"@types/cors": "^2.8.19",
 		"@types/ms": "^2.1.0",
 		"@types/node": "^25.0.9",
-		"@types/react": "^19.2.8",
+		"@types/react": "^19.2.9",
 		"@types/react-dom": "^19.2.3",
 		"@types/ws": "^8.18.1",
 		"commander": "^14.0.2",
@@ -81,10 +81,10 @@
 		"concurrently": "^9.2.1",
 		"eslint": "^9.39.2",
 		"eslint-config-pluv": "workspace:^",
-		"miniflare": "^4.20260114.0",
+		"miniflare": "^4.20260116.0",
 		"prisma": "^6.19.2",
 		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
-		"wrangler": "^4.59.2"
+		"wrangler": "^4.59.3"
 	}
 }
