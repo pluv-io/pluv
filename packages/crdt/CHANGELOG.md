@@ -1,5 +1,23 @@
 # @pluv/crdt
 
+## 4.0.0
+
+### Major Changes
+
+- df5c39c: Update all packages to be ESM only.
+
+### Minor Changes
+
+- 037074e: Migrated build process from tsup to tsdown.
+
+### Patch Changes
+
+- 2eb5def: Bumped dependencies.
+- Updated dependencies [2eb5def]
+- Updated dependencies [df5c39c]
+- Updated dependencies [037074e]
+    - @pluv/types@4.0.0
+
 ## 3.2.2
 
 ### Patch Changes

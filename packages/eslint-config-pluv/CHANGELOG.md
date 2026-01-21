@@ -1,5 +1,15 @@
 # eslint-config-pluv
 
+## 4.0.0
+
+### Major Changes
+
+- df5c39c: Update all packages to be ESM only.
+
+### Patch Changes
+
+- 2eb5def: Bumped dependencies.
+
 ## 3.2.2
 
 ## 3.2.1
