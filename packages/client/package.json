@@ -35,7 +35,7 @@
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^9.39.2",
 		"eslint-config-pluv": "workspace:^",
-		"tsdown": "0.20.0-beta.3",
+		"tsdown": "0.20.0-beta.4",
 		"typescript": "^5.9.3"
 	},
 	"exports": {
