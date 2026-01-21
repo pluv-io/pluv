@@ -1,5 +1,13 @@
 # @pluv/platform-node
 
+## 4.0.1
+
+### Patch Changes
+
+- @pluv/crdt@4.0.1
+- @pluv/io@4.0.1
+- @pluv/types@4.0.1
+
 ## 4.0.0
 
 ### Major Changes

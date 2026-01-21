@@ -1,6 +1,6 @@
 {
     "name": "@pluv/platform-node",
-    "version": "4.0.0",
+    "version": "4.0.1",
     "description": "@pluv/io adapter for node.js",
     "author": {
         "email": "david@pluv.io",

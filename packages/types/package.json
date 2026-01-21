@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/types",
-	"version": "4.0.0",
+	"version": "4.0.1",
 	"description": "@pluv/io shared types",
 	"author": {
 		"email": "david@pluv.io",
