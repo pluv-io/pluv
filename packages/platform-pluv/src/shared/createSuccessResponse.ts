@@ -20,5 +20,6 @@ export const createSuccessResponse = <TStatus extends ContentfulStatusCode = 200
             data: ZodEventResponse.parse(data),
         },
         status,
+        { "x-pluv-event": data.event },
     );
 };
