@@ -1,5 +1,13 @@
 # @pluv/react
 
+## 4.0.1
+
+### Patch Changes
+
+- @pluv/client@4.0.1
+- @pluv/crdt@4.0.1
+- @pluv/types@4.0.1
+
 ## 4.0.0
 
 ### Major Changes

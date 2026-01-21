@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 4.0.1
+
+### Patch Changes
+
+- 982e068: Added http header for webhook events (`x-pluv-event`).
+    - @pluv/crdt@4.0.1
+    - @pluv/io@4.0.1
+    - @pluv/types@4.0.1
+
 ## 4.0.0
 
 ### Major Changes

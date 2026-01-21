@@ -1,6 +1,6 @@
 {
   "name": "eslint-config-pluv",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "@pluv/io eslint config",
   "author": {
     "email": "david@pluv.io",
