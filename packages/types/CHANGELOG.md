@@ -1,5 +1,19 @@
 # @pluv/types
 
+## 4.0.0
+
+### Major Changes
+
+- df5c39c: Update all packages to be ESM only.
+
+### Minor Changes
+
+- 037074e: Migrated build process from tsup to tsdown.
+
+### Patch Changes
+
+- 2eb5def: Bumped dependencies.
+
 ## 3.2.2
 
 ### Patch Changes
