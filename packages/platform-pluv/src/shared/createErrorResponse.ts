@@ -6,6 +6,14 @@ export const createErrorResponse = <TStatus extends ContentfulStatusCode>(
     c: Context<BlankEnv, "/", BlankInput>,
     error: { message: string },
     status: TStatus,
+    event: string = "unknown",
 ) => {
-    return c.json({ ok: false, error: { message: error.message } }, status);
+    return c.json(
+        {
+            ok: false,
+            error: { message: error.message },
+        },
+        status,
+        { "x-pluv-event": event },
+    );
 };

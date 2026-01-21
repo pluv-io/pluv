@@ -389,7 +389,7 @@ export class PluvPlatform<
                         }
                     }
                     default: {
-                        throw new HttpError("Unknown event", 400);
+                        return createErrorResponse(c, { message: "Unknown event" }, 400, event);
                     }
                 }
             } catch (error) {
