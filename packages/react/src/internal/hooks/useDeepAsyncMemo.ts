@@ -51,6 +51,7 @@ export const useDeepAsyncMemo = <T>(
         inflightRef.current = promise;
 
         // Set loading state
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setState((prev) => {
             return {
                 ...prev,
