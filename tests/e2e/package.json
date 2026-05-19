@@ -28,9 +28,9 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@blocknote/core": "^0.51.0",
-		"@blocknote/mantine": "^0.51.0",
-		"@blocknote/react": "^0.51.0",
+		"@blocknote/core": "^0.51.1",
+		"@blocknote/mantine": "^0.51.1",
+		"@blocknote/react": "^0.51.1",
 		"@hono/node-server": "^2.0.2",
 		"@lexical/react": "^0.44.0",
 		"@lexical/utils": "^0.44.0",
