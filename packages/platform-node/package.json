@@ -30,7 +30,7 @@
         "@pluv/crdt": "workspace:^",
         "@pluv/io": "workspace:^",
         "@pluv/types": "workspace:^",
-        "@types/node": "^25.8.0",
+        "@types/node": "^25.9.1",
         "@types/ws": "^8.18.1",
         "path-to-regexp": "^8.4.2"
     },

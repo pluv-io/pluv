@@ -29,7 +29,7 @@
 	"dependencies": {
 		"@pluv/crdt": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^25.8.0",
+		"@types/node": "^25.9.1",
 		"js-base64": "^3.7.8",
 		"lib0": "^0.2.117"
 	},
