@@ -20,7 +20,7 @@ jobs:
           node-version: 24.x
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4.4.0
+        uses: pnpm/action-setup@v6.0.8
 
       - name: Install Dependencies
         run: pnpm install
