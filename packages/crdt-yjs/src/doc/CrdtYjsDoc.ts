@@ -31,9 +31,10 @@ export type CrdtYjsDocParams<TStorage extends Record<string, YjsType<any, any>>>
     builder: YjsBuilder,
 ) => TStorage;
 
-export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>>
-    implements CrdtDocLike<YDoc, TStorage>
-{
+export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> implements CrdtDocLike<
+    YDoc,
+    TStorage
+> {
     public value: YDoc = new YDoc();
 
     #_storage: TStorage;

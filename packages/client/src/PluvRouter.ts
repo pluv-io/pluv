@@ -26,8 +26,7 @@ export class PluvRouter<
     TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, TCrdt> = {},
-> implements IORouterLike<TEvents>
-{
+> implements IORouterLike<TEvents> {
     readonly _defs: { events: TEvents } = { events: {} as TEvents };
 
     constructor(events: TEvents) {

@@ -42,5 +42,8 @@
 	"exports": {
 		".": "./dist/index.mjs",
 		"./*": "./*"
+	},
+	"inlinedDependencies": {
+		"wonka": "6.3.6"
 	}
 }

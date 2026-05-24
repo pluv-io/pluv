@@ -30,9 +30,9 @@ export type CrdtLoroDocParams<TStorage extends Record<string, LoroType<any, any>
     builder: LoroBuilder,
 ) => TStorage;
 
-export class CrdtLoroDoc<TStorage extends Record<string, LoroType<any, any>>>
-    implements CrdtDocLike<LoroDoc, TStorage>
-{
+export class CrdtLoroDoc<
+    TStorage extends Record<string, LoroType<any, any>>,
+> implements CrdtDocLike<LoroDoc, TStorage> {
     public value: LoroDoc = new LoroDoc();
 
     #_storage: TStorage;

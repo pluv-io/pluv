@@ -165,7 +165,7 @@ export const createBundle = <
 
             useEffect(() => {
                 if (room.id === _room) return;
-                // eslint-disable-next-line react-hooks/set-state-in-effect
+
                 setRoom(createRoom());
             }, [_room, createRoom, room]);
 

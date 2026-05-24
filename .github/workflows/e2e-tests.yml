@@ -44,9 +44,7 @@ jobs:
         run: pnpm install
 
       - name: Setup dev.db
-        run: |
-          pnpm prisma generate
-          pnpm prisma db push
+        run: pnpm drizzle-kit push
         working-directory: tests/e2e
 
       - name: Install Playwright

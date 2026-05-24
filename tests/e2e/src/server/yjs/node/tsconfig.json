@@ -2,7 +2,6 @@
 	"extends": "@pluv/tsconfig/node.json",
 	"include": ["**/*.ts"],
 	"compilerOptions": {
-		"baseUrl": ".",
 		"declaration": false,
 		"declarationMap": false,
 		"types": ["@types/node"],

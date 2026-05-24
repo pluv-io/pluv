@@ -71,8 +71,7 @@ export class MockedRoom<
     TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>>,
-> implements RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>>
-{
+> implements RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>> {
     public readonly id: string;
 
     private readonly _crdtManager: CrdtManager<TCrdt>;

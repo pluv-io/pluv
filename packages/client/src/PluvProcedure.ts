@@ -20,8 +20,7 @@ export class PluvProcedure<
     TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
     TFilled extends "input" | "broadcast" | "",
-> implements ProcedureLike<TInput, TOutput>
-{
+> implements ProcedureLike<TInput, TOutput> {
     private _broadcast: EventResolver<
         TIO,
         TInput,

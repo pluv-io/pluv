@@ -8,7 +8,7 @@ node_modules
 # testing
 coverage
 playwright-report
-tests/e2e/prisma/dev.db
+tests/e2e/dev.db
 
 # next.js
 .next/

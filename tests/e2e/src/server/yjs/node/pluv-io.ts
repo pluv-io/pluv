@@ -1,8 +1,10 @@
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO, InferIORoom } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { prisma } from "../../../prisma";
+import { db } from "../../../db";
+import { rooms } from "../../../db/schema";
 
 const PLUV_AUTH_SECRET = "secret123";
 
@@ -29,13 +31,17 @@ const router = io.router({
         .self(({ value }) => ({ doubledNumber: { value: value * 2 } })),
 });
 
-export const rooms = new Map<string, InferIORoom<typeof ioServer>>();
+export const ioRooms = new Map<string, InferIORoom<typeof ioServer>>();
 export const ioServer = io.server({
     router,
     getInitialStorage: async ({ room: name }) => {
         if (name !== "e2e-node-storage-saved") return null;
 
-        const room = await prisma.room.findUnique({ where: { name } });
+        const room = await db
+            .select()
+            .from(rooms)
+            .where(eq(rooms.name, name))
+            .then((rooms) => rooms[0]);
         const storage = room?.storage ?? null;
 
         return storage;
@@ -43,13 +49,12 @@ export const ioServer = io.server({
     onStorageDestroyed: async ({ room: name, encodedState: storage }) => {
         if (name !== "e2e-node-storage-saved") return;
 
-        await prisma.room.upsert({
-            where: { name },
-            create: { name, storage },
-            update: { storage },
-        });
+        db.insert(rooms)
+            .values({ name, storage })
+            .onConflictDoUpdate({ target: rooms.name, set: { storage } })
+            .run();
     },
     onRoomDestroyed: (event) => {
-        rooms.delete(event.room);
+        ioRooms.delete(event.room);
     },
 });
