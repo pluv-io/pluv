@@ -29,7 +29,7 @@
 	"dependencies": {
 		"@pluv/crdt": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^25.0.9",
+		"@types/node": "^25.9.1",
 		"js-base64": "^3.7.8",
 		"lib0": "^0.2.117"
 	},
@@ -38,11 +38,11 @@
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^9.39.2",
+		"eslint": "^9.39.4",
 		"eslint-config-pluv": "workspace:^",
-		"tsdown": "0.20.0-beta.4",
+		"tsdown": "0.22.0",
 		"typescript": "^5.9.3",
-		"yjs": "^13.6.29"
+		"yjs": "^13.6.30"
 	},
 	"exports": {
 		".": "./dist/index.mjs",

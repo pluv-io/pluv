@@ -50,7 +50,8 @@ jobs:
         working-directory: tests/e2e
 
       - name: Install Playwright
-        run: pnpm dlx playwright install chromium
+        run: pnpm exec playwright install chromium
+        working-directory: tests/e2e
 
       - name: Test
         run: pnpm test:e2e

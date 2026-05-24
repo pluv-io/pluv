@@ -27,11 +27,11 @@
         "version-packages": "changeset version"
     },
     "devDependencies": {
-        "@changesets/cli": "^2.29.8",
+        "@changesets/cli": "^2.31.0",
         "commitizen": "^4.3.1",
         "cz-conventional-changelog": "^3.3.0",
-        "prettier": "^3.8.0",
-        "turbo": "^2.7.5"
+        "prettier": "^3.8.3",
+        "turbo": "^2.9.14"
     },
     "pnpm": {
         "onlyBuiltDependencies": [

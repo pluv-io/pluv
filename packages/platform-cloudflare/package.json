@@ -31,14 +31,14 @@
         "@pluv/io": "workspace:^",
         "@pluv/persistence-cloudflare-transactional-storage": "workspace:^",
         "@pluv/types": "workspace:^",
-        "path-to-regexp": "^8.3.0"
+        "path-to-regexp": "^8.4.2"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^4.20260120.0",
+        "@cloudflare/workers-types": "^4.20260524.1",
         "@pluv/tsconfig": "workspace:^",
-        "eslint": "^9.39.2",
+        "eslint": "^9.39.4",
         "eslint-config-pluv": "workspace:^",
-        "tsdown": "0.20.0-beta.4",
+        "tsdown": "0.22.0",
         "typescript": "^5.9.3"
     },
     "exports": {
