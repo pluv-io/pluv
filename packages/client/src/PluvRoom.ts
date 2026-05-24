@@ -208,8 +208,7 @@ export class PluvRoom<
     TPresence extends Record<string, any> = {},
     TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
-> implements RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>>
-{
+> implements RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>> {
     readonly _endpoints: RoomEndpoints<TIO, TMetadata>;
 
     public readonly id: string;
