@@ -59,7 +59,7 @@
 		"@types/ws": "^8.18.1",
 		"commander": "^14.0.3",
 		"common-tags": "^1.8.2",
-		"hono": "^4.12.21",
+		"hono": "^4.12.22",
 		"ioredis": "^5.10.1",
 		"lexical": "^0.44.0",
 		"loro-crdt": "^1.12.1",
@@ -70,21 +70,21 @@
 		"react-dom": "^19.2.6",
 		"slate": "^0.115.1",
 		"slate-react": "^0.114.2",
-		"ws": "^8.20.1",
+		"ws": "^8.21.0",
 		"yjs": "^13.6.30",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20260522.1",
+		"@cloudflare/workers-types": "^4.20260524.1",
 		"@playwright/test": "^1.60.0",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^9.2.1",
 		"eslint": "^9.39.4",
 		"eslint-config-pluv": "workspace:^",
-		"miniflare": "^4.20260520.0",
+		"miniflare": "^4.20260521.0",
 		"prisma": "^6.19.3",
 		"tsx": "^4.22.3",
 		"typescript": "^5.9.3",
-		"wrangler": "^4.93.1"
+		"wrangler": "^4.94.0"
 	}
 }

@@ -27,17 +27,17 @@
         "loro-crdt": "^1.12.1",
         "react": "^19.2.6",
         "react-dom": "^19.2.6",
-        "ws": "^8.20.1",
+        "ws": "^8.21.0",
         "yjs": "^13.6.30",
         "zod": "^4.4.3"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^4.20260522.1",
+        "@cloudflare/workers-types": "^4.20260524.1",
         "@pluv/tsconfig": "workspace:^",
         "eslint": "^9.39.4",
         "eslint-config-pluv": "workspace:^",
         "expect-type": "^1.3.0",
         "typescript": "^5.9.3",
-        "wrangler": "^4.93.1"
+        "wrangler": "^4.94.0"
     }
 }
