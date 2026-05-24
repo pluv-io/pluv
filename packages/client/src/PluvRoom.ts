@@ -825,7 +825,9 @@ export class PluvRoom<
         try {
             return await res.text().then((text) => text.trim());
         } catch (err) {
-            throw new Error(err instanceof Error ? err.message : "Room is unauthorized");
+            throw new Error(err instanceof Error ? err.message : "Room is unauthorized", {
+                cause: err,
+            });
         }
     }
 

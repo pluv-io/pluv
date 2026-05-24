@@ -33,7 +33,7 @@
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20260524.1",
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^9.39.4",
+		"eslint": "^10.4.0",
 		"eslint-config-pluv": "workspace:^",
 		"tsdown": "0.22.0",
 		"typescript": "^5.9.3"
