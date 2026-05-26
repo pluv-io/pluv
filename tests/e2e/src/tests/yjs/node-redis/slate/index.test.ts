@@ -1,11 +1,6 @@
 import test, { expect } from "@playwright/test";
 import ms from "ms";
-import {
-    clearSlateEditable,
-    openTestPage,
-    typeInSlateEditable,
-    waitMs,
-} from "../../../../utils";
+import { clearSlateEditable, openTestPage, typeInSlateEditable, waitMs } from "../../../../utils";
 
 const TEST_URL = "http://localhost:3100/yjs/node-redis/slate";
 
