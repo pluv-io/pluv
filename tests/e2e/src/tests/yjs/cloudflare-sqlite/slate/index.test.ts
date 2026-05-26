@@ -1,6 +1,11 @@
 import test, { expect } from "@playwright/test";
 import ms from "ms";
-import { openTestPage, waitMs } from "../../../../utils";
+import {
+    clearSlateEditable,
+    openTestPage,
+    typeInSlateEditable,
+    waitMs,
+} from "../../../../utils";
 
 const TEST_URL = "http://localhost:3100/yjs/cloudflare/slate";
 
@@ -18,7 +23,7 @@ test.describe("CloudflareSQLite Slate", () => {
 
         await waitMs(ms("1s"));
 
-        await firstPage.locator("#slate-editable").fill("hello world");
+        await typeInSlateEditable(firstPage, "hello world");
         await waitMs(ms("1s"));
 
         await secondPage
@@ -27,7 +32,7 @@ test.describe("CloudflareSQLite Slate", () => {
             .then((text) => expect(text.trim()).toEqual("hello world"));
         await waitMs(ms("1s"));
 
-        await secondPage.locator("#slate-editable").clear();
+        await clearSlateEditable(secondPage);
         await waitMs(ms("1s"));
 
         await firstPage
