@@ -1,15 +1,22 @@
 import { withYjs, YjsEditor } from "@slate-yjs/core";
 import type { FC } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import type { Descendant, Node } from "slate";
 import { createEditor, Editor, Transforms } from "slate";
 import { Editable, Slate, withReact } from "slate-react";
 import { useStorage } from "../../../pluv-io/yjs/node";
 
+const initialValue: Descendant[] = [
+    {
+        type: "paragraph",
+        children: [{ text: "" }],
+    } as Node,
+];
+
 export interface SlateEditorProps {}
 
 export const SlateEditor: FC<SlateEditorProps> = () => {
-    const [content, sharedType] = useStorage("slate");
+    const [, sharedType] = useStorage("slate");
 
     const editor = useMemo(() => {
         if (!sharedType) return null;
@@ -47,18 +54,10 @@ export const SlateEditor: FC<SlateEditorProps> = () => {
         };
     }, [editor]);
 
-    const [value, setValue] = useState<Descendant[]>([]);
-
     if (!editor) return null;
 
     return (
-        <Slate
-            editor={editor}
-            initialValue={value}
-            onChange={(newValue) => {
-                setValue(newValue);
-            }}
-        >
+        <Slate editor={editor} initialValue={initialValue}>
             <Editable
                 id="slate-editable"
                 style={{
