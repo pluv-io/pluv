@@ -1,6 +1,12 @@
-import test, { expect } from "@playwright/test";
+import test from "@playwright/test";
 import ms from "ms";
-import { clearSlateEditable, openTestPage, typeInSlateEditable, waitMs } from "../../../../utils";
+import {
+    clearSlateEditable,
+    expectSlateEditableText,
+    openTestPage,
+    typeInSlateEditable,
+    waitMs,
+} from "../../../../utils";
 
 const TEST_URL = "http://localhost:3100/yjs/node-redis/slate";
 
@@ -19,21 +25,11 @@ test.describe("Node Redis Slate", () => {
         await waitMs(ms("1s"));
 
         await typeInSlateEditable(firstPage, "hello world");
-        await waitMs(ms("1s"));
-
-        await secondPage
-            .locator("#slate-editable")
-            .innerText()
-            .then((text) => expect(text.trim()).toEqual("hello world"));
-        await waitMs(ms("1s"));
+        await expectSlateEditableText(secondPage, "hello world");
 
         await clearSlateEditable(secondPage);
-        await waitMs(ms("1s"));
-
-        await firstPage
-            .locator("#slate-editable")
-            .innerText()
-            .then((text) => expect(text.trim()).toEqual(""));
+        await expectSlateEditableText(secondPage, "");
+        await expectSlateEditableText(firstPage, "");
 
         await firstPage.close();
         await secondPage.close();

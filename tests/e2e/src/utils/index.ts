@@ -1,3 +1,3 @@
 export { openTestPage } from "./openTestPage";
-export { clearSlateEditable, typeInSlateEditable } from "./slateEditor";
+export { clearSlateEditable, expectSlateEditableText, typeInSlateEditable } from "./slateEditor";
 export { waitMs } from "./waitMs";
