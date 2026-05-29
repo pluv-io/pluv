@@ -1,5 +1,11 @@
 # @pluv/types
 
+## 4.0.2
+
+### Patch Changes
+
+- e1913b3: Upgraded internal dependencies
+
 ## 4.0.1
 
 ## 4.0.0

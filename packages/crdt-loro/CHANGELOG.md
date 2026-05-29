@@ -1,5 +1,14 @@
 # @pluv/crdt-loro
 
+## 4.0.2
+
+### Patch Changes
+
+- e1913b3: Upgraded internal dependencies
+- Updated dependencies [e1913b3]
+    - @pluv/types@4.0.2
+    - @pluv/crdt@4.0.2
+
 ## 4.0.1
 
 ### Patch Changes
