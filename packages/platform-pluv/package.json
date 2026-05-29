@@ -32,7 +32,7 @@
 		"@pluv/types": "workspace:^",
 		"@types/node": "^25.9.1",
 		"fast-json-stable-stringify": "^2.1.0",
-		"hono": "^4.12.22",
+		"hono": "^4.12.23",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
