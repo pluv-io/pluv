@@ -12,6 +12,7 @@
 			"@pluv/io": ["../../../../../../packages/io/dist"],
 			"@pluv/platform-node": ["../../../../../../packages/platform-node/dist"],
 			"@pluv/types": ["../../../../../../packages/types/dist"],
+			"loro-crdt": ["../../../../node_modules/loro-crdt/nodejs"],
 			"ws": ["../../../node_modules/@types/ws"]
 		}
 	}
