@@ -22,6 +22,7 @@ packages:
 allowBuilds:
   '@prisma/client': set this to true or false
   '@prisma/engines': set this to true or false
+  '@swc/core': true
   better-sqlite3: true
   core-js-pure: true
   esbuild: true
