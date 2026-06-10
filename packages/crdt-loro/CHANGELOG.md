@@ -1,5 +1,15 @@
 # @pluv/crdt-loro
 
+## 4.0.2
+
+### Patch Changes
+
+- ba5b80e: Fix Node resolution to use loro-crdt/nodejs instead of the bundler WASM entry.
+- e1913b3: Upgraded internal dependencies
+- Updated dependencies [e1913b3]
+    - @pluv/types@4.0.2
+    - @pluv/crdt@4.0.2
+
 ## 4.0.1
 
 ### Patch Changes
