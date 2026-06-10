@@ -1,5 +1,5 @@
-import type { Container } from "loro-crdt";
-import { LoroList, isContainer } from "loro-crdt";
+import type { Container } from "@loro-runtime";
+import { LoroList, isContainer } from "@loro-runtime";
 import type { LoroType } from "./types";
 
 export const list = <T extends unknown>(

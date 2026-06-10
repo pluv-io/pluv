@@ -3,6 +3,9 @@
 	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
 	"exclude": ["node_modules"],
 	"compilerOptions": {
-		"lib": ["dom", "esnext"]
+		"lib": ["dom", "esnext"],
+		"paths": {
+			"@loro-runtime": ["./src/loro-runtime.browser.ts"]
+		}
 	}
 }

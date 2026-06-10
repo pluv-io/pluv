@@ -3,13 +3,12 @@
     "include": ["./cf.d.ts", "./next-env.d.ts", "**/*.ts", "**/*.tsx"],
     "exclude": [ "node_modules"],
     "compilerOptions": {
-        "baseUrl": ".",
         "declaration": false,
         "declarationMap": false,
         "paths": {
             "@pluv/addon-indexeddb": ["../../packages/addon-indexeddb/dist"],
 			"@pluv/client": ["../../packages/client/dist"],
-            "@pluv/crdt-loro": ["../../packages/crdt-loro/dist"],
+            "@pluv/crdt-loro": ["../../packages/crdt-loro/dist/browser.mjs"],
             "@pluv/crdt-yjs": ["../../packages/crdt-yjs/dist"],
 			"@pluv/io": ["../../packages/io/dist"],
 			"@pluv/platform-node": ["../../packages/platform-node/dist"],

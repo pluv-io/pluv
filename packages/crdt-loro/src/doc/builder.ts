@@ -6,8 +6,8 @@ import type {
     LoroMap,
     LoroMovableList,
     LoroText,
-} from "loro-crdt";
-import { isContainer } from "loro-crdt";
+} from "@loro-runtime";
+import { isContainer } from "@loro-runtime";
 import type { LoroType } from "../types";
 
 export type LoroBuilder = ReturnType<typeof builder>;

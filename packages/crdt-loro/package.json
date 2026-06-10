@@ -15,13 +15,13 @@
 		"directory": "packages/crdt-loro"
 	},
 	"type": "module",
-	"types": "./dist/index.d.mts",
+	"types": "./dist/browser.d.mts",
 	"publishConfig": {
 		"access": "public"
 	},
 	"scripts": {
-		"build": "tsdown",
-		"dev": "tsdown --watch",
+		"build": "tsdown --config tsdown.browser.config.ts && tsdown --config tsdown.node.config.ts",
+		"dev": "tsdown --config tsdown.browser.config.ts --watch",
 		"lint": "eslint \"src/**/*.ts*\" --fix --max-warnings 0",
 		"typecheck": "tsc --noEmit",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
@@ -44,8 +44,20 @@
 		"typescript": "^5.9.3"
 	},
 	"exports": {
-		".": "./dist/index.mjs",
-		"./chunk-D7D4PA-g": "./dist/chunk-D7D4PA-g.mjs",
+		".": {
+			"types": "./dist/browser.d.mts",
+			"browser": "./dist/browser.mjs",
+			"node": "./dist/node.mjs",
+			"default": "./dist/browser.mjs"
+		},
+		"./browser": {
+			"types": "./dist/browser.d.mts",
+			"default": "./dist/browser.mjs"
+		},
+		"./node": {
+			"types": "./dist/browser.d.mts",
+			"default": "./dist/node.mjs"
+		},
 		"./*": "./*"
 	}
 }

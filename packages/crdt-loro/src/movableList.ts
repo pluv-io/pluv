@@ -1,5 +1,5 @@
-import type { Container } from "loro-crdt";
-import { isContainer, LoroMovableList } from "loro-crdt";
+import type { Container } from "@loro-runtime";
+import { isContainer, LoroMovableList } from "@loro-runtime";
 import type { LoroType } from "./types";
 
 export const movableList = <T extends unknown>(value: T[] | readonly T[] = []) => {

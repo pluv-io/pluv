@@ -1,14 +1,4 @@
-import { defineConfig } from "tsdown";
+import browserConfig from "./tsdown.browser.config.ts";
+import nodeConfig from "./tsdown.node.config.ts";
 
-export default defineConfig({
-    format: ["esm"],
-    dts: true,
-    outDir: "dist",
-    entry: "src/index.ts",
-    target: "esnext",
-    sourcemap: true,
-    clean: true,
-    exports: {
-        all: true,
-    },
-});
+export default [browserConfig, nodeConfig];
