@@ -6,7 +6,7 @@ import type {
 } from "@pluv/crdt";
 import type { CrdtDocLike } from "@pluv/types";
 import { fromUint8Array, toUint8Array } from "js-base64";
-import type { Container } from "loro-crdt";
+import type { Container } from "@loro-runtime";
 import {
     LoroCounter,
     LoroDoc,
@@ -17,7 +17,7 @@ import {
     LoroText,
     LoroTree,
     UndoManager,
-} from "loro-crdt";
+} from "@loro-runtime";
 import type { LoroType } from "../types";
 import type { LoroBuilder } from "./builder";
 import { builder } from "./builder";

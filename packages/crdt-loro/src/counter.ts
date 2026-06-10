@@ -1,4 +1,4 @@
-import { LoroCounter } from "loro-crdt";
+import { LoroCounter } from "@loro-runtime";
 import { LoroType } from "./types";
 
 export const counter = (): LoroCounter => {

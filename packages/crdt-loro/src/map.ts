@@ -1,5 +1,5 @@
-import type { Container } from "loro-crdt";
-import { LoroMap, isContainer } from "loro-crdt";
+import type { Container } from "@loro-runtime";
+import { LoroMap, isContainer } from "@loro-runtime";
 import type { LoroType } from "./types";
 
 export const map = <T extends unknown>(

@@ -1,17 +1,4 @@
 {
-	"extends": "@pluv/tsconfig/node.json",
-	"include": ["**/*.ts"],
-	"compilerOptions": {
-		"declaration": false,
-		"declarationMap": false,
-		"types": ["@types/node"],
-		"paths": {
-			"@pluv/crdt": ["../../../../../../packages/crdt/dist"],
-			"@pluv/crdt-yjs": ["../../../../../../packages/crdt-yjs/dist"],
-			"@pluv/io": ["../../../../../../packages/io/dist"],
-			"@pluv/platform-node": ["../../../../../../packages/platform-node/dist"],
-			"@pluv/types": ["../../../../../../packages/types/dist"],
-			"ws": ["../../../node_modules/@types/ws"]
-		}
-	}
+	"extends": "../../tsconfig.json",
+	"include": ["**/*.ts"]
 }

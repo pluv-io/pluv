@@ -1,5 +1,5 @@
 import { AbstractCrdtDocFactory } from "@pluv/crdt";
-import type { LoroDoc } from "loro-crdt";
+import type { LoroDoc } from "@loro-runtime";
 import type { LoroType } from "../types";
 import { CrdtLoroDoc } from "./CrdtLoroDoc";
 import type { LoroBuilder } from "./builder";
