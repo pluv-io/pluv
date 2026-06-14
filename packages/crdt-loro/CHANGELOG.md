@@ -1,5 +1,16 @@
 # @pluv/crdt-loro
 
+## 4.1.0
+
+### Minor Changes
+
+- 5aaef94: Add runtime-specific conditional exports for browser, workerd, bun, node, and deno. Cloudflare Workers and Bun resolve to `loro-crdt/bundler`; Node and Deno resolve to `loro-crdt/nodejs`; browsers resolve to bare `loro-crdt`.
+
+### Patch Changes
+
+- @pluv/crdt@4.1.0
+- @pluv/types@4.1.0
+
 ## 4.0.2
 
 ### Patch Changes
