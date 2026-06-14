@@ -20,7 +20,7 @@
 		"access": "public"
 	},
 	"scripts": {
-		"build": "tsdown --config tsdown.browser.config.ts && tsdown --config tsdown.node.config.ts",
+		"build": "tsdown --config tsdown.browser.config.ts && tsdown --config tsdown.bundler.config.ts && tsdown --config tsdown.node.config.ts",
 		"dev": "tsdown --config tsdown.browser.config.ts --watch",
 		"lint": "eslint \"src/**/*.ts*\" --fix --max-warnings 0",
 		"typecheck": "tsc --noEmit",
@@ -46,15 +46,34 @@
 	"exports": {
 		".": {
 			"types": "./dist/browser.d.mts",
-			"browser": "./dist/browser.mjs",
+			"workerd": "./dist/bundler.mjs",
+			"deno": "./dist/node.mjs",
 			"node": "./dist/node.mjs",
-			"default": "./dist/browser.mjs"
+			"bun": "./dist/bundler.mjs",
+			"browser": "./dist/browser.mjs",
+			"default": "./dist/bundler.mjs"
 		},
 		"./browser": {
 			"types": "./dist/browser.d.mts",
 			"default": "./dist/browser.mjs"
 		},
 		"./node": {
+			"types": "./dist/browser.d.mts",
+			"default": "./dist/node.mjs"
+		},
+		"./bundler": {
+			"types": "./dist/browser.d.mts",
+			"default": "./dist/bundler.mjs"
+		},
+		"./workerd": {
+			"types": "./dist/browser.d.mts",
+			"default": "./dist/bundler.mjs"
+		},
+		"./bun": {
+			"types": "./dist/browser.d.mts",
+			"default": "./dist/bundler.mjs"
+		},
+		"./deno": {
 			"types": "./dist/browser.d.mts",
 			"default": "./dist/node.mjs"
 		},
