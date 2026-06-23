@@ -6,13 +6,13 @@ const PLUV_AUTH_SECRET = "secret123";
 
 export const io = createIO(
     platformNode({
-        authorize: {
+        authorize: ({ request: _request }) => ({
             secret: PLUV_AUTH_SECRET,
             user: z.object({
                 id: z.string(),
                 name: z.string(),
             }),
-        },
+        }),
         debug: true,
     }),
 );
