@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/crdt-yjs",
-	"version": "4.1.0",
+	"version": "5.0.0",
 	"description": "yjs for @pluv/io",
 	"author": {
 		"email": "david@pluv.io",
