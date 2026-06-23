@@ -43,7 +43,7 @@ const app = new Hono<{ Bindings: HttpBindings }>()
 
         const id = Crypto.randomUUID();
         const token = await io1st.createToken({
-            req: c.env.incoming,
+            request: c.req.raw,
             room: roomId,
             user: { id, name: `user:${id}` },
         });
@@ -130,5 +130,5 @@ wsServer.on("connection", async (ws, req) => {
     const io = parsed.query?.io as string | undefined;
     const room = !io ? getRoom1(roomId) : getRoom2(roomId);
 
-    await room.register(ws, { req, token });
+    await room.register(ws, { request: req, token });
 });

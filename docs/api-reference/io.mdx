@@ -62,7 +62,7 @@ const token = await io.createToken({
 
 // If using `@pluv/platform-node`
 const token = await io.createToken({
-  req: req as Http.IncomingMessage,
+  request: request as Request,
   room: "my-example-room",
   user: { id: "...", name: "..." },
 });
@@ -294,7 +294,7 @@ room.register(webSocket, {
 });
 // For @pluv/platform-node
 room.register(webSocket, {
-  req: req as Http.IncomingMessage,
+  request: req as Http.IncomingMessage,
   token,
 });
 ```

@@ -40,13 +40,13 @@
 		"@pluv/tsconfig": "workspace:^",
 		"eslint": "^10.5.0",
 		"eslint-config-pluv": "workspace:^",
-		"tsdown": "0.22.2",
+		"tsdown": "0.22.3",
 		"typescript": "^5.9.3",
 		"yjs": "^13.6.31"
 	},
 	"exports": {
 		".": "./dist/index.mjs",
-		"./chunk-D7D4PA-g": "./dist/chunk-D7D4PA-g.mjs",
+		"./rolldown-runtime-D7D4PA-g": "./dist/rolldown-runtime-D7D4PA-g.mjs",
 		"./*": "./*"
 	}
 }

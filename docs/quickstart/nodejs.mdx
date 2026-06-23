@@ -128,10 +128,9 @@ const app = new Hono<{ Bindings: HttpBindings }>()
   .get("/api/pluv/auth", async (c) => {
     const room = c.req.query("room") as string;
 
-    const req: Http.IncomingMessage = c.env.incoming;
     // Example stub. However you get the authed user here
-    const user = await getUser(req);
-    const token = await ioServer.createToken({ user, req, room });
+    const user = await getUser(c.req.raw);
+    const token = await ioServer.createToken({ request: c.req.raw, room, user });
 
     return c.text(token, 200);
   });
@@ -166,7 +165,7 @@ wsServer.on("connection", async (ws, req) => {
 
   // Token is only needed if you have configured authorization
   const token = new URL(req.url).searchParams.get("token");
-  await room.register(ws, { req, token });
+  await room.register(ws, { request: req, token });
 });
 ```
 

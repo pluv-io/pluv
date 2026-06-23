@@ -1,5 +1,5 @@
-import browserConfig from "./tsdown.browser.config.ts";
-import bundlerConfig from "./tsdown.bundler.config.ts";
-import nodeConfig from "./tsdown.node.config.ts";
+import browserConfig from "./tsdown.browser.config";
+import bundlerConfig from "./tsdown.bundler.config";
+import nodeConfig from "./tsdown.node.config";
 
 export default [browserConfig, bundlerConfig, nodeConfig];

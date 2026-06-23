@@ -1,0 +1,71 @@
+---
+title: "v5 Breaking Changes"
+description: "Migration guide from v4 to v5"
+---
+
+# v5 Breaking Changes
+
+## `@pluv/platform-node` init context `req` → `request`
+
+The `@pluv/platform-node` init context now uses `request` instead of `req`, aligned with `@pluv/platform-cloudflare`. The `request` value may be a web `Request` or Node `IncomingMessage` on input surfaces. Function-form `authorize` always receives a normalized web `Request`.
+
+### `register` and `createToken`
+
+```ts
+// Before
+await room.register(ws, { req, token });
+await io.createToken({ req, room, user });
+
+// After
+await room.register(ws, { request: req, token });
+await io.createToken({ request: c.req.raw, room, user });
+// IncomingMessage is still accepted: { request: req }
+```
+
+### Function-form `authorize`
+
+```ts
+// Before
+authorize: ({ req }) => ({
+  secret: "MY-CUSTOM-SECRET",
+  user: z.object({ id: z.string() }),
+}),
+
+// After
+authorize: ({ request }) => ({
+  secret: "MY-CUSTOM-SECRET",
+  user: z.object({ id: z.string() }),
+}),
+```
+
+`request` in the authorize callback is always a web `Request`, even when `register` or `createToken` received an `IncomingMessage`.
+
+### Hono on Node.js
+
+For fetch-based auth routes, pass Hono's web `Request`:
+
+```ts
+const token = await ioServer.createToken({
+  request: c.req.raw,
+  room,
+  user,
+});
+```
+
+For WebSocket connections, pass the upgrade `IncomingMessage` as `request`:
+
+```ts
+wsServer.on("connection", async (ws, req) => {
+  await room.register(ws, { request: req, token });
+});
+```
+
+### Optional `origin` config
+
+When converting `IncomingMessage` to `Request`, a full URL is required. By default, the origin is inferred from `Host`, `X-Forwarded-*`, and TLS. Set an explicit origin when behind a proxy or when inference is ambiguous:
+
+```ts
+platformNode({
+  origin: "https://api.example.com",
+});
+```

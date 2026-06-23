@@ -9,10 +9,10 @@ import type {
 import { AbstractPlatform } from "@pluv/io";
 import type { IOAuthorize, Json } from "@pluv/types";
 import crypto from "node:crypto";
-import type { IncomingMessage } from "node:http";
 import { TextDecoder } from "node:util";
 import type { WebSocket } from "ws";
 import { NodeWebSocket } from "./NodeWebSocket";
+import type { NodeRegisterInput } from "./types";
 
 export type NodePlatformRoomContext<TMeta extends Record<string, Json>> = keyof TMeta extends never
     ? { meta?: undefined }
@@ -20,6 +20,7 @@ export type NodePlatformRoomContext<TMeta extends Record<string, Json>> = keyof 
 
 export type NodePlatformConfig<TMeta extends Record<string, Json>> = {
     mode?: WebSocketRegistrationMode;
+    origin?: string;
 } & (
     | { persistence?: undefined; pubSub?: undefined }
     | { persistence: AbstractPersistence; pubSub: AbstractPubSub }
@@ -30,7 +31,7 @@ export class NodePlatform<
     TMeta extends Record<string, Json> = {},
 > extends AbstractPlatform<
     NodeWebSocket<TAuthorize>,
-    { req: IncomingMessage },
+    NodeRegisterInput,
     NodePlatformRoomContext<TMeta>,
     {
         authorize: {
@@ -53,14 +54,17 @@ export class NodePlatform<
     public readonly id = crypto.randomUUID();
     public readonly _config;
     public readonly _name = "platformNode";
+    public readonly origin: string | undefined;
 
     constructor(config: NodePlatformConfig<TMeta> = {}) {
-        const { roomContext, mode = "attached", persistence, pubSub } = config;
+        const { origin, roomContext, mode = "attached", persistence, pubSub } = config;
 
         super({
             roomContext,
             ...(persistence && pubSub ? { persistence, pubSub } : {}),
         });
+
+        this.origin = origin;
 
         this._config = {
             authorize: {
@@ -116,10 +120,11 @@ export class NodePlatform<
 
     public initialize(config: AbstractPlatformConfig<NodePlatformRoomContext<TMeta>>): this {
         return new NodePlatform({
-            roomContext: config.roomContext,
             mode: this._config.registrationMode,
+            origin: this.origin,
             persistence: this.persistence.initialize(config.roomContext),
             pubSub: this.pubSub,
+            roomContext: config.roomContext,
         } as NodePlatformConfig<TMeta>)._initialize() as this;
     }
 
