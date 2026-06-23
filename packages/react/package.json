@@ -42,7 +42,7 @@
 		"eslint": "^10.5.0",
 		"eslint-config-pluv": "workspace:^",
 		"react": "^19.2.7",
-		"tsdown": "0.22.2",
+		"tsdown": "0.22.3",
 		"typescript": "^5.9.3"
 	},
 	"exports": {

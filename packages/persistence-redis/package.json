@@ -39,7 +39,7 @@
 		"eslint": "^10.5.0",
 		"eslint-config-pluv": "workspace:^",
 		"ioredis": "^5.11.1",
-		"tsdown": "0.22.2",
+		"tsdown": "0.22.3",
 		"typescript": "^5.9.3"
 	},
 	"exports": {
