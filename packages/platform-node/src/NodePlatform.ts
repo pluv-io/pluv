@@ -59,12 +59,12 @@ export class NodePlatform<
     constructor(config: NodePlatformConfig<TMeta> = {}) {
         const { origin, roomContext, mode = "attached", persistence, pubSub } = config;
 
-        this.origin = origin;
-
         super({
             roomContext,
             ...(persistence && pubSub ? { persistence, pubSub } : {}),
         });
+
+        this.origin = origin;
 
         this._config = {
             authorize: {

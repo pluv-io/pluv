@@ -1,10 +1,6 @@
 import type { IncomingMessage } from "node:http";
 import { Readable } from "node:stream";
 
-export type ToRequestOptions = {
-    origin?: string;
-};
-
 const getHeader = (incoming: IncomingMessage, name: string): string | undefined => {
     const value = incoming.headers[name];
 
@@ -24,6 +20,28 @@ const inferOrigin = (incoming: IncomingMessage): string => {
     return `${protocol}://${host}`;
 };
 
+const toHeaders = (incoming: IncomingMessage): Headers => {
+    const headers = new Headers();
+
+    for (const [key, value] of Object.entries(incoming.headers)) {
+        if (value == null) continue;
+
+        if (Array.isArray(value)) {
+            for (const item of value) headers.append(key, item);
+
+            continue;
+        }
+
+        headers.append(key, value);
+    }
+
+    return headers;
+};
+
+export type ToRequestOptions = {
+    origin?: string;
+};
+
 export const toRequest = (
     request: Request | IncomingMessage,
     options: ToRequestOptions = {},
@@ -33,10 +51,11 @@ export const toRequest = (
     const origin = options.origin ?? inferOrigin(request);
     const url = new URL(request.url ?? "/", origin);
     const method = request.method ?? "GET";
+    const headers = toHeaders(request);
 
     if (method === "GET" || method === "HEAD") {
         return new Request(url, {
-            headers: request.headers as HeadersInit,
+            headers,
             method,
         });
     }
@@ -44,7 +63,7 @@ export const toRequest = (
     return new Request(url, {
         body: Readable.toWeb(request) as ReadableStream,
         duplex: "half",
-        headers: request.headers as HeadersInit,
+        headers,
         method,
     });
 };

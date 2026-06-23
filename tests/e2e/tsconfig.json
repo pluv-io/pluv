@@ -8,7 +8,7 @@
         "paths": {
             "@pluv/addon-indexeddb": ["../../packages/addon-indexeddb/dist"],
 			"@pluv/client": ["../../packages/client/dist"],
-            "@pluv/crdt-loro": ["../../packages/crdt-loro/dist/browser.mjs"],
+            "@pluv/crdt-loro": ["../../packages/crdt-loro/dist/browser.d.mts"],
             "@pluv/crdt-yjs": ["../../packages/crdt-yjs/dist"],
 			"@pluv/io": ["../../packages/io/dist"],
 			"@pluv/platform-node": ["../../packages/platform-node/dist"],

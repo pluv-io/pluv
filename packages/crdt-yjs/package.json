@@ -46,7 +46,7 @@
 	},
 	"exports": {
 		".": "./dist/index.mjs",
-		"./chunk-D7D4PA-g": "./dist/chunk-D7D4PA-g.mjs",
+		"./rolldown-runtime-D7D4PA-g": "./dist/rolldown-runtime-D7D4PA-g.mjs",
 		"./*": "./*"
 	}
 }
