@@ -1,0 +1,18 @@
+{
+	"extends": "@pluv/tsconfig/frontend-generic.json",
+	"include": ["**/*.ts", "**/*.tsx"],
+	"exclude": ["node_modules", ".output", "dist"],
+	"compilerOptions": {
+		"jsx": "react-jsx",
+		"lib": ["DOM", "DOM.Iterable", "ES2022"],
+		"moduleResolution": "Bundler",
+		"target": "ES2022",
+		"types": ["vite/client"],
+		"allowJs": true,
+		"resolveJsonModule": true,
+		"paths": {
+			"@/*": ["./src/*"],
+			"collections/*": ["./.source/*"]
+		}
+	}
+}

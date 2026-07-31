@@ -1,0 +1,409 @@
+---
+title: "@pluv/react"
+description: "API reference for @pluv/react — createBundle, PluvRoomProvider, and hooks for events, presence, storage, and history."
+---
+
+## createBundle
+
+Returns a `CreateBundle` instance
+
+Creates a bundle to be able to access the `PluvClient` and `PluvRoom` from various react hooks.
+
+```ts
+import { createBundle createClient } from "@pluv/react";
+import { yjs } from "@pluv/crdt-yjs";
+
+const io = createClient({/* ... */});
+
+// Destructured room bundle
+export const {
+  // components
+  MockedRoomProvider,
+  PluvProvider,
+  PluvRoomProvider,
+
+  // utils
+  event,
+
+  // hooks
+  useBroadcast,
+  useCanRedo,
+  useCanUndo,
+  useClient,
+  useConnection,
+  useDoc,
+  useEvent,
+  useMyPresence,
+  useMyself,
+  useOther,
+  useOthers,
+  useRedo,
+  useRoom,
+  useStorage,
+  useTransact,
+  useUndo,
+} = createBundle(io);
+
+// If you defined a client-side custom events router, you can pass
+// that into createBundle as a 2nd argument
+
+const router = io.router({ /* ... */ });
+
+const { /* ... */} = createBundle(io, { router });
+```
+
+## CreateBundle
+
+This is the bundle returned from `createBundle`.
+
+### MockedRoomProvider
+
+React provider component to mock `PluvRoomProvider`. Enables hooks from `CreateBundle` while completely offline. This can be useful in [Storybook](https://storybook.js.org/) within a storybook decorator when mocking `PluvRoomProvider`.
+
+```tsx
+import { yjs } from "@pluv/crdt-yjs";
+import { MockedRoomProvider } from "./io";
+
+const MyComponent: FC = () => {
+  return (
+    <MockedRoomProvider
+      // Mock events sent and received for hooks in child components
+      events={{
+        EMIT_EMOJI: ({ emojiCode }) => ({
+          EMOJI_RECEIVED: { emojiCode },
+        }),
+      }}
+      // Define your initial presence
+      initialPresence={{
+        selectionId: null,
+      }}
+      // Define the initial storage for the room
+      initialStorage={(t) => ({
+        messages: t.array("messages"),
+      })}
+      // The room's id
+      room="my-mock-room"
+    >
+      {children}
+    </MockedRoomProvider>
+  );
+};
+```
+
+### PluvProvider
+
+React provider component to allow the `PluvClient` created by `createClient` to be accessible in child components via `useClient`. This is identical to importing the created client, so this is primarily useful for dependency injection when testing.
+
+```tsx
+<PluvProvider>{children}</PluvProvider>
+```
+
+### PluvRoomProvider
+
+React provider component to enable `CreateBundle` hooks within child components. Mounting this component connects to a real-time room with other connected users. Unmounting this component will disconnect the room. See [Create Rooms](/docs/guides/rooms/react) for more details.
+
+```tsx
+import { yjs } from "@pluv/crdt-yjs";
+import { MockedRoomProvider } from "./io";
+
+const MyComponent: FC = () => {
+  return (
+    <PluvRoomProvider
+      // Optional: Set the value of `connect` to trigger a connect or
+      // disconnect of the room.
+      // Default: true
+      connect={true}
+      // Required if `presence` was set on the client: Define the user's
+      // initial presence value
+      initialPresence={{
+        selectionId: null,
+      }}
+      // Optional: Overwrite the initialStorage value from the client
+      initialStorage={(t) => ({
+        messages: t.array("messages"),
+      })}
+      // Optional: Emits an error whenever authorization fails (when
+      // `authorize` is set on the PluvIO instance`)
+      onAuthorizationFail={(error: Error) => {
+        console.error(error);
+      }}
+      // Required: The room's id
+      room="my-room-id"
+    >
+      {children}
+    </PluvRoomProvider>
+  );
+};
+```
+
+### event
+
+typeof `EventProxy`
+
+Defines an event listener client for events broadcasted by connected clients. See [useEvent](/docs/api-reference/react#useEvent) for more details.
+
+```tsx
+// The below 2 statements are equivalent
+useEvent("receiveMessage", ({ data }) => {
+  console.log(data.message);
+});
+
+event.receiveMessage.useEvent(({ data }) => {
+  console.log(data.message);
+});
+```
+
+### useBroadcast
+
+Returns `BroadcastProxy`
+
+Returns a broadcast function to emit an event and its data to all connected clients. This is type-safe. The first parameter `event` will be the name of the event procedure specified when creating your `PluvProcedure` instance, and the second parameter `data` will be the associated input type. See [Define Events](/docs/guides/events/server) for more details.
+
+```tsx
+const broadcast = useBroadcast();
+
+// The below 2 statements are equivalent
+broadcast("sendMessage", { message:  "Hello world~!" });
+
+broadcast.sendMessage({ message: "Hello world~!" });
+```
+
+### useCanRedo
+
+Returns `boolean`
+
+Checks whether calling [PluvRoom.redo](/docs/api-reference/react#useRedo) will mutate storage.
+
+```ts
+const canRedo: boolean = useCanRedo();
+```
+
+### useCanUndo
+
+Returns `boolean`
+
+Checks whether calling [PluvRoom.undo](/docs/api-reference/react#useUndo) will mutate storage.
+
+```ts
+const canUndo: boolean = useCanUndo();
+```
+
+### useClient
+
+Returns `PluvClient`
+
+Returns the `PluvClient` that was created via `createClient`.
+
+### useConnection
+
+Returns `WebSocketConnection`
+
+Returns the websocket connection start of the current user.
+
+```tsx
+const connection = useConnection();
+//    ^? const connection: {
+//        id: string | null;
+//        state: ConnectionState;
+//    }
+```
+
+### useDoc
+
+Returns `AbstractCrdtDoc`
+
+This returns an instance of the `AbstractCrdtDoc` that holds the underlying CRDT doc. For instance, when using `@pluv/crdt-yjs`, this will hold a [yjs](https://yjs.dev/) doc in its `value` property.
+
+```ts
+import { yjs } from "@pluv/crdt-yjs";
+import { Doc as YDoc } from "yjs";
+
+const doc: yjs.CrdtYjsDoc<any> = useDoc();
+const ydoc: YDoc = doc.value;
+```
+
+### useEvent
+
+Returns `void`
+
+Defines a listener for events broadcasted by connected clients. This is type-safe. The first parameter `event` is the name of the event to listen to from your backend `PluvIO` instance. The second parameter is a callback containing the data emitted from the broadcasted event.
+
+```tsx
+useEvent("messageReceived", ({ message }) => {
+  console.log(message);
+});
+```
+
+### useMyPresence
+
+Returns `[myPresence: TPresence | null, updatePresence: Function]`
+
+Returns the current user's presence, and a function to update the user's presence. Using this hook rerenders the component based on a deep-equality check on the user's presence value. This hook accepts a selector to return a modified presence to reduce rerenders.
+
+```tsx
+const io = createClient({
+  presence: z.object({
+    selectionId: z.string().nullable(),
+    selectionColor: z.string(),
+  }),
+  // ...
+});
+
+// ...
+
+const { useMyPresence } = createBundle(io);
+
+const [
+  // the user's presence
+  myPresence,
+  // a presence updater function
+  updateMyPresence
+] = useMyPresence();
+
+// update individual base properties
+updateMyPresence({ selectionId: "name-input" });
+updateMyPresence({ selectionColor: "#123456" });
+
+// update multiple base properties
+updateMyPresence({
+  selectionId: "name-input",
+  selectionColor: "#123456",
+});
+
+// if you only need a partial presence
+const [myPresence] = useMyPresence(({ selectionId }) => selectionId);
+
+// if you don't need presence, and just want the updater
+const [, updateMyPresence] = useMyPresence(
+  // set selector to return a stable value
+  () => true
+);
+```
+
+### useMyself
+
+Returns `UserInfo | null`
+
+Returns the user-info object for the current user. This hook accepts a selector to return a modified user-info to reduce rerenders.
+
+```tsx
+const myself = useMyself();
+
+// if you don't need the entire user-info
+const myself = useMyself(({ connectionId }) => connectionId);
+```
+
+### useOther
+
+Returns `UserInfo | null`
+
+Returns the user-info object for a connected user by `connectionId` string.
+
+```tsx
+const other = useOther();
+
+// if you don't need the entire user-info
+const other = useOther(({ connectionId }) => connectionId);
+```
+
+### useOthers
+
+Returns `readonly UserInfo[]`
+
+Returns all user-info objects for all connected users. This may trigger a lot of re-renders if presence updates frequently.
+
+> **Note**
+> Consider using this hook only for deriving others' `connectionId` values to pass into `useOther`.
+
+```tsx
+const others = useOthers();
+
+// if you want to just pull out connectionId properties
+const connectionIds = useOthers((others) => {
+  return others.map(({ connectionId }) => connectionId);
+});
+```
+
+### useRedo
+
+Returns `void`
+
+Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/api-reference/react#useUndo).
+
+For more information see: [History](/docs/guides/history)
+
+```ts
+const redo = useRedo();
+
+redo();
+```
+
+### useStorage
+
+Returns `[TData | null, AbstractCrdtType | null]`
+
+Returns a base-level property of our CRDT storage as a serialized value and a `@pluv/crdt` `AbstractCrdtType` that holds a shared type of our specified CRDT. The component is re-rendered whenever the `AbstractCrdtType` is updated. The returned values are null while the room is still connecting or
+initializing its storage.
+
+```tsx
+import { yjs } from "@pluv/crdt-yjs";
+
+const io = createClient({
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array("messages", ["hello"]),
+  })),
+  // ...
+});
+
+// ...
+
+const { useStorage } = createBundle(io);
+
+const [messages, sharedType] = useStorage("messages");
+
+sharedType?.push(["world~!"]);
+
+messages?.map((message, key) => <div key={key}>{message}</div>);
+```
+
+### useTransact
+
+Returns `void`
+
+Performs a mutation that can be tracked as an operation to be undone/redone (undo/redo). When called without an origin, the origin will default to the user's connection id.
+
+You can specify a 2nd parameter to transact with a different transaction origin.
+
+For more information see: [History](/docs/guides/history)
+
+```ts
+const [messages, sharedType] = useStorage("messages");
+const transact = useTransact();
+
+transact((tx) => {
+  sharedType.push(["hello world!"]);
+
+  // Alternatively, access your storage from here
+  tx.messages.push(["hello world!"]);
+});
+
+// This will also be undoable if `"user-123"` is a tracked origin.
+transact(() => {
+  sharedType.push(["hello world!"]);
+}, "user-123");
+```
+
+### useUndo
+
+Returns `void`
+
+Undoes the last mutation that was applied via [PluvRoom.transact](/docs/api-reference/react#useTransact).
+
+For more information see: [History](/docs/guides/history)
+
+
+```ts
+const undo = useUndo();
+
+undo();
+```

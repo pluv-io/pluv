@@ -1,0 +1,92 @@
+---
+title: "@pluv/client Rooms"
+description: "Learn how to create and connect to rooms with @pluv/client"
+---
+
+Rooms are the channels that WebSockets can enter and leave (i.e. connect and disconnect). Events emitted by sockets in a room will be broadcasted only to other sockets within the same room.
+
+## Creating a PluvRoom
+
+To create a `PluvRoom`, you must first have a `PluvClient` defined. Refer to the [create client](/docs/guides/create-client) documentation to do so.
+
+```ts
+// frontend/room.ts
+
+import { createClient, infer } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
+import { z } from "zod";
+
+// Use a type import to avoid including the code in your frontend
+import type { ioServer } from "./server/pluv-io";
+
+// Connect your `ioServer` type to the client via `infer`
+// Note this is declared outside of `createClient` to workaround
+// TypeScript inferrence limitations
+const types = infer((i) => ({ io: i<typeof ioServer> }));
+export const client = createClient({
+  types,
+  // Optional: Define the initial storage for rooms. This will
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array<string>("messages", []),
+  })),
+  // Optional: Define your presence schema
+  presence: z.object({
+    selectionId: z.string().nullable(),
+  }),
+  // Other fields here ...
+});
+
+const room = client.createRoom("my-test-room", {
+  // Required (if presence is defined on the client): Define
+  // the user's initial presence value
+  initialPresence: {
+    selectionId: null,
+  },
+  // Optional: Overwrite initial storage from client
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array("messages", ["hello world!"]),
+  })),
+  // Optional: Handler when a user fails authorization
+  // This only matters if `authorize` has been configured on
+  // your `createIO` instance
+  onAuthorizationFail: (error: Error) => {
+    console.error(error);
+  },
+  // Optional: Whenever a connection drops, how much time before
+  // attempting to reconnect. `attempts` is the count of already
+  // failed reconnect attempts, starting from zero.
+  // Default: 30_000
+  reconnectTimeoutMs: ({ attempts }) => attempts * 1_000,
+});
+```
+
+## Connect to your PluvRoom
+
+```ts
+import { client } from "./io";
+
+const ROOM_NAME = "example-room";
+
+// connect by room name
+await client.enter(ROOM_NAME);
+// or connect by room instance
+await client.enter(room);
+
+// If your `PluvClient` specifies `metadata`, you will need to provide it as
+// the 2nd argument when entering
+await client.enter(ROOM_NAME, { metadata });
+await client.enter(room, { metadata });
+```
+
+## Leave your PluvRoom
+
+```ts
+import { client } from "./io";
+
+const ROOM_NAME = "example-room";
+
+// leave by room name
+client.leave(ROOM_NAME);
+// or leave by room instance
+client.leave(room);
+```

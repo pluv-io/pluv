@@ -1,0 +1,103 @@
+---
+title: "Create Client"
+description: "Create a framework-agnostic type-safe pluv.io client to add real-time to any app"
+---
+
+Generally, it is recommended to use framework-specific bindings for your particular UI framework such as [@pluv/react](https://www.npmjs.com/package/@pluv/react). However, if your selected framework is not yet supported, you can create a framework-agnostic pluv.io client to add automatic type-safe realtime to your app right away.
+
+## Installation
+
+To install pluv.io for your framework-agnostic frontend, we will install the following packages from pluv.io:
+
+| Purpose                                                 | Location | Install command                       |
+|---------------------------------------------------------|----------|---------------------------------------|
+| Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client              |
+| yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs            |
+
+
+### Installation Example
+
+Here is an example installation for [npm](https://www.npmjs.com) for you to copy:
+
+```bash
+# For the frontend
+npm install @pluv/client
+# Client peer dependencyes
+npm install zod
+
+# Optional if you wish to use CRDT storage
+# For storage capatilities
+npm install @pluv/crdt-yjs
+# Storage peer dependencies
+npm install yjs
+```
+
+## Creating a PluvClient
+
+> **Note**: This example assumes that you've already created a backend pluv.io
+> instance. Refer to the [quickstart](/docs/quickstart/nextjs) to learn more.
+
+```ts
+// frontend/io.ts
+
+import { createClient, infer } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
+import { z } from "zod";
+
+// Use a type import to avoid including the code in your frontend
+import type { ioServer } from "./server/pluv-io";
+
+// Connect your `ioServer` type to the client via `infer`
+// Note this is declared outside of `createClient` to workaround
+// TypeScript inferrence limitations
+const types = infer((i) => ({ io: i<typeof ioServer> }));
+export const client = createClient({
+  types,
+  // Optional: Define the initial storage for rooms. This will set
+  // the types for storage when using it in your application. Don't
+  // worry about the value, as this can be overwritten when creating
+  // a room via `client.createRoom`.
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array<string>("messages", []),
+  })),
+  // Optional: Define your presence schema
+  presence: z.object({
+    selectionId: z.string().nullable(),
+  }),
+
+  // Optional: Provide additional data at the point of connecting to
+  // to the room for use in `publicKey`, `wsEndpoint` or `authEndpoint`.
+  // This is particularly useful for Cloudflare Pages where accessing
+  // environment variables can be difficult
+  metadata: z.object({
+    secret: z.string(),
+  }),
+
+  // Required if you are using `@pluv/platform-pluv`: This is the
+  // publishable-key that was created for your project on pluv.io
+  publicKey: ({ metadata }) => "pk_...",
+
+  // Optional: If a `publicKey` is provided, the `PluvRoom` will
+  // automatically point to the pluv.io network. However, this
+  // can be provided manually if you are self-hosting pluv.io
+  wsEndpoint: ({ metadata, room }): string => {
+    // Specify the ws endpoint to connect to
+    return `ws://localhost:3000/api/room?room=${room}`;
+  },
+
+  // Required if `authorize` was specified on `createIO`: This is
+  // the endpoint where you've defined your own authorization
+  // for your room's participants
+  authEndpoint: ({ metadata, room }) => {
+    // This can either return a url string, or an object
+    // containing a url and options (fetch options) if
+    // you need to customize the API request
+    return `https://localhost:3000/api/pluv/auth?room=${room}`;
+  },
+});
+```
+
+## Related
+
+* [Enable authorization](/docs/guides/authorization)
+* [Create rooms](/docs/guides/rooms/client)

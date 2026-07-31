@@ -1,0 +1,92 @@
+---
+title: "Ecosystem"
+description: "Optional packages that extend pluv.io, including IndexedDB persistence for offline-friendly rooms."
+---
+
+Below are some optional packages that work alongside pluv.
+
+## @pluv/addon-indexeddb
+
+Use IndexedDB to persist room storage so that when the page is reloaded, the room will load from IndexedDB on the browser. This enables offline editing.
+
+**Installation**
+
+```bash
+npm install @pluv/addon-indexeddb
+```
+
+**Usage**
+
+```tsx
+// Using @pluv/client
+
+import { addonIndexedDB } from "@pluv/addon-indexeddb";
+import { createClient } from "@pluv/client";
+import type { io } from "../server/io";
+
+const client = createClient<typeof io>();
+
+const room = client.createRoom("my-room", {
+  // ... other configs here,
+  // ...
+  addons: [addonIndexedDB({ enabled: true })],
+  // Alternatively
+  addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],
+});
+
+// Using @pluv/react
+
+import { addonIndexedDB } from "@pluv/addon-indexeddb";
+import { createBundle, createClient } from "@pluv/react";
+
+const client = createClient<typeof io>();
+
+const { useRoom } = createBundle(client, {
+  // ... other configs here,
+  // ...
+  addons: [addonIndexedDB({ enabled: true })],
+  // Alternatively
+  addons: [addonIndexedDB({ enabled: (room) => room.id === "my-room" })],
+});
+```
+
+## @pluv/pubsub-redis + @pluv/persistence-redis
+
+> **Note**: Currently PubSubs are supported for Node.js only.
+
+> **Note**: PubSub support has been only moderately tested. So consider support to currently be experimental.
+
+You may want to run a single room across multiple servers to horizontally scale your API. For that a PubSub will be necessary to share the events, and Persistence will be necessary for syncing storage state across servers.
+
+**Installation**
+
+```bash
+# For the server
+npm install @pluv/pubsub-redis @pluv/persistence-redis
+# Peer-dependencies
+npm install ioredis
+```
+
+**Usage**
+
+```ts
+// server/io.ts
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { PubSubRedis } from "@pluv/pubsub-redis";
+import { PersistenceRedis } from "@pluv/persistence-redis";
+import { Redis } from "ioredis";
+
+// Setup redis. You can also use a Redis Cluster
+const redis = new Redis({ /* redis config here */ });
+
+export const io = createIO(
+  platformNode({
+    persistence: new PersistenceRedis({ client: redis }),
+    pubSub: new PubSubRedis({
+      publisher: redis,
+      subscriber: redis,
+    }),
+  })
+);
+```
