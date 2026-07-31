@@ -1,0 +1,83 @@
+---
+title: "Create React Bundle"
+description: "Learn how to create a frontend client and React.js bundle for pluv.io"
+---
+
+pluv.io provides [react](https://react.dev) bindings via [@pluv/react](https://npmjs.com/package/@pluv/react) to use [@pluv/client](https://npmjs.com/package/@pluv/client) in a more react-friendly way.
+
+## Create a PluvIO instance
+
+First, create a `PluvIO` instance from the `@pluv/io` package in your backend codebase.
+
+You can view examples of setting up the `PluvIO` instance via your platform's respective quickstart guides:
+
+1. [Next.js](/docs/quickstart/nextjs)
+2. [Cloudflare Workers](/docs/quickstart/cloudflare-workers)
+3. [Node.js](/docs/quickstart/nodejs)
+
+```ts
+// backend/io.ts
+import { yjs } from "@pluv/crdt-yjs";
+import { createIO } from "@pluv/io";
+import { platformPluv } from "@pluv/platform-pluv";
+
+export const io = createIO(
+  platformPluv({ /* ... */})
+);
+
+// Export the ioServer, so that this can be type-imported on the frontend
+export const ioServer = io.server();
+```
+
+## Create a Pluv React bundle
+
+Then, import your `PluvIO` type to the frontend, and create your type-safe react bundle using `@pluv/react`.
+
+```ts
+// frontend/io.ts
+import { yjs } from "@pluv/crdt-yjs";
+import { createClient, infer } from "@pluv/client";
+import { createBundle } from "@pluv/react";
+import { z } from "zod";
+// import your ioServer type from your backend codebase
+import type { ioServer } from "./backend/io";
+
+const types = infer((i) => ({ io: i<typeof ioServer> }));
+const client = clientClient({ /* ... */});
+
+export const {
+  // components
+  MockedRoomProvider,
+  PluvProvider,
+  PluvRoomProvider,
+
+  // utils
+  event,
+
+  // hooks
+  useBroadcast,
+  useCanRedo,
+  useCanUndo,
+  useClient,
+  useConnection,
+  useDoc,
+  useEvent,
+  useMyPresence,
+  useMyself,
+  useOther,
+  useOthers,
+  useRedo,
+  useRoom,
+  useStorage,
+  useTransact,
+  useUndo,
+} = createBundle(client);
+```
+
+## Related
+
+* [Setup authorization](/docs/guides/authorization)
+* [Create rooms](/docs/guides/rooms/react)
+* [Use custom events](/docs/guides/events/client)
+* [Use yjs storage](/docs/guides/storage/yjs)
+* [Use presence](/docs/guides/presence)

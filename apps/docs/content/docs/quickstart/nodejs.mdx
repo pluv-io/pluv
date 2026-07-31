@@ -1,0 +1,249 @@
+---
+title: "Node.js Quickstart"
+description: "Self-host pluv.io on Node.js and build a type-safe realtime WebSocket API."
+---
+
+`@pluv/io` is designed to be self-hosted on the [Node.js](https://nodejs.org/) runtime. Let's step through how we'd put together a real-time API for Node.js.
+
+## Installation
+
+To install pluv.io for Node.js (self-hosted), we will install the following packages from pluv.io:
+
+| Purpose                                                 | Location | Install command                       |
+|---------------------------------------------------------|----------|---------------------------------------|
+| Register websockets and custom events                   | Server   | npm install @pluv/io                  |
+| Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client              |
+| React-bindings for @pluv/client                         | Client   | npm install @pluv/react               |
+| Adapter for Node.js runtime                             | Server   | npm install @pluv/platform-node       |
+| yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs            |
+
+### Installation Example
+
+Here is an example installation for [npm](https://www.npmjs.com) for you to copy:
+
+```bash
+# For the server
+npm install @pluv/io @pluv/platform-node
+# Server peer dependencies
+npm install ws zod
+
+# Optional if you wish to use CRDT storage
+# For storage capabilities
+npm install @pluv/crdt-yjs
+# Storage peer dependencies
+npm install yjs
+```
+
+### Create PluvIO instance
+
+Define an io (websocket client) instance on the server codebase:
+
+```ts
+// server/io.ts
+
+import { yjs } from "@pluv/crdt-yjs";
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { z } from "zod";
+import { Database } from "./db";
+
+export const io = createIO(
+  platformNode({
+    // Optional: Authorization is optional for `@pluv/platform-node`
+    // If excluded, your `user` will be `null` on the frontend.
+    authorize: {
+      // Your own secret for generating JWTs
+      secret: process.env.PLUV_AUTH_SECRET!,
+      // The shape of your user object. `id` must be provided
+      user: z.object({
+        id: z.string(),
+        // Here is an additional field we can add
+        name: z.string(),
+      }),
+    },
+    // Optional: Context that will be made available in event
+    // handlers and procedures
+    context: () => ({
+      db: new Database(process.env.DATABASE_URL),
+    }),
+    // Optional: Only if you want to use CRDT storage features
+    crdt: yjs,
+    // Optional: If you want to enable development logging
+    debug: process.env.NODE_ENV === "development",
+  })
+);
+
+export const ioServer = io.server({
+  // Only if you're using storage (i.e. crdt)
+  getInitialStorage: async ({ room, context }) => {
+    const { db } = context;
+
+    // Stubbed example DB query
+    const rows = await db.sql(
+      "SELECT storage FROM room WHERE name = ?;",
+      [room]
+    );
+    const storage = rows[0]?.storage;
+
+    return storage;
+  },
+  // Optional: Triggered when a room is destroyed. Use for cleanup if needed.
+  onRoomDestroyed: async ({ room }) => {
+    // Room destroyed - use for cleanup if needed
+  },
+  // Optional: Only if you want to run code when storage is destroyed,
+  // such as saving the last storage state. Only fires when storage was
+  // initialized via initializeSession
+  onStorageDestroyed: async ({ room, encodedState, context }) => {
+    // Upsert the db room with last storage state
+  },
+});
+```
+
+### Integrate PluvIO with ws
+
+Integrate with [ws](https://www.npmjs.com/package/ws) on your Node.js server.
+
+```ts
+// backend/server.ts
+
+import type { InferIORoom } from "@pluv/io";
+import { serve, type HttpBindings } from "@hono/node-server";
+import Http from "http";
+import { Hono } from "hono";
+import Ws from "ws";
+import { ioServer } from "./io";
+
+const PORT = 3000;
+
+// Stub example to get roomId from url
+const parseRoomId = (url: string): string => {
+  /* get room from req.url */
+};
+
+const app = new Hono<{ Bindings: HttpBindings }>()
+  // Only if you specified `authorize` on @pluv/io
+  .get("/api/pluv/auth", async (c) => {
+    const room = c.req.query("room") as string;
+
+    // Example stub. However you get the authed user here
+    const user = await getUser(c.req.raw);
+    const token = await ioServer.createToken({ request: c.req.raw, room, user });
+
+    return c.text(token, 200);
+  });
+
+const server = serve({ fetch: app.fetch, port: PORT }) as Http.Server;
+const wsServer = new Ws.WebSocketServer({ server });
+
+// Manage rooms in-memory
+const rooms = new Map<string, InferIORoom<typeof ioServer>>();
+
+// Note: All event listeners are configured at the server level via io.server(),
+// not when creating individual rooms. See the ioServer configuration above.
+
+const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
+  const existing = rooms.get(roomId);
+  if (existing) return existing;
+
+  // Rooms are created without listener options - all listeners are server-level
+  const newRoom = ioServer.createRoom(roomId);
+  rooms.set(roomId, newRoom);
+
+  return newRoom;
+};
+
+// Handle room cleanup in the server-level onRoomDestroyed listener
+// (configured in io.server() above)
+
+// Setup your websocket request handler
+wsServer.on("connection", async (ws, req) => {
+  const roomId = parseRoomId(req.url);
+  const room = getRoom(roomId);
+
+  // Token is only needed if you have configured authorization
+  const token = new URL(req.url).searchParams.get("token");
+  await room.register(ws, { request: req, token });
+});
+```
+
+### Create the client bundle
+
+```ts
+// frontend/pluv.ts
+
+"use client";
+
+import { createClient } from "@pluv/client";
+import { yjs } from "@pluv/crdt-yjs";
+import { createBundle, infer } from "@pluv/react";
+
+// Use a type-import, since this will be used on the frontend
+import type { ioServer } from "./server/pluv";
+
+// Create `types` outside of `createClient` due to TypeScript inference
+// limitations
+const types = infer((i) => ({ io: i<typeof ioServer> }));
+
+// Note that the `wsEndpoint` param is omitted when using
+// `@pluv/platform-pluv`
+export const client = createClient({
+  types,
+  // Wherever your auth endpoint was
+  authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,
+  wsEndpoint: ({ room }) => {
+    const host = document.location.host;
+    const protocol = document.location.protocol;
+    const wsProtocol = protocol.includes("https") ? "wss:" : "ws:";
+
+    // Or wherever you intend to receive the connection requests from
+    return `${wsProtocol}//${host}/api/pluv/room?room=${room}`;
+  },
+});
+
+// Destructure the bundle, as the app router will not allow accessing
+// properties of objects within server components (e.g. you are unable to
+// write pluv.PluvRoomProvider in a layout that is a server component)
+export const {
+  PluvRoomProvider,
+
+  useStorage,
+  useMyself,
+  useOthers,
+  useRoom,
+  useTransact,
+
+  // ... Other values as needed
+
+  // Alternatively for things that will only be used in client components
+  // (i.e. not server components)
+  ...pluv,
+} = createBundle(client);
+```
+
+### Wrap the PluvRoomProvider
+
+At the route the room's layout will be defined, wrap the page with the `PluvRoomProvider` that was destructured from the previous step. This is necessary to enable all other functions from `createBundle`.
+
+```tsx
+import type { FC, ReactNode } from "react";
+
+interface PageProps {
+  children?: ReactNode;
+  params: Promise<{ room: string }>;
+}
+
+const Page: FC<PageProps> = async (props) => {
+  const { room } = await params;
+
+  return (
+    <PluvRoomProvider room={room}>
+      {children}
+    </PluvRoomProvider>
+  );
+};
+
+export default Page;
+```
+
+And that's it! With this, functions (e.g. hooks) from `createBundle` can be used for components within your provider.

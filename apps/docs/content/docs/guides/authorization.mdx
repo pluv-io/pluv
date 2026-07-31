@@ -1,0 +1,149 @@
+---
+title: "Authorization"
+description: "Learn how to add custom authorization to rooms in @pluv/io"
+---
+
+> **Note**: Authorization is required when using `@pluv/platform-pluv`.
+
+pluv.io uses JWTs to authorize access to rooms on a new connection. To generate a JWT, you will need to setup an authentication endpoint to determine if the user should have access to the room.
+
+The examples below will use [hono](https://hono.dev), but so long as you can create an http endpoint that can return text responses, the documentation below should still be relevant.
+
+You can view another example of these via your platform's respective quickstart guides:
+
+1. [Next.js](/docs/quickstart/nextjs)
+2. [Cloudflare Workers](/docs/quickstart/cloudflare-workers)
+3. [Node.js](/docs/quickstart/nodejs)
+
+## Enable authorization on io
+
+Set the `authorize` property on your `createIO` config to enable authorization on your io instance.
+
+```ts
+// server/io.ts
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { z } from "zod";
+
+export const io = createIO(
+  platformNode({
+    authorize: {
+      // The secret for generating your JWT
+      secret: process.env.PLUV_AUTH_SECRET!,
+      // The shape of your user object. `id` must always be required.
+      user: z.object({
+        id: z.string(),
+        // Here is an additional field we wish to add.
+        name: z.string(),
+      }),
+    },
+  })
+);
+
+export const ioServer = io.server();
+```
+
+## Setup an authorization endpoint
+
+To add custom authorization, you'll need to define an http endpoint to return a JWT from.
+
+```ts
+// server/server.ts
+import { serve, type HttpBindings } from "@hono/node-server";
+import Http from "http";
+import { Hono } from "hono";
+import { ioServer } from "./io";
+
+const PORT = 3000;
+
+const app = new Hono<{ Bindings: HttpBindings }>()
+  // Only if you specified `authorize` on @pluv/io
+  .get("/api/pluv/auth", async (c) => {
+    const room = c.req.query("room") as string;
+    const user = await getUser(c.req.raw);
+    const token = await ioServer.createToken({ request: c.req.raw, room, user });
+
+    return c.text(token, 200);
+  });
+
+const server = serve({ fetch: app.fetch, port: PORT }) as Http.Server;
+const wsServer = new Ws.WebSocketServer({ server });
+```
+
+## Connect to your authorization endpoint
+
+Now that we have your endpoint defined, connect your frontend client to your authorization endpoint.
+
+```ts
+// frontend/io.ts
+import { createClient } from "@pluv/react";
+import type { ioServer } from "server/io";
+
+const client = createClient<typeof ioServer>({
+  // Specify your auth endpoint here
+  // Set to `true` if you have authorization on your io instance, and you
+  // want to use the default of (room) => `/api/pluv/authorize?room=${room}`
+  // This is the default from `createPluvHandler`
+  authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,
+  // ...
+});
+```
+
+### How to use POST requests
+
+```ts
+// frontend/io.ts
+import { createClient } from "@pluv/react";
+import type { ioServer } from "server/io";
+
+const client = createClient<typeof ioServer>({
+  authEndpoint: ({ room }) => ({
+    url: "/api/authorize",
+    // You can use fetch options as well like so
+    options: {
+      method: "POST",
+      body: JSON.stringify({ room }),
+    },
+  }),
+  // ...
+});
+```
+
+## Add token to room registration
+
+When the frontend receives a JWT from your authorization endpoint, it will add that token as a `token` query parameter to your websocket connection request. To use this token, pass the token into `IORoom.register` on your server.
+
+```ts
+import { serve, type HttpBindings } from "@hono/node-server";
+import Http from "http";
+import { Hono } from "hono";
+import { ioServer } from "./io";
+
+const PORT = 3000;
+
+const app = new Hono<{ Bindings: HttpBindings }>()
+  // Only if you specified `authorize` on @pluv/io
+  .get("/api/pluv/auth", async (c) => {
+    // ...
+    return c.text(token, 200);
+  });
+
+const parseRoomId = (url: string): string => {
+  /* get room from req.url */
+};
+
+const parseToken = (url: string): string => {
+  /* get token from query parameters of req.url */
+};
+
+const getRoom = (roomId: string): InferIORoom<typeof ioServer> => { /* ... */};
+
+wsServer.on("connection", async (ws, req) => {
+  const roomId = parseRoomId(req.url);
+  const token = parseToken(req.url);
+  const room = getRoom(roomId);
+
+  // Pass in the token from query params
+  await room.register(ws, { request: req, token });
+});
+```

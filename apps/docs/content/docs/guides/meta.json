@@ -1,0 +1,15 @@
+{
+	"title": "Guides",
+	"pages": [
+		"why-host-on-pluvio",
+		"authorization",
+		"create-client",
+		"create-react-bundle",
+		"rooms",
+		"events",
+		"storage",
+		"presence",
+		"history",
+		"editors"
+	]
+}

@@ -1,0 +1,70 @@
+---
+title: "History"
+description: "Undo and redo shared storage changes in @pluv/react using Yjs or Loro history managers."
+---
+
+`@pluv/react` comes with hooks to manipulate history that are built on top of the CRDT library you are using.
+
+* For Yjs (`@pluv/crdt-yjs`), it is built on top of the [Yjs UndoManager](https://docs.yjs.dev/api/undo-manager).
+* For Loro (`@pluv/crdt-loro`), it is built on top of the [Loro UndoManager](https://loro.dev/docs/advanced/undo).
+
+This will allow users to apply undos and redos to Pluv storage mutations.
+
+## Relevant Hooks
+
+* [useCanRedo](/docs/api-reference/react#useCanRedo)
+* [useCanUndo](/docs/api-reference/react#useCanUndo)
+* [useRedo](/docs/api-reference/react#useRedo)
+* [useStorage](/docs/api-reference/react#useStorage)
+* [useUndo](/docs/api-reference/react#useUndo)
+
+## Undoing a storage mutation
+
+Assume you have storage defined like so:
+
+```ts
+import { yjs } from "@pluv/crdt-yjs";
+import { createBundle, createClient } from "@pluv/react";
+
+const client = createClient({
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array<string>("messages", []),
+  })),
+  // ...
+});
+
+export const {
+  useCanRedo,
+  useCanUndo,
+  useUndo,
+  useStorage,
+  useRedo,
+} = createBundle(client);
+```
+
+To get started with modifying your storage history, first make storage mutations.
+
+```ts
+const [messages, yArray] = useStorage();
+
+yArray?.push(["hello"]);
+yArray?.push(["world"]);
+```
+
+Then from anywhere within the `PluvRoomProvider`, you can undo your transacted operations.
+
+```ts
+const canUndo: boolean =  useCanUndo();
+const canRedo: boolean = useCanRedo();
+
+const undo = useUndo();
+const redo = useRedo();
+
+undo();
+redo();
+```
+
+## References
+
+* [Yjs UndoManager](https://docs.yjs.dev/api/undo-manager)
+* [Loro Undo](https://loro.dev/docs/advanced/undo)

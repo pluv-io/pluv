@@ -1,4 +1,6 @@
 packages:
+  - "apps/docs"
+
   - "packages/addon-indexeddb"
   - "packages/cli"
   - "packages/client"
