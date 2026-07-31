@@ -25,8 +25,7 @@ import type { AbstractWebSocket } from "./AbstractWebSocket";
 import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 
 export type PluvContext<TPlatform extends AbstractPlatform, TContext extends Record<string, any>> =
-    | MaybePromise<TContext>
-    | ((params: InferRoomContextType<TPlatform>) => MaybePromise<TContext>);
+    MaybePromise<TContext> | ((params: InferRoomContextType<TPlatform>) => MaybePromise<TContext>);
 
 export type EventResolverKind = "broadcast" | "self" | "sync";
 
@@ -62,9 +61,7 @@ export interface EventResolverContext<
 }
 
 export type SendMessageOptions =
-    | { type?: "broadcast"; sessionIds?: readonly string[] }
-    | { type: "self" }
-    | { type: "sync" };
+    { type?: "broadcast"; sessionIds?: readonly string[] } | { type: "self" } | { type: "sync" };
 
 export interface WebSocketSessionTimers {
     ping: number;
@@ -210,19 +207,21 @@ export type InferPlatformConfig<TPlatform extends AbstractPlatform<any, any, any
 export type InferPlatformAuthorizeProperties<
     TPlatform extends AbstractPlatform<any, any, any, any>,
 > = keyof {
-    [P in keyof PlatformConfig["authorize"] as InferPlatformConfig<TPlatform>["authorize"][P] extends
-        | true
-        | undefined
-        ? P
-        : never]: true;
+    [
+        P in keyof PlatformConfig["authorize"] as InferPlatformConfig<TPlatform>["authorize"][P] extends
+            true | undefined
+            ? P
+            : never
+    ]: true;
 };
 
 export type InferPlatformListeners<TPlatform extends AbstractPlatform<any, any, any, any>> = keyof {
-    [P in keyof PlatformConfig["listeners"] as InferPlatformConfig<TPlatform>["listeners"][P] extends
-        | true
-        | undefined
-        ? P
-        : never]: true;
+    [
+        P in keyof PlatformConfig["listeners"] as InferPlatformConfig<TPlatform>["listeners"][P] extends
+            true | undefined
+            ? P
+            : never
+    ]: true;
 };
 
 export type InferPlatformRouter<TPlatform extends AbstractPlatform<any, any, any, any>> =
@@ -285,5 +284,4 @@ export type IOUserDisconnectedEvent<
 };
 
 export type WebSocketType<TPlatform extends AbstractPlatform> =
-    | InferPlatformWebSocketType<TPlatform>
-    | InferPlatformWebSocketSource<TPlatform>;
+    InferPlatformWebSocketType<TPlatform> | InferPlatformWebSocketSource<TPlatform>;

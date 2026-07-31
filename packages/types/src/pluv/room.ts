@@ -70,8 +70,7 @@ export type SubscriptionCallback<
 > = (value: InferSubjectValue<TIO, TPresence, TSubject>) => void;
 
 export type UpdateMyPresenceAction<TPresence extends Record<string, any>> =
-    | Partial<TPresence>
-    | ((oldPresence: TPresence | null) => Partial<TPresence>);
+    Partial<TPresence> | ((oldPresence: TPresence | null) => Partial<TPresence>);
 
 export interface UserInfo<TIO extends IOLike, TPresence extends Record<string, any> = {}> {
     connectionId: string;

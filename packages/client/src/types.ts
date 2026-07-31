@@ -71,8 +71,7 @@ export interface PublicKeyParams<TMetadata extends JsonObject> {
     metadata: TMetadata;
 }
 export type PublicKey<TMetadata extends JsonObject> =
-    | string
-    | ((params: PublicKeyParams<TMetadata>) => string);
+    string | ((params: PublicKeyParams<TMetadata>) => string);
 
 export type WithMetadata<TMetadata extends JsonObject = {}> = keyof TMetadata extends never
     ? { metadata?: undefined }

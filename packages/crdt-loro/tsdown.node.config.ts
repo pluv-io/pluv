@@ -2,9 +2,20 @@ import { defineConfig } from "tsdown";
 
 export default defineConfig({
     entry: { node: "src/index.ts" },
-    alias: {
-        "@loro-runtime": "./src/loro-runtime.node.ts",
-    },
+    plugins: [
+        {
+            name: "rewrite-loro-import",
+            renderChunk(code) {
+                return {
+                    code: code.replaceAll(
+                        /from\s*["']loro-crdt["']/g,
+                        'from "loro-crdt/nodejs"',
+                    ),
+                    map: null,
+                };
+            },
+        },
+    ],
     format: ["esm"],
     target: "esnext",
     sourcemap: true,

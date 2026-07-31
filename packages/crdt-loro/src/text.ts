@@ -1,4 +1,4 @@
-import { LoroText } from "@loro-runtime";
+import { LoroText } from "loro-crdt";
 import type { LoroType } from "./types";
 
 export const text = (value: string = ""): LoroType<LoroText, string> => {

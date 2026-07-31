@@ -1,8 +1,3 @@
 {
-	"extends": "./tsconfig.json",
-	"compilerOptions": {
-		"paths": {
-			"@loro-runtime": ["./src/loro-runtime.bundler.ts"]
-		}
-	}
+	"extends": "./tsconfig.json"
 }

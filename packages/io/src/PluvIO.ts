@@ -62,15 +62,23 @@ export type BaseServerConfig<
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = {
-    [P in keyof ResolvedServerConfig<
-        TPlatform,
-        TAuthorize,
-        TContext,
-        TCrdt,
-        TEvents
-    > as ResolvedServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>[P] extends undefined
-        ? never
-        : P]: ResolvedServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>[P];
+    [
+        P in keyof ResolvedServerConfig<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TCrdt,
+            TEvents
+        > as ResolvedServerConfig<
+            TPlatform,
+            TAuthorize,
+            TContext,
+            TCrdt,
+            TEvents
+        >[P] extends undefined
+            ? never
+            : P
+    ]: ResolvedServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>[P];
 };
 
 export type ServerConfig<

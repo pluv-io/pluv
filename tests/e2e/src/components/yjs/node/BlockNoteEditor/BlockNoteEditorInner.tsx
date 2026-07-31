@@ -1,3 +1,4 @@
+import { withCollaboration } from "@blocknote/core/yjs";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import { yjs } from "@pluv/crdt-yjs";
@@ -19,14 +20,16 @@ export const BlockNoteEditorInner: FC<BlockNoteEditorInnerProps> = ({ userName }
         [userName],
     );
 
-    const editor = useCreateBlockNote({
-        collaboration: {
-            provider,
-            fragment,
-            user,
-            showCursorLabels: "activity",
-        },
-    });
+    const editor = useCreateBlockNote(
+        withCollaboration({
+            collaboration: {
+                provider,
+                fragment,
+                user,
+                showCursorLabels: "activity",
+            },
+        }),
+    );
 
     return <BlockNoteView id="blocknote-editable" editor={editor} />;
 };

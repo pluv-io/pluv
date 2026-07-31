@@ -127,8 +127,7 @@ export type ProcedureLike<
 > = {
     config: {
         broadcast?:
-            | ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>)
-            | null;
+            ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>) | null;
         input?: InputZodLike<TInput> | null;
         resolver: (data: TInput, ...args: any[]) => MaybePromise<TOutput>;
         self?: ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>) | null;

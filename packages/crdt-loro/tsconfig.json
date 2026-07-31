@@ -1,11 +1,8 @@
 {
 	"extends": "@pluv/tsconfig/library.json",
 	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-	"exclude": ["node_modules"],
+	"exclude": ["node_modules", "dist", "tsdown*.ts"],
 	"compilerOptions": {
-		"lib": ["dom", "esnext"],
-		"paths": {
-			"@loro-runtime": ["./src/loro-runtime.browser.ts"]
-		}
+		"lib": ["dom", "esnext"]
 	}
 }
