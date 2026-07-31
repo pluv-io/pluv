@@ -52,7 +52,7 @@
 		"@types/common-tags": "^1.8.4",
 		"@types/cors": "^2.8.19",
 		"@types/ms": "^2.1.0",
-		"@types/node": "^25.9.5",
+		"@types/node": "^26.1.2",
 		"@types/react": "^19.2.17",
 		"@types/react-dom": "^19.2.3",
 		"@types/ws": "^8.18.1",
@@ -77,17 +77,17 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20260702.1",
+		"@cloudflare/workers-types": "^5.20260730.1",
 		"@playwright/test": "^1.62.0",
 		"@pluv/tsconfig": "workspace:^",
 		"concurrently": "^10.0.4",
 		"drizzle-kit": "^0.31.10",
 		"eslint": "^10.8.0",
 		"eslint-config-pluv": "workspace:^",
-		"miniflare": "^4.20260722.0",
+		"miniflare": "^4.20260722.1",
 		"typescript": "^5.9.3",
 		"vite": "^8.1.5",
 		"vite-node": "^6.0.0",
-		"wrangler": "^4.114.0"
+		"wrangler": "^4.115.0"
 	}
 }

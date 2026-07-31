@@ -30,7 +30,7 @@
 		"@pluv/crdt": "workspace:^",
 		"@pluv/io": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^25.9.5",
+		"@types/node": "^26.1.2",
 		"fast-json-stable-stringify": "^2.1.0",
 		"hono": "^4.12.32",
 		"zod": "^4.4.3"
