@@ -30,7 +30,7 @@
 		"@pluv/crdt": "workspace:^",
 		"@pluv/types": "workspace:^",
 		"@types/node": "^26.1.2",
-		"js-base64": "^3.9.1",
+		"js-base64": "^3.9.2",
 		"lib0": "^0.2.117"
 	},
 	"peerDependencies": {

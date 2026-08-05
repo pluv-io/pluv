@@ -31,6 +31,6 @@
     "commitizen": "^4.3.2",
     "cz-conventional-changelog": "^3.3.0",
     "prettier": "^3.9.6",
-    "turbo": "^2.10.7"
+    "turbo": "^2.10.8"
   }
 }
