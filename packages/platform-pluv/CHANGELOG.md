@@ -1,5 +1,17 @@
 # @pluv/platform-pluv
 
+## 5.0.1
+
+### Patch Changes
+
+- 7910a2d: Fix Cloudflare Workers / workerd startup crash caused by a top-level `createRequire(import.meta.url)` injected when bundling a Node `require("node:crypto")` fallback.
+
+    `getCrypto` now uses `globalThis.crypto` only (available on modern Node, browsers, and Workers). This removes the Node `require` path so the published ESM build no longer initializes `createRequire` on import.
+
+- @pluv/crdt@5.0.1
+    - @pluv/io@5.0.1
+    - @pluv/types@5.0.1
+
 ## 5.0.0
 
 ### Patch Changes
@@ -964,9 +976,7 @@
     ```ts
     import { createIO } from "@pluv/io";
 
-    const io = createIO({
-        /* ... */
-    });
+    const io = createIO({/* ... */});
 
     const ioServer = io.server({
         // ...

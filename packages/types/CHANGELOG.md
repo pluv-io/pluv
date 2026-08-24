@@ -1,5 +1,7 @@
 # @pluv/types
 
+## 5.0.1
+
 ## 5.0.0
 
 ## 4.1.0
@@ -312,9 +314,7 @@
     import { createClient } from "@pluv/react";
     import type { io } from "../backend/io";
 
-    const client = createClient<typeof io>({
-        /* ... */
-    });
+    const client = createClient<typeof io>({/* ... */});
     ```
 
     ### Now:
@@ -356,9 +356,7 @@
     import type { ioServer } from "../backend/io";
 
     // This users the PluvServer type now
-    const client = createClient<typeof ioServer>({
-        /* ... */
-    });
+    const client = createClient<typeof ioServer>({/* ... */});
     ```
 
     - `PluvRouter` instances can also be merged via the `mergeRouters` method, which effectively performs an `Object.assign` of the events object and returns a new `PluvRouter` with the correct types:

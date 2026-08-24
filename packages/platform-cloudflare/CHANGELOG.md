@@ -1,5 +1,14 @@
 # @pluv/platform-cloudflare
 
+## 5.0.1
+
+### Patch Changes
+
+- @pluv/crdt@5.0.1
+    - @pluv/io@5.0.1
+    - @pluv/persistence-cloudflare-transactional-storage@5.0.1
+    - @pluv/types@5.0.1
+
 ## 5.0.0
 
 ### Patch Changes
@@ -1507,9 +1516,7 @@
     import { createClient } from "@pluv/react";
     import type { io } from "../backend/io";
 
-    const client = createClient<typeof io>({
-        /* ... */
-    });
+    const client = createClient<typeof io>({/* ... */});
     ```
 
     ### Now:
@@ -1551,9 +1558,7 @@
     import type { ioServer } from "../backend/io";
 
     // This users the PluvServer type now
-    const client = createClient<typeof ioServer>({
-        /* ... */
-    });
+    const client = createClient<typeof ioServer>({/* ... */});
     ```
 
     - `PluvRouter` instances can also be merged via the `mergeRouters` method, which effectively performs an `Object.assign` of the events object and returns a new `PluvRouter` with the correct types:
