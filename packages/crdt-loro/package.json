@@ -16,6 +16,7 @@
 	},
 	"type": "module",
 	"types": "./dist/browser.d.mts",
+	"files": ["dist"],
 	"publishConfig": {
 		"access": "public"
 	},
