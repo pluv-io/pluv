@@ -1,17 +1,7 @@
-import type { webcrypto } from "crypto";
-
-export const getCrypto = (): webcrypto.Crypto => {
-    if (typeof crypto !== "undefined") {
-        // In a browser or Web Worker (including Cloudflare Workers)
-        return crypto;
+export const getCrypto = (): Crypto => {
+    if (typeof globalThis.crypto !== "undefined") {
+        return globalThis.crypto;
     }
 
-    if (typeof require === "function") {
-        // In Node.js
-        // Node 15+ supports `crypto.webcrypto`
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        return require("node:crypto").webcrypto as webcrypto.Crypto;
-    }
-
-    throw new Error("Missing crypto module");
+    throw new Error("Missing Web Crypto API (globalThis.crypto)");
 };
