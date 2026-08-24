@@ -29,17 +29,17 @@
 	"dependencies": {
 		"@pluv/crdt": "workspace:^",
 		"@pluv/types": "workspace:^",
-		"@types/node": "^26.1.2",
-		"js-base64": "^3.9.2"
+		"@types/node": "^26.2.0",
+		"js-base64": "^3.9.3"
 	},
 	"peerDependencies": {
 		"loro-crdt": "^1.0.0"
 	},
 	"devDependencies": {
 		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^10.8.0",
+		"eslint": "^10.9.0",
 		"eslint-config-pluv": "workspace:^",
-		"loro-crdt": "^1.13.9",
+		"loro-crdt": "^1.14.1",
 		"tsdown": "0.22.14",
 		"typescript": "^5.9.3"
 	},
