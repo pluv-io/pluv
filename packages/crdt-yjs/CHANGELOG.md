@@ -1,5 +1,12 @@
 # @pluv/crdt-yjs
 
+## 5.0.1
+
+### Patch Changes
+
+- @pluv/crdt@5.0.1
+    - @pluv/types@5.0.1
+
 ## 5.0.0
 
 ### Patch Changes
@@ -223,9 +230,7 @@
     import { createClient } from "@pluv/client";
     import { yjs } from "@pluv/crdt-yjs";
 
-    const client = createClient({
-        /* ... */
-    });
+    const client = createClient({/* ... */});
     const room = client.createRoom("example-room");
 
     // Yjs Provider
@@ -276,9 +281,7 @@
     import { createClient } from "@pluv/client";
     import { yjs } from "@pluv/crdt-yjs";
 
-    const client = createClient({
-        /* ... */
-    });
+    const client = createClient({/* ... */});
     const room = client.createRoom("example-room");
 
     // Yjs Awareness

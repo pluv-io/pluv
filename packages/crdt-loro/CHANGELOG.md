@@ -1,5 +1,12 @@
 # @pluv/crdt-loro
 
+## 5.0.1
+
+### Patch Changes
+
+- @pluv/crdt@5.0.1
+    - @pluv/types@5.0.1
+
 ## 5.0.0
 
 ### Patch Changes

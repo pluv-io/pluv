@@ -1,5 +1,12 @@
 # @pluv/io
 
+## 5.0.1
+
+### Patch Changes
+
+- @pluv/crdt@5.0.1
+    - @pluv/types@5.0.1
+
 ## 5.0.0
 
 ### Patch Changes
@@ -908,9 +915,7 @@
     ```ts
     import { createIO } from "@pluv/io";
 
-    const io = createIO({
-        /* ... */
-    });
+    const io = createIO({/* ... */});
 
     const ioServer = io.server({
         // ...
@@ -1142,9 +1147,7 @@
     ```tsx
     // backend
 
-    const io = createIO({
-        /* ... */
-    });
+    const io = createIO({/* ... */});
 
     const ioServer = io.server({
         router: io.router({
@@ -1564,9 +1567,7 @@
     ```tsx
     // backend
 
-    const io = createIO({
-        /* ... */
-    });
+    const io = createIO({/* ... */});
 
     const router = io.router({
         SEND_MESSAGE: io.procedure
@@ -1622,9 +1623,7 @@
     import { createClient } from "@pluv/react";
     import type { io } from "../backend/io";
 
-    const client = createClient<typeof io>({
-        /* ... */
-    });
+    const client = createClient<typeof io>({/* ... */});
     ```
 
     ### Now:
@@ -1666,9 +1665,7 @@
     import type { ioServer } from "../backend/io";
 
     // This users the PluvServer type now
-    const client = createClient<typeof ioServer>({
-        /* ... */
-    });
+    const client = createClient<typeof ioServer>({/* ... */});
     ```
 
     - `PluvRouter` instances can also be merged via the `mergeRouters` method, which effectively performs an `Object.assign` of the events object and returns a new `PluvRouter` with the correct types:
@@ -1847,9 +1844,7 @@
         // Before:
         import { createClient, y } from "@pluv/client";
 
-        const client = createClient({
-            /* ... */
-        });
+        const client = createClient({/* ... */});
 
         client.createRoom({
             // ...
@@ -1863,9 +1858,7 @@
         // This is now imported separately
         import { yjs } from "@pluv/crdt-yjs";
 
-        const client = createClient({
-            /* ... */
-        });
+        const client = createClient({/* ... */});
 
         client.createRoom({
             // ...
@@ -1901,9 +1894,7 @@
         // Before:
         import { Doc as YDoc } from "yjs";
 
-        const room: PluvRoom = client.createRoom({
-            /* ... */
-        });
+        const room: PluvRoom = client.createRoom({/* ... */});
 
         const doc: YDoc = room.getDoc();
 
@@ -1911,9 +1902,7 @@
         import { CrdtYjsDoc } from "@pluv/crdt-yjs";
         import { Doc as YDoc } from "yjs";
 
-        const room: PluvRoom = client.createRoom({
-            /* ... */
-        });
+        const room: PluvRoom = client.createRoom({/* ... */});
 
         const doc: CrdtYjsDoc<any> = room.getDoc();
         const ydoc: YDoc = doc.value;
