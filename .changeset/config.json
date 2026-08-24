@@ -1,5 +1,5 @@
 {
-  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "$schema": "https://unpkg.com/@changesets/config@4.0.0/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [["@pluv/*", "eslint-config-pluv"]],
@@ -7,10 +7,7 @@
   "access": "restricted",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "@pluv-tests/*"
-  ],
-  "autoBumpPeerDependentInSameChangeset": false,
+  "ignore": [],
   "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
     "onlyUpdatePeerDependentsWhenOutOfRange": true
   }
