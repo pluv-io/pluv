@@ -1,4 +1,3 @@
-import type { webcrypto } from "crypto";
 import { getCrypto } from "./getCrypto";
 
 export interface CreateHmacParams {
@@ -21,7 +20,7 @@ export const createHmac = async (params: CreateHmacParams): Promise<CreateHmacRe
 
     const crypto = getCrypto();
 
-    const algorithm: webcrypto.HmacImportParams = { name: "HMAC", hash: { name: "SHA-256" } };
+    const algorithm: HmacImportParams = { name: "HMAC", hash: { name: "SHA-256" } };
     const extractable = false;
 
     const key = await crypto.subtle.importKey("raw", keyBytes, algorithm, extractable, [
