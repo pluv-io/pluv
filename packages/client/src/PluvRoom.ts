@@ -731,7 +731,9 @@ export class PluvRoom<
 
                 this._crdtNotifier.subject(prop).next(serialized);
 
-                return { ...acc, [prop]: serialized };
+                acc[prop as keyof InferStorage<TCrdt>] = serialized;
+
+                return acc;
             },
             {} as { [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]> },
         );
@@ -1132,7 +1134,9 @@ export class PluvRoom<
 
                 this._crdtNotifier.subject(prop).next(serialized);
 
-                return { ...acc, [prop]: serialized };
+                acc[prop as keyof InferStorage<TCrdt>] = serialized;
+
+                return acc;
             },
             {} as {
                 [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]>;

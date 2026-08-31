@@ -46,10 +46,11 @@ export class CrdtLoroDoc<
             new Set<string>(),
         );
 
-        this.#_storage = Object.entries(storage).reduce(
-            (acc, [key, node]) => (keys.has(key) ? { ...acc, [key]: node } : acc),
-            {} as TStorage,
-        );
+        this.#_storage = Object.entries(storage).reduce((acc, [key, node]) => {
+            if (keys.has(key)) Object.assign(acc, { [key]: node });
+
+            return acc;
+        }, {} as TStorage);
         if (!!Object.keys(storage).length) this.#_setPluvId();
 
         this.value.commit();
@@ -141,13 +142,13 @@ export class CrdtLoroDoc<
                   : container.toJSON!();
         }
 
-        return Object.entries(this.#_storage).reduce(
-            (acc, [key, value]) => ({
-                ...(acc as any),
+        return Object.entries(this.#_storage).reduce((acc, [key, value]) => {
+            Object.assign(acc, {
                 [key]: value instanceof LoroText ? value.toString() : value.toJSON!(),
-            }),
-            {} as InferCrdtJson<TStorage>,
-        );
+            });
+
+            return acc;
+        }, {} as InferCrdtJson<TStorage>);
     }
 
     public isEmpty(): boolean {
@@ -165,14 +166,17 @@ export class CrdtLoroDoc<
         }
 
         this.#_storage = Object.entries(reference).reduce((acc, [key, node]) => {
-            if (node instanceof LoroCounter) return { ...acc, [key]: this.value.getCounter(key) };
-            if (node instanceof LoroList) return { ...acc, [key]: this.value.getList(key) };
-            if (node instanceof LoroMap) return { ...acc, [key]: this.value.getMap(key) };
-            if (node instanceof LoroMovableList) {
-                return { ...acc, [key]: this.value.getMovableList(key) };
-            }
-            if (node instanceof LoroText) return { ...acc, [key]: this.value.getText(key) };
-            if (node instanceof LoroTree) return { ...acc, [key]: this.value.getTree(key) };
+            if (node instanceof LoroCounter)
+                Object.assign(acc, { [key]: this.value.getCounter(key) });
+            else if (node instanceof LoroList)
+                Object.assign(acc, { [key]: this.value.getList(key) });
+            else if (node instanceof LoroMap) Object.assign(acc, { [key]: this.value.getMap(key) });
+            else if (node instanceof LoroMovableList) {
+                Object.assign(acc, { [key]: this.value.getMovableList(key) });
+            } else if (node instanceof LoroText)
+                Object.assign(acc, { [key]: this.value.getText(key) });
+            else if (node instanceof LoroTree)
+                Object.assign(acc, { [key]: this.value.getTree(key) });
 
             return acc;
         }, {} as TStorage);

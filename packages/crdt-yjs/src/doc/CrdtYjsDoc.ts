@@ -44,10 +44,11 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
         const storage = params(builder(this.value));
         const keys = this.value.share.keys().reduce((set, key) => set.add(key), new Set<string>());
 
-        this.#_storage = Object.entries(storage).reduce(
-            (acc, [key, node]) => (keys.has(key) ? { ...acc, [key]: node } : acc),
-            {} as TStorage,
-        );
+        this.#_storage = Object.entries(storage).reduce((acc, [key, node]) => {
+            if (keys.has(key)) Object.assign(acc, { [key]: node });
+
+            return acc;
+        }, {} as TStorage);
         if (!!Object.keys(storage).length) this.#_setPluvId();
     }
 
@@ -135,15 +136,18 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
              * @date May 9 ,2025
              */
             if (node instanceof YXmlElement) {
-                return { ...acc, [key]: this.value.getXmlElement(key) };
+                Object.assign(acc, { [key]: this.value.getXmlElement(key) });
+            } else if (node instanceof YXmlFragment) {
+                Object.assign(acc, { [key]: this.value.getXmlFragment(key) });
+            } else if (node instanceof YXmlText) {
+                Object.assign(acc, { [key]: this.value.get(key, YXmlText) });
+            } else if (node instanceof YArray) {
+                Object.assign(acc, { [key]: this.value.getArray(key) });
+            } else if (node instanceof YMap) {
+                Object.assign(acc, { [key]: this.value.getMap(key) });
+            } else if (node instanceof YText) {
+                Object.assign(acc, { [key]: this.value.getText(key) });
             }
-            if (node instanceof YXmlFragment) {
-                return { ...acc, [key]: this.value.getXmlFragment(key) };
-            }
-            if (node instanceof YXmlText) return { ...acc, [key]: this.value.get(key, YXmlText) };
-            if (node instanceof YArray) return { ...acc, [key]: this.value.getArray(key) };
-            if (node instanceof YMap) return { ...acc, [key]: this.value.getMap(key) };
-            if (node instanceof YText) return { ...acc, [key]: this.value.getText(key) };
 
             return acc;
         }, {} as TStorage);
