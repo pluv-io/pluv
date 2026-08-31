@@ -19,7 +19,9 @@
         "typescript/no-unnecessary-type-constraint": "off",
         "typescript/no-unused-vars": "off",
         "no-extra-boolean-cast": "off",
-        "turbo/no-undeclared-env-vars": "warn"
+        "turbo/no-undeclared-env-vars": "warn",
+        "eslint/no-underscore-dangle": "off",
+        "react/react-in-jsx-scope": "off"
     },
     "overrides": [
         {
