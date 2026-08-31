@@ -1,6 +1,6 @@
 {
 	"name": "@pluv/react",
-	"version": "5.0.2",
+	"version": "5.0.3",
 	"description": "@pluv/client React.js bindings",
 	"author": {
 		"email": "david@pluv.io",
