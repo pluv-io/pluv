@@ -39,7 +39,7 @@
 		"eslint": "^10.9.0",
 		"eslint-config-pluv": "workspace:^",
 		"tailwindcss": "^4.3.3",
-		"typescript": "^5.9.3",
+		"typescript": "^7.0.2",
 		"vite": "^8.2.2",
 		"wrangler": "^4.125.0"
 	}

@@ -85,7 +85,7 @@
 		"eslint": "^10.9.0",
 		"eslint-config-pluv": "workspace:^",
 		"miniflare": "^4.20260730.0",
-		"typescript": "^5.9.3",
+		"typescript": "^7.0.2",
 		"vite": "^8.2.2",
 		"vite-node": "^6.0.0",
 		"wrangler": "^4.125.0"

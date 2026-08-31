@@ -41,7 +41,7 @@
 		"eslint-config-pluv": "workspace:^",
 		"ioredis": "^6.0.0",
 		"tsdown": "0.22.14",
-		"typescript": "^5.9.3"
+		"typescript": "^7.0.2"
 	},
 	"exports": {
 		".": "./dist/index.mjs",
