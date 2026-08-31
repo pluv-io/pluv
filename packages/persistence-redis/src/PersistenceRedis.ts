@@ -147,7 +147,10 @@ export class PersistenceRedis extends AbstractPersistence {
     public initialize(roomContext: {}): typeof this {
         return new PersistenceRedis({
             client: this._client,
-            _initialized: Promise.resolve(true as const),
+            // Spreading avoids an excess property check, so `_initialized` can be handed to the
+            // constructor without exposing it on PersistenceRedisOptions.
+            // oxlint-disable-next-line unicorn/no-useless-spread
+            ...{ _initialized: Promise.resolve(true as const) },
         }) as typeof this;
     }
 

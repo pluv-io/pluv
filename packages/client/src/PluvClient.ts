@@ -149,13 +149,14 @@ export class PluvClient<
         ...args: EnterRoomParams<TMetadata>
     ): Promise<PluvRoom<TIO, TMetadata, TPresence, TCrdt, any>> => {
         const toEnter = typeof room === "string" ? this.getRoom(room) : room;
+        const roomId = typeof room === "string" ? room : room.id;
 
-        if (!toEnter) throw new Error(`Could not find room: ${room}.`);
+        if (!toEnter) throw new Error(`Could not find room: ${roomId}.`);
 
         this._rooms.set(toEnter.id, toEnter);
         await toEnter.connect(...args);
 
-        this._logDebug(`Entered room: ${room}`);
+        this._logDebug(`Entered room: ${roomId}`);
 
         return toEnter;
     };
@@ -181,7 +182,7 @@ export class PluvClient<
 
         this._rooms.delete(toLeave.id);
 
-        this._logDebug(`Left and deleted room: ${room}`);
+        this._logDebug(`Left and deleted room: ${toLeave.id}`);
     };
 
     public router<TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {}>(
