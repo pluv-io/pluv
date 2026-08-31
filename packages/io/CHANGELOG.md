@@ -1,5 +1,20 @@
 # @pluv/io
 
+## 5.0.3
+
+### Patch Changes
+
+- 9cf4662: Fixed `garbageCollect`, `evict`, `evictAll` and `broadcast` resolving before their work finished. Websocket closes, `persistence.deleteUser`, `$exit` broadcasts and pub/sub publishes could still be in flight after awaiting them. If you `await room.garbageCollect()` from a Cloudflare Durable Object alarm handler, that cleanup could be cut short when the isolate is evicted.
+
+    The `$pong` heartbeat reply is now sent before periodic garbage collection, so the newly awaited cleanup cannot delay it past the client's pong timeout.
+
+- 23f608e: Re-export `@pluv/types` symbols (`IOAuthorize`, `CrdtDocFactory`, `InferIOAuthorize`, and related types) from `@pluv/io`, and `CrdtDocFactory` from `@pluv/crdt`, so wrapper packages that emit declarations can import portable types through the public API instead of reaching into `@pluv/types`.
+
+    Upgrade the monorepo to TypeScript 7 for package builds and type tests.
+
+- @pluv/crdt@5.0.3
+    - @pluv/types@5.0.3
+
 ## 5.0.2
 
 ### Patch Changes
