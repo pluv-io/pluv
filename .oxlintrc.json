@@ -18,6 +18,7 @@
         "typescript/no-explicit-any": "off",
         "typescript/no-unnecessary-type-constraint": "off",
         "typescript/no-unused-vars": "off",
+        "typescript/no-unsafe-type-assertion": "off",
         "no-extra-boolean-cast": "off",
         "turbo/no-undeclared-env-vars": "warn",
         "eslint/no-underscore-dangle": "off",
