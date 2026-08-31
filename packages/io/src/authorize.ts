@@ -1,4 +1,4 @@
-import hkdf from "@panva/hkdf";
+import { hkdf } from "@panva/hkdf";
 import type { BaseUser } from "@pluv/types";
 import { EncryptJWT, jwtDecrypt } from "jose";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
