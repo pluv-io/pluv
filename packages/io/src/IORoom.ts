@@ -292,8 +292,8 @@ export class IORoom<
      */
     public async garbageCollect(): Promise<void> {
         this._lastGarbageCollectMs = Date.now();
-        this._emitQuitters();
-        this._emitSyncState();
+
+        await Promise.all([this._emitQuitters(), this._emitSyncState()]);
     }
 
     public getSize(): number {
@@ -447,7 +447,7 @@ export class IORoom<
 
         if (typeof senderId !== "string") return;
 
-        this._platform.pubSub.publish(this.id, {
+        await this._platform.pubSub.publish(this.id, {
             connectionId: senderId ?? null,
             room: this.id,
             user,
@@ -526,7 +526,7 @@ export class IORoom<
             return pluvWs.state.quit || currentTime - pluvWs.state.timers.ping > PING_TIMEOUT_MS;
         });
 
-        this._closeWebSockets(quitters);
+        await this._closeWebSockets(quitters);
     }
 
     private async _emitRegistered(pluvWs: AbstractWebSocket<any, TAuthorize>): Promise<void> {
@@ -1158,6 +1158,16 @@ export class IORoom<
 
         if (!pluvWs) return;
 
+        const session = pluvWs.session;
+        const user = session.user ?? null;
+
+        await this._sendMessage(pluvWs, {
+            connectionId: senderId,
+            room: this.id,
+            user,
+            ...message,
+        });
+
         /**
          * @description Note that this will not fire for Cloudflare's hibernatable websockets
          * because the server will auto-respond with the $pong event without calling any
@@ -1167,20 +1177,15 @@ export class IORoom<
         if (message.type === "$pong") {
             const elapsedMs = Date.now() - this._lastGarbageCollectMs;
 
+            /**
+             * @description Garbage collection is awaited after responding, since it can close
+             * websockets and flush persistence. Blocking the $pong response on it risks
+             * exceeding the client's pong timeout and triggering a spurious reconnect.
+             */
             if (elapsedMs > GARBAGE_COLLECT_INTERVAL_MS) {
                 await this.garbageCollect();
             }
         }
-
-        const session = pluvWs.session;
-        const user = session.user ?? null;
-
-        this._sendMessage(pluvWs, {
-            connectionId: senderId,
-            room: this.id,
-            user,
-            ...message,
-        });
     }
 
     private async _sendSyncMessage(
@@ -1225,13 +1230,15 @@ export class IORoom<
             return;
         }
 
-        Promise.resolve(resolver(inputs, resolverCtx)).then((output) => {
-            if (!output) return;
+        const output = await resolver(inputs, resolverCtx);
 
-            Object.keys(output).forEach((type: string) => {
+        if (!output) return;
+
+        await Promise.all(
+            Object.keys(output).map((type) => {
                 const data = output[type] ?? {};
 
-                this._platform.pubSub.publish(this.id, {
+                return this._platform.pubSub.publish(this.id, {
                     connectionId,
                     data,
                     options: { type: "self" },
@@ -1239,7 +1246,7 @@ export class IORoom<
                     type,
                     user: (sender.user ?? null) as BaseUser | null,
                 });
-            });
-        });
+            }),
+        );
     }
 }

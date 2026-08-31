@@ -5,7 +5,13 @@
         "respectEslintDisableDirectives": false,
         "reportUnusedDisableDirectives": "warn"
     },
-    "ignorePatterns": ["dist/**", "**/*.gen.ts", "**/*.generated.ts", "tests/e2e/cf.d.ts", "tests/e2e/next-env.d.ts"],
+    "ignorePatterns": [
+        "dist/**",
+        "**/*.gen.ts",
+        "**/*.generated.ts",
+        "tests/e2e/cf.d.ts",
+        "tests/e2e/next-env.d.ts"
+    ],
     "plugins": ["typescript", "react", "react-hooks", "import", "unicorn", "oxc"],
     "jsPlugins": ["eslint-plugin-turbo"],
     "categories": {
