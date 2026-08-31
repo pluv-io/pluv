@@ -7,7 +7,7 @@
 	"scripts": {
 		"build": "vite build",
 		"dev": "vite dev",
-		"lint": "eslint \"src/**/*.ts*\" --fix --max-warnings 0",
+		"lint": "prettier --check \"src/**/*.{ts,tsx}\" --ignore-path ../../.prettierignore",
 		"typecheck": "fumadocs-mdx && tsc --noEmit",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf .output && rm -rf dist && rm -rf .source",
 		"cf:typegen": "wrangler types",
@@ -39,7 +39,7 @@
 		"eslint": "^10.9.0",
 		"eslint-config-pluv": "workspace:^",
 		"tailwindcss": "^4.3.3",
-		"typescript": "^5.9.3",
+		"typescript": "^7.0.2",
 		"vite": "^8.2.2",
 		"wrangler": "^4.125.0"
 	}

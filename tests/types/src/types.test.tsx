@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { createClient, infer } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";

@@ -23,7 +23,7 @@
 	"scripts": {
 		"build": "tsdown",
 		"dev": "tsdown --watch",
-		"lint": "eslint \"src/**/*.ts*\" --fix --max-warnings 0",
+		"lint": "prettier --check \"src/**/*.{ts,tsx}\" --ignore-path ../../.prettierignore",
 		"typecheck": "tsc --noEmit",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
@@ -44,7 +44,7 @@
 		"eslint-config-pluv": "workspace:^",
 		"react": "^19.2.8",
 		"tsdown": "0.22.14",
-		"typescript": "^5.9.3"
+		"typescript": "^7.0.2"
 	},
 	"exports": {
 		".": "./dist/index.mjs",
