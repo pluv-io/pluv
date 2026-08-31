@@ -16,6 +16,8 @@
     "rules": {
         "typescript/no-empty-object-type": "off",
         "typescript/no-explicit-any": "off",
+        "typescript/no-unnecessary-type-arguments": "off",
+        "typescript/no-unnecessary-type-assertion": "off",
         "typescript/no-unnecessary-type-constraint": "off",
         "typescript/no-unused-vars": "off",
         "typescript/no-unsafe-type-assertion": "off",
