@@ -120,7 +120,7 @@ export class NodeWebSocket<
         }
     }
 
-    public close(code?: number | undefined, reason?: string | undefined): void {
+    public close(code?: number, reason?: string): void {
         const canClose = [this.CONNECTING, this.OPEN].some(
             (readyState) => readyState === this.readyState,
         );

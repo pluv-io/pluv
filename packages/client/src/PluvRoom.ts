@@ -124,9 +124,12 @@ export interface EndpointParams<TMetadata extends JsonObject> {
     room: string;
 }
 export type AuthEndpoint<TMetadata extends JsonObject> =
-    string | ((params: EndpointParams<TMetadata>) => string | FetchOptions) | true;
+    | string
+    | ((params: EndpointParams<TMetadata>) => string | FetchOptions)
+    | true;
 export type WsEndpoint<TMetadata extends JsonObject> =
-    string | ((params: EndpointParams<TMetadata>) => string);
+    | string
+    | ((params: EndpointParams<TMetadata>) => string);
 
 type FetchOptions = { url: string; options?: RequestInit };
 
@@ -380,11 +383,11 @@ export class PluvRoom<
     ) as BroadcastProxy<TIO, TEvents>;
 
     public canRedo = (): boolean => {
-        return !!this._crdtManager.doc.canRedo();
+        return this._crdtManager.doc.canRedo();
     };
 
     public canUndo = (): boolean => {
-        return !!this._crdtManager.doc.canUndo();
+        return this._crdtManager.doc.canUndo();
     };
 
     public async connect(...args: RoomConnectParams<TMetadata>): Promise<void> {
@@ -728,7 +731,9 @@ export class PluvRoom<
 
                 this._crdtNotifier.subject(prop).next(serialized);
 
-                return { ...acc, [prop]: serialized };
+                acc[prop as keyof InferStorage<TCrdt>] = serialized;
+
+                return acc;
             },
             {} as { [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]> },
         );
@@ -1129,7 +1134,9 @@ export class PluvRoom<
 
                 this._crdtNotifier.subject(prop).next(serialized);
 
-                return { ...acc, [prop]: serialized };
+                acc[prop as keyof InferStorage<TCrdt>] = serialized;
+
+                return acc;
             },
             {} as {
                 [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]>;

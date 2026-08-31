@@ -1,62 +1,62 @@
 name: E2E Tests
 
 on:
-  push:
-    branches: [master]
-  pull_request:
-    types: [opened, synchronize]
+    push:
+        branches: [master]
+    pull_request:
+        types: [opened, synchronize]
 
 jobs:
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    services:
-      redis:
-        image: redis
-        ports:
-          - 6379:6379
-      redis-cluster:
-        image: grokzen/redis-cluster:6.2.14
-        ports:
-          - 7006:7000
-          - 7001:7001
-          - 7002:7002
-          - 7003:7003
-          - 7004:7004
-          - 7005:7005
-    strategy:
-      matrix:
-        node-version: [lts/*]
+    test:
+        name: Test
+        runs-on: ubuntu-latest
+        services:
+            redis:
+                image: redis
+                ports:
+                    - 6379:6379
+            redis-cluster:
+                image: grokzen/redis-cluster:6.2.14
+                ports:
+                    - 7006:7000
+                    - 7001:7001
+                    - 7002:7002
+                    - 7003:7003
+                    - 7004:7004
+                    - 7005:7005
+        strategy:
+            matrix:
+                node-version: [lts/*]
 
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v7
+        steps:
+            - name: Checkout Repo
+              uses: actions/checkout@v7
 
-      - name: Setup Node.js 24.x
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24.x
+            - name: Setup Node.js 24.x
+              uses: actions/setup-node@v7
+              with:
+                  node-version: 24.x
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6.0.10
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v6.0.10
 
-      - name: Install Dependencies
-        run: pnpm install
+            - name: Install Dependencies
+              run: pnpm install
 
-      - name: Setup dev.db
-        run: pnpm drizzle-kit push
-        working-directory: tests/e2e
+            - name: Setup dev.db
+              run: pnpm drizzle-kit push
+              working-directory: tests/e2e
 
-      - name: Install Playwright
-        run: pnpm exec playwright install chromium
-        working-directory: tests/e2e
+            - name: Install Playwright
+              run: pnpm exec playwright install chromium
+              working-directory: tests/e2e
 
-      - name: Test
-        run: pnpm test:e2e
+            - name: Test
+              run: pnpm test:e2e
 
-      - uses: actions/upload-artifact@v7
-        if: always()
-        with:
-          name: playwright-report
-          path: tests/e2e/playwright-report
-          retention-days: 14
+            - uses: actions/upload-artifact@v7
+              if: always()
+              with:
+                  name: playwright-report
+                  path: tests/e2e/playwright-report
+                  retention-days: 14

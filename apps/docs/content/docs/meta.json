@@ -1,11 +1,4 @@
 {
-	"title": "Documentation",
-	"pages": [
-		"index",
-		"quickstart",
-		"guides",
-		"api-reference",
-		"migrations",
-		"ecosystem"
-	]
+    "title": "Documentation",
+    "pages": ["index", "quickstart", "guides", "api-reference", "migrations", "ecosystem"]
 }

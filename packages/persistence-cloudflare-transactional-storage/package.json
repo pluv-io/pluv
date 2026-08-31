@@ -1,46 +1,45 @@
 {
-	"name": "@pluv/persistence-cloudflare-transactional-storage",
-	"version": "5.0.2",
-	"description": "@pluv/io crdt storage persistence for cloudflare via transactional storage",
-	"author": {
-		"email": "david@pluv.io",
-		"name": "i3dly",
-		"url": "https://github.com/i3dly"
-	},
-	"license": "MIT",
-	"homepage": "https://github.com/pluv-io/pluv",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/pluv-io/pluv.git",
-		"directory": "packages/persistence-cloudflare-transactional-storage"
-	},
-	"type": "module",
-	"types": "./dist/index.d.mts",
-	"files": ["dist"],
-	"publishConfig": {
-		"access": "public"
-	},
-	"scripts": {
-		"build": "tsdown",
-		"dev": "tsdown --watch",
-		"lint": "prettier --check \"src/**/*.{ts,tsx}\" --ignore-path ../../.prettierignore",
-		"typecheck": "tsc --noEmit",
-		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
-	},
-	"dependencies": {
-		"@pluv/io": "workspace:^",
-		"@pluv/types": "workspace:^"
-	},
-	"devDependencies": {
-		"@cloudflare/workers-types": "^5.20260823.1",
-		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^10.9.0",
-		"eslint-config-pluv": "workspace:^",
-		"tsdown": "0.22.14",
-		"typescript": "^7.0.2"
-	},
-	"exports": {
-		".": "./dist/index.mjs",
-		"./*": "./*"
-	}
+    "name": "@pluv/persistence-cloudflare-transactional-storage",
+    "version": "5.0.2",
+    "description": "@pluv/io crdt storage persistence for cloudflare via transactional storage",
+    "author": {
+        "email": "david@pluv.io",
+        "name": "i3dly",
+        "url": "https://github.com/i3dly"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/pluv-io/pluv",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/pluv-io/pluv.git",
+        "directory": "packages/persistence-cloudflare-transactional-storage"
+    },
+    "type": "module",
+    "types": "./dist/index.d.mts",
+    "files": [
+        "dist"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "build": "tsdown",
+        "dev": "tsdown --watch",
+        "typecheck": "tsc --noEmit",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    },
+    "dependencies": {
+        "@pluv/io": "workspace:^",
+        "@pluv/types": "workspace:^"
+    },
+    "devDependencies": {
+        "@cloudflare/workers-types": "^5.20260823.1",
+        "@pluv/tsconfig": "workspace:^",
+        "tsdown": "0.22.14",
+        "typescript": "^7.0.2"
+    },
+    "exports": {
+        ".": "./dist/index.mjs",
+        "./*": "./*"
+    }
 }

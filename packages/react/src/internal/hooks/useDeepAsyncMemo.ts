@@ -51,7 +51,6 @@ export const useDeepAsyncMemo = <T>(
         inflightRef.current = promise;
 
         // Set loading state
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setState((prev) => {
             return {
                 ...prev,
@@ -105,7 +104,7 @@ export const useDeepAsyncMemo = <T>(
         return () => {
             isMountedRef.current = false;
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [
         /**
          * !HACK

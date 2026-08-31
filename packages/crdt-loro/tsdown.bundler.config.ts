@@ -7,10 +7,7 @@ export default defineConfig({
             name: "rewrite-loro-import",
             renderChunk(code) {
                 return {
-                    code: code.replaceAll(
-                        /from\s*["']loro-crdt["']/g,
-                        'from "loro-crdt/bundler"',
-                    ),
+                    code: code.replaceAll(/from\s*["']loro-crdt["']/g, 'from "loro-crdt/bundler"'),
                     map: null,
                 };
             },

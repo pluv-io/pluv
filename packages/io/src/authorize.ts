@@ -1,4 +1,4 @@
-import hkdf from "@panva/hkdf";
+import { hkdf } from "@panva/hkdf";
 import type { BaseUser } from "@pluv/types";
 import { EncryptJWT, jwtDecrypt } from "jose";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
@@ -59,7 +59,7 @@ export const authorize = (params: AuthorizeParams) => {
             .setJti(platform.randomUUID())
             .encrypt(encryptionSecret);
 
-        return token.toString();
+        return token;
     };
 
     const decode = async <TUser extends BaseUser>(jwt: string): Promise<JWT<TUser> | null> => {

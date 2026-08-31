@@ -198,11 +198,11 @@ export class MockedRoom<
     ) as BroadcastProxy<TIO, TEvents>;
 
     public canRedo = (): boolean => {
-        return !!this._crdtManager.doc.canRedo();
+        return this._crdtManager.doc.canRedo();
     };
 
     public canUndo = (): boolean => {
-        return !!this._crdtManager.doc.canUndo();
+        return this._crdtManager.doc.canUndo();
     };
 
     public getConnection = (): WebSocketConnection => {
@@ -386,7 +386,9 @@ export class MockedRoom<
 
                     this._crdtNotifier.subject(prop).next(serialized);
 
-                    return { ...acc, [prop]: serialized };
+                    acc[prop as keyof InferStorage<TCrdt>] = serialized;
+
+                    return acc;
                 },
                 {} as {
                     [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]>;
@@ -423,13 +425,13 @@ export class MockedRoom<
 
         const result = resolver(data);
 
-        Object.keys(result).forEach((type) => {
-            const _type = type.toString() as keyof Partial<InferIOOutput<TIO>>;
-            const data = result[_type] as any;
+        Object.keys(result).forEach((outputType) => {
+            const _type = outputType as keyof Partial<InferIOOutput<TIO>>;
+            const outputData = result[_type] as any;
 
-            if (!data) return;
+            if (!outputData) return;
 
-            this._eventNotifier.subject(_type).next(data);
+            this._eventNotifier.subject(_type).next(outputData);
         });
     }
 

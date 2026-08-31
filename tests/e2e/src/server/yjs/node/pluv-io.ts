@@ -41,7 +41,7 @@ export const ioServer = io.server({
             .select()
             .from(rooms)
             .where(eq(rooms.name, name))
-            .then((rooms) => rooms[0]);
+            .then((rows) => rows[0]);
         const storage = room?.storage ?? null;
 
         return storage;

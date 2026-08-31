@@ -1,0 +1,43 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "options": {
+        "typeAware": true,
+        "respectEslintDisableDirectives": false,
+        "reportUnusedDisableDirectives": "warn"
+    },
+    "ignorePatterns": [
+        "dist/**",
+        "**/*.gen.ts",
+        "**/*.generated.ts",
+        "tests/e2e/cf.d.ts",
+        "tests/e2e/next-env.d.ts"
+    ],
+    "plugins": ["typescript", "react", "react-hooks", "import", "unicorn", "oxc"],
+    "jsPlugins": ["eslint-plugin-turbo"],
+    "categories": {
+        "correctness": "warn",
+        "suspicious": "warn",
+        "perf": "warn"
+    },
+    "rules": {
+        "typescript/no-empty-object-type": "off",
+        "typescript/no-explicit-any": "off",
+        "typescript/no-unnecessary-type-arguments": "off",
+        "typescript/no-unnecessary-type-assertion": "off",
+        "typescript/no-unnecessary-type-constraint": "off",
+        "typescript/no-unused-vars": "off",
+        "typescript/no-unsafe-type-assertion": "off",
+        "no-extra-boolean-cast": "off",
+        "turbo/no-undeclared-env-vars": "warn",
+        "eslint/no-underscore-dangle": "off",
+        "react/react-in-jsx-scope": "off",
+        "react/no-array-index-key": "off",
+        "unicorn/consistent-function-scoping": "off"
+    },
+    "overrides": [
+        {
+            "files": ["packages/react/**", "apps/docs/**", "tests/e2e/**"],
+            "plugins": ["react", "react-hooks"]
+        }
+    ]
+}

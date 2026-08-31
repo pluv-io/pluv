@@ -23,14 +23,14 @@ pnpm add @pluv/crdt-loro loro-crdt
 
 Import `@pluv/crdt-loro` normally. Conditional exports pick the Loro entry best suited for each runtime:
 
-| Runtime | Resolved build | Loro entry |
-| --- | --- | --- |
-| Browser (Vite, Webpack, etc.) | `dist/browser.mjs` | `loro-crdt` |
+| Runtime                       | Resolved build     | Loro entry          |
+| ----------------------------- | ------------------ | ------------------- |
+| Browser (Vite, Webpack, etc.) | `dist/browser.mjs` | `loro-crdt`         |
 | Cloudflare Workers (Wrangler) | `dist/bundler.mjs` | `loro-crdt/bundler` |
-| Bun | `dist/bundler.mjs` | `loro-crdt/bundler` |
-| Node.js | `dist/node.mjs` | `loro-crdt/nodejs` |
-| Deno | `dist/node.mjs` | `loro-crdt/nodejs` |
-| Other bundlers (default) | `dist/bundler.mjs` | `loro-crdt/bundler` |
+| Bun                           | `dist/bundler.mjs` | `loro-crdt/bundler` |
+| Node.js                       | `dist/node.mjs`    | `loro-crdt/nodejs`  |
+| Deno                          | `dist/node.mjs`    | `loro-crdt/nodejs`  |
+| Other bundlers (default)      | `dist/bundler.mjs` | `loro-crdt/bundler` |
 
 If your toolchain does not pick the expected build, import explicitly:
 

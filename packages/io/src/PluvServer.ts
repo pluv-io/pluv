@@ -152,25 +152,28 @@ export class PluvServer<
 
                         return true;
                     })
-                    .reduce<{
-                        [connectionId: string]: {
-                            connectionId: string;
-                            room: string | null;
-                            user: JsonObject | null;
+                    .reduce<
+                        Record<
+                            string,
+                            {
+                                connectionId: string;
+                                presence: unknown;
+                                room: string | null;
+                                timers: { presence: number | null };
+                                user: JsonObject | null;
+                            }
+                        >
+                    >((acc, { id, presence, timers, user }) => {
+                        acc[id] = {
+                            connectionId: id,
+                            presence,
+                            room,
+                            timers: { presence: timers.presence },
+                            user,
                         };
-                    }>(
-                        (acc, { id, presence, timers, user }) => ({
-                            ...acc,
-                            [id]: {
-                                connectionId: id,
-                                presence,
-                                room,
-                                timers: { presence: timers.presence },
-                                user,
-                            },
-                        }),
-                        {},
-                    );
+
+                        return acc;
+                    }, {});
 
                 return { $othersReceived: { others } };
             }),

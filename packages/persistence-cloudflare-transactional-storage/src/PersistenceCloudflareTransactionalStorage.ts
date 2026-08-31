@@ -314,6 +314,9 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
 
         return new PersistenceCloudflareTransactionalStorage({
             mode: this._mode,
+            // Spreading avoids an excess property check, so `_initialized` can be handed to the
+            // constructor without exposing it on the public config type.
+            // oxlint-disable-next-line unicorn/no-useless-spread
             ...{ _initialized: initialized },
         }) as typeof this;
     }

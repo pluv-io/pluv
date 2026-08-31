@@ -1,32 +1,36 @@
-'📚 documentation / examples':
-  - any: [docs/**]
+"📚 documentation / examples":
+    - any: [docs/**]
 
-'pluv':
-  - any: ['packages/cli/**', '!packages/cli/package.json']
+"pluv":
+    - any: ["packages/cli/**", "!packages/cli/package.json"]
 
-'@pluv/client':
-  - any: ['packages/client/**', '!packages/client/package.json']
+"@pluv/client":
+    - any: ["packages/client/**", "!packages/client/package.json"]
 
-'@pluv/crdt-yjs':
-  - any: ['packages/crdt-yjs/**', '!packages/crdt-yjs/package.json']
+"@pluv/crdt-yjs":
+    - any: ["packages/crdt-yjs/**", "!packages/crdt-yjs/package.json"]
 
-'@pluv/io':
-  - any: ['packages/io/**', '!packages/io/package.json']
+"@pluv/io":
+    - any: ["packages/io/**", "!packages/io/package.json"]
 
-'@pluv/persistence-cloudflare-transactional-storage':
-  - any: ['packages/persistence-cloudflare-transactional-storage/**', '!packages/persistence-cloudflare-transactional-storage/package.json']
+"@pluv/persistence-cloudflare-transactional-storage":
+    - any:
+          [
+              "packages/persistence-cloudflare-transactional-storage/**",
+              "!packages/persistence-cloudflare-transactional-storage/package.json",
+          ]
 
-'@pluv/persistence-redis':
-  - any: ['packages/persistence-redis/**', '!packages/persistence-redis/package.json']
+"@pluv/persistence-redis":
+    - any: ["packages/persistence-redis/**", "!packages/persistence-redis/package.json"]
 
-'@pluv/platform-cloudflare':
-  - any: ['packages/platform-cloudflare/**', '!packages/platform-cloudflare/package.json']
+"@pluv/platform-cloudflare":
+    - any: ["packages/platform-cloudflare/**", "!packages/platform-cloudflare/package.json"]
 
-'@pluv/platform-node':
-  - any: ['packages/platform-node/**', '!packages/platform-node/package.json']
+"@pluv/platform-node":
+    - any: ["packages/platform-node/**", "!packages/platform-node/package.json"]
 
-'@pluv/pubsub-redis':
-  - any: ['packages/pubsub-redis/**', '!packages/pubsub-redis/package.json']
+"@pluv/pubsub-redis":
+    - any: ["packages/pubsub-redis/**", "!packages/pubsub-redis/package.json"]
 
-'@pluv/react':
-  - any: ['packages/react/**', '!packages/react/package.json']
+"@pluv/react":
+    - any: ["packages/react/**", "!packages/react/package.json"]

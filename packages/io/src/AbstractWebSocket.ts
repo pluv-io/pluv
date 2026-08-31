@@ -104,7 +104,7 @@ export abstract class AbstractWebSocket<
         handler: AbstractListener<TType>,
     ): void;
 
-    public abstract close(code?: number | undefined, reason?: string | undefined): void;
+    public abstract close(code?: number, reason?: string): void;
 
     public abstract send(message: ArrayBuffer | ArrayBufferView | string): void;
 

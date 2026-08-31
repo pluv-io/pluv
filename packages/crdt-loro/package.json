@@ -1,83 +1,82 @@
 {
-	"name": "@pluv/crdt-loro",
-	"version": "5.0.2",
-	"description": "loro for @pluv/io",
-	"author": {
-		"email": "david@pluv.io",
-		"name": "i3dly",
-		"url": "https://github.com/i3dly"
-	},
-	"license": "MIT",
-	"homepage": "https://github.com/pluv-io/pluv",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/pluv-io/pluv.git",
-		"directory": "packages/crdt-loro"
-	},
-	"type": "module",
-	"types": "./dist/browser.d.mts",
-	"files": ["dist"],
-	"publishConfig": {
-		"access": "public"
-	},
-	"scripts": {
-		"build": "tsdown --config tsdown.browser.config.ts && tsdown --config tsdown.bundler.config.ts && tsdown --config tsdown.node.config.ts",
-		"dev": "tsdown --config tsdown.browser.config.ts --watch",
-		"lint": "prettier --check \"src/**/*.{ts,tsx}\" --ignore-path ../../.prettierignore",
-		"typecheck": "tsc --noEmit",
-		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
-	},
-	"dependencies": {
-		"@pluv/crdt": "workspace:^",
-		"@pluv/types": "workspace:^",
-		"@types/node": "^26.2.0",
-		"js-base64": "^3.9.3"
-	},
-	"peerDependencies": {
-		"loro-crdt": "^1.0.0"
-	},
-	"devDependencies": {
-		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^10.9.0",
-		"eslint-config-pluv": "workspace:^",
-		"loro-crdt": "^1.14.1",
-		"tsdown": "0.22.14",
-		"typescript": "^7.0.2"
-	},
-	"exports": {
-		".": {
-			"types": "./dist/browser.d.mts",
-			"workerd": "./dist/bundler.mjs",
-			"deno": "./dist/node.mjs",
-			"node": "./dist/node.mjs",
-			"bun": "./dist/bundler.mjs",
-			"browser": "./dist/browser.mjs",
-			"default": "./dist/bundler.mjs"
-		},
-		"./browser": {
-			"types": "./dist/browser.d.mts",
-			"default": "./dist/browser.mjs"
-		},
-		"./node": {
-			"types": "./dist/browser.d.mts",
-			"default": "./dist/node.mjs"
-		},
-		"./bundler": {
-			"types": "./dist/browser.d.mts",
-			"default": "./dist/bundler.mjs"
-		},
-		"./workerd": {
-			"types": "./dist/browser.d.mts",
-			"default": "./dist/bundler.mjs"
-		},
-		"./bun": {
-			"types": "./dist/browser.d.mts",
-			"default": "./dist/bundler.mjs"
-		},
-		"./deno": {
-			"types": "./dist/browser.d.mts",
-			"default": "./dist/node.mjs"
-		},
-		"./*": "./*"
-	}
+    "name": "@pluv/crdt-loro",
+    "version": "5.0.2",
+    "description": "loro for @pluv/io",
+    "author": {
+        "email": "david@pluv.io",
+        "name": "i3dly",
+        "url": "https://github.com/i3dly"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/pluv-io/pluv",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/pluv-io/pluv.git",
+        "directory": "packages/crdt-loro"
+    },
+    "type": "module",
+    "types": "./dist/browser.d.mts",
+    "files": [
+        "dist"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "build": "tsdown --config tsdown.browser.config.ts && tsdown --config tsdown.bundler.config.ts && tsdown --config tsdown.node.config.ts",
+        "dev": "tsdown --config tsdown.browser.config.ts --watch",
+        "typecheck": "tsc --noEmit",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    },
+    "dependencies": {
+        "@pluv/crdt": "workspace:^",
+        "@pluv/types": "workspace:^",
+        "@types/node": "^26.2.0",
+        "js-base64": "^3.9.3"
+    },
+    "peerDependencies": {
+        "loro-crdt": "^1.0.0"
+    },
+    "devDependencies": {
+        "@pluv/tsconfig": "workspace:^",
+        "loro-crdt": "^1.14.1",
+        "tsdown": "0.22.14",
+        "typescript": "^7.0.2"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/browser.d.mts",
+            "workerd": "./dist/bundler.mjs",
+            "deno": "./dist/node.mjs",
+            "node": "./dist/node.mjs",
+            "bun": "./dist/bundler.mjs",
+            "browser": "./dist/browser.mjs",
+            "default": "./dist/bundler.mjs"
+        },
+        "./browser": {
+            "types": "./dist/browser.d.mts",
+            "default": "./dist/browser.mjs"
+        },
+        "./node": {
+            "types": "./dist/browser.d.mts",
+            "default": "./dist/node.mjs"
+        },
+        "./bundler": {
+            "types": "./dist/browser.d.mts",
+            "default": "./dist/bundler.mjs"
+        },
+        "./workerd": {
+            "types": "./dist/browser.d.mts",
+            "default": "./dist/bundler.mjs"
+        },
+        "./bun": {
+            "types": "./dist/browser.d.mts",
+            "default": "./dist/bundler.mjs"
+        },
+        "./deno": {
+            "types": "./dist/browser.d.mts",
+            "default": "./dist/node.mjs"
+        },
+        "./*": "./*"
+    }
 }

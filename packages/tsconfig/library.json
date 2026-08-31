@@ -1,14 +1,14 @@
 {
-	"$schema": "https://json.schemastore.org/tsconfig",
-	"display": "Library",
-	"extends": "./base.json",
-	"compilerOptions": {
-		"lib": ["esnext"],
-		"module": "esnext",
-		"target": "esnext",
-		"isolatedModules": true,
-		"moduleResolution": "bundler"
-	},
-	"include": ["src"],
-	"exclude": ["node_modules"]
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "display": "Library",
+    "extends": "./base.json",
+    "compilerOptions": {
+        "lib": ["esnext"],
+        "module": "esnext",
+        "target": "esnext",
+        "isolatedModules": true,
+        "moduleResolution": "bundler"
+    },
+    "include": ["src"],
+    "exclude": ["node_modules"]
 }

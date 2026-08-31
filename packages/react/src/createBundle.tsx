@@ -325,7 +325,7 @@ export const createBundle = <
 
     const useConnection = <T extends unknown = WebSocketConnection>(
         selector = identity as (connection: WebSocketConnection) => T,
-        options?: SubscriptionHookOptions<Id<T>>,
+        hookOptions?: SubscriptionHookOptions<Id<T>>,
     ): Id<T> => {
         const room = useRoom();
 
@@ -346,7 +346,7 @@ export const createBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual ?? fastDeepEqual,
+            hookOptions?.isEqual ?? fastDeepEqual,
         );
     };
 
@@ -405,7 +405,7 @@ export const createBundle = <
 
     const useMyPresence = <T extends unknown = TPresence>(
         selector = identity as (myPresence: TPresence) => T,
-        options?: SubscriptionHookOptions<Id<T> | null>,
+        hookOptions?: SubscriptionHookOptions<Id<T> | null>,
     ): [Id<T>, Dispatch<UpdateMyPresenceAction<TPresence>>] => {
         const room = useRoom();
 
@@ -426,7 +426,7 @@ export const createBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual ?? fastDeepEqual,
+            hookOptions?.isEqual ?? fastDeepEqual,
         );
 
         return [myPresence, room.updateMyPresence];
@@ -434,7 +434,7 @@ export const createBundle = <
 
     const useMyself = <T extends unknown = UserInfo<TIO, TPresence>>(
         selector = identity as (myself: Id<UserInfo<TIO, TPresence>>) => T,
-        options?: SubscriptionHookOptions<Id<T> | null>,
+        hookOptions?: SubscriptionHookOptions<Id<T> | null>,
     ): Id<T> | null => {
         const room = useRoom();
 
@@ -457,14 +457,14 @@ export const createBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual ?? fastDeepEqual,
+            hookOptions?.isEqual ?? fastDeepEqual,
         );
     };
 
     const useOther = <T extends unknown = UserInfo<TIO, TPresence>>(
         connectionId: string,
         selector = identity as (other: UserInfo<TIO, TPresence>) => T,
-        options?: SubscriptionHookOptions<T | null>,
+        hookOptions?: SubscriptionHookOptions<T | null>,
     ): T | null => {
         const room = useRoom();
 
@@ -487,13 +487,13 @@ export const createBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual ?? fastDeepEqual,
+            hookOptions?.isEqual ?? fastDeepEqual,
         );
     };
 
     const useOthers = <T extends unknown = readonly UserInfo<TIO, TPresence>[]>(
         selector = identity as (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T,
-        options?: SubscriptionHookOptions<T>,
+        hookOptions?: SubscriptionHookOptions<T>,
     ): T => {
         const room = useRoom();
 
@@ -509,7 +509,7 @@ export const createBundle = <
             getSnapshot,
             getSnapshot,
             selector as (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T,
-            options?.isEqual ??
+            hookOptions?.isEqual ??
                 ((a, b) => {
                     /**
                      * !HACK
@@ -540,7 +540,7 @@ export const createBundle = <
     >(
         key: TKey,
         selector = identity as (data: InferCrdtJson<InferStorage<TCrdt>[TKey]>) => TData,
-        options?: SubscriptionHookOptions<TData | null>,
+        hookOptions?: SubscriptionHookOptions<TData | null>,
     ): [data: TData | null, sharedType: InferStorage<TCrdt>[TKey] | null] => {
         const room = useRoom();
         const rerender = useRerender();
@@ -576,7 +576,7 @@ export const createBundle = <
             getSnapshot,
             getSnapshot,
             _selector,
-            options?.isEqual ?? fastDeepEqual,
+            hookOptions?.isEqual ?? fastDeepEqual,
         );
 
         const sharedType = room.getStorage(key) ?? null;
