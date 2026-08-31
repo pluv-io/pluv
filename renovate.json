@@ -1,14 +1,14 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base", ":preserveSemverRanges"],
-  "labels": ["renovate"],
-  "updateInternalDeps": true,
-  "packageRules": [
-    {
-      "matchManagers": ["npm"],
-      "major": {
-        "enabled": false
-      }
-    }
-  ]
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": ["config:base", ":preserveSemverRanges"],
+    "labels": ["renovate"],
+    "updateInternalDeps": true,
+    "packageRules": [
+        {
+            "matchManagers": ["npm"],
+            "major": {
+                "enabled": false
+            }
+        }
+    ]
 }

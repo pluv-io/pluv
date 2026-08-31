@@ -1,49 +1,48 @@
 {
-	"name": "@pluv/pubsub-redis",
-	"version": "5.0.2",
-	"description": "@pluv/io redis pubsub",
-	"author": {
-		"email": "david@pluv.io",
-		"name": "i3dly",
-		"url": "https://github.com/i3dly"
-	},
-	"license": "MIT",
-	"homepage": "https://github.com/pluv-io/pluv",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/pluv-io/pluv.git",
-		"directory": "packages/pubsub-redis"
-	},
-	"type": "module",
-	"types": "./dist/index.d.mts",
-	"files": ["dist"],
-	"publishConfig": {
-		"access": "public"
-	},
-	"scripts": {
-		"build": "tsdown",
-		"dev": "tsdown --watch",
-		"lint": "prettier --check \"src/**/*.{ts,tsx}\" --ignore-path ../../.prettierignore",
-		"typecheck": "tsc --noEmit",
-		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
-	},
-	"dependencies": {
-		"@pluv/io": "workspace:^",
-		"@types/node": "^26.2.0"
-	},
-	"peerDependencies": {
-		"ioredis": "^5.0.0"
-	},
-	"devDependencies": {
-		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^10.9.0",
-		"eslint-config-pluv": "workspace:^",
-		"ioredis": "^6.0.0",
-		"tsdown": "0.22.14",
-		"typescript": "^7.0.2"
-	},
-	"exports": {
-		".": "./dist/index.mjs",
-		"./*": "./*"
-	}
+    "name": "@pluv/pubsub-redis",
+    "version": "5.0.2",
+    "description": "@pluv/io redis pubsub",
+    "author": {
+        "email": "david@pluv.io",
+        "name": "i3dly",
+        "url": "https://github.com/i3dly"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/pluv-io/pluv",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/pluv-io/pluv.git",
+        "directory": "packages/pubsub-redis"
+    },
+    "type": "module",
+    "types": "./dist/index.d.mts",
+    "files": [
+        "dist"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "build": "tsdown",
+        "dev": "tsdown --watch",
+        "typecheck": "tsc --noEmit",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    },
+    "dependencies": {
+        "@pluv/io": "workspace:^",
+        "@types/node": "^26.2.0"
+    },
+    "peerDependencies": {
+        "ioredis": "^5.0.0"
+    },
+    "devDependencies": {
+        "@pluv/tsconfig": "workspace:^",
+        "ioredis": "^6.0.0",
+        "tsdown": "0.22.14",
+        "typescript": "^7.0.2"
+    },
+    "exports": {
+        ".": "./dist/index.mjs",
+        "./*": "./*"
+    }
 }

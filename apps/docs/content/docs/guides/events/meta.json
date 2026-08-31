@@ -1,4 +1,4 @@
 {
-	"title": "Events",
-	"pages": ["overview", "client", "server"]
+    "title": "Events",
+    "pages": ["overview", "client", "server"]
 }

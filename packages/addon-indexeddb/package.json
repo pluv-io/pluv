@@ -1,50 +1,49 @@
 {
-	"name": "@pluv/addon-indexeddb",
-	"version": "5.0.2",
-	"description": "@pluv/io indexeddb for client storage persistence",
-	"author": {
-		"email": "david@pluv.io",
-		"name": "i3dly",
-		"url": "https://github.com/i3dly"
-	},
-	"license": "MIT",
-	"homepage": "https://github.com/pluv-io/pluv",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/pluv-io/pluv.git",
-		"directory": "packages/addon-indexeddb"
-	},
-	"type": "module",
-	"types": "./dist/index.d.mts",
-	"files": ["dist"],
-	"publishConfig": {
-		"access": "public"
-	},
-	"scripts": {
-		"build": "tsdown",
-		"dev": "tsdown --watch",
-		"lint": "prettier --check \"src/**/*.{ts,tsx}\" --ignore-path ../../.prettierignore",
-		"typecheck": "tsc --noEmit",
-		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
-	},
-	"dependencies": {
-		"@pluv/client": "workspace:^",
-		"@pluv/crdt": "workspace:^",
-		"idb": "^8.0.3"
-	},
-	"devDependencies": {
-		"@pluv/tsconfig": "workspace:^",
-		"@pluv/types": "workspace:^",
-		"eslint": "^10.9.0",
-		"eslint-config-pluv": "workspace:^",
-		"tsdown": "0.22.14",
-		"typescript": "^7.0.2"
-	},
-	"exports": {
-		".": "./dist/index.mjs",
-		"./*": "./*"
-	},
-	"inlinedDependencies": {
-		"wonka": "6.3.6"
-	}
+    "name": "@pluv/addon-indexeddb",
+    "version": "5.0.2",
+    "description": "@pluv/io indexeddb for client storage persistence",
+    "author": {
+        "email": "david@pluv.io",
+        "name": "i3dly",
+        "url": "https://github.com/i3dly"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/pluv-io/pluv",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/pluv-io/pluv.git",
+        "directory": "packages/addon-indexeddb"
+    },
+    "type": "module",
+    "types": "./dist/index.d.mts",
+    "files": [
+        "dist"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "build": "tsdown",
+        "dev": "tsdown --watch",
+        "typecheck": "tsc --noEmit",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    },
+    "dependencies": {
+        "@pluv/client": "workspace:^",
+        "@pluv/crdt": "workspace:^",
+        "idb": "^8.0.3"
+    },
+    "devDependencies": {
+        "@pluv/tsconfig": "workspace:^",
+        "@pluv/types": "workspace:^",
+        "tsdown": "0.22.14",
+        "typescript": "^7.0.2"
+    },
+    "exports": {
+        ".": "./dist/index.mjs",
+        "./*": "./*"
+    },
+    "inlinedDependencies": {
+        "wonka": "6.3.6"
+    }
 }

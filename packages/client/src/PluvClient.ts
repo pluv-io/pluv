@@ -162,7 +162,8 @@ export class PluvClient<
 
     public getRoom = (room: string): PluvRoom<TIO, TMetadata, TPresence, TCrdt, any> | null => {
         const found = this._rooms.get(room) as
-            PluvRoom<TIO, TMetadata, TPresence, TCrdt, any> | undefined;
+            | PluvRoom<TIO, TMetadata, TPresence, TCrdt, any>
+            | undefined;
 
         return found ?? null;
     };

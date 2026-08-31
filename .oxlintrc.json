@@ -1,0 +1,30 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "options": {
+        "typeAware": true,
+        "respectEslintDisableDirectives": false,
+        "reportUnusedDisableDirectives": "warn"
+    },
+    "ignorePatterns": ["dist/**", "**/*.gen.ts", "**/*.generated.ts", "tests/e2e/cf.d.ts"],
+    "plugins": ["typescript", "react", "react-hooks", "import", "unicorn", "oxc"],
+    "jsPlugins": ["eslint-plugin-turbo"],
+    "categories": {
+        "correctness": "warn",
+        "suspicious": "warn",
+        "perf": "warn"
+    },
+    "rules": {
+        "typescript/no-empty-object-type": "off",
+        "typescript/no-explicit-any": "off",
+        "typescript/no-unnecessary-type-constraint": "off",
+        "typescript/no-unused-vars": "off",
+        "no-extra-boolean-cast": "off",
+        "turbo/no-undeclared-env-vars": "warn"
+    },
+    "overrides": [
+        {
+            "files": ["packages/react/**", "apps/docs/**", "tests/e2e/**"],
+            "plugins": ["react", "react-hooks"]
+        }
+    ]
+}

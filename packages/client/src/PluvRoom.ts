@@ -124,9 +124,12 @@ export interface EndpointParams<TMetadata extends JsonObject> {
     room: string;
 }
 export type AuthEndpoint<TMetadata extends JsonObject> =
-    string | ((params: EndpointParams<TMetadata>) => string | FetchOptions) | true;
+    | string
+    | ((params: EndpointParams<TMetadata>) => string | FetchOptions)
+    | true;
 export type WsEndpoint<TMetadata extends JsonObject> =
-    string | ((params: EndpointParams<TMetadata>) => string);
+    | string
+    | ((params: EndpointParams<TMetadata>) => string);
 
 type FetchOptions = { url: string; options?: RequestInit };
 

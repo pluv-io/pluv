@@ -1,53 +1,52 @@
 {
-	"name": "@pluv/crdt-yjs",
-	"version": "5.0.2",
-	"description": "yjs for @pluv/io",
-	"author": {
-		"email": "david@pluv.io",
-		"name": "i3dly",
-		"url": "https://github.com/i3dly"
-	},
-	"license": "MIT",
-	"homepage": "https://github.com/pluv-io/pluv",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/pluv-io/pluv.git",
-		"directory": "packages/crdt-yjs"
-	},
-	"type": "module",
-	"types": "./dist/index.d.mts",
-	"files": ["dist"],
-	"publishConfig": {
-		"access": "public"
-	},
-	"scripts": {
-		"build": "tsdown",
-		"dev": "tsdown --watch",
-		"lint": "prettier --check \"src/**/*.{ts,tsx}\" --ignore-path ../../.prettierignore",
-		"typecheck": "tsc --noEmit",
-		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
-	},
-	"dependencies": {
-		"@pluv/crdt": "workspace:^",
-		"@pluv/types": "workspace:^",
-		"@types/node": "^26.2.0",
-		"js-base64": "^3.9.3",
-		"lib0": "^0.2.117"
-	},
-	"peerDependencies": {
-		"yjs": "^13.0.0"
-	},
-	"devDependencies": {
-		"@pluv/tsconfig": "workspace:^",
-		"eslint": "^10.9.0",
-		"eslint-config-pluv": "workspace:^",
-		"tsdown": "0.22.14",
-		"typescript": "^7.0.2",
-		"yjs": "^13.6.32"
-	},
-	"exports": {
-		".": "./dist/index.mjs",
-		"./rolldown-runtime-D7D4PA-g": "./dist/rolldown-runtime-D7D4PA-g.mjs",
-		"./*": "./*"
-	}
+    "name": "@pluv/crdt-yjs",
+    "version": "5.0.2",
+    "description": "yjs for @pluv/io",
+    "author": {
+        "email": "david@pluv.io",
+        "name": "i3dly",
+        "url": "https://github.com/i3dly"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/pluv-io/pluv",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/pluv-io/pluv.git",
+        "directory": "packages/crdt-yjs"
+    },
+    "type": "module",
+    "types": "./dist/index.d.mts",
+    "files": [
+        "dist"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "build": "tsdown",
+        "dev": "tsdown --watch",
+        "typecheck": "tsc --noEmit",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    },
+    "dependencies": {
+        "@pluv/crdt": "workspace:^",
+        "@pluv/types": "workspace:^",
+        "@types/node": "^26.2.0",
+        "js-base64": "^3.9.3",
+        "lib0": "^0.2.117"
+    },
+    "peerDependencies": {
+        "yjs": "^13.0.0"
+    },
+    "devDependencies": {
+        "@pluv/tsconfig": "workspace:^",
+        "tsdown": "0.22.14",
+        "typescript": "^7.0.2",
+        "yjs": "^13.6.32"
+    },
+    "exports": {
+        ".": "./dist/index.mjs",
+        "./rolldown-runtime-D7D4PA-g": "./dist/rolldown-runtime-D7D4PA-g.mjs",
+        "./*": "./*"
+    }
 }

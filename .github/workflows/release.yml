@@ -1,42 +1,42 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - master
+    push:
+        branches:
+            - master
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
-  id-token: write
-  contents: write
-  pull-requests: write
+    id-token: write
+    contents: write
+    pull-requests: write
 
 jobs:
-  release:
-    name: Release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v7
+    release:
+        name: Release
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repo
+              uses: actions/checkout@v7
 
-      - name: Setup Node.js 24.x
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24.x
+            - name: Setup Node.js 24.x
+              uses: actions/setup-node@v7
+              with:
+                  node-version: 24.x
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6.0.10
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v6.0.10
 
-      - name: Install Dependencies
-        run: pnpm install
+            - name: Install Dependencies
+              run: pnpm install
 
-      - name: Create Release Pull Request or Publish to npm
-        id: changesets
-        uses: changesets/action@v2
-        with:
-          # this expects you to have a script called release, which does a build
-          # for your packages and calls changeset publish
-          publish-script: pnpm release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Create Release Pull Request or Publish to npm
+              id: changesets
+              uses: changesets/action@v2
+              with:
+                  # this expects you to have a script called release, which does a build
+                  # for your packages and calls changeset publish
+                  publish-script: pnpm release
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

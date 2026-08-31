@@ -39,25 +39,25 @@ Create your pluv.io backend
 ```ts
 // backend
 const io = createIO(
-  platformNode({
-    context: () => ({ db }),
-    crdt: yjs,
-  })
+    platformNode({
+        context: () => ({ db }),
+        crdt: yjs,
+    }),
 );
 
 export const ioServer = io.server({
-  getInitialStorage: async ({ context: { db }, room }) => {
-    return await db.room
-      .findUnique({ where: { id: room } })
-      .then((result) => result?.encodedState ?? null);
-  },
-  router: io.router({
-    sendGreeting: io.procedure
-      .input(z.object({ message: z.string() }))
-      .broadcast(({ message }) => ({
-        receiveGreeting: { message }
-      }))
-  })
+    getInitialStorage: async ({ context: { db }, room }) => {
+        return await db.room
+            .findUnique({ where: { id: room } })
+            .then((result) => result?.encodedState ?? null);
+    },
+    router: io.router({
+        sendGreeting: io.procedure
+            .input(z.object({ message: z.string() }))
+            .broadcast(({ message }) => ({
+                receiveGreeting: { message },
+            })),
+    }),
 });
 ```
 
@@ -67,29 +67,25 @@ Create your frontend client with your backend types
 // frontend
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const io = createClient({
-  types,
-  initialStorage: yjs.doc((t) => ({
-    messages: t.array<string>("messages"),
-  })),
-  presence: z.object({
-    selectionId: z.string().nullable()
-  })
+    types,
+    initialStorage: yjs.doc((t) => ({
+        messages: t.array<string>("messages"),
+    })),
+    presence: z.object({
+        selectionId: z.string().nullable(),
+    }),
 });
 
-const {
-  event,
-  useBroadcast,
-  useMyPresence,
-  useOthers,
-  useStorage
-} = createBundle(io);
+const { event, useBroadcast, useMyPresence, useOthers, useStorage } = createBundle(io);
 ```
 
 Use powerful primitives to build realtime features
 
 ```tsx
 // react
-event.receiveGreeting.useEvent(({ data }) => { /* ... */});
+event.receiveGreeting.useEvent(({ data }) => {
+    /* ... */
+});
 //                                ^? const data: { message: string }
 
 const broadcast = useBroadcast();
@@ -98,20 +94,20 @@ broadcast.sendGreeting({ message: "hello world" });
 //        ^? const sendGreeting: (data: { message: string }) => void
 
 const [mySelection, update] = useMyPresence((presence) => {
-//     ^? const mySelection: string | null
-  return presence.selectionId;
+    //     ^? const mySelection: string | null
+    return presence.selectionId;
 });
 
 const others = useOthers((others) => {
-//    ^? const others = string[]
-  return others.map((other) => other.presence.selectionId);
+    //    ^? const others = string[]
+    return others.map((other) => other.presence.selectionId);
 });
 
 const [
-  messages,
-// ^? const messages: string[] | null
-  sharedType
-// ^? YArray<string> | null
+    messages,
+    // ^? const messages: string[] | null
+    sharedType,
+    // ^? YArray<string> | null
 ] = useStorage("messages");
 ```
 

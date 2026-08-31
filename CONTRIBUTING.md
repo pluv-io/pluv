@@ -44,7 +44,7 @@ pnpm build
 pnpm dev
 ```
 
-This will start a watcher in parallel which builds all `packages/*` on any file change, and should  run the app from the e2e tests on port 3100.
+This will start a watcher in parallel which builds all `packages/*` on any file change, and should run the app from the e2e tests on port 3100.
 
 ### Testing
 
@@ -60,11 +60,25 @@ pnpm services:start
 pnpm test
 ```
 
-### Linting
+### Linting and formatting
+
+This project uses [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) with root-level `.oxlintrc.json` and `.oxfmtrc.json` configuration.
 
 ```bash
 # in project root directory
 pnpm lint
+
+# auto-fix lint issues and format
+pnpm lint:fix
+
+# format only
+pnpm format
+```
+
+After a clean clone, build packages before linting so type-aware rules can resolve declarations:
+
+```bash
+pnpm build:packages && pnpm lint
 ```
 
 ### Working on your changes

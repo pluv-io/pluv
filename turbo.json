@@ -1,60 +1,39 @@
 {
-  "$schema": "https://turborepo.org/schema.json",
-  "globalEnv": [
-    "npm_config_user_agent",
-    "BASE_URL",
-    "DEPLOY_URL",
-    "NEXT_RUNTIME",
-    "NODE_ENV",
-    "PLUV_AUTH_SECRET",
-    "SEO",
-    "VERCEL_ENV",
-    "VERCEL_URL"
-  ],
-  "tasks": {
-    "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "env": [
-        "BUNDLE_ANALYZE",
-        "WS_ENDPOINT"
-      ],
-      "outputs": [
-        "dist/**",
-        ".next/**",
-        ".rollup.cache"
-      ]
-    },
-    "dev": {
-      "cache": false,
-      "dependsOn": [
-        "^dev"
-      ],
-      "env": [
-        "WS_ENDPOINT"
-      ]
-    },
-    "lint": {
-      "outputs": []
-    },
-    "test": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "playwright-report/**",
-        ".next/**"
-      ],
-      "env": [
-        "CI"
-      ]
-    },
-    "typecheck": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": []
+    "$schema": "https://turborepo.org/schema.json",
+    "globalEnv": [
+        "npm_config_user_agent",
+        "BASE_URL",
+        "DEPLOY_URL",
+        "NEXT_RUNTIME",
+        "NODE_ENV",
+        "PLUV_AUTH_SECRET",
+        "SEO",
+        "VERCEL_ENV",
+        "VERCEL_URL"
+    ],
+    "tasks": {
+        "build": {
+            "dependsOn": ["^build"],
+            "env": ["BUNDLE_ANALYZE", "WS_ENDPOINT"],
+            "outputs": ["dist/**", ".next/**", ".rollup.cache"]
+        },
+        "dev": {
+            "cache": false,
+            "dependsOn": ["^dev"],
+            "env": ["WS_ENDPOINT"]
+        },
+        "lint": {
+            "cache": false,
+            "outputs": []
+        },
+        "test": {
+            "dependsOn": ["^build"],
+            "outputs": ["playwright-report/**", ".next/**"],
+            "env": ["CI"]
+        },
+        "typecheck": {
+            "dependsOn": ["^build"],
+            "outputs": []
+        }
     }
-  }
 }

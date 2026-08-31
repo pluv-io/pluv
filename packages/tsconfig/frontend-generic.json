@@ -1,11 +1,10 @@
 {
-	"$schema": "https://json.schemastore.org/tsconfig",
-	"display": "Frontend Generic",
-	"extends": "./base.json",
-	"compilerOptions": {
-		"lib": ["dom", "esnext"],
-		"module": "esnext",
-		"target": "es6"
-	}
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "display": "Frontend Generic",
+    "extends": "./base.json",
+    "compilerOptions": {
+        "lib": ["dom", "esnext"],
+        "module": "esnext",
+        "target": "es6"
+    }
 }
-  

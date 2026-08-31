@@ -1,32 +1,31 @@
 packages:
-  - "apps/docs"
+    - "apps/docs"
 
-  - "packages/addon-indexeddb"
-  - "packages/cli"
-  - "packages/client"
-  - "packages/crdt"
-  - "packages/crdt-loro"
-  - "packages/crdt-yjs"
-  - "packages/eslint-config-pluv"
-  - "packages/io"
-  - "packages/persistence-cloudflare-transactional-storage"
-  - "packages/persistence-redis"
-  - "packages/platform-cloudflare"
-  - "packages/platform-node"
-  - "packages/platform-pluv"
-  - "packages/pubsub-redis"
-  - "packages/react"
-  - "packages/tsconfig"
-  - "packages/types"
+    - "packages/addon-indexeddb"
+    - "packages/cli"
+    - "packages/client"
+    - "packages/crdt"
+    - "packages/crdt-loro"
+    - "packages/crdt-yjs"
+    - "packages/io"
+    - "packages/persistence-cloudflare-transactional-storage"
+    - "packages/persistence-redis"
+    - "packages/platform-cloudflare"
+    - "packages/platform-node"
+    - "packages/platform-pluv"
+    - "packages/pubsub-redis"
+    - "packages/react"
+    - "packages/tsconfig"
+    - "packages/types"
 
-  - "tests/e2e"
-  - "tests/types"
+    - "tests/e2e"
+    - "tests/types"
 allowBuilds:
-  '@swc/core': true
-  better-sqlite3: true
-  core-js-pure: true
-  esbuild: true
-  sharp: true
-  workerd: true
+    "@swc/core": true
+    better-sqlite3: true
+    core-js-pure: true
+    esbuild: true
+    sharp: true
+    workerd: true
 minimumReleaseAgeExclude:
-  - '@cloudflare/workers-types@4.20260524.1'
+    - "@cloudflare/workers-types@4.20260524.1"

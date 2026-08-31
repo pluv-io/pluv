@@ -65,7 +65,8 @@ export type EventProxy<TIO extends IOLike> = {
 };
 
 export type MetadataGetter<TMetadata extends JsonObject> =
-    TMetadata | (() => MaybePromise<TMetadata>);
+    | TMetadata
+    | (() => MaybePromise<TMetadata>);
 
 export type PluvRoomProviderProps<
     TIO extends IOLike<any, any, any>,

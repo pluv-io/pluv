@@ -1,21 +1,16 @@
 {
-	"extends": "@pluv/tsconfig/wrangler.json",
-	"include": [
-		"../../../../cf.d.ts",
-		"**/*.ts",
-		"**/*.tsx"
-	],
-	"compilerOptions": {
-		"baseUrl": ".",
-		"declaration": false,
-		"declarationMap": false,
-		"types": ["@cloudflare/workers-types"],
-		"paths": {
-			"@pluv/crdt": ["../../../../../../packages/crdt/dist"],
-			"@pluv/crdt-yjs": ["../../../../../../packages/crdt-yjs/dist"],
-			"@pluv/io": ["../../../../../../packages/io/dist"],
-			"@pluv/platform-cloudflare": ["../../../../../../packages/platform-cloudflare/dist"],
-			"@pluv/types": ["../../../../../../packages/types/dist"]
-		}
-	}
+    "extends": "@pluv/tsconfig/wrangler.json",
+    "include": ["../../../../cf.d.ts", "**/*.ts", "**/*.tsx"],
+    "compilerOptions": {
+        "declaration": false,
+        "declarationMap": false,
+        "types": ["@cloudflare/workers-types"],
+        "paths": {
+            "@pluv/crdt": ["../../../../../../packages/crdt/dist"],
+            "@pluv/crdt-yjs": ["../../../../../../packages/crdt-yjs/dist"],
+            "@pluv/io": ["../../../../../../packages/io/dist"],
+            "@pluv/platform-cloudflare": ["../../../../../../packages/platform-cloudflare/dist"],
+            "@pluv/types": ["../../../../../../packages/types/dist"]
+        }
+    }
 }
