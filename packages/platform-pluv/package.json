@@ -32,10 +32,10 @@
         "@pluv/crdt": "workspace:^",
         "@pluv/io": "workspace:^",
         "@pluv/types": "workspace:^",
-        "@types/node": "^26.2.0",
+        "@types/node": "^26.4.0",
         "fast-json-stable-stringify": "^2.1.0",
-        "hono": "^4.13.3",
-        "zod": "^4.4.3"
+        "hono": "^4.13.5",
+        "zod": "^4.5.4"
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",

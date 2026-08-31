@@ -31,7 +31,7 @@
     "dependencies": {
         "@pluv/io": "workspace:^",
         "@pluv/types": "workspace:^",
-        "@types/node": "^26.2.0"
+        "@types/node": "^26.4.0"
     },
     "peerDependencies": {
         "ioredis": "^5.0.0"
