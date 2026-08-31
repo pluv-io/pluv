@@ -119,7 +119,7 @@ export class PluvIO<
     }
 
     constructor(options: PluvIOConfig<TPlatform, TAuthorize, TContext, TCrdt>) {
-        const { authorize, context, crdt = noop, debug = false, limits, platform } = options;
+        const { authorize: authorizeConfig, context, crdt = noop, debug = false, limits, platform } = options;
 
         this._crdt = crdt as CrdtLibraryType<any>;
         this._debug = debug;
@@ -132,7 +132,7 @@ export class PluvIO<
         };
         this._platform = platform;
 
-        if (authorize) this._authorize = authorize;
+        if (authorizeConfig) this._authorize = authorizeConfig;
         if (context) this._context = context;
     }
 

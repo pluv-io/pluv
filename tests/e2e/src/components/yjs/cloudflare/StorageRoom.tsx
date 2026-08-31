@@ -16,8 +16,8 @@ export type StorageRoomProps = Record<string, never>;
 export const StorageRoom: FC<StorageRoomProps> = () => {
     const [messages, sharedType] = useStorage("messages");
 
-    const myself = useMyself((myself) => myself.connectionId);
-    const others = useOthers((others) => others.map((other) => other.connectionId));
+    const myself = useMyself((myUser) => myUser.connectionId);
+    const others = useOthers((otherUsers) => otherUsers.map((other) => other.connectionId));
 
     const canUndo = useCanUndo();
     const canRedo = useCanRedo();

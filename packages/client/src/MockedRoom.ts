@@ -423,13 +423,13 @@ export class MockedRoom<
 
         const result = resolver(data);
 
-        Object.keys(result).forEach((type) => {
-            const _type = type.toString() as keyof Partial<InferIOOutput<TIO>>;
-            const data = result[_type] as any;
+        Object.keys(result).forEach((outputType) => {
+            const _type = outputType.toString() as keyof Partial<InferIOOutput<TIO>>;
+            const outputData = result[_type] as any;
 
-            if (!data) return;
+            if (!outputData) return;
 
-            this._eventNotifier.subject(_type).next(data);
+            this._eventNotifier.subject(_type).next(outputData);
         });
     }
 

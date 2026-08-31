@@ -193,7 +193,7 @@ export class IORoom<
     constructor(id: string, config: IORoomConfig<TPlatform, TAuthorize, TContext, TEvents>) {
         const {
             _meta,
-            authorize,
+            authorize: authorizeConfig,
             context,
             crdt = noop,
             debug,
@@ -228,7 +228,7 @@ export class IORoom<
             onUserDisconnected: (event) => onUserDisconnected?.(event),
         };
 
-        if (authorize) this._authorize = authorize;
+        if (authorizeConfig) this._authorize = authorizeConfig;
 
         /**
          * @description Everything below this line relates to waking up from hibernation.
@@ -814,10 +814,10 @@ export class IORoom<
             const uninitialize = async () => {
                 this._platform.pubSub.unsubscribe(pubSubId);
 
-                const [doc, context] = await Promise.all([this._doc, this._getContext()]);
-                const encodedState = doc.getEncodedState();
+                const [resolvedDoc, context] = await Promise.all([this._doc, this._getContext()]);
+                const encodedState = resolvedDoc.getEncodedState();
 
-                doc.destroy();
+                resolvedDoc.destroy();
                 this._doc = Promise.resolve(this._docFactory.getEmpty());
 
                 // Always emit onRoomDestroyed

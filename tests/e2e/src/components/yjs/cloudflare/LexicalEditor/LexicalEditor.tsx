@@ -29,7 +29,7 @@ export const LexicalEditor: FC = () => {
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     const room = useRoom();
-    const connection = useConnection((connection) => connection.state);
+    const connection = useConnection((connectionState) => connectionState.state);
 
     const providerFactory = useCallback(
         (id: string, yjsDocMap: Map<string, YDoc>) => {
