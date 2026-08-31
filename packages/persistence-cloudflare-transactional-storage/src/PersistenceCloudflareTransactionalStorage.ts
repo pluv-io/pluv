@@ -314,7 +314,7 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
 
         return new PersistenceCloudflareTransactionalStorage({
             mode: this._mode,
-            ...{ _initialized: initialized },
+            _initialized: initialized,
         }) as typeof this;
     }
 

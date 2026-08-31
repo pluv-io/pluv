@@ -59,7 +59,7 @@ export const authorize = (params: AuthorizeParams) => {
             .setJti(platform.randomUUID())
             .encrypt(encryptionSecret);
 
-        return token.toString();
+        return token;
     };
 
     const decode = async <TUser extends BaseUser>(jwt: string): Promise<JWT<TUser> | null> => {

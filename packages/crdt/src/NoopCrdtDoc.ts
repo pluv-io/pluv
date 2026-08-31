@@ -62,7 +62,7 @@ export class NoopCrdtDoc implements CrdtDocLike<any, any> {
         return this;
     }
 
-    public transact(fn: () => void, origin?: string | undefined): this {
+    public transact(fn: () => void, origin?: string): this {
         fn();
 
         return this;

@@ -199,7 +199,7 @@ export class CrdtLoroDoc<
             listener({
                 doc: this,
                 local: event.by === "local",
-                origin: event.origin ? String(event.origin) : null,
+                origin: event.origin ? event.origin : null,
                 update,
             });
         };

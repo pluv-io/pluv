@@ -383,11 +383,11 @@ export class PluvRoom<
     ) as BroadcastProxy<TIO, TEvents>;
 
     public canRedo = (): boolean => {
-        return !!this._crdtManager.doc.canRedo();
+        return this._crdtManager.doc.canRedo();
     };
 
     public canUndo = (): boolean => {
-        return !!this._crdtManager.doc.canUndo();
+        return this._crdtManager.doc.canUndo();
     };
 
     public async connect(...args: RoomConnectParams<TMetadata>): Promise<void> {

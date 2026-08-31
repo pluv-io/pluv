@@ -147,7 +147,7 @@ export class PersistenceRedis extends AbstractPersistence {
     public initialize(roomContext: {}): typeof this {
         return new PersistenceRedis({
             client: this._client,
-            ...{ _initialized: Promise.resolve(true as const) },
+            _initialized: Promise.resolve(true as const),
         }) as typeof this;
     }
 

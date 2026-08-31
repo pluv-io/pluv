@@ -380,7 +380,7 @@ export class IORoom<
         const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
 
         if (isUnauthorized) {
-            this._logDebug(`${colors.blue("Authorization failed for connection")}`);
+            this._logDebug(colors.blue("Authorization failed for connection"));
             pluvWs.handleError({ error: new Error("Not authorized"), room: this.id });
             pluvWs.close(3000, "WebSocket unauthorized.");
 
@@ -768,7 +768,7 @@ export class IORoom<
 
     private _initialize() {
         const promise = (async () => {
-            this._logDebug(`${colors.blue(`Initializing room: ${this.id}`)}`);
+            this._logDebug(colors.blue(`Initializing room: ${this.id}`));
 
             if (!!this._uninitialize) {
                 const uninitialize = (await this._uninitialize).bind(this);

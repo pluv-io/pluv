@@ -20,7 +20,7 @@ export class CrdtLoroDocFactory<
     }
 
     public getFactory(
-        initialStorage?: ((builder: LoroBuilder) => TStorage) | undefined,
+        initialStorage?: (builder: LoroBuilder) => TStorage,
     ): CrdtLoroDocFactory<TStorage> {
         return new CrdtLoroDocFactory<TStorage>(initialStorage ?? this._initialStorage);
     }

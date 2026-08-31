@@ -198,11 +198,11 @@ export class MockedRoom<
     ) as BroadcastProxy<TIO, TEvents>;
 
     public canRedo = (): boolean => {
-        return !!this._crdtManager.doc.canRedo();
+        return this._crdtManager.doc.canRedo();
     };
 
     public canUndo = (): boolean => {
-        return !!this._crdtManager.doc.canUndo();
+        return this._crdtManager.doc.canUndo();
     };
 
     public getConnection = (): WebSocketConnection => {
@@ -426,7 +426,7 @@ export class MockedRoom<
         const result = resolver(data);
 
         Object.keys(result).forEach((outputType) => {
-            const _type = outputType.toString() as keyof Partial<InferIOOutput<TIO>>;
+            const _type = outputType as keyof Partial<InferIOOutput<TIO>>;
             const outputData = result[_type] as any;
 
             if (!outputData) return;
