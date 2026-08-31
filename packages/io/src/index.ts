@@ -1,5 +1,17 @@
 export type { CrdtLibraryType } from "@pluv/crdt";
-export type { BaseUser, EventMessage, EventRecord, IOEventMessage } from "@pluv/types";
+export type {
+    BaseUser,
+    CrdtDocFactory,
+    CrdtDocLike,
+    EventMessage,
+    EventRecord,
+    InferIOAuthorize,
+    InferIOAuthorizeUser,
+    InputZodLike,
+    IOAuthorize,
+    IOEventMessage,
+    ProcedureLike,
+} from "@pluv/types";
 export { AbstractPersistence } from "./AbstractPersistence";
 export { AbstractPlatform } from "./AbstractPlatform";
 export type {

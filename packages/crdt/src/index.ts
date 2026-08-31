@@ -1,4 +1,5 @@
 export type {
+    CrdtDocFactory,
     CrdtDocLike,
     CrdtType,
     DocApplyEncodedStateParams,
