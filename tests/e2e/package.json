@@ -13,7 +13,7 @@
 		"dev:yjs:server:cloudflare": "wrangler dev --port 3101",
 		"dev:yjs:server:node": "vite-node --config ./vite.server.config.ts ./src/server/yjs/node/index.ts -- --port 3102",
 		"dev:yjs:server:node-redis": "vite-node --config ./vite.server.config.ts ./src/server/yjs/node-redis/index.ts -- --port 3103",
-		"lint": "eslint \"src/**/*.ts*\" --fix --max-warnings 0",
+		"lint": "prettier --check \"src/**/*.{ts,tsx}\" --ignore-path ../../.prettierignore",
 		"db:push": "drizzle-kit push",
 		"playwright": "playwright",
 		"start": "next start",

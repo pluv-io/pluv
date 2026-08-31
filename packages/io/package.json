@@ -23,7 +23,7 @@
 	"scripts": {
 		"build": "pnpm run version && tsdown",
 		"dev": "tsdown --watch",
-		"lint": "eslint \"src/**/*.ts*\" --fix --max-warnings 0",
+		"lint": "prettier --check \"src/**/*.{ts,tsx}\" --ignore-path ../../.prettierignore",
 		"typecheck": "tsc --noEmit",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
 		"version": "genversion ./src/version.generated.ts --esm"
