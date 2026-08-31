@@ -48,29 +48,29 @@ To use pluv.io, you will need to create a project. Each project corresponds to o
 
 You can create a new project from the [pluv.io dashboard](/app) by clicking on "**Add project**" from the sidebar.
 
-<img className="mx-auto" width="100%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/master/assets/create_project_dashboard.png" alt="Create project from the sidebar" loading="lazy" />
+<img className="mx-auto" width="100%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/main/assets/create_project_dashboard.png" alt="Create project from the sidebar" loading="lazy" />
 
 ### Project CRDT
 
 When creating a project, you can set the project's CRDT to either use [yjs](https://docs.yjs.dev/) via [@pluv/crdt-yjs](https://www.npmjs.com/package/@pluv/crdt-yjs) or [loro](https://loro.dev/) via [@pluv/crdt-loro](https://www.npmjs.com/package/@pluv/crdt-loro). Note that this selection cannot be changed once the project is created.
 
-<img className="mx-auto" width="72%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/master/assets/create_project_dialog.png" alt="Create project from the sidebar" loading="lazy" />
+<img className="mx-auto" width="72%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/main/assets/create_project_dialog.png" alt="Create project from the sidebar" loading="lazy" />
 
 ### Project API Keys
 
 In order for pluv.io to identify your project when using the `@pluv/io` library, you will need to create a secret key for your project. Both the secret and publishable keys must be copied and saved as environment variables for your app.
 
-<img className="mx-auto" width="100%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/master/assets/create_api_keys.png" alt="Create api key" loading="lazy" />
+<img className="mx-auto" width="100%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/main/assets/create_api_keys.png" alt="Create api key" loading="lazy" />
 
 ### Project Webhooks
 
 On `@pluv/platform-pluv`, server event listeners (i.e. `getInitialStorage`, `onRoomDestroyed`, `onStorageDestroyed`, `onUserConnected` and `onUserDisconnected`) are webhooks that require a webhook secret key to use. To create this, navigate to the **Webhooks** page, from the sidebar of the project dashboard, and click on the "**Create webhook**" button. This webhook secret key must be copied and saved as an environment variable for your app.
 
-<img className="mx-auto" width="100%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/master/assets/create_webhook_dashboard.png" alt="Create webhook dashboard" loading="lazy" />
+<img className="mx-auto" width="100%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/main/assets/create_webhook_dashboard.png" alt="Create webhook dashboard" loading="lazy" />
 
 Note that the endpoint must be publicly accessable (i.e. not localhost), so we recommend using [Ngrok](https://ngrok.com/) or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) for testing locally. In the future, we may provide a utility to run a local-only dev server using `@pluv/platform-cloudflare` under-the-hood.
 
-<img className="mx-auto" width="72%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/master/assets/create_webhook_dialog.png" alt="Create webhook dialog" loading="lazy" />
+<img className="mx-auto" width="72%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/main/assets/create_webhook_dialog.png" alt="Create webhook dialog" loading="lazy" />
 
 ## Setting up pluv.io on Next.js
 

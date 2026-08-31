@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://pluv.io/docs/introduction">
-    <img src="https://github.com/pluv-io/pluv/blob/master/assets/pluv-icon-192x192.png?raw=true" alt="Pluv.IO" width="156" style="border-radius:16px" />
+    <img src="https://github.com/pluv-io/pluv/blob/main/assets/pluv-icon-192x192.png?raw=true" alt="Pluv.IO" width="156" style="border-radius:16px" />
   </a>
 </div>
 
@@ -11,7 +11,7 @@
   <a href="https://www.npmjs.com/package/@pluv/io">
     <img src="https://img.shields.io/npm/v/@pluv/io" alt="npm @pluv/io" />
   </a>
-  <a href="https://github.com/pluv-io/pluv/blob/master/LICENSE">
+  <a href="https://github.com/pluv-io/pluv/blob/main/LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/pluv-io/pluv" alt="License MIT" />
   </a>
   <a href="https://commitizen.github.io/cz-cli/">
@@ -192,4 +192,4 @@ This software uses the following open source tooling and libraries:
 
 ## License
 
-[MIT](https://github.com/pluv-io/pluv/blob/master/LICENSE)
+[MIT](https://github.com/pluv-io/pluv/blob/main/LICENSE)
