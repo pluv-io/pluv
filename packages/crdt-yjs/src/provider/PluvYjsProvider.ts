@@ -43,12 +43,16 @@ export class PluvYjsProvider<
     synced: (state: boolean) => void;
 }> {
     public readonly awareness: PluvYjsAwareness<TIO, TPresence, TStorage, TEvents, TField>;
-    public readonly doc: YDoc;
 
     private readonly _room: RoomLike<TIO, YDoc, TPresence, TStorage, TEvents>;
     private readonly _unsubscribe: () => void;
 
     private _synced: boolean = false;
+
+    // Always read the live doc. The room may replace it after destroy/re-init.
+    public get doc(): YDoc {
+        return this._room.getDoc().value;
+    }
 
     constructor(params: PluvYjsProviderParams<TIO, TPresence, TStorage, TEvents, TField>) {
         super();
@@ -56,8 +60,6 @@ export class PluvYjsProvider<
         const { presenceField, room } = params;
 
         this.awareness = awareness({ presenceField, room });
-        this.doc = room.getDoc().value;
-
         this._room = room;
 
         const subscriptions = [

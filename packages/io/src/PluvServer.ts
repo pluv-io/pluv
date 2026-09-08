@@ -317,7 +317,7 @@ export class PluvServer<
                     },
                 };
             }),
-            $updateStorage: this._procedure.broadcast((data, { context, doc, platform, room }) => {
+            $updateStorage: this._procedure.broadcast(async (data, { context, doc, platform, room }) => {
                 const origin = (data as any)?.origin as Maybe<string>;
                 const update: string | null = (data as any)?.update ?? null;
 
@@ -338,13 +338,13 @@ export class PluvServer<
                     `);
                 }
 
-                platform.persistence.setStorageState(room, encodedState).then(() => {
-                    listeners.onStorageUpdated({
-                        context,
-                        encodedState,
-                        platform,
-                        room,
-                    });
+                await platform.persistence.setStorageState(room, encodedState);
+
+                listeners.onStorageUpdated({
+                    context,
+                    encodedState,
+                    platform,
+                    room,
                 });
 
                 return { $storageUpdated: { state: encodedState } };

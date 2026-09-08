@@ -328,9 +328,7 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
         await this._initialized;
 
         if (this._mode === "kv") {
-            await this._state.storage.put(this._getStorageKey(room), state, {
-                allowConcurrency: true,
-            });
+            await this._state.storage.put(this._getStorageKey(room), state);
             return;
         }
 
