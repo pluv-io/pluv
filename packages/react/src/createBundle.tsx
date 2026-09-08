@@ -21,6 +21,7 @@ import type {
     IOLike,
     JsonObject,
     RoomLike,
+    StorageState,
     UpdateMyPresenceAction,
 } from "@pluv/types";
 import fastDeepEqual from "fast-deep-equal";
@@ -51,6 +52,7 @@ import type {
     PluvProviderProps,
     PluvRoomProviderProps,
     SubscriptionHookOptions,
+    UseStorageResult,
 } from "./types";
 
 export type CreateBundleOptions<
@@ -354,7 +356,19 @@ export const createBundle = <
         const room = useRoom();
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => room.subscribe.storageLoaded(onStoreChange),
+            (onStoreChange: () => void) => {
+                // Storage teardown only surfaces on the connection state, so watch both.
+                const unsubscribes = [
+                    room.subscribe.storageLoaded(onStoreChange),
+                    room.subscribe.connection(onStoreChange),
+                ];
+
+                return () => {
+                    unsubscribes.forEach((unsubscribe) => {
+                        unsubscribe();
+                    });
+                };
+            },
             [room],
         );
 
@@ -541,17 +555,31 @@ export const createBundle = <
         key: TKey,
         selector = identity as (data: InferCrdtJson<InferStorage<TCrdt>[TKey]>) => TData,
         hookOptions?: SubscriptionHookOptions<TData | null>,
-    ): [data: TData | null, sharedType: InferStorage<TCrdt>[TKey] | null] => {
+    ): UseStorageResult<TData, InferStorage<TCrdt>[TKey]> => {
         const room = useRoom();
         const rerender = useRerender();
 
         useEffect(() => {
-            const unsubscribe = room.subscribe.storageLoaded(() => {
-                rerender();
-            });
+            let storageState: StorageState | null = null;
+
+            const unsubscribes = [
+                room.subscribe.storageLoaded(() => {
+                    rerender();
+                }),
+                // `storageLoaded` never fires on teardown, so watch the storage state too.
+                room.subscribe.connection(({ storage }) => {
+                    if (storage.state === storageState) return;
+
+                    storageState = storage.state;
+
+                    rerender();
+                }),
+            ];
 
             return () => {
-                unsubscribe();
+                unsubscribes.forEach((unsubscribe) => {
+                    unsubscribe();
+                });
             };
         }, [rerender, room]);
 
@@ -580,6 +608,8 @@ export const createBundle = <
         );
 
         const sharedType = room.getStorage(key) ?? null;
+
+        if (data === null || sharedType === null) return [null, null];
 
         return [data, sharedType];
     };

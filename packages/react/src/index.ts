@@ -6,4 +6,5 @@ export type {
     PluvProviderProps,
     PluvRoomProviderProps,
     SubscriptionHookOptions,
+    UseStorageResult,
 } from "./types";
