@@ -1,5 +1,16 @@
 # @pluv/io
 
+## 5.1.2
+
+### Patch Changes
+
+- 4e1c174: Fix `onStorageDestroyed` never firing for rooms hydrated from `getInitialStorage`.
+
+    Storage loaded from `getInitialStorage` was not marked as initialized, and the loaded content made `_wasDocEmptyOnInit` false, which permanently prevented the room from marking storage as initialized later. `onStorageDestroyed` was gated on that flag, so rooms that cold-started with content from an external store could never persist again and the external store kept its original snapshot.
+
+- @pluv/crdt@5.1.2
+    - @pluv/types@5.1.2
+
 ## 5.1.1
 
 ### Patch Changes

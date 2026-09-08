@@ -1,6 +1,6 @@
 {
     "name": "@pluv/persistence-redis",
-    "version": "5.1.1",
+    "version": "5.1.2",
     "description": "@pluv/io crdt storage persistence for node.js",
     "author": {
         "email": "david@pluv.io",
