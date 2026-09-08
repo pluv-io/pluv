@@ -19,8 +19,11 @@ import type {
     ZodUserDisconnectedResponse,
 } from "./schemas";
 
+export type PluvIOFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+
 export interface PluvIOEndpoints {
     createToken: string;
+    fetch?: PluvIOFetch;
 }
 
 export type PluvIOListeners<

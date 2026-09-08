@@ -107,9 +107,10 @@ export class PluvPlatform<
 
         this._logDebug({ endpoints, publicKey, secretKey });
 
-        const res = await fetch(endpoints.createToken, {
+        const fetcher = endpoints.fetch ?? fetch;
+        const request = new Request(endpoints.createToken, {
             headers: { "content-type": "application/json" },
-            method: "post",
+            method: "POST",
             body: JSON.stringify({
                 maxAge: params.maxAge ?? null,
                 publicKey,
@@ -117,23 +118,34 @@ export class PluvPlatform<
                 secretKey,
                 user: parsed,
             }),
-        }).catch((error) => {
-            this._logDebug(error);
-
-            return null;
         });
 
-        this._logDebug({ response: { status: res?.status ?? null } });
+        let res: Response;
 
-        if (!res || !res.ok || res.status !== 200) {
-            throw new Error("Authorization failed");
+        try {
+            res = await fetcher(request);
+        } catch (error) {
+            this._logDebug(error);
+
+            const message = error instanceof Error ? error.message : "Unknown error";
+
+            throw new Error(`Authorization failed: ${message}`);
+        }
+
+        this._logDebug({ response: { status: res.status } });
+
+        if (!res.ok || res.status !== 200) {
+            const body = await res.text().catch(() => "");
+            const detail = body.trim().slice(0, 500);
+
+            throw new Error(`Authorization failed: ${res.status}${detail ? ` ${detail}` : ""}`);
         }
 
         const token = await res.text().catch(() => null);
 
         this._logDebug({ token });
 
-        if (typeof token !== "string") throw new Error("Authorization failed");
+        if (typeof token !== "string") throw new Error("Authorization failed: empty token");
 
         return token;
     };
