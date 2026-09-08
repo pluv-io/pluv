@@ -1,5 +1,12 @@
 # @pluv/pubsub-redis
 
+## 5.1.2
+
+### Patch Changes
+
+- Updated dependencies [4e1c174]
+    - @pluv/io@5.1.2
+
 ## 5.1.1
 
 ### Patch Changes
