@@ -1,5 +1,13 @@
 # @pluv/persistence-redis
 
+## 5.1.1
+
+### Patch Changes
+
+- Updated dependencies [8ebe119]
+    - @pluv/io@5.1.1
+    - @pluv/types@5.1.1
+
 ## 5.1.0
 
 ### Patch Changes
