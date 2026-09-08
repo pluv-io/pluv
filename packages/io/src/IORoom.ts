@@ -672,6 +672,11 @@ export class IORoom<
 
             if (!!loadedState && !this._docFactory.isEmpty(loadedState)) {
                 doc.applyEncodedState({ update: loadedState });
+
+                // Storage loaded from getInitialStorage is already initialized. Without this,
+                // _wasDocEmptyOnInit is false and onStorageDestroyed can never fire again, so
+                // the external store keeps whatever snapshot it had.
+                this._storageInitializedViaSession = true;
             }
         }
 
