@@ -1,5 +1,14 @@
 # @pluv/platform-cloudflare
 
+## 5.0.4
+
+### Patch Changes
+
+- @pluv/crdt@5.0.4
+    - @pluv/io@5.0.4
+    - @pluv/persistence-cloudflare-transactional-storage@5.0.4
+    - @pluv/types@5.0.4
+
 ## 5.0.3
 
 ### Patch Changes

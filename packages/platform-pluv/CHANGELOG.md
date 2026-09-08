@@ -1,5 +1,14 @@
 # @pluv/platform-pluv
 
+## 5.0.4
+
+### Patch Changes
+
+- 3b25f7e: Allow injecting a custom `fetch` for `createToken` and surface the underlying authorization error instead of a generic failure.
+- @pluv/crdt@5.0.4
+    - @pluv/io@5.0.4
+    - @pluv/types@5.0.4
+
 ## 5.0.3
 
 ### Patch Changes
