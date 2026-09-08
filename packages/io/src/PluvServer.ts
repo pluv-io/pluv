@@ -317,38 +317,40 @@ export class PluvServer<
                     },
                 };
             }),
-            $updateStorage: this._procedure.broadcast(async (data, { context, doc, platform, room }) => {
-                const origin = (data as any)?.origin as Maybe<string>;
-                const update: string | null = (data as any)?.update ?? null;
+            $updateStorage: this._procedure.broadcast(
+                async (data, { context, doc, platform, room }) => {
+                    const origin = (data as any)?.origin as Maybe<string>;
+                    const update: string | null = (data as any)?.update ?? null;
 
-                if (origin === "$initialized" && Object.keys(doc.toJson()).length) return {};
+                    if (origin === "$initialized" && Object.keys(doc.toJson()).length) return {};
 
-                const updated = update === null ? doc : doc.applyEncodedState({ update });
-                const encodedState = updated.getEncodedState();
-                const storageSize = new TextEncoder().encode(encodedState).length;
+                    const updated = update === null ? doc : doc.applyEncodedState({ update });
+                    const encodedState = updated.getEncodedState();
+                    const storageSize = new TextEncoder().encode(encodedState).length;
 
-                if (
-                    !!this._config.limits.storageMaxSize &&
-                    storageSize > this._config.limits.storageMaxSize
-                ) {
-                    throw new Error(oneLine`
+                    if (
+                        !!this._config.limits.storageMaxSize &&
+                        storageSize > this._config.limits.storageMaxSize
+                    ) {
+                        throw new Error(oneLine`
                         Large Storage. Storage must be at most
                         ${this._config.limits.storageMaxSize.toLocaleString()} bytes.
                         Current size: ${storageSize.toLocaleString()} bytes
                     `);
-                }
+                    }
 
-                await platform.persistence.setStorageState(room, encodedState);
+                    await platform.persistence.setStorageState(room, encodedState);
 
-                listeners.onStorageUpdated({
-                    context,
-                    encodedState,
-                    platform,
-                    room,
-                });
+                    listeners.onStorageUpdated({
+                        context,
+                        encodedState,
+                        platform,
+                        room,
+                    });
 
-                return { $storageUpdated: { state: encodedState } };
-            }),
+                    return { $storageUpdated: { state: encodedState } };
+                },
+            ),
         });
     }
 
