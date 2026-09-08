@@ -33,6 +33,13 @@ export interface PluvProviderProps {
     children?: ReactNode;
 }
 
+/**
+ * Storage is all-or-nothing, so a union (not two nullable slots) lets one check narrow both.
+ */
+export type UseStorageResult<TData extends unknown, TSharedType extends unknown> =
+    | [data: null, sharedType: null]
+    | [data: TData, sharedType: TSharedType];
+
 type BaseRoomProviderProps<
     TPresence extends Record<string, any>,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
@@ -140,7 +147,7 @@ export interface CreateBundle<
         key: TKey,
         selector?: (data: InferCrdtJson<InferStorage<TCrdt>[TKey]>) => TData,
         options?: SubscriptionHookOptions<TData | null>,
-    ) => [data: TData | null, sharedType: InferStorage<TCrdt>[TKey] | null];
+    ) => UseStorageResult<TData, InferStorage<TCrdt>[TKey]>;
     useTransact: () => (fn: (storage: InferStorage<TCrdt>) => void, origin?: string) => void;
     useUndo: () => () => void;
 }

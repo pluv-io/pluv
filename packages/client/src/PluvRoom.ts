@@ -470,10 +470,8 @@ export class PluvRoom<
         this._updateState((oldState) => {
             oldState.authorization.token = null;
             oldState.connection.state = ConnectionState.Closed;
-            oldState.storage.state =
-                oldState.storage.state === StorageState.Synced
-                    ? StorageState.Offline
-                    : StorageState.Unavailable;
+            // Unlike `_onClose`, this destroys the doc below, so storage is gone.
+            oldState.storage.state = StorageState.Unavailable;
             oldState.webSocket = null;
 
             return oldState;
@@ -481,6 +479,9 @@ export class PluvRoom<
 
         await this._storageStore.destroy();
         this._crdtManager.destroy();
+
+        // `destroy` swaps in a new doc, so stop observing the destroyed one.
+        this._observeCrdt();
         this._stateNotifier.subjects["my-presence"].next(null);
     }
 
@@ -512,6 +513,10 @@ export class PluvRoom<
     public getStorage = <TKey extends keyof InferStorage<TCrdt>>(
         type: TKey,
     ): InferStorage<TCrdt>[TKey] | null => {
+        // Updates aren't delivered until storage loads, so don't hand out a writable
+        // shared-type that silently discards writes.
+        if (!this.getStorageLoaded()) return null;
+
         const sharedType = this._crdtManager.get(type);
 
         if (typeof sharedType === "undefined") return null;
@@ -1095,13 +1100,14 @@ export class PluvRoom<
 
         const encodedState = this._crdtManager.doc.getEncodedState();
 
-        this._emitSharedTypes();
-        this._observeCrdt();
+        // Must precede `_emitSharedTypes`, since `getStorage` returns null until loaded.
         this._updateState((oldState) => {
             oldState.storage.state = StorageState.Synced;
 
             return oldState;
         });
+        this._emitSharedTypes();
+        this._observeCrdt();
         this._stateNotifier.subjects["storage-loaded"].next(true);
 
         this._sendMessage({
@@ -1247,9 +1253,16 @@ export class PluvRoom<
 
             this._addToStorageStore(event.update);
 
-            if (!this._state.webSocket) return;
-            if (!this._state.connection.id) return;
-            if (this._state.webSocket.readyState !== WebSocket.OPEN) return;
+            const canSend =
+                !!this._state.webSocket &&
+                !!this._state.connection.id &&
+                this._state.webSocket.readyState === WebSocket.OPEN;
+
+            if (!canSend) {
+                this._logDebug("Dropped a storage update: storage is not syncing");
+
+                return;
+            }
 
             this._sendMessage({
                 type: "$updateStorage",

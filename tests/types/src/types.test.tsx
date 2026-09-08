@@ -166,6 +166,19 @@ const storageMessages = useStorage("messages");
 expectTypeOf(storageMessages[0]).toEqualTypeOf<string[] | null>();
 expectTypeOf(storageMessages[1]).toEqualTypeOf<yjs.YjsType<YArray<string>, string[]> | null>();
 
+expectTypeOf(storageMessages).toEqualTypeOf<
+    | [data: null, sharedType: null]
+    | [data: string[], sharedType: yjs.YjsType<YArray<string>, string[]>]
+>();
+
+const [storageMessagesData, storageMessagesSharedType] = storageMessages;
+
+if (!!storageMessagesSharedType) {
+    expectTypeOf(storageMessagesData).toEqualTypeOf<string[]>();
+} else {
+    expectTypeOf(storageMessagesData).toEqualTypeOf<null>();
+}
+
 expectTypeOf(useDoc()).toEqualTypeOf<
     CrdtDocLike<
         YDoc,
