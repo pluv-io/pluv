@@ -1,6 +1,6 @@
 {
     "name": "@pluv/client",
-    "version": "5.0.4",
+    "version": "5.1.0",
     "description": "@pluv/io frontend client",
     "author": {
         "email": "david@pluv.io",
