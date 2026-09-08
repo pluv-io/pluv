@@ -31,7 +31,7 @@
     "dependencies": {
         "@pluv/crdt": "workspace:^",
         "@pluv/types": "workspace:^",
-        "@types/node": "^26.4.0",
+        "@types/node": "^26.4.1",
         "js-base64": "^3.9.3"
     },
     "peerDependencies": {
@@ -39,8 +39,8 @@
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
-        "loro-crdt": "^1.15.1",
-        "tsdown": "0.22.14",
+        "loro-crdt": "^1.16.0",
+        "tsdown": "^0.23.0",
         "typescript": "^7.0.2"
     },
     "exports": {

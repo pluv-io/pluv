@@ -32,13 +32,13 @@
         "@pluv/crdt": "workspace:^",
         "@pluv/io": "workspace:^",
         "@pluv/types": "workspace:^",
-        "@types/node": "^26.4.0",
+        "@types/node": "^26.4.1",
         "@types/ws": "^8.18.1",
         "path-to-regexp": "^8.4.2"
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
-        "tsdown": "0.22.14",
+        "tsdown": "^0.23.0",
         "typescript": "^7.0.2",
         "ws": "^8.21.3"
     },

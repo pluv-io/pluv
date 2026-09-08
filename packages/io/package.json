@@ -33,14 +33,14 @@
         "@panva/hkdf": "^1.2.1",
         "@pluv/crdt": "workspace:^",
         "@pluv/types": "workspace:^",
-        "jose": "^6.2.10",
+        "jose": "^6.2.12",
         "kleur": "^4.1.5",
         "wonka": "^6.3.6"
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
         "genversion": "^3.2.0",
-        "tsdown": "0.22.14",
+        "tsdown": "^0.23.0",
         "typescript": "^7.0.2"
     },
     "exports": {
