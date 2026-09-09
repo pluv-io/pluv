@@ -1,0 +1,11 @@
+{
+    "extends": "@pluv/tsconfig/library.json",
+    "include": ["src/**/*.ts", "vitest.config.ts"],
+    "exclude": ["node_modules"],
+    "compilerOptions": {
+        "lib": ["esnext"],
+        "noEmit": true,
+        "strict": true,
+        "types": ["node"]
+    }
+}
