@@ -151,6 +151,10 @@ export class CrdtLoroDoc<
         }, {} as InferCrdtJson<TStorage>);
     }
 
+    public isDirty(): boolean {
+        return !!this.value.oplogFrontiers().length;
+    }
+
     public isEmpty(): boolean {
         const serialized = this.value.toJSON();
 

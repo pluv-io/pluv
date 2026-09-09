@@ -38,6 +38,10 @@ export class NoopCrdtDoc implements CrdtDocLike<any, any> {
         return "";
     }
 
+    public isDirty(): boolean {
+        return false;
+    }
+
     public isEmpty(): boolean {
         return true;
     }

@@ -127,6 +127,7 @@ export class IORoom<
 
     private _doc: Promise<CrdtDocLike<any, any>>;
     private _lastGarbageCollectMs: number = -1 * (GARBAGE_COLLECT_INTERVAL_MS + 1);
+    private _teardown: Promise<void> | null = null;
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
     private readonly _authorize: TAuthorize = null as TAuthorize;
@@ -368,6 +369,10 @@ export class IORoom<
         const sessionExists = typeof sessionId === "string" && this._sessions.has(sessionId);
 
         if (sessionExists) return;
+
+        // Joining an in-flight teardown lets the room re-initialize from storage below, rather
+        // than binding this connection to the doc that teardown discards.
+        if (this._teardown) await this._teardown;
 
         if (!(await this._initialized)) {
             this._initialize();
@@ -816,45 +821,72 @@ export class IORoom<
             // Track if doc was empty when room was first initialized
             this._wasDocEmptyOnInit = doc.isEmpty();
 
-            const uninitialize = async () => {
-                this._platform.pubSub.unsubscribe(pubSubId);
+            const uninitialize = async (): Promise<void> => {
+                // Teardown clears the doc partway through, so re-entering would persist that
+                // cleared doc over the room's real content.
+                if (this._teardown) return this._teardown;
 
-                const [resolvedDoc, context] = await Promise.all([this._doc, this._getContext()]);
-                const encodedState = resolvedDoc.getEncodedState();
+                this._teardown = (async () => {
+                    this._platform.pubSub.unsubscribe(pubSubId);
 
-                resolvedDoc.destroy();
-                this._doc = Promise.resolve(this._docFactory.getEmpty());
+                    const [resolvedDoc, context] = await Promise.all([
+                        this._doc,
+                        this._getContext(),
+                    ]);
+                    const encodedState = resolvedDoc.getEncodedState();
 
-                // Always emit onRoomDestroyed
-                await Promise.resolve(
-                    this._listeners.onRoomDestroyed({
-                        ...("_meta" in this._platform && !!this._platform._meta
-                            ? { _meta: this._platform._meta }
-                            : {}),
-                        context,
-                        platform: this._platform,
-                        room: this.id,
-                    }),
-                );
+                    // This room has held content, so an unwritten doc here was cleared by a
+                    // teardown rather than by the user.
+                    const shouldDestroyStorage =
+                        this._storageInitializedViaSession && resolvedDoc.isDirty();
 
-                // Only emit onStorageDestroyed if storage was initialized via initializeSession
-                if (this._storageInitializedViaSession) {
+                    if (this._storageInitializedViaSession && !shouldDestroyStorage) {
+                        this._logDebug(
+                            colors.blue(
+                                `Refusing to persist an unwritten document for room: ${this.id}`,
+                            ),
+                        );
+                    }
+
+                    this._storageInitializedViaSession = false;
+
+                    resolvedDoc.destroy();
+                    this._doc = Promise.resolve(this._docFactory.getEmpty());
+
+                    // Always emit onRoomDestroyed
                     await Promise.resolve(
-                        this._listeners.onStorageDestroyed({
+                        this._listeners.onRoomDestroyed({
                             ...("_meta" in this._platform && !!this._platform._meta
                                 ? { _meta: this._platform._meta }
                                 : {}),
                             context,
-                            encodedState,
                             platform: this._platform,
                             room: this.id,
                         }),
                     );
 
-                    this._storageInitializedViaSession = false;
-                }
+                    if (shouldDestroyStorage) {
+                        await Promise.resolve(
+                            this._listeners.onStorageDestroyed({
+                                ...("_meta" in this._platform && !!this._platform._meta
+                                    ? { _meta: this._platform._meta }
+                                    : {}),
+                                context,
+                                encodedState,
+                                platform: this._platform,
+                                room: this.id,
+                            }),
+                        );
+                    }
 
-                this._uninitialize = null;
+                    this._uninitialize = null;
+                })();
+
+                try {
+                    await this._teardown;
+                } finally {
+                    this._teardown = null;
+                }
             };
 
             return { doc, uninitialize };

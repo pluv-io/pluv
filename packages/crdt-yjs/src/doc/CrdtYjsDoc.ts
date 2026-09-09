@@ -116,6 +116,11 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
         return fromUint8Array(encodeStateAsUpdate(this.value));
     }
 
+    public isDirty(): boolean {
+        // Unlike `share`, the struct store stays empty until an operation is actually written.
+        return !!this.value.store.clients.size;
+    }
+
     public isEmpty(): boolean {
         return !this.value.share.size;
     }
