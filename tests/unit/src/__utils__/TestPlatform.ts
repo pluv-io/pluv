@@ -17,6 +17,7 @@ export type TestPlatformConfig = {
     pubSub?: AbstractPubSub;
     /** Sockets reported as pre-existing, as Cloudflare does after waking from hibernation. */
     hibernatedWebSockets?: readonly TestSocket[];
+    lastPings?: ReadonlyMap<TestSocket, number>;
     serializedStates?: ReadonlyMap<TestSocket, WebSocketSerializedState>;
 };
 
@@ -52,6 +53,7 @@ export class TestPlatform<
     public readonly _name = "platformTest";
 
     private readonly _hibernatedWebSockets: readonly TestSocket[];
+    private readonly _lastPings: ReadonlyMap<TestSocket, number>;
     private readonly _mode: WebSocketRegistrationMode;
     private readonly _serializedStates: ReadonlyMap<TestSocket, WebSocketSerializedState>;
     // Stable per socket, otherwise presence/quit/ping state is discarded between calls.
@@ -60,6 +62,7 @@ export class TestPlatform<
     constructor(config: TestPlatformConfig = {}) {
         const {
             hibernatedWebSockets = [],
+            lastPings = new Map<TestSocket, number>(),
             mode = "attached",
             persistence,
             pubSub,
@@ -69,6 +72,7 @@ export class TestPlatform<
         super({ persistence, pubSub });
 
         this._hibernatedWebSockets = hibernatedWebSockets;
+        this._lastPings = lastPings;
         this._mode = mode;
         this._serializedStates = serializedStates;
 
@@ -106,14 +110,16 @@ export class TestPlatform<
             platform: this,
             room: config.room,
         });
+        const serializedState = this._serializedStates.get(webSocket);
 
+        if (serializedState) converted.state = serializedState;
         this._wrapped.set(webSocket, converted);
 
         return converted;
     }
 
-    public getLastPing(): number | null {
-        return null;
+    public getLastPing(webSocket: TestWebSocket<TAuthorize>): number | null {
+        return this._lastPings.get(webSocket.webSocket) ?? null;
     }
 
     public getSerializedState(webSocket: TestSocket): WebSocketSerializedState | null {
@@ -131,6 +137,7 @@ export class TestPlatform<
     public initialize(config: AbstractPlatformConfig<{}>): this {
         return new TestPlatform<TAuthorize>({
             hibernatedWebSockets: this._hibernatedWebSockets,
+            lastPings: this._lastPings,
             mode: this._mode,
             persistence: this.persistence.initialize(config.roomContext),
             pubSub: this.pubSub,

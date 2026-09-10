@@ -528,7 +528,9 @@ export class IORoom<
     private async _emitQuitters(): Promise<void> {
         const currentTime = new Date().getTime();
         const quitters = Array.from(this._sessions.values()).filter((pluvWs) => {
-            return pluvWs.state.quit || currentTime - pluvWs.state.timers.ping > PING_TIMEOUT_MS;
+            const pingTime = this._platform.getLastPing(pluvWs) ?? pluvWs.state.timers.ping;
+
+            return pluvWs.state.quit || currentTime - pingTime > PING_TIMEOUT_MS;
         });
 
         await this._closeWebSockets(quitters);
