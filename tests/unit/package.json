@@ -1,0 +1,27 @@
+{
+    "name": "@pluv-tests/unit",
+    "version": "0.0.0",
+    "sideEffects": false,
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@pluv/crdt": "workspace:^",
+        "@pluv/crdt-loro": "workspace:^",
+        "@pluv/crdt-yjs": "workspace:^",
+        "@pluv/io": "workspace:^",
+        "@pluv/types": "workspace:^",
+        "loro-crdt": "^1.16.0",
+        "yjs": "^13.6.32"
+    },
+    "devDependencies": {
+        "@pluv/tsconfig": "workspace:^",
+        "@types/node": "^26.4.1",
+        "typescript": "^7.0.2",
+        "vitest": "^4.1.11"
+    }
+}

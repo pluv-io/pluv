@@ -70,6 +70,11 @@ export interface CrdtDocLike<
     get(key?: undefined): TStorage;
     get<TKey extends keyof TStorage>(key: TKey): TStorage[TKey];
     getEncodedState(): string;
+    /**
+     * @description Whether the document has ever received an operation. Not the inverse of
+     * `isEmpty()`: a document whose content was deleted is still dirty.
+     */
+    isDirty(): boolean;
     isEmpty(): boolean;
     rebuildStorage(reference: TStorage): this;
     redo(): this;
