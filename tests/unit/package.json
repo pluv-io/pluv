@@ -14,13 +14,15 @@
         "@pluv/crdt-loro": "workspace:^",
         "@pluv/crdt-yjs": "workspace:^",
         "@pluv/io": "workspace:^",
+        "@pluv/persistence-cloudflare-transactional-storage": "workspace:^",
+        "@pluv/platform-cloudflare": "workspace:^",
         "@pluv/types": "workspace:^",
         "loro-crdt": "^1.16.0",
         "yjs": "^13.6.32"
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
-        "@types/node": "^26.4.1",
+        "@types/node": "^26.5.0",
         "typescript": "^7.0.2",
         "vitest": "^4.1.11"
     }

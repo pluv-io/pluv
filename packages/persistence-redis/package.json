@@ -31,10 +31,10 @@
     "dependencies": {
         "@pluv/io": "workspace:^",
         "@pluv/types": "workspace:^",
-        "@types/node": "^26.4.1"
+        "@types/node": "^26.5.0"
     },
     "peerDependencies": {
-        "ioredis": "^5.0.0"
+        "ioredis": "^5.0.0 || ^6.0.0"
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
