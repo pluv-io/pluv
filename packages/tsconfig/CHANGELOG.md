@@ -1,5 +1,9 @@
 # @pluv/tsconfig
 
+## 5.2.0
+
+No changes in this release.
+
 ## 5.1.2
 
 No changes in this release.
