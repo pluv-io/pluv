@@ -1,5 +1,16 @@
 # @pluv/io
 
+## 5.2.1
+
+### Patch Changes
+
+- 9727ac6: Prevent garbage collection from evicting healthy hibernated WebSockets.
+
+    `IORoom` now uses the platform's latest ping timestamp when finding timed-out connections. This keeps Cloudflare WebSockets alive when their auto-response timestamp is newer than the serialized ping stored before hibernation.
+
+- @pluv/crdt@5.2.1
+    - @pluv/types@5.2.1
+
 ## 5.2.0
 
 ### Patch Changes
