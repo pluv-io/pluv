@@ -1,5 +1,11 @@
 # @pluv/crdt
 
+## 5.2.1
+
+### Patch Changes
+
+- @pluv/types@5.2.1
+
 ## 5.2.0
 
 ### Minor Changes

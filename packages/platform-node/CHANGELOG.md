@@ -1,5 +1,14 @@
 # @pluv/platform-node
 
+## 5.2.1
+
+### Patch Changes
+
+- Updated dependencies [9727ac6]
+    - @pluv/io@5.2.1
+    - @pluv/crdt@5.2.1
+    - @pluv/types@5.2.1
+
 ## 5.2.0
 
 ### Patch Changes
