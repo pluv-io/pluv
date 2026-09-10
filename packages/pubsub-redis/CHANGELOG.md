@@ -1,5 +1,12 @@
 # @pluv/pubsub-redis
 
+## 5.2.2
+
+### Patch Changes
+
+- b9c7a48: Allow ioredis v5 or v6 as peer dependencies.
+- @pluv/io@5.2.2
+
 ## 5.2.1
 
 ### Patch Changes
