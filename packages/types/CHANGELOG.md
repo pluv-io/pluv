@@ -1,5 +1,9 @@
 # @pluv/types
 
+## 5.2.2
+
+No changes in this release.
+
 ## 5.2.1
 
 No changes in this release.

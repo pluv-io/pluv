@@ -1,5 +1,22 @@
 # @pluv/platform-cloudflare
 
+## 5.2.2
+
+### Patch Changes
+
+- 20cc70c: Fix Cloudflare room storage being lost after Durable Object hibernation.
+
+    `$updateStorage` was writing to the default in-memory persistence because `CloudflarePlatform.initialize()` reused that adapter instead of Durable Object SQLite. Hibernation dropped the in-memory map, so a later reload restored the last `onStorageDestroyed` snapshot.
+
+    - `CloudflarePlatform.initialize()` now attaches `PersistenceCloudflareTransactionalStorage` (sqlite) unless a custom persistence adapter was provided.
+    - `PersistenceCloudflareTransactionalStorage.initialize()` now copies Durable Object state onto the returned instance, so reads and writes actually hit SQLite instead of no-opping.
+
+- Updated dependencies [20cc70c]
+    - @pluv/persistence-cloudflare-transactional-storage@5.2.2
+    - @pluv/crdt@5.2.2
+    - @pluv/io@5.2.2
+    - @pluv/types@5.2.2
+
 ## 5.2.1
 
 ### Patch Changes
