@@ -66,7 +66,7 @@ export class TestPlatform<
             serializedStates = new Map<TestSocket, WebSocketSerializedState>(),
         } = config;
 
-        super(persistence && pubSub ? { persistence, pubSub } : {});
+        super({ persistence, pubSub });
 
         this._hibernatedWebSockets = hibernatedWebSockets;
         this._mode = mode;
