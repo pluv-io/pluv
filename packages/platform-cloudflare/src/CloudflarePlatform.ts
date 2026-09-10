@@ -55,10 +55,12 @@ export class CloudflarePlatform<
     public readonly _config;
     public readonly _name = "platformCloudflare";
 
+    private readonly _persistenceProvided: boolean;
+
     constructor(config: CloudflarePlatformConfig<TEnv, TMeta>) {
         super({
             ...config,
-            ...(config.roomContext && config.mode === "detached"
+            ...(config.roomContext && (config.mode ?? DEFAULT_REGISTRATION_MODE) === "detached"
                 ? {
                       persistence:
                           config.persistence ??
@@ -66,6 +68,8 @@ export class CloudflarePlatform<
                   }
                 : {}),
         });
+
+        this._persistenceProvided = !!config.persistence;
 
         this._config = {
             authorize: {
@@ -170,10 +174,16 @@ export class CloudflarePlatform<
             state: ctx.state,
         } as CloudflarePlatformRoomContext<TEnv, TMeta>;
 
+        const persistence = (
+            this._persistenceProvided
+                ? this.persistence
+                : new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" })
+        ).initialize(roomContext);
+
         return new CloudflarePlatform<TAuthorize, TEnv, TMeta>({
             roomContext,
             mode: this._config.registrationMode,
-            persistence: this.persistence.initialize(roomContext),
+            persistence,
             pubSub: this.pubSub,
         })._initialize() as this;
     }

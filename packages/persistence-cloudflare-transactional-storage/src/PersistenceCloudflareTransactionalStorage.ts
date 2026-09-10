@@ -29,6 +29,7 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
         const { mode } = config;
 
         this._initialized = (config as any)._initialized;
+        this._state = (config as any)._state ?? null;
         this._mode = mode;
     }
 
@@ -289,13 +290,11 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
     }
 
     public initialize(roomContext: { state: DurableObjectState }): typeof this {
+        const { state } = roomContext;
+
         const initialized = (async () => {
-            const { state } = roomContext;
-
-            this._state = state;
-
             if (this._mode === "sqlite") {
-                this._state.storage.sql.exec(sql`
+                state.storage.sql.exec(sql`
                     CREATE TABLE IF NOT EXISTS ${SQLITE_STORAGE_TABLE}(
                         room TEXT PRIMARY KEY,
                         data TEXT NOT NULL
@@ -314,10 +313,10 @@ export class PersistenceCloudflareTransactionalStorage extends AbstractPersisten
 
         return new PersistenceCloudflareTransactionalStorage({
             mode: this._mode,
-            // Spreading avoids an excess property check, so `_initialized` can be handed to the
-            // constructor without exposing it on the public config type.
+            // Spreading avoids an excess property check, so `_initialized` and `_state` can be
+            // handed to the constructor without exposing them on the public config type.
             // oxlint-disable-next-line unicorn/no-useless-spread
-            ...{ _initialized: initialized },
+            ...{ _initialized: initialized, _state: state },
         }) as typeof this;
     }
 
