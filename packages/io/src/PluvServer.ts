@@ -178,20 +178,20 @@ export class PluvServer<
                 return { $othersReceived: { others } };
             }),
             $initializeSession: this._procedure
-                .broadcast((data, { session }) => {
-                    const presence = (data as any)?.presence;
-                    const timers = session.timers;
+                .broadcast((data, event) => {
+                    const presence = (data as any)?.presence ?? null;
+                    const { session } = event;
 
                     if (!session) return {};
 
-                    session.presence = presence;
+                    event.presence = presence;
 
                     return {
                         $userJoined: {
                             connectionId: session.id,
                             user: session.user,
                             presence,
-                            timers: { presence: timers.presence },
+                            timers: { presence: session.webSocket.state.timers.presence },
                         },
                     };
                 })
