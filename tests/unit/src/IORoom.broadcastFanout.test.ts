@@ -1,6 +1,5 @@
-import { createIO } from "@pluv/io";
 import { describe, expect, it } from "vitest";
-import { TestPlatform, TestSocket, tick } from "./__utils__";
+import { createAuthorizedIO, registerAuthorized, TestSocket, tick } from "./__utils__";
 
 type Room = {
     onMessage: (socket: TestSocket) => (event: { data: string }) => Promise<void>;
@@ -23,16 +22,16 @@ const send = async (room: Room, socket: TestSocket, type: string, data: unknown)
 
 describe("IORoom broadcast fan-out", () => {
     it("still delivers to healthy sockets when another send throws", async () => {
-        const io = createIO({
-            platform: () => new TestPlatform({ mode: "detached" }),
+        const io = createAuthorizedIO({
+            platform: { mode: "detached" },
         });
         const server = io.server();
         const room = server.createRoom("fanout");
         const healthy = new TestSocket("session-healthy");
         const broken = new TestSocket("session-broken");
 
-        await room.register(healthy);
-        await room.register(broken);
+        await registerAuthorized(room, healthy, { io });
+        await registerAuthorized(room, broken, { io });
         await send(room, healthy, "$initializeSession", { presence: {}, update: null });
         await send(room, broken, "$initializeSession", { presence: {}, update: null });
 

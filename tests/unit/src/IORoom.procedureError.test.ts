@@ -1,6 +1,5 @@
-import { createIO } from "@pluv/io";
 import { describe, expect, it } from "vitest";
-import { TestPlatform, TestSocket } from "./__utils__";
+import { createAuthorizedIO, registerAuthorized, TestSocket } from "./__utils__";
 
 type Room = {
     onMessage: (socket: TestSocket) => (event: { data: string }) => Promise<void>;
@@ -23,8 +22,8 @@ const send = async (room: Room, socket: TestSocket, type: string, data: unknown)
 
 describe("IORoom procedure errors", () => {
     it("sends $error when a procedure resolver throws", async () => {
-        const io = createIO({
-            platform: () => new TestPlatform({ mode: "detached" }),
+        const io = createAuthorizedIO({
+            platform: { mode: "detached" },
         });
         const server = io.server({
             router: io.router({
@@ -36,22 +35,22 @@ describe("IORoom procedure errors", () => {
         const room = server.createRoom("procedure-throw");
         const socket = new TestSocket("session-1");
 
-        await room.register(socket);
+        await registerAuthorized(room, socket, { io });
         await send(room, socket, "boom", {});
 
         expect(lastMessage(socket, "$error").data.message).toBe("procedure exploded");
     });
 
     it("sends $error when presence exceeds the size limit", async () => {
-        const io = createIO({
+        const io = createAuthorizedIO({
             limits: { presenceMaxSize: 32 },
-            platform: () => new TestPlatform({ mode: "detached" }),
+            platform: { mode: "detached" },
         });
         const server = io.server();
         const room = server.createRoom("presence-limit");
         const socket = new TestSocket("session-1");
 
-        await room.register(socket);
+        await registerAuthorized(room, socket, { io });
         await send(room, socket, "$initializeSession", { presence: {}, update: null });
         await send(room, socket, "$updatePresence", {
             presence: { note: "x".repeat(64) },
@@ -61,8 +60,8 @@ describe("IORoom procedure errors", () => {
     });
 
     it("still sends $error for invalid procedure input", async () => {
-        const io = createIO({
-            platform: () => new TestPlatform({ mode: "detached" }),
+        const io = createAuthorizedIO({
+            platform: { mode: "detached" },
         });
         const server = io.server({
             router: io.router({
@@ -87,7 +86,7 @@ describe("IORoom procedure errors", () => {
         const room = server.createRoom("invalid-input");
         const socket = new TestSocket("session-1");
 
-        await room.register(socket);
+        await registerAuthorized(room, socket, { io });
         await send(room, socket, "echo", { message: 1 });
 
         expect(lastMessage(socket, "$error").data.message).toBe("Expected { message: string }");

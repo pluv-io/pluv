@@ -1,14 +1,15 @@
 import { yjs } from "@pluv/crdt-yjs";
-import { createIO } from "@pluv/io";
 import { PersistenceCloudflareTransactionalStorage } from "@pluv/persistence-cloudflare-transactional-storage";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
+    createAuthorizedIO,
     createMockDurableObjectState,
     deferred,
     encodedStateWithContent,
+    registerAuthorized,
+    testAuthorize,
     TestPersistence,
-    TestPlatform,
     TestSocket,
 } from "./__utils__";
 
@@ -27,7 +28,7 @@ beforeAll(() => {
 
 describe("CloudflarePlatform persistence", () => {
     it("uses Durable Object storage after initialize, not the in-memory default", () => {
-        const { platform } = platformCloudflare();
+        const { platform } = platformCloudflare({ authorize: testAuthorize });
         const initialized = platform().initialize({
             roomContext: { env: {}, state: createMockDurableObjectState() },
         });
@@ -36,7 +37,7 @@ describe("CloudflarePlatform persistence", () => {
     });
 
     it("keeps $updateStorage writes across a new platform() after hibernation", async () => {
-        const { platform } = platformCloudflare();
+        const { platform } = platformCloudflare({ authorize: testAuthorize });
         const state = createMockDurableObjectState();
         const roomContext = { env: {}, state };
 
@@ -56,7 +57,7 @@ describe("CloudflarePlatform persistence", () => {
 
         await persistence.setStorageState("home-page", "custom");
 
-        const { platform } = platformCloudflare({ persistence });
+        const { platform } = platformCloudflare({ authorize: testAuthorize, persistence });
         const initialized = platform().initialize({
             roomContext: { env: {}, state: createMockDurableObjectState() },
         });
@@ -66,7 +67,7 @@ describe("CloudflarePlatform persistence", () => {
     });
 
     it("loads Durable Object storage after wake instead of webhook or client seed", async () => {
-        const { platform } = platformCloudflare();
+        const { platform } = platformCloudflare({ authorize: testAuthorize });
         const state = createMockDurableObjectState();
         const roomContext = { env: {}, state };
         const roomId = "home-page";
@@ -79,13 +80,12 @@ describe("CloudflarePlatform persistence", () => {
         await beforeHibernation.persistence.setStorageState(roomId, doSnapshot);
 
         const afterHibernation = platform().initialize({ roomContext });
-        const io = createIO({
+        const io = createAuthorizedIO({
             crdt: yjs,
-            platform: () =>
-                new TestPlatform({
-                    mode: "detached",
-                    persistence: afterHibernation.persistence,
-                }),
+            platform: {
+                mode: "detached",
+                persistence: afterHibernation.persistence,
+            },
         });
         const server = io.server({
             getInitialStorage: () => {
@@ -97,7 +97,7 @@ describe("CloudflarePlatform persistence", () => {
         const room = server.createRoom(roomId, { env: {}, state } as never);
         const socket = new TestSocket("session-1");
 
-        await room.register(socket);
+        await registerAuthorized(room, socket, { io });
         expect(reads).toBe(0);
 
         webhook.resolve(encodedStateWithContent("webhook"));

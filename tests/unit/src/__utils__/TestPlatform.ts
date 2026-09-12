@@ -7,7 +7,7 @@ import type {
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
-import type { IOAuthorize } from "@pluv/types";
+import type { BaseUser, IOAuthorize } from "@pluv/types";
 import crypto from "node:crypto";
 import { TestSocket, TestWebSocket } from "./TestWebSocket";
 
@@ -17,6 +17,8 @@ export type TestPlatformConfig = {
     pubSub?: AbstractPubSub;
     /** Sockets reported as pre-existing, as Cloudflare does after waking from hibernation. */
     hibernatedWebSockets?: readonly TestSocket[];
+    /** Users attached to hibernated sockets (mirrors Cloudflare attachment `user`). */
+    hibernatedUsers?: ReadonlyMap<TestSocket, BaseUser>;
     lastPings?: ReadonlyMap<TestSocket, number>;
     serializedStates?: ReadonlyMap<TestSocket, WebSocketSerializedState>;
 };
@@ -27,7 +29,7 @@ export type TestPlatformConfig = {
  * `onStorageDestroyed` are unsupported.
  */
 export class TestPlatform<
-    TAuthorize extends IOAuthorize<any, any> | null = null,
+    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
 > extends AbstractPlatform<
     TestWebSocket<TAuthorize>,
     {},
@@ -35,7 +37,6 @@ export class TestPlatform<
     {
         authorize: { secret: true };
         handleMode: "io";
-        requireAuth: false;
         registrationMode: WebSocketRegistrationMode;
         listeners: {
             onRoomDestroyed: true;
@@ -53,6 +54,7 @@ export class TestPlatform<
     public readonly _name = "platformTest";
 
     private readonly _hibernatedWebSockets: readonly TestSocket[];
+    private readonly _hibernatedUsers: ReadonlyMap<TestSocket, BaseUser>;
     private readonly _lastPings: ReadonlyMap<TestSocket, number>;
     private readonly _mode: WebSocketRegistrationMode;
     private readonly _serializedStates: ReadonlyMap<TestSocket, WebSocketSerializedState>;
@@ -62,6 +64,7 @@ export class TestPlatform<
     constructor(config: TestPlatformConfig = {}) {
         const {
             hibernatedWebSockets = [],
+            hibernatedUsers = new Map<TestSocket, BaseUser>(),
             lastPings = new Map<TestSocket, number>(),
             mode = "attached",
             persistence,
@@ -72,6 +75,7 @@ export class TestPlatform<
         super({ persistence, pubSub });
 
         this._hibernatedWebSockets = hibernatedWebSockets;
+        this._hibernatedUsers = hibernatedUsers;
         this._lastPings = lastPings;
         this._mode = mode;
         this._serializedStates = serializedStates;
@@ -80,7 +84,6 @@ export class TestPlatform<
             authorize: { secret: true as const },
             handleMode: "io" as const,
             registrationMode: mode,
-            requireAuth: false as const,
             listeners: {
                 onRoomDestroyed: true as const,
                 onStorageDestroyed: true as const,
@@ -111,8 +114,10 @@ export class TestPlatform<
             room: config.room,
         });
         const serializedState = this._serializedStates.get(webSocket);
+        const user = this._hibernatedUsers.get(webSocket);
 
         if (serializedState) converted.state = serializedState;
+        if (user) converted.user = user as any;
         this._wrapped.set(webSocket, converted);
 
         return converted;
@@ -137,6 +142,7 @@ export class TestPlatform<
     public initialize(config: AbstractPlatformConfig<{}>): this {
         return new TestPlatform<TAuthorize>({
             hibernatedWebSockets: this._hibernatedWebSockets,
+            hibernatedUsers: this._hibernatedUsers,
             lastPings: this._lastPings,
             mode: this._mode,
             persistence: this.persistence.initialize(config.roomContext),

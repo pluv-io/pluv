@@ -1,12 +1,12 @@
 import { yjs } from "@pluv/crdt-yjs";
-import { createIO } from "@pluv/io";
 import { describe, expect, it } from "vitest";
 import type { Deferred } from "./__utils__";
 import {
+    createAuthorizedIO,
     deferred,
     encodedStateWithContent,
     isEmptyEncodedState,
-    TestPlatform,
+    registerAuthorized,
     TestSocket,
     tick,
     waitUntil,
@@ -26,7 +26,7 @@ const setupRoom = (roomId: string) => {
 
     let shouldBlock = true;
 
-    const io = createIO({ crdt: yjs, platform: () => new TestPlatform() });
+    const io = createAuthorizedIO({ crdt: yjs });
     const server = io.server({
         getInitialStorage: () => Promise.resolve(seeded),
         onStorageDestroyed: async ({ encodedState }) => {
@@ -40,14 +40,14 @@ const setupRoom = (roomId: string) => {
         },
     });
 
-    return { destroyed, gate, room: server.createRoom(roomId), seeded };
+    return { destroyed, gate, io, room: server.createRoom(roomId), seeded };
 };
 
 describe("IORoom teardown", () => {
     it("persists storage once, and never persists an empty document", async () => {
-        const { destroyed, gate, room } = setupRoom("overlapping-teardowns");
+        const { destroyed, gate, io, room } = setupRoom("overlapping-teardowns");
 
-        await room.register(new TestSocket("session-1"));
+        await registerAuthorized(room, new TestSocket("session-1"), { io });
 
         // Held open inside its onStorageDestroyed webhook.
         const firstTeardown = room.evictAll();
@@ -67,9 +67,9 @@ describe("IORoom teardown", () => {
     });
 
     it("does not hand a late connection an empty document while teardown is in-flight", async () => {
-        const { destroyed, gate, room } = setupRoom("register-during-teardown");
+        const { destroyed, gate, io, room } = setupRoom("register-during-teardown");
 
-        await room.register(new TestSocket("session-1"));
+        await registerAuthorized(room, new TestSocket("session-1"), { io });
 
         const teardown = room.evictAll();
 
@@ -77,7 +77,7 @@ describe("IORoom teardown", () => {
 
         // The room is mid-teardown, so its doc has already been cleared.
         const late = new TestSocket("session-2");
-        const registration = room.register(late);
+        const registration = registerAuthorized(room, late, { io });
 
         await tick(2);
 

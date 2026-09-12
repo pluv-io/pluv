@@ -1,8 +1,14 @@
 import { yjs } from "@pluv/crdt-yjs";
-import { createIO } from "@pluv/io";
 import { applyUpdate, Doc as YDoc, encodeStateAsUpdate, encodeStateVector } from "yjs";
 import { describe, expect, it } from "vitest";
-import { encodedStateWithContent, TestPersistence, TestPlatform, TestSocket } from "./__utils__";
+import {
+    createAuthorizedIO,
+    encodedStateWithContent,
+    registerAuthorized,
+    TestPersistence,
+    TestPlatform,
+    TestSocket,
+} from "./__utils__";
 
 const ROOM_ID = "repeated-persistence";
 
@@ -52,9 +58,9 @@ describe("IORoom repeated persistence", () => {
     it("persists edits made after restoring an externally saved document", async () => {
         let externalStorage = encodedStateWithContent("initial");
 
-        const io = createIO({
+        const io = createAuthorizedIO({
             crdt: yjs,
-            platform: () => new TestPlatform({ mode: "detached" }),
+            platform: { mode: "detached" },
         });
         const server = io.server({
             getInitialStorage: () => Promise.resolve(externalStorage),
@@ -66,7 +72,7 @@ describe("IORoom repeated persistence", () => {
         const firstRoom = server.createRoom(ROOM_ID);
         const firstSocket = new TestSocket("session-1");
 
-        await firstRoom.register(firstSocket);
+        await registerAuthorized(firstRoom, firstSocket, { io });
         await updateStorage(
             firstRoom,
             firstSocket,
@@ -79,7 +85,7 @@ describe("IORoom repeated persistence", () => {
         const secondRoom = server.createRoom(ROOM_ID);
         const secondSocket = new TestSocket("session-2");
 
-        await secondRoom.register(secondSocket);
+        await registerAuthorized(secondRoom, secondSocket, { io });
         await updateStorage(
             secondRoom,
             secondSocket,
@@ -92,7 +98,7 @@ describe("IORoom repeated persistence", () => {
         const thirdRoom = server.createRoom(ROOM_ID);
         const thirdSocket = new TestSocket("session-3");
 
-        await thirdRoom.register(thirdSocket);
+        await registerAuthorized(thirdRoom, thirdSocket, { io });
 
         expect(decodeText(getRegisteredState(thirdSocket))).toBe("initial first second");
     });
@@ -103,7 +109,7 @@ describe("IORoom repeated persistence", () => {
         let initialStorageReads = 0;
         const persistence = new TestPersistence();
 
-        const io = createIO({
+        const io = createAuthorizedIO({
             crdt: yjs,
             platform: () =>
                 new TestPlatform({
@@ -137,7 +143,7 @@ describe("IORoom repeated persistence", () => {
         const firstRoom = server.createRoom(ROOM_ID);
         const firstSocket = new TestSocket("session-1");
 
-        await firstRoom.register(firstSocket);
+        await registerAuthorized(firstRoom, firstSocket, { io });
         await updateStorage(
             firstRoom,
             firstSocket,
@@ -153,7 +159,7 @@ describe("IORoom repeated persistence", () => {
 
         const secondSocket = new TestSocket("session-2");
 
-        await firstWake.register(secondSocket);
+        await registerAuthorized(firstWake, secondSocket, { io });
         expect(decodeText(getRegisteredState(secondSocket))).toBe("initial first");
         expect(initialStorageReads).toBe(2);
 
@@ -172,7 +178,7 @@ describe("IORoom repeated persistence", () => {
 
         const thirdSocket = new TestSocket("session-3");
 
-        await secondWake.register(thirdSocket);
+        await registerAuthorized(secondWake, thirdSocket, { io });
 
         expect(decodeText(getRegisteredState(thirdSocket))).toBe("initial first second");
         expect(decodeText(externalStorage)).toBe("initial first second");

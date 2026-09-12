@@ -1,8 +1,13 @@
 import { yjs } from "@pluv/crdt-yjs";
-import { createIO } from "@pluv/io";
 import { applyUpdate, Doc as YDoc, encodeStateAsUpdate, encodeStateVector } from "yjs";
 import { describe, expect, it, vi } from "vitest";
-import { encodedStateWithContent, TestPersistence, TestPlatform, TestSocket } from "./__utils__";
+import {
+    createAuthorizedIO,
+    encodedStateWithContent,
+    TestPersistence,
+    TestPlatform,
+    TestSocket,
+} from "./__utils__";
 
 describe("IORoom hibernation", () => {
     it("does not evict a hibernated socket with a recent auto-response ping", async () => {
@@ -14,11 +19,12 @@ describe("IORoom hibernation", () => {
 
         await persistence.setStorageState(roomId, encodedStateWithContent("current"));
 
-        const io = createIO({
+        const io = createAuthorizedIO({
             crdt: yjs,
             platform: () =>
                 new TestPlatform({
                     hibernatedWebSockets: [socket],
+                    hibernatedUsers: new Map([[socket, { id: "session-1" }]]),
                     lastPings: new Map([[socket, now]]),
                     mode: "detached",
                     persistence,
