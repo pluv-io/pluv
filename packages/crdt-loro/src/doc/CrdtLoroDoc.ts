@@ -132,23 +132,25 @@ export class CrdtLoroDoc<
     public toJson(): InferCrdtJson<TStorage>;
     public toJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]>;
     public toJson<TKey extends keyof TStorage>(type?: TKey) {
-        if (typeof type === "string") {
-            const container = this.#_storage[type] as unknown as Container;
+        const serialized = this.value.toJSON() as Record<string, unknown>;
 
-            return container instanceof LoroText
-                ? container.toString()
-                : container instanceof LoroCounter
-                  ? container.value
-                  : container.toJSON!();
+        if (typeof type === "string") {
+            const container = this.#_storage[type] as unknown as Container | undefined;
+
+            if (container) {
+                return container instanceof LoroText
+                    ? container.toString()
+                    : container instanceof LoroCounter
+                      ? container.value
+                      : container.toJSON!();
+            }
+
+            return (serialized[type] ?? null) as InferCrdtJson<TStorage[TKey]>;
         }
 
-        return Object.entries(this.#_storage).reduce((acc, [key, value]) => {
-            Object.assign(acc, {
-                [key]: value instanceof LoroText ? value.toString() : value.toJSON!(),
-            });
+        const { [PLUV_ID_FIELD]: _pluvId, ...json } = serialized;
 
-            return acc;
-        }, {} as InferCrdtJson<TStorage>);
+        return json as InferCrdtJson<TStorage>;
     }
 
     public isDirty(): boolean {
