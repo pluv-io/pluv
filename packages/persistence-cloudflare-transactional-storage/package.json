@@ -33,7 +33,7 @@
         "@pluv/types": "workspace:^"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^5.20260908.1",
+        "@cloudflare/workers-types": "^5.20260911.1",
         "@pluv/tsconfig": "workspace:^",
         "tsdown": "^0.23.0",
         "typescript": "^7.0.2"

@@ -6,6 +6,7 @@ node_modules
 .pnp.js
 
 # testing
+.vitest/
 coverage
 playwright-report
 tests/e2e/dev.db
