@@ -43,8 +43,7 @@ export type PluvIOConfig<
 
 type ResolvedServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
-        any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
@@ -56,8 +55,7 @@ type ResolvedServerConfig<
 
 export type BaseServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
-        any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
@@ -83,8 +81,7 @@ export type BaseServerConfig<
 
 export type ServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
-        any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
@@ -97,8 +94,7 @@ export type ServerConfig<
 
 export class PluvIO<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
-        any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
 > {

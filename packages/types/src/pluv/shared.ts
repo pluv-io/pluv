@@ -105,9 +105,7 @@ export type IOAuthorize<
           secret?: string;
           user: InputZodLike<TUser>;
       }
-    | ((
-          context: TContext,
-      ) => {
+    | ((context: TContext) => {
           secret?: string;
           user: InputZodLike<TUser>;
       });

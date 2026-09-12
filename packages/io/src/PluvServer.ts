@@ -47,8 +47,7 @@ export type InferIORoom<TServer extends PluvServer<any, any, any, any, any>> =
 
 export type PluvServerConfig<
     TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
-        any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
@@ -90,8 +89,7 @@ export type CreateRoomOptions<
 
 export class PluvServer<
     TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
-        any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},

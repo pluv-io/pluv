@@ -57,9 +57,7 @@ export const createAuthorizedToken = async (
     });
 };
 
-export const registerAuthorized = async <
-    TServer extends PluvServer<any, any, any, any, any>,
->(
+export const registerAuthorized = async <TServer extends PluvServer<any, any, any, any, any>>(
     room: InferIORoom<TServer>,
     socket: TestSocket,
     params: {

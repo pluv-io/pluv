@@ -82,8 +82,7 @@ export type BroadcastProxy<TIO extends IORoom<any, any, any, any, any>> = (<
 
 export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
-        any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
@@ -116,8 +115,7 @@ export type WebSocketRegisterConfig<
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
-        any,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
