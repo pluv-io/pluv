@@ -36,6 +36,6 @@
         "@pluv/tsconfig": "workspace:^",
         "expect-type": "^1.4.0",
         "typescript": "^7.0.2",
-        "wrangler": "^4.131.0"
+        "wrangler": "^4.131.1"
     }
 }

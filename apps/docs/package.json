@@ -20,13 +20,13 @@
         "fumadocs-core": "^16.15.9",
         "fumadocs-mdx": "^15.4.0",
         "fumadocs-ui": "^16.15.9",
-        "lucide-react": "^1.44.0",
+        "lucide-react": "^1.45.0",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
         "zod": "^4.6.2"
     },
     "devDependencies": {
-        "@cloudflare/vite-plugin": "^1.54.7",
+        "@cloudflare/vite-plugin": "^1.54.8",
         "@cloudflare/workers-types": "^5.20260911.1",
         "@pluv/tsconfig": "workspace:^",
         "@tailwindcss/vite": "^4.3.3",
@@ -38,6 +38,6 @@
         "tailwindcss": "^4.3.3",
         "typescript": "^7.0.2",
         "vite": "^8.3.0",
-        "wrangler": "^4.131.0"
+        "wrangler": "^4.131.1"
     }
 }
