@@ -1,0 +1,51 @@
+---
+description: How to write changesets for @pluv packages — users first, maintainers second
+globs: .changeset/**/*.md
+alwaysApply: false
+---
+
+# Changesets
+
+Write for **library users** first (app developers reading the changelog). Maintainers second.
+
+## Do
+
+- Lead with the user-visible outcome: what works now, what stopped breaking, what they can rely on
+- Name the symptom someone would hit in their app (late joiners, silent failures, wrong presence, etc.)
+- Keep internal detail brief and after the user-facing summary
+- Prefer plain language over event/protocol names unless users actually handle those APIs
+
+## Don't
+
+- Lead with implementation (“persist onto websocket state”, “wrap Promise.all in try/catch”)
+- Lead with internal symbols unless they are part of the public API users call or listen for
+- Write as a PR description or commit body dump
+
+## Examples
+
+```md
+<!-- ❌ Maintainer-first -->
+Persist `$initializeSession` presence onto websocket state so later `$getOthers`
+and `$updatePresence` patches keep the initialized fields.
+
+<!-- ✅ User-first -->
+Fix initial presence not being saved on the server.
+
+Late joiners could see other users with empty/default presence, and later
+presence patches could drop fields that were only set when the session started.
+```
+
+```md
+<!-- ❌ Maintainer-first -->
+Send `$error` when a procedure resolver or size-limit check throws, instead of
+leaving an unhandled rejection.
+
+<!-- ✅ User-first -->
+Surface procedure and size-limit failures to clients as `$error`.
+
+If a custom event handler threw, or presence/storage exceeded its size limit,
+the server used to fail silently from the client's point of view. Those errors
+now arrive on the same `$error` path already used for invalid input.
+```
+
+`$error` is fine to name when users already receive that event; still explain the *experience* first.
