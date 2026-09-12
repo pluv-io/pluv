@@ -1,7 +1,16 @@
+import { yjs } from "@pluv/crdt-yjs";
+import { createIO } from "@pluv/io";
 import { PersistenceCloudflareTransactionalStorage } from "@pluv/persistence-cloudflare-transactional-storage";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { beforeAll, describe, expect, it } from "vitest";
-import { createMockDurableObjectState, TestPersistence } from "./__utils__";
+import {
+    createMockDurableObjectState,
+    deferred,
+    encodedStateWithContent,
+    TestPersistence,
+    TestPlatform,
+    TestSocket,
+} from "./__utils__";
 
 const LATEST_SNAPSHOT = "snapshot-after-second-edit";
 
@@ -54,5 +63,62 @@ describe("CloudflarePlatform persistence", () => {
 
         expect(initialized.persistence).toBeInstanceOf(TestPersistence);
         await expect(initialized.persistence.getStorageState("home-page")).resolves.toBe("custom");
+    });
+
+    it("loads Durable Object storage after wake instead of webhook or client seed", async () => {
+        const { platform } = platformCloudflare();
+        const state = createMockDurableObjectState();
+        const roomContext = { env: {}, state };
+        const roomId = "home-page";
+        const doSnapshot = encodedStateWithContent("do");
+        const webhook = deferred<string | null>();
+        let reads = 0;
+
+        const beforeHibernation = platform().initialize({ roomContext });
+
+        await beforeHibernation.persistence.setStorageState(roomId, doSnapshot);
+
+        const afterHibernation = platform().initialize({ roomContext });
+        const io = createIO({
+            crdt: yjs,
+            platform: () =>
+                new TestPlatform({
+                    mode: "detached",
+                    persistence: afterHibernation.persistence,
+                }),
+        });
+        const server = io.server({
+            getInitialStorage: () => {
+                reads += 1;
+
+                return webhook.promise;
+            },
+        });
+        const room = server.createRoom(roomId, { env: {}, state } as never);
+        const socket = new TestSocket("session-1");
+
+        await room.register(socket);
+        expect(reads).toBe(0);
+
+        webhook.resolve(encodedStateWithContent("webhook"));
+        await room.onMessage(socket)({
+            data: JSON.stringify({
+                type: "$initializeSession",
+                data: { presence: {}, update: encodedStateWithContent("client") },
+            }),
+        });
+
+        const received = [...socket.messages]
+            .reverse()
+            .find((message) => message.type === "$storageReceived");
+        const doc = yjs
+            .doc(() => ({}))
+            .getEmpty()
+            .applyEncodedState({ update: received?.data.state });
+
+        expect((doc.toJson() as { content?: string }).content).toBe("do");
+        expect(reads).toBe(0);
+
+        doc.destroy();
     });
 });

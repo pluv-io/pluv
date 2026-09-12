@@ -54,6 +54,7 @@ export interface EventResolverContext<
     platform: TPlatform;
     presence: JsonObject | null;
     room: string;
+    storageSeeded: boolean;
     session: TKind extends "sync"
         ? WebSocketSession<TAuthorize> | null
         : WebSocketSession<TAuthorize>;

@@ -146,8 +146,7 @@ export class IORoom<
     >();
     private readonly _userSessionss = new Map<[userId: string][0], Set<[sessionId: string][0]>>();
 
-    private _wasDocEmptyOnInit: boolean = true;
-    private _storageInitializedViaSession: boolean = false;
+    private _storageSeeded: boolean = false;
 
     /**
      * @ignore
@@ -679,24 +678,22 @@ export class IORoom<
 
             if (!!loadedState && !this._docFactory.isEmpty(loadedState)) {
                 doc.applyEncodedState({ update: loadedState });
-
-                // Storage loaded from getInitialStorage is already initialized. Without this,
-                // _wasDocEmptyOnInit is false and onStorageDestroyed can never fire again, so
-                // the external store keeps whatever snapshot it had.
-                this._storageInitializedViaSession = true;
+                this._storageSeeded = true;
             }
         }
 
         if (typeof encodedState === "string") {
             doc.applyEncodedState({ update: encodedState });
 
-            // If we loaded storage from persistence and it's non-empty, storage was previously initialized.
-            // This handles hibernation wake-up: restore the initialization state so that onStorageDestroyed
-            // will fire correctly when the room is destroyed.
             if (!doc.isEmpty()) {
-                this._storageInitializedViaSession = true;
+                this._storageSeeded = true;
             }
         }
+
+        const initialized = this._docFactory.getInitialized();
+
+        doc.rebuildStorage(initialized.get());
+        initialized.destroy();
 
         return doc;
     }
@@ -820,9 +817,6 @@ export class IORoom<
 
             const doc = await this._getInitialDoc();
 
-            // Track if doc was empty when room was first initialized
-            this._wasDocEmptyOnInit = doc.isEmpty();
-
             const uninitialize = async (): Promise<void> => {
                 // Teardown clears the doc partway through, so re-entering would persist that
                 // cleared doc over the room's real content.
@@ -839,10 +833,9 @@ export class IORoom<
 
                     // This room has held content, so an unwritten doc here was cleared by a
                     // teardown rather than by the user.
-                    const shouldDestroyStorage =
-                        this._storageInitializedViaSession && resolvedDoc.isDirty();
+                    const shouldDestroyStorage = this._storageSeeded && resolvedDoc.isDirty();
 
-                    if (this._storageInitializedViaSession && !shouldDestroyStorage) {
+                    if (this._storageSeeded && !shouldDestroyStorage) {
                         this._logDebug(
                             colors.blue(
                                 `Refusing to persist an unwritten document for room: ${this.id}`,
@@ -850,7 +843,7 @@ export class IORoom<
                         );
                     }
 
-                    this._storageInitializedViaSession = false;
+                    this._storageSeeded = false;
 
                     resolvedDoc.destroy();
                     this._doc = Promise.resolve(this._docFactory.getEmpty());
@@ -929,6 +922,7 @@ export class IORoom<
             };
 
             const [doc, context] = await Promise.all([this._doc, this._getContext()]);
+            const room = this;
             const eventContext: EventResolverContext<
                 EventResolverKind,
                 TPlatform,
@@ -954,6 +948,12 @@ export class IORoom<
                 room: this.id,
                 session,
                 sessions,
+                get storageSeeded() {
+                    return room._storageSeeded;
+                },
+                set storageSeeded(value: boolean) {
+                    room._storageSeeded = value;
+                },
                 time: new Date().getTime(),
             };
 
@@ -1061,10 +1061,6 @@ export class IORoom<
 
                 await Promise.all([handleBroadcast(), handleSelf(), handleSync()]);
             });
-
-            // After processing messages that might update storage (like $initializeSession),
-            // check if storage was initialized via initializeSession
-            await this._checkStorageInitializedViaSession();
         };
     }
 
@@ -1133,19 +1129,6 @@ export class IORoom<
         this._userSessionss.delete(userId);
 
         return set;
-    }
-
-    private async _checkStorageInitializedViaSession(): Promise<void> {
-        if (this._storageInitializedViaSession) return;
-
-        // Only mark as initialized if:
-        // 1. Doc was empty when room was first initialized
-        // 2. Doc is now non-empty
-        // 3. At least one session has been registered
-        const doc = await this._doc;
-        if (this._wasDocEmptyOnInit && !doc.isEmpty() && this._sessions.size > 0) {
-            this._storageInitializedViaSession = true;
-        }
     }
 
     private async _sendMessage(
@@ -1238,6 +1221,7 @@ export class IORoom<
         if (typeof connectionId !== "string") return;
 
         const [doc, context] = await Promise.all([this._doc, this._getContext()]);
+        const room = this;
         const resolverCtx: EventResolverContext<"sync", TPlatform, TAuthorize, TContext> = {
             context,
             doc,
@@ -1254,6 +1238,12 @@ export class IORoom<
             room: this.id,
             session: null,
             sessions: this._getSessions(),
+            get storageSeeded() {
+                return room._storageSeeded;
+            },
+            set storageSeeded(value: boolean) {
+                room._storageSeeded = value;
+            },
             time: new Date().getTime(),
         };
 

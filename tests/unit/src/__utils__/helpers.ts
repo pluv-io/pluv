@@ -1,3 +1,4 @@
+import { loro } from "@pluv/crdt-loro";
 import { Doc as YDoc, encodeStateAsUpdate } from "yjs";
 
 export interface Deferred<T> {
@@ -38,6 +39,15 @@ export const encodedStateWithContent = (text: string): string => {
     doc.getText("content").insert(0, text);
 
     return Buffer.from(encodeStateAsUpdate(doc)).toString("base64");
+};
+
+export const encodedLoroStateWithContent = (text: string): string => {
+    const doc = loro.doc((t) => ({ content: t.text("content", text) })).getInitialized();
+    const encodedState = doc.getEncodedState();
+
+    doc.destroy();
+
+    return encodedState;
 };
 
 /** Yjs-specific. A pristine Y.Doc encodes to the 2-byte "AAA=" payload that wiped storage. */
