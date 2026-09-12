@@ -3,7 +3,7 @@ title: "Authorization"
 description: "Learn how to add custom authorization to rooms in @pluv/io"
 ---
 
-> **Note**: Authorization is required when using `@pluv/platform-pluv`.
+> **Note**: Authorization is required for all platforms. Every `createIO` must configure `authorize`, and every client must provide an `authEndpoint`.
 
 pluv.io uses JWTs to authorize access to rooms on a new connection. To generate a JWT, you will need to setup an authentication endpoint to determine if the user should have access to the room.
 
@@ -17,7 +17,7 @@ You can view another example of these via your platform's respective quickstart 
 
 ## Enable authorization on io
 
-Set the `authorize` property on your `createIO` config to enable authorization on your io instance.
+Set the required `authorize` property on your `createIO` config. The `user` schema must always include `id`.
 
 ```ts
 // server/io.ts
