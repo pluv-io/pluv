@@ -1,5 +1,13 @@
 # @pluv/persistence-cloudflare-transactional-storage
 
+## 5.2.3
+
+### Patch Changes
+
+- Updated dependencies [894370a]
+    - @pluv/io@5.2.3
+    - @pluv/types@5.2.3
+
 ## 5.2.2
 
 ### Patch Changes
