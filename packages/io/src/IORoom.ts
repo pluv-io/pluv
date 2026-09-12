@@ -1166,14 +1166,14 @@ export class IORoom<
                 return pluvWs ? dict.set(id, pluvWs) : dict;
             }, new Map<string, AbstractWebSocket<any, TAuthorize>>()) ?? this._sessions;
 
-        const promises = Array.from(webSockets.values()).map(async (pluvWs) => {
-            const session = pluvWs.session;
-            const user = session.user ?? null;
+        await Promise.allSettled(
+            Array.from(webSockets.values()).map(async (pluvWs) => {
+                const session = pluvWs.session;
+                const user = session.user ?? null;
 
-            this._sendMessage(pluvWs, { connectionId, data, room, type, user });
-        });
-
-        await Promise.all(promises);
+                await this._sendMessage(pluvWs, { connectionId, data, room, type, user });
+            }),
+        );
     }
 
     private async _sendSelfMessage(

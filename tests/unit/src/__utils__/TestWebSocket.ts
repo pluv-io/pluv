@@ -18,6 +18,8 @@ export class TestSocket {
     public readonly id: string;
     public readonly sent: string[] = [];
     public readyState: 0 | 1 | 2 | 3 = 1;
+    /** When set, `TestWebSocket.send` throws instead of recording the message. */
+    public throwOnSend: Error | null = null;
 
     private readonly _listeners = new Map<string, Set<TestSocketListener>>();
 
@@ -119,6 +121,8 @@ export class TestWebSocket<
 
     public send(message: string | ArrayBuffer | ArrayBufferView): void {
         if (this.readyState !== this.OPEN) return;
+
+        if (this.webSocket.throwOnSend) throw this.webSocket.throwOnSend;
 
         this.webSocket.sent.push(
             typeof message === "string"
