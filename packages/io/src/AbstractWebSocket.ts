@@ -1,5 +1,4 @@
 import type {
-    BaseUser,
     InferIOAuthorizeUser,
     IOAuthorize,
     IOEventMessage,
@@ -56,7 +55,7 @@ export interface AbstractWebSocketConfig {
 
 export abstract class AbstractWebSocket<
     TWebSocket = any,
-    TAuthorize extends IOAuthorize<any, any> | null = null,
+    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
 > {
     /** The connection is not yet open. */
     public readonly CONNECTING = 0;
@@ -79,6 +78,11 @@ export abstract class AbstractWebSocket<
     public abstract get sessionId(): string;
     public abstract get state(): WebSocketSerializedState;
     public abstract set state(state: WebSocketSerializedState);
+    /**
+     * @description Authorized user for this socket. `null` until `register` (or hibernation
+     * reattach) has assigned one.
+     */
+    public abstract get user(): InferIOAuthorizeUser<TAuthorize> | null;
     public abstract set user(user: InferIOAuthorizeUser<TAuthorize>);
 
     constructor(webSocket: TWebSocket, config: AbstractWebSocketConfig) {

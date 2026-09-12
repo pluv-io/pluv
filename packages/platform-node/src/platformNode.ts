@@ -11,7 +11,7 @@ import { toRequest } from "./utils/toRequest";
 export type PlatformNodeCreateIOParams<
     TMeta extends Record<string, Json> = {},
     TContext extends Record<string, any> = {},
-    TUser extends BaseUser | null = null,
+    TUser extends BaseUser = BaseUser,
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
 > = Id<
     NodePlatformConfig<TMeta> &
@@ -24,7 +24,7 @@ export type PlatformNodeCreateIOParams<
             >,
             "authorize" | "context" | "platform"
         > & {
-            authorize?: PluvIOAuthorize<
+            authorize: PluvIOAuthorize<
                 NodePlatform<IOAuthorize<TUser, TContext>, TMeta>,
                 TUser,
                 NodeAuthorizeContext
@@ -37,10 +37,10 @@ export type PlatformNodeCreateIOParams<
 export const platformNode = <
     TMeta extends Record<string, Json> = {},
     TContext extends Record<string, any> = {},
-    TUser extends BaseUser | null = null,
+    TUser extends BaseUser = BaseUser,
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
 >(
-    config: PlatformNodeCreateIOParams<TMeta, TContext, TUser, TCrdt> = {},
+    config: PlatformNodeCreateIOParams<TMeta, TContext, TUser, TCrdt>,
 ): CreateIOParams<NodePlatform<IOAuthorize<TUser, TContext>, TMeta>, TContext, TUser, TCrdt> => {
     const { authorize, context, crdt, debug, limits, origin } = config;
 

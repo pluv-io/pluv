@@ -1,4 +1,3 @@
-import type { Maybe } from "@pluv/types";
 import type { AbstractPersistence } from "./AbstractPersistence";
 import type { AbstractPubSub } from "./AbstractPubSub";
 import type { AbstractWebSocket, InferWebSocketSource } from "./AbstractWebSocket";
@@ -48,7 +47,7 @@ export abstract class AbstractPlatform<
     public abstract readonly id: string;
     public readonly _createToken?: (
         params: JWTEncodeParams<any, any> & {
-            authorize: Maybe<ResolvedPluvIOAuthorize<any, any>>;
+            authorize: ResolvedPluvIOAuthorize<any, any>;
         },
     ) => Promise<string>;
     public _fetch?: (...args: any[]) => Promise<any>;

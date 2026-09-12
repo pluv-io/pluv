@@ -2,7 +2,6 @@ import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
-    BaseUser,
     CrdtDocLike,
     CrdtLibraryType,
     EventMessage,
@@ -61,7 +60,7 @@ interface BroadcastParams<TIO extends IORoom<any, any, any, any, any>> {
 
 export interface IORoomListeners<
     TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>>,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > {
@@ -83,12 +82,12 @@ export type BroadcastProxy<TIO extends IORoom<any, any, any, any, any>> = (<
 
 export type IORoomConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null =
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
         any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
-    authorize?: TAuthorize;
+    authorize: TAuthorize;
     context: PluvContext<TPlatform, TContext>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     debug: boolean;
@@ -117,8 +116,8 @@ export type WebSocketRegisterConfig<
 
 export class IORoom<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null =
-        null,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
+        any,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
@@ -130,7 +129,7 @@ export class IORoom<
     private _teardown: Promise<void> | null = null;
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
-    private readonly _authorize: TAuthorize = null as TAuthorize;
+    private readonly _authorize: TAuthorize;
     private readonly _context: PluvContext<TPlatform, TContext>;
     private readonly _crdt: TCrdt;
     private readonly _debug: boolean;
@@ -218,6 +217,7 @@ export class IORoom<
         this._roomContext = roomContext;
         this._router = router;
         this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), roomContext });
+        this._authorize = authorizeConfig;
 
         // Listeners are provided from server-level configuration via createRoom
         this._listeners = {
@@ -227,8 +227,6 @@ export class IORoom<
             onUserConnected: (event) => onUserConnected?.(event),
             onUserDisconnected: (event) => onUserDisconnected?.(event),
         };
-
-        if (authorizeConfig) this._authorize = authorizeConfig;
 
         /**
          * @description Everything below this line relates to waking up from hibernation.
@@ -249,7 +247,7 @@ export class IORoom<
 
             this._sessions.set(sessionId, pluvWs);
 
-            const userId = pluvWs.session.user?.id;
+            const userId = pluvWs.user?.id;
 
             if (!!userId) this._addUserSession(userId, sessionId);
         });
@@ -378,12 +376,10 @@ export class IORoom<
             await this._initialized;
         }
 
-        const user: BaseUser | null = await this._getAuthorizedUser(token, _options);
-        const ioAuthorize = this._getIOAuthorize(_options);
-        const isUnauthorized = !!ioAuthorize && !user;
+        const user = await this._getAuthorizedUser(token, _options);
         const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
 
-        if (isUnauthorized) {
+        if (!user) {
             this._logDebug(colors.blue("Authorization failed for connection"));
             pluvWs.handleError({ error: new Error("Not authorized"), room: this.id });
             pluvWs.close(3000, "WebSocket unauthorized.");
@@ -391,19 +387,17 @@ export class IORoom<
             return;
         }
 
-        if (!!user) {
-            const latest = this._getLatestPresence(user.id);
-            const prevState = pluvWs.state;
+        const latest = this._getLatestPresence(user.id);
+        const prevState = pluvWs.state;
 
-            pluvWs.user = user;
+        pluvWs.user = user;
 
-            this._platform.setSerializedState(pluvWs, {
-                ...prevState,
-                presence: latest.presence,
-                timers: { ...prevState.timers, presence: latest.timer },
-            });
-            this._addUserSession(user.id, pluvWs.sessionId);
-        }
+        this._platform.setSerializedState(pluvWs, {
+            ...prevState,
+            presence: latest.presence,
+            timers: { ...prevState.timers, presence: latest.timer },
+        });
+        this._addUserSession(user.id, pluvWs.sessionId);
 
         this._logDebug(
             `${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`,
@@ -411,7 +405,7 @@ export class IORoom<
 
         await this._platform.acceptWebSocket(pluvWs);
         this._sessions.set(pluvWs.sessionId, pluvWs);
-        await this._platform.persistence.addUser(this.id, pluvWs.sessionId, user ?? {});
+        await this._platform.persistence.addUser(this.id, pluvWs.sessionId, user);
 
         if (this._platform._config.registrationMode === "attached") {
             const onClose = this._onClose(pluvWs).bind(this);
@@ -618,11 +612,10 @@ export class IORoom<
     private async _getAuthorizedUser(
         token: Maybe<string>,
         options: WebSocketRegisterConfig<TPlatform>,
-    ): Promise<InferIOAuthorizeUser<TAuthorize>> {
+    ): Promise<InferIOAuthorizeUser<TAuthorize> | null> {
         const ioAuthorize = this._getIOAuthorize(options);
 
-        if (!ioAuthorize) return null as any;
-        if (!token) return null as any;
+        if (!token) return null;
 
         if (!ioAuthorize.secret)
             throw new Error("`authorize` was specified without a valid secret");
@@ -636,7 +629,7 @@ export class IORoom<
             this._logDebug(colors.blue("Could not decode token:"));
             this._logDebug(token);
 
-            return null as any;
+            return null;
         }
 
         if (payload.room !== this.id) {
@@ -644,15 +637,15 @@ export class IORoom<
             this._logDebug(colors.blue("Received:"), payload.room);
             this._logDebug(token);
 
-            return null as any;
+            return null;
         }
 
         try {
-            return ioAuthorize.user.parse(payload.user) ?? null;
+            return ioAuthorize.user.parse(payload.user);
         } catch {
             this._logDebug(`${colors.blue("Token fails validation:")} ${token}`);
 
-            return null as any;
+            return null;
         }
     }
 
@@ -700,18 +693,16 @@ export class IORoom<
 
     private _getIOAuthorize(
         options: WebSocketRegisterConfig<TPlatform>,
-    ): ResolvedPluvIOAuthorize<any, any> | null {
+    ): ResolvedPluvIOAuthorize<any, any> {
         if (typeof this._authorize === "function") return this._authorize(options);
 
-        return this._authorize as ResolvedPluvIOAuthorize<any, any> | null;
+        return this._authorize as ResolvedPluvIOAuthorize<any, any>;
     }
 
     private _getLatestPresence(userId: string): {
         timer: number | null;
         presence: JsonObject | null;
     } {
-        if (!this._authorize) return { timer: null, presence: null };
-
         const sessionIds = Array.from(this._userSessionss.get(userId)?.values() ?? []);
 
         if (!sessionIds.length) return { timer: null, presence: null };
@@ -726,7 +717,7 @@ export class IORoom<
                 const presence = session.presence;
                 const timer = session.timers.presence;
 
-                if (session.user?.id !== userId) return state;
+                if (session.user.id !== userId) return state;
                 if (typeof state.timer !== "number") return { presence, timer };
                 if (typeof timer !== "number") return state;
 
@@ -1097,7 +1088,7 @@ export class IORoom<
         if (!pluvWs) return;
 
         const wsSession = pluvWs.session;
-        const user = wsSession.user as BaseUser | null;
+        const user = wsSession.user;
 
         const sessionIds = user
             ? new Set<string>([...(this._userSessionss.get(user.id) ?? []), sessionId])
@@ -1169,7 +1160,7 @@ export class IORoom<
         await Promise.allSettled(
             Array.from(webSockets.values()).map(async (pluvWs) => {
                 const session = pluvWs.session;
-                const user = session.user ?? null;
+                const user = session.user;
 
                 await this._sendMessage(pluvWs, { connectionId, data, room, type, user });
             }),
@@ -1189,7 +1180,7 @@ export class IORoom<
         if (!pluvWs) return;
 
         const session = pluvWs.session;
-        const user = session.user ?? null;
+        const user = session.user;
 
         await this._sendMessage(pluvWs, {
             connectionId: senderId,
@@ -1281,7 +1272,7 @@ export class IORoom<
                     options: { type: "self" },
                     room: this.id,
                     type,
-                    user: (sender.user ?? null) as BaseUser | null,
+                    user: sender.user,
                 });
             }),
         );

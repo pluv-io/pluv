@@ -47,13 +47,13 @@ export type InferIORoom<TServer extends PluvServer<any, any, any, any, any>> =
 
 export type PluvServerConfig<
     TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null =
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
         any,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
-    authorize?: TAuthorize;
+    authorize: TAuthorize;
     context?: PluvContext<TPlatform, TContext>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     debug?: boolean;
@@ -67,7 +67,7 @@ export type PluvServerConfig<
 
 type BaseCreateRoomOptions<
     TPlatform extends AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>>,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = {
@@ -76,7 +76,7 @@ type BaseCreateRoomOptions<
 
 export type CreateRoomOptions<
     TPlatform extends AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null,
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>>,
     TContext extends Record<string, any>,
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
 > = keyof Omit<InferRoomContextType<TPlatform>, "meta"> extends never
@@ -90,7 +90,7 @@ export type CreateRoomOptions<
 
 export class PluvServer<
     TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null =
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
         any,
     TContext extends Record<string, any> = {},
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
@@ -417,7 +417,7 @@ export class PluvServer<
 
         const newRoom = new IORoom<TPlatform, TAuthorize, TContext, TCrdt, TEvents>(room, {
             ...(!!_meta ? { _meta } : {}),
-            authorize: this._config.authorize ?? undefined,
+            authorize: this._config.authorize,
             context: this._config.context,
             crdt: this._config.crdt,
             debug: debug ?? this._config.debug,

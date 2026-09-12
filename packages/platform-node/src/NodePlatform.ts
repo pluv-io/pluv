@@ -27,7 +27,7 @@ export type NodePlatformConfig<TMeta extends Record<string, Json>> = {
 ) & { roomContext?: NodePlatformRoomContext<TMeta> };
 
 export class NodePlatform<
-    TAuthorize extends IOAuthorize<any, any> | null = null,
+    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
     TMeta extends Record<string, Json> = {},
 > extends AbstractPlatform<
     NodeWebSocket<TAuthorize>,
@@ -38,7 +38,6 @@ export class NodePlatform<
             secret: true;
         };
         handleMode: "io";
-        requireAuth: false;
         registrationMode: WebSocketRegistrationMode;
         listeners: {
             onRoomDestroyed: true;
@@ -72,7 +71,6 @@ export class NodePlatform<
             },
             handleMode: "io" as const,
             registrationMode: mode,
-            requireAuth: false as const,
             listeners: {
                 onRoomDestroyed: true as const,
                 onRoomMessage: true as const,

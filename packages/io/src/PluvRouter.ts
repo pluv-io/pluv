@@ -5,7 +5,7 @@ import type { PluvIOAuthorize } from "./types";
 
 export type PluvRouterEventConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null =
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
         any,
     TContext extends Record<string, any> = {},
 > = { [P: string]: Pick<PluvProcedure<TPlatform, TAuthorize, TContext, any, any>, "config"> };
@@ -25,7 +25,7 @@ export type MergedRouter<
 
 export class PluvRouter<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> | null =
+    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
         any,
     TContext extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},

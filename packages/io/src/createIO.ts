@@ -8,10 +8,10 @@ import type { PluvContext, PluvIOAuthorize, PluvIOLimits } from "./types";
 export type CreateIOParams<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TContext extends Record<string, any> = {},
-    TUser extends BaseUser | null = null,
+    TUser extends BaseUser = BaseUser,
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
 > = {
-    authorize?: PluvIOAuthorize<TPlatform, TUser, InferInitContextType<TPlatform>>;
+    authorize: PluvIOAuthorize<TPlatform, TUser, InferInitContextType<TPlatform>>;
     context?: PluvContext<TPlatform, TContext>;
     crdt?: TCrdt;
     debug?: boolean;
@@ -22,7 +22,7 @@ export type CreateIOParams<
 export const createIO = <
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
     TContext extends Record<string, any> = {},
-    TUser extends BaseUser | null = null,
+    TUser extends BaseUser = BaseUser,
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
 >(
     params: CreateIOParams<TPlatform, TContext, TUser, TCrdt>,

@@ -53,7 +53,6 @@ export class PluvPlatform<
         };
         handleMode: "fetch";
         registrationMode: "attached";
-        requireAuth: true;
         listeners: {
             onRoomDestroyed: true;
             onRoomMessage: false;
@@ -72,7 +71,6 @@ export class PluvPlatform<
         },
         handleMode: "fetch" as const,
         registrationMode: "attached" as const,
-        requireAuth: true as const,
         listeners: {
             onRoomDestroyed: true as const,
             onRoomMessage: false as const,

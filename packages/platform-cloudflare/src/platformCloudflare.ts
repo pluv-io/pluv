@@ -9,7 +9,7 @@ export type PlatformCloudflareCreateIOParams<
     TEnv extends Record<string, any> = {},
     TMeta extends Record<string, Json> = {},
     TContext extends Record<string, any> = {},
-    TUser extends BaseUser | null = null,
+    TUser extends BaseUser = BaseUser,
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
 > = Id<
     CloudflarePlatformConfig<TEnv, TMeta> &
@@ -22,7 +22,7 @@ export type PlatformCloudflareCreateIOParams<
             >,
             "authorize" | "context" | "platform"
         > & {
-            authorize?: PluvIOAuthorize<
+            authorize: PluvIOAuthorize<
                 CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>,
                 TUser,
                 InferInitContextType<CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>>
@@ -39,10 +39,10 @@ export const platformCloudflare = <
     TEnv extends Record<string, any> = {},
     TMeta extends Record<string, Json> = {},
     TContext extends Record<string, any> = {},
-    TUser extends BaseUser | null = null,
+    TUser extends BaseUser = BaseUser,
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
 >(
-    config: PlatformCloudflareCreateIOParams<TEnv, TMeta, TContext, TUser, TCrdt> = {},
+    config: PlatformCloudflareCreateIOParams<TEnv, TMeta, TContext, TUser, TCrdt>,
 ): CreateIOParams<
     CloudflarePlatform<IOAuthorize<TUser, TContext>, TEnv, TMeta>,
     TContext,
