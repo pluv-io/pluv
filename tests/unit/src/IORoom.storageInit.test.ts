@@ -1,15 +1,15 @@
 import { loro } from "@pluv/crdt-loro";
 import { yjs } from "@pluv/crdt-yjs";
-import { createIO } from "@pluv/io";
 import { LoroDoc } from "loro-crdt";
 import { applyUpdate, Doc as YDoc, encodeStateAsUpdate, encodeStateVector } from "yjs";
 import { describe, expect, it } from "vitest";
 import {
+    createAuthorizedIO,
     deferred,
     encodedLoroStateWithContent,
     encodedStateWithContent,
+    registerAuthorized,
     TestPersistence,
-    TestPlatform,
     TestSocket,
     tick,
 } from "./__utils__";
@@ -128,20 +128,20 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, crdt, decode, e
         roomId?: string;
     }) => {
         const persistence = config.persistence ?? new TestPersistence();
-        const io = createIO({
+        const io = createAuthorizedIO({
             crdt,
-            platform: () => new TestPlatform({ mode: "detached", persistence }),
+            platform: { mode: "detached", persistence },
         });
         const server = io.server({ getInitialStorage: config.getInitialStorage });
         const room = server.createRoom(config.roomId ?? "storage-init");
 
-        return { persistence, room };
+        return { io, persistence, room };
     };
 
     it("keeps delayed webhook state instead of a later client seed", async () => {
         const webhook = deferred<string | null>();
         let reads = 0;
-        const { room } = createRoom({
+        const { io, room } = createRoom({
             getInitialStorage: () => {
                 reads += 1;
 
@@ -149,7 +149,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, crdt, decode, e
             },
         });
         const socket = new TestSocket("session-1");
-        const registration = room.register(socket);
+        const registration = registerAuthorized(room, socket, { io });
 
         await tick();
         expect(reads).toBe(1);
@@ -170,7 +170,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, crdt, decode, e
 
         await persistence.setStorageState("storage-init", encode("do"));
 
-        const { room } = createRoom({
+        const { io, room } = createRoom({
             getInitialStorage: () => {
                 reads += 1;
 
@@ -180,7 +180,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, crdt, decode, e
         });
         const socket = new TestSocket("session-1");
 
-        await room.register(socket);
+        await registerAuthorized(room, socket, { io });
         expect(reads).toBe(0);
 
         webhook.resolve(encode("webhook"));
@@ -192,11 +192,11 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, crdt, decode, e
 
     it("allows a client seed when the delayed webhook is null", async () => {
         const webhook = deferred<string | null>();
-        const { persistence, room } = createRoom({
+        const { io, persistence, room } = createRoom({
             getInitialStorage: () => webhook.promise,
         });
         const socket = new TestSocket("session-1");
-        const registration = room.register(socket);
+        const registration = registerAuthorized(room, socket, { io });
 
         await tick();
         webhook.resolve(null);
@@ -211,7 +211,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, crdt, decode, e
     it("hydrates two overlapping first connections from one webhook fetch", async () => {
         const webhook = deferred<string | null>();
         let reads = 0;
-        const { room } = createRoom({
+        const { io, room } = createRoom({
             getInitialStorage: () => {
                 reads += 1;
 
@@ -220,7 +220,10 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, crdt, decode, e
         });
         const first = new TestSocket("session-1");
         const second = new TestSocket("session-2");
-        const registrations = Promise.all([room.register(first), room.register(second)]);
+        const registrations = Promise.all([
+            registerAuthorized(room, first, { io }),
+            registerAuthorized(room, second, { io }),
+        ]);
 
         await tick();
         expect(reads).toBe(1);
@@ -241,14 +244,17 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, crdt, decode, e
 
     it("ignores a second vacant client seed while the first persist is in flight", async () => {
         const persistence = new GatedPersistence();
-        const { room } = createRoom({
+        const { io, room } = createRoom({
             getInitialStorage: () => Promise.resolve(null),
             persistence,
         });
         const first = new TestSocket("session-1");
         const second = new TestSocket("session-2");
 
-        await Promise.all([room.register(first), room.register(second)]);
+        await Promise.all([
+            registerAuthorized(room, first, { io }),
+            registerAuthorized(room, second, { io }),
+        ]);
 
         const firstInit = initializeSession(room, first, encode("alpha"));
         const secondInit = initializeSession(room, second, encode("beta"));
@@ -267,12 +273,12 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, crdt, decode, e
     });
 
     it("does not apply $updateStorage origin $initialized after a claimed load", async () => {
-        const { persistence, room } = createRoom({
+        const { io, persistence, room } = createRoom({
             getInitialStorage: () => Promise.resolve(encode("server")),
         });
         const socket = new TestSocket("session-1");
 
-        await room.register(socket);
+        await registerAuthorized(room, socket, { io });
         await initializeSession(room, socket, encode("client"));
         await updateStorage(room, socket, "$initialized", encode("client"));
 
@@ -281,12 +287,12 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, crdt, decode, e
     });
 
     it("still applies $updateStorage origin null", async () => {
-        const { persistence, room } = createRoom({
+        const { io, persistence, room } = createRoom({
             getInitialStorage: () => Promise.resolve(encode("server")),
         });
         const socket = new TestSocket("session-1");
 
-        await room.register(socket);
+        await registerAuthorized(room, socket, { io });
         await initializeSession(room, socket, encode("client"));
 
         const base = lastMessage(socket, "$storageReceived").data.state as string;
@@ -299,13 +305,16 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, crdt, decode, e
     });
 
     it("merges two overlapping live origin-null updates", async () => {
-        const { persistence, room } = createRoom({
+        const { io, persistence, room } = createRoom({
             getInitialStorage: () => Promise.resolve(encode("base")),
         });
         const first = new TestSocket("session-1");
         const second = new TestSocket("session-2");
 
-        await Promise.all([room.register(first), room.register(second)]);
+        await Promise.all([
+            registerAuthorized(room, first, { io }),
+            registerAuthorized(room, second, { io }),
+        ]);
         await initializeSession(room, first, encode("client"));
 
         const base = lastMessage(first, "$storageReceived").data.state as string;

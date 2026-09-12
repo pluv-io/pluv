@@ -22,11 +22,11 @@ export interface NodeWebSocketEventMap {
 export type NodeWebSocketConfig = AbstractWebSocketConfig;
 
 export class NodeWebSocket<
-    TAuthorize extends IOAuthorize<any, any> | null = null,
+    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
 > extends AbstractWebSocket<WebSocket> {
     private _sessionId: string | null = null;
     private _state: WebSocketSerializedState;
-    private _user: InferIOAuthorizeUser<TAuthorize> = null as InferIOAuthorizeUser<TAuthorize>;
+    private _user: InferIOAuthorizeUser<TAuthorize> | null = null;
 
     public set presence(presence: JsonObject | null) {
         this._state.presence = presence;
@@ -37,13 +37,15 @@ export class NodeWebSocket<
     }
 
     public get session(): WebSocketSession<TAuthorize> {
-        const sessionId = this.sessionId;
-        const state = this._state;
         const user = this._user;
 
+        if (!user) {
+            throw new Error("WebSocket is not authorized");
+        }
+
         return {
-            ...state,
-            id: sessionId,
+            ...this._state,
+            id: this.sessionId,
             user,
             webSocket: this,
         };
@@ -65,6 +67,10 @@ export class NodeWebSocket<
 
     public set state(state: WebSocketSerializedState) {
         this._state = state;
+    }
+
+    public get user(): InferIOAuthorizeUser<TAuthorize> | null {
+        return this._user;
     }
 
     public set user(user: InferIOAuthorizeUser<TAuthorize>) {

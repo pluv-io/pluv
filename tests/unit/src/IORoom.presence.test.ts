@@ -1,6 +1,5 @@
-import { createIO } from "@pluv/io";
 import { describe, expect, it } from "vitest";
-import { TestPlatform, TestSocket } from "./__utils__";
+import { createAuthorizedIO, registerAuthorized, TestSocket } from "./__utils__";
 
 type Room = {
     onMessage: (socket: TestSocket) => (event: { data: string }) => Promise<void>;
@@ -52,24 +51,24 @@ const getOthers = async (room: Room, socket: TestSocket): Promise<void> => {
 
 describe("IORoom presence", () => {
     const createRoom = (roomId: string = "presence") => {
-        const io = createIO({
-            platform: () => new TestPlatform({ mode: "detached" }),
+        const io = createAuthorizedIO({
+            platform: { mode: "detached" },
         });
         const server = io.server();
         const room = server.createRoom(roomId);
 
-        return room;
+        return { io, room };
     };
 
     it("persists initialize presence for later $getOthers and partial patches", async () => {
-        const room = createRoom();
+        const { io, room } = createRoom();
         const first = new TestSocket("session-1");
         const second = new TestSocket("session-2");
 
-        await room.register(first);
+        await registerAuthorized(room, first, { io });
         await initializeSession(room, first, { cursor: 1, name: "ada" });
 
-        await room.register(second);
+        await registerAuthorized(room, second, { io });
         await initializeSession(room, second, { cursor: 0, name: "bob" });
         await getOthers(room, second);
 
@@ -94,14 +93,14 @@ describe("IORoom presence", () => {
     });
 
     it("still broadcasts $userJoined with the initialize presence payload", async () => {
-        const room = createRoom("presence-join");
+        const { io, room } = createRoom("presence-join");
         const first = new TestSocket("session-1");
         const second = new TestSocket("session-2");
 
-        await room.register(first);
+        await registerAuthorized(room, first, { io });
         await initializeSession(room, first, { cursor: 0, name: "ada" });
 
-        await room.register(second);
+        await registerAuthorized(room, second, { io });
         await initializeSession(room, second, { cursor: 9, name: "bob" });
 
         expect(lastMessage(first, "$userJoined").data).toMatchObject({

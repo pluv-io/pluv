@@ -67,7 +67,7 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = {
         connectionId: string;
         presence: JsonObject;
         timers: { presence: number | null };
-        user: NonNullable<Id<InferIOAuthorizeUser<TAuthorize>>>;
+        user: Id<InferIOAuthorizeUser<TAuthorize>>;
     };
 };
 
@@ -87,34 +87,28 @@ export type GetEventMessage<
 
 export type InferIOAuthorize<TIO extends IOLike<any, any, any>> =
     TIO extends IOLike<infer IAuthorize, any, any>
-        ? InferIOAuthorizeUser<IAuthorize> extends BaseUser
-            ? { user: InputZodLike<InferIOAuthorizeUser<IAuthorize>> }
-            : null
+        ? { user: InputZodLike<InferIOAuthorizeUser<IAuthorize>> }
         : never;
 
-export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any> | null> =
-    TAuthorize extends IOAuthorize<infer IUser, any> ? IUser : null;
+export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any>> =
+    TAuthorize extends IOAuthorize<infer IUser, any> ? IUser : never;
 
 export type InputZodLike<TData extends JsonObject> = {
     parse: (data: unknown) => TData;
 } & ({ _input: TData } | { _zod: { input: TData } });
 
 export type IOAuthorize<
-    TUser extends BaseUser | null = any,
+    TUser extends BaseUser = any,
     TContext extends Record<string, unknown> = {},
 > =
-    | (TUser extends BaseUser
-          ? {
-                secret?: string;
-                user: InputZodLike<TUser>;
-            }
-          : null)
-    | ((context: TContext) => TUser extends BaseUser
-          ? {
-                secret?: string;
-                user: InputZodLike<TUser>;
-            }
-          : null);
+    | {
+          secret?: string;
+          user: InputZodLike<TUser>;
+      }
+    | ((context: TContext) => {
+          secret?: string;
+          user: InputZodLike<TUser>;
+      });
 
 export type IOAuthorizeEventMessage<TIO extends IOLike> = {
     connectionId: string;
@@ -143,7 +137,7 @@ export interface IORouterLike<TEvents extends Record<string, ProcedureLike<any, 
 }
 
 export interface IOLike<
-    TAuthorize extends IOAuthorize<any, any> | null = null,
+    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
     TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
     TEvents extends Record<string, ProcedureLike<any, any>> = {},
 > extends IORouterLike<TEvents> {

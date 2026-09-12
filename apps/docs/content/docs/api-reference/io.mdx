@@ -75,7 +75,12 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO(platformNode());
+const io = createIO(platformNode({
+  authorize: {
+    secret: process.env.PLUV_AUTH_SECRET!,
+    user: z.object({ id: z.string() }),
+  },
+}));
 
 const sendMessage = io.procedure
   .input(z.object({ message: z.string() }))
@@ -98,7 +103,12 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO(platformNode());
+const io = createIO(platformNode({
+  authorize: {
+    secret: process.env.PLUV_AUTH_SECRET!,
+    user: z.object({ id: z.string() }),
+  },
+}));
 
 const sendMessage = io.procedure
   .input(z.object({ message: z.string() }))
@@ -129,7 +139,12 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO(platformNode());
+const io = createIO(platformNode({
+  authorize: {
+    secret: process.env.PLUV_AUTH_SECRET!,
+    user: z.object({ id: z.string() }),
+  },
+}));
 const router = io.router({ /* ... */ });
 
 const server = io.server({

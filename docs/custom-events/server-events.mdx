@@ -16,7 +16,12 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO(platformNode());
+const io = createIO(platformNode({
+  authorize: {
+    secret: process.env.PLUV_AUTH_SECRET!,
+    user: z.object({ id: z.string() }),
+  },
+}));
 
 // Create your custom events as procedures
 const sendMessage = io.procedure

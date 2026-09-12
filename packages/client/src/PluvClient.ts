@@ -65,7 +65,7 @@ export class PluvClient<
 > {
     public readonly metadata?: InputZodLike<TMetadata>;
 
-    private readonly _authEndpoint: AuthEndpoint<TMetadata> | undefined;
+    private readonly _authEndpoint: AuthEndpoint<TMetadata>;
     private readonly _debug: boolean;
     private readonly _initialStorage?: TCrdt;
     private readonly _limits: PluvClientLimits;
@@ -98,7 +98,7 @@ export class PluvClient<
 
         this.metadata = metadata;
 
-        this._authEndpoint = authEndpoint as AuthEndpoint<TMetadata>;
+        this._authEndpoint = authEndpoint;
         this._debug = debug;
         this._initialStorage = initialStorage as TCrdt;
         this._limits = {

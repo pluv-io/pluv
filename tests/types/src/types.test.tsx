@@ -83,15 +83,25 @@ room.subscribe.storage((storage) => {
 });
 
 room.subscribe.connection((event) => {
-    expectTypeOf<typeof event.authorization.user>().toExtend<{ id: string } | null>();
+    expectTypeOf<typeof event.authorization.user>().toEqualTypeOf<{ id: string } | null>();
+});
+room.subscribe.myself((myself) => {
+    expectTypeOf<typeof myself>().toExtend<{
+        user: { id: string };
+    } | null>();
+    if (myself) {
+        expectTypeOf(myself.user).toEqualTypeOf<{ id: string }>();
+        // @ts-expect-error user is non-null when myself is set
+        expectTypeOf(myself.user).toEqualTypeOf<null>();
+    }
 });
 room.subscribe.other("example-connection-id", (value) => {
     const user = value?.user ?? null;
 
-    expectTypeOf<typeof user>().toExtend<{ id: string } | null>();
+    expectTypeOf<typeof user>().toEqualTypeOf<{ id: string } | null>();
 });
 room.subscribe.others((others, event) => {
-    expectTypeOf<(typeof others)[number]["user"]>().toExtend<{ id: string }>();
+    expectTypeOf<(typeof others)[number]["user"]>().toEqualTypeOf<{ id: string }>();
     expectTypeOf<(typeof event)["kind"]>().toExtend<
         "sync" | "clear" | "enter" | "leave" | "update"
     >();

@@ -26,7 +26,7 @@ export type CloudflarePlatformConfig<
 };
 
 export class CloudflarePlatform<
-    TAuthorize extends IOAuthorize<any, any> | null = null,
+    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
     TEnv extends Record<string, any> = {},
     TMeta extends Record<string, Json> = {},
 > extends AbstractPlatform<
@@ -38,7 +38,6 @@ export class CloudflarePlatform<
             secret: true;
         };
         handleMode: "io";
-        requireAuth: false;
         registrationMode: WebSocketRegistrationMode;
         listeners: {
             onRoomDestroyed: true;
@@ -77,7 +76,6 @@ export class CloudflarePlatform<
             },
             handleMode: "io" as const,
             registrationMode: config.mode ?? DEFAULT_REGISTRATION_MODE,
-            requireAuth: false as const,
             listeners: {
                 onRoomDestroyed: true as const,
                 onRoomMessage: true as const,

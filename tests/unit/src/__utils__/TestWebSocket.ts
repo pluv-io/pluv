@@ -46,10 +46,10 @@ export class TestSocket {
 }
 
 export class TestWebSocket<
-    TAuthorize extends IOAuthorize<any, any> | null = null,
+    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
 > extends AbstractWebSocket<TestSocket> {
     private _state: WebSocketSerializedState;
-    private _user: InferIOAuthorizeUser<TAuthorize> = null as InferIOAuthorizeUser<TAuthorize>;
+    private _user: InferIOAuthorizeUser<TAuthorize> | null = null;
 
     public set presence(presence: JsonObject | null) {
         this._state.presence = presence;
@@ -60,10 +60,16 @@ export class TestWebSocket<
     }
 
     public get session(): WebSocketSession<TAuthorize> {
+        const user = this._user;
+
+        if (!user) {
+            throw new Error("WebSocket is not authorized");
+        }
+
         return {
             ...this._state,
             id: this.sessionId,
-            user: this._user,
+            user,
             webSocket: this,
         };
     }
@@ -78,6 +84,10 @@ export class TestWebSocket<
 
     public set state(state: WebSocketSerializedState) {
         this._state = state;
+    }
+
+    public get user(): InferIOAuthorizeUser<TAuthorize> | null {
+        return this._user;
     }
 
     public set user(user: InferIOAuthorizeUser<TAuthorize>) {
