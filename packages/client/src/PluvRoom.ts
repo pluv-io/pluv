@@ -8,7 +8,6 @@ import type {
 } from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
-    BaseUser,
     BroadcastProxy,
     CrdtDocLike,
     EventMessage,
@@ -135,9 +134,8 @@ type FetchOptions = { url: string; options?: RequestInit };
 
 export type RoomEndpoints<TIO extends IOLike<any, any, any>, TMetadata extends JsonObject> = {
     wsEndpoint?: WsEndpoint<TMetadata>;
-} & (InferIOAuthorizeUser<InferIOAuthorize<TIO>> extends BaseUser
-    ? { authEndpoint: AuthEndpoint<TMetadata> }
-    : { authEndpoint?: undefined });
+    authEndpoint: AuthEndpoint<TMetadata>;
+};
 
 interface InternalListeners {
     onAuthorizationFail: (error: Error) => void;
@@ -1017,7 +1015,7 @@ export class PluvRoom<
 
         this._updateState((oldState) => {
             oldState.connection.id = connectionId;
-            oldState.authorization.user = user ?? null;
+            oldState.authorization.user = user;
 
             return oldState;
         });

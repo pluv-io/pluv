@@ -152,20 +152,15 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
     }
 
     /**
-     * @description The client id is either the user's id (if authorized) or the connection id
-     * otherwise. This is so that, despite having multiple connections, the user will only have one
-     * presence to all other users.
+     * @description The client id is the authorized user's id. This is so that, despite having
+     * multiple connections, the user will only have one presence to all other users.
      * @date April 16, 2025
      */
     public getClientId(connectionId: string): string | null;
     public getClientId(userInfo: UserInfo<TIO, TPresence>): string;
     public getClientId(input: string | UserInfo<TIO, TPresence>): string | null {
         if (typeof input !== "string") {
-            const userInfo = input;
-            const connectionId = userInfo.connectionId;
-            const userId = userInfo.user?.id ?? null;
-
-            return userId ?? connectionId;
+            return input.user.id;
         }
 
         const connectionId = input;
