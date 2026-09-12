@@ -3,6 +3,7 @@ import type { BaseUser } from "@pluv/types";
 import { EncryptJWT, jwtDecrypt } from "jose";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
 
+/** Default token lifetime: 60 seconds (passed to jose as seconds). */
 const DEFAULT_MAX_AGE_MS = 60_000;
 
 export const getEncryptionKey = async (secret: string): Promise<Uint8Array> => {
@@ -19,6 +20,10 @@ export type JWTEncodeParams<
     TUser extends BaseUser,
     TPlatform extends AbstractPlatform<any, any>,
 > = {
+    /**
+     * Token lifetime in milliseconds. Converted to whole seconds for JWT `exp`.
+     * @default 60_000
+     */
     maxAge?: number;
     room: string;
     user: TUser;
@@ -30,13 +35,17 @@ export interface AuthorizeParams {
 }
 
 export interface AuthorizeModule {
-    decode: <TUser extends BaseUser>(jwt: string) => Promise<TUser | null>;
+    decode: <TUser extends BaseUser>(jwt: string) => Promise<JWT<TUser> | null>;
     encode: <TUser extends BaseUser, TPlatform extends AbstractPlatform<any, any>>(
         params: JWTEncodeParams<TUser, TPlatform>,
     ) => Promise<string>;
 }
 
 const now = () => (Date.now() / 1_000) | 0;
+
+const maxAgeMsToSeconds = (maxAgeMs: number): number => {
+    return Math.max(1, Math.ceil(maxAgeMs / 1_000));
+};
 
 export const authorize = (params: AuthorizeParams) => {
     const { platform, secret } = params;
@@ -55,7 +64,7 @@ export const authorize = (params: AuthorizeParams) => {
         })
             .setProtectedHeader({ alg: "dir", enc: "A256GCM" })
             .setIssuedAt()
-            .setExpirationTime(now() + maxAge)
+            .setExpirationTime(now() + maxAgeMsToSeconds(maxAge))
             .setJti(platform.randomUUID())
             .encrypt(encryptionSecret);
 
@@ -63,13 +72,17 @@ export const authorize = (params: AuthorizeParams) => {
     };
 
     const decode = async <TUser extends BaseUser>(jwt: string): Promise<JWT<TUser> | null> => {
-        const encryptionSecret = await getEncryptionKey(secret);
+        try {
+            const encryptionSecret = await getEncryptionKey(secret);
 
-        const { payload } = await jwtDecrypt(jwt, encryptionSecret, {
-            clockTolerance: 15,
-        });
+            const { payload } = await jwtDecrypt(jwt, encryptionSecret, {
+                clockTolerance: 15,
+            });
 
-        return (payload as any) ?? null;
+            return (payload as unknown as JWT<TUser> | undefined) ?? null;
+        } catch {
+            return null;
+        }
     };
 
     return { decode, encode };
