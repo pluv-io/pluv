@@ -1013,11 +1013,13 @@ export class IORoom<
                 return;
             }
 
-            await Promise.all([
-                procedure.config.broadcast?.(inputs, eventContext),
-                procedure.config.self?.(inputs, eventContext),
-                procedure.config.sync?.(inputs, eventContext),
-            ]).then(async ([broadcast, self, sync]) => {
+            try {
+                const [broadcast, self, sync] = await Promise.all([
+                    procedure.config.broadcast?.(inputs, eventContext),
+                    procedure.config.self?.(inputs, eventContext),
+                    procedure.config.sync?.(inputs, eventContext),
+                ]);
+
                 const handleBroadcast = async () => {
                     if (!broadcast) return;
 
@@ -1060,7 +1062,13 @@ export class IORoom<
                 };
 
                 await Promise.all([handleBroadcast(), handleSelf(), handleSync()]);
-            });
+            } catch (error) {
+                pluvWs.handleError({
+                    error,
+                    room: this.id,
+                    session,
+                });
+            }
         };
     }
 
