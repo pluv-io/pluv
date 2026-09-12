@@ -8,6 +8,9 @@ import type { CrdtDocLike } from "@pluv/types";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import {
     AbstractType,
+    ContentEmbed,
+    ContentFormat,
+    ContentString,
     UndoManager,
     Array as YArray,
     Doc as YDoc,
@@ -227,12 +230,17 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
     public toJson(): InferCrdtJson<TStorage>;
     public toJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]>;
     public toJson<TKey extends keyof TStorage>(type?: TKey) {
-        if (typeof type === "string") return this.#_storage[type].toJSON();
+        if (typeof type === "string") {
+            const shared = this.#_storage[type];
 
-        return Object.entries(this.#_storage).reduce(
-            (acc, [key, value]) => ({ ...(acc as any), [key]: value.toJSON() }),
-            {} as InferCrdtJson<TStorage>,
-        );
+            if (shared) return shared.toJSON();
+
+            const fromDoc = this.value.share.get(type);
+
+            return (this.#_toJsonFromShare(type, fromDoc) ?? null) as InferCrdtJson<TStorage[TKey]>;
+        }
+
+        return this.#_toJsonFromDoc();
     }
 
     public undo(): this {
@@ -246,5 +254,67 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
         const id = typeof crypto !== "undefined" ? crypto.randomUUID() : Math.random().toString();
 
         text.insert(0, id);
+    }
+
+    #_toJsonFromDoc(): InferCrdtJson<TStorage> {
+        const json = {} as InferCrdtJson<TStorage>;
+
+        this.value.share.forEach((sharedType, key) => {
+            if (key === PLUV_ID_FIELD) return;
+
+            Object.assign(json, { [key]: this.#_toJsonFromShare(key, sharedType) });
+        });
+
+        return json;
+    }
+
+    #_toJsonFromShare(key: string, sharedType: AbstractType<any> | undefined): unknown {
+        if (!sharedType) return null;
+
+        if (
+            sharedType instanceof YXmlElement ||
+            sharedType instanceof YXmlFragment ||
+            sharedType instanceof YXmlText ||
+            sharedType instanceof YText ||
+            sharedType instanceof YArray ||
+            sharedType instanceof YMap
+        ) {
+            return sharedType.toJSON();
+        }
+
+        const start = (
+            sharedType as AbstractType<any> & {
+                _start?: { content?: object } | null;
+                _map?: Map<string, unknown>;
+            }
+        )._start;
+        const map = (
+            sharedType as AbstractType<any> & {
+                _map?: Map<string, unknown>;
+            }
+        )._map;
+        const content = start?.content ?? null;
+
+        if (
+            content instanceof ContentString ||
+            content instanceof ContentEmbed ||
+            content instanceof ContentFormat
+        ) {
+            return this.value.getText(key).toJSON();
+        }
+
+        if (map && map.size > 0 && start) {
+            return this.value.getXmlElement(key).toJSON();
+        }
+
+        if (start) {
+            return this.value.getArray(key).toJSON();
+        }
+
+        if (map && map.size > 0) {
+            return this.value.getMap(key).toJSON();
+        }
+
+        return {};
     }
 }

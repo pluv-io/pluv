@@ -195,23 +195,14 @@ export class PluvServer<
                         },
                     };
                 })
-                .self(async (data, { context, doc, platform, room, session }) => {
-                    const oldState = await platform.persistence.getStorageState(room);
+                .self(async (data, event) => {
+                    const { context, doc, platform, room, session } = event;
                     /**
-                     * !HACK
                      * @description This is the frontend's initialStorage. We only want to
-                     * apply this if the server's storage is empty (i.e. no initial storage
-                     * has been applied)
+                     * apply this if the server has not already been seeded (persistence,
+                     * getInitialStorage, or an earlier client seed).
                      */
                     const update = (data as any)?.update as Maybe<string>;
-
-                    if (!oldState) {
-                        const loadedState = await this._getInitialStorage({ context, room });
-
-                        if (!!loadedState && !this._docFactory.isEmpty(loadedState)) {
-                            doc.applyEncodedState({ update: loadedState });
-                        }
-                    }
 
                     /**
                      * @description Storage was already initialized. Don't overwrite the current
@@ -219,7 +210,7 @@ export class PluvServer<
                      * is without changes.
                      * @date May 7, 2025
                      */
-                    if (!doc.isEmpty()) {
+                    if (event.storageSeeded) {
                         const encodedState = doc.getEncodedState();
 
                         return {
@@ -243,6 +234,8 @@ export class PluvServer<
                         ) {
                             throw new Error("Storage has exceeded the size limit");
                         }
+
+                        event.storageSeeded = true;
 
                         await platform.persistence
                             .setStorageState(room, encodedState)
@@ -322,7 +315,7 @@ export class PluvServer<
                     const origin = (data as any)?.origin as Maybe<string>;
                     const update: string | null = (data as any)?.update ?? null;
 
-                    if (origin === "$initialized" && Object.keys(doc.toJson()).length) return {};
+                    if (origin === "$initialized") return {};
 
                     const updated = update === null ? doc : doc.applyEncodedState({ update });
                     const encodedState = updated.getEncodedState();
