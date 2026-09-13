@@ -38,6 +38,7 @@ export { authorize } from "./authorize";
 export type { AuthorizeModule, AuthorizeParams, JWT, JWTEncodeParams } from "./authorize";
 export { createIO } from "./createIO";
 export type { CreateIOParams } from "./createIO";
+export { __internal } from "./internal";
 export type { IORoom } from "./IORoom";
 export { PluvIO } from "./PluvIO";
 export type { PluvIOConfig, ServerConfig } from "./PluvIO";
