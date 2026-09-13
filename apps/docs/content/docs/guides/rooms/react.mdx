@@ -29,9 +29,9 @@ export const MyPage: FC = () => {
         selectionId: null,
       }}
       // Optional: Overwrite the initialStorage value from the client
-      initialStorage={(t) => ({
-        messages: t.array("messages"),
-      })}
+      initialStorage={{
+        messages: [],
+      }}
       // Optional: Emits an error whenever authorization fails (when
       // `authorize` is set on the PluvIO instance`)
       onAuthorizationFail={(error: Error) => {

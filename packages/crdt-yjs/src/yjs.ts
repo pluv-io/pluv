@@ -1,11 +1,19 @@
 export { array } from "./array";
 export { awareness } from "./awareness";
 export { doc } from "./doc";
-export type { YjsBuilder } from "./doc";
 export { map } from "./map";
 export { provider } from "./provider";
+export {
+    schema,
+    storage,
+    yArray,
+    yMap,
+    yText,
+    yXmlElement,
+    yXmlFragment,
+    yXmlText,
+} from "./schema";
 export { text } from "./text";
-export type { YjsType } from "./types";
 export { xmlElement } from "./xmlElement";
 export { xmlFragment } from "./xmlFragment";
 export { xmlText } from "./xmlText";

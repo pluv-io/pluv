@@ -10,6 +10,7 @@
     "dependencies": {
         "@pluv/addon-indexeddb": "workspace:^",
         "@pluv/client": "workspace:^",
+        "@pluv/crdt": "workspace:^",
         "@pluv/crdt-loro": "workspace:^",
         "@pluv/crdt-yjs": "workspace:^",
         "@pluv/io": "workspace:^",

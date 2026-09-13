@@ -1,5 +1,12 @@
-import type { AbstractCrdtDocFactory, InferStorage, NoopCrdtDocFactory } from "@pluv/crdt";
-import type { InferIOCrdtKind, IOLike, JsonObject, StandardSchemaV1 } from "@pluv/types";
+import type { AbstractCrdtDocFactory, InferSeed, InferStorage } from "@pluv/crdt";
+import type {
+    HasCrdtLibrary,
+    InferIOCrdt,
+    InferIOCrdtKind,
+    IOLike,
+    JsonObject,
+    StandardSchemaV1,
+} from "@pluv/types";
 import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import type { InferCallback } from "./infer";
 import { PluvProcedure } from "./PluvProcedure";
@@ -20,7 +27,7 @@ import type { PluvClientLimits, PublicKey, WithMetadata } from "./types";
 export type PluvClientOptions<
     TIO extends IOLike<any, any, any>,
     TPresence extends Record<string, any>,
-    TCrdt extends InferIOCrdtKind<TIO>,
+    TCrdt extends AbstractCrdtDocFactory<any, any, any, any>,
     TMetadata extends JsonObject,
 > = RoomEndpoints<TIO, TMetadata> & {
     debug?: boolean;
@@ -33,21 +40,21 @@ export type PluvClientOptions<
     presence?: StandardSchemaV1<unknown, TPresence>;
     publicKey?: PublicKey<TMetadata>;
     types: InferCallback<TIO>;
-} & (InferIOCrdtKind<TIO> extends NoopCrdtDocFactory
-        ? { initialStorage?: "[ERROR]: Must provide crdt to createIO to use storage" }
-        : { initialStorage?: TCrdt });
+} & (HasCrdtLibrary<InferIOCrdt<TIO>> extends true
+        ? { storage?: TCrdt; initialStorage?: InferSeed<TCrdt> }
+        : { storage?: "[ERROR]: Must provide crdt to createIO to use storage" });
 
 export type CreateRoomOptions<
     TIO extends IOLike<any, any, any>,
     TPresence extends Record<string, any>,
-    TCrdt extends AbstractCrdtDocFactory<any, any>,
+    TCrdt extends AbstractCrdtDocFactory<any, any, any, any>,
     TMetadata extends JsonObject,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > = {
-    addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, InferStorage<TCrdt>>[];
+    addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TCrdt>[];
     debug?: boolean | PluvRoomDebug<TIO>;
     initialPresence?: TPresence;
-    initialStorage?: TCrdt;
+    initialStorage?: InferSeed<TCrdt>;
     onAuthorizationFail?: (error: Error) => void;
     reconnectTimeoutMs?: ReconnectTimeoutMs;
     router?: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
@@ -60,23 +67,25 @@ export type EnterRoomParams<TMetadata extends JsonObject = {}> = keyof TMetadata
 export class PluvClient<
     TIO extends IOLike<any, any, any>,
     TPresence extends Record<string, any> = {},
-    TCrdt extends InferIOCrdtKind<TIO> = InferIOCrdtKind<TIO>,
+    TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
     TMetadata extends JsonObject = {},
 > {
     public readonly metadata?: StandardSchemaV1<unknown, TMetadata>;
 
     private readonly _authEndpoint: AuthEndpoint<TMetadata>;
     private readonly _debug: boolean;
-    private readonly _initialStorage?: TCrdt;
+    private readonly _initialStorage?: InferSeed<TCrdt>;
     private readonly _limits: PluvClientLimits;
     private readonly _presence?: StandardSchemaV1<unknown, TPresence>;
     private readonly _publicKey: PublicKey<TMetadata> | null = null;
     private readonly _rooms = new Map<string, PluvRoom<TIO, TMetadata, TPresence, TCrdt, any>>();
+    private readonly _storage?: TCrdt;
     private readonly _wsEndpoint: WsEndpoint<TMetadata> | undefined;
 
     public get _defs() {
         return {
             initialStorage: this._initialStorage,
+            storage: this._storage,
         };
     }
 
@@ -93,19 +102,24 @@ export class PluvClient<
             metadata,
             presence,
             publicKey,
+            storage,
             wsEndpoint,
-        } = options;
+        } = options as PluvClientOptions<TIO, TPresence, TCrdt, TMetadata> & {
+            initialStorage?: InferSeed<TCrdt>;
+            storage?: TCrdt;
+        };
 
         this.metadata = metadata;
 
         this._authEndpoint = authEndpoint;
         this._debug = debug;
-        this._initialStorage = initialStorage as TCrdt;
+        this._initialStorage = initialStorage as InferSeed<TCrdt> | undefined;
         this._limits = {
             presenceMaxSize: MAX_PRESENCE_SIZE_BYTES,
             ...limits,
         };
         this._presence = presence;
+        this._storage = storage as TCrdt | undefined;
         this._wsEndpoint = wsEndpoint;
 
         if (!!publicKey) this._publicKey = publicKey;
@@ -134,6 +148,7 @@ export class PluvClient<
             publicKey: this._publicKey ?? undefined,
             reconnectTimeoutMs: options.reconnectTimeoutMs,
             router: options.router,
+            storage: this._storage,
             wsEndpoint: this._wsEndpoint,
         } as RoomConfig<TIO, TMetadata, TPresence, TCrdt, TEvents>);
 

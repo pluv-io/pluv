@@ -2,7 +2,6 @@ import type {
     DocApplyEncodedStateParams,
     DocBatchApplyEncodedStateParams,
     DocSubscribeCallbackParams,
-    InferCrdtJson,
 } from "@pluv/crdt";
 import type { CrdtDocLike } from "@pluv/types";
 import { fromUint8Array, toUint8Array } from "js-base64";
@@ -23,36 +22,32 @@ import {
     encodeStateAsUpdate,
     mergeUpdates,
 } from "yjs";
-import type { YjsType } from "../types";
-import type { YjsBuilder } from "./builder";
-import { builder } from "./builder";
+import { getYjsShare, hydrateTopLevel } from "../schema/hydrate";
+import type { InferYjsJson, InferYjsStorage, YjsSchema } from "../schema/schema";
 
 const MERGE_INTERVAL_MS = 1_000;
 const PLUV_ID_FIELD = "__$pluv";
 
-export type CrdtYjsDocParams<TStorage extends Record<string, YjsType<any, any>>> = (
-    builder: YjsBuilder,
-) => TStorage;
-
-export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> implements CrdtDocLike<
+export class CrdtYjsDoc<TSchema extends YjsSchema = YjsSchema> implements CrdtDocLike<
     YDoc,
-    TStorage
+    InferYjsStorage<TSchema>,
+    InferYjsJson<TSchema>
 > {
     public value: YDoc = new YDoc();
 
-    #_storage: TStorage;
+    #_schema: TSchema;
+    #_storage: InferYjsStorage<TSchema>;
     #_undoManager: UndoManager | null = null;
 
-    constructor(params: CrdtYjsDocParams<TStorage> = () => ({}) as TStorage) {
-        const storage = params(builder(this.value));
-        const keys = this.value.share.keys().reduce((set, key) => set.add(key), new Set<string>());
+    constructor(schema: TSchema, seed?: Record<string, unknown>, hydrate: boolean = false) {
+        this.#_schema = schema;
 
-        this.#_storage = Object.entries(storage).reduce((acc, [key, node]) => {
-            if (keys.has(key)) Object.assign(acc, { [key]: node });
-
-            return acc;
-        }, {} as TStorage);
-        if (!!Object.keys(storage).length) this.#_setPluvId();
+        if (hydrate) {
+            this.#_storage = hydrateTopLevel(this.value, schema, seed) as InferYjsStorage<TSchema>;
+            if (Object.keys(schema.shape).length) this.#_setPluvId();
+        } else {
+            this.#_storage = {} as InferYjsStorage<TSchema>;
+        }
     }
 
     public applyEncodedState(params: DocApplyEncodedStateParams): this {
@@ -107,9 +102,13 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
         this.value.destroy();
     }
 
-    public get(key?: undefined): TStorage;
-    public get<TKey extends keyof TStorage>(type: TKey): TStorage[TKey];
-    public get<TKey extends keyof TStorage>(type?: TKey): TStorage | TStorage[TKey] {
+    public get(key?: undefined): InferYjsStorage<TSchema>;
+    public get<TKey extends keyof InferYjsStorage<TSchema>>(
+        type: TKey,
+    ): InferYjsStorage<TSchema>[TKey];
+    public get<TKey extends keyof InferYjsStorage<TSchema>>(
+        type?: TKey,
+    ): InferYjsStorage<TSchema> | InferYjsStorage<TSchema>[TKey] {
         if (typeof type === "undefined") return this.#_storage;
 
         return this.#_storage[type as TKey];
@@ -120,7 +119,6 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
     }
 
     public isDirty(): boolean {
-        // Unlike `share`, the struct store stays empty until an operation is actually written.
         return !!this.value.store.clients.size;
     }
 
@@ -128,7 +126,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
         return !this.value.share.size;
     }
 
-    public rebuildStorage(reference: TStorage): this {
+    public rebuildStorage(): this {
         const isBuilt = !!Object.keys(this.#_storage).length;
 
         if (isBuilt) {
@@ -136,29 +134,10 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
             return this;
         }
 
-        this.#_storage = Object.entries(reference).reduce((acc, [key, node]) => {
-            /**
-             * @description It is important that the XML shared-types be checked before the others
-             * because they extend off the non-xml types (thereby you can mistakenly identify the
-             * wrong type if checked in the reverse order)
-             * @date May 9 ,2025
-             */
-            if (node instanceof YXmlElement) {
-                Object.assign(acc, { [key]: this.value.getXmlElement(key) });
-            } else if (node instanceof YXmlFragment) {
-                Object.assign(acc, { [key]: this.value.getXmlFragment(key) });
-            } else if (node instanceof YXmlText) {
-                Object.assign(acc, { [key]: this.value.get(key, YXmlText) });
-            } else if (node instanceof YArray) {
-                Object.assign(acc, { [key]: this.value.getArray(key) });
-            } else if (node instanceof YMap) {
-                Object.assign(acc, { [key]: this.value.getMap(key) });
-            } else if (node instanceof YText) {
-                Object.assign(acc, { [key]: this.value.getText(key) });
-            }
-
+        this.#_storage = Object.entries(this.#_schema.shape).reduce((acc, [key, node]) => {
+            Object.assign(acc, { [key]: getYjsShare(this.value, key, node.kind) });
             return acc;
-        }, {} as TStorage);
+        }, {} as InferYjsStorage<TSchema>);
 
         return this.track();
     }
@@ -170,9 +149,15 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
     }
 
     public subscribe(
-        listener: (params: DocSubscribeCallbackParams<YDoc, TStorage>) => void,
+        listener: (
+            params: DocSubscribeCallbackParams<
+                YDoc,
+                InferYjsStorage<TSchema>,
+                InferYjsJson<TSchema>
+            >,
+        ) => void,
     ): () => void {
-        const fn = (update: Uint8Array, origin: any, doc: YDoc) => {
+        const fn = (update: Uint8Array, origin: any, _doc: YDoc) => {
             listener({
                 doc: this,
                 local: origin === null || typeof origin === "undefined",
@@ -191,7 +176,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
     public track(): this {
         if (this.#_undoManager) this.#_undoManager.destroy();
 
-        const sharedTypes = Object.values(this.#_storage).reduce<YjsType<AbstractType<any>, any>[]>(
+        const sharedTypes = Object.values(this.#_storage).reduce<AbstractType<any>[]>(
             (acc, type) => {
                 if (
                     type instanceof YArray ||
@@ -201,7 +186,7 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
                     type instanceof YXmlFragment ||
                     type instanceof YXmlText
                 ) {
-                    acc.push(type as YjsType<AbstractType<any>, any>);
+                    acc.push(type);
                 }
 
                 return acc;
@@ -227,17 +212,21 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
         return this;
     }
 
-    public toJson(): InferCrdtJson<TStorage>;
-    public toJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]>;
-    public toJson<TKey extends keyof TStorage>(type?: TKey) {
+    public toJson(): InferYjsJson<TSchema>;
+    public toJson<TKey extends keyof InferYjsJson<TSchema>>(
+        type: TKey,
+    ): InferYjsJson<TSchema>[TKey];
+    public toJson<TKey extends keyof InferYjsJson<TSchema>>(type?: TKey) {
         if (typeof type === "string") {
             const shared = this.#_storage[type];
 
-            if (shared) return shared.toJSON();
+            if (shared && typeof (shared as { toJSON?: () => unknown }).toJSON === "function") {
+                return (shared as { toJSON: () => unknown }).toJSON();
+            }
 
             const fromDoc = this.value.share.get(type);
 
-            return (this.#_toJsonFromShare(type, fromDoc) ?? null) as InferCrdtJson<TStorage[TKey]>;
+            return (this.#_toJsonFromShare(type, fromDoc) ?? null) as InferYjsJson<TSchema>[TKey];
         }
 
         return this.#_toJsonFromDoc();
@@ -256,8 +245,8 @@ export class CrdtYjsDoc<TStorage extends Record<string, YjsType<any, any>>> impl
         text.insert(0, id);
     }
 
-    #_toJsonFromDoc(): InferCrdtJson<TStorage> {
-        const json = {} as InferCrdtJson<TStorage>;
+    #_toJsonFromDoc(): InferYjsJson<TSchema> {
+        const json = {} as InferYjsJson<TSchema>;
 
         this.value.share.forEach((sharedType, key) => {
             if (key === PLUV_ID_FIELD) return;

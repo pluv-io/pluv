@@ -1,10 +1,9 @@
 import { LoroText } from "loro-crdt";
-import type { LoroType } from "./types";
 
-export const text = (value: string = ""): LoroType<LoroText, string> => {
+export const text = (value: string = ""): LoroText => {
     const container = new LoroText();
 
-    container.insert(0, value);
+    if (value) container.insert(0, value);
 
-    return container as unknown as LoroType<LoroText, string>;
+    return container;
 };

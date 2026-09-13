@@ -1,9 +1,7 @@
 ---
 title: "History"
-description: "How to undo and redo on @pluv/react"
+description: "Undo and redo shared storage changes in @pluv/react using Yjs or Loro history managers."
 ---
-
-# History
 
 `@pluv/react` comes with hooks to manipulate history that are built on top of the CRDT library you are using.
 
@@ -25,13 +23,19 @@ This will allow users to apply undos and redos to Pluv storage mutations.
 Assume you have storage defined like so:
 
 ```ts
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 
 const client = createClient({
-  initialStorage: yjs.doc((t) => ({
-    messages: t.array<string>("messages", []),
-  })),
+  storage: yjs.storage({
+    schema: yjs.schema({
+      messages: yjs.yArray(s.string()),
+    }),
+  }),
+  initialStorage: {
+    messages: [],
+  },
   // ...
 });
 

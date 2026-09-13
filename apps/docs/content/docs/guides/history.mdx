@@ -23,13 +23,19 @@ This will allow users to apply undos and redos to Pluv storage mutations.
 Assume you have storage defined like so:
 
 ```ts
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle, createClient } from "@pluv/react";
 
 const client = createClient({
-  initialStorage: yjs.doc((t) => ({
-    messages: t.array<string>("messages", []),
-  })),
+  storage: yjs.storage({
+    schema: yjs.schema({
+      messages: yjs.yArray(s.string()),
+    }),
+  }),
+  initialStorage: {
+    messages: [],
+  },
   // ...
 });
 

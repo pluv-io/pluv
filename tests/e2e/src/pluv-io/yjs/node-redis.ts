@@ -1,7 +1,7 @@
 import { createClient, infer } from "@pluv/client";
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
-import { slateNodesToInsertDelta } from "@slate-yjs/core";
 import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node-redis";
 
@@ -12,21 +12,20 @@ const client = createClient({
 
         return `http://localhost:3103/api/authorize?roomName=${roomName}`;
     },
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array("messages", [
-            yjs.map([
-                ["message", "hello"],
-                ["name", "i3dly"],
-            ]),
-        ]),
-        slate: (() => {
-            const type = t.xmlText("slate");
-
-            type.applyDelta(slateNodesToInsertDelta([]));
-
-            return type;
-        })(),
-    })),
+    storage: yjs.storage({
+        schema: yjs.schema({
+            messages: yjs.yArray(yjs.yMap(s.string())),
+            slate: yjs.yXmlText(),
+        }),
+    }),
+    initialStorage: {
+        messages: [
+            {
+                message: "hello",
+                name: "i3dly",
+            },
+        ],
+    },
     presence: z.object({
         count: z.number(),
     }),

@@ -682,10 +682,7 @@ export class IORoom<
             }
         }
 
-        const initialized = this._docFactory.getInitialized();
-
-        doc.rebuildStorage(initialized.get());
-        initialized.destroy();
+        doc.rebuildStorage();
 
         return doc;
     }

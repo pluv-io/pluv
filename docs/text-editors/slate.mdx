@@ -3,8 +3,6 @@ title: "Slate"
 description: "Learn how to setup Slate for realtime collaboration with pluv.io"
 ---
 
-# Slate
-
 > **Note**: pluv.io integrates with Slate only via Yjs (i.e. @pluv/crdt-yjs)
 
 > **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart/nextjs) to see how.
@@ -59,7 +57,7 @@ export const SlateEditor: FC<SlateEditorProps> = () => {
 };
 ```
 
-Then we will need to setup Yjs storage on pluv.io, with a [Yjs.XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext) onto which Slate's editor contents will live. Note that the [slate-yjs docs](https://docs.slate-yjs.dev/walkthroughs/installation) do require that the YXmlText receive an initial transformation when initialized via [slateNodesToInsertDelta](https://docs.slate-yjs.dev/api/slate-yjs-core/utils) from `@slate-yjs/core`. So we can use an [IIFE](https://developer.mozilla.org/en-US/docs/Glossary/IIFE) when declaring the client's `initialStorage`.
+Then we will need to setup Yjs storage on pluv.io, with a [Yjs.XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext) onto which Slate's editor contents will live. Xml types are not JSON-seedable — declare `yjs.yXmlText()` on the schema and initialize the empty document when binding the editor (see `normalizeNode` below, or `slateNodesToInsertDelta` from `@slate-yjs/core` at connect time).
 
 ```ts
 // pluv.ts
@@ -68,16 +66,13 @@ import { createClient } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import type { InferBundleRoom } from "@pluv/react";
 import { createBundle } from "@pluv/react";
-import { slateNodesToInsertDelta } from "@slate-yjs/core";
 
 const io = createClient({
-  initialStorage: yjs.doc((t) => ({
-    myEditor: (() => {
-        const type = t.xmlText("myEditor");
-        type.applyDelta(slateNodesToInsertDelta([]));
-        return type;
-    })(),
-  })),
+  storage: yjs.storage({
+    schema: yjs.schema({
+      myEditor: yjs.yXmlText(),
+    }),
+  }),
   // ... other pluv.io configs
 });
 
@@ -160,4 +155,4 @@ export const SlateEditor: FC<SlateEditorProps> = () => {
 
 > **Note**: With Yjs, the shared `Y.XmlText` is the source of truth for the document. The `initialValue` prop is only used to initialize the editor on first mount—it is not controlled React state, and you should not mirror the editor value with `useState` and `onChange`.
 
-That's all you need to enable realtime collaboration on Slate! From here on, you can further customize your Slate editor by following the official [Slate documentation](https://docs.slatejs.org). And you can persist the contents of your Slate editor by following pluv.io's documentation for [Loading Storage](/docs/storage/loading-storage).
+That's all you need to enable realtime collaboration on Slate! From here on, you can further customize your Slate editor by following the official [Slate documentation](https://docs.slatejs.org). And you can persist the contents of your Slate editor by following pluv.io's documentation for [Loading Storage](/docs/guides/storage/loading).

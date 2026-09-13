@@ -68,9 +68,14 @@ Create your frontend client with your backend types
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const io = createClient({
     types,
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array<string>("messages"),
-    })),
+    storage: yjs.storage({
+        schema: yjs.schema({
+            messages: yjs.yArray(s.string()),
+        }),
+    }),
+    initialStorage: {
+        messages: [],
+    },
     presence: z.object({
         selectionId: z.string().nullable(),
     }),

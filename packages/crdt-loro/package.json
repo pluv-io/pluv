@@ -26,6 +26,8 @@
         "build": "tsdown --config tsdown.browser.config.ts && tsdown --config tsdown.bundler.config.ts && tsdown --config tsdown.node.config.ts",
         "dev": "tsdown --config tsdown.browser.config.ts --watch",
         "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest",
         "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
     },
     "dependencies": {
@@ -41,7 +43,8 @@
         "@pluv/tsconfig": "workspace:^",
         "loro-crdt": "^1.16.1",
         "tsdown": "^0.23.0",
-        "typescript": "^7.0.2"
+        "typescript": "^7.0.2",
+        "vitest": "^5.0.0"
     },
     "exports": {
         ".": {

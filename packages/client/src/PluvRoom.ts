@@ -1,8 +1,8 @@
 import type {
     AbstractCrdtDocFactory,
-    InferCrdtJson,
     InferDoc,
     InferDocLike,
+    InferJson,
     InferStorage,
     NoopCrdtDocFactory,
 } from "@pluv/crdt";
@@ -196,7 +196,7 @@ export type RoomConfig<
         reconnectTimeoutMs?: ReconnectTimeoutMs;
         router?: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
     } & RoomEndpoints<TIO, TMetadata> &
-        Pick<CrdtManagerOptions<TCrdt>, "initialStorage"> &
+        Pick<CrdtManagerOptions<TCrdt>, "initialStorage" | "storage"> &
         UsersManagerConfig<TPresence>
 >;
 
@@ -206,14 +206,21 @@ export class PluvRoom<
     TPresence extends Record<string, any> = {},
     TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
-> implements RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>> {
+> implements RoomLike<
+    TIO,
+    InferDoc<TCrdt>,
+    TPresence,
+    InferStorage<TCrdt>,
+    TEvents,
+    InferJson<TCrdt>
+> {
     readonly _endpoints: RoomEndpoints<TIO, TMetadata>;
 
     public readonly id: string;
     public readonly metadata?: StandardSchemaV1<unknown, TMetadata>;
 
     private readonly _crdtManager: CrdtManager<TCrdt>;
-    private readonly _crdtNotifier = new CrdtNotifier<InferStorage<TCrdt>>();
+    private readonly _crdtNotifier = new CrdtNotifier<InferJson<TCrdt>>();
     private readonly _debug: boolean | PluvRoomDebug<TIO>;
     private readonly _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
     private readonly _intervals: IntervalIds = {
@@ -270,6 +277,7 @@ export class PluvRoom<
             publicKey,
             reconnectTimeoutMs = RECONNECT_TIMEOUT_MS,
             router,
+            storage: crdtStorage,
             wsEndpoint,
         } = options;
 
@@ -304,7 +312,10 @@ export class PluvRoom<
             limits: this._limits,
             presence,
         });
-        this._crdtManager = new CrdtManager<TCrdt>({ initialStorage });
+        this._crdtManager = new CrdtManager<TCrdt>({
+            initialStorage,
+            storage: crdtStorage,
+        });
     }
 
     public get webSocket(): WebSocket | null {
@@ -363,7 +374,7 @@ export class PluvRoom<
                     any,
                     any,
                     TPresence,
-                    InferStorage<TCrdt>
+                    InferDocLike<TCrdt>
                 >
             )(parsed, context);
 
@@ -490,7 +501,7 @@ export class PluvRoom<
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     };
 
-    public getDoc = (): CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>> => {
+    public getDoc = (): CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>, InferJson<TCrdt>> => {
         return this._crdtManager.doc;
     };
 
@@ -524,11 +535,11 @@ export class PluvRoom<
         return sharedType;
     };
 
-    public getStorageJson(): InferCrdtJson<InferStorage<TCrdt>> | null;
-    public getStorageJson<TKey extends keyof InferStorage<TCrdt>>(
+    public getStorageJson(): InferJson<TCrdt> | null;
+    public getStorageJson<TKey extends keyof InferJson<TCrdt>>(
         type: TKey,
-    ): InferCrdtJson<InferStorage<TCrdt>[TKey]> | null;
-    public getStorageJson<TKey extends keyof InferStorage<TCrdt>>(type?: TKey) {
+    ): InferJson<TCrdt>[TKey] | null;
+    public getStorageJson<TKey extends keyof InferJson<TCrdt>>(type?: TKey) {
         if (this._state.connection.id === null) return null;
         if (typeof type === "undefined") return this._crdtManager.doc.toJson();
 
@@ -592,7 +603,7 @@ export class PluvRoom<
                 if (prop === "storage") return this.#_storage;
             },
         },
-    ) as SubscribeProxy<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
+    ) as SubscribeProxy<TIO, TPresence, InferJson<TCrdt>, TEvents>;
 
     public transact = (fn: (storage: InferStorage<TCrdt>) => void, origin?: string): void => {
         const _origin = origin ?? this._state.connection.id;
@@ -730,18 +741,15 @@ export class PluvRoom<
     private _emitSharedTypes(): void {
         const sharedTypes = this._crdtManager.doc.get();
 
-        const storageRoot = Object.keys(sharedTypes).reduce(
-            (acc, prop) => {
-                const serialized = this._crdtManager.doc.toJson(prop);
+        const storageRoot = Object.keys(sharedTypes).reduce((acc, prop) => {
+            const serialized = this._crdtManager.doc.toJson(prop);
 
-                this._crdtNotifier.subject(prop).next(serialized);
+            this._crdtNotifier.subject(prop).next(serialized);
 
-                acc[prop as keyof InferStorage<TCrdt>] = serialized;
+            acc[prop as keyof InferStorage<TCrdt>] = serialized;
 
-                return acc;
-            },
-            {} as { [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]> },
-        );
+            return acc;
+        }, {} as InferJson<TCrdt>);
 
         this._crdtNotifier.rootSubject.next(storageRoot);
     }
@@ -1134,20 +1142,15 @@ export class PluvRoom<
 
         const sharedTypes = this._crdtManager.doc.get();
 
-        const storageRoot = Object.keys(sharedTypes).reduce(
-            (acc, prop) => {
-                const serialized = this._crdtManager.doc.toJson(prop);
+        const storageRoot = Object.keys(sharedTypes).reduce((acc, prop) => {
+            const serialized = this._crdtManager.doc.toJson(prop);
 
-                this._crdtNotifier.subject(prop).next(serialized);
+            this._crdtNotifier.subject(prop).next(serialized);
 
-                acc[prop as keyof InferStorage<TCrdt>] = serialized;
+            acc[prop as keyof InferStorage<TCrdt>] = serialized;
 
-                return acc;
-            },
-            {} as {
-                [P in keyof InferStorage<TCrdt>]: InferCrdtJson<InferStorage<TCrdt>[P]>;
-            },
-        );
+            return acc;
+        }, {} as InferJson<TCrdt>);
 
         this._crdtNotifier.rootSubject.next(storageRoot);
     }
@@ -1579,26 +1582,26 @@ export class PluvRoom<
     }
 
     #_storage = new Proxy(
-        <TKey extends keyof InferStorage<TCrdt>>(
+        <TKey extends keyof InferJson<TCrdt>>(
             key: TKey,
-            callback: StorageSubscriptionCallback<InferStorage<TCrdt>, TKey>,
+            callback: StorageSubscriptionCallback<InferJson<TCrdt>, TKey>,
         ): (() => void) => this._crdtNotifier.subscribe(key, callback),
         {
             get: (fn, prop) => {
-                type _Storage = InferStorage<TCrdt>;
+                type _Json = InferJson<TCrdt>;
 
                 if (!!prop) {
-                    return (callback: StorageRootSubscriptionCallback<_Storage>) => {
+                    return (callback: StorageRootSubscriptionCallback<_Json>) => {
                         return this._crdtNotifier.subcribeRoot(callback);
                     };
                 }
 
-                return (callback: StorageSubscriptionCallback<_Storage, keyof _Storage>) => {
-                    return fn(prop as keyof InferStorage<TCrdt>, callback);
+                return (callback: StorageSubscriptionCallback<_Json, keyof _Json>) => {
+                    return fn(prop as keyof InferJson<TCrdt>, callback);
                 };
             },
         },
-    ) as StorageProxy<InferStorage<TCrdt>>;
+    ) as StorageProxy<InferJson<TCrdt>>;
 
     private _updateState(
         updater: (oldState: WebSocketState<TIO>) => WebSocketState<TIO>,

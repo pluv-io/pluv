@@ -1,7 +1,9 @@
-import type { Text as YText } from "yjs";
-import type { YjsType } from "../types";
-import { YjsText } from "./YjsText";
+import { Text as YText } from "yjs";
 
-export const text = (value: string = ""): YjsType<YText, string> => {
-    return new YjsText(value);
+export const text = (value: string = ""): YText => {
+    const shared = new YText();
+
+    if (value) shared.insert(0, value);
+
+    return shared;
 };

@@ -11,6 +11,7 @@ Creates a bundle to be able to access the `PluvClient` and `PluvRoom` from vario
 
 ```ts
 import { createBundle createClient } from "@pluv/react";
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 
 const io = createClient({/* ... */});
@@ -78,9 +79,9 @@ const MyComponent: FC = () => {
         selectionId: null,
       }}
       // Define the initial storage for the room
-      initialStorage={(t) => ({
-        messages: t.array("messages"),
-      })}
+      initialStorage={{
+        messages: [],
+      }}
       // The room's id
       room="my-mock-room"
     >
@@ -119,9 +120,9 @@ const MyComponent: FC = () => {
         selectionId: null,
       }}
       // Optional: Overwrite the initialStorage value from the client
-      initialStorage={(t) => ({
-        messages: t.array("messages"),
-      })}
+      initialStorage={{
+        messages: [],
+      }}
       // Optional: Emits an error whenever authorization fails (when
       // `authorize` is set on the PluvIO instance`)
       onAuthorizationFail={(error: Error) => {
@@ -340,18 +341,24 @@ redo();
 
 ### useStorage
 
-Returns `[TData | null, AbstractCrdtType | null]`
+Returns `[TData | null, SharedType | null]`
 
-Returns a base-level property of our CRDT storage as a serialized value and a `@pluv/crdt` `AbstractCrdtType` that holds a shared type of our specified CRDT. The component is re-rendered whenever the `AbstractCrdtType` is updated. The returned values are null while the room is still connecting or
+Returns a base-level property of our CRDT storage as a serialized JSON value and the native shared type (for example `Y.Array`). The component is re-rendered whenever the shared type is updated. The returned values are null while the room is still connecting or
 initializing its storage.
 
 ```tsx
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 
 const io = createClient({
-  initialStorage: yjs.doc((t) => ({
-    messages: t.array("messages", ["hello"]),
-  })),
+  storage: yjs.storage({
+    schema: yjs.schema({
+      messages: yjs.yArray(s.string()),
+    }),
+  }),
+  initialStorage: {
+    messages: ["hello"],
+  },
   // ...
 });
 

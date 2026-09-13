@@ -1,4 +1,9 @@
-import type { AbstractCrdtDocFactory, CrdtLibraryType, NoopCrdtDocFactory } from "@pluv/crdt";
+import type {
+    AbstractCrdtDocFactory,
+    CrdtLibraryType,
+    HasCrdtLibrary,
+    NoopCrdtDocFactory,
+} from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type { BaseUser, HasRequiredProperty, IOAuthorize, InferIOAuthorizeUser } from "@pluv/types";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
@@ -49,9 +54,9 @@ type ResolvedServerConfig<
     TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
 > = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> &
     PluvIORouter<TPlatform, TAuthorize, TContext, TEvents> &
-    (TCrdt extends CrdtLibraryType<NoopCrdtDocFactory>
-        ? { getInitialStorage?: "[ERROR]: Must specify crdt to use getInitialStorage" }
-        : { getInitialStorage: GetInitialStorageFn<TContext> });
+    (HasCrdtLibrary<TCrdt> extends true
+        ? { getInitialStorage: GetInitialStorageFn<TContext> }
+        : { getInitialStorage?: "[ERROR]: Must specify crdt to use getInitialStorage" });
 
 export type BaseServerConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,

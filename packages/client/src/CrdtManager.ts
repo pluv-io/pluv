@@ -1,8 +1,9 @@
-import type { AbstractCrdtDocFactory, InferDocLike, InferStorage } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, InferDocLike, InferSeed, InferStorage } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 
-export type CrdtManagerOptions<TCrdt extends AbstractCrdtDocFactory<any, any>> = {
-    initialStorage?: TCrdt;
+export type CrdtManagerOptions<TCrdt extends AbstractCrdtDocFactory<any, any, any, any>> = {
+    storage?: TCrdt;
+    initialStorage?: InferSeed<TCrdt>;
 };
 
 interface CrdtManagerInitializeParams {
@@ -15,16 +16,16 @@ interface ApplyUpdateParams {
     update: string | readonly string[];
 }
 
-export class CrdtManager<TCrdt extends AbstractCrdtDocFactory<any, any>> {
+export class CrdtManager<TCrdt extends AbstractCrdtDocFactory<any, any, any, any>> {
     public doc: InferDocLike<TCrdt>;
     public initialized: boolean = false;
 
     private readonly _docFactory: TCrdt;
 
     constructor(options: CrdtManagerOptions<TCrdt>) {
-        const { initialStorage = noop.doc({}) as any } = options;
+        const { initialStorage, storage = noop.doc() as TCrdt } = options;
 
-        this._docFactory = initialStorage;
+        this._docFactory = storage.getFactory(initialStorage) as TCrdt;
         this.doc = this._docFactory.getEmpty() as InferDocLike<TCrdt>;
     }
 
@@ -91,12 +92,8 @@ export class CrdtManager<TCrdt extends AbstractCrdtDocFactory<any, any>> {
 
         if (!updates.length) return this;
 
-        const initialized = this._docFactory.getInitialized();
-        const reference = initialized.get();
-
-        this.doc = this._applyDocUpdates(this.doc, updates, origin).rebuildStorage(reference);
+        this.doc = this._applyDocUpdates(this.doc, updates, origin).rebuildStorage();
         this.initialized = true;
-        initialized.destroy();
 
         return this;
     }

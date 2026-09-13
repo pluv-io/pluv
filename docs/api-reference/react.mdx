@@ -1,9 +1,7 @@
 ---
 title: "@pluv/react"
-description: "API Reference @pluv/react"
+description: "API reference for @pluv/react — createBundle, PluvRoomProvider, and hooks for events, presence, storage, and history."
 ---
-
-# @pluv/react
 
 ## createBundle
 
@@ -13,6 +11,7 @@ Creates a bundle to be able to access the `PluvClient` and `PluvRoom` from vario
 
 ```ts
 import { createBundle createClient } from "@pluv/react";
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 
 const io = createClient({/* ... */});
@@ -80,9 +79,9 @@ const MyComponent: FC = () => {
         selectionId: null,
       }}
       // Define the initial storage for the room
-      initialStorage={(t) => ({
-        messages: t.array("messages"),
-      })}
+      initialStorage={{
+        messages: [],
+      }}
       // The room's id
       room="my-mock-room"
     >
@@ -102,7 +101,7 @@ React provider component to allow the `PluvClient` created by `createClient` to 
 
 ### PluvRoomProvider
 
-React provider component to enable `CreateBundle` hooks within child components. Mounting this component connects to a real-time room with other connected users. Unmounting this component will disconnect the room. See [Create Rooms](/docs/api-reference/react) for more details.
+React provider component to enable `CreateBundle` hooks within child components. Mounting this component connects to a real-time room with other connected users. Unmounting this component will disconnect the room. See [Create Rooms](/docs/guides/rooms/react) for more details.
 
 ```tsx
 import { yjs } from "@pluv/crdt-yjs";
@@ -121,9 +120,9 @@ const MyComponent: FC = () => {
         selectionId: null,
       }}
       // Optional: Overwrite the initialStorage value from the client
-      initialStorage={(t) => ({
-        messages: t.array("messages"),
-      })}
+      initialStorage={{
+        messages: [],
+      }}
       // Optional: Emits an error whenever authorization fails (when
       // `authorize` is set on the PluvIO instance`)
       onAuthorizationFail={(error: Error) => {
@@ -159,7 +158,7 @@ event.receiveMessage.useEvent(({ data }) => {
 
 Returns `BroadcastProxy`
 
-Returns a broadcast function to emit an event and its data to all connected clients. This is type-safe. The first parameter `event` will be the name of the event procedure specified when creating your `PluvProcedure` instance, and the second parameter `data` will be the associated input type. See [Define Events](/docs/custom-events/server-events) for more details.
+Returns a broadcast function to emit an event and its data to all connected clients. This is type-safe. The first parameter `event` will be the name of the event procedure specified when creating your `PluvProcedure` instance, and the second parameter `data` will be the associated input type. See [Define Events](/docs/guides/events/server) for more details.
 
 ```tsx
 const broadcast = useBroadcast();
@@ -332,7 +331,7 @@ Returns `void`
 
 Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/api-reference/react#useUndo).
 
-For more information see: [History](/docs/history)
+For more information see: [History](/docs/guides/history)
 
 ```ts
 const redo = useRedo();
@@ -342,18 +341,24 @@ redo();
 
 ### useStorage
 
-Returns `[TData | null, AbstractCrdtType | null]`
+Returns `[TData | null, SharedType | null]`
 
-Returns a base-level property of our CRDT storage as a serialized value and a `@pluv/crdt` `AbstractCrdtType` that holds a shared type of our specified CRDT. The component is re-rendered whenever the `AbstractCrdtType` is updated. The returned values are null while the room is still connecting or
+Returns a base-level property of our CRDT storage as a serialized JSON value and the native shared type (for example `Y.Array`). The component is re-rendered whenever the shared type is updated. The returned values are null while the room is still connecting or
 initializing its storage.
 
 ```tsx
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 
 const io = createClient({
-  initialStorage: yjs.doc((t) => ({
-    messages: t.array("messages", ["hello"]),
-  })),
+  storage: yjs.storage({
+    schema: yjs.schema({
+      messages: yjs.yArray(s.string()),
+    }),
+  }),
+  initialStorage: {
+    messages: ["hello"],
+  },
   // ...
 });
 
@@ -376,7 +381,7 @@ Performs a mutation that can be tracked as an operation to be undone/redone (und
 
 You can specify a 2nd parameter to transact with a different transaction origin.
 
-For more information see: [History](/docs/history)
+For more information see: [History](/docs/guides/history)
 
 ```ts
 const [messages, sharedType] = useStorage("messages");
@@ -401,7 +406,7 @@ Returns `void`
 
 Undoes the last mutation that was applied via [PluvRoom.transact](/docs/api-reference/react#useTransact).
 
-For more information see: [History](/docs/history)
+For more information see: [History](/docs/guides/history)
 
 
 ```ts

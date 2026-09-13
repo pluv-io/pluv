@@ -1,7 +1,5 @@
-import type { XmlText as YXmlText } from "yjs";
-import { YjsType } from "../types";
-import { YjsXmlText } from "./YjsXmlText";
+import { XmlText as YXmlText } from "yjs";
 
-export const xmlText = (): YjsType<YXmlText, string> => {
-    return new YjsXmlText();
+export const xmlText = (): YXmlText => {
+    return new YXmlText();
 };

@@ -1,33 +1,39 @@
 import { AbstractCrdtDocFactory } from "@pluv/crdt";
 import type { LoroDoc } from "loro-crdt";
-import type { LoroType } from "../types";
+import type { InferLoroJson, InferLoroSeed, InferLoroStorage, LoroSchema } from "../schema/schema";
 import { CrdtLoroDoc } from "./CrdtLoroDoc";
-import type { LoroBuilder } from "./builder";
 
 export class CrdtLoroDocFactory<
-    TStorage extends Record<string, LoroType<any, any>>,
-> extends AbstractCrdtDocFactory<LoroDoc, TStorage> {
-    public readonly _initialStorage: (builder: LoroBuilder) => TStorage;
+    TSchema extends LoroSchema = LoroSchema,
+> extends AbstractCrdtDocFactory<
+    LoroDoc,
+    InferLoroStorage<TSchema>,
+    InferLoroJson<TSchema>,
+    InferLoroSeed<TSchema>
+> {
+    public readonly _schema: TSchema;
+    public readonly _seed?: InferLoroSeed<TSchema>;
 
-    constructor(initialStorage: (builder: LoroBuilder) => TStorage = () => ({}) as TStorage) {
-        super(initialStorage);
+    constructor(schema: TSchema, seed?: InferLoroSeed<TSchema>) {
+        super();
 
-        this._initialStorage = initialStorage;
+        this._schema = schema;
+        this._seed = seed;
     }
 
-    public getEmpty(): CrdtLoroDoc<TStorage> {
-        return new CrdtLoroDoc<TStorage>();
+    public getEmpty(): CrdtLoroDoc<TSchema> {
+        return new CrdtLoroDoc<TSchema>(this._schema);
     }
 
-    public getFactory(
-        initialStorage?: (builder: LoroBuilder) => TStorage,
-    ): CrdtLoroDocFactory<TStorage> {
-        return new CrdtLoroDocFactory<TStorage>(initialStorage ?? this._initialStorage);
+    public getFactory(seed?: InferLoroSeed<TSchema>): CrdtLoroDocFactory<TSchema> {
+        return new CrdtLoroDocFactory<TSchema>(this._schema, seed ?? this._seed);
     }
 
-    public getInitialized(
-        initialStorage?: (builder: LoroBuilder) => TStorage,
-    ): CrdtLoroDoc<TStorage> {
-        return new CrdtLoroDoc<TStorage>(initialStorage ?? this._initialStorage);
+    public getInitialized(seed?: InferLoroSeed<TSchema>): CrdtLoroDoc<TSchema> {
+        return new CrdtLoroDoc<TSchema>(
+            this._schema,
+            (seed ?? this._seed) as Record<string, unknown> | undefined,
+            true,
+        );
     }
 }

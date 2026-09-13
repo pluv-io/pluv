@@ -3,8 +3,6 @@ title: "@pluv/react Rooms"
 description: "Learn how to create and connect to rooms with @pluv/react"
 ---
 
-# @pluv/react Rooms
-
 Rooms are the channels that WebSockets can enter and leave (i.e. connect and disconnect). Events emitted by a connection in a room will be broadcasted only to connections within the same room.
 
 ## Create and connect to a PluvRoom
@@ -31,9 +29,9 @@ export const MyPage: FC = () => {
         selectionId: null,
       }}
       // Optional: Overwrite the initialStorage value from the client
-      initialStorage={(t) => ({
-        messages: t.array("messages"),
-      })}
+      initialStorage={{
+        messages: [],
+      }}
       // Optional: Emits an error whenever authorization fails (when
       // `authorize` is set on the PluvIO instance`)
       onAuthorizationFail={(error: Error) => {

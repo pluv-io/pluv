@@ -12,16 +12,24 @@ const AUTHORED_CONTENT = "content that the user will delete";
 const scenarios = [
     {
         name: "yjs",
-        roomDoc: () => yjs.doc(() => ({})).getEmpty(),
+        roomDoc: () => yjs.doc().getEmpty(),
         authoredState: () =>
             yjs
-                .doc((t) => ({ content: t.text("content", AUTHORED_CONTENT) }))
-                .getInitialized()
+                .storage({
+                    schema: yjs.schema({
+                        content: yjs.yText(),
+                    }),
+                })
+                .getInitialized({ content: AUTHORED_CONTENT })
                 .getEncodedState(),
         deletedState: () => {
             const doc = yjs
-                .doc((t) => ({ content: t.text("content", AUTHORED_CONTENT) }))
-                .getInitialized();
+                .storage({
+                    schema: yjs.schema({
+                        content: yjs.yText(),
+                    }),
+                })
+                .getInitialized({ content: AUTHORED_CONTENT });
             const text = doc.get("content");
 
             text.delete(0, text.length);
@@ -31,16 +39,24 @@ const scenarios = [
     },
     {
         name: "loro",
-        roomDoc: () => loro.doc(() => ({})).getEmpty(),
+        roomDoc: () => loro.doc().getEmpty(),
         authoredState: () =>
             loro
-                .doc((t) => ({ content: t.text("content", AUTHORED_CONTENT) }))
-                .getInitialized()
+                .storage({
+                    schema: loro.schema({
+                        content: loro.loroText(),
+                    }),
+                })
+                .getInitialized({ content: AUTHORED_CONTENT })
                 .getEncodedState(),
         deletedState: () => {
             const doc = loro
-                .doc((t) => ({ content: t.text("content", AUTHORED_CONTENT) }))
-                .getInitialized();
+                .storage({
+                    schema: loro.schema({
+                        content: loro.loroText(),
+                    }),
+                })
+                .getInitialized({ content: AUTHORED_CONTENT });
             const text = doc.get("content");
 
             text.delete(0, text.length);
@@ -76,7 +92,7 @@ describe("yjs isDirty vs isEmpty", () => {
     // Why teardown cannot key off `isEmpty()`: binding an editor to a shared type registers it
     // without writing anything, which is what BlockNote does before the user types.
     it("treats a registered but unwritten shared type as clean, where isEmpty does not", () => {
-        const doc = yjs.doc(() => ({})).getEmpty();
+        const doc = yjs.doc().getEmpty();
 
         doc.value.getText("content");
 

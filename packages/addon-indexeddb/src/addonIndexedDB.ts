@@ -1,5 +1,5 @@
 import type { PluvRoom, PluvRoomAddon } from "@pluv/client";
-import type { AbstractCrdtDocFactory, CrdtType } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import type { IOLike, JsonObject } from "@pluv/types";
 import { IndexedDBStorage } from "./IndexedDBStorage";
 

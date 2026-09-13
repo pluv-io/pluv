@@ -1,4 +1,5 @@
 import { createClient, infer } from "@pluv/client";
+import { s } from "@pluv/crdt";
 import { loro } from "@pluv/crdt-loro";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
@@ -9,14 +10,19 @@ const client = createClient({
     authEndpoint: ({ room }) => {
         return `http://localhost:3112/api/pluv/authorize?room=${room}`;
     },
-    initialStorage: loro.doc((t) => ({
-        messages: t.list("messages", [
-            loro.object({
+    storage: loro.storage({
+        schema: loro.schema({
+            messages: loro.loroList(loro.loroMap(s.string())),
+        }),
+    }),
+    initialStorage: {
+        messages: [
+            {
                 message: "hello",
                 name: "pluvrt",
-            }),
-        ]),
-    })),
+            },
+        ],
+    },
     presence: z.object({
         count: z.number(),
     }),

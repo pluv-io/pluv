@@ -9,9 +9,9 @@ import type {
 } from "@pluv/client";
 import type {
     AbstractCrdtDocFactory,
-    InferCrdtJson,
     InferDoc,
-    InferInitialStorageFn,
+    InferJson,
+    InferSeed,
     InferStorage,
 } from "@pluv/crdt";
 import type {
@@ -45,7 +45,7 @@ type BaseRoomProviderProps<
     TCrdt extends AbstractCrdtDocFactory<any, any>,
 > = {
     children?: ReactNode;
-    initialStorage?: keyof InferStorage<TCrdt> extends never ? never : InferInitialStorageFn<TCrdt>;
+    initialStorage?: keyof InferSeed<TCrdt> extends never ? never : InferSeed<TCrdt>;
     room: string;
 } & (keyof TPresence extends never ? { initialPresence?: never } : { initialPresence: TPresence });
 
@@ -61,8 +61,8 @@ export type MockedRoomProviderProps<
 export type BroadcastProxy<TIO extends IOLike> = (<TEvent extends keyof InferIOInput<TIO>>(
     event: TEvent,
     data: Id<InferIOInput<TIO>[TEvent]>,
-) => void) & {
-    [event in keyof InferIOInput<TIO>]: (input: Id<InferIOInput<TIO>[event]>) => void;
+) => Promise<void>) & {
+    [event in keyof InferIOInput<TIO>]: (input: Id<InferIOInput<TIO>[event]>) => Promise<void>;
 };
 
 export type EventProxy<TIO extends IOLike> = {
@@ -96,7 +96,7 @@ export interface CreateBundle<
     TIO extends IOLike<any, any, any>,
     TMetadata extends JsonObject,
     TPresence extends Record<string, any> = {},
-    TCrdt extends InferIOCrdtKind<TIO> = InferIOCrdtKind<TIO>,
+    TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > {
     // components
@@ -116,7 +116,7 @@ export interface CreateBundle<
         selector?: (connection: WebSocketConnection) => T,
         options?: SubscriptionHookOptions<Id<T>>,
     ) => Id<T>;
-    useDoc: () => CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>>;
+    useDoc: () => CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>, InferJson<TCrdt>>;
     useEvent: <TType extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
         type: TType,
         callback: (data: Id<IOEventMessage<MergeEvents<TEvents, TIO>, TType>>) => void,
@@ -139,13 +139,20 @@ export interface CreateBundle<
         options?: SubscriptionHookOptions<T>,
     ) => T;
     useRedo: () => () => void;
-    useRoom: () => RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>, TEvents>;
+    useRoom: () => RoomLike<
+        TIO,
+        InferDoc<TCrdt>,
+        TPresence,
+        InferStorage<TCrdt>,
+        TEvents,
+        InferJson<TCrdt>
+    >;
     useStorage: <
-        TKey extends keyof InferStorage<TCrdt>,
-        TData extends unknown = InferCrdtJson<InferStorage<TCrdt>[TKey]>,
+        TKey extends keyof InferJson<TCrdt>,
+        TData extends unknown = InferJson<TCrdt>[TKey],
     >(
         key: TKey,
-        selector?: (data: InferCrdtJson<InferStorage<TCrdt>[TKey]>) => TData,
+        selector?: (data: InferJson<TCrdt>[TKey]) => TData,
         options?: SubscriptionHookOptions<TData | null>,
     ) => UseStorageResult<TData, InferStorage<TCrdt>[TKey]>;
     useTransact: () => (fn: (storage: InferStorage<TCrdt>) => void, origin?: string) => void;
@@ -154,5 +161,5 @@ export interface CreateBundle<
 
 export type InferBundleRoom<TBundle extends CreateBundle<any, any, any, any, any>> =
     TBundle extends CreateBundle<infer IIO, any, infer IPresence, infer ICrdt, infer IEvents>
-        ? RoomLike<IIO, InferDoc<ICrdt>, IPresence, InferStorage<ICrdt>, IEvents>
+        ? RoomLike<IIO, InferDoc<ICrdt>, IPresence, InferStorage<ICrdt>, IEvents, InferJson<ICrdt>>
         : never;

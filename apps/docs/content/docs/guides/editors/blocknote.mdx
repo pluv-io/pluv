@@ -56,9 +56,11 @@ import { createBundle } from "@pluv/react";
 import { z } from "zod";
 
 const io = createClient({
-  initialStorage: yjs.doc((t) => ({
-    myEditor: t.xmlFragment("myEditor"),
-  })),
+  storage: yjs.storage({
+    schema: yjs.schema({
+      myEditor: yjs.yXmlFragment(),
+    }),
+  }),
   presense: z.object({
     // We'll put BlockNote's awareness data here.
 
