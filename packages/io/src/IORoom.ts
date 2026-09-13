@@ -184,7 +184,8 @@ export class IORoom<
     }
 
     private get _initialized(): Promise<boolean> {
-        return Promise.resolve(!!this._uninitialize?.then((result) => !!result));
+        if (!this._uninitialize) return Promise.resolve(false);
+        return this._uninitialize.then(() => true);
     }
 
     constructor(id: string, config: IORoomConfig<TPlatform, TAuthorize, TContext, TEvents>) {
