@@ -1,9 +1,9 @@
 import type {
     EventRecord,
     IOAuthorize,
-    InputZodLike,
     JsonObject,
     ProcedureLike,
+    StandardSchemaV1,
 } from "@pluv/types";
 import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
 import type { EventResolver, EventResolverKind, MergeEventRecords } from "./types";
@@ -23,7 +23,7 @@ export interface PluvProcedureConfig<
         TInput,
         Partial<TOutput>
     > | null;
-    input?: InputZodLike<TInput>;
+    input?: StandardSchemaV1<unknown, TInput>;
     self?: EventResolver<"self", TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null;
     sync?: EventResolver<"sync", TPlatform, TAuthorize, TContext, TInput, Partial<TOutput>> | null;
 }
@@ -44,7 +44,7 @@ export class PluvProcedure<
         TInput,
         Partial<TOutput>
     > | null = null;
-    private _input: InputZodLike<TInput> | null = null;
+    private _input: StandardSchemaV1<unknown, TInput> | null = null;
     private _self: EventResolver<
         "self",
         TPlatform,
@@ -114,7 +114,7 @@ export class PluvProcedure<
     }
 
     public input<TData extends JsonObject>(
-        input: InputZodLike<TData>,
+        input: StandardSchemaV1<unknown, TData>,
     ): Omit<
         PluvProcedure<TPlatform, TAuthorize, TContext, TData, {}, TFilled | "input">,
         TFilled | "input"

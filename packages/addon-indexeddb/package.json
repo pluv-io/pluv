@@ -44,6 +44,7 @@
         "./*": "./*"
     },
     "inlinedDependencies": {
+        "@standard-schema/spec": "1.1.0",
         "wonka": "6.3.6"
     }
 }

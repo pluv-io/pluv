@@ -24,7 +24,7 @@ import type {
     PluvIORouter,
     ResolvedPluvIOAuthorize,
 } from "./types";
-import { oneLine } from "./utils";
+import { oneLine, parsePluvSchema } from "./utils";
 import { __PLUV_VERSION } from "./version";
 
 export type PluvIOConfig<
@@ -144,7 +144,7 @@ export class PluvIO<
     ): Promise<string> {
         const ioAuthorize = this._getIOAuthorize(params);
         const user = params.user as BaseUser;
-        const parsed = ioAuthorize.user.parse(user);
+        const parsed = parsePluvSchema(ioAuthorize.user, user);
 
         if (!!this._limits.userIdMaxLength && user.id.length > this._limits.userIdMaxLength) {
             throw new Error(oneLine`

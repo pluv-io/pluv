@@ -20,7 +20,6 @@ import type {
     InferIOAuthorizeUser,
     InferIOInput,
     InferIOOutput,
-    InputZodLike,
     JsonObject,
     MergeEvents,
     OptionalProps,
@@ -28,6 +27,7 @@ import type {
     OthersSubscriptionCallback,
     RoomEventListenerMap,
     RoomLike,
+    StandardSchemaV1,
     StateNotifierSubjects,
     StorageProxy,
     StorageRootSubscriptionCallback,
@@ -63,7 +63,7 @@ import type {
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
 import { UsersNotifier } from "./UsersNotifier";
-import { debounce } from "./utils";
+import { debounce, parsePluvSchema } from "./utils";
 
 const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
 const HEARTBEAT_INTERVAL_MS = 10_000;
@@ -191,7 +191,7 @@ export type RoomConfig<
         debug?: boolean | PluvRoomDebug<TIO>;
         limits: PluvClientLimits;
         onAuthorizationFail?: (error: Error) => void;
-        metadata?: InputZodLike<TMetadata>;
+        metadata?: StandardSchemaV1<unknown, TMetadata>;
         publicKey?: PublicKey<TMetadata>;
         reconnectTimeoutMs?: ReconnectTimeoutMs;
         router?: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
@@ -210,7 +210,7 @@ export class PluvRoom<
     readonly _endpoints: RoomEndpoints<TIO, TMetadata>;
 
     public readonly id: string;
-    public readonly metadata?: InputZodLike<TMetadata>;
+    public readonly metadata?: StandardSchemaV1<unknown, TMetadata>;
 
     private readonly _crdtManager: CrdtManager<TCrdt>;
     private readonly _crdtNotifier = new CrdtNotifier<InferStorage<TCrdt>>();
@@ -347,7 +347,9 @@ export class PluvRoom<
 
             if (!myself) return;
 
-            const parsed = procedure.config.input ? procedure.config.input.parse(data) : data;
+            const parsed = procedure.config.input
+                ? parsePluvSchema(procedure.config.input, data)
+                : data;
             const context: EventResolverContext<TIO, TPresence, InferDocLike<TCrdt>> = {
                 doc: this._crdtManager.doc,
                 others: this._usersManager.getOthers(),
@@ -1569,7 +1571,7 @@ export class PluvRoom<
     }
 
     private _setMetadata(metadata: TMetadata): TMetadata {
-        const parsed = this.metadata ? this.metadata.parse(metadata) : metadata;
+        const parsed = this.metadata ? parsePluvSchema(this.metadata, metadata) : metadata;
 
         this._lastMetadata = parsed;
 

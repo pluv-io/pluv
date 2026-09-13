@@ -67,18 +67,23 @@ describe("IORoom procedure errors", () => {
             router: io.router({
                 echo: io.procedure
                     .input({
-                        parse: (data: unknown) => {
-                            if (
-                                typeof data !== "object" ||
-                                data === null ||
-                                typeof (data as { message?: unknown }).message !== "string"
-                            ) {
-                                throw new Error("Expected { message: string }");
-                            }
+                        "~standard": {
+                            version: 1,
+                            vendor: "test",
+                            validate: (data: unknown) => {
+                                if (
+                                    typeof data !== "object" ||
+                                    data === null ||
+                                    typeof (data as { message?: unknown }).message !== "string"
+                                ) {
+                                    return {
+                                        issues: [{ message: "Expected { message: string }" }],
+                                    };
+                                }
 
-                            return data as { message: string };
+                                return { value: data as { message: string } };
+                            },
                         },
-                        _input: { message: "" },
                     })
                     .broadcast(({ message }) => ({ echoed: { message } })),
             }),

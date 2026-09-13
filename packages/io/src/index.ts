@@ -7,11 +7,12 @@ export type {
     EventRecord,
     InferIOAuthorize,
     InferIOAuthorizeUser,
-    InputZodLike,
     IOAuthorize,
     IOEventMessage,
     ProcedureLike,
+    StandardSchemaV1,
 } from "@pluv/types";
+export { parsePluvSchema } from "./utils";
 export { AbstractPersistence } from "./AbstractPersistence";
 export { AbstractPlatform } from "./AbstractPlatform";
 export type {

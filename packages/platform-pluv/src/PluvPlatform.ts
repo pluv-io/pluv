@@ -8,7 +8,7 @@ import type {
     PluvContext,
     WebSocketSerializedState,
 } from "@pluv/io";
-import { AbstractPlatform } from "@pluv/io";
+import { AbstractPlatform, parsePluvSchema } from "@pluv/io";
 import type { MaybePromise } from "@pluv/types";
 import stringify from "fast-json-stable-stringify";
 import type { Context } from "hono";
@@ -95,7 +95,7 @@ export class PluvPlatform<
     private readonly _webhookSecret?: WebhookSecret;
 
     public _createToken = async (params: JWTEncodeParams<any, any>): Promise<string> => {
-        const parsed = params.authorize.user.parse(params.user);
+        const parsed = parsePluvSchema(params.authorize.user, params.user);
 
         const [endpoints, publicKey, secretKey] = await Promise.all([
             typeof this._endpoints === "object" ? this._endpoints : this._endpoints(),

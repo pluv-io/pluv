@@ -6,7 +6,7 @@ import type {
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
 } from "@pluv/io";
-import type { InputZodLike } from "@pluv/types";
+import type { StandardSchemaV1 } from "@pluv/types";
 import type { z } from "zod";
 import type { PluvPlatform } from "./PluvPlatform";
 import type {
@@ -36,14 +36,14 @@ export type PluvIOListeners<
     onUserConnected: (
         event: IOUserConnectedEvent<
             PluvPlatform<TContext>,
-            { user: InputZodLike<TUser> },
+            { user: StandardSchemaV1<unknown, TUser> },
             TContext
         >,
     ) => void;
     onUserDisconnected: (
         event: IOUserDisconnectedEvent<
             PluvPlatform<TContext>,
-            { user: InputZodLike<TUser> },
+            { user: StandardSchemaV1<unknown, TUser> },
             TContext
         >,
     ) => void;

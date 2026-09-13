@@ -34,6 +34,7 @@
         "typescript": "^7.0.2"
     },
     "dependencies": {
+        "@standard-schema/spec": "^1.1.0",
         "wonka": "^6.3.6"
     },
     "exports": {

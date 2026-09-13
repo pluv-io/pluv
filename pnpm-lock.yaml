@@ -623,6 +623,9 @@ importers:
 
   packages/types:
     dependencies:
+      '@standard-schema/spec':
+        specifier: ^1.1.0
+        version: 1.1.0
       wonka:
         specifier: ^6.3.6
         version: 6.3.6

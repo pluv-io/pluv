@@ -1,14 +1,14 @@
-import type { InputZodLike, IOLike, JsonObject, OptionalProps, UserInfo } from "@pluv/types";
+import type { IOLike, JsonObject, OptionalProps, StandardSchemaV1, UserInfo } from "@pluv/types";
 import { PLUV_PRESENCE_META_KEY } from "./constants";
 import type { PluvClientLimits } from "./types";
-import { pickBy } from "./utils";
+import { parsePluvSchema, pickBy } from "./utils";
 
 export type Presence = Record<string, unknown>;
 
 export type UsersManagerConfig<TPresence extends Record<string, any> = {}> = {
     initialPresence?: TPresence;
     limits: PluvClientLimits;
-    presence?: InputZodLike<TPresence>;
+    presence?: StandardSchemaV1<unknown, TPresence>;
 };
 
 export type AddConnectionResult<TIO extends IOLike, TPresence extends Record<string, any> = {}> = {
@@ -45,7 +45,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
      */
     private _myself: UserInfo<TIO, TPresence> | null = null;
     private _others = new Map<[clientId: string][0], UserInfo<TIO, TPresence>>();
-    private _presence: InputZodLike<TPresence> | null = null;
+    private _presence: StandardSchemaV1<unknown, TPresence> | null = null;
 
     constructor(config: UsersManagerConfig<TPresence>) {
         const { initialPresence, limits, presence = null } = config;
@@ -207,7 +207,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
             ...cleanedPresence,
             ...cleanedPatch,
         } as TPresence;
-        const validated = this._presence ? this._presence.parse(presence) : presence;
+        const validated = this._presence ? parsePluvSchema(this._presence, presence) : presence;
 
         /**
          * !HACK

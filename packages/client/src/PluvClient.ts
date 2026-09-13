@@ -1,5 +1,5 @@
 import type { AbstractCrdtDocFactory, InferStorage, NoopCrdtDocFactory } from "@pluv/crdt";
-import type { InferIOCrdtKind, InputZodLike, IOLike, JsonObject } from "@pluv/types";
+import type { InferIOCrdtKind, IOLike, JsonObject, StandardSchemaV1 } from "@pluv/types";
 import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import type { InferCallback } from "./infer";
 import { PluvProcedure } from "./PluvProcedure";
@@ -29,8 +29,8 @@ export type PluvClientOptions<
      * this if you control the server and have changed the limits there.
      */
     limits?: PluvClientLimits;
-    metadata?: InputZodLike<TMetadata>;
-    presence?: InputZodLike<TPresence>;
+    metadata?: StandardSchemaV1<unknown, TMetadata>;
+    presence?: StandardSchemaV1<unknown, TPresence>;
     publicKey?: PublicKey<TMetadata>;
     types: InferCallback<TIO>;
 } & (InferIOCrdtKind<TIO> extends NoopCrdtDocFactory
@@ -63,13 +63,13 @@ export class PluvClient<
     TCrdt extends InferIOCrdtKind<TIO> = InferIOCrdtKind<TIO>,
     TMetadata extends JsonObject = {},
 > {
-    public readonly metadata?: InputZodLike<TMetadata>;
+    public readonly metadata?: StandardSchemaV1<unknown, TMetadata>;
 
     private readonly _authEndpoint: AuthEndpoint<TMetadata>;
     private readonly _debug: boolean;
     private readonly _initialStorage?: TCrdt;
     private readonly _limits: PluvClientLimits;
-    private readonly _presence?: InputZodLike<TPresence>;
+    private readonly _presence?: StandardSchemaV1<unknown, TPresence>;
     private readonly _publicKey: PublicKey<TMetadata> | null = null;
     private readonly _rooms = new Map<string, PluvRoom<TIO, TMetadata, TPresence, TCrdt, any>>();
     private readonly _wsEndpoint: WsEndpoint<TMetadata> | undefined;
