@@ -32,7 +32,7 @@ export const isYjsSchema = (value: unknown): value is YjsSchema => {
         typeof value === "object" &&
         value !== null &&
         (value as YjsSchema).kind === "y.doc" &&
-        (value as YjsSchema)[YJS_SCHEMA_BRAND] === true
+        YJS_SCHEMA_BRAND in value
     );
 };
 

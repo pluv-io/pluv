@@ -7,7 +7,7 @@ type Room = {
 };
 
 const lastMessage = (socket: TestSocket, type: string): { type: string; data: any } => {
-    const message = [...socket.messages].reverse().find((entry) => entry.type === type);
+    const message = socket.messages.findLast((entry) => entry.type === type);
 
     if (!message) throw new Error(`Missing ${type} message`);
 

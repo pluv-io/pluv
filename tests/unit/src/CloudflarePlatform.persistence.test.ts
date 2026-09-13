@@ -107,9 +107,7 @@ describe("CloudflarePlatform persistence", () => {
             }),
         });
 
-        const received = [...socket.messages]
-            .reverse()
-            .find((message) => message.type === "$storageReceived");
+        const received = socket.messages.findLast((message) => message.type === "$storageReceived");
         const doc = yjs
             .doc(() => ({}))
             .getEmpty()

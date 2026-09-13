@@ -32,7 +32,7 @@ export const isLoroSchema = (value: unknown): value is LoroSchema => {
         typeof value === "object" &&
         value !== null &&
         (value as LoroSchema).kind === "loro.doc" &&
-        (value as LoroSchema)[LORO_SCHEMA_BRAND] === true
+        LORO_SCHEMA_BRAND in value
     );
 };
 
