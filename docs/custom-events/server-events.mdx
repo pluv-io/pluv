@@ -1,9 +1,7 @@
 ---
 title: "Server Events"
-description: "Define events in pluv.io by simply defining event procedures as JavaScript functions"
+description: "Define type-safe custom events on your self-hosted PluvIO backend with validated procedures and automatic typing."
 ---
-
-# Server Events
 
 > **Note**: Custom server events are only available when pluv.io is self-hosted.
 
@@ -16,12 +14,14 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO(platformNode({
-  authorize: {
-    secret: process.env.PLUV_AUTH_SECRET!,
-    user: z.object({ id: z.string() }),
-  },
-}));
+const io = createIO()
+  .platform(platformNode())
+  .config({
+    authorize: {
+      secret: process.env.PLUV_AUTH_SECRET!,
+      user: z.object({ id: z.string() }),
+    },
+  });
 
 // Create your custom events as procedures
 const sendMessage = io.procedure
@@ -55,4 +55,4 @@ const server = io.server({ router });
 
 ## Next steps
 
-* [Receiving custom events](/docs/custom-events/client-events#Receiving-events)
+* [Receiving custom events](/docs/guides/events/client#Receiving-events)

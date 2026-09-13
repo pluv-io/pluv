@@ -8,14 +8,14 @@ describe("createBaseRouter", () => {
             onStorageUpdated: vi.fn(),
         });
 
-        expect(Object.keys(router._defs.events).sort()).toEqual(
+        expect(Object.keys(router._defs.events).toSorted()).toEqual(
             [
                 "$getOthers",
                 "$initializeSession",
                 "$ping",
                 "$updatePresence",
                 "$updateStorage",
-            ].sort(),
+            ].toSorted(),
         );
     });
 });

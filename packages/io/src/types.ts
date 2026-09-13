@@ -1,9 +1,7 @@
-import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import type {
     BaseUser,
     CrdtDocLike,
     EventRecord,
-    IOAuthorize,
     Id,
     InferEventMessage,
     InferEventsOutput,
@@ -16,13 +14,13 @@ import type {
 import type { StandardSchemaV1 } from "@pluv/types";
 import type {
     AbstractPlatform,
-    InferInitContextType,
     InferPlatformWebSocketSource,
     InferPlatformWebSocketType,
     InferRoomContextType,
 } from "./AbstractPlatform";
 import type { AbstractWebSocket } from "./AbstractWebSocket";
-import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
+import type { IODefs } from "./IODefs";
+import type { PluvRouter } from "./PluvRouter";
 
 export type PluvContext<TPlatform extends AbstractPlatform, TContext extends Record<string, any>> =
     | MaybePromise<TContext>
@@ -32,39 +30,24 @@ export type EventResolverKind = "broadcast" | "self" | "sync";
 
 export type EventResolver<
     TKind extends EventResolverKind = EventResolverKind,
-    TPlatform extends AbstractPlatform = AbstractPlatform,
-    TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>> = IOAuthorize<
-        any,
-        InferInitContextType<TPlatform>
-    >,
-    TContext extends Record<string, any> = {},
+    T extends IODefs = IODefs,
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
-> = (
-    data: TInput,
-    context: EventResolverContext<TKind, TPlatform, TAuthorize, TContext>,
-) => MaybePromise<TOutput | void>;
+> = (data: TInput, context: EventResolverContext<TKind, T>) => MaybePromise<TOutput | void>;
 
 export interface EventResolverContext<
     TKind extends EventResolverKind = EventResolverKind,
-    TPlatform extends AbstractPlatform = AbstractPlatform,
-    TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>> = IOAuthorize<
-        any,
-        InferInitContextType<TPlatform>
-    >,
-    TContext extends Record<string, any> = {},
+    T extends IODefs = IODefs,
 > {
-    context: TContext;
+    context: T["context"];
     doc: CrdtDocLike<any, any>;
     garbageCollect: () => Promise<void>;
-    platform: TPlatform;
+    platform: T["platform"];
     presence: JsonObject | null;
     room: string;
     storageSeeded: boolean;
-    session: TKind extends "sync"
-        ? WebSocketSession<TAuthorize> | null
-        : WebSocketSession<TAuthorize>;
-    sessions: readonly WebSocketSession<TAuthorize>[];
+    session: TKind extends "sync" ? WebSocketSession<T> | null : WebSocketSession<T>;
+    sessions: readonly WebSocketSession<T>[];
     time: number;
 }
 
@@ -85,12 +68,11 @@ export interface WebSocketSerializedState {
     timers: WebSocketSessionTimers;
 }
 
-export type WebSocketSession<TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>> =
-    WebSocketSerializedState & {
-        id: string;
-        user: InferIOAuthorizeUser<TAuthorize>;
-        webSocket: AbstractWebSocket;
-    };
+export type WebSocketSession<T extends IODefs = IODefs> = WebSocketSerializedState & {
+    id: string;
+    user: InferIOAuthorizeUser<T["authorize"]>;
+    webSocket: AbstractWebSocket;
+};
 
 export type MergeEventRecords<
     TEventRecords extends EventRecord<string, any>[],
@@ -139,10 +121,9 @@ export interface PlatformConfig {
 export type ResolvedPluvIOAuthorize<
     TPlatform extends AbstractPlatform<any, any, any, any>,
     TUser extends BaseUser = any,
-> = { user: StandardSchemaV1<unknown, TUser> } & UndefinedProps<
-    { secret?: string },
-    Exclude<"secret", InferPlatformAuthorizeProperties<TPlatform>>
->;
+> = TPlatform["_config"]["authorize"]["secret"] extends true
+    ? { user: StandardSchemaV1<unknown, TUser>; secret: string }
+    : { user: StandardSchemaV1<unknown, TUser>; secret?: string };
 
 export type PluvIOAuthorize<
     TPlatform extends AbstractPlatform<any, any, any, any>,
@@ -171,57 +152,27 @@ export interface PluvIOLimits {
     userMaxSize?: number | null;
 }
 
-export type BasePluvIOListeners<
-    TPlatform extends AbstractPlatform<any, any, any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> = {
-    onRoomDestroyed: (event: IORoomDestroyedEvent<TPlatform, TContext>) => void;
-    onRoomMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
-    onStorageDestroyed: (event: IORoomListenerEvent<TPlatform, TContext>) => void;
-    onStorageUpdated: (event: IOStorageUpdatedEvent<TPlatform, TAuthorize, TContext>) => void;
-    onUserConnected: (event: IOUserConnectedEvent<TPlatform, TAuthorize, TContext>) => void;
-    onUserDisconnected: (event: IOUserDisconnectedEvent<TPlatform, TAuthorize, TContext>) => void;
+export type BasePluvIOListeners<T extends IODefs = IODefs> = {
+    onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;
+    onRoomMessage: (event: IORoomMessageEvent<T>) => void;
+    onStorageDestroyed: (event: IORoomListenerEvent<T>) => void;
+    onStorageUpdated: (event: IOStorageUpdatedEvent<T>) => void;
+    onUserConnected: (event: IOUserConnectedEvent<T>) => void;
+    onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
 };
 
-export type PluvIOListeners<
-    TPlatform extends AbstractPlatform<any, any, any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> = UndefinedProps<
-    BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>,
-    Exclude<
-        keyof BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>,
-        InferPlatformListeners<TPlatform>
-    >
+export type PluvIOListeners<T extends IODefs = IODefs> = UndefinedProps<
+    BasePluvIOListeners<T>,
+    Exclude<keyof BasePluvIOListeners<T>, InferPlatformListeners<T["platform"]>>
 >;
 
-export type PluvIORouter<
-    TPlatform extends AbstractPlatform<any, any, any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> =
-    InferPlatformRouter<TPlatform> extends true
-        ? { router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents> }
+export type PluvIORouter<T extends IODefs = IODefs> =
+    InferPlatformRouter<T["platform"]> extends true
+        ? { router?: PluvRouter<T> }
         : { router?: undefined };
 
 export type InferPlatformConfig<TPlatform extends AbstractPlatform<any, any, any, any>> =
     TPlatform extends AbstractPlatform<any, any, any, infer IConfig> ? IConfig : never;
-
-export type InferPlatformAuthorizeProperties<
-    TPlatform extends AbstractPlatform<any, any, any, any>,
-> = keyof {
-    [
-        P in keyof PlatformConfig["authorize"] as InferPlatformConfig<TPlatform>["authorize"][P] extends
-            | true
-            | undefined
-            ? P
-            : never
-    ]: true;
-};
 
 export type InferPlatformListeners<TPlatform extends AbstractPlatform<any, any, any, any>> = keyof {
     [
@@ -236,60 +187,40 @@ export type InferPlatformListeners<TPlatform extends AbstractPlatform<any, any, 
 export type InferPlatformRouter<TPlatform extends AbstractPlatform<any, any, any, any>> =
     InferPlatformConfig<TPlatform>["router"];
 
-export type IORoomListenerEvent<
-    TPlatform extends AbstractPlatform<any, any, any, any>,
-    TContext extends Record<string, any>,
-> = {
-    context: TContext;
+export type IORoomListenerEvent<T extends IODefs = IODefs> = {
+    context: T["context"];
     encodedState: string | null;
-    platform: TPlatform;
+    platform: T["platform"];
     room: string;
 };
 
-export type IORoomDestroyedEvent<
-    TPlatform extends AbstractPlatform<any, any, any, any>,
-    TContext extends Record<string, any>,
-> = {
-    context: TContext;
-    platform: TPlatform;
+export type IORoomDestroyedEvent<T extends IODefs = IODefs> = {
+    context: T["context"];
+    platform: T["platform"];
     room: string;
 };
 
-export type IORoomMessageEvent<
-    TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> = IORoomListenerEvent<TPlatform, TContext> & {
-    message: InferEventMessage<InferEventsOutput<TEvents>, keyof InferEventsOutput<TEvents>>;
-    user?: InferIOAuthorizeUser<TAuthorize>;
-    webSocket?: InferPlatformWebSocketSource<TPlatform>;
+export type IORoomMessageEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
+    message: InferEventMessage<
+        InferEventsOutput<T["events"]>,
+        keyof InferEventsOutput<T["events"]>
+    >;
+    user?: InferIOAuthorizeUser<T["authorize"]>;
+    webSocket?: InferPlatformWebSocketSource<T["platform"]>;
 };
 
-export type IOStorageUpdatedEvent<
-    TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any>,
-> = IORoomListenerEvent<TPlatform, TContext> & {
-    user?: InferIOAuthorizeUser<TAuthorize>;
-    webSocket?: InferPlatformWebSocketSource<TPlatform>;
+export type IOStorageUpdatedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
+    user?: InferIOAuthorizeUser<T["authorize"]>;
+    webSocket?: InferPlatformWebSocketSource<T["platform"]>;
 };
 
-export type IOUserConnectedEvent<
-    TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any>,
-> = IORoomListenerEvent<TPlatform, TContext> & {
-    user?: InferIOAuthorizeUser<TAuthorize>;
-    webSocket?: InferPlatformWebSocketSource<TPlatform>;
+export type IOUserConnectedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
+    user?: InferIOAuthorizeUser<T["authorize"]>;
+    webSocket?: InferPlatformWebSocketSource<T["platform"]>;
 };
 
-export type IOUserDisconnectedEvent<
-    TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any>,
-> = IORoomListenerEvent<TPlatform, TContext> & {
-    user?: InferIOAuthorizeUser<TAuthorize>;
+export type IOUserDisconnectedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
+    user?: InferIOAuthorizeUser<T["authorize"]>;
 };
 
 export type WebSocketType<TPlatform extends AbstractPlatform> =

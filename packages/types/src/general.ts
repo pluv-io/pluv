@@ -69,6 +69,8 @@ export type Json = JsonPrimitive | Json[] | readonly Json[] | { [key: string]: J
 
 export type JsonObject = Record<string, Json>;
 
+export type SetKey<T, K extends keyof T, V> = Omit<T, K> & { [P in K]: V };
+
 export type StringLiteral<T> = T extends string ? (string extends T ? never : T) : never;
 
 export type UnionToIntersection<U> = (U extends any ? (arg: U) => any : never) extends (
@@ -76,6 +78,9 @@ export type UnionToIntersection<U> = (U extends any ? (arg: U) => any : never) e
 ) => void
     ? I
     : never;
+
+/** `true` when `T` is `any`. `any` is the only type for which `1 & T` stays `any`. */
+export type IsAny<T> = 0 extends 1 & T ? true : false;
 
 // Check if all properties in T are optional
 // - If T is {} (no keys), all properties are optional (none exist)

@@ -14,7 +14,7 @@ export type {
 export { AbstractStorageStore } from "./AbstractStorageStore";
 export { createClient } from "./createClient";
 export { infer } from "./infer";
-export type { InferCallback } from "./infer";
+export type { InferCallback, InferIOLike } from "./infer";
 export { MockedRoom } from "./MockedRoom";
 export type { MockedRoomConfig, MockedRoomEvents } from "./MockedRoom";
 export { parsePluvSchema } from "./utils";

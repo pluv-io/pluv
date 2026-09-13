@@ -12,8 +12,6 @@ import { ioRooms, ioServer } from "./pluv-io";
 
 export type { ioServer } from "./pluv-io";
 
-type CommanderOptionValue = string | boolean | string[] | undefined;
-
 const options = program
     .description("Pluv server running on node")
     .addOption(
@@ -21,9 +19,9 @@ const options = program
     )
     .argument("[args...]")
     .parse(process.argv)
-    .opts<{ port: CommanderOptionValue }>();
+    .opts<{ port: string }>();
 
-const port = parseInt(`${options.port}`, 10);
+const port = parseInt(options.port, 10);
 
 if (Number.isNaN(port)) throw new Error("Port is not a number");
 

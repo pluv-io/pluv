@@ -30,10 +30,13 @@ export const clearSlateEditable = async (page: Page) => {
         await editable.press("ControlOrMeta+End");
 
         for (let i = 0; i < 64; i++) {
+            // Each Backspace depends on the previous DOM read.
+            // oxlint-disable-next-line eslint/no-await-in-loop
             if ((await getSlateEditableText(page)).length === 0) {
                 break;
             }
 
+            // oxlint-disable-next-line eslint/no-await-in-loop
             await editable.press("Backspace");
         }
     }

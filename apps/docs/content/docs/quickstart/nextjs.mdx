@@ -87,37 +87,26 @@ import { platformPluv } from "@pluv/platform-pluv";
 import { z } from "zod";
 import { db } from "./database";
 
-export const io = createIO(
-  platformPluv({
-    // Required: Authorization is required for `@pluv/platform-pluv`
+export const io = createIO()
+  .platform(
+    platformPluv({
+      publicKey: process.env.PLUV_PUBLISHABLE_KEY!,
+      secretKey: process.env.PLUV_SECRET_KEY!,
+      basePath: "/api/pluv",
+    }),
+  )
+  .config({
     authorize: {
-      // Required: The user schema
-      // Note: Must be JSON serializable
-      // Note: Keep this schema lean (i.e. < 1,024 bytes) else errors
-      // may be encountered
       user: z.object({
-        // Required: id field is required
         id: z.string(),
-        // All other fields are optional (whatever is needed to
-        // represent users in the app)
         name: z.string(),
       }),
     },
-    // Optional: Context that will be accessable from server event
-    // listeners
     context: () => ({
       db,
     }),
-    // Optional: Only if you require CRDT features
-    // It must match what was configured when your project was created
     crdt: yjs,
-    // Required: The API keys saved from the previous step
-    publicKey: process.env.PLUV_PUBLISHABLE_KEY!,
-    secretKey: process.env.PLUV_SECRET_KEY!,
-    // Required: The route where your pluv webhooks will be located
-    basePath: "/api/pluv",
-  }),
-);
+  });
 
 export const ioServer = io.server({
   // Only if you're using storage (i.e. crdt)
@@ -208,13 +197,17 @@ The example below sets the `webhookSecret` on the `createIO` function and sets a
 ```ts
 // backend/pluv.ts
 
-export const io = createIO(
-  platformPluv({
+export const io = createIO()
+  .platform(
+    platformPluv({
+      // ...
+      webhookSecret: process.env.PLUV_WEBHOOK_SECRET!,
+      // ...
+    }),
+  )
+  .config({
     // ...
-    webhookSecret: process.env.PLUV_WEBHOOK_SECRET!,
-    // ...
-  }),
-);
+  });
 
 export const ioServer = io.server({
   // Optional: This handler is called when a room is created

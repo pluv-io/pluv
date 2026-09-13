@@ -58,7 +58,7 @@ import type {
 } from "./types";
 
 export type CreateBundleOptions<
-    TIO extends IOLike<any, any, any>,
+    TIO extends IOLike,
     TPresenceSchema extends StandardSchemaV1<any, any> | undefined = undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
     TMetadataSchema extends StandardSchemaV1<any, any> | undefined = undefined,
@@ -78,7 +78,7 @@ export type CreateBundleOptions<
 };
 
 export const createBundle = <
-    TIO extends IOLike<any, any, any>,
+    TIO extends IOLike,
     TPresenceSchema extends StandardSchemaV1<any, any> | undefined = undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
     TMetadataSchema extends StandardSchemaV1<any, any> | undefined = undefined,

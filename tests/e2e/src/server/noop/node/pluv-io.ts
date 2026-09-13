@@ -4,8 +4,9 @@ import { z } from "zod";
 
 const PLUV_AUTH_SECRET = "secret123";
 
-export const io = createIO(
-    platformNode({
+export const io = createIO()
+    .platform(platformNode())
+    .config({
         authorize: ({ request: _request }) => ({
             secret: PLUV_AUTH_SECRET,
             user: z.object({
@@ -14,8 +15,7 @@ export const io = createIO(
             }),
         }),
         debug: true,
-    }),
-);
+    });
 
 export const rooms = new Map<string, InferIORoom<typeof ioServer>>();
 

@@ -6,8 +6,8 @@ import { textFileResponse } from "@/lib/text-file-response";
 export const Route = createFileRoute("/llms.txt")({
     server: {
         handlers: {
-            GET({ request }) {
-                const body = `${llms(source).index()}
+            async GET({ request }) {
+                const body = `${await llms(source).index()}
 
 ## Optional
 

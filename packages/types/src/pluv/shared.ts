@@ -1,5 +1,5 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
-import type { Id, JsonObject, MaybePromise, UnionToIntersection } from "../general";
+import type { Id, IsAny, JsonObject, MaybePromise, UnionToIntersection } from "../general";
 import { CrdtLibraryType } from "./crdt";
 
 export type BaseUser = {
@@ -86,13 +86,19 @@ export type GetEventMessage<
     TEvent extends keyof T,
 > = TEvent extends string ? EventMessage<TEvent, T[TEvent]> : never;
 
-export type InferIOAuthorize<TIO extends IOLike<any, any, any>> =
-    TIO extends IOLike<infer IAuthorize, any, any>
-        ? { user: StandardSchemaV1<unknown, InferIOAuthorizeUser<IAuthorize>> }
+export type InferIOAuthorize<TIO extends IOLike> =
+    TIO extends IOLike<infer D>
+        ? IsAny<D> extends true
+            ? { user: StandardSchemaV1<unknown, any> }
+            : { user: StandardSchemaV1<unknown, InferIOAuthorizeUser<D["authorize"]>> }
         : never;
 
 export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any>> =
-    TAuthorize extends IOAuthorize<infer IUser, any> ? IUser : never;
+    IsAny<TAuthorize> extends true
+        ? any
+        : TAuthorize extends IOAuthorize<infer IUser, any>
+          ? IUser
+          : never;
 
 export type IOAuthorize<
     TUser extends BaseUser = any,
@@ -133,36 +139,38 @@ export interface IORouterLike<TEvents extends Record<string, ProcedureLike<any, 
     };
 }
 
-export interface IOLike<
-    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
-    TEvents extends Record<string, ProcedureLike<any, any>> = {},
-> extends IORouterLike<TEvents> {
-    _defs: {
-        authorize: TAuthorize;
-        crdt: TCrdt;
-        events: TEvents;
-    };
+export type IOLikeDefs = {
+    authorize: IOAuthorize<any, any>;
+    crdt: CrdtLibraryType<any>;
+    events: Record<string, ProcedureLike<any, any>>;
+};
+
+export interface IOLike<T extends IOLikeDefs = any> extends IORouterLike<T["events"]> {
+    _defs: T;
 }
 
-export type InferIOCrdtKind<TIO extends IOLike<any, any, any>> =
-    TIO extends IOLike<any, infer ICrdt, any>
-        ? ICrdt extends CrdtLibraryType<infer IDoc>
-            ? IDoc
-            : never
+export type InferIOCrdtKind<TIO extends IOLike> =
+    TIO extends IOLike<infer D>
+        ? IsAny<D> extends true
+            ? any
+            : D["crdt"] extends CrdtLibraryType<infer IDoc>
+              ? IDoc
+              : never
         : never;
 
-export type InferIOCrdt<TIO extends IOLike<any, any, any>> =
-    TIO extends IOLike<any, infer ICrdt, any> ? ICrdt : never;
+export type InferIOCrdt<TIO extends IOLike> =
+    TIO extends IOLike<infer D> ? (IsAny<D> extends true ? any : D["crdt"]) : never;
 
-export type InferIOEvents<TIO extends IOLike<any, any, any>> =
-    TIO extends IOLike<any, any, infer IEvents>
-        ? {
-              [P in keyof IEvents]: ProcedureLike<
-                  InferIOProcedureInput<IEvents[P]>,
-                  InferIOProcedureOutput<IEvents[P]>
-              >;
-          }
+export type InferIOEvents<TIO extends IOLike> =
+    TIO extends IOLike<infer D>
+        ? IsAny<D> extends true
+            ? any
+            : {
+                  [P in keyof D["events"]]: ProcedureLike<
+                      InferIOProcedureInput<D["events"][P]>,
+                      InferIOProcedureOutput<D["events"][P]>
+                  >;
+              }
         : never;
 
 export type InferIOProcedureInput<TProcedure extends ProcedureLike<any, any>> =
@@ -199,7 +207,7 @@ export type InferEventMessage<
         : never;
 
 export type IOEventMessage<
-    TIO extends IOLike<any, any, any>,
+    TIO extends IOLike,
     TEvent extends keyof InferIOOutput<TIO> = keyof InferIOOutput<TIO>,
 > = Id<
     { room: string } & InferEventMessage<InferIOOutput<TIO>, TEvent> &
@@ -210,25 +218,24 @@ export type IOEventMessage<
 
 export type PluvRouterEventConfig = { [P: string]: Pick<ProcedureLike<any, any>, "config"> };
 
-export type MergeEvents<
-    TClientEvents extends PluvRouterEventConfig,
-    TServerIO extends IOLike<any, any, any>,
-> =
-    TServerIO extends IOLike<infer IAuthorize, infer ICrdt, infer IServerEvents>
-        ? IOLike<
-              IAuthorize,
-              ICrdt,
-              {
-                  [P in keyof TClientEvents]: TClientEvents[P] extends ProcedureLike<
-                      infer IClientInput,
-                      infer IClientOutput
-                  >
-                      ? {
-                            [K in keyof IClientOutput]: K extends keyof IServerEvents
-                                ? IServerEvents[K]
-                                : ProcedureLike<IClientInput, Id<Pick<IClientOutput, K>>>;
-                        }[keyof IClientOutput]
-                      : never;
-              } & IServerEvents
-          >
+export type MergeEvents<TClientEvents extends PluvRouterEventConfig, TServerIO extends IOLike> =
+    TServerIO extends IOLike<infer D>
+        ? IsAny<D> extends true
+            ? TServerIO
+            : IOLike<{
+                  authorize: D["authorize"];
+                  crdt: D["crdt"];
+                  events: {
+                      [P in keyof TClientEvents]: TClientEvents[P] extends ProcedureLike<
+                          infer IClientInput,
+                          infer IClientOutput
+                      >
+                          ? {
+                                [K in keyof IClientOutput]: K extends keyof D["events"]
+                                    ? D["events"][K]
+                                    : ProcedureLike<IClientInput, Id<Pick<IClientOutput, K>>>;
+                            }[keyof IClientOutput]
+                          : never;
+                  } & D["events"];
+              }>
         : never;

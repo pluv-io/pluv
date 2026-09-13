@@ -84,7 +84,7 @@ export type MetadataGetter<TMetadata extends Record<string, any>> =
     | (() => MaybePromise<TMetadata>);
 
 export type PluvRoomProviderProps<
-    TIO extends IOLike<any, any, any>,
+    TIO extends IOLike,
     TMetadataSchema extends StandardSchemaV1<any, any> | undefined,
     TPresenceSchema extends StandardSchemaV1<any, any> | undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
@@ -101,7 +101,7 @@ export interface SubscriptionHookOptions<T extends unknown> {
 }
 
 export interface CreateBundle<
-    TIO extends IOLike<any, any, any>,
+    TIO extends IOLike,
     TPresenceSchema extends StandardSchemaV1<any, any> | undefined = undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
     TMetadataSchema extends StandardSchemaV1<any, any> | undefined = undefined,

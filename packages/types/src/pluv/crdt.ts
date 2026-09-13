@@ -1,4 +1,4 @@
-import type { Maybe } from "../general";
+import type { IsAny, Maybe } from "../general";
 
 export interface CrdtDocFactory<
     TDoc extends any = any,
@@ -24,7 +24,7 @@ export interface CrdtLibraryType<
 /** True when `TCrdt` is a real CRDT library (`yjs` / `loro`), not the noop default. */
 export type HasCrdtLibrary<TCrdt> = [TCrdt] extends [never]
     ? false
-    : 0 extends 1 & TCrdt
+    : IsAny<TCrdt> extends true
       ? false
       : [TCrdt] extends [{ kind: "loro" | "yjs" }]
         ? true

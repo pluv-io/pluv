@@ -37,7 +37,11 @@ export class TestSocket {
     public async emit(type: string, event: unknown): Promise<void> {
         const listeners = Array.from(this._listeners.get(type) ?? []);
 
-        for (const listener of listeners) await Promise.resolve(listener(event));
+        for (const listener of listeners) {
+            // Run in registration order, like a real socket.
+            // oxlint-disable-next-line eslint/no-await-in-loop
+            await Promise.resolve(listener(event));
+        }
     }
 
     public get messages(): { type: string; data: any }[] {
@@ -45,11 +49,9 @@ export class TestSocket {
     }
 }
 
-export class TestWebSocket<
-    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
-> extends AbstractWebSocket<TestSocket> {
+export class TestWebSocket extends AbstractWebSocket<TestSocket> {
     private _state: WebSocketSerializedState;
-    private _user: InferIOAuthorizeUser<TAuthorize> | null = null;
+    private _user: InferIOAuthorizeUser<IOAuthorize<any, any>> | null = null;
 
     public set presence(presence: JsonObject | null) {
         this._state.presence = presence;
@@ -59,7 +61,7 @@ export class TestWebSocket<
         return this.webSocket.readyState;
     }
 
-    public get session(): WebSocketSession<TAuthorize> {
+    public get session(): WebSocketSession<any> {
         const user = this._user;
 
         if (!user) {
@@ -86,11 +88,11 @@ export class TestWebSocket<
         this._state = state;
     }
 
-    public get user(): InferIOAuthorizeUser<TAuthorize> | null {
+    public get user(): InferIOAuthorizeUser<IOAuthorize<any, any>> | null {
         return this._user;
     }
 
-    public set user(user: InferIOAuthorizeUser<TAuthorize>) {
+    public set user(user: InferIOAuthorizeUser<IOAuthorize<any, any>>) {
         this._user = user;
     }
 

@@ -58,12 +58,22 @@ export type Env = {
  * work around TypeScript type-inference limitations.
  */
 const types = infer((i) => ({ env: i<Env> }));
-export const io = createIO(
-  platformCloudflare({
-    // Provide the `env` type
-    types,
-    // Optional: Authorization is optional for `@pluv/platform-cloudflare`
-    // If excluded, your `user` will be `null` on the frontend.
+export const io = createIO()
+  .platform(
+    platformCloudflare({
+      // Provide the `env` type
+      types,
+      /**
+       * Optional: Specify whether WebSocket event listeners should be
+       * "attached" to or "detached" from the WebSocket upon registration.
+       *
+       * Event listeners should be "detached" to use Cloudflare's WebSocket
+       * hibernation.
+       */
+      mode: "detached", // @default = "detached"
+    }),
+  )
+  .config({
     authorize: ({ env }) => ({
       // Your own secret for generating JWTs
       secret: env.PLUV_AUTH_SECRET,
@@ -83,17 +93,7 @@ export const io = createIO(
     crdt: yjs,
     // Optional: If you want to enable development logging
     debug: true,
-    /**
-     * Optional: Specify whether WebSocket event listeners should be
-     * "attached" to or "detached" from the WebSocket upon registration.
-     *
-     * Event listeners should be "detached" to use Cloudflare's WebSocket
-     * hibernation.
-     */
-    mode: "detached", // @default = "detached"
-    types,
-  })
-);
+  });
 
 export const ioServer = io.server({
   // Only if you're using storage (i.e. crdt)

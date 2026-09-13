@@ -1,9 +1,7 @@
 ---
 title: "Ecosystem"
-description: "Packages to use alongside pluv"
+description: "Optional packages that extend pluv.io, including IndexedDB persistence for offline-friendly rooms."
 ---
-
-# Ecosystem
 
 Below are some optional packages that work alongside pluv.
 
@@ -82,13 +80,20 @@ import { Redis } from "ioredis";
 // Setup redis. You can also use a Redis Cluster
 const redis = new Redis({ /* redis config here */ });
 
-export const io = createIO(
-  platformNode({
-    persistence: new PersistenceRedis({ client: redis }),
-    pubSub: new PubSubRedis({
-      publisher: redis,
-      subscriber: redis,
+export const io = createIO()
+  .platform(
+    platformNode({
+      persistence: new PersistenceRedis({ client: redis }),
+      pubSub: new PubSubRedis({
+        publisher: redis,
+        subscriber: redis,
+      }),
     }),
-  })
-);
+  )
+  .config({
+    authorize: {
+      secret: process.env.PLUV_AUTH_SECRET!,
+      user: z.object({ id: z.string() }),
+    },
+  });
 ```

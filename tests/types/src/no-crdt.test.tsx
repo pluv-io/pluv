@@ -5,14 +5,14 @@ import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { z } from "zod";
 
-const io = createIO(
-    platformCloudflare({
+const io = createIO()
+    .platform(platformCloudflare())
+    .config({
         authorize: {
             secret: "test-secret",
             user: z.object({ id: z.string() }),
         },
-    }),
-);
+    });
 
 const ioServer = io.server({
     // @ts-expect-error
@@ -32,4 +32,4 @@ createClient({
 });
 
 // @ts-expect-error authorize is required
-createIO(platformCloudflare({}));
+createIO().platform(platformCloudflare()).config({});

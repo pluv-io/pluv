@@ -5,8 +5,9 @@ import { z } from "zod";
 
 const PLUV_AUTH_SECRET = "secret123";
 
-export const io = createIO(
-    platformNode({
+export const io = createIO()
+    .platform(platformNode())
+    .config({
         authorize: {
             secret: PLUV_AUTH_SECRET,
             user: z.object({
@@ -16,8 +17,7 @@ export const io = createIO(
         },
         crdt: loro,
         debug: true,
-    }),
-);
+    });
 
 const router = io.router({
     SEND_MESSAGE: io.procedure

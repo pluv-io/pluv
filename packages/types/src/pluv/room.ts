@@ -113,7 +113,7 @@ export type BroadcastProxy<TIO extends IOLike, TEvents extends PluvRouterEventCo
 };
 
 export type EventNotifierSubscriptionCallback<
-    TIO extends IOLike<any, any, any>,
+    TIO extends IOLike,
     TEvent extends keyof InferIOOutput<TIO>,
 > = (value: Id<IOEventMessage<TIO, TEvent>>) => void;
 

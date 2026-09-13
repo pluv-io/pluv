@@ -7,12 +7,13 @@ import type {
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
-import type { IOAuthorize, Json } from "@pluv/types";
+import type { Json } from "@pluv/types";
 import crypto from "node:crypto";
 import { TextDecoder } from "node:util";
 import type { WebSocket } from "ws";
 import { NodeWebSocket } from "./NodeWebSocket";
 import type { NodeRegisterInput } from "./types";
+import { toRequest } from "./utils/toRequest";
 
 export type NodePlatformRoomContext<TMeta extends Record<string, Json>> = keyof TMeta extends never
     ? { meta?: undefined }
@@ -26,11 +27,8 @@ export type NodePlatformConfig<TMeta extends Record<string, Json>> = {
     | { persistence: AbstractPersistence; pubSub: AbstractPubSub }
 ) & { roomContext?: NodePlatformRoomContext<TMeta> };
 
-export class NodePlatform<
-    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
-    TMeta extends Record<string, Json> = {},
-> extends AbstractPlatform<
-    NodeWebSocket<TAuthorize>,
+export class NodePlatform<TMeta extends Record<string, Json> = {}> extends AbstractPlatform<
+    NodeWebSocket,
     NodeRegisterInput,
     NodePlatformRoomContext<TMeta>,
     {
@@ -83,24 +81,21 @@ export class NodePlatform<
         };
     }
 
-    public acceptWebSocket(webSocket: NodeWebSocket<TAuthorize>): Promise<void> {
+    public acceptWebSocket(webSocket: NodeWebSocket): Promise<void> {
         return Promise.resolve(undefined);
     }
 
-    public convertWebSocket(
-        webSocket: WebSocket,
-        config: ConvertWebSocketConfig,
-    ): NodeWebSocket<TAuthorize> {
+    public convertWebSocket(webSocket: WebSocket, config: ConvertWebSocketConfig): NodeWebSocket {
         const { room } = config;
 
-        return new NodeWebSocket<TAuthorize>(webSocket, {
+        return new NodeWebSocket(webSocket, {
             persistence: this.persistence,
             platform: this,
             room,
         });
     }
 
-    public getLastPing(webSocket: NodeWebSocket<TAuthorize>): number | null {
+    public getLastPing(webSocket: NodeWebSocket): number | null {
         return null;
     }
 
@@ -126,6 +121,12 @@ export class NodePlatform<
         } as NodePlatformConfig<TMeta>)._initialize() as this;
     }
 
+    public normalizeInitContext(initContext: NodeRegisterInput): NodeRegisterInput {
+        return {
+            request: toRequest(initContext.request, { origin: this.origin }),
+        };
+    }
+
     public parseData(data: string | ArrayBuffer): Record<string, any> {
         if (typeof data === "string") return JSON.parse(data);
 
@@ -139,7 +140,7 @@ export class NodePlatform<
     }
 
     public setSerializedState(
-        webSocket: NodeWebSocket<TAuthorize>,
+        webSocket: NodeWebSocket,
         state: WebSocketSerializedState,
     ): WebSocketSerializedState {
         webSocket.state = state;

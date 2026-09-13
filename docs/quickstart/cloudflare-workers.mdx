@@ -1,9 +1,7 @@
 ---
-title: "Cloudflare - Quickstart"
-description: "Build real-time applications with pluv.io on Cloudflare Workers"
+title: "Cloudflare Workers Quickstart"
+description: "Self-host pluv.io on Cloudflare Workers with Durable Objects and WebSocket hibernation."
 ---
-
-# Cloudflare Workers
 
 `@pluv/io` is designed to be self-hosted on the [Cloudflare Workers](https://workers.cloudflare.com/) runtime via [Durable Objects](https://developers.cloudflare.com/workers/runtime-apis/durable-objects/).
 
@@ -60,12 +58,22 @@ export type Env = {
  * work around TypeScript type-inference limitations.
  */
 const types = infer((i) => ({ env: i<Env> }));
-export const io = createIO(
-  platformCloudflare({
-    // Provide the `env` type
-    types,
-    // Optional: Authorization is optional for `@pluv/platform-cloudflare`
-    // If excluded, your `user` will be `null` on the frontend.
+export const io = createIO()
+  .platform(
+    platformCloudflare({
+      // Provide the `env` type
+      types,
+      /**
+       * Optional: Specify whether WebSocket event listeners should be
+       * "attached" to or "detached" from the WebSocket upon registration.
+       *
+       * Event listeners should be "detached" to use Cloudflare's WebSocket
+       * hibernation.
+       */
+      mode: "detached", // @default = "detached"
+    }),
+  )
+  .config({
     authorize: ({ env }) => ({
       // Your own secret for generating JWTs
       secret: env.PLUV_AUTH_SECRET,
@@ -85,17 +93,7 @@ export const io = createIO(
     crdt: yjs,
     // Optional: If you want to enable development logging
     debug: true,
-    /**
-     * Optional: Specify whether WebSocket event listeners should be
-     * "attached" to or "detached" from the WebSocket upon registration.
-     *
-     * Event listeners should be "detached" to use Cloudflare's WebSocket
-     * hibernation.
-     */
-    mode: "detached", // @default = "detached"
-    types,
-  })
-);
+  });
 
 export const ioServer = io.server({
   // Only if you're using storage (i.e. crdt)

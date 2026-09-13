@@ -27,8 +27,8 @@ export const BroadcastRoom: FC<BroadcastRoomProps> = () => {
             <br />
             <button
                 id="button-subtract-from-7"
-                onClick={() => {
-                    broadcast.subtract5({ value: 7 });
+                onClick={async () => {
+                    await broadcast.subtract5({ value: 7 });
                 }}
                 type="button"
             >
@@ -36,8 +36,8 @@ export const BroadcastRoom: FC<BroadcastRoomProps> = () => {
             </button>
             <button
                 id="button-subtract-from-11"
-                onClick={() => {
-                    broadcast.subtract5({ value: 11 });
+                onClick={async () => {
+                    await broadcast.subtract5({ value: 11 });
                 }}
                 type="button"
             >
@@ -45,8 +45,8 @@ export const BroadcastRoom: FC<BroadcastRoomProps> = () => {
             </button>
             <button
                 id="button-subtract-from-17"
-                onClick={() => {
-                    broadcast.subtract5({ value: 17 });
+                onClick={async () => {
+                    await broadcast.subtract5({ value: 17 });
                 }}
                 type="button"
             >
@@ -54,8 +54,8 @@ export const BroadcastRoom: FC<BroadcastRoomProps> = () => {
             </button>
             <button
                 id="button-double-7"
-                onClick={() => {
-                    broadcast.doubleNumber({ value: 7 });
+                onClick={async () => {
+                    await broadcast.doubleNumber({ value: 7 });
                 }}
                 type="button"
             >

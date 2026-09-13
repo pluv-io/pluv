@@ -4,7 +4,7 @@ import type { PluvClientOptions } from "./PluvClient";
 import { PluvClient } from "./PluvClient";
 
 export const createClient = <
-    TIO extends IOLike<any, any, any>,
+    TIO extends IOLike,
     TPresenceSchema extends StandardSchemaV1<any, any> | undefined = undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
     TMetadataSchema extends StandardSchemaV1<any, any> | undefined = undefined,

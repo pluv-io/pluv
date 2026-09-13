@@ -53,10 +53,7 @@ export interface AbstractWebSocketConfig {
     room: string;
 }
 
-export abstract class AbstractWebSocket<
-    TWebSocket = any,
-    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
-> {
+export abstract class AbstractWebSocket<TWebSocket = any> {
     /** The connection is not yet open. */
     public readonly CONNECTING = 0;
     /** The connection is open and ready to communicate. */
@@ -74,7 +71,7 @@ export abstract class AbstractWebSocket<
 
     public abstract set presence(presence: JsonObject | null);
     public abstract get readyState(): 0 | 1 | 2 | 3;
-    public abstract get session(): WebSocketSession<TAuthorize>;
+    public abstract get session(): WebSocketSession<any>;
     public abstract get sessionId(): string;
     public abstract get state(): WebSocketSerializedState;
     public abstract set state(state: WebSocketSerializedState);
@@ -82,8 +79,8 @@ export abstract class AbstractWebSocket<
      * @description Authorized user for this socket. `null` until `register` (or hibernation
      * reattach) has assigned one.
      */
-    public abstract get user(): InferIOAuthorizeUser<TAuthorize> | null;
-    public abstract set user(user: InferIOAuthorizeUser<TAuthorize>);
+    public abstract get user(): InferIOAuthorizeUser<IOAuthorize<any, any>> | null;
+    public abstract set user(user: InferIOAuthorizeUser<IOAuthorize<any, any>>);
 
     constructor(webSocket: TWebSocket, config: AbstractWebSocketConfig) {
         const { persistence, platform, room } = config;

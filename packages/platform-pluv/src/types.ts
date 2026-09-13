@@ -1,14 +1,11 @@
 import type {
-    BaseUser,
     GetInitialStorageFn,
     IORoomDestroyedEvent,
     IORoomListenerEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
 } from "@pluv/io";
-import type { StandardSchemaV1 } from "@pluv/types";
 import type { z } from "zod";
-import type { PluvPlatform } from "./PluvPlatform";
 import type {
     ZodEventKind,
     ZodEventResponse,
@@ -26,27 +23,12 @@ export interface PluvIOEndpoints {
     fetch?: PluvIOFetch;
 }
 
-export type PluvIOListeners<
-    TContext extends Record<string, any> = {},
-    TUser extends BaseUser = BaseUser,
-> = {
-    getInitialStorage?: GetInitialStorageFn<TContext>;
-    onRoomDestroyed: (event: IORoomDestroyedEvent<PluvPlatform<TContext>, TContext>) => void;
-    onStorageDestroyed: (event: IORoomListenerEvent<PluvPlatform<TContext>, TContext>) => void;
-    onUserConnected: (
-        event: IOUserConnectedEvent<
-            PluvPlatform<TContext>,
-            { user: StandardSchemaV1<unknown, TUser> },
-            TContext
-        >,
-    ) => void;
-    onUserDisconnected: (
-        event: IOUserDisconnectedEvent<
-            PluvPlatform<TContext>,
-            { user: StandardSchemaV1<unknown, TUser> },
-            TContext
-        >,
-    ) => void;
+export type PluvIOListeners = {
+    getInitialStorage?: GetInitialStorageFn<Record<string, any>>;
+    onRoomDestroyed: (event: IORoomDestroyedEvent) => void;
+    onStorageDestroyed: (event: IORoomListenerEvent) => void;
+    onUserConnected: (event: IOUserConnectedEvent) => void;
+    onUserDisconnected: (event: IOUserDisconnectedEvent) => void;
 };
 
 export type EventKind = z.output<typeof ZodEventKind>;

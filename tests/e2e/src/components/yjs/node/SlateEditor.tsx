@@ -45,7 +45,7 @@ export const SlateEditor: FC<SlateEditorProps> = () => {
     }, [sharedType]);
 
     useEffect(() => {
-        if (!editor) return;
+        if (!editor) return () => {};
 
         YjsEditor.connect(editor);
 

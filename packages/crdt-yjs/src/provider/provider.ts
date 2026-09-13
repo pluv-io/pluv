@@ -3,7 +3,7 @@ import type { PluvYjsProviderParams } from "./PluvYjsProvider";
 import { PluvYjsProvider } from "./PluvYjsProvider";
 
 export const provider = <
-    TIO extends IOLike<any, any, any>,
+    TIO extends IOLike,
     TPresence extends Record<string, any>,
     TStorage extends Record<string, any>,
     TEvents extends PluvRouterEventConfig,

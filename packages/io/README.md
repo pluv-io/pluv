@@ -38,12 +38,16 @@ Create your pluv.io backend
 
 ```ts
 // backend
-const io = createIO(
-    platformNode({
+const io = createIO()
+    .platform(platformNode())
+    .config({
+        authorize: {
+            secret: process.env.PLUV_AUTH_SECRET!,
+            user: z.object({ id: z.string() }),
+        },
         context: () => ({ db }),
         crdt: yjs,
-    }),
-);
+    });
 
 export const ioServer = io.server({
     getInitialStorage: async ({ context: { db }, room }) => {

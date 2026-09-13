@@ -1,37 +1,27 @@
 import type { JsonObject, Maybe } from "@pluv/types";
-import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
 import { PING_TIMEOUT_MS } from "./constants";
+import type { IODefs, SetKey } from "./IODefs";
 import { PluvProcedure } from "./PluvProcedure";
 import { PluvRouter } from "./PluvRouter";
-import type { IOStorageUpdatedEvent, PluvIOAuthorize, PluvIOLimits } from "./types";
+import type { IOStorageUpdatedEvent, PluvIOLimits } from "./types";
 import { oneLine, pickBy } from "./utils";
 
-export type CreateBaseRouterParams<
-    TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
-        PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any> = {},
-> = {
+export type CreateBaseRouterParams<T extends IODefs = IODefs> = {
     limits: Pick<PluvIOLimits, "presenceMaxSize" | "storageMaxSize">;
     logDebug?: (...data: any[]) => void;
-    onStorageUpdated: (event: IOStorageUpdatedEvent<TPlatform, TAuthorize, TContext>) => void;
+    onStorageUpdated: (event: IOStorageUpdatedEvent<T>) => void;
 };
 
 /**
  * Built-in `$` protocol events. Kept separate from `PluvServer` so the protocol
  * can be constructed/tested without a full server instance.
  */
-export const createBaseRouter = <
-    TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> =
-        PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any> = {},
->(
-    params: CreateBaseRouterParams<TPlatform, TAuthorize, TContext>,
-): PluvRouter<TPlatform, TAuthorize, TContext, {}> => {
+export const createBaseRouter = <T extends IODefs = IODefs>(
+    params: CreateBaseRouterParams<T>,
+): PluvRouter<SetKey<T, "events", {}>> => {
     const { limits, onStorageUpdated } = params;
     const logDebug = params.logDebug ?? (() => undefined);
-    const procedure = new PluvProcedure<TPlatform, TAuthorize, TContext, {}, {}>();
+    const procedure = new PluvProcedure<T, {}, {}>();
 
     return new PluvRouter({
         $getOthers: procedure.sync((data, { room, session, sessions }) => {
@@ -99,7 +89,7 @@ export const createBaseRouter = <
 
                 /**
                  * @description Storage was already initialized. Don't overwrite the current
-                 * storage state with the incoming initial storage. Return what the current state
+                 * storage state with the incoming initialStorage. Return what the current state
                  * is without changes.
                  * @date May 7, 2025
                  */
@@ -129,7 +119,7 @@ export const createBaseRouter = <
 
                     await platform.persistence
                         .setStorageState(room, encodedState)
-                        .catch((error) => {
+                        .catch((error: unknown) => {
                             logDebug(error);
                         });
 

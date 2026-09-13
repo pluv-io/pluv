@@ -3,7 +3,7 @@ import type { PluvYjsAwarenessParams } from "./PluvYjsAwareness";
 import { PluvYjsAwareness } from "./PluvYjsAwareness";
 
 export const awareness = <
-    TIO extends IOLike<any, any, any>,
+    TIO extends IOLike,
     TPresence extends Record<string, any>,
     TStorage extends Record<string, any>,
     TEvents extends PluvRouterEventConfig,
