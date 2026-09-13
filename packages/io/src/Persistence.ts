@@ -41,10 +41,6 @@ export class Persistence extends AbstractPersistence {
         return Promise.resolve();
     }
 
-    public getSize(room: string): Promise<number> {
-        return Promise.resolve(this._users.get(room)?.size ?? 0);
-    }
-
     public getStorageState(room: string): Promise<string | null> {
         const storage = this._storages.get(room) ?? null;
 
@@ -66,7 +62,7 @@ export class Persistence extends AbstractPersistence {
     }
 
     public async getUsersSize(room: string): Promise<number> {
-        return this._users.size;
+        return this._users.get(room)?.size ?? 0;
     }
 
     public initialize(roomContext: any): this {
