@@ -67,7 +67,7 @@ const Page = () => {
     const data = useFumadocsLoader(Route.useLoaderData());
 
     return (
-        <DocsLayout {...baseOptions()} tree={data.pageTree}>
+        <DocsLayout {...baseOptions()} tree={data.pageTree} sidebar={{ className: "text-xs" }}>
             <Suspense>{clientLoader.useContent(data.path)}</Suspense>
         </DocsLayout>
     );

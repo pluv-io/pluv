@@ -130,3 +130,14 @@
         @apply font-mono;
     }
 }
+
+/* Denser than body prose so nav stays secondary (body is prose-sm / 14px) */
+#nd-sidebar,
+#nd-sidebar-mobile {
+    font-size: 0.75rem; /* text-xs / 12px */
+}
+
+#nd-sidebar [class*="0.9375rem"],
+#nd-sidebar-mobile [class*="0.9375rem"] {
+    font-size: inherit;
+}
