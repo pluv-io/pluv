@@ -1,4 +1,4 @@
-import type { AbstractCrdtDocFactory, CrdtLibraryType, NoopCrdtDocFactory } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, CrdtLibraryType, HasCrdtLibrary } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type { IOLike, Id, InferIOAuthorize, InferIOAuthorizeUser, NonNilProps } from "@pluv/types";
 import colors from "kleur";
@@ -49,9 +49,9 @@ export type PluvServerConfig<
     io: PluvIO<TPlatform, TAuthorize, TContext>;
     platform: () => TPlatform;
     router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
-} & (TCrdt extends CrdtLibraryType<NoopCrdtDocFactory>
-        ? { getInitialStorage?: "[ERROR]: Must specify crdt to use getInitialStorage" }
-        : { getInitialStorage: GetInitialStorageFn<TContext> });
+} & (HasCrdtLibrary<TCrdt> extends true
+        ? { getInitialStorage: GetInitialStorageFn<TContext> }
+        : { getInitialStorage?: "[ERROR]: Must specify crdt to use getInitialStorage" });
 
 type BaseCreateRoomOptions<
     TPlatform extends AbstractPlatform<any, any>,
@@ -249,11 +249,9 @@ export class PluvServer<
     }
 
     private _getInitialStorage: GetInitialStorageFn<TContext> = (...args) => {
-        const getInitialStorage =
-            typeof this._config.getInitialStorage !== "string"
-                ? (this._config.getInitialStorage ??
-                  ((() => null) as GetInitialStorageFn<TContext>))
-                : ((() => null) as GetInitialStorageFn<TContext>);
+        const getInitialStorage = this._config.getInitialStorage;
+
+        if (typeof getInitialStorage !== "function") return null;
 
         return getInitialStorage(...args);
     };

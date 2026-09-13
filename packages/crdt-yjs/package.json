@@ -26,6 +26,8 @@
         "build": "tsdown",
         "dev": "tsdown --watch",
         "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest",
         "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
     },
     "dependencies": {
@@ -42,6 +44,7 @@
         "@pluv/tsconfig": "workspace:^",
         "tsdown": "^0.23.0",
         "typescript": "^7.0.2",
+        "vitest": "^5.0.0",
         "yjs": "^13.6.32"
     },
     "exports": {

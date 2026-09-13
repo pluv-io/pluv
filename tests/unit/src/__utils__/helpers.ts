@@ -42,7 +42,13 @@ export const encodedStateWithContent = (text: string): string => {
 };
 
 export const encodedLoroStateWithContent = (text: string): string => {
-    const doc = loro.doc((t) => ({ content: t.text("content", text) })).getInitialized();
+    const doc = loro
+        .storage({
+            schema: loro.schema({
+                content: loro.loroText(),
+            }),
+        })
+        .getInitialized({ content: text });
     const encodedState = doc.getEncodedState();
 
     doc.destroy();

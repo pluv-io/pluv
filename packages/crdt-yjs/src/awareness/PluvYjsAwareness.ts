@@ -1,5 +1,4 @@
 import type {
-    CrdtType,
     IOLike,
     OthersSubscriptionEvent,
     PluvRouterEventConfig,
@@ -14,7 +13,7 @@ import type { AwarenessPresence, MetaClientState, YjsAwarenessUpdate } from "../
 export interface PluvYjsAwarenessParams<
     TIO extends IOLike<any, any, any>,
     TPresence extends Record<string, any>,
-    TStorage extends Record<string, CrdtType<any, any>>,
+    TStorage extends Record<string, any>,
     TEvents extends PluvRouterEventConfig,
     TField extends keyof TPresence | null = null,
 > {
@@ -25,7 +24,7 @@ export interface PluvYjsAwarenessParams<
 export class PluvYjsAwareness<
     TIO extends IOLike,
     TPresence extends Record<string, any>,
-    TStorage extends Record<string, CrdtType<any, any>>,
+    TStorage extends Record<string, any>,
     TEvents extends PluvRouterEventConfig,
     TField extends keyof TPresence | null = null,
 > extends ObservableV2<{

@@ -1,20 +1,16 @@
 import { AbstractCrdtDocFactory } from "./AbstractCrdtDocFactory";
 import { NoopCrdtDoc } from "./NoopCrdtDoc";
 
-export class NoopCrdtDocFactory extends AbstractCrdtDocFactory<any, any> {
-    constructor(initialStorage: () => {} = () => ({})) {
-        super(initialStorage);
-    }
-
+export class NoopCrdtDocFactory extends AbstractCrdtDocFactory<any, {}, {}, {}> {
     public getEmpty(): NoopCrdtDoc {
         return new NoopCrdtDoc();
     }
 
-    public getFactory(initialStorage?: (builder: any) => any): NoopCrdtDocFactory {
+    public getFactory(_seed?: {}): NoopCrdtDocFactory {
         return this;
     }
 
-    public getInitialized(initialStorage?: (builder: any) => any): NoopCrdtDoc {
+    public getInitialized(_seed?: {}): NoopCrdtDoc {
         return new NoopCrdtDoc();
     }
 }

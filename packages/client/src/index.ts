@@ -1,4 +1,3 @@
-export type { CrdtType, InferCrdtJson } from "@pluv/crdt";
 export { ConnectionState } from "@pluv/types";
 export type {
     BaseUser,

@@ -2,7 +2,6 @@ import type {
     DocApplyEncodedStateParams,
     DocBatchApplyEncodedStateParams,
     DocSubscribeCallbackParams,
-    InferCrdtJson,
 } from "@pluv/crdt";
 import type { CrdtDocLike } from "@pluv/types";
 import { fromUint8Array, toUint8Array } from "js-base64";
@@ -18,40 +17,33 @@ import {
     LoroTree,
     UndoManager,
 } from "loro-crdt";
-import type { LoroType } from "../types";
-import type { LoroBuilder } from "./builder";
-import { builder } from "./builder";
+import { getLoroShare, hydrateTopLevel } from "../schema/hydrate";
+import type { InferLoroJson, InferLoroStorage, LoroSchema } from "../schema/schema";
 
 const MAX_UNDO_STEPS = 100;
 const MERGE_INTERVAL_MS = 1_000;
 const PLUV_ID_FIELD = "__$pluv";
 
-export type CrdtLoroDocParams<TStorage extends Record<string, LoroType<any, any>>> = (
-    builder: LoroBuilder,
-) => TStorage;
-
-export class CrdtLoroDoc<
-    TStorage extends Record<string, LoroType<any, any>>,
-> implements CrdtDocLike<LoroDoc, TStorage> {
+export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements CrdtDocLike<
+    LoroDoc,
+    InferLoroStorage<TSchema>,
+    InferLoroJson<TSchema>
+> {
     public value: LoroDoc = new LoroDoc();
 
-    #_storage: TStorage;
+    #_schema: TSchema;
+    #_storage: InferLoroStorage<TSchema>;
     #_undoManager: UndoManager | null = null;
 
-    constructor(params: CrdtLoroDocParams<TStorage> = () => ({}) as TStorage) {
-        const storage = params(builder(this.value));
+    constructor(schema: TSchema, seed?: Record<string, unknown>, hydrate: boolean = false) {
+        this.#_schema = schema;
 
-        const keys = Object.keys(this.value.toJSON()).reduce(
-            (set, key) => set.add(key),
-            new Set<string>(),
-        );
-
-        this.#_storage = Object.entries(storage).reduce((acc, [key, node]) => {
-            if (keys.has(key)) Object.assign(acc, { [key]: node });
-
-            return acc;
-        }, {} as TStorage);
-        if (!!Object.keys(storage).length) this.#_setPluvId();
+        if (hydrate) {
+            this.#_storage = hydrateTopLevel(this.value, schema, seed) as InferLoroStorage<TSchema>;
+            if (Object.keys(schema.shape).length) this.#_setPluvId();
+        } else {
+            this.#_storage = {} as InferLoroStorage<TSchema>;
+        }
 
         this.value.commit();
     }
@@ -117,9 +109,13 @@ export class CrdtLoroDoc<
         return;
     }
 
-    public get(key?: undefined): TStorage;
-    public get<TKey extends keyof TStorage>(key: TKey): TStorage[TKey];
-    public get<TKey extends keyof TStorage>(key?: TKey): TStorage | TStorage[TKey] {
+    public get(key?: undefined): InferLoroStorage<TSchema>;
+    public get<TKey extends keyof InferLoroStorage<TSchema>>(
+        key: TKey,
+    ): InferLoroStorage<TSchema>[TKey];
+    public get<TKey extends keyof InferLoroStorage<TSchema>>(
+        key?: TKey,
+    ): InferLoroStorage<TSchema> | InferLoroStorage<TSchema>[TKey] {
         if (typeof key === "undefined") return this.#_storage;
 
         return this.#_storage[key as TKey];
@@ -129,9 +125,11 @@ export class CrdtLoroDoc<
         return fromUint8Array(this.value.export({ mode: "snapshot" }));
     }
 
-    public toJson(): InferCrdtJson<TStorage>;
-    public toJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]>;
-    public toJson<TKey extends keyof TStorage>(type?: TKey) {
+    public toJson(): InferLoroJson<TSchema>;
+    public toJson<TKey extends keyof InferLoroJson<TSchema>>(
+        type: TKey,
+    ): InferLoroJson<TSchema>[TKey];
+    public toJson<TKey extends keyof InferLoroJson<TSchema>>(type?: TKey) {
         const serialized = this.value.toJSON() as Record<string, unknown>;
 
         if (typeof type === "string") {
@@ -145,12 +143,12 @@ export class CrdtLoroDoc<
                       : container.toJSON!();
             }
 
-            return (serialized[type] ?? null) as InferCrdtJson<TStorage[TKey]>;
+            return (serialized[type] ?? null) as InferLoroJson<TSchema>[TKey];
         }
 
         const { [PLUV_ID_FIELD]: _pluvId, ...json } = serialized;
 
-        return json as InferCrdtJson<TStorage>;
+        return json as InferLoroJson<TSchema>;
     }
 
     public isDirty(): boolean {
@@ -163,7 +161,7 @@ export class CrdtLoroDoc<
         return !serialized || !Object.keys(serialized).length;
     }
 
-    public rebuildStorage(reference: TStorage): this {
+    public rebuildStorage(): this {
         const isBuilt = !!Object.keys(this.#_storage).length;
 
         if (isBuilt) {
@@ -171,21 +169,10 @@ export class CrdtLoroDoc<
             return this;
         }
 
-        this.#_storage = Object.entries(reference).reduce((acc, [key, node]) => {
-            if (node instanceof LoroCounter)
-                Object.assign(acc, { [key]: this.value.getCounter(key) });
-            else if (node instanceof LoroList)
-                Object.assign(acc, { [key]: this.value.getList(key) });
-            else if (node instanceof LoroMap) Object.assign(acc, { [key]: this.value.getMap(key) });
-            else if (node instanceof LoroMovableList) {
-                Object.assign(acc, { [key]: this.value.getMovableList(key) });
-            } else if (node instanceof LoroText)
-                Object.assign(acc, { [key]: this.value.getText(key) });
-            else if (node instanceof LoroTree)
-                Object.assign(acc, { [key]: this.value.getTree(key) });
-
+        this.#_storage = Object.entries(this.#_schema.shape).reduce((acc, [key, node]) => {
+            Object.assign(acc, { [key]: getLoroShare(this.value, key, node.kind) });
             return acc;
-        }, {} as TStorage);
+        }, {} as InferLoroStorage<TSchema>);
 
         return this.track();
     }
@@ -197,7 +184,13 @@ export class CrdtLoroDoc<
     }
 
     public subscribe(
-        listener: (params: DocSubscribeCallbackParams<LoroDoc, TStorage>) => void,
+        listener: (
+            params: DocSubscribeCallbackParams<
+                LoroDoc,
+                InferLoroStorage<TSchema>,
+                InferLoroJson<TSchema>
+            >,
+        ) => void,
     ): () => void {
         const fn = (event: LoroEventBatch) => {
             const update = fromUint8Array(this.value.export({ mode: "update" }));

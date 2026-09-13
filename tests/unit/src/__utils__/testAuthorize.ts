@@ -1,3 +1,4 @@
+import type { CrdtLibraryType, NoopCrdtDocFactory } from "@pluv/crdt";
 import type { CreateIOParams, InferIORoom, PluvIO, PluvServer } from "@pluv/io";
 import { createIO } from "@pluv/io";
 import type { BaseUser } from "@pluv/types";
@@ -19,15 +20,15 @@ export const testAuthorize = {
     user: testAuthorizeUser,
 } as const;
 
-type TestCreateIOOptions = Omit<
-    CreateIOParams<TestPlatform, {}, TestAuthorizeUser, any>,
-    "authorize" | "platform"
-> & {
-    platform?: TestPlatformConfig | (() => TestPlatform);
-};
+type TestCreateIOOptions<TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>> =
+    Omit<CreateIOParams<TestPlatform, {}, TestAuthorizeUser, TCrdt>, "authorize" | "platform"> & {
+        platform?: TestPlatformConfig | (() => TestPlatform);
+    };
 
-export const createAuthorizedIO = <TCrdt extends CreateIOParams<any, any, any, any>["crdt"]>(
-    options: TestCreateIOOptions & { crdt?: TCrdt } = {},
+export const createAuthorizedIO = <
+    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
+>(
+    options: TestCreateIOOptions<TCrdt> = {} as TestCreateIOOptions<TCrdt>,
 ) => {
     const { platform, ...rest } = options;
     const platformFactory =

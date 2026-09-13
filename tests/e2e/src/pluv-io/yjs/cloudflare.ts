@@ -1,7 +1,7 @@
 import { createClient, infer } from "@pluv/client";
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
-import { slateNodesToInsertDelta } from "@slate-yjs/core";
 import { z } from "zod";
 import type { ioServerSqlite } from "../../server/yjs/cloudflare";
 
@@ -20,23 +20,22 @@ const client = createClient({
 
         return url.toString();
     },
-    initialStorage: yjs.doc((t) => ({
-        blocknote: t.xmlFragment("blocknote"),
-        messages: t.array("messages", [
-            yjs.map([
-                ["message", "hello"],
-                ["name", "i3dly"],
-            ]),
-        ]),
-        root: t.xmlText("root"),
-        slate: (() => {
-            const type = t.xmlText("slate");
-
-            type.applyDelta(slateNodesToInsertDelta([]));
-
-            return type;
-        })(),
-    })),
+    storage: yjs.storage({
+        schema: yjs.schema({
+            blocknote: yjs.yXmlFragment(),
+            messages: yjs.yArray(yjs.yMap(s.string())),
+            root: yjs.yXmlText(),
+            slate: yjs.yXmlText(),
+        }),
+    }),
+    initialStorage: {
+        messages: [
+            {
+                message: "hello",
+                name: "i3dly",
+            },
+        ],
+    },
     metadata: z.object({
         authEndpoint: z.string().default("http://localhost:3101"),
     }),

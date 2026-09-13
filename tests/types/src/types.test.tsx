@@ -1,4 +1,5 @@
 import { createClient, infer } from "@pluv/client";
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
@@ -48,9 +49,14 @@ const ioServer = io.server({
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = createClient({
     authEndpoint: () => "",
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array<string>("messages"),
-    })),
+    storage: yjs.storage({
+        schema: yjs.schema({
+            messages: yjs.yArray(s.string()),
+        }),
+    }),
+    initialStorage: {
+        messages: [],
+    },
     presence: z.object({
         cursor: z.nullable(z.object({ x: z.number(), y: z.number() })),
     }),
@@ -58,9 +64,9 @@ const client = createClient({
 });
 
 const room = client.createRoom("test-room", {
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array("messages"),
-    })),
+    initialStorage: {
+        messages: ["hello"],
+    },
 });
 
 room.subscribe.event.receiveMessage((params) => {
@@ -142,7 +148,10 @@ expectTypeOf(room.getDoc()).toEqualTypeOf<
     CrdtDocLike<
         YDoc,
         {
-            messages: yjs.YjsType<YArray<string>, string[]>;
+            messages: YArray<string>;
+        },
+        {
+            messages: string[];
         }
     >
 >();
@@ -153,19 +162,19 @@ const { PluvRoomProvider, useDoc, useStorage } = createBundle(client);
     initialPresence={{
         cursor: null,
     }}
-    initialStorage={(t) => ({
-        messages: t.array("messages"),
-    })}
+    initialStorage={{
+        messages: [],
+    }}
     room="test-room"
 >
     <div />
 </PluvRoomProvider>;
 
 <PluvRoomProvider
-    // @ts-expect-error
-    initialStorage={(t) => ({
-        invalidKey: t.array("invalidKey"),
-    })}
+    initialStorage={{
+        // @ts-expect-error extra seed keys are not allowed
+        invalidKey: [],
+    }}
     room="test-room"
 >
     <div />
@@ -174,11 +183,10 @@ const { PluvRoomProvider, useDoc, useStorage } = createBundle(client);
 const storageMessages = useStorage("messages");
 
 expectTypeOf(storageMessages[0]).toEqualTypeOf<string[] | null>();
-expectTypeOf(storageMessages[1]).toEqualTypeOf<yjs.YjsType<YArray<string>, string[]> | null>();
+expectTypeOf(storageMessages[1]).toEqualTypeOf<YArray<string> | null>();
 
 expectTypeOf(storageMessages).toEqualTypeOf<
-    | [data: null, sharedType: null]
-    | [data: string[], sharedType: yjs.YjsType<YArray<string>, string[]>]
+    [data: null, sharedType: null] | [data: string[], sharedType: YArray<string>]
 >();
 
 const [storageMessagesData, storageMessagesSharedType] = storageMessages;
@@ -193,7 +201,10 @@ expectTypeOf(useDoc()).toEqualTypeOf<
     CrdtDocLike<
         YDoc,
         {
-            messages: yjs.YjsType<YArray<string>, string[]>;
+            messages: YArray<string>;
+        },
+        {
+            messages: string[];
         }
     >
 >();

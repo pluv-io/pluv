@@ -1,9 +1,7 @@
-import type { YjsType } from "../types";
-import type { YjsBuilder } from "./builder";
+import { schema } from "../schema/schema";
+import { storage } from "../schema/storage";
 import { CrdtYjsDocFactory } from "./CrdtYjsDocFactory";
 
-export const doc = <TStorage extends Record<string, YjsType<any, any>>>(
-    value: (buidler: YjsBuilder) => TStorage = () => ({}) as TStorage,
-): CrdtYjsDocFactory<TStorage> => {
-    return new CrdtYjsDocFactory<TStorage>(value);
+export const doc = (_value?: any): CrdtYjsDocFactory => {
+    return storage({ schema: schema({}) });
 };

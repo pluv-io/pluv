@@ -1,33 +1,39 @@
 import { AbstractCrdtDocFactory } from "@pluv/crdt";
 import type { Doc as YDoc } from "yjs";
-import type { YjsType } from "../types";
+import type { InferYjsJson, InferYjsSeed, InferYjsStorage, YjsSchema } from "../schema/schema";
 import { CrdtYjsDoc } from "./CrdtYjsDoc";
-import type { YjsBuilder } from "./builder";
 
 export class CrdtYjsDocFactory<
-    TStorage extends Record<string, YjsType<any, any>> = {},
-> extends AbstractCrdtDocFactory<YDoc, TStorage> {
-    public readonly _initialStorage: (builder: YjsBuilder) => TStorage;
+    TSchema extends YjsSchema = YjsSchema,
+> extends AbstractCrdtDocFactory<
+    YDoc,
+    InferYjsStorage<TSchema>,
+    InferYjsJson<TSchema>,
+    InferYjsSeed<TSchema>
+> {
+    public readonly _schema: TSchema;
+    public readonly _seed?: InferYjsSeed<TSchema>;
 
-    constructor(initialStorage: (builder: YjsBuilder) => TStorage = () => ({}) as TStorage) {
-        super(initialStorage);
+    constructor(schema: TSchema, seed?: InferYjsSeed<TSchema>) {
+        super();
 
-        this._initialStorage = initialStorage;
+        this._schema = schema;
+        this._seed = seed;
     }
 
-    public getEmpty(): CrdtYjsDoc<TStorage> {
-        return new CrdtYjsDoc<TStorage>();
+    public getEmpty(): CrdtYjsDoc<TSchema> {
+        return new CrdtYjsDoc<TSchema>(this._schema);
     }
 
-    public getFactory(
-        initialStorage: (builder: YjsBuilder) => TStorage,
-    ): CrdtYjsDocFactory<TStorage> {
-        return new CrdtYjsDocFactory<TStorage>(initialStorage ?? this._initialStorage);
+    public getFactory(seed?: InferYjsSeed<TSchema>): CrdtYjsDocFactory<TSchema> {
+        return new CrdtYjsDocFactory<TSchema>(this._schema, seed ?? this._seed);
     }
 
-    public getInitialized(
-        initialStorage?: (builder: YjsBuilder) => TStorage,
-    ): CrdtYjsDoc<TStorage> {
-        return new CrdtYjsDoc<TStorage>(initialStorage ?? this._initialStorage);
+    public getInitialized(seed?: InferYjsSeed<TSchema>): CrdtYjsDoc<TSchema> {
+        return new CrdtYjsDoc<TSchema>(
+            this._schema,
+            (seed ?? this._seed) as Record<string, unknown> | undefined,
+            true,
+        );
     }
 }

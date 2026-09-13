@@ -1,6 +1,6 @@
 import type { Subject } from "wonka";
 import type { Id } from "../general";
-import type { CrdtDocLike, CrdtType, InferCrdtJson } from "./crdt";
+import type { CrdtDocLike } from "./crdt";
 import type { ConnectionState, StorageState } from "./enums";
 import type {
     InferIOAuthorize,
@@ -134,38 +134,34 @@ export type EventProxy<
 };
 
 export type StorageSubscriptionCallback<
-    TStorage extends Record<string, CrdtType<any, any>>,
-    TKey extends keyof TStorage,
-> = (value: InferCrdtJson<TStorage[TKey]>) => void;
+    TJson extends Record<string, any>,
+    TKey extends keyof TJson,
+> = (value: TJson[TKey]) => void;
 
-export type StorageSubscriptionFn<TStorage extends Record<string, CrdtType<any, any>>> = <
-    TKey extends keyof TStorage,
->(
+export type StorageSubscriptionFn<TJson extends Record<string, any>> = <TKey extends keyof TJson>(
     key: TKey,
-    fn: StorageSubscriptionCallback<TStorage, TKey>,
+    fn: StorageSubscriptionCallback<TJson, TKey>,
 ) => () => void;
 
-export type StorageRootSubscriptionCallback<TStorage extends Record<string, CrdtType<any, any>>> =
-    (value: { [P in keyof TStorage]: InferCrdtJson<TStorage[P]> }) => void;
+export type StorageRootSubscriptionCallback<TJson extends Record<string, any>> = (
+    value: TJson,
+) => void;
 
-export type StorageRootSubscriptionFn<TStorage extends Record<string, CrdtType<any, any>>> = (
-    callback: StorageRootSubscriptionCallback<TStorage>,
+export type StorageRootSubscriptionFn<TJson extends Record<string, any>> = (
+    callback: StorageRootSubscriptionCallback<TJson>,
 ) => () => void;
 
-export type StorageProxy<TStorage extends Record<string, CrdtType<any, any>>> =
-    StorageSubscriptionFn<TStorage> &
-        StorageRootSubscriptionFn<TStorage> & {
-            [PKey in keyof TStorage]: (
-                callback: StorageSubscriptionCallback<TStorage, PKey>,
-            ) => () => void;
-        };
+export type StorageProxy<TJson extends Record<string, any>> = StorageSubscriptionFn<TJson> &
+    StorageRootSubscriptionFn<TJson> & {
+        [PKey in keyof TJson]: (callback: StorageSubscriptionCallback<TJson, PKey>) => () => void;
+    };
 
 export type SubscribeFn<TValue extends unknown> = (callback: (value: TValue) => void) => () => void;
 
 export type SubscribeProxy<
     TIO extends IOLike,
     TPresence extends Record<string, any>,
-    TStorage extends Record<string, CrdtType<any, any>>,
+    TJson extends Record<string, any>,
     TEvents extends PluvRouterEventConfig,
 > = (<TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
     name: TSubject,
@@ -177,7 +173,7 @@ export type SubscribeProxy<
     myself: SubscribeFn<Id<UserInfo<TIO>> | null>;
     other: OtherSubscriptionFn<TIO, TPresence>;
     others: OthersSubscriptionFn<TIO, TPresence>;
-    storage: StorageProxy<TStorage>;
+    storage: StorageProxy<TJson>;
     storageLoaded: SubscribeFn<boolean>;
 };
 
@@ -192,8 +188,9 @@ export interface RoomLike<
     TIO extends IOLike,
     TDoc extends any,
     TPresence extends Record<string, any> = {},
-    TStorage extends Record<string, CrdtType<any, any>> = {},
+    TStorage extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig = {},
+    TJson extends Record<string, any> = any,
 > {
     id: string;
     broadcast: BroadcastProxy<TIO, TEvents>;
@@ -207,7 +204,7 @@ export interface RoomLike<
 
     canUndo(): boolean;
 
-    getDoc(): CrdtDocLike<TDoc, TStorage>;
+    getDoc(): CrdtDocLike<TDoc, TStorage, TJson>;
 
     getConnection(): WebSocketConnection;
 
@@ -221,14 +218,14 @@ export interface RoomLike<
 
     getStorage<TKey extends keyof TStorage>(type: TKey): TStorage[TKey] | null;
 
-    getStorageJson(): InferCrdtJson<TStorage> | null;
-    getStorageJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]> | null;
+    getStorageJson(): TJson | null;
+    getStorageJson<TKey extends keyof TJson>(type: TKey): TJson[TKey] | null;
 
     getStorageLoaded: () => boolean;
 
     redo(): void;
 
-    subscribe: SubscribeProxy<TIO, TPresence, TStorage, TEvents>;
+    subscribe: SubscribeProxy<TIO, TPresence, TJson, TEvents>;
 
     transact(fn: (storage: TStorage) => void, origin?: string): void;
 

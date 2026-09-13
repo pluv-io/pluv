@@ -7,25 +7,45 @@ const AUTHORED_CONTENT = "authored app json";
 const scenarios = [
     {
         name: "yjs",
-        empty: () => yjs.doc(() => ({})).getEmpty(),
+        empty: () => yjs.doc().getEmpty(),
         authored: () =>
-            yjs.doc((t) => ({ content: t.text("content", AUTHORED_CONTENT) })).getInitialized(),
+            yjs
+                .storage({
+                    schema: yjs.schema({
+                        content: yjs.yText(),
+                    }),
+                })
+                .getInitialized({ content: AUTHORED_CONTENT }),
         encoded: () =>
             yjs
-                .doc((t) => ({ content: t.text("content", AUTHORED_CONTENT) }))
-                .getInitialized()
+                .storage({
+                    schema: yjs.schema({
+                        content: yjs.yText(),
+                    }),
+                })
+                .getInitialized({ content: AUTHORED_CONTENT })
                 .getEncodedState(),
         keyed: (doc: { toJson: (key: "content") => unknown }) => doc.toJson("content"),
     },
     {
         name: "loro",
-        empty: () => loro.doc(() => ({})).getEmpty(),
+        empty: () => loro.doc().getEmpty(),
         authored: () =>
-            loro.doc((t) => ({ content: t.text("content", AUTHORED_CONTENT) })).getInitialized(),
+            loro
+                .storage({
+                    schema: loro.schema({
+                        content: loro.loroText(),
+                    }),
+                })
+                .getInitialized({ content: AUTHORED_CONTENT }),
         encoded: () =>
             loro
-                .doc((t) => ({ content: t.text("content", AUTHORED_CONTENT) }))
-                .getInitialized()
+                .storage({
+                    schema: loro.schema({
+                        content: loro.loroText(),
+                    }),
+                })
+                .getInitialized({ content: AUTHORED_CONTENT })
                 .getEncodedState(),
         keyed: (doc: { toJson: (key: "content") => unknown }) => doc.toJson("content"),
     },

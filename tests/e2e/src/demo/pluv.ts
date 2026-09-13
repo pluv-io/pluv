@@ -6,7 +6,7 @@ import { ioServer } from "./io";
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const client = createClient({
     authEndpoint: ({ room }) => `https://localhost:3000/api/auth?room=${room}`,
-    initialStorage: yjs.doc(),
+    storage: yjs.storage({ schema: yjs.schema({}) }),
     types,
     wsEndpoint: ({ room }) => `ws://localhost:3000/api/room/${room}`,
 });

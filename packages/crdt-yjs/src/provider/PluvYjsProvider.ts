@@ -1,4 +1,4 @@
-import type { CrdtType, IOLike, PluvRouterEventConfig, RoomLike } from "@pluv/types";
+import type { IOLike, PluvRouterEventConfig, RoomLike } from "@pluv/types";
 import { StorageState } from "@pluv/types";
 import { ObservableV2 } from "lib0/observable";
 import type { Doc as YDoc } from "yjs";
@@ -9,7 +9,7 @@ import type { YjsProviderStatus } from "../types";
 export interface PluvYjsProviderParams<
     TIO extends IOLike<any, any, any>,
     TPresence extends Record<string, any>,
-    TStorage extends Record<string, CrdtType<any, any>>,
+    TStorage extends Record<string, any>,
     TEvents extends PluvRouterEventConfig,
     TField extends keyof TPresence | null = null,
 > {
@@ -26,7 +26,7 @@ export interface PluvYjsProviderParams<
 export class PluvYjsProvider<
     TIO extends IOLike<any, any, any>,
     TPresence extends Record<string, any>,
-    TStorage extends Record<string, CrdtType<any, any>>,
+    TStorage extends Record<string, any>,
     TEvents extends PluvRouterEventConfig,
     TField extends keyof TPresence | null = null,
 > extends ObservableV2<{

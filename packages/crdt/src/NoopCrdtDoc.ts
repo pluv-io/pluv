@@ -5,14 +5,14 @@ import {
     DocSubscribeCallbackParams,
 } from "@pluv/types";
 
-export class NoopCrdtDoc implements CrdtDocLike<any, any> {
+export class NoopCrdtDoc implements CrdtDocLike<any, {}, {}> {
     public value: any = null;
 
-    public applyEncodedState(params: DocApplyEncodedStateParams): this {
+    public applyEncodedState(_params: DocApplyEncodedStateParams): this {
         return this;
     }
 
-    public batchApplyEncodedState(params: DocBatchApplyEncodedStateParams): this {
+    public batchApplyEncodedState(_params: DocBatchApplyEncodedStateParams): this {
         return this;
     }
 
@@ -54,7 +54,9 @@ export class NoopCrdtDoc implements CrdtDocLike<any, any> {
         return this;
     }
 
-    public subscribe(listener: (params: DocSubscribeCallbackParams<any, any>) => void): () => void {
+    public subscribe(
+        _listener: (params: DocSubscribeCallbackParams<any, {}, {}>) => void,
+    ): () => void {
         return () => undefined;
     }
 
@@ -66,7 +68,7 @@ export class NoopCrdtDoc implements CrdtDocLike<any, any> {
         return this;
     }
 
-    public transact(fn: () => void, origin?: string): this {
+    public transact(fn: () => void, _origin?: string): this {
         fn();
 
         return this;

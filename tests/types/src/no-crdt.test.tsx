@@ -1,4 +1,5 @@
 import { infer as clientInfer, createClient } from "@pluv/client";
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
@@ -23,9 +24,11 @@ createClient({
     authEndpoint: () => "",
     types,
     // @ts-expect-error
-    initialStorage: yjs.doc((t) => ({
-        messages: t.array<string>("messages"),
-    })),
+    storage: yjs.storage({
+        schema: yjs.schema({
+            messages: yjs.yArray(s.string()),
+        }),
+    }),
 });
 
 // @ts-expect-error authorize is required

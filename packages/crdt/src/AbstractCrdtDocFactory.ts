@@ -1,22 +1,14 @@
-import type { CrdtDocFactory, CrdtDocLike, CrdtType, Maybe } from "@pluv/types";
+import type { CrdtDocFactory, CrdtDocLike, Maybe } from "@pluv/types";
 
 export abstract class AbstractCrdtDocFactory<
-    TDoc extends any,
-    TStorage extends Record<string, CrdtType<any, any>>,
-> implements CrdtDocFactory<TDoc, TStorage> {
-    public _initialStorage: (builder: any) => TStorage;
-
-    constructor(initialStorage: (builder: any) => TStorage) {
-        this._initialStorage = initialStorage;
-    }
-
-    public abstract getEmpty(): CrdtDocLike<TDoc, TStorage>;
-    public abstract getFactory(
-        initialStorage?: (builder: any) => TStorage,
-    ): AbstractCrdtDocFactory<TDoc, TStorage>;
-    public abstract getInitialized(
-        initialStorage?: (builder: any) => TStorage,
-    ): CrdtDocLike<TDoc, TStorage>;
+    TDoc extends any = any,
+    TStorage extends Record<string, any> = Record<string, any>,
+    TJson extends Record<string, any> = any,
+    TSeed extends Record<string, any> = any,
+> implements CrdtDocFactory<TDoc, TStorage, TJson, TSeed> {
+    public abstract getEmpty(): CrdtDocLike<TDoc, TStorage, TJson>;
+    public abstract getFactory(seed?: TSeed): AbstractCrdtDocFactory<TDoc, TStorage, TJson, TSeed>;
+    public abstract getInitialized(seed?: TSeed): CrdtDocLike<TDoc, TStorage, TJson>;
 
     public isEmpty(initialState: Maybe<string>): boolean {
         const doc = this.getEmpty().applyEncodedState({ update: initialState });

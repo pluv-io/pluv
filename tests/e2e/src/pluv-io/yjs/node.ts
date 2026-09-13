@@ -1,8 +1,8 @@
 import { addonIndexedDB } from "@pluv/addon-indexeddb";
 import { createClient, infer } from "@pluv/client";
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
-import { slateNodesToInsertDelta } from "@slate-yjs/core";
 import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node";
 
@@ -12,22 +12,21 @@ const io = createClient({
         return `http://localhost:3102/api/pluv/authorize?room=${room}`;
     },
     debug: true,
-    initialStorage: yjs.doc((t) => ({
-        blocknote: t.xmlFragment("blocknote"),
-        messages: t.array("messages", [
-            yjs.map([
-                ["message", "hello"],
-                ["name", "i3dly"],
-            ]),
-        ]),
-        slate: (() => {
-            const type = t.xmlText("slate");
-
-            type.applyDelta(slateNodesToInsertDelta([]));
-
-            return type;
-        })(),
-    })),
+    storage: yjs.storage({
+        schema: yjs.schema({
+            blocknote: yjs.yXmlFragment(),
+            messages: yjs.yArray(yjs.yMap(s.string())),
+            slate: yjs.yXmlText(),
+        }),
+    }),
+    initialStorage: {
+        messages: [
+            {
+                message: "hello",
+                name: "i3dly",
+            },
+        ],
+    },
     presence: z.object({
         blocknote: z.any().default({}),
         count: z.number(),

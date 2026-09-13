@@ -1,40 +1,34 @@
-import type { Json, Maybe } from "../general";
+import type { Maybe } from "../general";
 
 export interface CrdtDocFactory<
-    TDoc extends any,
-    TStorage extends Record<string, CrdtType<any, any>>,
+    TDoc extends any = any,
+    TStorage extends Record<string, any> = Record<string, any>,
+    TJson extends Record<string, any> = any,
+    TSeed extends Record<string, any> = any,
 > {
-    _initialStorage: (builder: any) => TStorage;
-    getEmpty(): CrdtDocLike<TDoc, TStorage>;
-    getFactory(initialStorage?: (builder: any) => TStorage): CrdtDocFactory<TDoc, TStorage>;
-    getInitialized(initialStorage?: (builder: any) => TStorage): CrdtDocLike<TDoc, TStorage>;
+    getEmpty(): CrdtDocLike<TDoc, TStorage, TJson>;
+    getFactory(seed?: TSeed): CrdtDocFactory<TDoc, TStorage, TJson, TSeed>;
+    getInitialized(seed?: TSeed): CrdtDocLike<TDoc, TStorage, TJson>;
     isEmpty(initialStorage: Maybe<string>): boolean;
 }
 
-export interface CrdtLibraryType<TDoc extends CrdtDocFactory<any, any> = CrdtDocFactory<any, any>> {
-    doc: (value: any) => TDoc;
-    kind: "loro" | "yjs";
+export type CrdtLibraryKind = "loro" | "noop" | "yjs";
+
+export interface CrdtLibraryType<
+    TDoc extends CrdtDocFactory<any, any, any, any> = CrdtDocFactory<any, any>,
+> {
+    doc: (value?: any) => TDoc;
+    kind: CrdtLibraryKind;
 }
 
-export type CrdtType<TValue extends unknown, TJson extends unknown = any> = Omit<
-    TValue,
-    "__pluvType"
-> & {
-    __pluvType: () => TJson;
-};
-
-export type InferCrdtJson<T extends unknown> =
-    T extends CrdtType<any, infer IJson>
-        ? InferCrdtJson<IJson>
-        : T extends Record<string, any>
-          ? { [P in keyof T]: InferCrdtJson<T[P]> }
-          : T extends (infer IJson)[]
-            ? InferCrdtJson<IJson>[]
-            : T extends readonly (infer IJson)[]
-              ? readonly InferCrdtJson<IJson>[]
-              : T extends Json
-                ? T
-                : string;
+/** True when `TCrdt` is a real CRDT library (`yjs` / `loro`), not the noop default. */
+export type HasCrdtLibrary<TCrdt> = [TCrdt] extends [never]
+    ? false
+    : 0 extends 1 & TCrdt
+      ? false
+      : [TCrdt] extends [{ kind: "loro" | "yjs" }]
+        ? true
+        : false;
 
 export interface DocApplyEncodedStateParams {
     origin?: string;
@@ -47,18 +41,20 @@ export interface DocBatchApplyEncodedStateParams {
 }
 
 export interface DocSubscribeCallbackParams<
-    TDoc extends any,
-    TStorage extends Record<string, CrdtType<any, any>>,
+    TDoc extends any = any,
+    TStorage extends Record<string, any> = Record<string, any>,
+    TJson extends Record<string, any> = any,
 > {
-    doc: CrdtDocLike<TDoc, TStorage>;
+    doc: CrdtDocLike<TDoc, TStorage, TJson>;
     local: boolean;
     origin?: string | null;
     update: string;
 }
 
 export interface CrdtDocLike<
-    TDoc extends any,
-    TStorage extends Record<string, CrdtType<any, any>>,
+    TDoc extends any = any,
+    TStorage extends Record<string, any> = Record<string, any>,
+    TJson extends Record<string, any> = any,
 > {
     value: TDoc;
 
@@ -76,11 +72,13 @@ export interface CrdtDocLike<
      */
     isDirty(): boolean;
     isEmpty(): boolean;
-    rebuildStorage(reference: TStorage): this;
+    rebuildStorage(reference?: TStorage): this;
     redo(): this;
-    subscribe(listener: (params: DocSubscribeCallbackParams<TDoc, TStorage>) => void): () => void;
-    toJson(): InferCrdtJson<TStorage>;
-    toJson<TKey extends keyof TStorage>(type: TKey): InferCrdtJson<TStorage[TKey]>;
+    subscribe(
+        listener: (params: DocSubscribeCallbackParams<TDoc, TStorage, TJson>) => void,
+    ): () => void;
+    toJson(): TJson;
+    toJson<TKey extends keyof TJson>(type: TKey): TJson[TKey];
     track(): this;
     transact(fn: () => void, origin?: string): this;
     undo(): this;

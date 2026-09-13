@@ -11,7 +11,7 @@ import type {
     WebSocketConnection,
 } from "@pluv/client";
 import { MockedRoom, parsePluvSchema } from "@pluv/client";
-import type { InferCrdtJson, InferDoc, InferStorage } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, InferDoc, InferJson, InferStorage } from "@pluv/crdt";
 import type {
     Id,
     InferIOCrdtKind,
@@ -59,7 +59,7 @@ export type CreateBundleOptions<
     TIO extends IOLike<any, any, any>,
     TMetadata extends JsonObject = {},
     TPresence extends Record<string, any> = {},
-    TCrdt extends InferIOCrdtKind<TIO> = InferIOCrdtKind<TIO>,
+    TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 > = {
     addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TCrdt>[];
@@ -70,7 +70,7 @@ export const createBundle = <
     TIO extends IOLike<any, any, any>,
     TMetadata extends JsonObject = {},
     TPresence extends Record<string, any> = {},
-    TCrdt extends InferIOCrdtKind<TIO> = InferIOCrdtKind<TIO>,
+    TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
     TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
 >(
     client: PluvClient<TIO, TPresence, TCrdt, TMetadata>,
@@ -91,7 +91,7 @@ export const createBundle = <
      * @date November 11, 2022
      */
     const PluvRoomContext = createContext<
-        RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>, TEvents>
+        RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>, TEvents, InferJson<TCrdt>>
     >(null as any);
 
     const MockedRoomContext = createContext<RoomLike<
@@ -99,7 +99,8 @@ export const createBundle = <
         InferDoc<TCrdt>,
         TPresence,
         InferStorage<TCrdt>,
-        TEvents
+        TEvents,
+        InferJson<TCrdt>
     > | null>(null);
 
     const MockedRoomProvider = memo<MockedRoomProviderProps<TIO, TPresence, TCrdt>>((props) => {
@@ -109,10 +110,8 @@ export const createBundle = <
             return new MockedRoom<TIO, TPresence, TCrdt, TEvents>(_room, {
                 events,
                 initialPresence,
-                initialStorage:
-                    typeof initialStorage === "function"
-                        ? (client._defs.initialStorage?.getFactory(initialStorage) as TCrdt)
-                        : undefined,
+                initialStorage,
+                storage: client._defs.storage,
             });
         });
 
@@ -153,10 +152,7 @@ export const createBundle = <
                     addons: options.addons,
                     debug,
                     initialPresence,
-                    initialStorage:
-                        typeof initialStorage === "function"
-                            ? client._defs.initialStorage?.getFactory(initialStorage)
-                            : undefined,
+                    initialStorage,
                     metadata,
                     onAuthorizationFail,
                     router: options.router,
@@ -549,11 +545,11 @@ export const createBundle = <
     };
 
     const useStorage = <
-        TKey extends keyof InferStorage<TCrdt>,
-        TData extends unknown = InferCrdtJson<InferStorage<TCrdt>[TKey]>,
+        TKey extends keyof InferJson<TCrdt>,
+        TData extends unknown = InferJson<TCrdt>[TKey],
     >(
         key: TKey,
-        selector = identity as (data: InferCrdtJson<InferStorage<TCrdt>[TKey]>) => TData,
+        selector = identity as (data: InferJson<TCrdt>[TKey]) => TData,
         hookOptions?: SubscriptionHookOptions<TData | null>,
     ): UseStorageResult<TData, InferStorage<TCrdt>[TKey]> => {
         const room = useRoom();
@@ -588,12 +584,12 @@ export const createBundle = <
             [key, room],
         );
 
-        const getSnapshot = useCallback((): InferCrdtJson<InferStorage<TCrdt>[TKey]> | null => {
+        const getSnapshot = useCallback((): InferJson<TCrdt>[TKey] | null => {
             return room.getStorageJson(key);
         }, [key, room]);
 
         const _selector = useCallback(
-            (snapshot: InferCrdtJson<InferStorage<TCrdt>[TKey]> | null) => {
+            (snapshot: InferJson<TCrdt>[TKey] | null) => {
                 return snapshot === null ? null : selector(snapshot);
             },
             [selector],
