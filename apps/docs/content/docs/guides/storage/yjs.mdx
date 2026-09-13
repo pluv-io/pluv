@@ -13,7 +13,7 @@ To get started with Yjs storage for pluv.io, the following packages will need to
 
 ```bash
 # pluv.io packages
-npm install @pluv/crdt-yjs
+npm install @pluv/crdt @pluv/crdt-yjs
 
 # Peer dependencies
 npm install yjs
@@ -52,12 +52,13 @@ export const ioServer = io.server({
 });
 ```
 
-Then, on the frontend, we will need to specify the schema of the pluv.io storage via an `initialStorage`.
+Then, on the frontend, define a `yjs.schema` and pass it to `createClient` via `yjs.storage`. JSON seeds go in `initialStorage`.
 
 ```ts
 // frontend/pluv.ts
 
 import { createClient, infer } from "@pluv/client";
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import type { InferBundleRoom } from "@pluv/react";
 import { createBundle } from "@pluv/react";
@@ -66,11 +67,16 @@ import type { ioServer } from "../backend";
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const io = createClient({
   types,
-  initialStorage: yjs.doc((t) => {
-    // Create a Y.Array with the name "groceries", initialized with an
-    // empty array
-    groceries: t.array<string>("groceries", []),
+  storage: yjs.storage({
+    schema: yjs.schema({
+      // Top-level fields must be Yjs CRDT nodes (yArray, yMap, yText, …)
+      groceries: yjs.yArray(s.string()),
+    }),
   }),
+  // Optional JSON seed. Missing keys become empty containers
+  initialStorage: {
+    groceries: [],
+  },
 });
 
 const bundle = createBundle(io);
@@ -80,7 +86,7 @@ export const { PluvRoomProvider, useStorage } = bundle;
 export type PluvIORoom = InferBundleRoom<typeof bundle>;
 ```
 
-Optionally, when we then wrap our room with the `PluvRoomProvider`, we can specify a different `initialStorage` for the room, so long as it adheres to the schema defined on `createClient`.
+Optionally, when we then wrap our room with the `PluvRoomProvider`, we can specify a different JSON `initialStorage` for the room, so long as it adheres to the schema defined on `createClient`.
 
 ```tsx
 // frontend/PluvRoom.tsx
@@ -99,11 +105,9 @@ export const PluvRoom: FC = ({ children, id }) => {
       room={id}
       // This prop is optional. We only need this if we want to provide a
       // different initialStorage value for the room
-      initialStorage={(t) => ({
-        // Create a Y.Array with the name "groceries", initialized with an
-        // array containing 3 items
-        groceries: t.array("groceries", ["bacon", "lettuce", "tomato"]),
-      })}
+      initialStorage={{
+        groceries: ["bacon", "lettuce", "tomato"],
+      }}
     >
       {children}
     </PluvRoomProvider>
@@ -145,8 +149,8 @@ import { yjs } from "@pluv/crdt-yjs";
 import { Array as YArray, Map as YMap, Text as YText } from "yjs";
 import { useStorage } from "./pluv";
 
-// "groceries" is a key from the root properties of `initialStorage`
-// yArray is a shared-type from Yjs
+// "groceries" is a key from the root properties of `yjs.schema`
+// yArray is a native Y.Array
 const [groceries, yArray] = useStorage("groceries");
 //                ^? const yArray: YArray<string> | null
 yArray.push(["bread"]);
@@ -154,30 +158,33 @@ yArray.push(["bread"]);
 
 ## Nesting Yjs shared types
 
-It isn't so uncommon to want to create a nested structure containing multiple Yjs shared-types. It is important to keep in mind however, that declaring top-level shared-types onto the Document (i.e. Y.Doc) uses a different API than creating a shared-type to be nested under another shared-type ([example here](https://docs.yjs.dev/api/shared-types/y.map)). The same applies when using `@pluv/crdt-yjs`.
+It isn't so uncommon to want to create a nested structure containing multiple Yjs shared-types. Declare the nested shape on `yjs.schema`. JSON seeds stay JSON — nested CRDT nodes are constructed from that seed at hydrate time.
 
-To declare a top-level shared-type on the `Y.Doc`, you will need to use the builder that is exposed in the first positional argument of the `yjs.doc` function.
+To declare a top-level shared-type on the `Y.Doc`, use `yjs.yArray`, `yjs.yMap`, `yjs.yText`, and the xml helpers on `yjs.schema`. JSON-only leaves use `s` from `@pluv/crdt`.
 
 ```ts
 import { createClient } from "@pluv/client";
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
-import type { Text as YText } from "yjs";
 
 const io = createClient({
   // ...
-  // See that we are using this `t` builder to create top-level types
-  // Note that top-level types require a name to be created (e.g. "groceries")
-  initialStorage: yjs.doc((t) => ({
-    groceries: t.array<string>("messages", []),
-    // Example of a top-level Y.Map named "chats" that will nest Y.Text items
-    chats: t.map<string, YText>("chats", []),
-  })),
+  storage: yjs.storage({
+    schema: yjs.schema({
+      groceries: yjs.yArray(s.string()),
+      // Top-level Y.Map named "chats" that nests Y.Text items
+      chats: yjs.yMap(yjs.yText()),
+    }),
+  }),
+  initialStorage: {
+    groceries: [],
+    chats: {},
+  },
 });
 ```
 
-Then, to create a nested shared-type, you will need to create them via the `@pluv/crdt-yjs` functions (i.e. not via the builder that is exposed from `yjs.doc`).
+Then, to insert a nested shared-type at runtime, use the `@pluv/crdt-yjs` helpers (or the native Yjs constructors). These return native Yjs types:
 
-The functions that are available include the following (linked to their respective Yjs shared-type docs):
 1. [yjs.array](https://docs.yjs.dev/api/shared-types/y.array)
 2. [yjs.map](https://docs.yjs.dev/api/shared-types/y.map)
 3. [yjs.text](https://docs.yjs.dev/api/shared-types/y.text)
@@ -190,32 +197,29 @@ import { yjs } from "@pluv/crdt-yjs";
 import { Text as YText } from "yjs";
 import { PluvRoomProvider, useStorage } from "./pluv";
 
-// initialStorage example
+// initialStorage is JSON only
 <PluvRoomProvider
   room="example-room"
-  initialStorage={(t) => ({
-    groceries: t.array<string>("messages", ["bacon", "lettuce", "tomato"]),
-    // chats is declared using `t` as a top-level type with a name
-    chats: t.map<string, YText>("chats", [
-      // The Y.Texts are declared using `yjs` as a nested item without names
-      // The texts below are initialized with a value of empty string
-      ["chat1", yjs.text("")],
-      ["chat2", yjs.text("")],
-    ]),
-  })}
+  initialStorage={{
+    groceries: ["bacon", "lettuce", "tomato"],
+    chats: {
+      chat1: "",
+      chat2: "",
+    },
+  }}
 >
   {children}
 </PluvRoomProvider>
 
-// "chats" is a key from the root properties of `initialStorage`
-// yMap is a shared-type from Yjs
+// "chats" is a key from the root properties of `yjs.schema`
+// yMap is a native Y.Map
 const [chats, yMap] = useStorage("chats");
-//            ^? const yMap: YMap<string, YText> | null
+//            ^? const yMap: YMap<YText> | null
 
 // The `yjs` module from @pluv/crdt-yjs returns the native Yjs shared-types
 // Therefore these are equivalent statements
 yMap?.set("chat3", yjs.text("hello world"));
-yMap?.set("chat3". new YText("hello world"));
+yMap?.set("chat3", new YText("hello world"));
 ```
 
 ## Yjs Provider
@@ -232,7 +236,7 @@ import { z } from "zod";
 
 const io = createClient({
   // ...
-  initialStorage: yjs.doc((t) => ({ /* ... */ })),
+  storage: yjs.storage({ schema: yjs.schema({ /* ... */ }) }),
   presence: z.object({
     // Many integrations will expect to read/write awareness data to
     // some location. We are defining one here

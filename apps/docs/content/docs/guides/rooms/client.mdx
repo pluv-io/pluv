@@ -13,6 +13,7 @@ To create a `PluvRoom`, you must first have a `PluvClient` defined. Refer to the
 // frontend/room.ts
 
 import { createClient, infer } from "@pluv/client";
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
 
@@ -25,10 +26,15 @@ import type { ioServer } from "./server/pluv-io";
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 export const client = createClient({
   types,
-  // Optional: Define the initial storage for rooms. This will
-  initialStorage: yjs.doc((t) => ({
-    messages: t.array<string>("messages", []),
-  })),
+  // Optional: Define the storage schema and an optional JSON seed.
+  storage: yjs.storage({
+    schema: yjs.schema({
+      messages: yjs.yArray(s.string()),
+    }),
+  }),
+  initialStorage: {
+    messages: [],
+  },
   // Optional: Define your presence schema
   presence: z.object({
     selectionId: z.string().nullable(),
@@ -43,9 +49,9 @@ const room = client.createRoom("my-test-room", {
     selectionId: null,
   },
   // Optional: Overwrite initial storage from client
-  initialStorage: yjs.doc((t) => ({
-    messages: t.array("messages", ["hello world!"]),
-  })),
+  initialStorage: {
+    messages: ["hello world!"],
+  },
   // Optional: Handler when a user fails authorization
   // This only matters if `authorize` has been configured on
   // your `createIO` instance

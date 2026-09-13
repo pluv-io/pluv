@@ -3,8 +3,6 @@ title: "Using Loro"
 description: "Learn how to use pluv.io storage with the Loro CRDT"
 ---
 
-# Using Loro
-
 > **Note**: pluv.io's Loro integration is currently in preview, but is available for use today.
 
 [Loro](https://loro.dev/) is a high-performance CRDT for building collaborative applications that sync automatically. Compared to other CRDT libraries, Loro seems to have a greater focus on developer tooling and solving some more complex data synchronization problems such as [hierarchical relationships](https://loro.dev/blog/movable-tree) and [rich text editing](https://loro.dev/blog/loro-richtext). Due to enough similarities between the API designs between [Yjs](https://yjs.dev/) and Loro, pluv.io has built an integration between its storage API and the Loro CRDT via [@pluv/crdt-loro](https://www.npmjs.com/package/@pluv/crdt-loro).
@@ -15,7 +13,7 @@ To get started with Loro storage for pluv.io, the following packages will need t
 
 ```bash
 # pluv.io packages
-npm install @pluv/crdt-loro
+npm install @pluv/crdt @pluv/crdt-loro
 
 # Peer dependencies
 npm install loro-crdt
@@ -54,12 +52,13 @@ export const ioServer = io.server({
 });
 ```
 
-Then, on the frontend, we will need to specify the schema of the pluv.io storage via an `initialStorage`.
+Then, on the frontend, define a `loro.schema` and pass it to `createClient` via `loro.storage`. JSON seeds go in `initialStorage`.
 
 ```ts
 // frontend/pluv.ts
 
 import { createClient, infer } from "@pluv/client";
+import { s } from "@pluv/crdt";
 import { loro } from "@pluv/crdt-loro";
 import type { InferBundleRoom } from "@pluv/react";
 import { createBundle } from "@pluv/react";
@@ -68,11 +67,15 @@ import type { ioServer } from "../backend";
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const io = createClient({
   types,
-  initialStorage: loro.doc((t) => {
-    // Create a LoroList with the name "groceries", initialized with an
-    // empty array
-    groceries: t.list<string>("groceries", []),
+  storage: loro.storage({
+    schema: loro.schema({
+      // Top-level fields must be Loro CRDT nodes (loroList, loroMap, loroText, …)
+      groceries: loro.loroList(s.string()),
+    }),
   }),
+  initialStorage: {
+    groceries: [],
+  },
 });
 
 const bundle = createBundle(io);
@@ -82,7 +85,7 @@ export const { PluvRoomProvider, useStorage, useTransact } = bundle;
 export type PluvIORoom = InferBundleRoom<typeof bundle>;
 ```
 
-Optionally, when we then wrap our room with the `PluvRoomProvider`, we can specify a different `initialStorage` for the room, so long as it adheres to the schema defined on `createClient`.
+Optionally, when we then wrap our room with the `PluvRoomProvider`, we can specify a different JSON `initialStorage` for the room, so long as it adheres to the schema defined on `createClient`.
 
 ```tsx
 // frontend/PluvRoom.tsx
@@ -102,11 +105,9 @@ export const PluvRoom: FC = ({ children, id }) => {
       room={id}
       // This prop is optional. We only need this if we want to provide a
       // different initialStorage value for the room
-      initialStorage={(t) => ({
-        // Create a LoroList with the name "groceries", initialized with an
-        // array containing 3 items
-        groceries: t.list("groceries", ["bacon", "lettuce", "tomato"]),
-      })}
+      initialStorage={{
+        groceries: ["bacon", "lettuce", "tomato"],
+      }}
     >
       {children}
     </PluvRoomProvider>
@@ -152,7 +153,7 @@ import { useStorage, useTransact } from "./pluv";
 
 const transact = useTransact();
 
-// "groceries" is a key from the root properties of `initialStorage`
+// "groceries" is a key from the root properties of `loro.schema`
 // loroList is a container-type from loro
 const [groceries, loroList] = useStorage("groceries");
 //                ^? const loroList: LoroList<string> | null
@@ -172,29 +173,32 @@ transact((tx) => {
 
 ## Nesting Loro container types
 
-It isn't so uncommon to want to create a nested structure containing multiple Loro container types. It is important to keep in mind however, that declaring top-level container types onto the Document (i.e. LoroDoc) uses a different API than creating a container-type to be nested under another container type ([example here](https://loro.dev/docs/tutorial/loro_doc#list-container)). The same applies when using `@pluv/crdt-loro`.
+It isn't so uncommon to want to create a nested structure containing multiple Loro container types. Declare the nested shape on `loro.schema`. JSON seeds stay JSON — nested CRDT nodes are constructed from that seed at hydrate time.
 
-To declare a top-level container type on the `LoroDoc`, you will need to use the builder that is exposed in the first positional argument of the `loro.doc` function.
+To declare a top-level container type on the `LoroDoc`, use `loro.loroList`, `loro.loroMap`, `loro.loroText`, and the other schema helpers on `loro.schema`. JSON-only leaves use `s` from `@pluv/crdt`.
 
 ```ts
 import { createClient } from "@pluv/client";
+import { s } from "@pluv/crdt";
 import { loro } from "@pluv/crdt-loro";
-import type { LoroText } from "loro-crdt"
 
 const io = createClient({
   // ...
-  // See that we are using this `t` builder to create top-level types
-  // Note that top-level types require a name to be created (e.g. "groceries")
-  initialStorage: loro.doc((t) => ({
-    groceries: t.list<string>("messages", []),
-    // Example of a top-level LoroMap named "chats" that will nest
-    // LoroText items
-    chats: t.map<Record<string, LoroText>>("chats", []),
-  })),
+  storage: loro.storage({
+    schema: loro.schema({
+      groceries: loro.loroList(s.string()),
+      // Top-level LoroMap named "chats" that nests LoroText items
+      chats: loro.loroMap(loro.loroText()),
+    }),
+  }),
+  initialStorage: {
+    groceries: [],
+    chats: {},
+  },
 });
 ```
 
-Then, to create a nested container type, you will need to create them via `@pluv/crdt-loro` functions (i.e. not via the builder that is exposed from `loro.doc`).
+Then, to insert a nested container type at runtime, use the `@pluv/crdt-loro` helpers (or the native Loro constructors). These return native Loro types.
 
 The functions that are available include the following (linked to their respective Loro container type docs):
 1. [loro.text](https://loro.dev/docs/tutorial/text)
@@ -209,25 +213,22 @@ import { loro } from "@pluv/crdt-loro";
 import { LoroText } from "loro-crdt";
 import { PluvRoomProvider, useStorage, useTransact } from "./pluv";
 
-// initialStorage example
+// initialStorage is JSON only
 <PluvRoomProvider
   room="example-room"
-  initialStorage={(t) => ({
-    groceries: t.list<string>("messages", ["bacon", "lettuce", "tomato"]),
-    // chats is declared using `t` as a top-level type with a name
-    chats: t.map<Record<string, LoroText>>("chats", [
-      // The LoroTexts are declared using `loro` as a nested item without names
-      // The texts below are initialized with a value of empty string
-      ["chat1", loro.text("")],
-      ["chat2", loro.text("")],
-    ]),
-  })}
+  initialStorage={{
+    groceries: ["bacon", "lettuce", "tomato"],
+    chats: {
+      chat1: "",
+      chat2: "",
+    },
+  }}
 >
   {children}
 </PluvRoomProvider>
 
 const transact = useTransact();
-// "chats" is a key from the root properties of `initialStorage`
+// "chats" is a key from the root properties of `loro.schema`
 // loroMap is a container-type from Loro
 const [chats, loroMap] = useStorage("chats");
 //            ^? const loroMap: LoroMap<Record<string, LoroText>> | null

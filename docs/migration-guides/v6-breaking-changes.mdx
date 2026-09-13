@@ -1,0 +1,80 @@
+---
+title: "Migrate to v6"
+description: "Breaking changes when upgrading from pluv.io v5 to v6, including the CRDT schema builder and JSON-only storage seeds."
+---
+
+## Storage schema and JSON seeds
+
+`yjs.doc((t) => …)` and `loro.doc((t) => …)` builders are removed. Declare storage with `yjs.schema` / `loro.schema`, wrap it in `yjs.storage` / `loro.storage` on `createClient`, and seed with JSON in `initialStorage`.
+
+JSON schema leaves live on `s` from `@pluv/crdt`. Top-level fields must be that library's CRDT nodes (`yjs.yArray`, `loro.loroList`, …).
+
+```ts
+import { s } from "@pluv/crdt";
+import { yjs } from "@pluv/crdt-yjs";
+
+// Before
+createClient({
+  types,
+  initialStorage: yjs.doc((t) => ({
+    messages: t.array<string>("messages", ["hello"]),
+  })),
+});
+
+// After
+createClient({
+  types,
+  storage: yjs.storage({
+    schema: yjs.schema({
+      messages: yjs.yArray(s.string()),
+    }),
+  }),
+  initialStorage: {
+    messages: ["hello"],
+  },
+});
+```
+
+Room-level `initialStorage` is JSON only, not a builder function:
+
+```tsx
+// Before
+<PluvRoomProvider
+  room="my-room"
+  initialStorage={(t) => ({
+    messages: t.array("messages", ["hello"]),
+  })}
+/>
+
+// After
+<PluvRoomProvider
+  room="my-room"
+  initialStorage={{
+    messages: ["hello"],
+  }}
+/>
+```
+
+Missing seed keys become empty containers. Extra keys throw. Xml/tree types are not JSON-seedable — declare them on the schema and initialize at editor bind time.
+
+The server still takes `createIO({ crdt: yjs })` (or `loro`) and an empty `doc()`. Do not pass `storage` to `createIO` or `io.server`.
+
+## Native shared types
+
+`CrdtType`, `YjsType`, `LoroType`, and `InferCrdtJson` are removed. `useStorage` and `getStorage` return native types (`Y.Array`, `LoroList`, …), not wrappers with a `.value` property.
+
+```ts
+// Before
+const messages: yjs.YjsType<YArray<string>, string[]> | null = room.getStorage("messages");
+messages?.value.push(["world"]);
+
+// After
+const messages: YArray<string> | null = room.getStorage("messages");
+messages?.push(["world"]);
+```
+
+Runtime nested inserts still use `yjs.map()` / `yjs.text()` / `loro.object()` / `loro.list()`. Those helpers return native constructors.
+
+## Combinators
+
+Unions, intersections, optionals, and similar combinators are `$`-prefixed on `s` (`s.$union`, `s.$optional`, …). Serialized `kind` values are unprefixed (`"union"`, `"optional"`, …).

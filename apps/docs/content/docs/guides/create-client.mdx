@@ -12,6 +12,7 @@ To install pluv.io for your framework-agnostic frontend, we will install the fol
 | Purpose                                                 | Location | Install command                       |
 |---------------------------------------------------------|----------|---------------------------------------|
 | Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client              |
+| Storage schema                                          | Client   | npm install @pluv/crdt                |
 | yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs            |
 
 
@@ -26,8 +27,8 @@ npm install @pluv/client
 npm install zod
 
 # Optional if you wish to use CRDT storage
-# For storage capatilities
-npm install @pluv/crdt-yjs
+# For storage capabilities
+npm install @pluv/crdt @pluv/crdt-yjs
 # Storage peer dependencies
 npm install yjs
 ```
@@ -41,6 +42,7 @@ npm install yjs
 // frontend/io.ts
 
 import { createClient, infer } from "@pluv/client";
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
 
@@ -53,13 +55,18 @@ import type { ioServer } from "./server/pluv-io";
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 export const client = createClient({
   types,
-  // Optional: Define the initial storage for rooms. This will set
-  // the types for storage when using it in your application. Don't
-  // worry about the value, as this can be overwritten when creating
-  // a room via `client.createRoom`.
-  initialStorage: yjs.doc((t) => ({
-    messages: t.array<string>("messages", []),
-  })),
+  // Optional: Define the storage schema for rooms. This sets
+  // the types for storage when using it in your application.
+  // `initialStorage` is an optional JSON seed and can be overwritten
+  // when creating a room via `client.createRoom`.
+  storage: yjs.storage({
+    schema: yjs.schema({
+      messages: yjs.yArray(s.string()),
+    }),
+  }),
+  initialStorage: {
+    messages: [],
+  },
   // Optional: Define your presence schema
   presence: z.object({
     selectionId: z.string().nullable(),

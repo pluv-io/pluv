@@ -75,11 +75,13 @@ import { createBundle } from "@pluv/react";
 import { z } from "zod";
 
 const io = createClient({
-  initialStorage: yjs.doc((t) => ({
-    // IMPORTANT!
-    // Must be called "root" due to @lexical/yjs's internals!
-    root: t.xmlText("root"),
-  })),
+  storage: yjs.storage({
+    schema: yjs.schema({
+      // IMPORTANT!
+      // Must be called "root" due to @lexical/yjs's internals!
+      root: yjs.yXmlText(),
+    }),
+  }),
   presense: z.object({
     // We'll put Lexical's awareness data here.
 

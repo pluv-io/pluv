@@ -3,8 +3,6 @@ title: "Lexical"
 description: "Learn how to setup Lexical for realtime collaboration with pluv.io"
 ---
 
-# Lexical
-
 > **Note**: pluv.io integrates with Lexical only via Yjs (i.e. @pluv/crdt-yjs)
 
 > **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart/nextjs) to see how.
@@ -77,11 +75,13 @@ import { createBundle } from "@pluv/react";
 import { z } from "zod";
 
 const io = createClient({
-  initialStorage: yjs.doc((t) => ({
-    // IMPORTANT!
-    // Must be called "root" due to @lexical/yjs's internals!
-    root: t.xmlText("root"),
-  })),
+  storage: yjs.storage({
+    schema: yjs.schema({
+      // IMPORTANT!
+      // Must be called "root" due to @lexical/yjs's internals!
+      root: yjs.yXmlText(),
+    }),
+  }),
   presense: z.object({
     // We'll put Lexical's awareness data here.
 
@@ -184,4 +184,4 @@ export const LexicalEditor: FC<LexicalEditorProps> = () => {
 };
 ```
 
-That's all you need to enable realtime collaboration on Lexical! From here on, you can further customize your Lexical editor by following the official [Lexical documentation](https://lexical.dev/docs/intro). And you can persist the contents of your Lexical editor by following pluv.io's documentation for [Loading Storage](/docs/storage/loading-storage).
+That's all you need to enable realtime collaboration on Lexical! From here on, you can further customize your Lexical editor by following the official [Lexical documentation](https://lexical.dev/docs/intro). And you can persist the contents of your Lexical editor by following pluv.io's documentation for [Loading Storage](/docs/guides/storage/loading).

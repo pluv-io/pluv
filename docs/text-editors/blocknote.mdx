@@ -3,8 +3,6 @@ title: "BlockNote"
 description: "Learn how to setup BlockNote for realtime collaboration with pluv.io"
 ---
 
-# BlockNote
-
 > **Note**: pluv.io integrates with BlockNote only via Yjs (i.e. @pluv/crdt-yjs)
 
 > **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart/nextjs) to see how.
@@ -58,9 +56,11 @@ import { createBundle } from "@pluv/react";
 import { z } from "zod";
 
 const io = createClient({
-  initialStorage: yjs.doc((t) => ({
-    myEditor: t.xmlFragment("myEditor"),
-  })),
+  storage: yjs.storage({
+    schema: yjs.schema({
+      myEditor: yjs.yXmlFragment(),
+    }),
+  }),
   presense: z.object({
     // We'll put BlockNote's awareness data here.
 
@@ -150,4 +150,4 @@ export const BlockNoteEditor: FC<BlockNoteEditorProps> = () => {
 };
 ```
 
-That's all you need to enable realtime collaboration on BlockNote! From here on, you can further customize your BlockNote editor by following the official [BlockNote documentation](https://www.blocknotejs.org/docs). And you can persist the contents of your BlockNote editor by following pluv.io's documentation for [Loading Storage](/docs/storage/loading-storage).
+That's all you need to enable realtime collaboration on BlockNote! From here on, you can further customize your BlockNote editor by following the official [BlockNote documentation](https://www.blocknotejs.org/docs). And you can persist the contents of your BlockNote editor by following pluv.io's documentation for [Loading Storage](/docs/guides/storage/loading).

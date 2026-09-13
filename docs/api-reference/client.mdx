@@ -1,9 +1,7 @@
 ---
 title: "@pluv/client"
-description: "API Reference for @pluv/client"
+description: "API reference for @pluv/client — create clients, rooms, event routers, and interact with presence and storage."
 ---
-
-# @pluv/client
 
 ## createClient
 
@@ -15,10 +13,11 @@ Create a frontend `PluvClient` that will create rooms to connect to your server'
 
 If you've created a basic `PluvIO` backend without any auth, you can create a `PluvClient` with your websocket connection endpoint.
 
-See the [Create Client](/docs/create-client) docs for more details.
+See the [Create Client](/docs/guides/create-client) docs for more details.
 
 ```ts
 import { createClient, infer } from "@pluv/client";
+import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import type { ioServer } from "./server/pluv-io";
 import { z } from "zod";
@@ -29,13 +28,15 @@ import { z } from "zod";
 const types = infer((i) => ({ io: i<typeof ioServer> }));
 const io = createClient({
   types,
-  // Optional: Define the initial storage for rooms. This will set
-  // the types for storage when using it in your application. Don't
-  // worry about the value, as this can be overwritten when creating
-  // a room via `client.createRoom`.
-  initialStorage: yjs.doc((t) => ({
-    messages: t.array<string>("messages", []),
-  })),
+  // Optional: Define the storage schema and an optional JSON seed.
+  storage: yjs.storage({
+    schema: yjs.schema({
+      messages: yjs.yArray(s.string()),
+    }),
+  }),
+  initialStorage: {
+    messages: [],
+  },
   // Optional: Define your presence schema
   presence: z.object({
     selectionId: z.string().nullable(),
@@ -92,14 +93,19 @@ Returns a `PluvRoom` instance
 
 Create a `PluvRoom` that websockets can join and leave.
 
-See the [Create Rooms](/docs/create-rooms/client-rooms) docs for more details.
+See the [Create Rooms](/docs/guides/rooms/client) docs for more details.
 
 ```ts
 export const io = createClient({
-  // Optional: Define the initial storage for rooms. This will
-  initialStorage: yjs.doc((t) => ({
-    messages: t.array<string>("messages", []),
-  })),
+  // Optional: Define the storage schema and an optional JSON seed.
+  storage: yjs.storage({
+    schema: yjs.schema({
+      messages: yjs.yArray(s.string()),
+    }),
+  }),
+  initialStorage: {
+    messages: [],
+  },
   // Optional: Define your presence schema
   presence: z.object({
     selectionId: z.string().nullable(),
@@ -114,9 +120,9 @@ const room = io.createRoom("my-example-room", {
     selectionId: null,
   },
   // Optional: Overwrite initial storage from client
-  initialStorage: yjs.doc((t) => ({
-    messages: t.array("messages", ["hello world!"]),
-  })),
+  initialStorage: {
+    messages: ["hello world!"],
+  },
 });
 ```
 
@@ -182,7 +188,7 @@ io.leave(room);
 
 ### PluvClient.procedure
 
-Creates a new type-safe event procedure to be broadcasted from `PluvClient`. See [Define Events](/docs/custom-events/client-events) for more information.
+Creates a new type-safe event procedure to be broadcasted from `PluvClient`. See [Define Events](/docs/guides/events/client) for more information.
 
 ```ts
 import { createClient } from "@pluv/client";
@@ -204,7 +210,7 @@ const wave = io.procedure
 
 ### PluvClient.router
 
-Creates a new type-safe event procedure router to attach events and connect to a `PluvRoom` via `PluvRoom.createRoom`. See [Define Events](/docs/custom-events/client-events) for more information.
+Creates a new type-safe event procedure router to attach events and connect to a `PluvRoom` via `PluvRoom.createRoom`. See [Define Events](/docs/guides/events/client) for more information.
 
 ```ts
 import { createClient } from "@pluv/client";
@@ -334,7 +340,7 @@ const myPresence = room.getMyPresence();
 
 Returns `UserInfo | null`
 
-Returns a user info object containing data used when generating the JWT during authentication (see [Authorization](/docs/authorization)), the user's presence, and the user's connection id.
+Returns a user info object containing data used when generating the JWT during authentication (see [Authorization](/docs/guides/authorization)), the user's presence, and the user's connection id.
 
 ```ts
 const myself = room.getMyself();
@@ -364,13 +370,11 @@ const others = room.getOthers();
 
 ### PluvRoom.getStorage
 
-Returns a `CrdtAbstractType` from `@pluv/crdt` that holds a CRDT shared type. For instance, if using `@pluv/crdt-yjs`, the `CrdtAbstractType` will hold a [yjs](https://yjs.dev/) shared type in its `value` property. This will be null when not yet connected.
+Returns the native CRDT shared type, or `null` while storage is unavailable. For `@pluv/crdt-yjs`, this is a Yjs type such as `Y.Array`.
 
 ```ts
 // frontend/room.ts
-import { yjs } from "@pluv/crdt-yjs";
 import { Array as YArray } from "yjs";
-import { z } from "zod";
 
 // const io = ...
 
@@ -378,15 +382,13 @@ const room = io.createRoom("my-example-room", {
   initialPresence: {
     selectionId: null,
   },
-  // Define the initial storage for the room
-  initialStorage: yjs.doc((t) => ({
-    messages: t.array("messages", ["hello world!"]),
-  })),
+  // Override the JSON seed defined in createClient
+  initialStorage: {
+    messages: ["hello world!"],
+  },
 });
 
-// Get messages as defined from the `createRoom` config
-const messages: yjs.YjsArray<string> | null = room.getStorage("messages");
-const sharedType: YArray<string> | null = messages?.value;
+const messages: YArray<string> | null = room.getStorage("messages");
 ```
 
 ### PluvRoom.redo
@@ -539,9 +541,9 @@ const room = io.createRoom("my-example-room", {
     selectionId: null,
   },
   // Override initialStorage defined in createClient
-  initialStorage: yjs.doc((t) => ({
-    messages: t.array("messages", ["hello world!"]),
-  })),
+  initialStorage: {
+    messages: ["hello world!"],
+  },
 });
 
 // The following functions are equivalent
@@ -549,7 +551,7 @@ room.subscribe.storage("messages", (messages: string[]) => {});
 
 const unsubscribe = room.subscribe.storage.messages((messages: string[]) => {
   console.log(messages);
-  // If the AbstractCrdtType is needed, you call call getStorage here.
+  // If the native shared type is needed, call getStorage here.
   const sharedType = room.getStorage("messages");
 });
 
