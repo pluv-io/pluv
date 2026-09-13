@@ -10,7 +10,7 @@ import type {
     UserInfo,
     WebSocketConnection,
 } from "@pluv/client";
-import { MockedRoom } from "@pluv/client";
+import { MockedRoom, parsePluvSchema } from "@pluv/client";
 import type { InferCrdtJson, InferDoc, InferStorage } from "@pluv/crdt";
 import type {
     Id,
@@ -176,7 +176,7 @@ export const createBundle = <
                     typeof metadata === "function" ? metadata() : metadata,
                 );
 
-                return !!room.metadata ? room.metadata.parse(resolved) : resolved;
+                return !!room.metadata ? parsePluvSchema(room.metadata, resolved) : resolved;
             });
 
             useEffect(() => {

@@ -49,6 +49,7 @@ import type {
     InternalSubscriptions,
     PluvClientLimits,
 } from "./types";
+import { parsePluvSchema } from "./utils";
 
 export type MockedRoomEvents<TIO extends IOLike> = Partial<{
     [P in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[P]>) => Partial<InferIOOutput<TIO>>;
@@ -164,7 +165,9 @@ export class MockedRoom<
 
             if (!myself) return;
 
-            const parsed = procedure.config.input ? procedure.config.input.parse(data) : data;
+            const parsed = procedure.config.input
+                ? parsePluvSchema(procedure.config.input, data)
+                : data;
             const context: EventResolverContext<TIO, TPresence, InferDocLike<TCrdt>> = {
                 doc: this._crdtManager.doc,
                 others: this._usersManager.getOthers(),

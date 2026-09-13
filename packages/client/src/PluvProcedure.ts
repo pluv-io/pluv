@@ -1,5 +1,5 @@
 import type { AbstractCrdtDocFactory, InferDocLike } from "@pluv/crdt";
-import type { EventRecord, IOLike, InputZodLike, JsonObject, ProcedureLike } from "@pluv/types";
+import type { EventRecord, IOLike, JsonObject, ProcedureLike, StandardSchemaV1 } from "@pluv/types";
 import type { EventResolver, MergeEventRecords } from "./types";
 
 export interface PluvProcedureConfig<
@@ -10,7 +10,7 @@ export interface PluvProcedureConfig<
     TCrdt extends AbstractCrdtDocFactory<any, any>,
 > {
     broadcast?: EventResolver<TIO, TInput, TOutput, TPresence, InferDocLike<TCrdt>> | null;
-    input?: InputZodLike<TInput>;
+    input?: StandardSchemaV1<unknown, TInput>;
 }
 
 export class PluvProcedure<
@@ -28,7 +28,7 @@ export class PluvProcedure<
         TPresence,
         InferDocLike<TCrdt>
     > | null = null;
-    private _input: InputZodLike<TInput> | null = null;
+    private _input: StandardSchemaV1<unknown, TInput> | null = null;
 
     public get config(): ProcedureLike<TInput, TOutput>["config"] {
         return {
@@ -76,7 +76,7 @@ export class PluvProcedure<
     }
 
     public input<TData extends JsonObject>(
-        input: InputZodLike<TData>,
+        input: StandardSchemaV1<unknown, TData>,
     ): Omit<PluvProcedure<TIO, TData, {}, TPresence, TCrdt, TFilled | "input">, TFilled | "input"> {
         return new PluvProcedure<TIO, TData, {}, TPresence, TCrdt, TFilled | "input">({ input });
     }

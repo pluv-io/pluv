@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { Id, JsonObject, MaybePromise, UnionToIntersection } from "../general";
 import { CrdtLibraryType } from "./crdt";
 
@@ -87,15 +88,11 @@ export type GetEventMessage<
 
 export type InferIOAuthorize<TIO extends IOLike<any, any, any>> =
     TIO extends IOLike<infer IAuthorize, any, any>
-        ? { user: InputZodLike<InferIOAuthorizeUser<IAuthorize>> }
+        ? { user: StandardSchemaV1<unknown, InferIOAuthorizeUser<IAuthorize>> }
         : never;
 
 export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any>> =
     TAuthorize extends IOAuthorize<infer IUser, any> ? IUser : never;
-
-export type InputZodLike<TData extends JsonObject> = {
-    parse: (data: unknown) => TData;
-} & ({ _input: TData } | { _zod: { input: TData } });
 
 export type IOAuthorize<
     TUser extends BaseUser = any,
@@ -103,11 +100,11 @@ export type IOAuthorize<
 > =
     | {
           secret?: string;
-          user: InputZodLike<TUser>;
+          user: StandardSchemaV1<unknown, TUser>;
       }
     | ((context: TContext) => {
           secret?: string;
-          user: InputZodLike<TUser>;
+          user: StandardSchemaV1<unknown, TUser>;
       });
 
 export type IOAuthorizeEventMessage<TIO extends IOLike> = {
@@ -123,7 +120,7 @@ export type ProcedureLike<
         broadcast?:
             | ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>)
             | null;
-        input?: InputZodLike<TInput> | null;
+        input?: StandardSchemaV1<unknown, TInput> | null;
         resolver: (data: TInput, ...args: any[]) => MaybePromise<TOutput>;
         self?: ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>) | null;
         sync?: ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>) | null;

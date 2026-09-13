@@ -18,6 +18,7 @@ export type {
     UndefinedProps,
 } from "./general";
 export { ConnectionState, StorageState } from "./pluv";
+export type { StandardSchemaV1 } from "@standard-schema/spec";
 export type {
     BaseClientEventRecord,
     BaseClientMessage,
@@ -49,7 +50,6 @@ export type {
     InferIOOutput,
     InferIOProcedureInput,
     InferIOProcedureOutput,
-    InputZodLike,
     IOAuthorize,
     IOAuthorizeEventMessage,
     IOEventMessage,

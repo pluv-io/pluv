@@ -47,7 +47,7 @@ import type {
     WebSocketSession,
     WebSocketType,
 } from "./types";
-import { oneLine } from "./utils";
+import { oneLine, parsePluvSchema } from "./utils";
 
 type BroadcastMessage<TIO extends IORoom<any, any, any, any, any>> =
     | InferEventMessage<InferIOInput<TIO>>
@@ -640,7 +640,7 @@ export class IORoom<
         }
 
         try {
-            return ioAuthorize.user.parse(payload.user);
+            return parsePluvSchema(ioAuthorize.user, payload.user);
         } catch {
             this._logDebug(`${colors.blue("Token fails validation:")} ${token}`);
 
@@ -748,7 +748,9 @@ export class IORoom<
 
         if (!procedure) return message.data;
 
-        return procedure.config.input ? procedure.config.input.parse(message.data) : message.data;
+        return procedure.config.input
+            ? parsePluvSchema(procedure.config.input, message.data)
+            : message.data;
     }
 
     private _getSession(webSocket: WebSocketType<TPlatform>): WebSocketSession<TAuthorize> {

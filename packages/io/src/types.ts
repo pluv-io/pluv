@@ -8,12 +8,12 @@ import type {
     InferEventMessage,
     InferEventsOutput,
     InferIOAuthorizeUser,
-    InputZodLike,
     JsonObject,
     Maybe,
     MaybePromise,
     UndefinedProps,
 } from "@pluv/types";
+import type { StandardSchemaV1 } from "@pluv/types";
 import type {
     AbstractPlatform,
     InferInitContextType,
@@ -139,7 +139,7 @@ export interface PlatformConfig {
 export type ResolvedPluvIOAuthorize<
     TPlatform extends AbstractPlatform<any, any, any, any>,
     TUser extends BaseUser = any,
-> = { user: InputZodLike<TUser> } & UndefinedProps<
+> = { user: StandardSchemaV1<unknown, TUser> } & UndefinedProps<
     { secret?: string },
     Exclude<"secret", InferPlatformAuthorizeProperties<TPlatform>>
 >;

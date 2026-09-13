@@ -19,6 +19,8 @@ You can view another example of these via your platform's respective quickstart 
 
 Set the required `authorize` property on your `createIO` config. The `user` schema must always include `id`.
 
+Schemas may be any [Standard Schema](https://standardschema.dev)–compatible library (Zod 3.24+, Valibot 1+, ArkType 2+, and others). The examples below use Zod.
+
 ```ts
 // server/io.ts
 import { createIO } from "@pluv/io";

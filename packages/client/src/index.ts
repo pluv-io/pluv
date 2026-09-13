@@ -18,6 +18,7 @@ export { infer } from "./infer";
 export type { InferCallback } from "./infer";
 export { MockedRoom } from "./MockedRoom";
 export type { MockedRoomConfig, MockedRoomEvents } from "./MockedRoom";
+export { parsePluvSchema } from "./utils";
 export { PluvClient } from "./PluvClient";
 export type { CreateRoomOptions, EnterRoomParams, PluvClientOptions } from "./PluvClient";
 export type { PluvProcedureConfig } from "./PluvProcedure";
