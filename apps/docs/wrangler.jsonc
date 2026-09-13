@@ -7,4 +7,13 @@
     "observability": {
         "enabled": true,
     },
+    "routes": [
+        {
+            "pattern": "docs.pluv.io",
+            "custom_domain": true,
+        },
+    ],
+    "vars": {
+        "SITE_URL": "https://docs.pluv.io",
+    },
 }

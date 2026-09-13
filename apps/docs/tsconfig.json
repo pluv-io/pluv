@@ -1,6 +1,6 @@
 {
     "extends": "@pluv/tsconfig/frontend-generic.json",
-    "include": ["**/*.ts", "**/*.tsx"],
+    "include": ["**/*.ts", "**/*.tsx", "cf.d.ts"],
     "exclude": ["node_modules", ".output", "dist"],
     "compilerOptions": {
         "jsx": "react-jsx",

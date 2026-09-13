@@ -3,5 +3,5 @@
     "printWidth": 100,
     "tabWidth": 4,
     "sortPackageJson": false,
-    "ignorePatterns": ["docs/**/*", "**/*.mdx", "**/*.gen.ts", "**/*.generated.ts"]
+    "ignorePatterns": ["docs/**/*", "**/*.mdx", "**/*.gen.ts", "**/*.generated.ts", "**/cf.d.ts"]
 }

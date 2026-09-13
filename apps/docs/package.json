@@ -7,9 +7,9 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite dev",
-        "typecheck": "fumadocs-mdx && tsc --noEmit",
-        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf .output && rm -rf dist && rm -rf .source",
-        "cf:typegen": "wrangler types",
+        "typecheck": "fumadocs-mdx && pnpm cf:typegen && tsc --noEmit",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf .output && rm -rf dist && rm -rf .source && rm -f cf.d.ts",
+        "cf:typegen": "wrangler types ./cf.d.ts",
         "deploy": "pnpm build && wrangler deploy",
         "preview": "vite preview"
     },
