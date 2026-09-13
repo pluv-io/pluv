@@ -55,7 +55,9 @@ export const schema = <TShape extends Record<string, AnySchemaNode>>(
 
     const node = createSchemaNode("y.doc", { shape });
 
-    return Object.assign(node, { [YJS_SCHEMA_BRAND]: true as const }) as unknown as YjsSchema<TShape>;
+    return Object.assign(node, {
+        [YJS_SCHEMA_BRAND]: true as const,
+    }) as unknown as YjsSchema<TShape>;
 };
 
 schema.fromJSON = (ast: SchemaAst): YjsSchema => {

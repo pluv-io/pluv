@@ -1,4 +1,5 @@
-const SITE_NAME = "pluv.io Docs";
+import { SITE_NAME, SITE_URL } from "@/constants";
+
 const DEFAULT_DESCRIPTION =
     "Type-safe realtime primitives for multiplayer apps. Self-host on Cloudflare Workers or Node.js, or use the pluv.io network.";
 
@@ -6,18 +7,16 @@ export function createPageHead({
     title,
     description,
     url,
-    siteUrl,
     type = "website",
 }: {
     title: string;
     description?: string;
     url?: string;
-    siteUrl?: string;
     type?: "website" | "article";
 }) {
     const fullTitle = title === SITE_NAME ? title : `${title} | ${SITE_NAME}`;
     const metaDescription = description?.trim() || DEFAULT_DESCRIPTION;
-    const pageUrl = url && siteUrl ? `${siteUrl}${url}` : undefined;
+    const pageUrl = url ? `${SITE_URL}${url}` : undefined;
 
     return {
         meta: [
@@ -34,5 +33,3 @@ export function createPageHead({
         ],
     };
 }
-
-export { DEFAULT_DESCRIPTION, SITE_NAME };

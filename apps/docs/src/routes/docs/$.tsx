@@ -8,7 +8,6 @@ import browserCollections from "collections/browser";
 import { getMDXComponents } from "@/components/mdx";
 import { baseOptions } from "@/lib/layout.shared";
 import { createPageHead } from "@/lib/seo";
-import { getSiteUrl } from "@/lib/site-url";
 import { source } from "@/lib/source";
 
 const serverLoader = createServerFn({
@@ -59,7 +58,6 @@ export const Route = createFileRoute("/docs/$")({
             title: loaderData.title,
             description: loaderData.description,
             url: loaderData.url,
-            siteUrl: getSiteUrl(),
             type: "article",
         });
     },

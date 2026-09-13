@@ -13,7 +13,4 @@
             "custom_domain": true,
         },
     ],
-    "vars": {
-        "SITE_URL": "https://docs.pluv.io",
-    },
 }
