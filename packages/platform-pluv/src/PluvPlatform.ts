@@ -122,7 +122,7 @@ export class PluvPlatform extends AbstractPlatform<
 
             const message = error instanceof Error ? error.message : "Unknown error";
 
-            throw new Error(`Authorization failed: ${message}`);
+            throw new Error(`Authorization failed: ${message}`, { cause: error });
         }
 
         this._logDebug({ response: { status: res.status } });
@@ -256,7 +256,7 @@ export class PluvPlatform extends AbstractPlatform<
                 const [payload, webhookSecret] = await Promise.all([
                     c.req.json(),
                     typeof this._webhookSecret === "string"
-                        ? this._webhookSecret
+                        ? Promise.resolve(this._webhookSecret)
                         : await this._webhookSecret(),
                 ]).catch((error) => {
                     this._logDebug(

@@ -37,7 +37,11 @@ export class TestSocket {
     public async emit(type: string, event: unknown): Promise<void> {
         const listeners = Array.from(this._listeners.get(type) ?? []);
 
-        for (const listener of listeners) await Promise.resolve(listener(event));
+        for (const listener of listeners) {
+            // Run in registration order, like a real socket.
+            // oxlint-disable-next-line eslint/no-await-in-loop
+            await Promise.resolve(listener(event));
+        }
     }
 
     public get messages(): { type: string; data: any }[] {

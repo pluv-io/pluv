@@ -19,6 +19,7 @@ export const deferred = <T = void>(): Deferred<T> => {
 /** Drains pending microtasks, advancing an in-flight teardown to its next suspension point. */
 export const tick = async (times: number = 1): Promise<void> => {
     for (let i = 0; i < times; i += 1) {
+        // oxlint-disable-next-line eslint/no-await-in-loop
         await new Promise<void>((resolve) => setTimeout(resolve, 0));
     }
 };
@@ -29,6 +30,7 @@ export const waitUntil = async (predicate: () => boolean, timeoutMs: number = 5_
     while (!predicate()) {
         if (Date.now() - start > timeoutMs) throw new Error("Timed out waiting for condition");
 
+        // oxlint-disable-next-line eslint/no-await-in-loop
         await tick();
     }
 };
