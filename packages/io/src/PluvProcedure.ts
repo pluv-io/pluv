@@ -120,12 +120,14 @@ export class PluvProcedure<
     }
 
     private _resolver(): EventResolver<EventResolverKind, T, TInput, TOutput> {
-        return (data, context) => {
-            return {
-                ...this._broadcast?.(data, context),
-                ...this._self?.(data, context),
-                ...this._sync?.(data, context),
-            } as TOutput;
+        return async (data, context) => {
+            const [broadcast, self, sync] = await Promise.all([
+                this._broadcast?.(data, context),
+                this._self?.(data, context),
+                this._sync?.(data, context),
+            ]);
+
+            return { ...broadcast, ...self, ...sync } as TOutput;
         };
     }
 }
