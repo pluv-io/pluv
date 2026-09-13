@@ -1,12 +1,6 @@
 import { yjs } from "@pluv/crdt-yjs";
 import { describe, expect, it } from "vitest";
-import {
-    createAuthorizedIO,
-    deferred,
-    registerAuthorized,
-    TestSocket,
-    tick,
-} from "./__utils__";
+import { createAuthorizedIO, deferred, registerAuthorized, TestSocket, tick } from "./__utils__";
 
 describe("IORoom initialization", () => {
     it("waits for getInitialStorage before finishing register", async () => {
