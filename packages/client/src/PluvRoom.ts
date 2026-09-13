@@ -191,7 +191,7 @@ export type RoomConfig<
         debug?: boolean | PluvRoomDebug<TIO>;
         limits: PluvClientLimits;
         onAuthorizationFail?: (error: Error) => void;
-        metadata?: StandardSchemaV1<unknown, TMetadata>;
+        metadata?: StandardSchemaV1<any, TMetadata>;
         publicKey?: PublicKey<TMetadata>;
         reconnectTimeoutMs?: ReconnectTimeoutMs;
         router?: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
@@ -217,7 +217,7 @@ export class PluvRoom<
     readonly _endpoints: RoomEndpoints<TIO, TMetadata>;
 
     public readonly id: string;
-    public readonly metadata?: StandardSchemaV1<unknown, TMetadata>;
+    public readonly metadata?: StandardSchemaV1<any, TMetadata>;
 
     private readonly _crdtManager: CrdtManager<TCrdt>;
     private readonly _crdtNotifier = new CrdtNotifier<InferJson<TCrdt>>();

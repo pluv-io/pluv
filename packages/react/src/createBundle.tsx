@@ -1,6 +1,8 @@
 import type {
     CreateRoomOptions,
     EnterRoomParams,
+    InferSchemaInput,
+    InferSchemaOutput,
     MergeEvents,
     PluvClient,
     PluvRoom,
@@ -19,7 +21,7 @@ import type {
     InferIOOutput,
     IOEventMessage,
     IOLike,
-    JsonObject,
+    StandardSchemaV1,
     RoomLike,
     StorageState,
     UpdateMyPresenceAction,
@@ -57,32 +59,49 @@ import type {
 
 export type CreateBundleOptions<
     TIO extends IOLike<any, any, any>,
-    TMetadata extends JsonObject = {},
-    TPresence extends Record<string, any> = {},
+    TPresenceSchema extends StandardSchemaV1<any, any> | undefined = undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
+    TMetadataSchema extends StandardSchemaV1<any, any> | undefined = undefined,
+    TEvents extends PluvRouterEventConfig<
+        TIO,
+        InferSchemaOutput<TPresenceSchema>,
+        InferStorage<TCrdt>
+    > = {},
 > = {
-    addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TCrdt>[];
-    router?: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
+    addons?: readonly PluvRoomAddon<
+        TIO,
+        InferSchemaOutput<TMetadataSchema>,
+        InferSchemaOutput<TPresenceSchema>,
+        TCrdt
+    >[];
+    router?: PluvRouter<TIO, InferSchemaOutput<TPresenceSchema>, InferStorage<TCrdt>, TEvents>;
 };
 
 export const createBundle = <
     TIO extends IOLike<any, any, any>,
-    TMetadata extends JsonObject = {},
-    TPresence extends Record<string, any> = {},
+    TPresenceSchema extends StandardSchemaV1<any, any> | undefined = undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
+    TMetadataSchema extends StandardSchemaV1<any, any> | undefined = undefined,
+    TEvents extends PluvRouterEventConfig<
+        TIO,
+        InferSchemaOutput<TPresenceSchema>,
+        InferStorage<TCrdt>
+    > = {},
 >(
-    client: PluvClient<TIO, TPresence, TCrdt, TMetadata>,
-    options: CreateBundleOptions<TIO, TMetadata, TPresence, TCrdt, TEvents> = {},
-): CreateBundle<TIO, TMetadata, TPresence, TCrdt, TEvents> => {
+    client: PluvClient<TIO, TPresenceSchema, TCrdt, TMetadataSchema>,
+    options: CreateBundleOptions<TIO, TPresenceSchema, TCrdt, TMetadataSchema, TEvents> = {},
+): CreateBundle<TIO, TPresenceSchema, TCrdt, TMetadataSchema, TEvents> => {
+    type TPresence = InferSchemaOutput<TPresenceSchema>;
+    type TMetadata = InferSchemaOutput<TMetadataSchema>;
     /**
      * !HACK
      * @description We'll let the context error out if client is not provided,
      * and let the users deal with it.
      * @date October 27, 2022
      */
-    const PluvContext = createContext<PluvClient<TIO, TPresence, TCrdt, TMetadata>>(null as any);
+    const PluvContext = createContext<PluvClient<TIO, TPresenceSchema, TCrdt, TMetadataSchema>>(
+        null as any,
+    );
 
     /**
      * !HACK
@@ -103,130 +122,137 @@ export const createBundle = <
         InferJson<TCrdt>
     > | null>(null);
 
-    const MockedRoomProvider = memo<MockedRoomProviderProps<TIO, TPresence, TCrdt>>((props) => {
-        const { children, events, initialPresence, initialStorage, room: _room } = props;
+    const MockedRoomProvider = memo<MockedRoomProviderProps<TIO, TPresenceSchema, TCrdt, TEvents>>(
+        (props) => {
+            const { children, events, initialPresence, initialStorage, room: _room } = props;
 
-        const [room] = useState<MockedRoom<TIO, TPresence, TCrdt, TEvents>>(() => {
-            return new MockedRoom<TIO, TPresence, TCrdt, TEvents>(_room, {
-                events,
-                initialPresence,
-                initialStorage,
-                storage: client._defs.storage,
+            const [room] = useState<MockedRoom<TIO, TPresence, TCrdt, TEvents>>(() => {
+                return new MockedRoom<TIO, TPresence, TCrdt, TEvents>(_room, {
+                    events,
+                    initialPresence,
+                    initialStorage,
+                    storage: client._defs.storage,
+                });
             });
-        });
 
-        return (
-            <MockedRoomContext.Provider value={room}>
-                <PluvRoomContext.Provider value={room}>{children}</PluvRoomContext.Provider>
-            </MockedRoomContext.Provider>
-        );
-    });
+            return (
+                <MockedRoomContext.Provider value={room}>
+                    <PluvRoomContext.Provider value={room}>{children}</PluvRoomContext.Provider>
+                </MockedRoomContext.Provider>
+            );
+        },
+    );
 
     MockedRoomProvider.displayName = "MockedRoomProvider";
 
-    const PluvRoomProvider = memo<PluvRoomProviderProps<TIO, TMetadata, TPresence, TCrdt>>(
-        (props) => {
-            const {
-                children,
-                connect = true,
+    const PluvRoomProvider = memo<
+        PluvRoomProviderProps<TIO, TMetadataSchema, TPresenceSchema, TCrdt>
+    >((props) => {
+        const {
+            children,
+            connect = true,
+            debug,
+            initialPresence,
+            initialStorage,
+            metadata,
+            onAuthorizationFail,
+            room: _room,
+        } = props;
+
+        const queue = useAsyncQueue();
+        const rerender = useRerender();
+        const mockedRoom = useContext(MockedRoomContext);
+
+        const createRoom = useCallback((): PluvRoom<TIO, TMetadata, TPresence, TCrdt, TEvents> => {
+            return client.createRoom(_room, {
+                addons: options.addons,
                 debug,
                 initialPresence,
                 initialStorage,
                 metadata,
                 onAuthorizationFail,
-                room: _room,
-            } = props;
+                router: options.router,
+            } as CreateRoomOptions<TIO, TPresenceSchema, TCrdt, TMetadataSchema, TEvents>);
+        }, [_room, debug, initialPresence, initialStorage, metadata, onAuthorizationFail]);
 
-            const queue = useAsyncQueue();
-            const rerender = useRerender();
-            const mockedRoom = useContext(MockedRoomContext);
+        const [room, setRoom] = useState(() => createRoom());
 
-            const createRoom = useCallback((): PluvRoom<
-                TIO,
-                TMetadata,
-                TPresence,
-                TCrdt,
-                TEvents
-            > => {
-                return client.createRoom(_room, {
-                    addons: options.addons,
-                    debug,
-                    initialPresence,
-                    initialStorage,
-                    metadata,
-                    onAuthorizationFail,
-                    router: options.router,
-                } as CreateRoomOptions<TIO, TPresence, TCrdt, TMetadata, TEvents>);
-            }, [_room, debug, initialPresence, initialStorage, metadata, onAuthorizationFail]);
+        useEffect(() => {
+            if (room.id === _room) return;
 
-            const [room, setRoom] = useState(() => createRoom());
+            setRoom(createRoom());
+        }, [_room, createRoom, room]);
 
-            useEffect(() => {
-                if (room.id === _room) return;
+        const resolvedMeta = useDeepAsyncMemo(async () => {
+            const resolved = await Promise.resolve(
+                typeof metadata === "function"
+                    ? (
+                          metadata as () =>
+                              | InferSchemaInput<TMetadataSchema>
+                              | Promise<InferSchemaInput<TMetadataSchema>>
+                      )()
+                    : metadata,
+            );
 
-                setRoom(createRoom());
-            }, [_room, createRoom, room]);
+            return !!room.metadata ? parsePluvSchema(room.metadata, resolved) : resolved;
+        });
 
-            const resolvedMeta = useDeepAsyncMemo(async () => {
-                const resolved = await Promise.resolve(
-                    typeof metadata === "function" ? metadata() : metadata,
-                );
-
-                return !!room.metadata ? parsePluvSchema(room.metadata, resolved) : resolved;
+        useEffect(() => {
+            const unsubscribe = room.subscribe.connection(() => {
+                rerender();
             });
 
-            useEffect(() => {
-                const unsubscribe = room.subscribe.connection(() => {
-                    rerender();
-                });
+            return () => {
+                unsubscribe();
+            };
+        }, [rerender, room]);
 
-                return () => {
-                    unsubscribe();
-                };
-            }, [rerender, room]);
-
-            useEffect(() => {
-                const leaveRoom = async (): Promise<void> => {
-                    await queue.push(
-                        client.leave(room).catch((error) => {
-                            console.error(error);
-                        }),
-                    );
-                };
-
-                if (!connect) {
-                    void leaveRoom();
-                    return () => {};
-                }
-
-                if (!resolvedMeta.isInitialized) {
-                    void leaveRoom();
-                    return () => {};
-                }
-
-                const resolved = resolvedMeta.value as TMetadata;
-
-                void queue.push(
-                    client
-                        .enter(room, ...([{ metadata: resolved }] as EnterRoomParams<TMetadata>))
-                        .catch(async (error) => {
-                            console.error(error);
-                            await leaveRoom();
-                        }),
+        useEffect(() => {
+            const leaveRoom = async (): Promise<void> => {
+                await queue.push(
+                    client.leave(room).catch((error) => {
+                        console.error(error);
+                    }),
                 );
+            };
 
-                return () => {
-                    void leaveRoom();
-                };
-            }, [connect, queue, resolvedMeta.isInitialized, resolvedMeta.value, room]);
+            if (!connect) {
+                void leaveRoom();
+                return () => {};
+            }
 
-            return (
-                <PluvRoomContext.Provider value={mockedRoom ?? room}>
-                    {children}
-                </PluvRoomContext.Provider>
+            if (!resolvedMeta.isInitialized) {
+                void leaveRoom();
+                return () => {};
+            }
+
+            const resolved = resolvedMeta.value as TMetadata;
+
+            void queue.push(
+                client
+                    .enter(
+                        room,
+                        ...([{ metadata: resolved }] as unknown as EnterRoomParams<
+                            InferSchemaInput<TMetadataSchema>
+                        >),
+                    )
+                    .catch(async (error) => {
+                        console.error(error);
+                        await leaveRoom();
+                    }),
             );
-        },
-    );
+
+            return () => {
+                void leaveRoom();
+            };
+        }, [connect, queue, resolvedMeta.isInitialized, resolvedMeta.value, room]);
+
+        return (
+            <PluvRoomContext.Provider value={mockedRoom ?? room}>
+                {children}
+            </PluvRoomContext.Provider>
+        );
+    });
 
     PluvRoomProvider.displayName = "PluvRoomProvider";
 
@@ -238,7 +264,8 @@ export const createBundle = <
 
     PluvProvider.displayName = "PluvProvider";
 
-    const useClient = (): PluvClient<TIO, TPresence, TCrdt, TMetadata> => useContext(PluvContext);
+    const useClient = (): PluvClient<TIO, TPresenceSchema, TCrdt, TMetadataSchema> =>
+        useContext(PluvContext);
 
     const useRoom = () => {
         const room = useContext(PluvRoomContext);

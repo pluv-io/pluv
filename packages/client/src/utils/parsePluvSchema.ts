@@ -1,9 +1,6 @@
-import type { JsonObject, StandardSchemaV1 } from "@pluv/types";
+import type { StandardSchemaV1 } from "@pluv/types";
 
-export function parsePluvSchema<TData extends JsonObject>(
-    schema: StandardSchemaV1<unknown, TData>,
-    data: unknown,
-): TData {
+export function parsePluvSchema<TData>(schema: StandardSchemaV1<any, TData>, data: unknown): TData {
     const result = schema["~standard"].validate(data);
 
     if (result instanceof Promise) {

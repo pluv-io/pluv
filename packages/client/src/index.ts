@@ -33,4 +33,10 @@ export type {
 export type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
 export { register } from "./register";
 export type { RegisterParams } from "./register";
-export type { InferMetadata, PublicKey, PublicKeyParams } from "./types";
+export type {
+    InferMetadata,
+    InferSchemaInput,
+    InferSchemaOutput,
+    PublicKey,
+    PublicKeyParams,
+} from "./types";

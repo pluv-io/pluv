@@ -1,4 +1,6 @@
 import type {
+    InferSchemaInput,
+    InferSchemaOutput,
     MergeEvents,
     MockedRoomEvents,
     PluvClient,
@@ -22,9 +24,9 @@ import type {
     InferIOOutput,
     IOEventMessage,
     IOLike,
-    JsonObject,
     MaybePromise,
     RoomLike,
+    StandardSchemaV1,
     UpdateMyPresenceAction,
 } from "@pluv/types";
 import type { Dispatch, FC, ReactNode } from "react";
@@ -41,20 +43,26 @@ export type UseStorageResult<TData extends unknown, TSharedType extends unknown>
     | [data: TData, sharedType: TSharedType];
 
 type BaseRoomProviderProps<
-    TPresence extends Record<string, any>,
+    TPresenceSchema extends StandardSchemaV1<any, any> | undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
 > = {
     children?: ReactNode;
     initialStorage?: keyof InferSeed<TCrdt> extends never ? never : InferSeed<TCrdt>;
     room: string;
-} & (keyof TPresence extends never ? { initialPresence?: never } : { initialPresence: TPresence });
+} & (keyof InferSchemaOutput<TPresenceSchema> extends never
+    ? { initialPresence?: never }
+    : { initialPresence: InferSchemaInput<TPresenceSchema> });
 
 export type MockedRoomProviderProps<
     TIO extends IOLike,
-    TPresence extends Record<string, any>,
+    TPresenceSchema extends StandardSchemaV1<any, any> | undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
-> = BaseRoomProviderProps<TPresence, TCrdt> & {
+    TEvents extends PluvRouterEventConfig<
+        TIO,
+        InferSchemaOutput<TPresenceSchema>,
+        InferStorage<TCrdt>
+    > = {},
+> = BaseRoomProviderProps<TPresenceSchema, TCrdt> & {
     events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
 };
 
@@ -71,22 +79,22 @@ export type EventProxy<TIO extends IOLike> = {
     };
 };
 
-export type MetadataGetter<TMetadata extends JsonObject> =
+export type MetadataGetter<TMetadata extends Record<string, any>> =
     | TMetadata
     | (() => MaybePromise<TMetadata>);
 
 export type PluvRoomProviderProps<
     TIO extends IOLike<any, any, any>,
-    TMetadata extends JsonObject,
-    TPresence extends Record<string, any>,
+    TMetadataSchema extends StandardSchemaV1<any, any> | undefined,
+    TPresenceSchema extends StandardSchemaV1<any, any> | undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any>,
-> = BaseRoomProviderProps<TPresence, TCrdt> & {
+> = BaseRoomProviderProps<TPresenceSchema, TCrdt> & {
     connect?: boolean;
     debug?: boolean | PluvRoomDebug<TIO>;
     onAuthorizationFail?: (error: Error) => void;
-} & (keyof TMetadata extends never
+} & (keyof InferSchemaOutput<TMetadataSchema> extends never
         ? { metadata?: undefined }
-        : { metadata: MetadataGetter<TMetadata> });
+        : { metadata: MetadataGetter<InferSchemaInput<TMetadataSchema>> });
 
 export interface SubscriptionHookOptions<T extends unknown> {
     isEqual?: (a: T, b: T) => boolean;
@@ -94,15 +102,19 @@ export interface SubscriptionHookOptions<T extends unknown> {
 
 export interface CreateBundle<
     TIO extends IOLike<any, any, any>,
-    TMetadata extends JsonObject,
-    TPresence extends Record<string, any> = {},
+    TPresenceSchema extends StandardSchemaV1<any, any> | undefined = undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
+    TMetadataSchema extends StandardSchemaV1<any, any> | undefined = undefined,
+    TEvents extends PluvRouterEventConfig<
+        TIO,
+        InferSchemaOutput<TPresenceSchema>,
+        InferStorage<TCrdt>
+    > = {},
 > {
     // components
-    MockedRoomProvider: FC<MockedRoomProviderProps<TIO, TPresence, TCrdt>>;
+    MockedRoomProvider: FC<MockedRoomProviderProps<TIO, TPresenceSchema, TCrdt, TEvents>>;
     PluvProvider: FC<PluvProviderProps>;
-    PluvRoomProvider: FC<PluvRoomProviderProps<TIO, TMetadata, TPresence, TCrdt>>;
+    PluvRoomProvider: FC<PluvRoomProviderProps<TIO, TMetadataSchema, TPresenceSchema, TCrdt>>;
 
     // proxies
     event: EventProxy<MergeEvents<TEvents, TIO>>;
@@ -111,7 +123,7 @@ export interface CreateBundle<
     useBroadcast: () => BroadcastProxy<MergeEvents<TEvents, TIO>>;
     useCanRedo: () => boolean;
     useCanUndo: () => boolean;
-    useClient: () => PluvClient<TIO, TPresence, TCrdt, TMetadata>;
+    useClient: () => PluvClient<TIO, TPresenceSchema, TCrdt, TMetadataSchema>;
     useConnection: <T extends unknown = WebSocketConnection>(
         selector?: (connection: WebSocketConnection) => T,
         options?: SubscriptionHookOptions<Id<T>>,
@@ -121,28 +133,31 @@ export interface CreateBundle<
         type: TType,
         callback: (data: Id<IOEventMessage<MergeEvents<TEvents, TIO>, TType>>) => void,
     ) => void;
-    useMyPresence: <T extends unknown = TPresence>(
-        selector?: (myPresence: TPresence) => T,
+    useMyPresence: <T extends unknown = InferSchemaOutput<TPresenceSchema>>(
+        selector?: (myPresence: InferSchemaOutput<TPresenceSchema>) => T,
         options?: SubscriptionHookOptions<Id<T> | null>,
-    ) => [myPresence: Id<T>, updateMyPresence: Dispatch<UpdateMyPresenceAction<TPresence>>];
-    useMyself: <T extends unknown = UserInfo<TIO, TPresence>>(
-        selector?: (myself: Id<UserInfo<TIO, TPresence>>) => T,
+    ) => [
+        myPresence: Id<T>,
+        updateMyPresence: Dispatch<UpdateMyPresenceAction<InferSchemaOutput<TPresenceSchema>>>,
+    ];
+    useMyself: <T extends unknown = UserInfo<TIO, InferSchemaOutput<TPresenceSchema>>>(
+        selector?: (myself: Id<UserInfo<TIO, InferSchemaOutput<TPresenceSchema>>>) => T,
         options?: SubscriptionHookOptions<Id<T> | null>,
     ) => Id<T> | null;
-    useOther: <T extends unknown = UserInfo<TIO, TPresence>>(
+    useOther: <T extends unknown = UserInfo<TIO, InferSchemaOutput<TPresenceSchema>>>(
         connectionId: string,
-        selector?: (other: UserInfo<TIO, TPresence>) => T,
+        selector?: (other: UserInfo<TIO, InferSchemaOutput<TPresenceSchema>>) => T,
         options?: SubscriptionHookOptions<T | null>,
     ) => T | null;
-    useOthers: <T extends unknown = readonly UserInfo<TIO, TPresence>[]>(
-        selector?: (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T,
+    useOthers: <T extends unknown = readonly UserInfo<TIO, InferSchemaOutput<TPresenceSchema>>[]>(
+        selector?: (other: readonly Id<UserInfo<TIO, InferSchemaOutput<TPresenceSchema>>>[]) => T,
         options?: SubscriptionHookOptions<T>,
     ) => T;
     useRedo: () => () => void;
     useRoom: () => RoomLike<
         TIO,
         InferDoc<TCrdt>,
-        TPresence,
+        InferSchemaOutput<TPresenceSchema>,
         InferStorage<TCrdt>,
         TEvents,
         InferJson<TCrdt>
@@ -160,6 +175,13 @@ export interface CreateBundle<
 }
 
 export type InferBundleRoom<TBundle extends CreateBundle<any, any, any, any, any>> =
-    TBundle extends CreateBundle<infer IIO, any, infer IPresence, infer ICrdt, infer IEvents>
-        ? RoomLike<IIO, InferDoc<ICrdt>, IPresence, InferStorage<ICrdt>, IEvents, InferJson<ICrdt>>
+    TBundle extends CreateBundle<infer IIO, infer IPresenceSchema, infer ICrdt, any, infer IEvents>
+        ? RoomLike<
+              IIO,
+              InferDoc<ICrdt>,
+              InferSchemaOutput<IPresenceSchema>,
+              InferStorage<ICrdt>,
+              IEvents,
+              InferJson<ICrdt>
+          >
         : never;

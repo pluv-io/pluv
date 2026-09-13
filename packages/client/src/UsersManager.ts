@@ -1,4 +1,4 @@
-import type { IOLike, JsonObject, OptionalProps, StandardSchemaV1, UserInfo } from "@pluv/types";
+import type { IOLike, OptionalProps, StandardSchemaV1, UserInfo } from "@pluv/types";
 import { PLUV_PRESENCE_META_KEY } from "./constants";
 import type { PluvClientLimits } from "./types";
 import { parsePluvSchema, pickBy } from "./utils";
@@ -6,9 +6,9 @@ import { parsePluvSchema, pickBy } from "./utils";
 export type Presence = Record<string, unknown>;
 
 export type UsersManagerConfig<TPresence extends Record<string, any> = {}> = {
-    initialPresence?: TPresence;
+    initialPresence?: Record<string, any>;
     limits: PluvClientLimits;
-    presence?: StandardSchemaV1<unknown, TPresence>;
+    presence?: StandardSchemaV1<any, TPresence>;
 };
 
 export type AddConnectionResult<TIO extends IOLike, TPresence extends Record<string, any> = {}> = {
@@ -45,16 +45,20 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
      */
     private _myself: UserInfo<TIO, TPresence> | null = null;
     private _others = new Map<[clientId: string][0], UserInfo<TIO, TPresence>>();
-    private _presence: StandardSchemaV1<unknown, TPresence> | null = null;
+    private _presence: StandardSchemaV1<any, TPresence> | null = null;
 
     constructor(config: UsersManagerConfig<TPresence>) {
         const { initialPresence, limits, presence = null } = config;
 
-        this.initialPresence = initialPresence as TPresence;
-
-        this._limits = limits;
-        this._myPresence = initialPresence as TPresence;
         this._presence = presence;
+        this._limits = limits;
+
+        const resolved = presence
+            ? parsePluvSchema(presence, initialPresence ?? {})
+            : ((initialPresence ?? {}) as TPresence);
+
+        this.initialPresence = resolved;
+        this._myPresence = resolved;
     }
 
     public get myPresence(): TPresence {

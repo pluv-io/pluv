@@ -208,3 +208,25 @@ expectTypeOf(useDoc()).toEqualTypeOf<
         }
     >
 >();
+
+const defaultedClient = createClient({
+    authEndpoint: ({ metadata }) => metadata.authEndpoint,
+    metadata: z.object({
+        authEndpoint: z.string().default("/api/pluv/authorize"),
+    }),
+    presence: z.object({
+        blocknote: z.any().default({}),
+        count: z.number(),
+    }),
+    types,
+});
+
+const { PluvRoomProvider: DefaultedRoomProvider } = createBundle(defaultedClient);
+
+<DefaultedRoomProvider initialPresence={{ count: 0 }} metadata={{}} room="test-room">
+    <div />
+</DefaultedRoomProvider>;
+
+defaultedClient.createRoom("test-room", {
+    initialPresence: { count: 0 },
+});

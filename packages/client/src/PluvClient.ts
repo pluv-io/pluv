@@ -4,7 +4,6 @@ import type {
     InferIOCrdt,
     InferIOCrdtKind,
     IOLike,
-    JsonObject,
     StandardSchemaV1,
 } from "@pluv/types";
 import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
@@ -22,23 +21,29 @@ import type {
 import { PluvRoom } from "./PluvRoom";
 import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
-import type { PluvClientLimits, PublicKey, WithMetadata } from "./types";
+import type {
+    InferSchemaInput,
+    InferSchemaOutput,
+    PluvClientLimits,
+    PublicKey,
+    WithMetadata,
+} from "./types";
 
 export type PluvClientOptions<
     TIO extends IOLike<any, any, any>,
-    TPresence extends Record<string, any>,
+    TPresenceSchema extends StandardSchemaV1<any, any> | undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any, any, any>,
-    TMetadata extends JsonObject,
-> = RoomEndpoints<TIO, TMetadata> & {
+    TMetadataSchema extends StandardSchemaV1<any, any> | undefined,
+> = RoomEndpoints<TIO, InferSchemaOutput<TMetadataSchema>> & {
     debug?: boolean;
     /**
      * @description Configurable limits defined for client-side validation. You should only set
      * this if you control the server and have changed the limits there.
      */
     limits?: PluvClientLimits;
-    metadata?: StandardSchemaV1<unknown, TMetadata>;
-    presence?: StandardSchemaV1<unknown, TPresence>;
-    publicKey?: PublicKey<TMetadata>;
+    metadata?: TMetadataSchema;
+    presence?: TPresenceSchema;
+    publicKey?: PublicKey<InferSchemaOutput<TMetadataSchema>>;
     types: InferCallback<TIO>;
 } & (HasCrdtLibrary<InferIOCrdt<TIO>> extends true
         ? { storage?: TCrdt; initialStorage?: InferSeed<TCrdt> }
@@ -46,41 +51,58 @@ export type PluvClientOptions<
 
 export type CreateRoomOptions<
     TIO extends IOLike<any, any, any>,
-    TPresence extends Record<string, any>,
+    TPresenceSchema extends StandardSchemaV1<any, any> | undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any, any, any>,
-    TMetadata extends JsonObject,
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
+    TMetadataSchema extends StandardSchemaV1<any, any> | undefined,
+    TEvents extends PluvRouterEventConfig<
+        TIO,
+        InferSchemaOutput<TPresenceSchema>,
+        InferStorage<TCrdt>
+    > = {},
 > = {
-    addons?: readonly PluvRoomAddon<TIO, TMetadata, TPresence, TCrdt>[];
+    addons?: readonly PluvRoomAddon<
+        TIO,
+        InferSchemaOutput<TMetadataSchema>,
+        InferSchemaOutput<TPresenceSchema>,
+        TCrdt
+    >[];
     debug?: boolean | PluvRoomDebug<TIO>;
-    initialPresence?: TPresence;
+    initialPresence?: InferSchemaInput<TPresenceSchema>;
     initialStorage?: InferSeed<TCrdt>;
     onAuthorizationFail?: (error: Error) => void;
     reconnectTimeoutMs?: ReconnectTimeoutMs;
-    router?: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
+    router?: PluvRouter<TIO, InferSchemaOutput<TPresenceSchema>, InferStorage<TCrdt>, TEvents>;
 };
 
-export type EnterRoomParams<TMetadata extends JsonObject = {}> = keyof TMetadata extends never
-    ? []
-    : [WithMetadata<TMetadata>];
+export type EnterRoomParams<TMetadata extends Record<string, any> = {}> =
+    keyof TMetadata extends never ? [] : [WithMetadata<TMetadata>];
 
 export class PluvClient<
     TIO extends IOLike<any, any, any>,
-    TPresence extends Record<string, any> = {},
+    TPresenceSchema extends StandardSchemaV1<any, any> | undefined = undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
-    TMetadata extends JsonObject = {},
+    TMetadataSchema extends StandardSchemaV1<any, any> | undefined = undefined,
 > {
-    public readonly metadata?: StandardSchemaV1<unknown, TMetadata>;
+    public readonly metadata?: TMetadataSchema;
 
-    private readonly _authEndpoint: AuthEndpoint<TMetadata>;
+    private readonly _authEndpoint: AuthEndpoint<InferSchemaOutput<TMetadataSchema>>;
     private readonly _debug: boolean;
     private readonly _initialStorage?: InferSeed<TCrdt>;
     private readonly _limits: PluvClientLimits;
-    private readonly _presence?: StandardSchemaV1<unknown, TPresence>;
-    private readonly _publicKey: PublicKey<TMetadata> | null = null;
-    private readonly _rooms = new Map<string, PluvRoom<TIO, TMetadata, TPresence, TCrdt, any>>();
+    private readonly _presence?: TPresenceSchema;
+    private readonly _publicKey: PublicKey<InferSchemaOutput<TMetadataSchema>> | null = null;
+    private readonly _rooms = new Map<
+        string,
+        PluvRoom<
+            TIO,
+            InferSchemaOutput<TMetadataSchema>,
+            InferSchemaOutput<TPresenceSchema>,
+            TCrdt,
+            any
+        >
+    >();
     private readonly _storage?: TCrdt;
-    private readonly _wsEndpoint: WsEndpoint<TMetadata> | undefined;
+    private readonly _wsEndpoint: WsEndpoint<InferSchemaOutput<TMetadataSchema>> | undefined;
 
     public get _defs() {
         return {
@@ -89,11 +111,18 @@ export class PluvClient<
         };
     }
 
-    public get procedure(): PluvProcedure<TIO, {}, {}, TPresence, TCrdt, ""> {
-        return new PluvProcedure<TIO, {}, {}, TPresence, TCrdt, "">();
+    public get procedure(): PluvProcedure<
+        TIO,
+        {},
+        {},
+        InferSchemaOutput<TPresenceSchema>,
+        TCrdt,
+        ""
+    > {
+        return new PluvProcedure<TIO, {}, {}, InferSchemaOutput<TPresenceSchema>, TCrdt, "">();
     }
 
-    constructor(options: PluvClientOptions<TIO, TPresence, TCrdt, TMetadata>) {
+    constructor(options: PluvClientOptions<TIO, TPresenceSchema, TCrdt, TMetadataSchema>) {
         const {
             authEndpoint,
             debug = false,
@@ -104,7 +133,7 @@ export class PluvClient<
             publicKey,
             storage,
             wsEndpoint,
-        } = options as PluvClientOptions<TIO, TPresence, TCrdt, TMetadata> & {
+        } = options as PluvClientOptions<TIO, TPresenceSchema, TCrdt, TMetadataSchema> & {
             initialStorage?: InferSeed<TCrdt>;
             storage?: TCrdt;
         };
@@ -126,16 +155,32 @@ export class PluvClient<
     }
 
     public createRoom = <
-        TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {},
+        TEvents extends PluvRouterEventConfig<
+            TIO,
+            InferSchemaOutput<TPresenceSchema>,
+            InferStorage<TCrdt>
+        > = {},
     >(
         room: string,
-        options: CreateRoomOptions<TIO, TPresence, TCrdt, TMetadata, TEvents> = {},
-    ): PluvRoom<TIO, TMetadata, TPresence, TCrdt, TEvents> => {
+        options: CreateRoomOptions<TIO, TPresenceSchema, TCrdt, TMetadataSchema, TEvents> = {},
+    ): PluvRoom<
+        TIO,
+        InferSchemaOutput<TMetadataSchema>,
+        InferSchemaOutput<TPresenceSchema>,
+        TCrdt,
+        TEvents
+    > => {
         const oldRoom = this.getRoom(room);
 
         if (oldRoom) return oldRoom;
 
-        const newRoom = new PluvRoom<TIO, TMetadata, TPresence, TCrdt, TEvents>(room, {
+        const newRoom = new PluvRoom<
+            TIO,
+            InferSchemaOutput<TMetadataSchema>,
+            InferSchemaOutput<TPresenceSchema>,
+            TCrdt,
+            TEvents
+        >(room, {
             addons: options.addons,
             authEndpoint: this._authEndpoint,
             debug: options.debug,
@@ -150,7 +195,13 @@ export class PluvClient<
             router: options.router,
             storage: this._storage,
             wsEndpoint: this._wsEndpoint,
-        } as RoomConfig<TIO, TMetadata, TPresence, TCrdt, TEvents>);
+        } as RoomConfig<
+            TIO,
+            InferSchemaOutput<TMetadataSchema>,
+            InferSchemaOutput<TPresenceSchema>,
+            TCrdt,
+            TEvents
+        >);
 
         this._rooms.set(room, newRoom);
 
@@ -160,31 +211,59 @@ export class PluvClient<
     };
 
     public enter = async (
-        room: string | PluvRoom<TIO, TMetadata, any, any, any>,
-        ...args: EnterRoomParams<TMetadata>
-    ): Promise<PluvRoom<TIO, TMetadata, TPresence, TCrdt, any>> => {
+        room: string | PluvRoom<TIO, InferSchemaOutput<TMetadataSchema>, any, any, any>,
+        ...args: EnterRoomParams<InferSchemaInput<TMetadataSchema>>
+    ): Promise<
+        PluvRoom<
+            TIO,
+            InferSchemaOutput<TMetadataSchema>,
+            InferSchemaOutput<TPresenceSchema>,
+            TCrdt,
+            any
+        >
+    > => {
         const toEnter = typeof room === "string" ? this.getRoom(room) : room;
         const roomId = typeof room === "string" ? room : room.id;
 
         if (!toEnter) throw new Error(`Could not find room: ${roomId}.`);
 
         this._rooms.set(toEnter.id, toEnter);
-        await toEnter.connect(...args);
+        await toEnter.connect(...(args as any));
 
         this._logDebug(`Entered room: ${roomId}`);
 
         return toEnter;
     };
 
-    public getRoom = (room: string): PluvRoom<TIO, TMetadata, TPresence, TCrdt, any> | null => {
+    public getRoom = (
+        room: string,
+    ): PluvRoom<
+        TIO,
+        InferSchemaOutput<TMetadataSchema>,
+        InferSchemaOutput<TPresenceSchema>,
+        TCrdt,
+        any
+    > | null => {
         const found = this._rooms.get(room) as
-            | PluvRoom<TIO, TMetadata, TPresence, TCrdt, any>
+            | PluvRoom<
+                  TIO,
+                  InferSchemaOutput<TMetadataSchema>,
+                  InferSchemaOutput<TPresenceSchema>,
+                  TCrdt,
+                  any
+              >
             | undefined;
 
         return found ?? null;
     };
 
-    public getRooms = (): readonly PluvRoom<TIO, TMetadata, TPresence, TCrdt, any>[] => {
+    public getRooms = (): readonly PluvRoom<
+        TIO,
+        InferSchemaOutput<TMetadataSchema>,
+        InferSchemaOutput<TPresenceSchema>,
+        TCrdt,
+        any
+    >[] => {
         return Array.from(this._rooms.values());
     };
 
@@ -200,16 +279,27 @@ export class PluvClient<
         this._logDebug(`Left and deleted room: ${toLeave.id}`);
     };
 
-    public router<TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>> = {}>(
+    public router<
+        TEvents extends PluvRouterEventConfig<
+            TIO,
+            InferSchemaOutput<TPresenceSchema>,
+            InferStorage<TCrdt>
+        > = {},
+    >(
         events: TEvents,
-    ): PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents> {
+    ): PluvRouter<TIO, InferSchemaOutput<TPresenceSchema>, InferStorage<TCrdt>, TEvents> {
         const invalidName = Object.keys(events).find((name) => name.includes("$"));
 
         if (typeof invalidName === "string") {
             throw new Error(`Invalid event name. Event names must not contain $: "${invalidName}"`);
         }
 
-        return new PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>(events);
+        return new PluvRouter<
+            TIO,
+            InferSchemaOutput<TPresenceSchema>,
+            InferStorage<TCrdt>,
+            TEvents
+        >(events);
     }
 
     private _logDebug(...data: any[]): void {
