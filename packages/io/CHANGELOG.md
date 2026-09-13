@@ -1,5 +1,45 @@
 # @pluv/io
 
+## 6.0.0
+
+### Major Changes
+
+- 80a5c16: Require authorization for every room connection.
+
+    Open (unauthorized) rooms are removed: `createIO` must configure `authorize`, clients must provide an `authEndpoint`, and connections without a valid token are rejected. Session users are always typed from your authorize schema (at least `{ id: string }`), not `null`.
+
+- 1f6f749: Accept any Standard Schema validator for authorize, presence, metadata, and procedure inputs.
+
+    Zod still works as before on recent versions (3.24+/4). You can also use Valibot, ArkType, or other Standard Schema–compatible libraries. The old `InputZodLike` duck type (`{ parse, _input }`) is removed — schemas must expose `~standard.validate`.
+
+### Patch Changes
+
+- b5d7caf: Surface procedure and size-limit failures to clients as `$error`.
+
+    If a custom event handler threw, or presence/storage exceeded its size limit, the server used to fail silently from the client's point of view. Those errors now arrive on the same `$error` path already used for invalid input.
+
+- d55f1f7: Fix in-memory persistence reporting the wrong user count for a room.
+
+    `getUsersSize` now counts connections in that room instead of how many rooms exist in memory, matching Redis and other persistence backends.
+
+- a521c50: Fix JWT `maxAge` so it is treated as milliseconds (default 60s), and treat invalid/expired tokens as unauthorized instead of throwing during register.
+
+    Room registration also waits for room initialization to finish before accepting the connection, so clients are not registered against a room that is still loading storage.
+
+- 7d858b0: Keep room broadcasts reliable when one socket fails to send.
+
+    A single dead or erroring connection no longer risks dropping the rest of the fan-out or leaving an unhandled rejection while delivering events to everyone else.
+
+- 8ca1791: Fix initial presence not being saved on the server.
+
+    Late joiners could see other users with empty/default presence, and later presence patches could drop fields that were only set when the session started.
+
+- Updated dependencies [0ee9d2d]
+- Updated dependencies [80a5c16]
+- Updated dependencies [1f6f749]
+    - @pluv/crdt@6.0.0
+    - @pluv/types@6.0.0
+
 ## 5.2.3
 
 ### Patch Changes

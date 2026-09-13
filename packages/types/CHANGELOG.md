@@ -1,5 +1,21 @@
 # @pluv/types
 
+## 6.0.0
+
+### Major Changes
+
+- 0ee9d2d: Replace `yjs.doc((t) => …)` / `loro.doc((t) => …)` with a schema builder and JSON seeds.
+
+    `createClient` now takes `storage: yjs.storage({ schema: yjs.schema({ … }) })` (or Loro) plus an optional JSON `initialStorage`. Room-level `initialStorage` is JSON only, not a builder. `useStorage` and `getStorage` return native Yjs/Loro types instead of `YjsType` / `LoroType` wrappers. `CrdtType` and `InferCrdtJson` are removed.
+
+- 80a5c16: Require authorization for every room connection.
+
+    Open (unauthorized) rooms are removed: `createIO` must configure `authorize`, clients must provide an `authEndpoint`, and connections without a valid token are rejected. Session users are always typed from your authorize schema (at least `{ id: string }`), not `null`.
+
+- 1f6f749: Accept any Standard Schema validator for authorize, presence, metadata, and procedure inputs.
+
+    Zod still works as before on recent versions (3.24+/4). You can also use Valibot, ArkType, or other Standard Schema–compatible libraries. The old `InputZodLike` duck type (`{ parse, _input }`) is removed — schemas must expose `~standard.validate`.
+
 ## 5.2.3
 
 No changes in this release.

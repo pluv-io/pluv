@@ -1,5 +1,21 @@
 # @pluv/crdt-loro
 
+## 6.0.0
+
+### Major Changes
+
+- 0ee9d2d: Replace `yjs.doc((t) => …)` / `loro.doc((t) => …)` with a schema builder and JSON seeds.
+
+    `createClient` now takes `storage: yjs.storage({ schema: yjs.schema({ … }) })` (or Loro) plus an optional JSON `initialStorage`. Room-level `initialStorage` is JSON only, not a builder. `useStorage` and `getStorage` return native Yjs/Loro types instead of `YjsType` / `LoroType` wrappers. `CrdtType` and `InferCrdtJson` are removed.
+
+### Patch Changes
+
+- Updated dependencies [0ee9d2d]
+- Updated dependencies [80a5c16]
+- Updated dependencies [1f6f749]
+    - @pluv/crdt@6.0.0
+    - @pluv/types@6.0.0
+
 ## 5.2.3
 
 ### Patch Changes
