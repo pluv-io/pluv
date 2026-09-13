@@ -601,6 +601,8 @@ export class PluvRoom<
                 if (prop === "event") return this._event;
                 if (prop === "other") return this._other;
                 if (prop === "storage") return this.#_storage;
+
+                throw new Error(`Unknown subject: ${prop.toString()}`);
             },
         },
     ) as SubscribeProxy<TIO, TPresence, InferJson<TCrdt>, TEvents>;
