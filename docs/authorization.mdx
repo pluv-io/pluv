@@ -3,8 +3,6 @@ title: "Authorization"
 description: "Learn how to add custom authorization to rooms in @pluv/io"
 ---
 
-# Authorization
-
 pluv.io uses JWTs to authorize access to rooms on a new connection. To generate a JWT, you will need to setup an authentication endpoint to determine if the user should have access to the room.
 
 The examples below will use [hono](https://hono.dev), but so long as you can create an http endpoint that can return text responses, the documentation below should still be relevant.
@@ -27,19 +25,17 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-export const io = createIO(
-  platformNode({
+export const io = createIO()
+  .platform(platformNode())
+  .config({
     authorize: {
-      // The secret for generating your JWT
       secret: process.env.PLUV_AUTH_SECRET!,
-      // The shape of your user object. `id` must always be required.
       user: z.object({
         id: z.string(),
-        // Here is an additional field we wish to add.
         name: z.string(),
       }),
     },
-  })
+  });
 );
 
 export const ioServer = io.server();

@@ -31,12 +31,15 @@ import { createIO } from "@pluv/io";
 import { yjs } from "@pluv/crdt-yjs";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 
-const io = createIO(
-  platformCloudflare({
-    // ...
+const io = createIO()
+  .platform(platformCloudflare())
+  .config({
+    authorize: {
+      secret: process.env.PLUV_AUTH_SECRET!,
+      user: z.object({ id: z.string() }),
+    },
     crdt: yjs,
-  }),
-);
+  });
 
 export const ioServer = io.server({
   // Triggered when a room is freshly created. If the room existed

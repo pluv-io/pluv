@@ -1,15 +1,13 @@
 ---
 title: "@pluv/io"
-description: "API reference for @pluv/io"
+description: "API reference for @pluv/io — create server instances, procedures, routers, tokens, and register WebSocket connections."
 ---
-
-# @pluv/io
 
 ## createIO
 
 Returns a `PluvIO` instance.
 
-Creates a server-side `PluvIO` client that can be used to create event procedures, routers and servers. Below is an example configuration for `createIO`. To learn more about `createIO`, read [Authorization](/docs/authorization), [Cloudflare Workers](/docs/quickstart/cloudflare-workers) and [Node.js](/docs/quickstart/node.js).
+Creates a server-side `PluvIO` client that can be used to create event procedures, routers and servers. Below is an example configuration for `createIO`. To learn more about `createIO`, read [Authorization](/docs/guides/authorization), [Cloudflare Workers](/docs/quickstart/cloudflare-workers) and [Node.js](/docs/quickstart/nodejs).
 
 ```ts
 import { yjs } from "@pluv/crdt-yjs";
@@ -18,8 +16,9 @@ import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 import { Database } from "./db";
 
-const io = createIO(
-  platformNode({
+const io = createIO()
+  .platform(platformNode())
+  .config({
     authorize: {
       secret: process.env.PLUV_AUTH_SECRET!,
       user: z.object({
@@ -31,8 +30,7 @@ const io = createIO(
       db: new Database(process.env.DATABASE_URL!),
     }),
     crdt: yjs,
-  })
-);
+  });
 ```
 
 ## PluvIO
@@ -43,7 +41,7 @@ This is the client returned by `createIO`.
 
 Returns `Promise<string>`.
 
-Creates a JWT for a user trying to connect to a room. This should be called within a custom authentication endpoint you define. See [Authorization](/docs/authorization) for more information.
+Creates a JWT for a user trying to connect to a room. This should be called within a custom authentication endpoint you define. See [Authorization](/docs/guides/authorization) for more information.
 
 ```ts
 // If using `@pluv/platform-pluv`
@@ -70,19 +68,21 @@ const token = await io.createToken({
 
 ### procedure
 
-Creates a new type-safe event procedure to be broadcasted from `PluvClient`. See [Define Events](/docs/custom-events/server-events) for more information.
+Creates a new type-safe event procedure to be broadcasted from `PluvClient`. See [Define Events](/docs/guides/events/server) for more information.
 
 ```ts
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO(platformNode({
-  authorize: {
-    secret: process.env.PLUV_AUTH_SECRET!,
-    user: z.object({ id: z.string() }),
-  },
-}));
+const io = createIO()
+  .platform(platformNode())
+  .config({
+    authorize: {
+      secret: process.env.PLUV_AUTH_SECRET!,
+      user: z.object({ id: z.string() }),
+    },
+  });
 
 const sendMessage = io.procedure
   .input(z.object({ message: z.string() }))
@@ -105,12 +105,14 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO(platformNode({
-  authorize: {
-    secret: process.env.PLUV_AUTH_SECRET!,
-    user: z.object({ id: z.string() }),
-  },
-}));
+const io = createIO()
+  .platform(platformNode())
+  .config({
+    authorize: {
+      secret: process.env.PLUV_AUTH_SECRET!,
+      user: z.object({ id: z.string() }),
+    },
+  });
 
 const sendMessage = io.procedure
   .input(z.object({ message: z.string() }))
@@ -141,12 +143,14 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-const io = createIO(platformNode({
-  authorize: {
-    secret: process.env.PLUV_AUTH_SECRET!,
-    user: z.object({ id: z.string() }),
-  },
-}));
+const io = createIO()
+  .platform(platformNode())
+  .config({
+    authorize: {
+      secret: process.env.PLUV_AUTH_SECRET!,
+      user: z.object({ id: z.string() }),
+    },
+  });
 const router = io.router({ /* ... */ });
 
 const server = io.server({
@@ -296,7 +300,7 @@ const roomId = room.id;
 
 Returns `Promise<void>`.
 
-Registers a websocket to the room. Accepts a secondary options parameter to pass-in a token for authorizing the room. Read [Cloudflare Workers](/docs/quickstart/cloudflar-workers), [Node.js](/docs/quickstart/nodejs) and [Authorization](/docs/authorization) to learn more.
+Registers a websocket to the room. Accepts a secondary options parameter to pass-in a token for authorizing the room. Read [Cloudflare Workers](/docs/quickstart/cloudflare-workers), [Node.js](/docs/quickstart/nodejs) and [Authorization](/docs/guides/authorization) to learn more.
 
 ```ts
 // const token: string = ...

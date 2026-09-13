@@ -1,9 +1,7 @@
 ---
-title: "Next.js - Installation"
-description: "Learn how to quickly setup and get started with @pluv/io on Next.js"
+title: "Next.js Quickstart"
+description: "Get started with pluv.io on Next.js using the hosted pluv.io network for realtime WebSockets."
 ---
-
-# Next.js
 
 Next.js is a full-stack [React](https://react.dev/) framework that is commonly hosted on [Vercel](https://vercel.com/). As of the date of writing (April 1, 2025), [Vercel doesn't currently support WebSockets](https://vercel.com/guides/do-vercel-serverless-functions-support-websocket-connections) (i.e. does not support the wss protocol). As a result, when building on Next.js, we recommend connecting to the pluv.io network to use `@pluv/io`.
 
@@ -46,7 +44,7 @@ npm install zod
 
 To use pluv.io, you will need to create a project. Each project corresponds to one [PluvIO](/docs/api-reference/io#PluvIO) instance that is created via [@pluv/io](https://www.npmjs.com/package/@pluv/io)'s [createIO](/docs/api-reference/io#createIO) function.
 
-You can create a new project from the [pluv.io dashboard](/app) by clicking on "**Add project**" from the sidebar.
+You can create a new project from the [pluv.io dashboard](https://pluv.io/app) by clicking on "**Add project**" from the sidebar.
 
 <img className="mx-auto" width="100%" src="https://raw.githubusercontent.com/pluv-io/pluv/refs/heads/main/assets/create_project_dashboard.png" alt="Create project from the sidebar" loading="lazy" />
 
@@ -89,37 +87,26 @@ import { platformPluv } from "@pluv/platform-pluv";
 import { z } from "zod";
 import { db } from "./database";
 
-export const io = createIO(
-  platformPluv({
-    // Required: Authorization is required for `@pluv/platform-pluv`
+export const io = createIO()
+  .platform(
+    platformPluv({
+      publicKey: process.env.PLUV_PUBLISHABLE_KEY!,
+      secretKey: process.env.PLUV_SECRET_KEY!,
+      basePath: "/api/pluv",
+    }),
+  )
+  .config({
     authorize: {
-      // Required: The user schema
-      // Note: Must be JSON serializable
-      // Note: Keep this schema lean (i.e. < 1,024 bytes) else errors
-      // may be encountered
       user: z.object({
-        // Required: id field is required
         id: z.string(),
-        // All other fields are optional (whatever is needed to
-        // represent users in the app)
         name: z.string(),
       }),
     },
-    // Optional: Context that will be accessable from server event
-    // listeners
     context: () => ({
       db,
     }),
-    // Optional: Only if you require CRDT features
-    // It must match what was configured when your project was created
     crdt: yjs,
-    // Required: The API keys saved from the previous step
-    publicKey: process.env.PLUV_PUBLISHABLE_KEY!,
-    secretKey: process.env.PLUV_SECRET_KEY!,
-    // Required: The route where your pluv webhooks will be located
-    basePath: "/api/pluv",
-  }),
-);
+  });
 
 export const ioServer = io.server({
   // Only if you're using storage (i.e. crdt)
@@ -152,7 +139,7 @@ export const ioServer = io.server({
 
 ### Define an authorization endpoint
 
-`@pluv/platform-pluv` requires setting up authorization unlike in the other platforms where it is optional. Define an endpoint to create and return an access token for the user that has access to the room. See [Authorization](/docs/io/authorization) for more detailed documentation.
+`@pluv/platform-pluv` requires setting up authorization unlike in the other platforms where it is optional. Define an endpoint to create and return an access token for the user that has access to the room. See [Authorization](/docs/guides/authorization) for more detailed documentation.
 
 ```ts
 // app/api/auth/pluv/route.ts
@@ -210,13 +197,17 @@ The example below sets the `webhookSecret` on the `createIO` function and sets a
 ```ts
 // backend/pluv.ts
 
-export const io = createIO(
-  platformPluv({
+export const io = createIO()
+  .platform(
+    platformPluv({
+      // ...
+      webhookSecret: process.env.PLUV_WEBHOOK_SECRET!,
+      // ...
+    }),
+  )
+  .config({
     // ...
-    webhookSecret: process.env.PLUV_WEBHOOK_SECRET!,
-    // ...
-  }),
-);
+  });
 
 export const ioServer = io.server({
   // Optional: This handler is called when a room is created

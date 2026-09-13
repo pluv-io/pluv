@@ -57,7 +57,7 @@ Room-level `initialStorage` is JSON only, not a builder function:
 
 Missing seed keys become empty containers. Extra keys throw. Xml/tree types are not JSON-seedable — declare them on the schema and initialize at editor bind time.
 
-The server still takes `createIO({ crdt: yjs })` (or `loro`) and an empty `doc()`. Do not pass `storage` to `createIO` or `io.server`.
+The server still takes `createIO().platform(...).config({ crdt: yjs })` (or `loro`) and an empty `doc()`. Do not pass `storage` to `.config()` or `io.server`.
 
 ## Native shared types
 
@@ -78,3 +78,22 @@ Runtime nested inserts still use `yjs.map()` / `yjs.text()` / `loro.object()` / 
 ## Combinators
 
 Unions, intersections, optionals, and similar combinators are `$`-prefixed on `s` (`s.$union`, `s.$optional`, …). Serialized `kind` values are unprefixed (`"union"`, `"optional"`, …).
+
+## createIO is platform-then-config
+
+`createIO` is no longer a one-shot call. Pass a named platform helper to `.platform()`, then put `authorize`, `context`, and `crdt` on `.config()`. Platform helpers no longer take authorize or crdt.
+
+```ts
+const io = createIO()
+  .platform(platformNode())
+  .config({
+    authorize: { secret, user: schema },
+    context,
+    crdt: yjs,
+  });
+
+export const ioServer = io.server({ router, getInitialStorage });
+```
+
+Hosted pluv keeps JWT-less `authorize: { user }` on `.config()` and `secretKey` on `platformPluv({ ... })`. Node and Cloudflare still require `authorize.secret`.
+

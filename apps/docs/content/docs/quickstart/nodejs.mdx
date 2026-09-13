@@ -47,31 +47,22 @@ import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 import { Database } from "./db";
 
-export const io = createIO(
-  platformNode({
-    // Optional: Authorization is optional for `@pluv/platform-node`
-    // If excluded, your `user` will be `null` on the frontend.
+export const io = createIO()
+  .platform(platformNode())
+  .config({
     authorize: {
-      // Your own secret for generating JWTs
       secret: process.env.PLUV_AUTH_SECRET!,
-      // The shape of your user object. `id` must be provided
       user: z.object({
         id: z.string(),
-        // Here is an additional field we can add
         name: z.string(),
       }),
     },
-    // Optional: Context that will be made available in event
-    // handlers and procedures
     context: () => ({
       db: new Database(process.env.DATABASE_URL),
     }),
-    // Optional: Only if you want to use CRDT storage features
     crdt: yjs,
-    // Optional: If you want to enable development logging
     debug: process.env.NODE_ENV === "development",
-  })
-);
+  });
 
 export const ioServer = io.server({
   // Only if you're using storage (i.e. crdt)
