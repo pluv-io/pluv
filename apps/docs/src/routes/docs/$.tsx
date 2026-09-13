@@ -32,8 +32,10 @@ const clientLoader = browserCollections.docs.createClientLoader({
         return (
             <DocsPage toc={toc}>
                 <DocsTitle>{frontmatter.title}</DocsTitle>
-                <DocsDescription>{frontmatter.description}</DocsDescription>
-                <DocsBody>
+                <DocsDescription className="text-sm">
+                    {frontmatter.description}
+                </DocsDescription>
+                <DocsBody className="prose-sm">
                     <MDX components={getMDXComponents()} />
                 </DocsBody>
             </DocsPage>
