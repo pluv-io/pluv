@@ -12,14 +12,14 @@ import {
 } from "@pluv/crdt";
 import { fromJSON as fromJsonNode } from "./fromJSON";
 
-const YJS_SCHEMA_BRAND = Symbol.for("pluv.yjs.schema");
+const YJS_SCHEMA_BRAND: unique symbol = Symbol("pluv.yjs.schema");
 
 export type YjsSchema<
     TShape extends Record<string, AnySchemaNode> = Record<string, AnySchemaNode>,
 > = {
     readonly kind: "y.doc";
     readonly shape: TShape;
-    readonly [typeof YJS_SCHEMA_BRAND]: true;
+    readonly [YJS_SCHEMA_BRAND]: true;
     toJSON(): { kind: "y.doc"; shape: Record<string, unknown> };
 };
 
@@ -55,7 +55,9 @@ export const schema = <TShape extends Record<string, AnySchemaNode>>(
 
     const node = createSchemaNode("y.doc", { shape });
 
-    return Object.assign(node, { [YJS_SCHEMA_BRAND]: true as const }) as YjsSchema<TShape>;
+    return Object.assign(node, {
+        [YJS_SCHEMA_BRAND]: true as const,
+    }) as unknown as YjsSchema<TShape>;
 };
 
 schema.fromJSON = (ast: SchemaAst): YjsSchema => {

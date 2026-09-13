@@ -1,5 +1,5 @@
-const SITE_NAME = "pluv.io Docs";
-const SITE_URL = "https://pluv.io";
+import { SITE_NAME, SITE_URL } from "@/constants";
+
 const DEFAULT_DESCRIPTION =
     "Type-safe realtime primitives for multiplayer apps. Self-host on Cloudflare Workers or Node.js, or use the pluv.io network.";
 
@@ -33,5 +33,3 @@ export function createPageHead({
         ],
     };
 }
-
-export { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL };

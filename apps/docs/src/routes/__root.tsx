@@ -1,11 +1,11 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
+import { SITE_NAME } from "@/constants";
 import appCss from "@/styles/app.css?url";
-import { createPageHead, DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/seo";
+import { createPageHead } from "@/lib/seo";
 
 const rootHead = createPageHead({
     title: SITE_NAME,
-    description: DEFAULT_DESCRIPTION,
     url: "/docs",
 });
 

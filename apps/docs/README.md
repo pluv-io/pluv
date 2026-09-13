@@ -17,15 +17,15 @@ Open:
 
 ## Scripts
 
-| Script       | Description                                    |
-| ------------ | ---------------------------------------------- |
-| `dev`        | Start the Vite development server              |
-| `build`      | Build the production app                       |
-| `preview`    | Preview the production build (Workers runtime) |
-| `deploy`     | Build and deploy to Cloudflare Workers         |
-| `cf:typegen` | Generate Cloudflare Workers types              |
-| `typecheck`  | Generate MDX types and run `tsc`               |
-| `lint`       | Run ESLint                                     |
+| Script       | Description                                     |
+| ------------ | ----------------------------------------------- |
+| `dev`        | Start the Vite development server               |
+| `build`      | Build the production app                        |
+| `preview`    | Preview the production build (Workers runtime)  |
+| `deploy`     | Build and deploy to Cloudflare Workers          |
+| `cf:typegen` | Generate Cloudflare Workers env/runtime types   |
+| `typecheck`  | Run `cf:typegen`, generate MDX types, run `tsc` |
+| `lint`       | Run ESLint                                      |
 
 ## Deploy
 
