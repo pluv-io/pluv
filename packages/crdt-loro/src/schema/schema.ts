@@ -12,14 +12,14 @@ import {
 } from "@pluv/crdt";
 import { fromJSON as fromJsonNode } from "./fromJSON";
 
-const LORO_SCHEMA_BRAND = Symbol.for("pluv.loro.schema");
+const LORO_SCHEMA_BRAND: unique symbol = Symbol("pluv.loro.schema");
 
 export type LoroSchema<
     TShape extends Record<string, AnySchemaNode> = Record<string, AnySchemaNode>,
 > = {
     readonly kind: "loro.doc";
     readonly shape: TShape;
-    readonly [typeof LORO_SCHEMA_BRAND]: true;
+    readonly [LORO_SCHEMA_BRAND]: true;
     toJSON(): { kind: "loro.doc"; shape: Record<string, unknown> };
 };
 
@@ -55,7 +55,9 @@ export const schema = <TShape extends Record<string, AnySchemaNode>>(
 
     const node = createSchemaNode("loro.doc", { shape });
 
-    return Object.assign(node, { [LORO_SCHEMA_BRAND]: true as const }) as LoroSchema<TShape>;
+    return Object.assign(node, {
+        [LORO_SCHEMA_BRAND]: true as const,
+    }) as unknown as LoroSchema<TShape>;
 };
 
 schema.fromJSON = (ast: SchemaAst): LoroSchema => {

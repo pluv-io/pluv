@@ -53,8 +53,9 @@ describe("yjs schema hydrate", () => {
         });
 
         expect(doc.get("mixed").get(0)).toBe("hello");
-        expect(doc.get("mixed").get(1)).toBeInstanceOf(YMap);
-        expect(doc.get("mixed").get(1)?.get("n")).toBe(1);
+        const second = doc.get("mixed").get(1);
+        expect(second).toBeInstanceOf(YMap);
+        expect(second instanceof YMap ? second.get("n") : undefined).toBe(1);
     });
 
     it("throws on extra seed keys", () => {
