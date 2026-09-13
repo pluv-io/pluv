@@ -17,21 +17,21 @@ Build IO with `createIO().platform(...).config({ authorize })`.
 ```ts
 // Before
 const io = createIO(
-  platformNode({
-    authorize: { secret, user: schema },
-    context: () => ({ db }),
-    crdt: yjs,
-  }),
+    platformNode({
+        authorize: { secret, user: schema },
+        context: () => ({ db }),
+        crdt: yjs,
+    }),
 );
 
 // After
 const io = createIO()
-  .platform(platformNode())
-  .config({
-    authorize: { secret, user: schema },
-    context: () => ({ db }),
-    crdt: yjs,
-  });
+    .platform(platformNode())
+    .config({
+        authorize: { secret, user: schema },
+        context: () => ({ db }),
+        crdt: yjs,
+    });
 ```
 
 `platformCloudflare` follows the same split. `authorize.secret` stays on `.config()`.
@@ -41,28 +41,28 @@ Hosted pluv is the exception on secrets: `secretKey` / `publicKey` / `basePath` 
 ```ts
 // Before
 const io = createIO(
-  platformPluv({
-    authorize: { user: schema },
-    context: () => ({ db }),
-    crdt: yjs,
-    publicKey,
-    secretKey,
-    basePath: "/api/pluv",
-  }),
+    platformPluv({
+        authorize: { user: schema },
+        context: () => ({ db }),
+        crdt: yjs,
+        publicKey,
+        secretKey,
+        basePath: "/api/pluv",
+    }),
 );
 
 // After
 const io = createIO()
-  .platform(
-    platformPluv({
-      publicKey,
-      secretKey,
-      basePath: "/api/pluv",
-    }),
-  )
-  .config({
-    authorize: { user: schema },
-    context: () => ({ db }),
-    crdt: yjs,
-  });
+    .platform(
+        platformPluv({
+            publicKey,
+            secretKey,
+            basePath: "/api/pluv",
+        }),
+    )
+    .config({
+        authorize: { user: schema },
+        context: () => ({ db }),
+        crdt: yjs,
+    });
 ```
