@@ -1,5 +1,32 @@
 # @pluv/platform-cloudflare
 
+## 6.0.0
+
+### Major Changes
+
+- 80a5c16: Require authorization for every room connection.
+
+    Open (unauthorized) rooms are removed: `createIO` must configure `authorize`, clients must provide an `authEndpoint`, and connections without a valid token are rejected. Session users are always typed from your authorize schema (at least `{ id: string }`), not `null`.
+
+- 1f6f749: Accept any Standard Schema validator for authorize, presence, metadata, and procedure inputs.
+
+    Zod still works as before on recent versions (3.24+/4). You can also use Valibot, ArkType, or other Standard Schema–compatible libraries. The old `InputZodLike` duck type (`{ parse, _input }`) is removed — schemas must expose `~standard.validate`.
+
+### Patch Changes
+
+- Updated dependencies [b5d7caf]
+- Updated dependencies [d55f1f7]
+- Updated dependencies [a521c50]
+- Updated dependencies [0ee9d2d]
+- Updated dependencies [7d858b0]
+- Updated dependencies [8ca1791]
+- Updated dependencies [80a5c16]
+- Updated dependencies [1f6f749]
+    - @pluv/io@6.0.0
+    - @pluv/crdt@6.0.0
+    - @pluv/types@6.0.0
+    - @pluv/persistence-cloudflare-transactional-storage@6.0.0
+
 ## 5.2.3
 
 ### Patch Changes
