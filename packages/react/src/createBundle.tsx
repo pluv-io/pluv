@@ -195,18 +195,18 @@ export const createBundle = <
                 };
 
                 if (!connect) {
-                    leaveRoom();
-                    return;
+                    void leaveRoom();
+                    return () => {};
                 }
 
                 if (!resolvedMeta.isInitialized) {
-                    leaveRoom();
-                    return;
+                    void leaveRoom();
+                    return () => {};
                 }
 
                 const resolved = resolvedMeta.value as TMetadata;
 
-                queue.push(
+                void queue.push(
                     client
                         .enter(room, ...([{ metadata: resolved }] as EnterRoomParams<TMetadata>))
                         .catch(async (error) => {
@@ -216,7 +216,7 @@ export const createBundle = <
                 );
 
                 return () => {
-                    leaveRoom();
+                    void leaveRoom();
                 };
             }, [connect, queue, resolvedMeta.isInitialized, resolvedMeta.value, room]);
 
@@ -255,11 +255,11 @@ export const createBundle = <
         const room = useRoom();
 
         const broadcast = useCallback(
-            <TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
+            async <TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
                 event: TEvent,
                 data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
             ) => {
-                room.broadcast(event, data);
+                await room.broadcast(event, data);
             },
             [room],
         );
@@ -273,7 +273,7 @@ export const createBundle = <
                                 MergeEvents<TEvents, TIO>
                             >]
                         >,
-                    ): void => {
+                    ): Promise<void> => {
                         return fn(prop as keyof InferIOInput<MergeEvents<TEvents, TIO>>, data);
                     };
                 },

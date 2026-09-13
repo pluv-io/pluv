@@ -317,6 +317,8 @@ export class MockedRoom<
                 if (prop === "event") return this._event;
                 if (prop === "other") return this._other;
                 if (prop === "storage") return this.#_storage;
+
+                throw new Error(`Unknown subscription: ${String(prop)}`);
             },
         },
     ) as SubscribeProxy<TIO, TPresence, InferJson<TCrdt>, TEvents>;
@@ -360,6 +362,7 @@ export class MockedRoom<
     };
 
     private _event = new Proxy(
+        // oxlint-disable-next-line typescript/no-unnecessary-type-parameters
         <TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
             event: TEvent,
             callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,

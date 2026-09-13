@@ -61,8 +61,8 @@ export type MockedRoomProviderProps<
 export type BroadcastProxy<TIO extends IOLike> = (<TEvent extends keyof InferIOInput<TIO>>(
     event: TEvent,
     data: Id<InferIOInput<TIO>[TEvent]>,
-) => void) & {
-    [event in keyof InferIOInput<TIO>]: (input: Id<InferIOInput<TIO>[event]>) => void;
+) => Promise<void>) & {
+    [event in keyof InferIOInput<TIO>]: (input: Id<InferIOInput<TIO>[event]>) => Promise<void>;
 };
 
 export type EventProxy<TIO extends IOLike> = {
