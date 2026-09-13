@@ -30,5 +30,5 @@ Open:
 ## Deploy
 
 ```bash
-pnpm --filter @repo/docs deploy
+pnpm --filter @repo/docs run deploy
 ```
