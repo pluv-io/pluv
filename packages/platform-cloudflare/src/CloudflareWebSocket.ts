@@ -17,9 +17,7 @@ export interface CloudflareWebSocketEventMap {
 
 export type CloudflareWebSocketConfig = AbstractWebSocketConfig;
 
-export class CloudflareWebSocket<
-    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
-> extends AbstractWebSocket<WebSocket, TAuthorize> {
+export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
     public set presence(presence: JsonObject | null) {
         const deserialized = this.webSocket.deserializeAttachment();
         const state = deserialized.state;
@@ -34,7 +32,7 @@ export class CloudflareWebSocket<
         return this.webSocket.readyState as 0 | 1 | 2 | 3;
     }
 
-    public get session(): WebSocketSession<TAuthorize> {
+    public get session(): WebSocketSession<any> {
         const deserialized = this.webSocket.deserializeAttachment();
         const sessionId = deserialized.sessionId as string;
         const state = this.state;
@@ -89,14 +87,17 @@ export class CloudflareWebSocket<
         this.webSocket.serializeAttachment({ ...deserialized, state });
     }
 
-    public get user(): InferIOAuthorizeUser<TAuthorize> | null {
+    public get user(): InferIOAuthorizeUser<IOAuthorize<any, any>> | null {
         const deserialized = this.webSocket.deserializeAttachment();
-        const user = deserialized?.user as InferIOAuthorizeUser<TAuthorize> | null | undefined;
+        const user = deserialized?.user as
+            | InferIOAuthorizeUser<IOAuthorize<any, any>>
+            | null
+            | undefined;
 
         return user ?? null;
     }
 
-    public set user(user: InferIOAuthorizeUser<TAuthorize>) {
+    public set user(user: InferIOAuthorizeUser<IOAuthorize<any, any>>) {
         const deserialized = this.webSocket.deserializeAttachment();
 
         this.webSocket.serializeAttachment({ ...deserialized, user });

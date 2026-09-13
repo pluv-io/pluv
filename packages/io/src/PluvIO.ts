@@ -1,12 +1,8 @@
-import type {
-    AbstractCrdtDocFactory,
-    CrdtLibraryType,
-    HasCrdtLibrary,
-    NoopCrdtDocFactory,
-} from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, CrdtLibraryType, HasCrdtLibrary } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type { BaseUser, HasRequiredProperty, IOAuthorize, InferIOAuthorizeUser } from "@pluv/types";
-import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
+import type { BaseUser, HasRequiredProperty, InferIOAuthorizeUser, SetKey } from "@pluv/types";
+import type { InferInitContextType } from "./AbstractPlatform";
+import type { IODefs } from "./IODefs";
 import type { WebSocketRegisterConfig } from "./IORoom";
 import { PluvProcedure } from "./PluvProcedure";
 import type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
@@ -23,7 +19,6 @@ import {
 import type {
     GetInitialStorageFn,
     PluvContext,
-    PluvIOAuthorize,
     PluvIOLimits,
     PluvIOListeners,
     PluvIORouter,
@@ -32,94 +27,52 @@ import type {
 import { oneLine, parsePluvSchema } from "./utils";
 import { __PLUV_VERSION } from "./version";
 
-export type PluvIOConfig<
-    TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends IOAuthorize<any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any>,
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
-> = {
-    authorize: TAuthorize;
-    context?: PluvContext<TPlatform, TContext>;
-    crdt?: TCrdt;
+export type PluvIOConfig<T extends IODefs = IODefs> = {
+    authorize: T["authorize"];
+    context?: PluvContext<T["platform"], T["context"]>;
+    crdt?: T["crdt"];
     debug?: boolean;
     limits?: PluvIOLimits;
-    platform: () => TPlatform;
+    platform: () => T["platform"];
 };
 
-type ResolvedServerConfig<
-    TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
-    TContext extends Record<string, any> = {},
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> &
-    PluvIORouter<TPlatform, TAuthorize, TContext, TEvents> &
-    (HasCrdtLibrary<TCrdt> extends true
-        ? { getInitialStorage: GetInitialStorageFn<TContext> }
+type ResolvedServerConfig<T extends IODefs = IODefs> = Partial<PluvIOListeners<T>> &
+    PluvIORouter<T> &
+    (HasCrdtLibrary<T["crdt"]> extends true
+        ? { getInitialStorage: GetInitialStorageFn<T["context"]> }
         : { getInitialStorage?: "[ERROR]: Must specify crdt to use getInitialStorage" });
 
-export type BaseServerConfig<
-    TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
-    TContext extends Record<string, any> = {},
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> = {
+export type BaseServerConfig<T extends IODefs = IODefs> = {
     [
-        P in keyof ResolvedServerConfig<
-            TPlatform,
-            TAuthorize,
-            TContext,
-            TCrdt,
-            TEvents
-        > as ResolvedServerConfig<
-            TPlatform,
-            TAuthorize,
-            TContext,
-            TCrdt,
-            TEvents
-        >[P] extends undefined
+        P in keyof ResolvedServerConfig<T> as ResolvedServerConfig<T>[P] extends undefined
             ? never
             : P
-    ]: ResolvedServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>[P];
+    ]: ResolvedServerConfig<T>[P];
 };
 
-export type ServerConfig<
-    TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
-    TContext extends Record<string, any> = {},
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> =
-    HasRequiredProperty<
-        BaseServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>
-    > extends true
-        ? [BaseServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>]
-        : [BaseServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>?];
+export type ServerConfig<T extends IODefs = IODefs> =
+    HasRequiredProperty<BaseServerConfig<T>> extends true
+        ? [BaseServerConfig<T>]
+        : [BaseServerConfig<T>?];
 
-export class PluvIO<
-    TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
-    TContext extends Record<string, any> = {},
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
-> {
+export class PluvIO<T extends IODefs = IODefs> {
     public readonly version: string = __PLUV_VERSION as any;
 
-    private readonly _authorize: TAuthorize;
-    private readonly _context: PluvContext<TPlatform, TContext> = {} as PluvContext<
-        TPlatform,
-        TContext
+    private readonly _authorize: T["authorize"];
+    private readonly _context: PluvContext<T["platform"], T["context"]> = {} as PluvContext<
+        T["platform"],
+        T["context"]
     >;
     private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     private readonly _debug: boolean;
     private readonly _limits: PluvIOLimits;
-    private readonly _platform: () => TPlatform;
+    private readonly _platform: () => T["platform"];
 
-    public get procedure(): PluvProcedure<TPlatform, TAuthorize, TContext, {}, {}> {
+    public get procedure(): PluvProcedure<T, {}, {}> {
         return new PluvProcedure();
     }
 
-    constructor(options: PluvIOConfig<TPlatform, TAuthorize, TContext, TCrdt>) {
+    constructor(options: PluvIOConfig<T>) {
         const {
             authorize: authorizeConfig,
             context,
@@ -145,10 +98,15 @@ export class PluvIO<
     }
 
     public async createToken(
-        params: JWTEncodeParams<InferIOAuthorizeUser<TAuthorize>, TPlatform>,
+        params: JWTEncodeParams<InferIOAuthorizeUser<T["authorize"]>, T["platform"]>,
     ): Promise<string> {
-        const ioAuthorize = this._getIOAuthorize(params);
-        const user = params.user as BaseUser;
+        const platform = this._platform();
+        const { maxAge, room, user, ...initRest } = params;
+        const initContext = platform.normalizeInitContext(
+            initRest as InferInitContextType<T["platform"]>,
+        );
+        const authorizeParams = { ...params, ...initContext };
+        const ioAuthorize = this._getIOAuthorize(authorizeParams);
         const parsed = parsePluvSchema(ioAuthorize.user, user);
 
         if (!!this._limits.userIdMaxLength && user.id.length > this._limits.userIdMaxLength) {
@@ -163,20 +121,12 @@ export class PluvIO<
         if (!!this._limits.userMaxSize && bytes > this._limits.userMaxSize) {
             throw new Error(oneLine`
                 createToken called with large payload. User must be at most 512
-                bytes. Current size: ${bytes.toLocaleString()}
+                bytes. Current size: ${bytes.toLocaleString()} bytes
             `);
         }
 
-        const platform = this._platform();
-
-        /**
-         * !HACK
-         * @description Allow the platform to overwrite this behavior as needed. This is introduced
-         * to support platformPluv
-         * @date December 15, 2024
-         */
         if (platform._createToken) {
-            return await platform._createToken({ ...params, authorize: ioAuthorize });
+            return await platform._createToken({ ...authorizeParams, authorize: ioAuthorize });
         }
 
         const secret = ioAuthorize.secret ?? null;
@@ -184,19 +134,19 @@ export class PluvIO<
         if (!secret) throw new Error("`authorize` was specified without a valid secret");
 
         return await authorize({ platform, secret }).encode(
-            params as JWTEncodeParams<any, TPlatform>,
+            authorizeParams as JWTEncodeParams<any, T["platform"]>,
         );
     }
 
-    public mergeRouters<TRouters extends PluvRouter<TPlatform, TAuthorize, TContext, any>[]>(
+    public mergeRouters<TRouters extends PluvRouter<SetKey<T, "events", any>>[]>(
         ...routers: TRouters
-    ): MergedRouter<TRouters> {
-        return PluvRouter.merge(...routers);
+    ): MergedRouter<TRouters, T> {
+        return PluvRouter.merge(...routers) as MergedRouter<TRouters, T>;
     }
 
-    public router<TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>>(
+    public router<TEvents extends PluvRouterEventConfig<T>>(
         events: TEvents,
-    ): PluvRouter<TPlatform, TAuthorize, TContext, TEvents> {
+    ): PluvRouter<SetKey<T, "events", TEvents>> {
         const invalidName = Object.keys(events).find((name) => name.includes("$"));
 
         if (typeof invalidName === "string") {
@@ -205,34 +155,28 @@ export class PluvIO<
             `);
         }
 
-        return new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>(events);
+        return new PluvRouter<SetKey<T, "events", TEvents>>(events);
     }
 
-    public server<TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {}>(
-        ...config: ServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>
-    ): PluvServer<TPlatform, TAuthorize, TContext, TCrdt, TEvents> {
-        const serverConfig = (config[0] ?? {}) as PluvServerConfig<
-            TPlatform,
-            TAuthorize,
-            TContext,
-            TCrdt,
-            TEvents
-        >;
+    public server<TEvents extends PluvRouterEventConfig<T> = {}>(
+        ...config: ServerConfig<SetKey<T, "events", TEvents>>
+    ): PluvServer<SetKey<T, "events", TEvents>> {
+        const serverConfig = (config[0] ?? {}) as PluvServerConfig<SetKey<T, "events", TEvents>>;
 
-        return new PluvServer<TPlatform, TAuthorize, TContext, TCrdt, TEvents>({
+        return new PluvServer<SetKey<T, "events", TEvents>>({
             ...serverConfig,
             authorize: this._authorize,
             context: this._context,
             crdt: this._crdt,
             debug: this._debug,
-            io: this as PluvIO<TPlatform, TAuthorize, TContext, TCrdt>,
+            io: this,
             limits: this._limits,
             platform: this._platform,
         });
     }
 
     private _getIOAuthorize(
-        options: WebSocketRegisterConfig<TPlatform>,
+        options: WebSocketRegisterConfig<T["platform"]>,
     ): ResolvedPluvIOAuthorize<any, any> {
         if (typeof this._authorize === "function") {
             return this._authorize(options);

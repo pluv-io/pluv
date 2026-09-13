@@ -1,93 +1,54 @@
 import type { AbstractCrdtDocFactory, CrdtLibraryType, HasCrdtLibrary } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type { IOLike, Id, InferIOAuthorize, InferIOAuthorizeUser, NonNilProps } from "@pluv/types";
+import type { IOLike, Id, InferIOAuthorizeUser, NonNilProps } from "@pluv/types";
 import colors from "kleur";
-import type {
-    AbstractPlatform,
-    InferInitContextType,
-    InferRoomContextType,
-} from "./AbstractPlatform";
+import type { InferRoomContextType } from "./AbstractPlatform";
 import { createBaseRouter } from "./createBaseRouter";
+import type { IODefs, IOLikeFromDefs, SetKey } from "./IODefs";
 import { IORoom } from "./IORoom";
 import type { PluvIO } from "./PluvIO";
-import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import type { JWTEncodeParams } from "./authorize";
 import type {
     BasePluvIOListeners,
     GetInitialStorageFn,
     PluvContext,
-    PluvIOAuthorize,
     PluvIOLimits,
     PluvIOListeners,
 } from "./types";
 import { __PLUV_VERSION } from "./version";
 
-export type InferIORoom<TServer extends PluvServer<any, any, any, any, any>> =
-    TServer extends PluvServer<
-        infer IPlatform,
-        infer IAuthorize,
-        infer IContext,
-        infer ICrdt,
-        infer IEvents
-    >
-        ? IORoom<IPlatform, IAuthorize, IContext, ICrdt, IEvents>
-        : never;
+export type InferIORoom<TServer extends PluvServer<any>> =
+    TServer extends PluvServer<infer IDefs extends IODefs> ? IORoom<IDefs> : never;
 
-export type PluvServerConfig<
-    TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
-    TContext extends Record<string, any> = {},
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> = Partial<PluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
-    authorize: TAuthorize;
-    context?: PluvContext<TPlatform, TContext>;
+export type PluvServerConfig<T extends IODefs = IODefs> = Partial<PluvIOListeners<T>> & {
+    authorize: T["authorize"];
+    context?: PluvContext<T["platform"], T["context"]>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     debug?: boolean;
     limits: PluvIOLimits;
-    io: PluvIO<TPlatform, TAuthorize, TContext>;
-    platform: () => TPlatform;
-    router?: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
-} & (HasCrdtLibrary<TCrdt> extends true
-        ? { getInitialStorage: GetInitialStorageFn<TContext> }
+    io: PluvIO<SetKey<T, "events", {}>>;
+    platform: () => T["platform"];
+    router?: PluvRouter<T>;
+} & (HasCrdtLibrary<T["crdt"]> extends true
+        ? { getInitialStorage: GetInitialStorageFn<T["context"]> }
         : { getInitialStorage?: "[ERROR]: Must specify crdt to use getInitialStorage" });
 
-type BaseCreateRoomOptions<
-    TPlatform extends AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> = {
+type BaseCreateRoomOptions<T extends IODefs> = {
     debug?: boolean;
 };
 
-export type CreateRoomOptions<
-    TPlatform extends AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> = keyof Omit<InferRoomContextType<TPlatform>, "meta"> extends never
-    ? [BaseCreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>] | []
-    : [
-          Id<
-              BaseCreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents> &
-                  InferRoomContextType<TPlatform>
-          >,
-      ];
+export type CreateRoomOptions<T extends IODefs = IODefs> = keyof Omit<
+    InferRoomContextType<T["platform"]>,
+    "meta"
+> extends never
+    ? [BaseCreateRoomOptions<T>] | []
+    : [Id<BaseCreateRoomOptions<T> & InferRoomContextType<T["platform"]>>];
 
-export class PluvServer<
-    TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
-    TContext extends Record<string, any> = {},
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> implements IOLike<TAuthorize, TCrdt, TEvents> {
+export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<T>> {
     public readonly version: string = __PLUV_VERSION as any;
 
-    private readonly _config: NonNilProps<
-        PluvServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>
-    >;
+    private readonly _config: NonNilProps<PluvServerConfig<T>>;
     private readonly _docFactory: AbstractCrdtDocFactory<any, any>;
 
     public get fetch(): (...args: any[]) => Promise<any> {
@@ -115,40 +76,34 @@ export class PluvServer<
             crdt: this._config.crdt,
             events: this._router._defs.events,
             platform: this._config.platform(),
-        } as {
-            authorize: TAuthorize;
-            context: PluvContext<TPlatform, TContext>;
-            crdt: TCrdt;
-            events: TEvents;
-            platform: TPlatform;
-        };
+        } as T;
     }
 
-    private get _baseRouter(): PluvRouter<TPlatform, TAuthorize, TContext, {}> {
+    private get _baseRouter(): PluvRouter<SetKey<T, "events", {}>> {
         const listeners = this._getListeners();
 
-        return createBaseRouter<TPlatform, TAuthorize, TContext>({
+        return createBaseRouter<T>({
             limits: this._config.limits,
             logDebug: (...data) => this._logDebug(...data),
             onStorageUpdated: (event) => listeners.onStorageUpdated(event),
-        });
+        }) as PluvRouter<SetKey<T, "events", {}>>;
     }
 
-    private get _router(): PluvRouter<TPlatform, TAuthorize, TContext, TEvents> {
+    private get _router(): PluvRouter<T> {
         return (
             this._config.router
                 ? PluvRouter.merge(this._baseRouter, this._config.router)
                 : this._baseRouter
-        ) as PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
+        ) as PluvRouter<T>;
     }
 
-    constructor(options: PluvServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>) {
+    constructor(options: PluvServerConfig<T>) {
         this._config = {
             crdt: noop,
             debug: false,
-            router: new PluvRouter<TPlatform, TAuthorize, TContext, TEvents>({} as TEvents),
+            router: new PluvRouter<T>({} as T["events"]),
             ...options,
-        } as NonNilProps<PluvServerConfig<TPlatform, TAuthorize, TContext, TCrdt, TEvents>>;
+        } as NonNilProps<PluvServerConfig<T>>;
 
         const {
             onRoomDestroyed,
@@ -157,7 +112,7 @@ export class PluvServer<
             onStorageUpdated,
             onUserConnected,
             onUserDisconnected,
-        } = options as Partial<BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>>;
+        } = options as Partial<BasePluvIOListeners<T>>;
 
         this._docFactory = this._config.crdt.doc(() => ({}));
         (this as any)._listeners = {
@@ -167,19 +122,12 @@ export class PluvServer<
             onStorageUpdated: (event) => onStorageUpdated?.(event),
             onUserConnected: (event) => onUserConnected?.(event),
             onUserDisconnected: (event) => onUserDisconnected?.(event),
-        } as BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents>;
+        } as BasePluvIOListeners<T>;
     }
 
-    public createRoom(
-        room: string,
-        ...options: CreateRoomOptions<TPlatform, TAuthorize, TContext, TEvents>
-    ): IORoom<TPlatform, TAuthorize, TContext, TCrdt, TEvents> {
-        const { _meta, debug, ...platformRoomContext } = (options[0] ?? {}) as CreateRoomOptions<
-            TPlatform,
-            TAuthorize,
-            TContext,
-            TEvents
-        >[0] & {
+    public createRoom(room: string, ...options: CreateRoomOptions<T>): IORoom<T> {
+        const { _meta, debug, ...platformRoomContext } = (options[0] ??
+            {}) as CreateRoomOptions<T>[0] & {
             _meta?: any;
         };
 
@@ -194,11 +142,11 @@ export class PluvServer<
         if (!/^[a-z0-9](?:[a-z0-9-_]*[a-z0-9])?$/i.test(room))
             throw new Error("Unsupported room name");
 
-        const roomContext = platformRoomContext as InferRoomContextType<TPlatform>;
+        const roomContext = platformRoomContext as InferRoomContextType<T["platform"]>;
         const listeners = this._getListeners();
         const logDebug = this._logDebug.bind(this);
 
-        const newRoom = new IORoom<TPlatform, TAuthorize, TContext, TCrdt, TEvents>(room, {
+        const newRoom = new IORoom<T>(room, {
             ...(!!_meta ? { _meta } : {}),
             authorize: this._config.authorize,
             context: this._config.context,
@@ -243,12 +191,12 @@ export class PluvServer<
     }
 
     public async createToken(
-        params: JWTEncodeParams<InferIOAuthorizeUser<InferIOAuthorize<this>>, TPlatform>,
+        params: JWTEncodeParams<InferIOAuthorizeUser<T["authorize"]>, T["platform"]>,
     ): Promise<string> {
         return await this._config.io.createToken(params);
     }
 
-    private _getInitialStorage: GetInitialStorageFn<TContext> = (...args) => {
+    private _getInitialStorage: GetInitialStorageFn<T["context"]> = (...args) => {
         const getInitialStorage = this._config.getInitialStorage;
 
         if (typeof getInitialStorage !== "function") return null;
@@ -256,7 +204,7 @@ export class PluvServer<
         return getInitialStorage(...args);
     };
 
-    private _getListeners(): BasePluvIOListeners<TPlatform, TAuthorize, TContext, TEvents> {
+    private _getListeners(): BasePluvIOListeners<T> {
         return (this as any)._listeners;
     }
 

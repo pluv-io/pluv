@@ -8,8 +8,17 @@ import { cluster } from "../cluster";
 
 const PLUV_AUTH_SECRET = "secret123";
 
-export const io = createIO(
-    platformNode({
+export const io = createIO()
+    .platform(
+        platformNode({
+            persistence: new PersistenceRedis({ client: cluster }),
+            pubSub: new PubSubRedis({
+                publisher: cluster,
+                subscriber: cluster,
+            }),
+        }),
+    )
+    .config({
         authorize: {
             secret: PLUV_AUTH_SECRET,
             user: z.object({
@@ -19,13 +28,7 @@ export const io = createIO(
         },
         crdt: yjs,
         debug: true,
-        persistence: new PersistenceRedis({ client: cluster }),
-        pubSub: new PubSubRedis({
-            publisher: cluster,
-            subscriber: cluster,
-        }),
-    }),
-);
+    });
 
 const router = io.router({
     SEND_MESSAGE: io.procedure

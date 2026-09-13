@@ -3,8 +3,9 @@ import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 
-export const io = createIO(
-    platformNode({
+export const io = createIO()
+    .platform(platformNode())
+    .config({
         authorize: {
             secret: process.env.PLUV_AUTH_SECRET!,
             user: z.object({
@@ -13,8 +14,7 @@ export const io = createIO(
             }),
         },
         crdt: yjs,
-    }),
-);
+    });
 
 const router = io.router({
     SEND_MESSAGE: io.procedure

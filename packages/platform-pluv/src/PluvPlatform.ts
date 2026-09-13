@@ -1,7 +1,6 @@
 import type {
     AbstractPlatformConfig,
     AbstractWebSocket,
-    BaseUser,
     ConvertWebSocketConfig,
     GetInitialStorageFn,
     JWTEncodeParams,
@@ -23,7 +22,7 @@ export type PublicKey = string | (() => MaybePromise<string>);
 export type SecretKey = string | (() => MaybePromise<string>);
 export type WebhookSecret = string | (() => MaybePromise<string>);
 
-export interface PluvPlatformConfig<TContext extends Record<string, any> = {}> {
+export interface PluvPlatformConfig {
     /**
      * @ignore
      * @readonly
@@ -34,16 +33,12 @@ export interface PluvPlatformConfig<TContext extends Record<string, any> = {}> {
         endpoints?: PluvIOEndpoints | (() => MaybePromise<PluvIOEndpoints>);
     };
     basePath: string;
-    context?: PluvContext<any, TContext>;
     publicKey: PublicKey;
     secretKey: SecretKey;
     webhookSecret?: WebhookSecret;
 }
 
-export class PluvPlatform<
-    TContext extends Record<string, any> = {},
-    TUser extends BaseUser = BaseUser,
-> extends AbstractPlatform<
+export class PluvPlatform extends AbstractPlatform<
     any,
     {},
     {},
@@ -85,8 +80,8 @@ export class PluvPlatform<
 
     private readonly _app: Hono;
     private readonly _basePath: string;
-    private readonly _context: PluvContext<this, TContext>;
-    private readonly _debug: boolean;
+    private _context: PluvContext<this, Record<string, any>> = {};
+    private _debug: boolean;
     private readonly _endpoints: PluvIOEndpoints | (() => MaybePromise<PluvIOEndpoints>);
     private _getInitialStorage?: GetInitialStorageFn<{}>;
     private _listeners?: PluvIOListeners;
@@ -151,10 +146,9 @@ export class PluvPlatform<
     constructor(params: PluvPlatformConfig) {
         super();
 
-        const { _defs, basePath, context, publicKey, secretKey, webhookSecret } = params;
+        const { _defs, basePath, publicKey, secretKey, webhookSecret } = params;
 
         this._basePath = basePath;
-        this._context = (context ?? {}) as TContext;
         this._debug = _defs?.debug ?? false;
         this._endpoints = _defs?.endpoints ?? {
             createToken: "https://rooms.pluv.io/api/room/token",
@@ -227,6 +221,8 @@ export class PluvPlatform<
         }
 
         this._getInitialStorage = config.getInitialStorage;
+        this._context = config.context ?? {};
+        this._debug = config.debug ?? this._debug;
         this._listeners = {
             onRoomDestroyed: (event) => config.onRoomDestroyed?.(event),
             onStorageDestroyed: (event) => config.onStorageDestroyed?.(event),
@@ -412,7 +408,7 @@ export class PluvPlatform<
             }
         });
 
-    private async _getContext(): Promise<TContext> {
+    private async _getContext(): Promise<Record<string, any>> {
         return typeof this._context === "function"
             ? await Promise.resolve(this._context(this._roomContext as any))
             : await Promise.resolve(this._context);

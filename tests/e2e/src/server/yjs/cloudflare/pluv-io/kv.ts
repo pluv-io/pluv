@@ -6,8 +6,13 @@ import { PersistenceCloudflareTransactionalStorage } from "@pluv/persistence-clo
 
 const PLUV_AUTH_SECRET = "secret123";
 
-export const io = createIO(
-    platformCloudflare({
+export const io = createIO()
+    .platform(
+        platformCloudflare({
+            persistence: new PersistenceCloudflareTransactionalStorage({ mode: "kv" }),
+        }),
+    )
+    .config({
         authorize: {
             secret: PLUV_AUTH_SECRET,
             user: z.object({
@@ -17,9 +22,7 @@ export const io = createIO(
         },
         crdt: yjs,
         debug: true,
-        persistence: new PersistenceCloudflareTransactionalStorage({ mode: "kv" }),
-    }),
-);
+    });
 
 const router = io.router({
     SEND_MESSAGE: io.procedure

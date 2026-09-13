@@ -3,7 +3,6 @@ import { noop } from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
     CrdtDocLike,
-    CrdtLibraryType,
     EventMessage,
     IOEventMessage,
     IOLike,
@@ -29,7 +28,8 @@ import type {
     AbstractMessageEvent,
 } from "./AbstractWebSocket";
 import { AbstractWebSocket } from "./AbstractWebSocket";
-import type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
+import type { IODefs, IOLikeFromDefs } from "./IODefs";
+import type { PluvRouter } from "./PluvRouter";
 import { authorize } from "./authorize";
 import { GARBAGE_COLLECT_INTERVAL_MS, PING_TIMEOUT_MS } from "./constants";
 import type {
@@ -42,58 +42,46 @@ import type {
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
     PluvContext,
-    PluvIOAuthorize,
     ResolvedPluvIOAuthorize,
+    SendMessageOptions,
     WebSocketSession,
     WebSocketType,
 } from "./types";
 import { oneLine, parsePluvSchema } from "./utils";
 
-type BroadcastMessage<TIO extends IORoom<any, any, any, any, any>> =
+type BroadcastMessage<TIO extends IORoom<any>> =
     | InferEventMessage<InferIOInput<TIO>>
     | InferEventMessage<BaseIOEventRecord<InferIOAuthorize<TIO>>>;
 
-interface BroadcastParams<TIO extends IORoom<any, any, any, any, any>> {
+interface BroadcastParams<TIO extends IORoom<any>> {
     message: BroadcastMessage<TIO>;
     senderId?: string;
 }
 
-export interface IORoomListeners<
-    TPlatform extends AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>>,
-    TContext extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext>,
-> {
-    onRoomDestroyed: (event: IORoomDestroyedEvent<TPlatform, TContext>) => void;
-    onStorageDestroyed: (event: IORoomListenerEvent<TPlatform, TContext>) => void;
-    onMessage: (event: IORoomMessageEvent<TPlatform, TAuthorize, TContext, TEvents>) => void;
-    onUserConnected: (event: IOUserConnectedEvent<TPlatform, TAuthorize, TContext>) => void;
-    onUserDisconnected: (event: IOUserDisconnectedEvent<TPlatform, TAuthorize, TContext>) => void;
+export interface IORoomListeners<T extends IODefs = IODefs> {
+    onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;
+    onStorageDestroyed: (event: IORoomListenerEvent<T>) => void;
+    onMessage: (event: IORoomMessageEvent<T>) => void;
+    onUserConnected: (event: IOUserConnectedEvent<T>) => void;
+    onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
 }
 
-export type BroadcastProxy<TIO extends IORoom<any, any, any, any, any>> = (<
-    TEvent extends keyof InferIOInput<TIO>,
->(
+export type BroadcastProxy<TIO extends IORoom<any>> = (<TEvent extends keyof InferIOInput<TIO>>(
     event: TEvent,
     data: Id<InferIOInput<TIO>[TEvent]>,
 ) => Promise<void>) & {
     [event in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>>[event]) => Promise<void>;
 };
 
-export type IORoomConfig<
-    TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
-    TContext extends Record<string, any> = {},
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> = Partial<IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>> & {
-    authorize: TAuthorize;
-    context: PluvContext<TPlatform, TContext>;
+export type IORoomConfig<T extends IODefs = IODefs> = Partial<IORoomListeners<T>> & {
+    authorize: T["authorize"];
+    context: PluvContext<T["platform"], T["context"]>;
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     debug: boolean;
-    getInitialStorage: GetInitialStorageFn<TContext>;
-    platform: TPlatform;
-    roomContext: InferRoomContextType<TPlatform>;
-    router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
+    getInitialStorage: GetInitialStorageFn<T["context"]>;
+    platform: T["platform"];
+    roomContext: InferRoomContextType<T["platform"]>;
+    router: PluvRouter<T>;
 };
 
 interface SendMessageSender {
@@ -113,13 +101,7 @@ export type WebSocketRegisterConfig<
     token?: string | null;
 } & InferInitContextType<TPlatform>;
 
-export class IORoom<
-    TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TAuthorize extends PluvIOAuthorize<TPlatform, any, InferInitContextType<TPlatform>> = any,
-    TContext extends Record<string, any> = {},
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<any>,
-    TEvents extends PluvRouterEventConfig<TPlatform, TAuthorize, TContext> = {},
-> implements IOLike<TAuthorize, TCrdt, TEvents> {
+export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<T>> {
     public readonly id: string;
 
     private _doc: Promise<CrdtDocLike<any, any>>;
@@ -127,20 +109,17 @@ export class IORoom<
     private _teardown: Promise<void> | null = null;
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
-    private readonly _authorize: TAuthorize;
-    private readonly _context: PluvContext<TPlatform, TContext>;
-    private readonly _crdt: TCrdt;
+    private readonly _authorize: T["authorize"];
+    private readonly _context: PluvContext<T["platform"], T["context"]>;
+    private readonly _crdt: T["crdt"];
     private readonly _debug: boolean;
     private readonly _docFactory: AbstractCrdtDocFactory<any, any>;
-    private readonly _getInitialStorage: GetInitialStorageFn<TContext>;
-    private readonly _listeners: IORoomListeners<TPlatform, TAuthorize, TContext, TEvents>;
-    private readonly _platform: TPlatform;
-    private readonly _roomContext: InferRoomContextType<TPlatform>;
-    private readonly _router: PluvRouter<TPlatform, TAuthorize, TContext, TEvents>;
-    private readonly _sessions = new Map<
-        [sessionId: string][0],
-        AbstractWebSocket<any, TAuthorize>
-    >();
+    private readonly _getInitialStorage: GetInitialStorageFn<T["context"]>;
+    private readonly _listeners: IORoomListeners<T>;
+    private readonly _platform: T["platform"];
+    private readonly _roomContext: InferRoomContextType<T["platform"]>;
+    private readonly _router: PluvRouter<T>;
+    private readonly _sessions = new Map<[sessionId: string][0], AbstractWebSocket>();
     private readonly _userSessionss = new Map<[userId: string][0], Set<[sessionId: string][0]>>();
 
     private _storageSeeded: boolean = false;
@@ -158,11 +137,11 @@ export class IORoom<
             events: this._router._defs.events,
             platform: this._platform,
         } as {
-            authorize: TAuthorize;
-            context: TContext;
-            crdt: TCrdt;
-            events: TEvents;
-            platform: TPlatform;
+            authorize: T["authorize"];
+            context: T["context"];
+            crdt: T["crdt"];
+            events: T["events"];
+            platform: T["platform"];
         };
     }
 
@@ -188,7 +167,7 @@ export class IORoom<
         return this._uninitialize.then(() => true);
     }
 
-    constructor(id: string, config: IORoomConfig<TPlatform, TAuthorize, TContext, TEvents>) {
+    constructor(id: string, config: IORoomConfig<T>) {
         const {
             _meta,
             authorize: authorizeConfig,
@@ -204,12 +183,12 @@ export class IORoom<
             platform,
             roomContext,
             router,
-        } = config as IORoomConfig<TPlatform, TAuthorize, TContext, TEvents> & { _meta?: any };
+        } = config as IORoomConfig<T> & { _meta?: any };
 
         this.id = id;
 
         this._context = context;
-        this._crdt = crdt as TCrdt;
+        this._crdt = crdt as T["crdt"];
         this._debug = debug;
         this._docFactory = crdt.doc(() => ({}));
         this._getInitialStorage = getInitialStorage;
@@ -232,8 +211,9 @@ export class IORoom<
          * @see https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-hibernation-api
          * @date April 17, 2025
          */
-        const webSockets =
-            this._platform.getWebSockets() as readonly InferPlatformWebSocketSource<TPlatform>[];
+        const webSockets = this._platform.getWebSockets() as readonly InferPlatformWebSocketSource<
+            T["platform"]
+        >[];
 
         webSockets.forEach((webSocket) => {
             const deserialized = this._platform.getSerializedState(webSocket);
@@ -311,7 +291,7 @@ export class IORoom<
     }
 
     public onClose(
-        webSocket: WebSocketType<TPlatform>,
+        webSocket: WebSocketType<T["platform"]>,
     ): (event: AbstractCloseEvent) => Promise<void> {
         this._ensureDetached();
 
@@ -323,7 +303,7 @@ export class IORoom<
     }
 
     public onError(
-        webSocket: WebSocketType<TPlatform>,
+        webSocket: WebSocketType<T["platform"]>,
     ): (event: AbstractErrorEvent) => Promise<void> {
         this._ensureDetached();
 
@@ -335,7 +315,7 @@ export class IORoom<
     }
 
     public onMessage(
-        webSocket: WebSocketType<TPlatform>,
+        webSocket: WebSocketType<T["platform"]>,
     ): (event: AbstractMessageEvent) => Promise<void> {
         this._ensureDetached();
 
@@ -347,13 +327,20 @@ export class IORoom<
     }
 
     public async register(
-        webSocket: InferPlatformWebSocketSource<TPlatform>,
-        ...options: keyof InferInitContextType<TPlatform> extends never
+        webSocket: InferPlatformWebSocketSource<T["platform"]>,
+        ...options: keyof InferInitContextType<T["platform"]> extends never
             ? [{ token?: string }?]
-            : [WebSocketRegisterConfig<TPlatform>]
+            : [WebSocketRegisterConfig<T["platform"]>]
     ): Promise<void> {
-        const _options = (options[0] ?? {}) as WebSocketRegisterConfig<TPlatform>;
-        const token = _options.token ?? null;
+        const _options = (options[0] ?? {}) as WebSocketRegisterConfig<T["platform"]>;
+        const { token: tokenOption, ...initRest } = _options as WebSocketRegisterConfig<
+            T["platform"]
+        > & { token?: string | null };
+        const token = tokenOption ?? null;
+        const registerConfig = {
+            ...this._platform.normalizeInitContext(initRest as InferInitContextType<T["platform"]>),
+            token,
+        } as WebSocketRegisterConfig<T["platform"]>;
 
         /**
          * TODO
@@ -375,7 +362,7 @@ export class IORoom<
             await this._initialized;
         }
 
-        const user = await this._getAuthorizedUser(token, _options);
+        const user = await this._getAuthorizedUser(token, registerConfig);
         const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
 
         if (!user) {
@@ -452,12 +439,8 @@ export class IORoom<
         });
     }
 
-    private async _closeWebSockets(
-        webSockets: readonly AbstractWebSocket<any, TAuthorize>[],
-    ): Promise<void> {
-        const closeWebSocket = async (
-            webSocket: AbstractWebSocket<any, TAuthorize>,
-        ): Promise<void> => {
+    private async _closeWebSockets(webSockets: readonly AbstractWebSocket[]): Promise<void> {
+        const closeWebSocket = async (webSocket: AbstractWebSocket): Promise<void> => {
             webSocket.state = { ...webSocket.state, quit: true };
 
             const sessionId = webSocket.sessionId;
@@ -473,7 +456,7 @@ export class IORoom<
                 senderId: sessionId,
             });
 
-            const session = webSocket.session;
+            const session = this._toSession(webSocket);
             const user = session.user;
 
             if (!!user) this._removeUserSession(user.id, sessionId);
@@ -528,8 +511,8 @@ export class IORoom<
         await this._closeWebSockets(quitters);
     }
 
-    private async _emitRegistered(pluvWs: AbstractWebSocket<any, TAuthorize>): Promise<void> {
-        const session = pluvWs.session;
+    private async _emitRegistered(pluvWs: AbstractWebSocket): Promise<void> {
+        const session = this._toSession(pluvWs);
         const sessionId = session.id;
         const presence = session.presence;
         const user = session.user;
@@ -569,7 +552,7 @@ export class IORoom<
     private async _emitSyncState(): Promise<void> {
         const connectionIds = await this._platform.persistence
             .getUsers(this.id)
-            .then((map) => Object.keys(map));
+            .then((map: Map<string, JsonObject | null>) => Object.keys(map));
 
         await this._broadcast({
             message: {
@@ -585,9 +568,7 @@ export class IORoom<
         throw new Error("Platform must use detached mode");
     }
 
-    private _getAbstractWs(
-        webSocket: WebSocketType<TPlatform>,
-    ): AbstractWebSocket<any, TAuthorize> | null {
+    private _getAbstractWs(webSocket: WebSocketType<T["platform"]>): AbstractWebSocket | null {
         if ((webSocket as unknown as any) instanceof AbstractWebSocket) return webSocket;
 
         const sessionId = this._platform.getSessionId(webSocket);
@@ -610,8 +591,8 @@ export class IORoom<
      */
     private async _getAuthorizedUser(
         token: Maybe<string>,
-        options: WebSocketRegisterConfig<TPlatform>,
-    ): Promise<InferIOAuthorizeUser<TAuthorize> | null> {
+        options: WebSocketRegisterConfig<T["platform"]>,
+    ): Promise<InferIOAuthorizeUser<T["authorize"]> | null> {
         const ioAuthorize = this._getIOAuthorize(options);
 
         if (!token) return null;
@@ -648,10 +629,14 @@ export class IORoom<
         }
     }
 
-    private async _getContext(): Promise<TContext> {
-        return typeof this._context === "function"
-            ? await Promise.resolve(this._context(this._roomContext))
-            : await Promise.resolve(this._context);
+    private async _getContext(): Promise<T["context"]> {
+        const context = this._context as PluvContext<T["platform"], T["context"]>;
+
+        if (typeof context === "function") {
+            return await Promise.resolve(context(this._roomContext));
+        }
+
+        return await Promise.resolve(context);
     }
 
     private async _getInitialDoc(): Promise<CrdtDocLike<any, any>> {
@@ -688,7 +673,7 @@ export class IORoom<
     }
 
     private _getIOAuthorize(
-        options: WebSocketRegisterConfig<TPlatform>,
+        options: WebSocketRegisterConfig<T["platform"]>,
     ): ResolvedPluvIOAuthorize<any, any> {
         if (typeof this._authorize === "function") return this._authorize(options);
 
@@ -740,7 +725,7 @@ export class IORoom<
 
     private _getProcedureInputs(
         message: EventMessage<string, any>,
-    ): InferIOInput<this>[keyof TEvents] {
+    ): InferIOInput<this>[keyof T["events"]] {
         const procedure = this._getProcedure(message);
 
         if (!procedure) return message.data;
@@ -750,18 +735,20 @@ export class IORoom<
             : message.data;
     }
 
-    private _getSession(webSocket: WebSocketType<TPlatform>): WebSocketSession<TAuthorize> {
+    private _getSession(webSocket: WebSocketType<T["platform"]>): WebSocketSession<T> {
         const pluvWs = this._getAbstractWs(webSocket);
 
         if (!pluvWs) throw new Error("Session could not be found");
 
-        return pluvWs.session;
+        return this._toSession(pluvWs);
     }
 
-    private _getSessions() {
-        const sessions = Array.from(this._sessions.values()).map((pluvWs) => pluvWs.session);
+    private _getSessions(): readonly WebSocketSession<T>[] {
+        return Array.from(this._sessions.values()).map((pluvWs) => this._toSession(pluvWs));
+    }
 
-        return sessions;
+    private _toSession(pluvWs: AbstractWebSocket): WebSocketSession<T> {
+        return pluvWs.session as WebSocketSession<T>;
     }
 
     private _initialize() {
@@ -777,7 +764,7 @@ export class IORoom<
 
             const pubSubId = await this._platform.pubSub.subscribe(
                 this.id,
-                async ({ options = {}, ...message }): Promise<void> => {
+                async ({ options = {} as SendMessageOptions, ...message }): Promise<void> => {
                     await promise;
 
                     const sender: SendMessageSender = {
@@ -886,7 +873,7 @@ export class IORoom<
         if (this._debug) console.log(...data);
     }
 
-    private _onClose(webSocket: AbstractWebSocket<any, TAuthorize>): () => Promise<void> {
+    private _onClose(webSocket: AbstractWebSocket): () => Promise<void> {
         return async (): Promise<void> => {
             if (!(await this._initialized)) return;
             await this._closeWebSockets([webSocket]);
@@ -894,16 +881,16 @@ export class IORoom<
     }
 
     private _onMessage(
-        webSocket: AbstractWebSocket<any, TAuthorize>,
+        webSocket: AbstractWebSocket,
     ): (event: AbstractMessageEvent) => Promise<void> {
         return async (event: AbstractMessageEvent): Promise<void> => {
             if (!(await this._initialized)) return;
 
-            const pluvWs = this._getAbstractWs(webSocket as WebSocketType<TPlatform>);
+            const pluvWs = this._getAbstractWs(webSocket as WebSocketType<T["platform"]>);
 
             if (!pluvWs) throw new Error("Could not get session");
 
-            const session = this._getSession(pluvWs as WebSocketType<TPlatform>);
+            const session = this._getSession(pluvWs as WebSocketType<T["platform"]>);
             const sessions = this._getSessions();
 
             const setPresence = (params: PatchPresenceParams): void => {
@@ -912,12 +899,7 @@ export class IORoom<
 
             const [doc, context] = await Promise.all([this._doc, this._getContext()]);
             const room = this;
-            const eventContext: EventResolverContext<
-                EventResolverKind,
-                TPlatform,
-                TAuthorize,
-                TContext
-            > = {
+            const eventContext: EventResolverContext<EventResolverKind, T> = {
                 context,
                 doc,
                 garbageCollect: async () => {
@@ -966,8 +948,8 @@ export class IORoom<
                 context,
                 encodedState: doc.getEncodedState(),
                 message: message as InferEventMessage<
-                    InferEventsOutput<TEvents>,
-                    keyof InferEventsOutput<TEvents>
+                    InferEventsOutput<T["events"]>,
+                    keyof InferEventsOutput<T["events"]>
                 >,
                 platform: this._platform,
                 room: this.id,
@@ -987,7 +969,7 @@ export class IORoom<
                 return;
             }
 
-            let inputs: InferIOInput<this>[keyof TEvents];
+            let inputs: InferIOInput<this>[keyof T["events"]];
 
             try {
                 inputs = this._getProcedureInputs(message);
@@ -1129,7 +1111,7 @@ export class IORoom<
     }
 
     private async _sendMessage(
-        pluvWs: AbstractWebSocket<any, TAuthorize>,
+        pluvWs: AbstractWebSocket,
         message: IOEventMessage<any>,
     ): Promise<void> {
         if (!(await this._initialized)) return;
@@ -1153,7 +1135,7 @@ export class IORoom<
                 const pluvWs = this._sessions.get(id);
 
                 return pluvWs ? dict.set(id, pluvWs) : dict;
-            }, new Map<string, AbstractWebSocket<any, TAuthorize>>()) ?? this._sessions;
+            }, new Map<string, AbstractWebSocket>()) ?? this._sessions;
 
         await Promise.allSettled(
             Array.from(webSockets.values()).map(async (pluvWs) => {
@@ -1219,7 +1201,7 @@ export class IORoom<
 
         const [doc, context] = await Promise.all([this._doc, this._getContext()]);
         const room = this;
-        const resolverCtx: EventResolverContext<"sync", TPlatform, TAuthorize, TContext> = {
+        const resolverCtx: EventResolverContext<"sync", T> = {
             context,
             doc,
             garbageCollect: async () => {
@@ -1248,7 +1230,7 @@ export class IORoom<
 
         if (!resolver) return;
 
-        let inputs: InferIOInput<this>[keyof TEvents];
+        let inputs: InferIOInput<this>[keyof T["events"]];
 
         try {
             inputs = this._getProcedureInputs(message);
@@ -1270,7 +1252,7 @@ export class IORoom<
                     options: { type: "self" },
                     room: this.id,
                     type,
-                    user: sender.user,
+                    user: sender.user as InferIOAuthorizeUser<T["authorize"]>,
                 });
             }),
         );

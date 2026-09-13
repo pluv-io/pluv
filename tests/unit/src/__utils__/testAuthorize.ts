@@ -1,5 +1,5 @@
 import type { CrdtLibraryType, NoopCrdtDocFactory } from "@pluv/crdt";
-import type { CreateIOParams, InferIORoom, PluvIO, PluvServer } from "@pluv/io";
+import type { InferIORoom, IOConfigParams, PluvIO, PluvServer } from "@pluv/io";
 import { createIO } from "@pluv/io";
 import type { BaseUser } from "@pluv/types";
 import { z } from "zod";
@@ -21,7 +21,7 @@ export const testAuthorize = {
 } as const;
 
 type TestCreateIOOptions<TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>> =
-    Omit<CreateIOParams<TestPlatform, {}, TestAuthorizeUser, TCrdt>, "authorize" | "platform"> & {
+    Omit<IOConfigParams<TestPlatform, TestAuthorizeUser, {}, TCrdt>, "authorize"> & {
         platform?: TestPlatformConfig | (() => TestPlatform);
     };
 
@@ -36,15 +36,16 @@ export const createAuthorizedIO = <
             ? platform
             : () => new TestPlatform(platform ?? { mode: "detached" });
 
-    return createIO({
-        authorize: testAuthorize,
-        platform: platformFactory,
-        ...rest,
-    });
+    return createIO()
+        .platform(platformFactory)
+        .config({
+            authorize: testAuthorize,
+            ...rest,
+        });
 };
 
 export const createAuthorizedToken = async (
-    io: PluvIO<any, any, any, any>,
+    io: PluvIO<any>,
     params: {
         room: string;
         user?: TestAuthorizeUser;
@@ -58,11 +59,11 @@ export const createAuthorizedToken = async (
     });
 };
 
-export const registerAuthorized = async <TServer extends PluvServer<any, any, any, any, any>>(
+export const registerAuthorized = async <TServer extends PluvServer<any>>(
     room: InferIORoom<TServer>,
     socket: TestSocket,
     params: {
-        io: PluvIO<any, any, any, any>;
+        io: PluvIO<any>;
         user?: TestAuthorizeUser & BaseUser;
     },
 ): Promise<void> => {

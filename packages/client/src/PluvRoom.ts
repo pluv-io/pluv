@@ -132,7 +132,7 @@ export type WsEndpoint<TMetadata extends JsonObject> =
 
 type FetchOptions = { url: string; options?: RequestInit };
 
-export type RoomEndpoints<TIO extends IOLike<any, any, any>, TMetadata extends JsonObject> = {
+export type RoomEndpoints<TIO extends IOLike, TMetadata extends JsonObject> = {
     wsEndpoint?: WsEndpoint<TMetadata>;
     authEndpoint: AuthEndpoint<TMetadata>;
 };
@@ -201,7 +201,7 @@ export type RoomConfig<
 >;
 
 export class PluvRoom<
-    TIO extends IOLike<any, any, any>,
+    TIO extends IOLike,
     TMetadata extends JsonObject = {},
     TPresence extends Record<string, any> = {},
     TCrdt extends AbstractCrdtDocFactory<any, any> = NoopCrdtDocFactory,

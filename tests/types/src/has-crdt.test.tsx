@@ -5,15 +5,15 @@ import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { z } from "zod";
 
-const io = createIO(
-    platformCloudflare({
+const io = createIO()
+    .platform(platformCloudflare())
+    .config({
         authorize: {
             secret: "test-secret",
             user: z.object({ id: z.string() }),
         },
         crdt: yjs,
-    }),
-);
+    });
 
 // @ts-expect-error
 const ioServer = io.server();

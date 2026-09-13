@@ -9,8 +9,9 @@ import { expectTypeOf } from "expect-type";
 import type { Array as YArray, Doc as YDoc } from "yjs";
 import { z } from "zod";
 
-const io = createIO(
-    platformCloudflare({
+const io = createIO()
+    .platform(platformCloudflare())
+    .config({
         authorize: {
             secret: "",
             user: z.object({
@@ -19,8 +20,7 @@ const io = createIO(
         },
         context: ({ env, meta, state }) => ({ env, meta, state }),
         crdt: yjs,
-    }),
-);
+    });
 
 const router = io.router({
     sendMessage: io.procedure

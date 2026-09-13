@@ -31,7 +31,7 @@ export interface ConvertWebSocketConfig {
 }
 
 export abstract class AbstractPlatform<
-    TWebSocket extends AbstractWebSocket<any, any> = AbstractWebSocket<any, any>,
+    TWebSocket extends AbstractWebSocket<any> = AbstractWebSocket<any>,
     TInitContext extends Record<string, any> = {},
     TRoomContext extends Record<string, any> = {},
     TConfig extends PlatformConfig = PlatformConfig,
@@ -69,9 +69,9 @@ export abstract class AbstractPlatform<
     public abstract convertWebSocket(
         webSocket: InferWebSocketSource<TWebSocket>,
         config: ConvertWebSocketConfig,
-    ): AbstractWebSocket<any, any>;
+    ): AbstractWebSocket;
 
-    public abstract getLastPing(webSocket: AbstractWebSocket<any, any>): number | null;
+    public abstract getLastPing(webSocket: AbstractWebSocket): number | null;
 
     public abstract getSerializedState(
         webSocket: InferWebSocketSource<TWebSocket>,
@@ -91,6 +91,14 @@ export abstract class AbstractPlatform<
         webSocket: AbstractWebSocket,
         state: WebSocketSerializedState,
     ): WebSocketSerializedState;
+
+    /**
+     * Normalize register/createToken init context before authorize runs.
+     * Platforms may convert runtime-specific request types (e.g. Node `IncomingMessage`).
+     */
+    public normalizeInitContext(initContext: TInitContext): TInitContext {
+        return initContext;
+    }
 
     public validateConfig(config: any): void {}
 

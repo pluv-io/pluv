@@ -9,9 +9,14 @@ const PLUV_KV_KEY = "TEST_DATA";
 const SAVED_ROOM_NAME = "47d823c8aa9956f9625dbbd4f258eaef6a773a7ef8c2f0a9d72061dcd849125b";
 
 const types = infer((i) => ({ env: i<CloudflareEnv> }));
-export const io = createIO(
-    platformCloudflare({
-        types,
+export const io = createIO()
+    .platform(
+        platformCloudflare({
+            types,
+            persistence: new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" }),
+        }),
+    )
+    .config({
         authorize: ({ env }) => ({
             secret: PLUV_AUTH_SECRET,
             user: z.object({
@@ -22,9 +27,7 @@ export const io = createIO(
         context: ({ env }) => ({ env }),
         crdt: yjs,
         debug: true,
-        persistence: new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" }),
-    }),
-);
+    });
 
 const router = io.router({
     SEND_MESSAGE: io.procedure

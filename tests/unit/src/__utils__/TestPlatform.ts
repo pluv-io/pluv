@@ -7,7 +7,7 @@ import type {
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
-import type { BaseUser, IOAuthorize } from "@pluv/types";
+import type { BaseUser } from "@pluv/types";
 import crypto from "node:crypto";
 import { TestSocket, TestWebSocket } from "./TestWebSocket";
 
@@ -28,10 +28,8 @@ export type TestPlatformConfig = {
  * `PlatformConfig`, the flags widen to `boolean` and `@pluv/io` infers that listeners such as
  * `onStorageDestroyed` are unsupported.
  */
-export class TestPlatform<
-    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
-> extends AbstractPlatform<
-    TestWebSocket<TAuthorize>,
+export class TestPlatform extends AbstractPlatform<
+    TestWebSocket,
     {},
     {},
     {
@@ -59,7 +57,7 @@ export class TestPlatform<
     private readonly _mode: WebSocketRegistrationMode;
     private readonly _serializedStates: ReadonlyMap<TestSocket, WebSocketSerializedState>;
     // Stable per socket, otherwise presence/quit/ping state is discarded between calls.
-    private readonly _wrapped = new Map<TestSocket, TestWebSocket<TAuthorize>>();
+    private readonly _wrapped = new Map<TestSocket, TestWebSocket>();
 
     constructor(config: TestPlatformConfig = {}) {
         const {
@@ -100,15 +98,12 @@ export class TestPlatform<
         return Promise.resolve(undefined);
     }
 
-    public convertWebSocket(
-        webSocket: TestSocket,
-        config: ConvertWebSocketConfig,
-    ): TestWebSocket<TAuthorize> {
+    public convertWebSocket(webSocket: TestSocket, config: ConvertWebSocketConfig): TestWebSocket {
         const existing = this._wrapped.get(webSocket);
 
         if (existing) return existing;
 
-        const converted = new TestWebSocket<TAuthorize>(webSocket, {
+        const converted = new TestWebSocket(webSocket, {
             persistence: this.persistence,
             platform: this,
             room: config.room,
@@ -123,7 +118,7 @@ export class TestPlatform<
         return converted;
     }
 
-    public getLastPing(webSocket: TestWebSocket<TAuthorize>): number | null {
+    public getLastPing(webSocket: TestWebSocket): number | null {
         return this._lastPings.get(webSocket.webSocket) ?? null;
     }
 
@@ -140,7 +135,7 @@ export class TestPlatform<
     }
 
     public initialize(config: AbstractPlatformConfig<{}>): this {
-        return new TestPlatform<TAuthorize>({
+        return new TestPlatform({
             hibernatedWebSockets: this._hibernatedWebSockets,
             hibernatedUsers: this._hibernatedUsers,
             lastPings: this._lastPings,
@@ -162,7 +157,7 @@ export class TestPlatform<
     }
 
     public setSerializedState(
-        webSocket: TestWebSocket<TAuthorize>,
+        webSocket: TestWebSocket,
         state: WebSocketSerializedState,
     ): WebSocketSerializedState {
         webSocket.state = state;

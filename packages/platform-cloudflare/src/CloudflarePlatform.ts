@@ -6,7 +6,7 @@ import type {
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
 import { PersistenceCloudflareTransactionalStorage } from "@pluv/persistence-cloudflare-transactional-storage";
-import type { IOAuthorize, Json } from "@pluv/types";
+import type { Json } from "@pluv/types";
 import { CloudflareWebSocket } from "./CloudflareWebSocket";
 import { DEFAULT_REGISTRATION_MODE } from "./constants";
 
@@ -26,11 +26,10 @@ export type CloudflarePlatformConfig<
 };
 
 export class CloudflarePlatform<
-    TAuthorize extends IOAuthorize<any, any> = IOAuthorize<any, any>,
     TEnv extends Record<string, any> = {},
     TMeta extends Record<string, Json> = {},
 > extends AbstractPlatform<
-    CloudflareWebSocket<TAuthorize>,
+    CloudflareWebSocket,
     { env: TEnv; request: Request },
     CloudflarePlatformRoomContext<TEnv, TMeta>,
     {
@@ -99,7 +98,7 @@ export class CloudflarePlatform<
         );
     }
 
-    public async acceptWebSocket(webSocket: CloudflareWebSocket<TAuthorize>): Promise<void> {
+    public async acceptWebSocket(webSocket: CloudflareWebSocket): Promise<void> {
         const detachedState = this._getDetachedState();
 
         if (!detachedState) {
@@ -114,17 +113,17 @@ export class CloudflarePlatform<
     public convertWebSocket(
         webSocket: WebSocket,
         config: ConvertWebSocketConfig,
-    ): CloudflareWebSocket<TAuthorize> {
+    ): CloudflareWebSocket {
         const { room } = config;
 
-        return new CloudflareWebSocket<TAuthorize>(webSocket, {
+        return new CloudflareWebSocket(webSocket, {
             persistence: this.persistence,
             platform: this,
             room,
         });
     }
 
-    public getLastPing(webSocket: CloudflareWebSocket<TAuthorize>): number | null {
+    public getLastPing(webSocket: CloudflareWebSocket): number | null {
         const detachedState = this._getDetachedState();
 
         if (!detachedState) return null;
@@ -178,7 +177,7 @@ export class CloudflarePlatform<
                 : new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" })
         ).initialize(roomContext);
 
-        return new CloudflarePlatform<TAuthorize, TEnv, TMeta>({
+        return new CloudflarePlatform<TEnv, TMeta>({
             roomContext,
             mode: this._config.registrationMode,
             persistence,
@@ -199,7 +198,7 @@ export class CloudflarePlatform<
     }
 
     public setSerializedState(
-        webSocket: CloudflareWebSocket<TAuthorize>,
+        webSocket: CloudflareWebSocket,
         state: WebSocketSerializedState,
     ): WebSocketSerializedState {
         const deserialized = webSocket.webSocket.deserializeAttachment() ?? {};

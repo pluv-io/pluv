@@ -30,7 +30,7 @@ import type {
 } from "./types";
 
 export type PluvClientOptions<
-    TIO extends IOLike<any, any, any>,
+    TIO extends IOLike,
     TPresenceSchema extends StandardSchemaV1<any, any> | undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any, any, any>,
     TMetadataSchema extends StandardSchemaV1<any, any> | undefined,
@@ -50,7 +50,7 @@ export type PluvClientOptions<
         : { storage?: "[ERROR]: Must provide crdt to createIO to use storage" });
 
 export type CreateRoomOptions<
-    TIO extends IOLike<any, any, any>,
+    TIO extends IOLike,
     TPresenceSchema extends StandardSchemaV1<any, any> | undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any, any, any>,
     TMetadataSchema extends StandardSchemaV1<any, any> | undefined,
@@ -78,7 +78,7 @@ export type EnterRoomParams<TMetadata extends Record<string, any> = {}> =
     keyof TMetadata extends never ? [] : [WithMetadata<TMetadata>];
 
 export class PluvClient<
-    TIO extends IOLike<any, any, any>,
+    TIO extends IOLike,
     TPresenceSchema extends StandardSchemaV1<any, any> | undefined = undefined,
     TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
     TMetadataSchema extends StandardSchemaV1<any, any> | undefined = undefined,
