@@ -37,7 +37,6 @@ export class PluvProcedure<
         return {
             broadcast: this._broadcast?.bind(this) ?? null,
             input: this._input ?? null,
-            resolver: this._resolver(),
         } as ProcedureLike<TInput, TOutput>["config"];
     }
 
@@ -84,15 +83,5 @@ export class PluvProcedure<
         input: StandardSchemaV1<unknown, TData>,
     ): Omit<PluvProcedure<TDefs, TData, {}, TFilled | "input">, TFilled | "input"> {
         return new PluvProcedure<TDefs, TData, {}, TFilled | "input">({ input });
-    }
-
-    private _resolver(): EventResolver<
-        TDefs["io"],
-        TInput,
-        TOutput,
-        InferClientPresence<TDefs>,
-        InferDocLike<TDefs["storage"]>
-    > {
-        return (data, context) => this._broadcast?.(data, context) as TOutput;
     }
 }

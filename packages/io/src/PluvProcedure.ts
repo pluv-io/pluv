@@ -1,6 +1,6 @@
 import type { EventRecord, JsonObject, ProcedureLike, StandardSchemaV1 } from "@pluv/types";
 import type { IODefs } from "./IODefs";
-import type { EventResolver, EventResolverKind, MergeEventRecords } from "./types";
+import type { EventResolver, MergeEventRecords } from "./types";
 
 export interface PluvProcedureConfig<
     T extends IODefs,
@@ -28,7 +28,6 @@ export class PluvProcedure<
         return {
             broadcast: this._broadcast?.bind(this) ?? null,
             input: this._input ?? null,
-            resolver: this._resolver(),
             self: this._self?.bind(this) ?? null,
             sync: this._sync?.bind(this) ?? null,
         } as ProcedureLike<TInput, TOutput>["config"];
@@ -117,17 +116,5 @@ export class PluvProcedure<
             ...(this.config as any),
             sync: resolver as any,
         });
-    }
-
-    private _resolver(): EventResolver<EventResolverKind, T, TInput, TOutput> {
-        return async (data, context) => {
-            const [broadcast, self, sync] = await Promise.all([
-                this._broadcast?.(data, context),
-                this._self?.(data, context),
-                this._sync?.(data, context),
-            ]);
-
-            return { ...broadcast, ...self, ...sync } as TOutput;
-        };
     }
 }
