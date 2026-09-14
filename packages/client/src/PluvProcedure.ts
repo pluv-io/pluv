@@ -1,32 +1,35 @@
-import type { AbstractCrdtDocFactory, InferDocLike } from "@pluv/crdt";
-import type { EventRecord, IOLike, JsonObject, ProcedureLike, StandardSchemaV1 } from "@pluv/types";
-import type { EventResolver, MergeEventRecords } from "./types";
+import type { InferDocLike } from "@pluv/crdt";
+import type { EventRecord, JsonObject, ProcedureLike, StandardSchemaV1 } from "@pluv/types";
+import type { ClientDefs } from "./ClientDefs";
+import type { EventResolver, InferClientPresence, MergeEventRecords } from "./types";
 
 export interface PluvProcedureConfig<
-    TIO extends IOLike,
-    TInput extends JsonObject,
-    TOutput extends EventRecord<string, any>,
-    TPresence extends Record<string, any>,
-    TCrdt extends AbstractCrdtDocFactory<any, any>,
+    TDefs extends ClientDefs,
+    TInput extends JsonObject = {},
+    TOutput extends EventRecord<string, any> = {},
 > {
-    broadcast?: EventResolver<TIO, TInput, TOutput, TPresence, InferDocLike<TCrdt>> | null;
+    broadcast?: EventResolver<
+        TDefs["io"],
+        TInput,
+        TOutput,
+        InferClientPresence<TDefs>,
+        InferDocLike<TDefs["storage"]>
+    > | null;
     input?: StandardSchemaV1<unknown, TInput>;
 }
 
 export class PluvProcedure<
-    TIO extends IOLike,
-    TInput extends JsonObject,
-    TOutput extends EventRecord<string, any>,
-    TPresence extends Record<string, any>,
-    TCrdt extends AbstractCrdtDocFactory<any, any>,
-    TFilled extends "input" | "broadcast" | "",
+    TDefs extends ClientDefs = ClientDefs,
+    TInput extends JsonObject = {},
+    TOutput extends EventRecord<string, any> = {},
+    TFilled extends "input" | "broadcast" | "" = "",
 > implements ProcedureLike<TInput, TOutput> {
     private _broadcast: EventResolver<
-        TIO,
+        TDefs["io"],
         TInput,
         Partial<TOutput>,
-        TPresence,
-        InferDocLike<TCrdt>
+        InferClientPresence<TDefs>,
+        InferDocLike<TDefs["storage"]>
     > | null = null;
     private _input: StandardSchemaV1<unknown, TInput> | null = null;
 
@@ -38,7 +41,7 @@ export class PluvProcedure<
         } as ProcedureLike<TInput, TOutput>["config"];
     }
 
-    constructor(config: PluvProcedureConfig<TIO, TInput, TOutput, TPresence, TCrdt> = {}) {
+    constructor(config: PluvProcedureConfig<TDefs, TInput, TOutput> = {}) {
         const { broadcast, input } = config;
 
         this._broadcast = broadcast ?? null;
@@ -46,14 +49,18 @@ export class PluvProcedure<
     }
 
     public broadcast<TResult extends EventRecord<string, any> = {}>(
-        resolver: EventResolver<TIO, TInput, TResult, TPresence, InferDocLike<TCrdt>>,
+        resolver: EventResolver<
+            TDefs["io"],
+            TInput,
+            TResult,
+            InferClientPresence<TDefs>,
+            InferDocLike<TDefs["storage"]>
+        >,
     ): Omit<
         PluvProcedure<
-            TIO,
+            TDefs,
             TInput,
             MergeEventRecords<[TOutput, TResult]>,
-            TPresence,
-            TCrdt,
             TFilled | "input" | "broadcast"
         >,
         TFilled | "input" | "broadcast"
@@ -63,11 +70,9 @@ export class PluvProcedure<
         if (!!broadcast) throw new Error("Broadcast was already defined for this procedure");
 
         return new PluvProcedure<
-            TIO,
+            TDefs,
             TInput,
             MergeEventRecords<[TOutput, TResult]>,
-            TPresence,
-            TCrdt,
             TFilled | "input" | "broadcast"
         >({
             ...(this.config as any),
@@ -77,11 +82,17 @@ export class PluvProcedure<
 
     public input<TData extends JsonObject>(
         input: StandardSchemaV1<unknown, TData>,
-    ): Omit<PluvProcedure<TIO, TData, {}, TPresence, TCrdt, TFilled | "input">, TFilled | "input"> {
-        return new PluvProcedure<TIO, TData, {}, TPresence, TCrdt, TFilled | "input">({ input });
+    ): Omit<PluvProcedure<TDefs, TData, {}, TFilled | "input">, TFilled | "input"> {
+        return new PluvProcedure<TDefs, TData, {}, TFilled | "input">({ input });
     }
 
-    private _resolver(): EventResolver<TIO, TInput, TOutput, TPresence, InferDocLike<TCrdt>> {
+    private _resolver(): EventResolver<
+        TDefs["io"],
+        TInput,
+        TOutput,
+        InferClientPresence<TDefs>,
+        InferDocLike<TDefs["storage"]>
+    > {
         return (data, context) => this._broadcast?.(data, context) as TOutput;
     }
 }

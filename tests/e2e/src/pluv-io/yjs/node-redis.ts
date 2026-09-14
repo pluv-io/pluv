@@ -1,12 +1,11 @@
-import { createClient, infer } from "@pluv/client";
+import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node-redis";
 
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-const client = createClient({
+const client = createClient<typeof ioServer>().config({
     authEndpoint: ({ room }) => {
         const [roomName] = room.split("_");
 
@@ -29,7 +28,6 @@ const client = createClient({
     presence: z.object({
         count: z.number(),
     }),
-    types,
     wsEndpoint: ({ room }) => {
         const [roomName, io] = room.split("_");
 

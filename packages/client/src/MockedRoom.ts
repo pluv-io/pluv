@@ -1,19 +1,10 @@
-import type {
-    AbstractCrdtDocFactory,
-    InferDoc,
-    InferDocLike,
-    InferJson,
-    InferStorage,
-} from "@pluv/crdt";
+import type { InferDoc, InferDocLike, InferJson, InferStorage } from "@pluv/crdt";
 import type {
     BroadcastProxy,
     CrdtDocLike,
     EventNotifierSubscriptionCallback,
     EventProxy,
-    IOLike,
     Id,
-    InferIOInput,
-    InferIOOutput,
     MergeEvents,
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
@@ -31,12 +22,12 @@ import type {
     WebSocketState,
 } from "@pluv/types";
 import { ConnectionState, StorageState } from "@pluv/types";
+import type { ClientDefs } from "./ClientDefs";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
 import { EventNotifier } from "./EventNotifier";
 import { PluvProcedure } from "./PluvProcedure";
-import type { PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import { StateNotifier } from "./StateNotifier";
 import type { UsersManagerConfig } from "./UsersManager";
@@ -46,50 +37,47 @@ import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import type {
     EventResolver,
     EventResolverContext,
+    InferClientInput,
+    InferClientOutput,
+    InferClientPresence,
     InternalSubscriptions,
     PluvClientLimits,
 } from "./types";
 import { parsePluvSchema } from "./utils";
 
-export type MockedRoomEvents<TIO extends IOLike> = Partial<{
-    [P in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[P]>) => Partial<InferIOOutput<TIO>>;
+export type MockedRoomEvents<TDefs extends ClientDefs = ClientDefs> = Partial<{
+    [P in keyof InferClientInput<TDefs>]: (
+        data: Id<InferClientInput<TDefs>[P]>,
+    ) => Partial<InferClientOutput<TDefs>>;
 }>;
 
-export type MockedRoomConfig<
-    TIO extends IOLike,
-    TPresence extends Record<string, any>,
-    TCrdt extends AbstractCrdtDocFactory<any, any>,
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>>,
-> = {
-    events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
+export type MockedRoomConfig<TDefs extends ClientDefs = ClientDefs> = {
+    events?: MockedRoomEvents<TDefs>;
     limits?: PluvClientLimits;
-    router?: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
-} & Pick<CrdtManagerOptions<TCrdt>, "initialStorage" | "storage"> &
-    Omit<UsersManagerConfig<TPresence>, "limits">;
+    router?: PluvRouter<TDefs>;
+} & Pick<CrdtManagerOptions<TDefs["storage"]>, "initialStorage" | "storage"> &
+    Omit<UsersManagerConfig<InferClientPresence<TDefs>>, "limits">;
 
-export class MockedRoom<
-    TIO extends IOLike,
-    TPresence extends Record<string, any>,
-    TCrdt extends AbstractCrdtDocFactory<any, any>,
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, InferStorage<TCrdt>>,
-> implements RoomLike<
-    TIO,
-    InferDoc<TCrdt>,
-    TPresence,
-    InferStorage<TCrdt>,
-    TEvents,
-    InferJson<TCrdt>
+export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike<
+    TDefs["io"],
+    InferDoc<TDefs["storage"]>,
+    InferClientPresence<TDefs>,
+    InferStorage<TDefs["storage"]>,
+    TDefs["events"],
+    InferJson<TDefs["storage"]>
 > {
     public readonly id: string;
 
-    private readonly _crdtManager: CrdtManager<TCrdt>;
-    private readonly _crdtNotifier = new CrdtNotifier<InferJson<TCrdt>>();
-    private readonly _eventNotifier = new EventNotifier<MergeEvents<TEvents, TIO>>();
-    private readonly _events?: MockedRoomEvents<MergeEvents<TEvents, TIO>>;
+    private readonly _crdtManager: CrdtManager<TDefs["storage"]>;
+    private readonly _crdtNotifier = new CrdtNotifier<InferJson<TDefs["storage"]>>();
+    private readonly _eventNotifier = new EventNotifier<
+        MergeEvents<TDefs["events"], TDefs["io"]>
+    >();
+    private readonly _events?: MockedRoomEvents<TDefs>;
     private readonly _limits: PluvClientLimits;
-    private readonly _usersNotifier = new UsersNotifier<TIO, TPresence>();
-    private readonly _router: PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>;
-    private _state: WebSocketState<TIO> = {
+    private readonly _usersNotifier = new UsersNotifier<TDefs["io"], InferClientPresence<TDefs>>();
+    private readonly _router: PluvRouter<TDefs>;
+    private _state: WebSocketState<TDefs["io"]> = {
         authorization: {
             token: null,
             user: null,
@@ -104,13 +92,13 @@ export class MockedRoom<
         },
         webSocket: null,
     };
-    private readonly _stateNotifier = new StateNotifier<TIO, TPresence>();
+    private readonly _stateNotifier = new StateNotifier<TDefs["io"], InferClientPresence<TDefs>>();
     private readonly _subscriptions: InternalSubscriptions = {
         observeCrdt: null,
     };
-    private readonly _usersManager: UsersManager<TIO, TPresence>;
+    private readonly _usersManager: UsersManager<TDefs["io"], InferClientPresence<TDefs>>;
 
-    constructor(room: string, options: MockedRoomConfig<TIO, TPresence, TCrdt, TEvents>) {
+    constructor(room: string, options: MockedRoomConfig<TDefs>) {
         const { events, initialPresence, initialStorage, limits, presence, router, storage } =
             options;
 
@@ -121,16 +109,14 @@ export class MockedRoom<
             presenceMaxSize: MAX_PRESENCE_SIZE_BYTES,
             ...limits,
         };
-        this._router =
-            router ??
-            (new PluvRouter({}) as PluvRouter<TIO, TPresence, InferStorage<TCrdt>, TEvents>);
-        this._usersManager = new UsersManager<TIO, TPresence>({
+        this._router = router ?? (new PluvRouter({}) as PluvRouter<TDefs>);
+        this._usersManager = new UsersManager<TDefs["io"], InferClientPresence<TDefs>>({
             initialPresence,
             limits: this._limits,
             presence,
         });
 
-        this._crdtManager = new CrdtManager<TCrdt>({
+        this._crdtManager = new CrdtManager<TDefs["storage"]>({
             initialStorage,
             storage,
         });
@@ -146,23 +132,16 @@ export class MockedRoom<
     }
 
     public broadcast = new Proxy(
-        async <TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
+        async <TEvent extends keyof InferClientInput<TDefs>>(
             event: TEvent,
-            data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
+            data: Id<InferClientInput<TDefs>[TEvent]>,
         ): Promise<void> => {
             if (!this._state.webSocket) return;
             if (this._state.connection.state !== ConnectionState.Open) return;
 
             const type = event.toString();
 
-            const procedure = this._router._defs.events[type] as PluvProcedure<
-                TIO,
-                any,
-                any,
-                TPresence,
-                TCrdt,
-                ""
-            > | null;
+            const procedure = this._router._defs.events[type] as PluvProcedure<TDefs> | null;
 
             if (!procedure?.config.broadcast) {
                 this._simulateEvent(type as TEvent, data);
@@ -177,7 +156,11 @@ export class MockedRoom<
             const parsed = procedure.config.input
                 ? parsePluvSchema(procedure.config.input, data)
                 : data;
-            const context: EventResolverContext<TIO, TPresence, InferDocLike<TCrdt>> = {
+            const context: EventResolverContext<
+                TDefs["io"],
+                InferClientPresence<TDefs>,
+                InferDocLike<TDefs["storage"]>
+            > = {
                 doc: this._crdtManager.doc,
                 others: this._usersManager.getOthers(),
                 room: this.id,
@@ -186,11 +169,11 @@ export class MockedRoom<
 
             const output = await (
                 procedure.config.broadcast as EventResolver<
-                    TIO,
+                    TDefs["io"],
                     any,
                     any,
-                    TPresence,
-                    InferDocLike<TCrdt>
+                    InferClientPresence<TDefs>,
+                    InferDocLike<TDefs["storage"]>
                 >
             )(parsed, context);
 
@@ -200,14 +183,12 @@ export class MockedRoom<
         },
         {
             get(fn, prop) {
-                return async (
-                    data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[any]>,
-                ): Promise<void> => {
+                return async (data: Id<InferClientInput<TDefs>[any]>): Promise<void> => {
                     return await fn(prop, data);
                 };
             },
         },
-    ) as BroadcastProxy<TIO, TEvents>;
+    ) as BroadcastProxy<TDefs["io"], TDefs["events"]>;
 
     public canRedo = (): boolean => {
         return this._crdtManager.doc.canRedo();
@@ -222,29 +203,35 @@ export class MockedRoom<
         return Object.freeze(JSON.parse(JSON.stringify(this._state.connection)));
     };
 
-    public getDoc(): CrdtDocLike<InferDoc<TCrdt>, InferStorage<TCrdt>, InferJson<TCrdt>> {
+    public getDoc(): CrdtDocLike<
+        InferDoc<TDefs["storage"]>,
+        InferStorage<TDefs["storage"]>,
+        InferJson<TDefs["storage"]>
+    > {
         return this._crdtManager.doc;
     }
 
-    public getMyPresence = (): TPresence => {
+    public getMyPresence = (): InferClientPresence<TDefs> => {
         return this._usersManager.myPresence;
     };
 
-    public getMyself = (): Id<UserInfo<TIO, TPresence>> | null => {
+    public getMyself = (): Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>> | null => {
         return this._usersManager.myself;
     };
 
-    public getOther = (connectionId: string): Id<UserInfo<TIO, TPresence>> | null => {
+    public getOther = (
+        connectionId: string,
+    ): Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>> | null => {
         return this._usersManager.getOther(connectionId);
     };
 
-    public getOthers = (): readonly Id<UserInfo<TIO, TPresence>>[] => {
+    public getOthers = (): readonly Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>>[] => {
         return this._usersManager.getOthers();
     };
 
-    public getStorage = <TKey extends keyof InferStorage<TCrdt>>(
+    public getStorage = <TKey extends keyof InferStorage<TDefs["storage"]>>(
         type: TKey,
-    ): InferStorage<TCrdt>[TKey] | null => {
+    ): InferStorage<TDefs["storage"]>[TKey] | null => {
         const sharedType = this._crdtManager.get(type);
 
         if (typeof sharedType === "undefined") return null;
@@ -252,11 +239,11 @@ export class MockedRoom<
         return sharedType;
     };
 
-    public getStorageJson(): InferJson<TCrdt> | null;
-    public getStorageJson<TKey extends keyof InferJson<TCrdt>>(
+    public getStorageJson(): InferJson<TDefs["storage"]> | null;
+    public getStorageJson<TKey extends keyof InferJson<TDefs["storage"]>>(
         type: TKey,
-    ): InferJson<TCrdt>[TKey] | null;
-    public getStorageJson<TKey extends keyof InferJson<TCrdt>>(type?: TKey) {
+    ): InferJson<TDefs["storage"]>[TKey] | null;
+    public getStorageJson<TKey extends keyof InferJson<TDefs["storage"]>>(type?: TKey) {
         if (this._state.connection.id === null) return null;
         if (typeof type === "undefined") return this._crdtManager.doc.toJson();
 
@@ -271,45 +258,74 @@ export class MockedRoom<
         this._crdtManager.doc.redo();
     };
 
-    public storageRoot = (fn: (value: InferJson<TCrdt>) => void): (() => void) => {
+    public storageRoot = (fn: (value: InferJson<TDefs["storage"]>) => void): (() => void) => {
         return this._crdtNotifier.subcribeRoot(fn);
     };
 
     public subscribe = new Proxy(
-        <TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
+        <TSubject extends keyof StateNotifierSubjects<TDefs["io"], InferClientPresence<TDefs>>>(
             name: TSubject,
-            callback: SubscriptionCallback<TIO, TPresence, TSubject>,
+            callback: SubscriptionCallback<TDefs["io"], InferClientPresence<TDefs>, TSubject>,
         ): (() => void) => {
             return this._stateNotifier.subscribe(name, callback);
         },
         {
             get: (fn, prop) => {
                 if (prop === "connection") {
-                    return (callback: SubscriptionCallback<TIO, TPresence, "connection">) => {
+                    return (
+                        callback: SubscriptionCallback<
+                            TDefs["io"],
+                            InferClientPresence<TDefs>,
+                            "connection"
+                        >,
+                    ) => {
                         return fn("connection", callback);
                     };
                 }
 
                 if (prop === "myPresence") {
-                    return (callback: SubscriptionCallback<TIO, TPresence, "my-presence">) => {
+                    return (
+                        callback: SubscriptionCallback<
+                            TDefs["io"],
+                            InferClientPresence<TDefs>,
+                            "my-presence"
+                        >,
+                    ) => {
                         return fn("my-presence", callback);
                     };
                 }
 
                 if (prop === "myself") {
-                    return (callback: SubscriptionCallback<TIO, TPresence, "myself">) => {
+                    return (
+                        callback: SubscriptionCallback<
+                            TDefs["io"],
+                            InferClientPresence<TDefs>,
+                            "myself"
+                        >,
+                    ) => {
                         return fn("myself", callback);
                     };
                 }
 
                 if (prop === "others") {
-                    return (callback: OthersSubscriptionCallback<TIO, TPresence>) => {
+                    return (
+                        callback: OthersSubscriptionCallback<
+                            TDefs["io"],
+                            InferClientPresence<TDefs>
+                        >,
+                    ) => {
                         return this._usersNotifier.subscribeOthers(callback);
                     };
                 }
 
                 if (prop === "storageLoaded") {
-                    return (callback: SubscriptionCallback<TIO, TPresence, "storage-loaded">) => {
+                    return (
+                        callback: SubscriptionCallback<
+                            TDefs["io"],
+                            InferClientPresence<TDefs>,
+                            "storage-loaded"
+                        >,
+                    ) => {
                         return fn("storage-loaded", callback);
                     };
                 }
@@ -321,9 +337,17 @@ export class MockedRoom<
                 throw new Error(`Unknown subscription: ${String(prop)}`);
             },
         },
-    ) as SubscribeProxy<TIO, TPresence, InferJson<TCrdt>, TEvents>;
+    ) as SubscribeProxy<
+        TDefs["io"],
+        InferClientPresence<TDefs>,
+        InferJson<TDefs["storage"]>,
+        TDefs["events"]
+    >;
 
-    public transact = (fn: (storage: InferStorage<TCrdt>) => void, origin?: string): void => {
+    public transact = (
+        fn: (storage: InferStorage<TDefs["storage"]>) => void,
+        origin?: string,
+    ): void => {
         const _origin = origin ?? this._state.connection.id;
         const crdtManager = this._crdtManager;
 
@@ -348,7 +372,9 @@ export class MockedRoom<
         this._crdtManager.doc.undo();
     };
 
-    public updateMyPresence = (presence: UpdateMyPresenceAction<TPresence>): void => {
+    public updateMyPresence = (
+        presence: UpdateMyPresenceAction<InferClientPresence<TDefs>>,
+    ): void => {
         const newPresence =
             typeof presence === "function" ? presence(this.getMyPresence()) : presence;
 
@@ -363,18 +389,24 @@ export class MockedRoom<
 
     private _event = new Proxy(
         // oxlint-disable-next-line typescript/no-unnecessary-type-parameters
-        <TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
+        <TEvent extends keyof InferClientOutput<TDefs>>(
             event: TEvent,
-            callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
+            callback: EventNotifierSubscriptionCallback<
+                MergeEvents<TDefs["events"], TDefs["io"]>,
+                any
+            >,
         ): (() => void) => this._eventNotifier.subscribe(event, callback),
         {
             get(fn, prop) {
                 return (
-                    callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, any>,
+                    callback: EventNotifierSubscriptionCallback<
+                        MergeEvents<TDefs["events"], TDefs["io"]>,
+                        any
+                    >,
                 ): (() => void) => fn(prop as any, callback);
             },
         },
-    ) as EventProxy<TIO, TEvents>;
+    ) as EventProxy<TDefs["io"], TDefs["events"]>;
 
     private _observeCrdt(): void {
         this._subscriptions.observeCrdt?.();
@@ -389,17 +421,20 @@ export class MockedRoom<
 
             const sharedTypes = this._crdtManager.doc.get();
 
-            const storageRoot = Object.keys(sharedTypes).reduce((acc, prop) => {
-                if (!this._crdtManager) return acc;
+            const storageRoot = Object.keys(sharedTypes).reduce(
+                (acc, prop) => {
+                    if (!this._crdtManager) return acc;
 
-                const serialized = this._crdtManager.doc.toJson(prop);
+                    const serialized = this._crdtManager.doc.toJson(prop);
 
-                this._crdtNotifier.subject(prop).next(serialized);
+                    this._crdtNotifier.subject(prop).next(serialized);
 
-                acc[prop as keyof InferStorage<TCrdt>] = serialized;
+                    acc[prop as keyof InferStorage<TDefs["storage"]>] = serialized;
 
-                return acc;
-            }, {} as InferJson<TCrdt>);
+                    return acc;
+                },
+                {} as InferJson<TDefs["storage"]>,
+            );
 
             this._crdtNotifier.rootSubject.next(storageRoot);
         });
@@ -409,7 +444,7 @@ export class MockedRoom<
 
     private _other = (
         connectionId: string,
-        callback: OtherSubscriptionCallback<TIO, TPresence>,
+        callback: OtherSubscriptionCallback<TDefs["io"], InferClientPresence<TDefs>>,
     ): (() => void) => {
         const clientId = this._usersManager.getClientId(connectionId);
 
@@ -418,9 +453,9 @@ export class MockedRoom<
         return this._usersNotifier.subscribeOther(clientId, callback);
     };
 
-    private _simulateEvent<TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
+    private _simulateEvent<TEvent extends keyof InferClientInput<TDefs>>(
         event: TEvent,
-        data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
+        data: Id<InferClientInput<TDefs>[TEvent]>,
     ) {
         if (!this._events) return;
 
@@ -432,7 +467,7 @@ export class MockedRoom<
         const result = resolver(data);
 
         Object.keys(result).forEach((outputType) => {
-            const _type = outputType as keyof Partial<InferIOOutput<TIO>>;
+            const _type = outputType as keyof Partial<InferClientOutput<TDefs>>;
             const outputData = result[_type] as any;
 
             if (!outputData) return;
@@ -442,13 +477,13 @@ export class MockedRoom<
     }
 
     #_storage = new Proxy(
-        <TKey extends keyof InferJson<TCrdt>>(
+        <TKey extends keyof InferJson<TDefs["storage"]>>(
             key: TKey,
-            callback: StorageSubscriptionCallback<InferJson<TCrdt>, TKey>,
+            callback: StorageSubscriptionCallback<InferJson<TDefs["storage"]>, TKey>,
         ): (() => void) => this._crdtNotifier.subscribe(key, callback),
         {
             get: (fn, prop) => {
-                type _Json = InferJson<TCrdt>;
+                type _Json = InferJson<TDefs["storage"]>;
 
                 if (!!prop) {
                     return (callback: StorageRootSubscriptionCallback<_Json>) => {
@@ -457,9 +492,9 @@ export class MockedRoom<
                 }
 
                 return (callback: StorageSubscriptionCallback<_Json, keyof _Json>) => {
-                    return fn(prop as keyof InferJson<TCrdt>, callback);
+                    return fn(prop as keyof InferJson<TDefs["storage"]>, callback);
                 };
             },
         },
-    ) as StorageProxy<InferJson<TCrdt>>;
+    ) as StorageProxy<InferJson<TDefs["storage"]>>;
 }

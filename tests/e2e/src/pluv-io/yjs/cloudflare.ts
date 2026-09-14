@@ -1,12 +1,11 @@
-import { createClient, infer } from "@pluv/client";
+import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
 import type { ioServerSqlite } from "../../server/yjs/cloudflare";
 
-const types = infer((i) => ({ io: i<typeof ioServerSqlite> }));
-const client = createClient({
+const client = createClient<typeof ioServerSqlite>().config({
     authEndpoint: ({ metadata, room }) => {
         const url = new URL(`${metadata.authEndpoint}/api/pluv/authorize`);
 
@@ -44,7 +43,6 @@ const client = createClient({
         count: z.number(),
         lexical: z.any().default({}),
     }),
-    types,
     wsEndpoint: ({ room }) => {
         return `ws://localhost:3101/api/pluv/room/${room}`;
     },

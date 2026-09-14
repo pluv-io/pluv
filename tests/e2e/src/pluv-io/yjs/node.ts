@@ -1,13 +1,12 @@
 import { addonIndexedDB } from "@pluv/addon-indexeddb";
-import { createClient, infer } from "@pluv/client";
+import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node";
 
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-const io = createClient({
+const io = createClient<typeof ioServer>().config({
     authEndpoint: ({ room }) => {
         return `http://localhost:3102/api/pluv/authorize?room=${room}`;
     },
@@ -31,7 +30,6 @@ const io = createClient({
         blocknote: z.any().default({}),
         count: z.number(),
     }),
-    types,
     wsEndpoint: ({ room }) => {
         return `ws://localhost:3102/api/pluv/room/${room}`;
     },
