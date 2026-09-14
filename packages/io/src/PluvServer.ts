@@ -50,6 +50,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
 
     private readonly _config: NonNilProps<PluvServerConfig<T>>;
     private readonly _docFactory: AbstractCrdtDocFactory<any, any>;
+    private readonly _listeners: BasePluvIOListeners<T>;
 
     public get fetch(): (...args: any[]) => Promise<any> {
         return (...args: any[]): Promise<any> => {
@@ -80,12 +81,10 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
     }
 
     private get _baseRouter(): PluvRouter<SetKey<T, "events", {}>> {
-        const listeners = this._getListeners();
-
         return createBaseRouter<T>({
             limits: this._config.limits,
             logDebug: (...data) => this._logDebug(...data),
-            onStorageUpdated: (event) => listeners.onStorageUpdated(event),
+            onStorageUpdated: (event) => this._listeners.onStorageUpdated(event),
         }) as PluvRouter<SetKey<T, "events", {}>>;
     }
 
@@ -115,14 +114,14 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
         } = options as Partial<BasePluvIOListeners<T>>;
 
         this._docFactory = this._config.crdt.doc(() => ({}));
-        (this as any)._listeners = {
+        this._listeners = {
             onRoomDestroyed: (event) => onRoomDestroyed?.(event),
             onRoomMessage: (event) => onRoomMessage?.(event),
             onStorageDestroyed: (event) => onStorageDestroyed?.(event),
             onStorageUpdated: (event) => onStorageUpdated?.(event),
             onUserConnected: (event) => onUserConnected?.(event),
             onUserDisconnected: (event) => onUserDisconnected?.(event),
-        } as BasePluvIOListeners<T>;
+        };
     }
 
     public createRoom(room: string, ...options: CreateRoomOptions<T>): IORoom<T> {
@@ -143,7 +142,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             throw new Error("Unsupported room name");
 
         const roomContext = platformRoomContext as InferRoomContextType<T["platform"]>;
-        const listeners = this._getListeners();
+        const listeners = this._listeners;
         const logDebug = this._logDebug.bind(this);
 
         const newRoom = new IORoom<T>(room, {
@@ -203,10 +202,6 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
 
         return getInitialStorage(...args);
     };
-
-    private _getListeners(): BasePluvIOListeners<T> {
-        return (this as any)._listeners;
-    }
 
     private _logDebug(...data: any[]): void {
         if (this._config.debug) console.log(...data);

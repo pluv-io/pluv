@@ -112,7 +112,8 @@ export class PluvIO<T extends IODefs = IODefs> {
         if (!!this._limits.userIdMaxLength && user.id.length > this._limits.userIdMaxLength) {
             throw new Error(oneLine`
                 createToken was called with a long user id. User ID must be at
-                most 128 characters. Current length: ${user.id.length.toLocaleString()}
+                most ${this._limits.userIdMaxLength.toLocaleString()} characters.
+                Current length: ${user.id.length.toLocaleString()}
             `);
         }
 
@@ -120,8 +121,9 @@ export class PluvIO<T extends IODefs = IODefs> {
 
         if (!!this._limits.userMaxSize && bytes > this._limits.userMaxSize) {
             throw new Error(oneLine`
-                createToken called with large payload. User must be at most 512
-                bytes. Current size: ${bytes.toLocaleString()} bytes
+                createToken called with large payload. User must be at most
+                ${this._limits.userMaxSize.toLocaleString()} bytes. Current size:
+                ${bytes.toLocaleString()} bytes
             `);
         }
 

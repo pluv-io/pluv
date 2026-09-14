@@ -120,7 +120,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     private readonly _roomContext: InferRoomContextType<T["platform"]>;
     private readonly _router: PluvRouter<T>;
     private readonly _sessions = new Map<[sessionId: string][0], AbstractWebSocket>();
-    private readonly _userSessionss = new Map<[userId: string][0], Set<[sessionId: string][0]>>();
+    private readonly _userSessions = new Map<[userId: string][0], Set<[sessionId: string][0]>>();
 
     private _storageSeeded: boolean = false;
 
@@ -414,10 +414,10 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     }
 
     private _addUserSession(userId: string, sessionId: string): Set<[sessionId: string][0]> {
-        const set = this._userSessionss.get(userId) ?? new Set<string>();
+        const set = this._userSessions.get(userId) ?? new Set<string>();
         const updated = set.add(sessionId);
 
-        this._userSessionss.set(userId, updated);
+        this._userSessions.set(userId, updated);
 
         return updated;
     }
@@ -684,7 +684,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         timer: number | null;
         presence: JsonObject | null;
     } {
-        const sessionIds = Array.from(this._userSessionss.get(userId)?.values() ?? []);
+        const sessionIds = Array.from(this._userSessions.get(userId)?.values() ?? []);
 
         if (!sessionIds.length) return { timer: null, presence: null };
 
@@ -1071,7 +1071,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         const user = wsSession.user;
 
         const sessionIds = user
-            ? new Set<string>([...(this._userSessionss.get(user.id) ?? []), sessionId])
+            ? new Set<string>([...(this._userSessions.get(user.id) ?? []), sessionId])
             : new Set([sessionId]);
 
         sessionIds.forEach((sId) => {
@@ -1097,7 +1097,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         userId: string,
         sessionId: string,
     ): Set<[sessionId: string][0]> | null {
-        const set = this._userSessionss.get(userId);
+        const set = this._userSessions.get(userId);
 
         if (!set) return null;
 
@@ -1105,7 +1105,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
 
         if (!!set.size) return set;
 
-        this._userSessionss.delete(userId);
+        this._userSessions.delete(userId);
 
         return set;
     }

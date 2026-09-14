@@ -5,6 +5,7 @@ import type { JWTEncodeParams } from "./authorize";
 import { Persistence } from "./Persistence";
 import { PubSub } from "./PubSub";
 import type { PlatformConfig, ResolvedPluvIOAuthorize, WebSocketSerializedState } from "./types";
+import { oneLine } from "./utils";
 
 export type InferPlatformWebSocketType<TPlatform extends AbstractPlatform> =
     TPlatform extends AbstractPlatform<infer IAbstractWebSocket> ? IAbstractWebSocket : never;
@@ -103,7 +104,13 @@ export abstract class AbstractPlatform<
     public validateConfig(config: any): void {}
 
     protected _initialize(): typeof this {
-        if (this._initialized) throw new Error("Platform is already initialized");
+        if (this._initialized) {
+            throw new Error(oneLine`
+                Platform is already initialized. The \`platform\` factory passed to
+                \`createIO().platform(...)\` must return a new platform instance each
+                time it is called (e.g. \`platformNode()\`), not reuse one.
+            `);
+        }
 
         this._initialized = true;
 
