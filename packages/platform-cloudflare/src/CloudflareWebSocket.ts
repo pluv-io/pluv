@@ -8,13 +8,6 @@ import type {
 import { AbstractWebSocket } from "@pluv/io";
 import type { InferIOAuthorizeUser, IOAuthorize, JsonObject } from "@pluv/types";
 
-export interface CloudflareWebSocketEventMap {
-    close: CloseEvent;
-    message: MessageEvent;
-    open: Event;
-    error: ErrorEvent;
-}
-
 export type CloudflareWebSocketConfig = AbstractWebSocketConfig;
 
 export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
@@ -127,8 +120,10 @@ export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
     public addEventListener<TType extends keyof AbstractEventMap>(
         type: TType,
         handler: AbstractListener<TType>,
-    ) {
-        this.webSocket.addEventListener(type, handler as any);
+    ): void {
+        throw new Error(
+            "Cloudflare WebSockets use hibernation handlers (webSocketMessage/Close/Error), not addEventListener",
+        );
     }
 
     public close(code?: number, reason?: string): void {
