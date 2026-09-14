@@ -5,7 +5,7 @@ description: "Self-host pluv.io on Cloudflare Workers with Durable Objects and W
 
 `@pluv/io` is designed to be self-hosted on the [Cloudflare Workers](https://workers.cloudflare.com/) runtime via [Durable Objects](https://developers.cloudflare.com/workers/runtime-apis/durable-objects/).
 
-While `@pluv/io` does support [key-value storage-backed Durable Objects](https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/#create-durable-object-class-with-key-value-storage) and the [standard WebSocket API](https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-standard-api), this documentation will walkthrough the recommended way to setup `@pluv/io` - using [WebSocket hibernation](https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-hibernation-api) on [SQLite-backed Durable Objects](https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/#create-sqlite-backed-durable-object-class).
+This documentation walks through setting up `@pluv/io` with [WebSocket hibernation](https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-hibernation-api) on [SQLite-backed Durable Objects](https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/#create-sqlite-backed-durable-object-class). [Key-value storage-backed Durable Objects](https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/#create-durable-object-class-with-key-value-storage) are also supported via `@pluv/persistence-cloudflare-transactional-storage`.
 
 ## Installation
 
@@ -63,14 +63,6 @@ export const io = createIO()
     platformCloudflare({
       // Provide the `env` type
       types,
-      /**
-       * Optional: Specify whether WebSocket event listeners should be
-       * "attached" to or "detached" from the WebSocket upon registration.
-       *
-       * Event listeners should be "detached" to use Cloudflare's WebSocket
-       * hibernation.
-       */
-      mode: "detached", // @default = "detached"
     }),
   )
   .config({
@@ -142,7 +134,6 @@ export class RoomDurableObject extends DurableObject<Env> {
     this._room = ioServer.createRoom(state.id.toString(), { env, state });
   }
 
-  // Only needed if using "detached" mode (i.e. hibernation)
   public async webSocketClose(
     ws: WebSocket,
     code: number,
@@ -153,7 +144,6 @@ export class RoomDurableObject extends DurableObject<Env> {
     await handler({ code, reason });
   }
 
-  // Only needed if using "detached" mode (i.e. hibernation)
   public async webSocketError(
     ws: WebSocket,
     error: unknown
@@ -164,7 +154,6 @@ export class RoomDurableObject extends DurableObject<Env> {
     await handler({ error: eventError, message: eventError.message });
   }
 
-  // Only needed if using "detached" mode (i.e. hibernation)
   public async webSocketMessage(
     ws: WebSocket,
     message: string | ArrayBuffer
