@@ -1,5 +1,5 @@
 ---
-description: Conventional commit message format matching this repo’s history and Commitizen setup
+description: Conventional commit and branch naming matching this repo’s history and Commitizen setup
 alwaysApply: true
 ---
 
@@ -18,6 +18,43 @@ type(optional-scope): short summary
 - **summary**: imperative, concise; start lowercase; no trailing period; focus on *why/what changed for the project*, not a file list
 - Body (optional): one blank line after summary; wrap sensibly; explain motivation when useful
 - Do **not** append `(#123)` yourself — GitHub adds that on merge when relevant
+
+## Branch names
+
+Mirror commit style: conventional **type**, optional **scope** in parentheses (same slugs as commits), then `/` and a short kebab-case summary:
+
+```
+type/short-kebab-summary
+type(scope)/short-kebab-summary
+```
+
+- Prefer the type that will match the eventual commit/PR (`fix/…`, `feat/…`, `refactor/…`, `chore/…`, `docs/…`, etc.)
+- **scope** (optional): package or area without `@pluv/` — e.g. `io`, `client`, `platform-pluv`, `persistence-cloudflare-transactional-storage`
+- When one package is clearly primary, use `type(scope)/…`; when cross-cutting or spanning multiple packages, omit the scope
+- Keep the summary concise and lowercase; use hyphens, not spaces or underscores
+- Do not use `WIP`, ticket-only names, `@pluv/` in the scope, invented area scopes, or non-conventional prefixes
+
+```text
+# ✅ Cross-cutting / multiple packages
+fix/storage-destroyed-after-initial-storage
+chore/bump-deps
+refactor/drop-cloudflare-kv-persistence-mode
+
+# ✅ One package
+fix(io)/preserve-hibernated-sockets
+fix(client)/get-storage-null-while-unavailable
+feat(platform-pluv)/custom-fetch
+refactor(persistence-cloudflare-transactional-storage)/drop-kv-mode
+
+# ❌
+drop-cloudflare-kv-persistence-mode
+refactor(@pluv/io)/drop-kv
+refactor(cloudflare)/drop-kv-persistence-mode
+fix/io-preserve-hibernated-sockets
+Fix/storage-bug
+WIP
+my-branch
+```
 
 ## Types this repo uses most
 
@@ -63,4 +100,4 @@ fix(@pluv/io): ...
 fix: surface errors to clients as $error (#1338)
 ```
 
-When committing via the agent: use a HEREDOC message that matches this format; prefer `fix`/`feat`/`chore` with an optional scope when the change is clearly package-scoped.
+When committing via the agent: use a HEREDOC message that matches this format; prefer `fix`/`feat`/`chore` with an optional scope when the change is clearly package-scoped. When creating branches, use `type/short-kebab-summary` or `type(scope)/short-kebab-summary`.
