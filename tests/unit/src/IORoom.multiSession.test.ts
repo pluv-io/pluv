@@ -61,7 +61,7 @@ describe("IORoom multi-session presence", () => {
             platform: { mode: "detached" },
         });
         const server = io.server();
-        const room = server.createRoom(roomId) as Room;
+        const room = server.createRoom(roomId);
 
         return { io, room };
     };

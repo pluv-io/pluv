@@ -43,7 +43,7 @@ describe("IORoom close", () => {
                 disconnected.push(user?.id ?? "missing");
             },
         });
-        const room = server.createRoom("error-then-close") as Room;
+        const room = server.createRoom("error-then-close");
         const first = new TestSocket("session-1");
         const observer = new TestSocket("session-2");
 
@@ -77,7 +77,7 @@ describe("IORoom close", () => {
                 storageDestroyed.push(room);
             },
         });
-        const room = server.createRoom("partial-teardown") as Room;
+        const room = server.createRoom("partial-teardown");
         const first = new TestSocket("session-1");
         const second = new TestSocket("session-2");
 
@@ -106,7 +106,7 @@ describe("IORoom close", () => {
                 roomDestroyed.push(room);
             },
         });
-        const room = server.createRoom("evict-one") as Room;
+        const room = server.createRoom("evict-one");
         const first = new TestSocket("session-1");
         const second = new TestSocket("session-2");
 

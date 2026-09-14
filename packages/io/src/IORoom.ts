@@ -31,7 +31,6 @@ import { AbstractWebSocket } from "./AbstractWebSocket";
 import type { IODefs, IOLikeFromDefs } from "./IODefs";
 import type { PluvRouter } from "./PluvRouter";
 import { RoomSessions } from "./RoomSessions";
-import type { PatchPresenceParams } from "./RoomSessions";
 import { RoomStorage } from "./RoomStorage";
 import { authorize } from "./authorize";
 import { GARBAGE_COLLECT_INTERVAL_MS } from "./constants";
@@ -47,6 +46,7 @@ import type {
     PluvContext,
     ResolvedPluvIOAuthorize,
     SendMessageOptions,
+    WebSocketSession,
     WebSocketType,
 } from "./types";
 import { oneLine, parsePluvSchema } from "./utils";
@@ -235,14 +235,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         if (!this._uninitialize) return this._storage.doc;
 
         return this._uninitialize.then(() => this._storage.doc);
-    }
-
-    private get _storageSeeded(): boolean {
-        return this._storage.storageSeeded;
-    }
-
-    private set _storageSeeded(value: boolean) {
-        this._storage.storageSeeded = value;
     }
 
     /**
@@ -602,6 +594,46 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         return await Promise.resolve(context);
     }
 
+    private _createEventResolverContext<TKind extends EventResolverKind>(params: {
+        context: T["context"];
+        doc: CrdtDocLike<any, any>;
+        session: TKind extends "sync" ? WebSocketSession<T> | null : WebSocketSession<T>;
+        sessions: readonly WebSocketSession<T>[];
+    }): EventResolverContext<TKind, T> {
+        const { context, doc, session, sessions } = params;
+        const roomSessions = this._sessions;
+        const storage = this._storage;
+
+        return {
+            context,
+            doc,
+            garbageCollect: async () => {
+                await this.garbageCollect();
+            },
+            platform: this._platform,
+            get presence() {
+                return (session?.presence ?? null) as JsonObject | null;
+            },
+            set presence(presence: JsonObject | null) {
+                const sessionId = this.session?.id;
+
+                if (!sessionId) return;
+
+                roomSessions.setPresence({ presence, sessionId, timer: this.time });
+            },
+            room: this.id,
+            session,
+            sessions,
+            get storageSeeded() {
+                return storage.storageSeeded;
+            },
+            set storageSeeded(value: boolean) {
+                storage.storageSeeded = value;
+            },
+            time: new Date().getTime(),
+        } as EventResolverContext<TKind, T>;
+    }
+
     private _getIOAuthorize(
         options: WebSocketRegisterConfig<T["platform"]>,
     ): ResolvedPluvIOAuthorize<any, any> {
@@ -761,41 +793,13 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
 
             const session = this._sessions.getSession(pluvWs as WebSocketType<T["platform"]>);
             const sessions = this._sessions.getSessions();
-
-            const setPresence = (params: PatchPresenceParams): void => {
-                this._sessions.setPresence.bind(this._sessions)(params);
-            };
-
             const [doc, context] = await Promise.all([this._doc, this._getContext()]);
-            const room = this;
-            const eventContext: EventResolverContext<EventResolverKind, T> = {
+            const eventContext = this._createEventResolverContext({
                 context,
                 doc,
-                garbageCollect: async () => {
-                    await this.garbageCollect();
-                },
-                platform: this._platform,
-                get presence() {
-                    return session.presence as JsonObject | null;
-                },
-                set presence(presence: JsonObject | null) {
-                    const sessionId = this.session?.id;
-
-                    if (!sessionId) return;
-
-                    setPresence({ presence, sessionId, timer: this.time });
-                },
-                room: this.id,
                 session,
                 sessions,
-                get storageSeeded() {
-                    return room._storageSeeded;
-                },
-                set storageSeeded(value: boolean) {
-                    room._storageSeeded = value;
-                },
-                time: new Date().getTime(),
-            };
+            });
 
             if (pluvWs.state.quit) {
                 await this._closeWebSockets([pluvWs]).catch(() => null);
@@ -1018,31 +1022,12 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         if (typeof connectionId !== "string") return;
 
         const [doc, context] = await Promise.all([this._doc, this._getContext()]);
-        const room = this;
-        const resolverCtx: EventResolverContext<"sync", T> = {
+        const resolverCtx = this._createEventResolverContext<"sync">({
             context,
             doc,
-            garbageCollect: async () => {
-                await this.garbageCollect();
-            },
-            platform: this._platform,
-            get presence() {
-                return null;
-            },
-            set presence(presence: JsonObject | null) {
-                return;
-            },
-            room: this.id,
             session: null,
             sessions: this._sessions.getSessions(),
-            get storageSeeded() {
-                return room._storageSeeded;
-            },
-            set storageSeeded(value: boolean) {
-                room._storageSeeded = value;
-            },
-            time: new Date().getTime(),
-        };
+        });
 
         const resolver = this._getProcedure(message)?.config.sync;
 
