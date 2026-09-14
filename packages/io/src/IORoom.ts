@@ -30,6 +30,8 @@ import type {
 import { AbstractWebSocket } from "./AbstractWebSocket";
 import type { IODefs, IOLikeFromDefs } from "./IODefs";
 import type { PluvRouter } from "./PluvRouter";
+import { RoomSessions } from "./RoomSessions";
+import type { PatchPresenceParams } from "./RoomSessions";
 import { authorize } from "./authorize";
 import { GARBAGE_COLLECT_INTERVAL_MS, PING_TIMEOUT_MS } from "./constants";
 import type {
@@ -44,7 +46,6 @@ import type {
     PluvContext,
     ResolvedPluvIOAuthorize,
     SendMessageOptions,
-    WebSocketSession,
     WebSocketType,
 } from "./types";
 import { oneLine, parsePluvSchema } from "./utils";
@@ -89,12 +90,6 @@ interface SendMessageSender {
     user: JsonObject | null;
 }
 
-interface PatchPresenceParams {
-    presence: JsonObject | null;
-    sessionId: string;
-    timer?: number | null;
-}
-
 export type WebSocketRegisterConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
 > = {
@@ -119,8 +114,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     private readonly _platform: T["platform"];
     private readonly _roomContext: InferRoomContextType<T["platform"]>;
     private readonly _router: PluvRouter<T>;
-    private readonly _sessions = new Map<[sessionId: string][0], AbstractWebSocket>();
-    private readonly _userSessions = new Map<[userId: string][0], Set<[sessionId: string][0]>>();
+    private readonly _sessions: RoomSessions<T>;
 
     private _storageSeeded: boolean = false;
 
@@ -196,6 +190,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         this._router = router;
         this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), roomContext });
         this._authorize = authorizeConfig;
+        this._sessions = new RoomSessions({ platform: this._platform });
 
         // Listeners are provided from server-level configuration via createRoom
         this._listeners = {
@@ -228,7 +223,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
 
             const userId = pluvWs.user?.id;
 
-            if (!!userId) this._addUserSession(userId, sessionId);
+            if (!!userId) this._sessions.addUserSession(userId, sessionId);
         });
 
         const { doc, uninitialize } = this._initialize();
@@ -274,20 +269,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     }
 
     public getSize(): number {
-        const currentTime = new Date().getTime();
-
-        /**
-         * @description Doing this instead of .size because some sessions
-         * in the map can be considered as "omitted".
-         * @date December 21, 2022
-         */
-        return Array.from(this._sessions.values()).reduce((count, pluvWs) => {
-            if (pluvWs.state.quit) return count;
-
-            const pingTime = this._platform.getLastPing(pluvWs) ?? pluvWs.state.timers.ping;
-
-            return currentTime - pingTime > PING_TIMEOUT_MS ? count : count + 1;
-        }, 0);
+        return this._sessions.getSize();
     }
 
     public onClose(
@@ -295,7 +277,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     ): (event: AbstractCloseEvent) => Promise<void> {
         this._ensureDetached();
 
-        const wsSession = this._getAbstractWs(webSocket);
+        const wsSession = this._sessions.resolve(webSocket);
 
         if (!wsSession) return async () => undefined;
 
@@ -307,7 +289,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     ): (event: AbstractErrorEvent) => Promise<void> {
         this._ensureDetached();
 
-        const wsSession = this._getAbstractWs(webSocket);
+        const wsSession = this._sessions.resolve(webSocket);
 
         if (!wsSession) return async () => undefined;
 
@@ -319,7 +301,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     ): (event: AbstractMessageEvent) => Promise<void> {
         this._ensureDetached();
 
-        const wsSession = this._getAbstractWs(webSocket);
+        const wsSession = this._sessions.resolve(webSocket);
 
         if (!wsSession) return async () => undefined;
 
@@ -373,7 +355,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             return;
         }
 
-        const latest = this._getLatestPresence(user.id);
+        const latest = this._sessions.getLatestPresence(user.id);
         const prevState = pluvWs.state;
 
         pluvWs.user = user;
@@ -383,7 +365,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             presence: latest.presence,
             timers: { ...prevState.timers, presence: latest.timer },
         });
-        this._addUserSession(user.id, pluvWs.sessionId);
+        this._sessions.addUserSession(user.id, pluvWs.sessionId);
 
         this._logDebug(
             `${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`,
@@ -411,15 +393,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             ${pluvWs.sessionId}
         `);
         this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
-    }
-
-    private _addUserSession(userId: string, sessionId: string): Set<[sessionId: string][0]> {
-        const set = this._userSessions.get(userId) ?? new Set<string>();
-        const updated = set.add(sessionId);
-
-        this._userSessions.set(userId, updated);
-
-        return updated;
     }
 
     private async _broadcast(params: BroadcastParams<this>): Promise<void> {
@@ -456,10 +429,10 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 senderId: sessionId,
             });
 
-            const session = this._toSession(webSocket);
+            const session = this._sessions.toSession(webSocket);
             const user = session.user;
 
-            if (!!user) this._removeUserSession(user.id, sessionId);
+            if (!!user) this._sessions.removeUserSession(user.id, sessionId);
 
             try {
                 const [doc, context] = await Promise.all([this._doc, this._getContext()]);
@@ -512,7 +485,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     }
 
     private async _emitRegistered(pluvWs: AbstractWebSocket): Promise<void> {
-        const session = this._toSession(pluvWs);
+        const session = this._sessions.toSession(pluvWs);
         const sessionId = session.id;
         const presence = session.presence;
         const user = session.user;
@@ -566,22 +539,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         if (this._platform._config.registrationMode === "detached") return;
 
         throw new Error("Platform must use detached mode");
-    }
-
-    private _getAbstractWs(webSocket: WebSocketType<T["platform"]>): AbstractWebSocket | null {
-        if ((webSocket as unknown as any) instanceof AbstractWebSocket) return webSocket;
-
-        const sessionId = this._platform.getSessionId(webSocket);
-
-        if (typeof sessionId === "string") {
-            const session = this._sessions.get(sessionId) ?? null;
-
-            if (session) return session;
-        }
-
-        const sessions = Array.from(this._sessions.values());
-
-        return sessions.find((pluvWs) => pluvWs.webSocket === webSocket) ?? null;
     }
 
     /**
@@ -680,37 +637,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         return this._authorize as ResolvedPluvIOAuthorize<any, any>;
     }
 
-    private _getLatestPresence(userId: string): {
-        timer: number | null;
-        presence: JsonObject | null;
-    } {
-        const sessionIds = Array.from(this._userSessions.get(userId)?.values() ?? []);
-
-        if (!sessionIds.length) return { timer: null, presence: null };
-
-        return sessionIds.reduce(
-            (state, sessionId) => {
-                const pluvWs = this._sessions.get(sessionId) ?? null;
-
-                if (!pluvWs) return state;
-
-                const session = pluvWs.session;
-                const presence = session.presence;
-                const timer = session.timers.presence;
-
-                if (session.user.id !== userId) return state;
-                if (typeof state.timer !== "number") return { presence, timer };
-                if (typeof timer !== "number") return state;
-
-                return timer > state.timer ? { presence, timer } : state;
-            },
-            { presence: null, timer: null } as {
-                presence: JsonObject | null;
-                timer: number | null;
-            },
-        );
-    }
-
     private _getProcedure(
         message: EventMessage<string, any>,
     ):
@@ -733,22 +659,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         return procedure.config.input
             ? parsePluvSchema(procedure.config.input, message.data)
             : message.data;
-    }
-
-    private _getSession(webSocket: WebSocketType<T["platform"]>): WebSocketSession<T> {
-        const pluvWs = this._getAbstractWs(webSocket);
-
-        if (!pluvWs) throw new Error("Session could not be found");
-
-        return this._toSession(pluvWs);
-    }
-
-    private _getSessions(): readonly WebSocketSession<T>[] {
-        return Array.from(this._sessions.values()).map((pluvWs) => this._toSession(pluvWs));
-    }
-
-    private _toSession(pluvWs: AbstractWebSocket): WebSocketSession<T> {
-        return pluvWs.session as WebSocketSession<T>;
     }
 
     private _initialize() {
@@ -886,15 +796,15 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         return async (event: AbstractMessageEvent): Promise<void> => {
             if (!(await this._initialized)) return;
 
-            const pluvWs = this._getAbstractWs(webSocket as WebSocketType<T["platform"]>);
+            const pluvWs = this._sessions.resolve(webSocket as WebSocketType<T["platform"]>);
 
             if (!pluvWs) throw new Error("Could not get session");
 
-            const session = this._getSession(pluvWs as WebSocketType<T["platform"]>);
-            const sessions = this._getSessions();
+            const session = this._sessions.getSession(pluvWs as WebSocketType<T["platform"]>);
+            const sessions = this._sessions.getSessions();
 
             const setPresence = (params: PatchPresenceParams): void => {
-                this._setPresence.bind(this)(params);
+                this._sessions.setPresence.bind(this._sessions)(params);
             };
 
             const [doc, context] = await Promise.all([this._doc, this._getContext()]);
@@ -1059,57 +969,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         }
     }
 
-    private _setPresence(params: PatchPresenceParams): void {
-        const { presence, sessionId, timer: _timer } = params;
-
-        const timer = _timer ?? new Date().getTime();
-        const pluvWs = this._sessions.get(sessionId) ?? null;
-
-        if (!pluvWs) return;
-
-        const wsSession = pluvWs.session;
-        const user = wsSession.user;
-
-        const sessionIds = user
-            ? new Set<string>([...(this._userSessions.get(user.id) ?? []), sessionId])
-            : new Set([sessionId]);
-
-        sessionIds.forEach((sId) => {
-            const pWs = this._sessions.get(sId);
-            const session = pWs?.session;
-
-            if (!session) return;
-
-            const prevState = session.webSocket.state;
-
-            this._platform.setSerializedState(session.webSocket, {
-                ...prevState,
-                presence,
-                timers: {
-                    ...prevState.timers,
-                    presence: timer,
-                },
-            });
-        });
-    }
-
-    private _removeUserSession(
-        userId: string,
-        sessionId: string,
-    ): Set<[sessionId: string][0]> | null {
-        const set = this._userSessions.get(userId);
-
-        if (!set) return null;
-
-        set.delete(sessionId);
-
-        if (!!set.size) return set;
-
-        this._userSessions.delete(userId);
-
-        return set;
-    }
-
     private async _sendMessage(
         pluvWs: AbstractWebSocket,
         message: IOEventMessage<any>,
@@ -1135,7 +994,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 const pluvWs = this._sessions.get(id);
 
                 return pluvWs ? dict.set(id, pluvWs) : dict;
-            }, new Map<string, AbstractWebSocket>()) ?? this._sessions;
+            }, new Map<string, AbstractWebSocket>()) ?? this._sessions.all();
 
         await Promise.allSettled(
             Array.from(webSockets.values()).map(async (pluvWs) => {
@@ -1216,7 +1075,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             },
             room: this.id,
             session: null,
-            sessions: this._getSessions(),
+            sessions: this._sessions.getSessions(),
             get storageSeeded() {
                 return room._storageSeeded;
             },
