@@ -5,9 +5,9 @@ description: "API reference for @pluv/client — create clients, rooms, event ro
 
 ## createClient
 
-Returns a `PluvClient` instance
+Returns a builder whose `.config()` method creates a `PluvClient`
 
-Create a frontend `PluvClient` that will create rooms to connect to your server's `PluvIO` instance.
+Bind your server type as a type argument, then pass presence, storage, metadata, and endpoints to `.config()`. Do not pass options to `createClient` itself — that would freeze presence and storage inference.
 
 ### createClient basic example
 
@@ -16,18 +16,13 @@ If you've created a basic `PluvIO` backend without any auth, you can create a `P
 See the [Create Client](/docs/guides/create-client) docs for more details.
 
 ```ts
-import { createClient, infer } from "@pluv/client";
+import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import type { ioServer } from "./server/pluv-io";
 import { z } from "zod";
 
-// Connect your `ioServer` type to the client via `infer`
-// Note this is declared outside of `createClient` to workaround
-// TypeScript inferrence limitations
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-const io = createClient({
-  types,
+const io = createClient<typeof ioServer>().config({
   // Optional: Define the storage schema and an optional JSON seed.
   storage: yjs.storage({
     schema: yjs.schema({
@@ -55,7 +50,7 @@ If your `PluvIO` implements auth, you will need to specify an `authEndpoint` on 
 ```ts
 import { createClient } from "@pluv/client";
 
-const io = createClient({
+const io = createClient().config({
   authEndpoint: ({ room }) => `/api/room/auth?room=${room}`,
   // ...
 });
@@ -70,7 +65,7 @@ If you need to use a POST request or specify additional headers, you can return 
 
 import { createClient } from "@pluv/client";
 
-const io = createClient({
+const io = createClient().config({
   authEndpoint: ({ room }) => ({
     url: "/api/room/auth",
     // specify fetch options here
@@ -96,7 +91,7 @@ Create a `PluvRoom` that websockets can join and leave.
 See the [Create Rooms](/docs/guides/rooms/client) docs for more details.
 
 ```ts
-export const io = createClient({
+export const io = createClient().config({
   // Optional: Define the storage schema and an optional JSON seed.
   storage: yjs.storage({
     schema: yjs.schema({
@@ -194,7 +189,7 @@ Creates a new type-safe event procedure to be broadcasted from `PluvClient`. See
 import { createClient } from "@pluv/client";
 import { z } from "zod";
 
-const io = createClient({ /* ... */ });
+const io = createClient().config({ /* ... */ });
 
 const sendMessage = io.procedure
   .input(z.object({ message: z.string() }))
@@ -216,7 +211,7 @@ Creates a new type-safe event procedure router to attach events and connect to a
 import { createClient } from "@pluv/client";
 import { z } from "zod";
 
-const io = createClient({ /* ... */ });
+const io = createClient().config({ /* ... */ });
 
 const sendMessage = io.procedure
   .input(z.object({ message: z.string() }))
@@ -628,7 +623,7 @@ Updates the user's own presence and broadcasts the update to all connected parti
 
 ```ts
 // frontend/room.ts
-const client = createClient({
+const client = createClient().config({
   // ...
   presence: z.object({
     selectionId: z.string().nullable(),

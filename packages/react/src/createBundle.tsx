@@ -1,27 +1,25 @@
 import type {
+    ClientDefs,
     CreateRoomOptions,
     EnterRoomParams,
+    InferClientMetadata,
+    InferClientOutput,
+    InferClientPresence,
     InferSchemaInput,
-    InferSchemaOutput,
-    MergeEvents,
     PluvClient,
     PluvRoom,
     PluvRoomAddon,
     PluvRouter,
     PluvRouterEventConfig,
+    SetKey,
     UserInfo,
     WebSocketConnection,
 } from "@pluv/client";
 import { MockedRoom, parsePluvSchema } from "@pluv/client";
-import type { AbstractCrdtDocFactory, InferDoc, InferJson, InferStorage } from "@pluv/crdt";
+import type { InferDoc, InferJson, InferStorage } from "@pluv/crdt";
 import type {
+    BroadcastProxy,
     Id,
-    InferIOCrdtKind,
-    InferIOInput,
-    InferIOOutput,
-    IOEventMessage,
-    IOLike,
-    StandardSchemaV1,
     RoomLike,
     StorageState,
     UpdateMyPresenceAction,
@@ -34,7 +32,6 @@ import {
     useCallback,
     useContext,
     useEffect,
-    useMemo,
     useState,
     useSyncExternalStore,
 } from "react";
@@ -47,7 +44,6 @@ import {
     useSyncExternalStoreWithSelector,
 } from "./internal";
 import type {
-    BroadcastProxy,
     CreateBundle,
     EventProxy,
     MockedRoomProviderProps,
@@ -57,51 +53,28 @@ import type {
     UseStorageResult,
 } from "./types";
 
-export type CreateBundleOptions<
-    TIO extends IOLike,
-    TPresenceSchema extends StandardSchemaV1<any, any> | undefined = undefined,
-    TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
-    TMetadataSchema extends StandardSchemaV1<any, any> | undefined = undefined,
-    TEvents extends PluvRouterEventConfig<
-        TIO,
-        InferSchemaOutput<TPresenceSchema>,
-        InferStorage<TCrdt>
-    > = {},
-> = {
-    addons?: readonly PluvRoomAddon<
-        TIO,
-        InferSchemaOutput<TMetadataSchema>,
-        InferSchemaOutput<TPresenceSchema>,
-        TCrdt
-    >[];
-    router?: PluvRouter<TIO, InferSchemaOutput<TPresenceSchema>, InferStorage<TCrdt>, TEvents>;
+export type CreateBundleOptions<TDefs extends ClientDefs = ClientDefs> = {
+    addons?: readonly PluvRoomAddon<any>[];
+    router?: PluvRouter<TDefs>;
 };
 
 export const createBundle = <
-    TIO extends IOLike,
-    TPresenceSchema extends StandardSchemaV1<any, any> | undefined = undefined,
-    TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
-    TMetadataSchema extends StandardSchemaV1<any, any> | undefined = undefined,
-    TEvents extends PluvRouterEventConfig<
-        TIO,
-        InferSchemaOutput<TPresenceSchema>,
-        InferStorage<TCrdt>
-    > = {},
+    TDefs extends ClientDefs,
+    TEvents extends PluvRouterEventConfig<TDefs> = {},
 >(
-    client: PluvClient<TIO, TPresenceSchema, TCrdt, TMetadataSchema>,
-    options: CreateBundleOptions<TIO, TPresenceSchema, TCrdt, TMetadataSchema, TEvents> = {},
-): CreateBundle<TIO, TPresenceSchema, TCrdt, TMetadataSchema, TEvents> => {
-    type TPresence = InferSchemaOutput<TPresenceSchema>;
-    type TMetadata = InferSchemaOutput<TMetadataSchema>;
+    client: PluvClient<TDefs>,
+    options: CreateBundleOptions<SetKey<TDefs, "events", TEvents>> = {},
+): CreateBundle<SetKey<TDefs, "events", TEvents>> => {
+    type TRoom = SetKey<TDefs, "events", TEvents>;
+    type TPresence = InferClientPresence<TRoom>;
+    type TMetadata = InferClientMetadata<TRoom>;
     /**
      * !HACK
      * @description We'll let the context error out if client is not provided,
      * and let the users deal with it.
      * @date October 27, 2022
      */
-    const PluvContext = createContext<PluvClient<TIO, TPresenceSchema, TCrdt, TMetadataSchema>>(
-        null as any,
-    );
+    const PluvContext = createContext<PluvClient<TDefs>>(null as any);
 
     /**
      * !HACK
@@ -110,44 +83,47 @@ export const createBundle = <
      * @date November 11, 2022
      */
     const PluvRoomContext = createContext<
-        RoomLike<TIO, InferDoc<TCrdt>, TPresence, InferStorage<TCrdt>, TEvents, InferJson<TCrdt>>
+        RoomLike<
+            TDefs["io"],
+            InferDoc<TDefs["storage"]>,
+            TPresence,
+            InferStorage<TDefs["storage"]>,
+            TEvents,
+            InferJson<TDefs["storage"]>
+        >
     >(null as any);
 
     const MockedRoomContext = createContext<RoomLike<
-        TIO,
-        InferDoc<TCrdt>,
+        TDefs["io"],
+        InferDoc<TDefs["storage"]>,
         TPresence,
-        InferStorage<TCrdt>,
+        InferStorage<TDefs["storage"]>,
         TEvents,
-        InferJson<TCrdt>
+        InferJson<TDefs["storage"]>
     > | null>(null);
 
-    const MockedRoomProvider = memo<MockedRoomProviderProps<TIO, TPresenceSchema, TCrdt, TEvents>>(
-        (props) => {
-            const { children, events, initialPresence, initialStorage, room: _room } = props;
+    const MockedRoomProvider = memo<MockedRoomProviderProps<TRoom>>((props) => {
+        const { children, events, initialPresence, initialStorage, room: _room } = props;
 
-            const [room] = useState<MockedRoom<TIO, TPresence, TCrdt, TEvents>>(() => {
-                return new MockedRoom<TIO, TPresence, TCrdt, TEvents>(_room, {
-                    events,
-                    initialPresence,
-                    initialStorage,
-                    storage: client._defs.storage,
-                });
+        const [room] = useState<MockedRoom<TRoom>>(() => {
+            return new MockedRoom<TRoom>(_room, {
+                events,
+                initialPresence,
+                initialStorage,
+                storage: client._defs.storage,
             });
+        });
 
-            return (
-                <MockedRoomContext.Provider value={room}>
-                    <PluvRoomContext.Provider value={room}>{children}</PluvRoomContext.Provider>
-                </MockedRoomContext.Provider>
-            );
-        },
-    );
+        return (
+            <MockedRoomContext.Provider value={room}>
+                <PluvRoomContext.Provider value={room}>{children}</PluvRoomContext.Provider>
+            </MockedRoomContext.Provider>
+        );
+    });
 
     MockedRoomProvider.displayName = "MockedRoomProvider";
 
-    const PluvRoomProvider = memo<
-        PluvRoomProviderProps<TIO, TMetadataSchema, TPresenceSchema, TCrdt>
-    >((props) => {
+    const PluvRoomProvider = memo<PluvRoomProviderProps<TRoom>>((props) => {
         const {
             children,
             connect = true,
@@ -163,7 +139,7 @@ export const createBundle = <
         const rerender = useRerender();
         const mockedRoom = useContext(MockedRoomContext);
 
-        const createRoom = useCallback((): PluvRoom<TIO, TMetadata, TPresence, TCrdt, TEvents> => {
+        const createRoom = useCallback((): PluvRoom<TRoom> => {
             return client.createRoom(_room, {
                 addons: options.addons,
                 debug,
@@ -172,7 +148,7 @@ export const createBundle = <
                 metadata,
                 onAuthorizationFail,
                 router: options.router,
-            } as CreateRoomOptions<TIO, TPresenceSchema, TCrdt, TMetadataSchema, TEvents>);
+            } as CreateRoomOptions<TRoom>);
         }, [_room, debug, initialPresence, initialStorage, metadata, onAuthorizationFail]);
 
         const [room, setRoom] = useState(() => createRoom());
@@ -188,8 +164,8 @@ export const createBundle = <
                 typeof metadata === "function"
                     ? (
                           metadata as () =>
-                              | InferSchemaInput<TMetadataSchema>
-                              | Promise<InferSchemaInput<TMetadataSchema>>
+                              | InferSchemaInput<TDefs["metadata"]>
+                              | Promise<InferSchemaInput<TDefs["metadata"]>>
                       )()
                     : metadata,
             );
@@ -233,7 +209,7 @@ export const createBundle = <
                     .enter(
                         room,
                         ...([{ metadata: resolved }] as unknown as EnterRoomParams<
-                            InferSchemaInput<TMetadataSchema>
+                            InferSchemaInput<TDefs["metadata"]>
                         >),
                     )
                     .catch(async (error) => {
@@ -264,8 +240,7 @@ export const createBundle = <
 
     PluvProvider.displayName = "PluvProvider";
 
-    const useClient = (): PluvClient<TIO, TPresenceSchema, TCrdt, TMetadataSchema> =>
-        useContext(PluvContext);
+    const useClient = (): PluvClient<TDefs> => useContext(PluvContext);
 
     const useRoom = () => {
         const room = useContext(PluvRoomContext);
@@ -278,34 +253,10 @@ export const createBundle = <
         return room;
     };
 
-    const useBroadcast = (): BroadcastProxy<MergeEvents<TEvents, TIO>> => {
+    const useBroadcast = (): BroadcastProxy<TDefs["io"], TEvents> => {
         const room = useRoom();
 
-        const broadcast = useCallback(
-            async <TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>>(
-                event: TEvent,
-                data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
-            ) => {
-                await room.broadcast(event, data);
-            },
-            [room],
-        );
-
-        return useMemo((): BroadcastProxy<MergeEvents<TEvents, TIO>> => {
-            return new Proxy(broadcast, {
-                get(fn, prop) {
-                    return (
-                        data: Id<
-                            InferIOInput<MergeEvents<TEvents, TIO>>[keyof InferIOInput<
-                                MergeEvents<TEvents, TIO>
-                            >]
-                        >,
-                    ): Promise<void> => {
-                        return fn(prop as keyof InferIOInput<MergeEvents<TEvents, TIO>>, data);
-                    };
-                },
-            }) as BroadcastProxy<MergeEvents<TEvents, TIO>>;
-        }, [broadcast]);
+        return room.broadcast;
     };
 
     const useCanRedo = (): boolean => {
@@ -348,10 +299,10 @@ export const createBundle = <
         return canUndo;
     };
 
-    const useConnection = <T extends unknown = WebSocketConnection>(
-        selector = identity as (connection: WebSocketConnection) => T,
-        hookOptions?: SubscriptionHookOptions<Id<T>>,
-    ): Id<T> => {
+    const useConnection = <TValue extends unknown = WebSocketConnection>(
+        selector = identity as (connection: WebSocketConnection) => TValue,
+        hookOptions?: SubscriptionHookOptions<Id<TValue>>,
+    ): Id<TValue> => {
         const room = useRoom();
 
         const subscribe = useCallback(
@@ -362,7 +313,7 @@ export const createBundle = <
         const getSnapshot = room.getConnection;
 
         const _selector = useCallback(
-            (snapshot: WebSocketConnection) => selector(snapshot) as Id<T>,
+            (snapshot: WebSocketConnection) => selector(snapshot) as Id<TValue>,
             [selector],
         );
 
@@ -400,9 +351,9 @@ export const createBundle = <
         return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
     };
 
-    const useEvent = <TType extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>>(
+    const useEvent = <TType extends keyof InferClientOutput<TRoom>>(
         type: TType,
-        callback: (data: Id<IOEventMessage<MergeEvents<TEvents, TIO>, TType>>) => void,
+        callback: Parameters<EventProxy<TRoom>[TType]["useEvent"]>[0],
     ): void => {
         const room = useRoom();
 
@@ -420,30 +371,22 @@ export const createBundle = <
         {
             get(_, prop) {
                 const useProxyEvent = (
-                    callback: (
-                        data: Id<
-                            IOEventMessage<
-                                MergeEvents<TEvents, TIO>,
-                                keyof InferIOOutput<MergeEvents<TEvents, TIO>>
-                            >
-                        >,
-                    ) => void,
+                    callback: Parameters<
+                        EventProxy<TRoom>[keyof InferClientOutput<TRoom>]["useEvent"]
+                    >[0],
                 ): void => {
-                    return useEvent(
-                        prop as keyof InferIOOutput<MergeEvents<TEvents, TIO>>,
-                        callback,
-                    );
+                    return useEvent(prop as keyof InferClientOutput<TRoom>, callback);
                 };
 
                 return { useEvent: useProxyEvent };
             },
         },
-    ) as EventProxy<MergeEvents<TEvents, TIO>>;
+    ) as EventProxy<TRoom>;
 
-    const useMyPresence = <T extends unknown = TPresence>(
-        selector = identity as (myPresence: TPresence) => T,
-        hookOptions?: SubscriptionHookOptions<Id<T> | null>,
-    ): [Id<T>, Dispatch<UpdateMyPresenceAction<TPresence>>] => {
+    const useMyPresence = <TValue extends unknown = TPresence>(
+        selector = identity as (myPresence: TPresence) => TValue,
+        hookOptions?: SubscriptionHookOptions<Id<TValue> | null>,
+    ): [Id<TValue>, Dispatch<UpdateMyPresenceAction<TPresence>>] => {
         const room = useRoom();
 
         const subscribe = useCallback(
@@ -454,7 +397,7 @@ export const createBundle = <
         const getSnapshot = room.getMyPresence;
 
         const _selector = useCallback(
-            (snapshot: TPresence) => selector(snapshot) as Id<T>,
+            (snapshot: TPresence) => selector(snapshot) as Id<TValue>,
             [selector],
         );
 
@@ -469,10 +412,10 @@ export const createBundle = <
         return [myPresence, room.updateMyPresence];
     };
 
-    const useMyself = <T extends unknown = UserInfo<TIO, TPresence>>(
-        selector = identity as (myself: Id<UserInfo<TIO, TPresence>>) => T,
-        hookOptions?: SubscriptionHookOptions<Id<T> | null>,
-    ): Id<T> | null => {
+    const useMyself = <TValue extends unknown = UserInfo<TDefs["io"], TPresence>>(
+        selector = identity as (myself: Id<UserInfo<TDefs["io"], TPresence>>) => TValue,
+        hookOptions?: SubscriptionHookOptions<Id<TValue> | null>,
+    ): Id<TValue> | null => {
         const room = useRoom();
 
         const subscribe = useCallback(
@@ -483,8 +426,8 @@ export const createBundle = <
         const getSnapshot = room.getMyself;
 
         const _selector = useCallback(
-            (snapshot: Id<UserInfo<TIO, TPresence>> | null) => {
-                return !snapshot ? null : (selector(snapshot) as Id<T>);
+            (snapshot: Id<UserInfo<TDefs["io"], TPresence>> | null) => {
+                return !snapshot ? null : (selector(snapshot) as Id<TValue>);
             },
             [selector],
         );
@@ -498,11 +441,11 @@ export const createBundle = <
         );
     };
 
-    const useOther = <T extends unknown = UserInfo<TIO, TPresence>>(
+    const useOther = <TValue extends unknown = UserInfo<TDefs["io"], TPresence>>(
         connectionId: string,
-        selector = identity as (other: UserInfo<TIO, TPresence>) => T,
-        hookOptions?: SubscriptionHookOptions<T | null>,
-    ): T | null => {
+        selector = identity as (other: UserInfo<TDefs["io"], TPresence>) => TValue,
+        hookOptions?: SubscriptionHookOptions<TValue | null>,
+    ): TValue | null => {
         const room = useRoom();
 
         const subscribe = useCallback(
@@ -513,8 +456,8 @@ export const createBundle = <
         const getSnapshot = useCallback(() => room.getOther(connectionId), [room, connectionId]);
 
         const _selector = useCallback(
-            (snapshot: Id<UserInfo<TIO, TPresence>> | null) => {
-                return !snapshot ? null : (selector(snapshot) as T);
+            (snapshot: Id<UserInfo<TDefs["io"], TPresence>> | null) => {
+                return !snapshot ? null : (selector(snapshot) as TValue);
             },
             [selector],
         );
@@ -528,10 +471,10 @@ export const createBundle = <
         );
     };
 
-    const useOthers = <T extends unknown = readonly UserInfo<TIO, TPresence>[]>(
-        selector = identity as (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T,
-        hookOptions?: SubscriptionHookOptions<T>,
-    ): T => {
+    const useOthers = <TValue extends unknown = readonly UserInfo<TDefs["io"], TPresence>[]>(
+        selector = identity as (other: readonly Id<UserInfo<TDefs["io"], TPresence>>[]) => TValue,
+        hookOptions?: SubscriptionHookOptions<TValue>,
+    ): TValue => {
         const room = useRoom();
 
         const subscribe = useCallback(
@@ -545,7 +488,7 @@ export const createBundle = <
             subscribe,
             getSnapshot,
             getSnapshot,
-            selector as (other: readonly Id<UserInfo<TIO, TPresence>>[]) => T,
+            selector as (other: readonly Id<UserInfo<TDefs["io"], TPresence>>[]) => TValue,
             hookOptions?.isEqual ??
                 ((a, b) => {
                     /**
@@ -572,13 +515,13 @@ export const createBundle = <
     };
 
     const useStorage = <
-        TKey extends keyof InferJson<TCrdt>,
-        TData extends unknown = InferJson<TCrdt>[TKey],
+        TKey extends keyof InferJson<TDefs["storage"]>,
+        TData extends unknown = InferJson<TDefs["storage"]>[TKey],
     >(
         key: TKey,
-        selector = identity as (data: InferJson<TCrdt>[TKey]) => TData,
+        selector = identity as (data: InferJson<TDefs["storage"]>[TKey]) => TData,
         hookOptions?: SubscriptionHookOptions<TData | null>,
-    ): UseStorageResult<TData, InferStorage<TCrdt>[TKey]> => {
+    ): UseStorageResult<TData, InferStorage<TDefs["storage"]>[TKey]> => {
         const room = useRoom();
         const rerender = useRerender();
 
@@ -611,12 +554,12 @@ export const createBundle = <
             [key, room],
         );
 
-        const getSnapshot = useCallback((): InferJson<TCrdt>[TKey] | null => {
+        const getSnapshot = useCallback((): InferJson<TDefs["storage"]>[TKey] | null => {
             return room.getStorageJson(key);
         }, [key, room]);
 
         const _selector = useCallback(
-            (snapshot: InferJson<TCrdt>[TKey] | null) => {
+            (snapshot: InferJson<TDefs["storage"]>[TKey] | null) => {
                 return snapshot === null ? null : selector(snapshot);
             },
             [selector],
@@ -675,5 +618,5 @@ export const createBundle = <
         useStorage,
         useTransact,
         useUndo,
-    };
+    } as CreateBundle<TRoom>;
 };

@@ -40,14 +40,13 @@ Then, import your `PluvIO` type to the frontend, and create your type-safe react
 ```ts
 // frontend/io.ts
 import { yjs } from "@pluv/crdt-yjs";
-import { createClient, infer } from "@pluv/client";
+import { createClient } from "@pluv/client";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
 // import your ioServer type from your backend codebase
 import type { ioServer } from "./backend/io";
 
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-const client = clientClient({ /* ... */});
+const client = createClient<typeof ioServer>().config({ /* ... */});
 
 export const {
   // components

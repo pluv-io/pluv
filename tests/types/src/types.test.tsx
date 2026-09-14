@@ -1,4 +1,4 @@
-import { createClient, infer } from "@pluv/client";
+import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
@@ -46,8 +46,7 @@ const ioServer = io.server({
     },
 });
 
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-const client = createClient({
+const client = createClient<typeof ioServer>().config({
     authEndpoint: () => "",
     storage: yjs.storage({
         schema: yjs.schema({
@@ -60,7 +59,6 @@ const client = createClient({
     presence: z.object({
         cursor: z.nullable(z.object({ x: z.number(), y: z.number() })),
     }),
-    types,
 });
 
 const room = client.createRoom("test-room", {
@@ -209,7 +207,7 @@ expectTypeOf(useDoc()).toEqualTypeOf<
     >
 >();
 
-const defaultedClient = createClient({
+const defaultedClient = createClient<typeof ioServer>().config({
     authEndpoint: ({ metadata }) => metadata.authEndpoint,
     metadata: z.object({
         authEndpoint: z.string().default("/api/pluv/authorize"),
@@ -218,7 +216,6 @@ const defaultedClient = createClient({
         blocknote: z.any().default({}),
         count: z.number(),
     }),
-    types,
 });
 
 const { PluvRoomProvider: DefaultedRoomProvider } = createBundle(defaultedClient);

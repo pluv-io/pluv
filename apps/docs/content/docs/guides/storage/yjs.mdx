@@ -60,16 +60,14 @@ Then, on the frontend, define a `yjs.schema` and pass it to `createClient` via `
 ```ts
 // frontend/pluv.ts
 
-import { createClient, infer } from "@pluv/client";
+import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import type { InferBundleRoom } from "@pluv/react";
 import { createBundle } from "@pluv/react";
 import type { ioServer } from "../backend";
 
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-const io = createClient({
-  types,
+const io = createClient<typeof ioServer>().config({
   storage: yjs.storage({
     schema: yjs.schema({
       // Top-level fields must be Yjs CRDT nodes (yArray, yMap, yText, …)
@@ -170,7 +168,7 @@ import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 
-const io = createClient({
+const io = createClient().config({
   // ...
   storage: yjs.storage({
     schema: yjs.schema({
@@ -237,7 +235,7 @@ import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
 
-const io = createClient({
+const io = createClient().config({
   // ...
   storage: yjs.storage({ schema: yjs.schema({ /* ... */ }) }),
   presence: z.object({

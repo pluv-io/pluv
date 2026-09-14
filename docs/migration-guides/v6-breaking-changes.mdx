@@ -1,17 +1,44 @@
 ---
 title: "Migrate to v6"
-description: "Breaking changes when upgrading from pluv.io v5 to v6, including the CRDT schema builder and JSON-only storage seeds."
+description: "Breaking changes when upgrading from pluv.io v5 to v6, including the CRDT schema builder, createIO/createClient builders, and JSON-only storage seeds."
 ---
+
+## createClient is type-arg then config
+
+`infer((i) => ({ io }))` and `createClient({ types, ... })` are removed. Bind the server type as a type argument, then pass presence, storage, and metadata to `.config()`.
+
+```ts
+import type { ioServer } from "./server/pluv-io";
+
+// Before
+const types = infer((i) => ({ io: i<typeof ioServer> }));
+const client = createClient({
+  types,
+  authEndpoint: () => "",
+  presence: z.object({ selectionId: z.string().nullable() }),
+});
+
+// After
+const client = createClient<typeof ioServer>().config({
+  authEndpoint: () => "",
+  presence: z.object({ selectionId: z.string().nullable() }),
+});
+```
+
+Do not call `createClient<TIO>(options)` — that freezes presence and storage inference. `createClient().config({ ... })` still works when you do not have a server type.
+
+Cloudflare/Node `infer((i) => ({ env }))` on the platform is unchanged.
 
 ## Storage schema and JSON seeds
 
-`yjs.doc((t) => …)` and `loro.doc((t) => …)` builders are removed. Declare storage with `yjs.schema` / `loro.schema`, wrap it in `yjs.storage` / `loro.storage` on `createClient`, and seed with JSON in `initialStorage`.
+`yjs.doc((t) => …)` and `loro.doc((t) => …)` builders are removed. Declare storage with `yjs.schema` / `loro.schema`, wrap it in `yjs.storage` / `loro.storage` on `createClient().config()`, and seed with JSON in `initialStorage`.
 
 JSON schema leaves live on `s` from `@pluv/crdt`. Top-level fields must be that library's CRDT nodes (`yjs.yArray`, `loro.loroList`, …).
 
 ```ts
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
+import type { ioServer } from "./server/pluv-io";
 
 // Before
 createClient({
@@ -22,8 +49,7 @@ createClient({
 });
 
 // After
-createClient({
-  types,
+createClient<typeof ioServer>().config({
   storage: yjs.storage({
     schema: yjs.schema({
       messages: yjs.yArray(s.string()),
@@ -96,4 +122,3 @@ export const ioServer = io.server({ router, getInitialStorage });
 ```
 
 Hosted pluv keeps JWT-less `authorize: { user }` on `.config()` and `secretKey` on `platformPluv({ ... })`. Node and Cloudflare still require `authorize.secret`.
-

@@ -68,10 +68,7 @@ export const ioServer = io.server({
 Create your frontend client with your backend types
 
 ```ts
-// frontend
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-const io = createClient({
-    types,
+const io = createClient<typeof ioServer>().config({
     storage: yjs.storage({
         schema: yjs.schema({
             messages: yjs.yArray(s.string()),

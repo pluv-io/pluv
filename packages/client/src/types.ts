@@ -2,14 +2,19 @@ import type {
     CrdtDocLike,
     EventRecord,
     Id,
+    InferEventsInput,
+    InferEventsOutput,
     InferIOAuthorize,
     InferIOAuthorizeUser,
+    InferIOInput,
+    InferIOOutput,
     IOLike,
     JsonObject,
     MaybePromise,
     StandardSchemaV1,
     UserInfo,
 } from "@pluv/types";
+import type { ClientDefs } from "./ClientDefs";
 import type { PluvClient } from "./PluvClient";
 
 export type InferSchemaInput<TSchema, TFallback extends Record<string, any> = {}> =
@@ -17,6 +22,13 @@ export type InferSchemaInput<TSchema, TFallback extends Record<string, any> = {}
 
 export type InferSchemaOutput<TSchema, TFallback extends Record<string, any> = {}> =
     TSchema extends StandardSchemaV1<any, infer O extends Record<string, any>> ? O : TFallback;
+
+export type InferClientPresence<TDefs extends ClientDefs> = InferSchemaOutput<TDefs["presence"]>;
+export type InferClientMetadata<TDefs extends ClientDefs> = InferSchemaOutput<TDefs["metadata"]>;
+export type InferClientInput<TDefs extends ClientDefs> = InferEventsInput<TDefs["events"]> &
+    InferIOInput<TDefs["io"]>;
+export type InferClientOutput<TDefs extends ClientDefs> = InferEventsOutput<TDefs["events"]> &
+    InferIOOutput<TDefs["io"]>;
 
 export interface AuthorizationState<TIO extends IOLike> {
     token: string | null;
@@ -45,10 +57,8 @@ export interface EventResolverContext<
     user: UserInfo<TIO, TPresence>;
 }
 
-export type InferMetadata<TClient extends PluvClient<any, any, any, any>> =
-    TClient extends PluvClient<any, any, any, infer IMetadataSchema>
-        ? InferSchemaOutput<IMetadataSchema>
-        : never;
+export type InferMetadata<TClient extends PluvClient<any>> =
+    TClient extends PluvClient<infer TDefs> ? InferSchemaOutput<TDefs["metadata"]> : never;
 
 export interface InternalSubscriptions {
     observeCrdt: (() => void) | null;

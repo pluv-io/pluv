@@ -10,14 +10,12 @@ Presence is a per-connection state that allows users to view what others are doi
 To get started with presence for pluv.io, first set a `presence` config on your `createClient` config and create your react bundle.
 
 ```ts
-import { createClient, infer } from "@pluv/client";
+import { createClient } from "@pluv/client";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "./backend/io";
 
-const types = infer((i) => ({ io: i<typeof iServer> }));
-const client = createClient({
-  types,
+const client = createClient<typeof ioServer>().config({
   presence: z.object({
     selectionId: z.string().nullable(),
   }),

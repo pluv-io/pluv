@@ -1,4 +1,4 @@
-import { createClient, infer } from "@pluv/client";
+import { createClient, type PluvClient } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO, type IODefs } from "@pluv/io";
 import { platformCloudflare, type CloudflarePlatform } from "@pluv/platform-cloudflare";
@@ -53,11 +53,10 @@ const ioServer = io.server({
     router,
 });
 
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-
-type InferredIO = typeof types extends (i: any) => { io: (io: infer TIO) => infer TIO }
-    ? TIO
-    : never;
+const client = createClient<typeof ioServer>().config({
+    authEndpoint: () => "",
+});
+type InferredIO = typeof client extends PluvClient<infer TDefs> ? TDefs["io"] : never;
 type InferredDefs = InferredIO["_defs"];
 
 expectTypeOf<InferredDefs>().toHaveProperty("authorize");
@@ -71,10 +70,6 @@ expectTypeOf<InferIOInput<InferredIO>["ping"]>().toEqualTypeOf<{}>();
 expectTypeOf<InferIOOutput<InferredIO>["receiveMessage"]>().toEqualTypeOf<{ message: string }>();
 expectTypeOf<InferIOOutput<InferredIO>["pong"]>().toEqualTypeOf<{}>();
 
-const client = createClient({
-    authEndpoint: () => "",
-    types,
-});
 const room = client.createRoom("test-room");
 
 room.subscribe.event.receiveMessage((event) => {

@@ -1,12 +1,11 @@
-import { createClient, infer } from "@pluv/client";
+import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { loro } from "@pluv/crdt-loro";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "../../server/loro/node";
 
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-const client = createClient({
+const client = createClient<typeof ioServer>().config({
     authEndpoint: ({ room }) => {
         return `http://localhost:3112/api/pluv/authorize?room=${room}`;
     },
@@ -26,7 +25,6 @@ const client = createClient({
     presence: z.object({
         count: z.number(),
     }),
-    types,
     wsEndpoint: ({ room }) => {
         return `ws://localhost:3112/api/pluv/room/${room}`;
     },

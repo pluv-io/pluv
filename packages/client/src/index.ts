@@ -12,14 +12,19 @@ export type {
     WebSocketState,
 } from "@pluv/types";
 export { AbstractStorageStore } from "./AbstractStorageStore";
+export type { ClientDefs, PatchDefs, SetKey } from "./ClientDefs";
 export { createClient } from "./createClient";
-export { infer } from "./infer";
-export type { InferCallback, InferIOLike } from "./infer";
+export type { InferIOLike } from "./infer";
 export { MockedRoom } from "./MockedRoom";
 export type { MockedRoomConfig, MockedRoomEvents } from "./MockedRoom";
 export { parsePluvSchema } from "./utils";
 export { PluvClient } from "./PluvClient";
-export type { CreateRoomOptions, EnterRoomParams, PluvClientOptions } from "./PluvClient";
+export type {
+    CreateClientBuilder,
+    CreateRoomOptions,
+    EnterRoomParams,
+    PluvClientOptions,
+} from "./PluvClient";
 export type { PluvProcedureConfig } from "./PluvProcedure";
 export { PluvRoom } from "./PluvRoom";
 export type {
@@ -30,10 +35,15 @@ export type {
     RoomConnectParams,
     RoomEndpoints,
 } from "./PluvRoom";
-export type { PluvRouter, PluvRouterEventConfig } from "./PluvRouter";
+export { PluvRouter } from "./PluvRouter";
+export type { PluvRouterEventConfig } from "./PluvRouter";
 export { register } from "./register";
 export type { RegisterParams } from "./register";
 export type {
+    InferClientInput,
+    InferClientMetadata,
+    InferClientOutput,
+    InferClientPresence,
     InferMetadata,
     InferSchemaInput,
     InferSchemaOutput,

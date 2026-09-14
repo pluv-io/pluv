@@ -1,35 +1,25 @@
-import type { AbstractCrdtDocFactory } from "@pluv/crdt";
-import type { IOLike, IORouterLike, JsonObject } from "@pluv/types";
+import type { IORouterLike, SetKey } from "@pluv/types";
+import type { ClientDefs } from "./ClientDefs";
 import type { PluvProcedure } from "./PluvProcedure";
 
-export type PluvRouterEventConfig<
-    TIO extends IOLike,
-    TPresence extends Record<string, any>,
-    TCrdt extends AbstractCrdtDocFactory<any, any>,
-> = { [P: string]: Pick<PluvProcedure<TIO, any, any, TPresence, TCrdt, "">, "config"> };
+export type PluvRouterEventConfig<TDefs extends ClientDefs = ClientDefs> = {
+    [P: string]: Pick<PluvProcedure<TDefs, any, any>, "config">;
+};
 
 export type MergedRouter<
-    TRouters extends PluvRouter<TIO, TPresence, TCrdt, any>[],
-    TIO extends IOLike,
-    TPresence extends Record<string, any>,
-    TCrdt extends AbstractCrdtDocFactory<any, any>,
-    TRoot extends TRouters[0]["_defs"]["events"],
-> = TRouters extends [
-    infer IHead extends PluvRouter<TIO, TPresence, TCrdt, any>,
-    ...infer ITail extends PluvRouter<TIO, TPresence, TCrdt, any>[],
-]
-    ? MergedRouter<ITail, TIO, TPresence, TCrdt, TRoot & IHead["_defs"]["events"]>
-    : PluvRouter<TIO, TPresence, TCrdt, TRoot>;
+    TRouters extends PluvRouter<any>[] = [],
+    TDefs extends ClientDefs = ClientDefs,
+    TRoot extends Record<string, any> = {},
+> = TRouters extends [infer IHead extends PluvRouter<any>, ...infer ITail extends PluvRouter<any>[]]
+    ? MergedRouter<ITail, TDefs, TRoot & IHead["_defs"]["events"]>
+    : PluvRouter<SetKey<TDefs, "events", TRoot>>;
 
-export class PluvRouter<
-    TIO extends IOLike,
-    TPresence extends Record<string, any>,
-    TCrdt extends AbstractCrdtDocFactory<any, any>,
-    TEvents extends PluvRouterEventConfig<TIO, TPresence, TCrdt> = {},
-> implements IORouterLike<TEvents> {
-    readonly _defs: { events: TEvents } = { events: {} as TEvents };
+export class PluvRouter<TDefs extends ClientDefs = ClientDefs> implements IORouterLike<
+    TDefs["events"]
+> {
+    readonly _defs: { events: TDefs["events"] } = { events: {} as TDefs["events"] };
 
-    constructor(events: TEvents) {
+    constructor(events: TDefs["events"]) {
         const invalidName = Object.keys(events).find((name) => !this._isValidEventName(name));
 
         if (typeof invalidName === "string") {
@@ -41,12 +31,9 @@ export class PluvRouter<
         this._defs = { events };
     }
 
-    public static merge<
-        TRouters extends PluvRouter<TIO, TPresence, TCrdt, any>[],
-        TIO extends IOLike,
-        TPresence extends Record<string, any>,
-        TCrdt extends AbstractCrdtDocFactory<any, any>,
-    >(...routers: TRouters): MergedRouter<TRouters, TIO, TPresence, TCrdt, {}> {
+    public static merge<TRouters extends PluvRouter<any>[]>(
+        ...routers: TRouters
+    ): MergedRouter<TRouters> {
         const events = Object.assign(
             Object.create(null),
             ...routers.map((router) => router._defs.events),
@@ -56,13 +43,7 @@ export class PluvRouter<
             throw new Error('Procedures may not start with "$"');
         }
 
-        return new PluvRouter<any, any, any, any>(events) as MergedRouter<
-            TRouters,
-            TIO,
-            TPresence,
-            TCrdt,
-            {}
-        >;
+        return new PluvRouter<any>(events) as MergedRouter<TRouters>;
     }
 
     private _isValidEventName(name: string): boolean {

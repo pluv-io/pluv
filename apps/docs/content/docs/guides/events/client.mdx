@@ -12,13 +12,12 @@ In pluv.io, you can define custom events with an input validation schema and a f
 ```ts
 // ./frontend/pluv.ts
 
-import { createClient, infer } from "@pluv/client";
+import { createClient } from "@pluv/client";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "./backend/pluv-io";
 
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-const io = createClient({ types });
+const io = createClient<typeof ioServer>().config({});
 
 // Create your custom events as procedures
 const sendMessage = io.procedure

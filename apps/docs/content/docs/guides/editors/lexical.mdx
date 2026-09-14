@@ -74,7 +74,7 @@ import type { InferBundleRoom } from "@pluv/react";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
 
-const io = createClient({
+const io = createClient().config({
   storage: yjs.storage({
     schema: yjs.schema({
       // IMPORTANT!

@@ -14,7 +14,7 @@ import { createBundle createClient } from "@pluv/react";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 
-const io = createClient({/* ... */});
+const io = createClient().config({/* ... */});
 
 // Destructured room bundle
 export const {
@@ -242,7 +242,7 @@ Returns `[myPresence: TPresence | null, updatePresence: Function]`
 Returns the current user's presence, and a function to update the user's presence. Using this hook rerenders the component based on a deep-equality check on the user's presence value. This hook accepts a selector to return a modified presence to reduce rerenders.
 
 ```tsx
-const io = createClient({
+const io = createClient().config({
   presence: z.object({
     selectionId: z.string().nullable(),
     selectionColor: z.string(),
@@ -350,7 +350,7 @@ initializing its storage.
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 
-const io = createClient({
+const io = createClient().config({
   storage: yjs.storage({
     schema: yjs.schema({
       messages: yjs.yArray(s.string()),

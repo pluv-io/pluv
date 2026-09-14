@@ -260,19 +260,14 @@ export default { fetch: app.fetch };
 
 import { createClient } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
-import { createBundle, infer } from "@pluv/react";
+import { createBundle } from "@pluv/react";
 
 // Use a type-import, since this will be used on the frontend
 import type { ioServer } from "./server/pluv";
 
-// Create `types` outside of `createClient` due to TypeScript inference
-// limitations
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-
 // Note that the `wsEndpoint` param is omitted when using
 // `@pluv/platform-pluv`
-export const client = createClient({
-  types,
+export const client = createClient<typeof ioServer>().config({
   // Wherever your auth endpoint was
   authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,
   wsEndpoint: ({ room }) => {

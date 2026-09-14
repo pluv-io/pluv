@@ -1,4 +1,4 @@
-import { infer, createClient } from "@pluv/client";
+import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
@@ -24,10 +24,8 @@ io.server({
     getInitialStorage: () => null,
 });
 
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-createClient({
+createClient<typeof ioServer>().config({
     authEndpoint: () => "",
-    types,
     storage: yjs.storage({
         schema: yjs.schema({
             messages: yjs.yArray(s.string()),
@@ -39,8 +37,7 @@ createClient({
 });
 
 // @ts-expect-error authEndpoint is required
-createClient({
-    types,
+createClient<typeof ioServer>().config({
     storage: yjs.storage({
         schema: yjs.schema({
             messages: yjs.yArray(s.string()),

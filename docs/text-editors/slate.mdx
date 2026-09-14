@@ -67,7 +67,7 @@ import { yjs } from "@pluv/crdt-yjs";
 import type { InferBundleRoom } from "@pluv/react";
 import { createBundle } from "@pluv/react";
 
-const io = createClient({
+const io = createClient().config({
   storage: yjs.storage({
     schema: yjs.schema({
       myEditor: yjs.yXmlText(),
