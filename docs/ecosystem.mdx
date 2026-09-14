@@ -24,7 +24,7 @@ import { addonIndexedDB } from "@pluv/addon-indexeddb";
 import { createClient } from "@pluv/client";
 import type { io } from "../server/io";
 
-const client = createClient<typeof io>();
+const client = createClient<typeof io>().config({});
 
 const room = client.createRoom("my-room", {
   // ... other configs here,
@@ -39,7 +39,7 @@ const room = client.createRoom("my-room", {
 import { addonIndexedDB } from "@pluv/addon-indexeddb";
 import { createBundle, createClient } from "@pluv/react";
 
-const client = createClient<typeof io>();
+const client = createClient<typeof io>().config({});
 
 const { useRoom } = createBundle(client, {
   // ... other configs here,

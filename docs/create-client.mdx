@@ -41,7 +41,7 @@ npm install yjs
 ```ts
 // frontend/io.ts
 
-import { createClient, infer } from "@pluv/client";
+import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
@@ -49,12 +49,7 @@ import { z } from "zod";
 // Use a type import to avoid including the code in your frontend
 import type { ioServer } from "./server/pluv-io";
 
-// Connect your `ioServer` type to the client via `infer`
-// Note this is declared outside of `createClient` to workaround
-// TypeScript inferrence limitations
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-export const client = createClient({
-  types,
+export const client = createClient<typeof ioServer>().config({
   // Optional: Define the storage schema for rooms. This sets
   // the types for storage when using it in your application.
   // `initialStorage` is an optional JSON seed and can be overwritten

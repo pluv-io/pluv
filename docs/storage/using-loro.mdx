@@ -60,16 +60,14 @@ Then, on the frontend, define a `loro.schema` and pass it to `createClient` via 
 ```ts
 // frontend/pluv.ts
 
-import { createClient, infer } from "@pluv/client";
+import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { loro } from "@pluv/crdt-loro";
 import type { InferBundleRoom } from "@pluv/react";
 import { createBundle } from "@pluv/react";
 import type { ioServer } from "../backend";
 
-const types = infer((i) => ({ io: i<typeof ioServer> }));
-const io = createClient({
-  types,
+const io = createClient<typeof ioServer>().config({
   storage: loro.storage({
     schema: loro.schema({
       // Top-level fields must be Loro CRDT nodes (loroList, loroMap, loroText, …)
@@ -185,7 +183,7 @@ import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { loro } from "@pluv/crdt-loro";
 
-const io = createClient({
+const io = createClient().config({
   // ...
   storage: loro.storage({
     schema: loro.schema({

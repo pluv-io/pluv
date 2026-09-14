@@ -77,7 +77,7 @@ Now that we have your endpoint defined, connect your frontend client to your aut
 import { createClient } from "@pluv/react";
 import type { ioServer } from "server/io";
 
-const client = createClient<typeof ioServer>({
+const client = createClient<typeof ioServer>().config({
   // Specify your auth endpoint here
   // Set to `true` if you have authorization on your io instance, and you
   // want to use the default of (room) => `/api/pluv/authorize?room=${room}`
@@ -94,7 +94,7 @@ const client = createClient<typeof ioServer>({
 import { createClient } from "@pluv/react";
 import type { ioServer } from "server/io";
 
-const client = createClient<typeof ioServer>({
+const client = createClient<typeof ioServer>().config({
   authEndpoint: ({ room }) => ({
     url: "/api/authorize",
     // You can use fetch options as well like so
