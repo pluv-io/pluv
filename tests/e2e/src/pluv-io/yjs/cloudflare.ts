@@ -3,9 +3,9 @@ import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
-import type { ioServerSqlite } from "../../server/yjs/cloudflare";
+import type { ioServer } from "../../server/yjs/cloudflare";
 
-const client = createClient<typeof ioServerSqlite>().config({
+const client = createClient<typeof ioServer>().config({
     authEndpoint: ({ metadata, room }) => {
         const url = new URL(`${metadata.authEndpoint}/api/pluv/authorize`);
 
