@@ -127,7 +127,6 @@ export type ProcedureLike<
             | ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>)
             | null;
         input?: StandardSchemaV1<unknown, TInput> | null;
-        resolver: (data: TInput, ...args: any[]) => MaybePromise<TOutput>;
         self?: ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>) | null;
         sync?: ((data: TInput, ...args: any[]) => MaybePromise<Partial<TOutput> | void>) | null;
     };
