@@ -1,6 +1,5 @@
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
-import { PersistenceCloudflareTransactionalStorage } from "@pluv/persistence-cloudflare-transactional-storage";
 import { infer, platformCloudflare } from "@pluv/platform-cloudflare";
 import { z } from "zod";
 
@@ -13,7 +12,6 @@ export const io = createIO()
     .platform(
         platformCloudflare({
             types,
-            persistence: new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" }),
         }),
     )
     .config({

@@ -19,11 +19,10 @@
         "test": "playwright test",
         "test:noop:node": "playwright test ./src/tests/noop/node/**/*",
         "test:loro:node": "playwright test ./src/tests/loro/node/**/*",
-        "test:yjs:cloudflare-kv": "wrangler deploy --dry-run && playwright test ./src/tests/yjs/cloudflare-kv/**/*",
         "test:yjs:cloudflare-sqlite": "wrangler deploy --dry-run && playwright test ./src/tests/yjs/cloudflare-sqlite/**/*",
         "test:yjs:node": "rm -f dev.db && drizzle-kit push && playwright test ./src/tests/yjs/node/**/*",
         "test:yjs:node-redis": "playwright test ./src/tests/yjs/node-redis/**/*",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "pnpm cf:typegen && tsc --noEmit"
     },
     "dependencies": {
         "@blocknote/core": "^0.54.2",
@@ -39,7 +38,6 @@
         "@pluv/crdt-loro": "workspace:^",
         "@pluv/crdt-yjs": "workspace:^",
         "@pluv/io": "workspace:^",
-        "@pluv/persistence-cloudflare-transactional-storage": "workspace:^",
         "@pluv/persistence-redis": "workspace:^",
         "@pluv/platform-cloudflare": "workspace:^",
         "@pluv/platform-node": "workspace:^",

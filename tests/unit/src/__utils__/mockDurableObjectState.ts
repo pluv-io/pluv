@@ -29,13 +29,13 @@ export const createMockDurableObjectState = (): any => {
             };
         }
 
-        if (query.includes("UPDATE") && query.includes("__pluv_storage")) {
-            storage.set(String(binds[1]), String(binds[0]));
+        if (query.includes("INSERT INTO __pluv_storage")) {
+            storage.set(String(binds[0]), String(binds[1]));
             return emptyResult();
         }
 
-        if (query.includes("INSERT INTO __pluv_storage")) {
-            storage.set(String(binds[0]), String(binds[1]));
+        if (query.includes("UPDATE") && query.includes("__pluv_storage")) {
+            storage.set(String(binds[1]), String(binds[0]));
             return emptyResult();
         }
 

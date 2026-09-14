@@ -7,9 +7,9 @@ const LATEST_SNAPSHOT = "snapshot-after-second-edit";
 
 describe("PersistenceCloudflareTransactionalStorage", () => {
     it("writes and reads on the instance returned by initialize", async () => {
-        const persistence = new PersistenceCloudflareTransactionalStorage({
-            mode: "sqlite",
-        }).initialize({ state: createMockDurableObjectState() });
+        const persistence = new PersistenceCloudflareTransactionalStorage().initialize({
+            state: createMockDurableObjectState(),
+        });
 
         await persistence.setStorageState(ROOM_ID, LATEST_SNAPSHOT);
 
@@ -19,13 +19,11 @@ describe("PersistenceCloudflareTransactionalStorage", () => {
     it("keeps writes across a new initialize with the same Durable Object state", async () => {
         const state = createMockDurableObjectState();
 
-        await new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" })
+        await new PersistenceCloudflareTransactionalStorage()
             .initialize({ state })
             .setStorageState(ROOM_ID, LATEST_SNAPSHOT);
 
-        const revived = new PersistenceCloudflareTransactionalStorage({
-            mode: "sqlite",
-        }).initialize({ state });
+        const revived = new PersistenceCloudflareTransactionalStorage().initialize({ state });
 
         await expect(revived.getStorageState(ROOM_ID)).resolves.toBe(LATEST_SNAPSHOT);
     });

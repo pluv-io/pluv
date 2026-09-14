@@ -50,8 +50,7 @@ export class CloudflarePlatform<
             ...(config.roomContext
                 ? {
                       persistence:
-                          config.persistence ??
-                          new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" }),
+                          config.persistence ?? new PersistenceCloudflareTransactionalStorage(),
                   }
                 : {}),
         });
@@ -156,7 +155,7 @@ export class CloudflarePlatform<
         const persistence = (
             this._persistenceProvided
                 ? this.persistence
-                : new PersistenceCloudflareTransactionalStorage({ mode: "sqlite" })
+                : new PersistenceCloudflareTransactionalStorage()
         ).initialize(roomContext);
 
         return new CloudflarePlatform<TEnv, TMeta>({
