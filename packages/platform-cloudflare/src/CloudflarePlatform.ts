@@ -84,7 +84,9 @@ export class CloudflarePlatform<
         const detachedState = this._getDetachedState();
 
         if (!detachedState) {
-            throw new Error("Cloudflare platform requires DurableObjectState for WebSocket hibernation");
+            throw new Error(
+                "Cloudflare platform requires DurableObjectState for WebSocket hibernation",
+            );
         }
 
         detachedState.acceptWebSocket(webSocket.webSocket);
