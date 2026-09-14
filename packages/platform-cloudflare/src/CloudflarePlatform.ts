@@ -68,11 +68,11 @@ export class CloudflarePlatform<
             router: true as const,
         };
 
-        const detachedState = this._getDetachedState();
+        const state = this._getDurableObjectState();
 
-        if (!detachedState) return;
+        if (!state) return;
 
-        detachedState.setWebSocketAutoResponse(
+        state.setWebSocketAutoResponse(
             new WebSocketRequestResponsePair(
                 '{"type":"$ping","data":{}}',
                 JSON.stringify({ type: "$pong", data: {} }),
@@ -81,15 +81,15 @@ export class CloudflarePlatform<
     }
 
     public async acceptWebSocket(webSocket: CloudflareWebSocket): Promise<void> {
-        const detachedState = this._getDetachedState();
+        const state = this._getDurableObjectState();
 
-        if (!detachedState) {
+        if (!state) {
             throw new Error(
                 "Cloudflare platform requires DurableObjectState for WebSocket hibernation",
             );
         }
 
-        detachedState.acceptWebSocket(webSocket.webSocket);
+        state.acceptWebSocket(webSocket.webSocket);
     }
 
     public convertWebSocket(
@@ -106,11 +106,11 @@ export class CloudflarePlatform<
     }
 
     public getLastPing(webSocket: CloudflareWebSocket): number | null {
-        const detachedState = this._getDetachedState();
+        const state = this._getDurableObjectState();
 
-        if (!detachedState) return null;
+        if (!state) return null;
 
-        const timestamp = detachedState.getWebSocketAutoResponseTimestamp(webSocket.webSocket);
+        const timestamp = state.getWebSocketAutoResponseTimestamp(webSocket.webSocket);
 
         return timestamp?.getTime() ?? null;
     }
@@ -131,11 +131,11 @@ export class CloudflarePlatform<
     }
 
     public getWebSockets(): readonly WebSocket[] {
-        const detachedState = this._getDetachedState();
+        const state = this._getDurableObjectState();
 
-        if (!detachedState) return [];
+        if (!state) return [];
 
-        const webSockets = detachedState.getWebSockets() ?? [];
+        const webSockets = state.getWebSockets() ?? [];
 
         return webSockets;
     }
@@ -189,7 +189,7 @@ export class CloudflarePlatform<
         return state;
     }
 
-    private _getDetachedState(): DurableObjectState | null {
+    private _getDurableObjectState(): DurableObjectState | null {
         return this._roomContext?.state ?? null;
     }
 }
