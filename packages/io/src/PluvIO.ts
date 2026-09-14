@@ -147,14 +147,6 @@ export class PluvIO<T extends IODefs = IODefs> {
     public router<TEvents extends PluvRouterEventConfig<T>>(
         events: TEvents,
     ): PluvRouter<SetKey<T, "events", TEvents>> {
-        const invalidName = Object.keys(events).find((name) => name.includes("$"));
-
-        if (typeof invalidName === "string") {
-            throw new Error(oneLine`
-                Invalid event name. Event names must not contain $: "${invalidName}"
-            `);
-        }
-
         return new PluvRouter<SetKey<T, "events", TEvents>>(events);
     }
 

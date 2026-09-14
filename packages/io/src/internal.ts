@@ -1,4 +1,5 @@
 import { createBaseRouter } from "./createBaseRouter";
+import { createInternalPluvRouter } from "./utils";
 
 /**
  * Maintainer / test-only surface. Not part of the public API — shape and
@@ -6,4 +7,5 @@ import { createBaseRouter } from "./createBaseRouter";
  */
 export const __internal = {
     createBaseRouter,
+    createInternalPluvRouter,
 };

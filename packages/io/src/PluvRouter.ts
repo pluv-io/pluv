@@ -1,6 +1,7 @@
 import type { IORouterLike, SetKey } from "@pluv/types";
 import type { IODefs } from "./IODefs";
 import type { PluvProcedure } from "./PluvProcedure";
+import { assertEventNames, createInternalPluvRouter } from "./utils";
 
 export type PluvRouterEventConfig<T extends IODefs = IODefs> = {
     [P: string]: Pick<PluvProcedure<T, any, any>, "config">;
@@ -18,29 +19,30 @@ export class PluvRouter<T extends IODefs = IODefs> implements IORouterLike<T["ev
     readonly _defs: { events: T["events"] } = { events: {} as T["events"] };
 
     constructor(events: T["events"]) {
-        const invalidName = Object.keys(events).find((name) => !this._isValidEventName(name));
-
-        if (typeof invalidName === "string") {
-            throw new Error(
-                `Invalid event name. Event names must be formatted as valid JavaScript variable names: "${invalidName}"`,
-            );
-        }
-
+        assertEventNames(Object.keys(events as Record<string, unknown>), { allowDollar: false });
         this._defs = { events };
     }
 
     public static merge<TRouters extends PluvRouter<any>[]>(
         ...routers: TRouters
     ): MergedRouter<TRouters> {
+        const seen = new Set<string>();
+
+        for (const router of routers) {
+            for (const name of Object.keys(router._defs.events as Record<string, unknown>)) {
+                if (seen.has(name)) {
+                    throw new Error(`Duplicate event name "${name}" when merging routers`);
+                }
+
+                seen.add(name);
+            }
+        }
+
         const events = Object.assign(
             Object.create(null),
             ...routers.map((router) => router._defs.events),
         );
 
-        return new PluvRouter<any>(events) as MergedRouter<TRouters>;
-    }
-
-    private _isValidEventName(name: string): boolean {
-        return /^[a-z_$][a-z0-9_$]*$/gi.test(name);
+        return createInternalPluvRouter(events) as MergedRouter<TRouters>;
     }
 }
