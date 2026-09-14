@@ -48,14 +48,7 @@ export class PluvPlatform extends AbstractPlatform<
         };
         handleMode: "fetch";
         registrationMode: "attached";
-        listeners: {
-            onRoomDestroyed: true;
-            onRoomMessage: false;
-            onStorageDestroyed: true;
-            onStorageUpdated: false;
-            onUserConnected: true;
-            onUserDisconnected: true;
-        };
+        listeners: "webhook";
         router: false;
     }
 > {
@@ -66,14 +59,7 @@ export class PluvPlatform extends AbstractPlatform<
         },
         handleMode: "fetch" as const,
         registrationMode: "attached" as const,
-        listeners: {
-            onRoomDestroyed: true as const,
-            onRoomMessage: false as const,
-            onStorageDestroyed: true as const,
-            onStorageUpdated: false as const,
-            onUserConnected: true as const,
-            onUserDisconnected: true as const,
-        },
+        listeners: "webhook" as const,
         router: false as const,
     };
     public readonly _name = "platformPluv";

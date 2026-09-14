@@ -38,14 +38,7 @@ export class CloudflarePlatform<
         };
         handleMode: "io";
         registrationMode: WebSocketRegistrationMode;
-        listeners: {
-            onRoomDestroyed: true;
-            onRoomMessage: true;
-            onStorageDestroyed: true;
-            onStorageUpdated: true;
-            onUserConnected: true;
-            onUserDisconnected: true;
-        };
+        listeners: "all";
         router: true;
     }
 > {
@@ -75,14 +68,7 @@ export class CloudflarePlatform<
             },
             handleMode: "io" as const,
             registrationMode: config.mode ?? DEFAULT_REGISTRATION_MODE,
-            listeners: {
-                onRoomDestroyed: true as const,
-                onRoomMessage: true as const,
-                onStorageDestroyed: true as const,
-                onStorageUpdated: true as const,
-                onUserConnected: true as const,
-                onUserDisconnected: true as const,
-            },
+            listeners: "all" as const,
             router: true as const,
         };
 
