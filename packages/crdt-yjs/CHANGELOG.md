@@ -1,5 +1,82 @@
 # @pluv/crdt-yjs
 
+## 6.0.0
+
+### Major Changes
+
+- 0ee9d2d: Replace `yjs.doc((t) => …)` / `loro.doc((t) => …)` with a schema builder and JSON seeds.
+
+    `createClient` now takes `storage: yjs.storage({ schema: yjs.schema({ … }) })` (or Loro) plus an optional JSON `initialStorage`. Room-level `initialStorage` is JSON only, not a builder. `useStorage` and `getStorage` return native Yjs/Loro types instead of `YjsType` / `LoroType` wrappers. `CrdtType` and `InferCrdtJson` are removed.
+
+- 67ab7f2: Build IO with `createIO().platform(...).config({ authorize })`.
+
+    `createIO` is no longer a one-shot call. Named platform helpers only take platform options. Pass `authorize`, `context`, and `crdt` to `.config()`.
+
+    ```ts
+    // Before
+    const io = createIO(
+        platformNode({
+            authorize: { secret, user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+        }),
+    );
+
+    // After
+    const io = createIO()
+        .platform(platformNode())
+        .config({
+            authorize: { secret, user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+        });
+    ```
+
+    `platformCloudflare` follows the same split. `authorize.secret` stays on `.config()`.
+
+    Hosted pluv is the exception on secrets: `secretKey` / `publicKey` / `basePath` stay on `platformPluv`. `authorize` on `.config()` is JWT-less (`user` only — no `secret`).
+
+    ```ts
+    // Before
+    const io = createIO(
+        platformPluv({
+            authorize: { user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+            publicKey,
+            secretKey,
+            basePath: "/api/pluv",
+        }),
+    );
+
+    // After
+    const io = createIO()
+        .platform(
+            platformPluv({
+                publicKey,
+                secretKey,
+                basePath: "/api/pluv",
+            }),
+        )
+        .config({
+            authorize: { user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+        });
+    ```
+
+### Patch Changes
+
+- Updated dependencies [ba6805a]
+- Updated dependencies [0ee9d2d]
+- Updated dependencies [d10f401]
+- Updated dependencies [67ab7f2]
+- Updated dependencies [80a5c16]
+- Updated dependencies [392a989]
+- Updated dependencies [1f6f749]
+    - @pluv/types@6.0.0
+    - @pluv/crdt@6.0.0
+
 ## 5.2.3
 
 ### Patch Changes

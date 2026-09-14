@@ -1,5 +1,128 @@
 # @pluv/client
 
+## 6.0.0
+
+### Major Changes
+
+- aa94a5b: Create clients with `createClient<typeof ioServer>().config({ ... })`.
+
+    `createClient` is no longer a one-shot call. `infer((i) => ({ io }))` and the `types` option are removed. Bind the server type as a type argument, then pass presence, storage, and metadata to `.config()`.
+
+    ```ts
+    // Before
+    const types = infer((i) => ({ io: i<typeof ioServer> }));
+    const client = createClient({
+        types,
+        authEndpoint: () => "",
+        presence: z.object({ selectionId: z.string().nullable() }),
+    });
+
+    // After
+    const client = createClient<typeof ioServer>().config({
+        authEndpoint: () => "",
+        presence: z.object({ selectionId: z.string().nullable() }),
+    });
+    ```
+
+    Do not call `createClient<TIO>(options)` — that freezes presence and storage inference. `createClient().config({ ... })` still works when you do not have a server type.
+
+- ba6805a: Require Cloudflare WebSocket hibernation and SQLite-backed Durable Object storage.
+
+    `platformCloudflare({ mode: "attached" })` (standard WebSocket API listeners) is no longer supported. Durable Objects must implement `webSocketMessage`, `webSocketClose`, and `webSocketError` and forward them to the room.
+
+    Key-value Durable Object storage is no longer supported. `PersistenceCloudflareTransactionalStorage({ mode: "kv" })` has been removed; persistence always uses SQLite. Create rooms with `new_sqlite_classes` (or `"storage": "sqlite"`). Existing KV-backed namespaces need a new SQLite Durable Object class and a data move—Cloudflare does not offer an in-place storage-backend switch.
+
+- 0ee9d2d: Replace `yjs.doc((t) => …)` / `loro.doc((t) => …)` with a schema builder and JSON seeds.
+
+    `createClient` now takes `storage: yjs.storage({ schema: yjs.schema({ … }) })` (or Loro) plus an optional JSON `initialStorage`. Room-level `initialStorage` is JSON only, not a builder. `useStorage` and `getStorage` return native Yjs/Loro types instead of `YjsType` / `LoroType` wrappers. `CrdtType` and `InferCrdtJson` are removed.
+
+- 67ab7f2: Build IO with `createIO().platform(...).config({ authorize })`.
+
+    `createIO` is no longer a one-shot call. Named platform helpers only take platform options. Pass `authorize`, `context`, and `crdt` to `.config()`.
+
+    ```ts
+    // Before
+    const io = createIO(
+        platformNode({
+            authorize: { secret, user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+        }),
+    );
+
+    // After
+    const io = createIO()
+        .platform(platformNode())
+        .config({
+            authorize: { secret, user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+        });
+    ```
+
+    `platformCloudflare` follows the same split. `authorize.secret` stays on `.config()`.
+
+    Hosted pluv is the exception on secrets: `secretKey` / `publicKey` / `basePath` stay on `platformPluv`. `authorize` on `.config()` is JWT-less (`user` only — no `secret`).
+
+    ```ts
+    // Before
+    const io = createIO(
+        platformPluv({
+            authorize: { user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+            publicKey,
+            secretKey,
+            basePath: "/api/pluv",
+        }),
+    );
+
+    // After
+    const io = createIO()
+        .platform(
+            platformPluv({
+                publicKey,
+                secretKey,
+                basePath: "/api/pluv",
+            }),
+        )
+        .config({
+            authorize: { user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+        });
+    ```
+
+- 80a5c16: Require authorization for every room connection.
+
+    Open (unauthorized) rooms are removed: `createIO` must configure `authorize`, clients must provide an `authEndpoint`, and connections without a valid token are rejected. Session users are always typed from your authorize schema (at least `{ id: string }`), not `null`.
+
+- 1f6f749: Accept any Standard Schema validator for authorize, presence, metadata, and procedure inputs.
+
+    Zod still works as before on recent versions (3.24+/4). You can also use Valibot, ArkType, or other Standard Schema–compatible libraries. The old `InputZodLike` duck type (`{ parse, _input }`) is removed — schemas must expose `~standard.validate`.
+
+### Minor Changes
+
+- 5036555: Don't require defaulted presence and metadata fields when joining a room.
+
+    If a field has a schema default, TypeScript used to still demand it on `initialPresence` and `metadata`. You can omit those fields now, and the defaults are applied when the room is created.
+
+### Patch Changes
+
+- d10f401: Remove the unused combined `config.resolver` from procedures.
+
+    Event handlers already run via `broadcast`, `self`, and `sync` individually; the merged resolver was never called at runtime.
+
+- Updated dependencies [ba6805a]
+- Updated dependencies [0ee9d2d]
+- Updated dependencies [d10f401]
+- Updated dependencies [67ab7f2]
+- Updated dependencies [80a5c16]
+- Updated dependencies [392a989]
+- Updated dependencies [1f6f749]
+    - @pluv/types@6.0.0
+    - @pluv/crdt@6.0.0
+
 ## 5.2.3
 
 ### Patch Changes

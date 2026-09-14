@@ -1,5 +1,124 @@
 # @pluv/io
 
+## 6.0.0
+
+### Major Changes
+
+- ba6805a: Require Cloudflare WebSocket hibernation and SQLite-backed Durable Object storage.
+
+    `platformCloudflare({ mode: "attached" })` (standard WebSocket API listeners) is no longer supported. Durable Objects must implement `webSocketMessage`, `webSocketClose`, and `webSocketError` and forward them to the room.
+
+    Key-value Durable Object storage is no longer supported. `PersistenceCloudflareTransactionalStorage({ mode: "kv" })` has been removed; persistence always uses SQLite. Create rooms with `new_sqlite_classes` (or `"storage": "sqlite"`). Existing KV-backed namespaces need a new SQLite Durable Object class and a data move—Cloudflare does not offer an in-place storage-backend switch.
+
+- 67ab7f2: Build IO with `createIO().platform(...).config({ authorize })`.
+
+    `createIO` is no longer a one-shot call. Named platform helpers only take platform options. Pass `authorize`, `context`, and `crdt` to `.config()`.
+
+    ```ts
+    // Before
+    const io = createIO(
+        platformNode({
+            authorize: { secret, user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+        }),
+    );
+
+    // After
+    const io = createIO()
+        .platform(platformNode())
+        .config({
+            authorize: { secret, user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+        });
+    ```
+
+    `platformCloudflare` follows the same split. `authorize.secret` stays on `.config()`.
+
+    Hosted pluv is the exception on secrets: `secretKey` / `publicKey` / `basePath` stay on `platformPluv`. `authorize` on `.config()` is JWT-less (`user` only — no `secret`).
+
+    ```ts
+    // Before
+    const io = createIO(
+        platformPluv({
+            authorize: { user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+            publicKey,
+            secretKey,
+            basePath: "/api/pluv",
+        }),
+    );
+
+    // After
+    const io = createIO()
+        .platform(
+            platformPluv({
+                publicKey,
+                secretKey,
+                basePath: "/api/pluv",
+            }),
+        )
+        .config({
+            authorize: { user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+        });
+    ```
+
+- 80a5c16: Require authorization for every room connection.
+
+    Open (unauthorized) rooms are removed: `createIO` must configure `authorize`, clients must provide an `authEndpoint`, and connections without a valid token are rejected. Session users are always typed from your authorize schema (at least `{ id: string }`), not `null`.
+
+- 1f6f749: Accept any Standard Schema validator for authorize, presence, metadata, and procedure inputs.
+
+    Zod still works as before on recent versions (3.24+/4). You can also use Valibot, ArkType, or other Standard Schema–compatible libraries. The old `InputZodLike` duck type (`{ parse, _input }`) is removed — schemas must expose `~standard.validate`.
+
+### Patch Changes
+
+- b5d7caf: Surface procedure and size-limit failures to clients as `$error`.
+
+    If a custom event handler threw, or presence/storage exceeded its size limit, the server used to fail silently from the client's point of view. Those errors now arrive on the same `$error` path already used for invalid input.
+
+- d55f1f7: Fix in-memory persistence reporting the wrong user count for a room.
+
+    `getUsersSize` now counts connections in that room instead of how many rooms exist in memory, matching Redis and other persistence backends.
+
+- a521c50: Fix JWT `maxAge` so it is treated as milliseconds (default 60s), and treat invalid/expired tokens as unauthorized instead of throwing during register.
+
+    Room registration also waits for room initialization to finish before accepting the connection, so clients are not registered against a room that is still loading storage.
+
+- d10f401: Remove the unused combined `config.resolver` from procedures.
+
+    Event handlers already run via `broadcast`, `self`, and `sync` individually; the merged resolver was never called at runtime.
+
+- d46b156: Fix socket error-then-close running disconnect twice.
+
+    A connection that errors and then closes no longer broadcasts a second `$exit` or fires `onUserDisconnected` again.
+
+- 7d858b0: Keep room broadcasts reliable when one socket fails to send.
+
+    A single dead or erroring connection no longer risks dropping the rest of the fan-out or leaving an unhandled rejection while delivering events to everyone else.
+
+- 8ca1791: Fix initial presence not being saved on the server.
+
+    Late joiners could see other users with empty/default presence, and later presence patches could drop fields that were only set when the session started.
+
+- ba4ab54: Fail fast on invalid or conflicting custom event names.
+
+    Event names that use `$` (reserved for built-in protocol events) are now rejected wherever you define a router, not only through `io.router()`. Merging two routers that both define the same event also throws instead of keeping whichever was registered last.
+
+- Updated dependencies [ba6805a]
+- Updated dependencies [0ee9d2d]
+- Updated dependencies [d10f401]
+- Updated dependencies [67ab7f2]
+- Updated dependencies [80a5c16]
+- Updated dependencies [392a989]
+- Updated dependencies [1f6f749]
+    - @pluv/types@6.0.0
+    - @pluv/crdt@6.0.0
+
 ## 5.2.3
 
 ### Patch Changes

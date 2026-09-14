@@ -1,6 +1,6 @@
 {
     "name": "@pluv/pubsub-redis",
-    "version": "5.2.3",
+    "version": "6.0.0",
     "description": "@pluv/io redis pubsub",
     "author": {
         "email": "david@pluv.io",
