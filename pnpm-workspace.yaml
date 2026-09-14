@@ -28,5 +28,8 @@ allowBuilds:
     esbuild: true
     sharp: true
     workerd: true
+# Match Renovate `minimumReleaseAge` (1 day). pnpm 12 defaults to this; set
+# explicitly so the policy is not tied to whatever the current default is.
+minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
     - "@cloudflare/workers-types@4.20260524.1"
