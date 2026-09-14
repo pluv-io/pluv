@@ -825,6 +825,8 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             const user = session.user;
 
             if (!procedure) {
+                // Unknown event types are broadcast on purpose so client-only
+                // MergeEvents procedures can still relay through the room.
                 await this._broadcast({
                     message: message as any,
                     senderId: sessionId,
