@@ -141,3 +141,13 @@
 #nd-sidebar-mobile [class*="0.9375rem"] {
     font-size: inherit;
 }
+
+/* TOC items also carry `prose`, which defaults to 16px — force text-xs */
+#nd-toc,
+#nd-toc .prose {
+    font-size: 0.75rem; /* text-xs / 12px */
+}
+
+#nd-toc .text-sm {
+    font-size: inherit;
+}
