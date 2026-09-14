@@ -2,7 +2,7 @@
 
 > [React.js](https://reactjs.org/) bindings for [@pluv/client](https://www.npmjs.com/package/@pluv/client).
 
-**👉 See full documentation on [pluv.io](https://pluv.io/docs/introduction). 👈**
+**👉 See full documentation on [docs.pluv.io](https://docs.pluv.io/docs). 👈**
 
 ## Installation
 

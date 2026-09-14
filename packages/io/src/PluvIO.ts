@@ -3,7 +3,6 @@ import { noop } from "@pluv/crdt";
 import type { BaseUser, HasRequiredProperty, InferIOAuthorizeUser, SetKey } from "@pluv/types";
 import type { InferInitContextType } from "./AbstractPlatform";
 import type { IODefs } from "./IODefs";
-import type { WebSocketRegisterConfig } from "./IORoom";
 import { PluvProcedure } from "./PluvProcedure";
 import type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
@@ -22,9 +21,8 @@ import type {
     PluvIOLimits,
     PluvIOListeners,
     PluvIORouter,
-    ResolvedPluvIOAuthorize,
 } from "./types";
-import { oneLine, parsePluvSchema } from "./utils";
+import { oneLine, parsePluvSchema, resolveIOAuthorize } from "./utils";
 import { __PLUV_VERSION } from "./version";
 
 export type PluvIOConfig<T extends IODefs = IODefs> = {
@@ -106,7 +104,7 @@ export class PluvIO<T extends IODefs = IODefs> {
             initRest as InferInitContextType<T["platform"]>,
         );
         const authorizeParams = { ...params, ...initContext };
-        const ioAuthorize = this._getIOAuthorize(authorizeParams);
+        const ioAuthorize = resolveIOAuthorize(this._authorize, authorizeParams);
         const parsed = parsePluvSchema(ioAuthorize.user, user);
 
         if (!!this._limits.userIdMaxLength && user.id.length > this._limits.userIdMaxLength) {
@@ -167,15 +165,5 @@ export class PluvIO<T extends IODefs = IODefs> {
             limits: this._limits,
             platform: this._platform,
         });
-    }
-
-    private _getIOAuthorize(
-        options: WebSocketRegisterConfig<T["platform"]>,
-    ): ResolvedPluvIOAuthorize<any, any> {
-        if (typeof this._authorize === "function") {
-            return this._authorize(options);
-        }
-
-        return this._authorize as ResolvedPluvIOAuthorize<any, any>;
     }
 }

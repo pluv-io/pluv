@@ -2,7 +2,7 @@
 
 > Enables [@pluv/io](https://www.npmjs.com/package/@pluv/io) to run on [Node.js](https://nodejs.org/).
 
-**👉 See full documentation on [pluv.io](https://pluv.io/docs/introduction). 👈**
+**👉 See full documentation on [docs.pluv.io](https://docs.pluv.io/docs). 👈**
 
 ## Installation
 

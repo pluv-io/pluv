@@ -1,6 +1,6 @@
 # `@repo/docs`
 
-Documentation site for [pluv.io](https://pluv.io), built with [TanStack Start](https://tanstack.com/start) and [Fumadocs](https://fumadocs.dev). Deployed on [Cloudflare Workers](https://developers.cloudflare.com/workers/).
+Documentation site for [pluv.io](https://pluv.io), hosted at [docs.pluv.io](https://docs.pluv.io). Built with [TanStack Start](https://tanstack.com/start) and [Fumadocs](https://fumadocs.dev). Deployed on [Cloudflare Workers](https://developers.cloudflare.com/workers/).
 
 ## Development
 
