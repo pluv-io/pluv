@@ -2,6 +2,6 @@
 "@pluv/io": patch
 ---
 
-Reject `$` in user router event names consistently, and throw when merging routers that define the same event twice.
+Fail fast on invalid or conflicting custom event names.
 
-Previously `$` was only blocked via `io.router()`, so a direct `PluvRouter` could still register reserved-looking names, and duplicate procedure names on merge silently overwrote each other.
+Event names that use `$` (reserved for built-in protocol events) are now rejected wherever you define a router, not only through `io.router()`. Merging two routers that both define the same event also throws instead of keeping whichever was registered last.
