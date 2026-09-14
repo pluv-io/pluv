@@ -32,6 +32,7 @@ import type { IODefs, IOLikeFromDefs } from "./IODefs";
 import type { PluvRouter } from "./PluvRouter";
 import { RoomSessions } from "./RoomSessions";
 import type { PatchPresenceParams } from "./RoomSessions";
+import { RoomStorage } from "./RoomStorage";
 import { authorize } from "./authorize";
 import { GARBAGE_COLLECT_INTERVAL_MS } from "./constants";
 import type {
@@ -99,7 +100,6 @@ export type WebSocketRegisterConfig<
 export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<T>> {
     public readonly id: string;
 
-    private _doc: Promise<CrdtDocLike<any, any>>;
     private _lastGarbageCollectMs: number = -1 * (GARBAGE_COLLECT_INTERVAL_MS + 1);
     private _teardown: Promise<void> | null = null;
     private _uninitialize: Promise<() => Promise<void>> | null = null;
@@ -108,15 +108,12 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     private readonly _context: PluvContext<T["platform"], T["context"]>;
     private readonly _crdt: T["crdt"];
     private readonly _debug: boolean;
-    private readonly _docFactory: AbstractCrdtDocFactory<any, any>;
-    private readonly _getInitialStorage: GetInitialStorageFn<T["context"]>;
     private readonly _listeners: IORoomListeners<T>;
     private readonly _platform: T["platform"];
     private readonly _roomContext: InferRoomContextType<T["platform"]>;
     private readonly _router: PluvRouter<T>;
     private readonly _sessions: RoomSessions<T>;
-
-    private _storageSeeded: boolean = false;
+    private readonly _storage: RoomStorage<T>;
 
     /**
      * @ignore
@@ -184,13 +181,18 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         this._context = context;
         this._crdt = crdt as T["crdt"];
         this._debug = debug;
-        this._docFactory = crdt.doc(() => ({}));
-        this._getInitialStorage = getInitialStorage;
         this._roomContext = roomContext;
         this._router = router;
         this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), roomContext });
         this._authorize = authorizeConfig;
         this._sessions = new RoomSessions({ platform: this._platform });
+        this._storage = new RoomStorage({
+            docFactory: crdt.doc(() => ({})),
+            getContext: () => this._getContext(),
+            getInitialStorage,
+            platform: this._platform,
+            room: this.id,
+        });
 
         // Listeners are provided from server-level configuration via createRoom
         this._listeners = {
@@ -226,10 +228,21 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             if (!!userId) this._sessions.addUserSession(userId, sessionId);
         });
 
-        const { doc, uninitialize } = this._initialize();
+        this._initialize();
+    }
 
-        this._doc = doc;
-        this._uninitialize = uninitialize;
+    private get _doc(): Promise<CrdtDocLike<any, any>> {
+        if (!this._uninitialize) return this._storage.doc;
+
+        return this._uninitialize.then(() => this._storage.doc);
+    }
+
+    private get _storageSeeded(): boolean {
+        return this._storage.storageSeeded;
+    }
+
+    private set _storageSeeded(value: boolean) {
+        this._storage.storageSeeded = value;
     }
 
     /**
@@ -589,39 +602,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         return await Promise.resolve(context);
     }
 
-    private async _getInitialDoc(): Promise<CrdtDocLike<any, any>> {
-        const doc = this._docFactory.getEmpty();
-
-        const [encodedState, context] = await Promise.all([
-            this._platform.persistence.getStorageState(this.id),
-            this._getContext(),
-        ]);
-
-        if (!encodedState) {
-            const loadedState = await this._getInitialStorage({
-                context,
-                room: this.id,
-            });
-
-            if (!!loadedState && !this._docFactory.isEmpty(loadedState)) {
-                doc.applyEncodedState({ update: loadedState });
-                this._storageSeeded = true;
-            }
-        }
-
-        if (typeof encodedState === "string") {
-            doc.applyEncodedState({ update: encodedState });
-
-            if (!doc.isEmpty()) {
-                this._storageSeeded = true;
-            }
-        }
-
-        doc.rebuildStorage();
-
-        return doc;
-    }
-
     private _getIOAuthorize(
         options: WebSocketRegisterConfig<T["platform"]>,
     ): ResolvedPluvIOAuthorize<any, any> {
@@ -694,7 +674,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 },
             );
 
-            const doc = await this._getInitialDoc();
+            await this._storage.initialize();
 
             const uninitialize = async (): Promise<void> => {
                 // Teardown clears the doc partway through, so re-entering would persist that
@@ -704,28 +684,17 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 this._teardown = (async () => {
                     this._platform.pubSub.unsubscribe(pubSubId);
 
-                    const [resolvedDoc, context] = await Promise.all([
-                        this._doc,
-                        this._getContext(),
-                    ]);
-                    const encodedState = resolvedDoc.getEncodedState();
+                    const context = await this._getContext();
+                    const { encodedState, refusedEmptyPersist, shouldDestroyStorage } =
+                        await this._storage.destroy();
 
-                    // This room has held content, so an unwritten doc here was cleared by a
-                    // teardown rather than by the user.
-                    const shouldDestroyStorage = this._storageSeeded && resolvedDoc.isDirty();
-
-                    if (this._storageSeeded && !shouldDestroyStorage) {
+                    if (refusedEmptyPersist) {
                         this._logDebug(
                             colors.blue(
                                 `Refusing to persist an unwritten document for room: ${this.id}`,
                             ),
                         );
                     }
-
-                    this._storageSeeded = false;
-
-                    resolvedDoc.destroy();
-                    this._doc = Promise.resolve(this._docFactory.getEmpty());
 
                     // Always emit onRoomDestroyed
                     await Promise.resolve(
@@ -763,13 +732,10 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 }
             };
 
-            return { doc, uninitialize };
+            return { uninitialize };
         })();
 
-        this._doc = promise.then((result) => result.doc);
         this._uninitialize = promise.then((result) => result.uninitialize);
-
-        return { doc: this._doc, uninitialize: this._uninitialize };
     }
 
     private _logDebug(...data: any[]): void {
