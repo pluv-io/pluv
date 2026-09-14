@@ -44,12 +44,11 @@ import type {
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
     PluvContext,
-    ResolvedPluvIOAuthorize,
     SendMessageOptions,
     WebSocketSession,
     WebSocketType,
 } from "./types";
-import { oneLine, parsePluvSchema } from "./utils";
+import { oneLine, parsePluvSchema, resolveIOAuthorize } from "./utils";
 
 type BroadcastMessage<TIO extends IORoom<any>> =
     | InferEventMessage<InferIOInput<TIO>>
@@ -548,7 +547,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         token: Maybe<string>,
         options: WebSocketRegisterConfig<T["platform"]>,
     ): Promise<InferIOAuthorizeUser<T["authorize"]> | null> {
-        const ioAuthorize = this._getIOAuthorize(options);
+        const ioAuthorize = resolveIOAuthorize(this._authorize, options);
 
         if (!token) return null;
 
@@ -632,14 +631,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             },
             time: new Date().getTime(),
         } as EventResolverContext<TKind, T>;
-    }
-
-    private _getIOAuthorize(
-        options: WebSocketRegisterConfig<T["platform"]>,
-    ): ResolvedPluvIOAuthorize<any, any> {
-        if (typeof this._authorize === "function") return this._authorize(options);
-
-        return this._authorize as ResolvedPluvIOAuthorize<any, any>;
     }
 
     private _getProcedure(
