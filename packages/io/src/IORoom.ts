@@ -851,6 +851,8 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             }
 
             try {
+                // broadcast, self, and sync resolvers run concurrently and may
+                // race on shared doc / presence state — do not assume ordering.
                 const [broadcast, self, sync] = await Promise.all([
                     procedure.config.broadcast?.(inputs, eventContext),
                     procedure.config.self?.(inputs, eventContext),
