@@ -2,9 +2,9 @@ import type { JsonObject, Maybe } from "@pluv/types";
 import { PING_TIMEOUT_MS } from "./constants";
 import type { IODefs, SetKey } from "./IODefs";
 import { PluvProcedure } from "./PluvProcedure";
-import { PluvRouter } from "./PluvRouter";
+import type { PluvRouter } from "./PluvRouter";
 import type { IOStorageUpdatedEvent, PluvIOLimits } from "./types";
-import { oneLine, pickBy } from "./utils";
+import { createInternalPluvRouter, oneLine, pickBy } from "./utils";
 
 export type CreateBaseRouterParams<T extends IODefs = IODefs> = {
     limits: Pick<PluvIOLimits, "presenceMaxSize" | "storageMaxSize">;
@@ -23,7 +23,7 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
     const logDebug = params.logDebug ?? (() => undefined);
     const procedure = new PluvProcedure<T, {}, {}>();
 
-    return new PluvRouter({
+    return createInternalPluvRouter({
         $getOthers: procedure.sync((data, { room, session, sessions }) => {
             const currentTime = Date.now();
 
