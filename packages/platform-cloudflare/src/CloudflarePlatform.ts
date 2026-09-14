@@ -1,14 +1,12 @@
 import type {
     AbstractPlatformConfig,
     ConvertWebSocketConfig,
-    WebSocketRegistrationMode,
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
 import { PersistenceCloudflareTransactionalStorage } from "@pluv/persistence-cloudflare-transactional-storage";
 import type { Json } from "@pluv/types";
 import { CloudflareWebSocket } from "./CloudflareWebSocket";
-import { DEFAULT_REGISTRATION_MODE } from "./constants";
 
 export type CloudflarePlatformRoomContext<
     TEnv extends Record<string, any>,
@@ -21,9 +19,7 @@ export type CloudflarePlatformRoomContext<
 export type CloudflarePlatformConfig<
     TEnv extends Record<string, any> = {},
     TMeta extends Record<string, Json> = {},
-> = AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>> & {
-    mode?: WebSocketRegistrationMode;
-};
+> = AbstractPlatformConfig<CloudflarePlatformRoomContext<TEnv, TMeta>>;
 
 export class CloudflarePlatform<
     TEnv extends Record<string, any> = {},
@@ -37,7 +33,7 @@ export class CloudflarePlatform<
             secret: true;
         };
         handleMode: "io";
-        registrationMode: WebSocketRegistrationMode;
+        registrationMode: "detached";
         listeners: "all";
         router: true;
     }
@@ -51,7 +47,7 @@ export class CloudflarePlatform<
     constructor(config: CloudflarePlatformConfig<TEnv, TMeta>) {
         super({
             ...config,
-            ...(config.roomContext && (config.mode ?? DEFAULT_REGISTRATION_MODE) === "detached"
+            ...(config.roomContext
                 ? {
                       persistence:
                           config.persistence ??
@@ -67,7 +63,7 @@ export class CloudflarePlatform<
                 secret: true as const,
             },
             handleMode: "io" as const,
-            registrationMode: config.mode ?? DEFAULT_REGISTRATION_MODE,
+            registrationMode: "detached" as const,
             listeners: "all" as const,
             router: true as const,
         };
@@ -88,9 +84,9 @@ export class CloudflarePlatform<
         const detachedState = this._getDetachedState();
 
         if (!detachedState) {
-            webSocket.webSocket.accept();
-
-            return;
+            throw new Error(
+                "Cloudflare platform requires DurableObjectState for WebSocket hibernation",
+            );
         }
 
         detachedState.acceptWebSocket(webSocket.webSocket);
@@ -165,7 +161,6 @@ export class CloudflarePlatform<
 
         return new CloudflarePlatform<TEnv, TMeta>({
             roomContext,
-            mode: this._config.registrationMode,
             persistence,
             pubSub: this.pubSub,
         })._initialize() as this;
@@ -195,10 +190,6 @@ export class CloudflarePlatform<
     }
 
     private _getDetachedState(): DurableObjectState | null {
-        if (this._config.registrationMode !== "detached") return null;
-
-        const detachedState = this._roomContext?.state ?? null;
-
-        return detachedState;
+        return this._roomContext?.state ?? null;
     }
 }
