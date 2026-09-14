@@ -9,16 +9,16 @@ export type BaseUser = {
 export interface BaseClientEventRecord {
     $getOthers: {};
     $initializeSession: {
-        presence: JsonObject;
+        presence: JsonObject | null;
         update: string | null;
     };
     $ping: {};
     $updatePresence: {
-        presence: JsonObject;
+        presence: JsonObject | null;
     };
     $updateStorage: {
         origin: string | null;
-        update: string;
+        update: string | null;
     };
 }
 

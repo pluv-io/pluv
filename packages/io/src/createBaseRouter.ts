@@ -1,4 +1,4 @@
-import type { JsonObject, Maybe } from "@pluv/types";
+import type { BaseClientEventRecord, JsonObject } from "@pluv/types";
 import { PING_TIMEOUT_MS } from "./constants";
 import type { IODefs, SetKey } from "./IODefs";
 import { PluvProcedure } from "./PluvProcedure";
@@ -21,48 +21,49 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
 ): PluvRouter<SetKey<T, "events", {}>> => {
     const { limits, onStorageUpdated } = params;
     const logDebug = params.logDebug ?? (() => undefined);
-    const procedure = new PluvProcedure<T, {}, {}>();
 
     return createInternalPluvRouter({
-        $getOthers: procedure.sync((data, { room, session, sessions }) => {
-            const currentTime = Date.now();
+        $getOthers: new PluvProcedure<T, BaseClientEventRecord["$getOthers"], {}>().sync(
+            (_data, { room, session, sessions }) => {
+                const currentTime = Date.now();
 
-            const others = sessions
-                .filter((wsSession) => {
-                    if (wsSession.id === session?.id) return false;
-                    if (wsSession.quit) return false;
-                    if (currentTime - wsSession.timers.ping > PING_TIMEOUT_MS) return false;
+                const others = sessions
+                    .filter((wsSession) => {
+                        if (wsSession.id === session?.id) return false;
+                        if (wsSession.quit) return false;
+                        if (currentTime - wsSession.timers.ping > PING_TIMEOUT_MS) return false;
 
-                    return true;
-                })
-                .reduce<
-                    Record<
-                        string,
-                        {
-                            connectionId: string;
-                            presence: unknown;
-                            room: string | null;
-                            timers: { presence: number | null };
-                            user: JsonObject | null;
-                        }
-                    >
-                >((acc, { id, presence, timers, user }) => {
-                    acc[id] = {
-                        connectionId: id,
-                        presence,
-                        room,
-                        timers: { presence: timers.presence },
-                        user,
-                    };
+                        return true;
+                    })
+                    .reduce<
+                        Record<
+                            string,
+                            {
+                                connectionId: string;
+                                presence: unknown;
+                                room: string | null;
+                                timers: { presence: number | null };
+                                user: JsonObject | null;
+                            }
+                        >
+                    >((acc, { id, presence, timers, user }) => {
+                        acc[id] = {
+                            connectionId: id,
+                            presence,
+                            room,
+                            timers: { presence: timers.presence },
+                            user,
+                        };
 
-                    return acc;
-                }, {});
+                        return acc;
+                    }, {});
 
-            return { $othersReceived: { others } };
-        }),
-        $initializeSession: procedure
+                return { $othersReceived: { others } };
+            },
+        ),
+        $initializeSession: new PluvProcedure<T, BaseClientEventRecord["$initializeSession"], {}>()
             .broadcast((data, event) => {
-                const presence = (data as any)?.presence ?? null;
+                const presence = data.presence ?? null;
                 const { session } = event;
 
                 if (!session) return {};
@@ -85,7 +86,7 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                  * apply this if the server has not already been seeded (persistence,
                  * getInitialStorage, or an earlier client seed).
                  */
-                const update = (data as any)?.update as Maybe<string>;
+                const update = data.update;
 
                 /**
                  * @description Storage was already initialized. Don't overwrite the current
@@ -141,24 +142,30 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
 
                 return { $storageReceived: { changeKind: "empty", state: encodedState } };
             }),
-        $ping: procedure.self((data, { platform, session }) => {
-            if (!session) return {};
+        $ping: new PluvProcedure<T, BaseClientEventRecord["$ping"], {}>().self(
+            (_data, { platform, session }) => {
+                if (!session) return {};
 
-            const currentTime = new Date().getTime();
-            const prevState = session.webSocket.state;
+                const currentTime = new Date().getTime();
+                const prevState = session.webSocket.state;
 
-            platform.setSerializedState(session.webSocket, {
-                ...prevState,
-                timers: {
-                    ...prevState.timers,
-                    ping: currentTime,
-                },
-            });
+                platform.setSerializedState(session.webSocket, {
+                    ...prevState,
+                    timers: {
+                        ...prevState.timers,
+                        ping: currentTime,
+                    },
+                });
 
-            return { $pong: {} };
-        }),
-        $updatePresence: procedure.broadcast((data, context) => {
-            const presence = (data as any)?.presence;
+                return { $pong: {} };
+            },
+        ),
+        $updatePresence: new PluvProcedure<
+            T,
+            BaseClientEventRecord["$updatePresence"],
+            {}
+        >().broadcast((data, context) => {
+            const presence = data.presence;
             const { session } = context;
 
             if (!session) return {};
@@ -184,9 +191,13 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                 },
             };
         }),
-        $updateStorage: procedure.broadcast(async (data, { context, doc, platform, room }) => {
-            const origin = (data as any)?.origin as Maybe<string>;
-            const update: string | null = (data as any)?.update ?? null;
+        $updateStorage: new PluvProcedure<
+            T,
+            BaseClientEventRecord["$updateStorage"],
+            {}
+        >().broadcast(async (data, { context, doc, platform, room }) => {
+            const origin = data.origin;
+            const update = data.update ?? null;
 
             if (origin === "$initialized") return {};
 
