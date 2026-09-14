@@ -699,9 +699,6 @@ importers:
       '@pluv/io':
         specifier: workspace:^
         version: link:../../packages/io
-      '@pluv/persistence-cloudflare-transactional-storage':
-        specifier: workspace:^
-        version: link:../../packages/persistence-cloudflare-transactional-storage
       '@pluv/persistence-redis':
         specifier: workspace:^
         version: link:../../packages/persistence-redis

@@ -3,10 +3,7 @@
     "main": "src/server/yjs/cloudflare/index.ts",
     "compatibility_date": "2025-04-27",
     "durable_objects": {
-        "bindings": [
-            { "name": "rooms_kv", "class_name": "RoomKVDurableObject" },
-            { "name": "rooms_sqlite", "class_name": "RoomSQLiteDurableObject" },
-        ],
+        "bindings": [{ "name": "rooms_sqlite", "class_name": "RoomSQLiteDurableObject" }],
     },
     "kv_namespaces": [{ "binding": "pluv_kv", "id": "1ccd1ee2a212420195e07a5c822491d5" }],
     "migrations": [
@@ -16,5 +13,6 @@
             "renamed_classes": [{ "from": "RoomDurableObject", "to": "RoomKVDurableObject" }],
             "new_sqlite_classes": ["RoomSQLiteDurableObject"],
         },
+        { "tag": "v3", "deleted_classes": ["RoomKVDurableObject"] },
     ],
 }

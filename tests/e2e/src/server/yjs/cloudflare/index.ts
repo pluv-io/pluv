@@ -1,11 +1,9 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { ioServer as ioServerKV } from "./pluv-io/kv";
-import { ioServer as ioServerSqlite } from "./pluv-io/sqlite";
+import { ioServer } from "./pluv-io/sqlite";
 
-export { RoomKVDurableObject, RoomSQLiteDurableObject } from "./durable-objects";
-export type { ioServer as ioServerKV } from "./pluv-io/kv";
-export type { ioServer as ioServerSqlite } from "./pluv-io/sqlite";
+export { RoomSQLiteDurableObject } from "./durable-objects";
+export type { ioServer } from "./pluv-io/sqlite";
 
 const app = new Hono<{ Bindings: CloudflareEnv }>()
     .use(cors({ origin: "*" }))
@@ -15,9 +13,8 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
 
         if (!roomId) return c.text("Not found", 404);
 
-        const namespace = roomId.startsWith("kv") ? c.env.rooms_kv : c.env.rooms_sqlite;
-        const durableObjectId = namespace.idFromName(roomId);
-        const room = namespace.get(durableObjectId);
+        const durableObjectId = c.env.rooms_sqlite.idFromName(roomId);
+        const room = c.env.rooms_sqlite.get(durableObjectId);
 
         return await room.fetch(request);
     })
@@ -27,10 +24,7 @@ const app = new Hono<{ Bindings: CloudflareEnv }>()
 
         if (!roomId) return c.text("Not found", 404);
 
-        const namespace = roomId.startsWith("kv") ? c.env.rooms_kv : c.env.rooms_sqlite;
-        const durableObjectId = namespace.idFromName(roomId);
-
-        const ioServer = roomId.startsWith("kv") ? ioServerKV : ioServerSqlite;
+        const durableObjectId = c.env.rooms_sqlite.idFromName(roomId);
 
         const userId = c.req.query("user_id") ?? crypto.randomUUID();
         const user = { id: userId, name: `name:${userId}` };
