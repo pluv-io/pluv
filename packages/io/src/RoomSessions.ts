@@ -40,6 +40,17 @@ export class RoomSessions<T extends IODefs = IODefs> {
         return this._sessions.delete(sessionId);
     }
 
+    public deleteConnection(sessionId: string): AbstractWebSocket | null {
+        const webSocket = this._sessions.get(sessionId) ?? null;
+
+        if (!webSocket) return null;
+
+        webSocket.state = { ...webSocket.state, quit: true };
+        this._sessions.delete(sessionId);
+
+        return webSocket;
+    }
+
     public get(sessionId: string): AbstractWebSocket | undefined {
         return this._sessions.get(sessionId);
     }
@@ -75,6 +86,14 @@ export class RoomSessions<T extends IODefs = IODefs> {
         );
     }
 
+    public getQuitters(): readonly AbstractWebSocket[] {
+        const currentTime = new Date().getTime();
+
+        return Array.from(this._sessions.values()).filter(
+            (pluvWs) => !this._isLive(pluvWs, currentTime),
+        );
+    }
+
     public getSession(webSocket: WebSocketType<T["platform"]>): WebSocketSession<T> {
         const pluvWs = this.resolve(webSocket);
 
@@ -96,11 +115,7 @@ export class RoomSessions<T extends IODefs = IODefs> {
          * @date December 21, 2022
          */
         return Array.from(this._sessions.values()).reduce((count, pluvWs) => {
-            if (pluvWs.state.quit) return count;
-
-            const pingTime = this._platform.getLastPing(pluvWs) ?? pluvWs.state.timers.ping;
-
-            return currentTime - pingTime > PING_TIMEOUT_MS ? count : count + 1;
+            return this._isLive(pluvWs, currentTime) ? count + 1 : count;
         }, 0);
     }
 
@@ -187,5 +202,13 @@ export class RoomSessions<T extends IODefs = IODefs> {
 
     public values(): IterableIterator<AbstractWebSocket> {
         return this._sessions.values();
+    }
+
+    private _isLive(pluvWs: AbstractWebSocket, currentTime: number): boolean {
+        if (pluvWs.state.quit) return false;
+
+        const pingTime = this._platform.getLastPing(pluvWs) ?? pluvWs.state.timers.ping;
+
+        return currentTime - pingTime <= PING_TIMEOUT_MS;
     }
 }

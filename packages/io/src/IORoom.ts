@@ -33,7 +33,7 @@ import type { PluvRouter } from "./PluvRouter";
 import { RoomSessions } from "./RoomSessions";
 import type { PatchPresenceParams } from "./RoomSessions";
 import { authorize } from "./authorize";
-import { GARBAGE_COLLECT_INTERVAL_MS, PING_TIMEOUT_MS } from "./constants";
+import { GARBAGE_COLLECT_INTERVAL_MS } from "./constants";
 import type {
     EventResolverContext,
     EventResolverKind,
@@ -414,14 +414,14 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
 
     private async _closeWebSockets(webSockets: readonly AbstractWebSocket[]): Promise<void> {
         const closeWebSocket = async (webSocket: AbstractWebSocket): Promise<void> => {
-            webSocket.state = { ...webSocket.state, quit: true };
-
             const sessionId = webSocket.sessionId;
+            const deleted = this._sessions.deleteConnection(sessionId);
+
+            if (!deleted) return;
 
             this._logDebug(
                 `${colors.blue(`Unregistering connection for room ${this.id}:`)} ${sessionId}`,
             );
-            this._sessions.delete(sessionId);
 
             await this._platform.persistence.deleteUser(this.id, sessionId).catch(() => null);
             await this._broadcast({
@@ -429,7 +429,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 senderId: sessionId,
             });
 
-            const session = this._sessions.toSession(webSocket);
+            const session = this._sessions.toSession(deleted);
             const user = session.user;
 
             if (!!user) this._sessions.removeUserSession(user.id, sessionId);
@@ -452,7 +452,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             }
 
             this._logDebug(
-                `${colors.blue(`Unregistered connection for room ${this.id}:`)} ${webSocket.sessionId}`,
+                `${colors.blue(`Unregistered connection for room ${this.id}:`)} ${deleted.sessionId}`,
             );
         };
 
@@ -474,14 +474,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     }
 
     private async _emitQuitters(): Promise<void> {
-        const currentTime = new Date().getTime();
-        const quitters = Array.from(this._sessions.values()).filter((pluvWs) => {
-            const pingTime = this._platform.getLastPing(pluvWs) ?? pluvWs.state.timers.ping;
-
-            return pluvWs.state.quit || currentTime - pingTime > PING_TIMEOUT_MS;
-        });
-
-        await this._closeWebSockets(quitters);
+        await this._closeWebSockets(this._sessions.getQuitters());
     }
 
     private async _emitRegistered(pluvWs: AbstractWebSocket): Promise<void> {
