@@ -99,6 +99,7 @@ export type GetInitialStorageFn<TContext extends Record<string, any>> = (
 ) => MaybePromise<Maybe<string>>;
 
 export type HandleMode = "io" | "fetch";
+export type ListenerMode = "all" | "webhook";
 export type WebSocketRegistrationMode = "attached" | "detached";
 
 export interface PlatformConfig {
@@ -107,14 +108,7 @@ export interface PlatformConfig {
     };
     handleMode: HandleMode;
     registrationMode: WebSocketRegistrationMode;
-    listeners: {
-        onRoomDestroyed?: boolean;
-        onRoomMessage?: boolean;
-        onStorageDestroyed?: boolean;
-        onStorageUpdated?: boolean;
-        onUserConnected?: boolean;
-        onUserDisconnected?: boolean;
-    };
+    listeners: ListenerMode;
     router?: boolean;
 }
 
@@ -174,15 +168,13 @@ export type PluvIORouter<T extends IODefs = IODefs> =
 export type InferPlatformConfig<TPlatform extends AbstractPlatform<any, any, any, any>> =
     TPlatform extends AbstractPlatform<any, any, any, infer IConfig> ? IConfig : never;
 
-export type InferPlatformListeners<TPlatform extends AbstractPlatform<any, any, any, any>> = keyof {
-    [
-        P in keyof PlatformConfig["listeners"] as InferPlatformConfig<TPlatform>["listeners"][P] extends
-            | true
-            | undefined
-            ? P
-            : never
-    ]: true;
+type AllowedListenersByMode = {
+    all: keyof BasePluvIOListeners;
+    webhook: "onRoomDestroyed" | "onStorageDestroyed" | "onUserConnected" | "onUserDisconnected";
 };
+
+export type InferPlatformListeners<TPlatform extends AbstractPlatform<any, any, any, any>> =
+    AllowedListenersByMode[InferPlatformConfig<TPlatform>["listeners"]];
 
 export type InferPlatformRouter<TPlatform extends AbstractPlatform<any, any, any, any>> =
     InferPlatformConfig<TPlatform>["router"];

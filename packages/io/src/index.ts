@@ -64,6 +64,7 @@ export type {
     IOStorageUpdatedEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
+    ListenerMode,
     PlatformConfig,
     PluvContext,
     PluvIOAuthorize,

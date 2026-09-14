@@ -37,14 +37,7 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
         };
         handleMode: "io";
         registrationMode: WebSocketRegistrationMode;
-        listeners: {
-            onRoomDestroyed: true;
-            onRoomMessage: true;
-            onStorageDestroyed: true;
-            onStorageUpdated: true;
-            onUserConnected: true;
-            onUserDisconnected: true;
-        };
+        listeners: "all";
         router: true;
     }
 > {
@@ -69,14 +62,7 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
             },
             handleMode: "io" as const,
             registrationMode: mode,
-            listeners: {
-                onRoomDestroyed: true as const,
-                onRoomMessage: true as const,
-                onStorageDestroyed: true as const,
-                onStorageUpdated: true as const,
-                onUserConnected: true as const,
-                onUserDisconnected: true as const,
-            },
+            listeners: "all" as const,
             router: true as const,
         };
     }

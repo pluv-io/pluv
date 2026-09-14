@@ -23,11 +23,6 @@ export type TestPlatformConfig = {
     serializedStates?: ReadonlyMap<TestSocket, WebSocketSerializedState>;
 };
 
-/**
- * @description The config generic must be spelled out with literal types. Left to the default
- * `PlatformConfig`, the flags widen to `boolean` and `@pluv/io` infers that listeners such as
- * `onStorageDestroyed` are unsupported.
- */
 export class TestPlatform extends AbstractPlatform<
     TestWebSocket,
     {},
@@ -36,14 +31,7 @@ export class TestPlatform extends AbstractPlatform<
         authorize: { secret: true };
         handleMode: "io";
         registrationMode: WebSocketRegistrationMode;
-        listeners: {
-            onRoomDestroyed: true;
-            onRoomMessage: true;
-            onStorageDestroyed: true;
-            onStorageUpdated: true;
-            onUserConnected: true;
-            onUserDisconnected: true;
-        };
+        listeners: "all";
         router: true;
     }
 > {
@@ -82,14 +70,7 @@ export class TestPlatform extends AbstractPlatform<
             authorize: { secret: true as const },
             handleMode: "io" as const,
             registrationMode: mode,
-            listeners: {
-                onRoomDestroyed: true as const,
-                onStorageDestroyed: true as const,
-                onStorageUpdated: true as const,
-                onUserConnected: true as const,
-                onUserDisconnected: true as const,
-                onRoomMessage: true as const,
-            },
+            listeners: "all" as const,
             router: true as const,
         };
     }
