@@ -1047,7 +1047,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         const patched = this._usersManager.patchPresence(
             connectionId,
             data.presence as InferClientPresence<TDefs>,
-            data.timers.presence,
+            data.seq.presence,
         );
         const myClientId = !!myself ? this._usersManager.getClientId(myself) : null;
         const clientId = this._usersManager.getClientId(connectionId);
@@ -1062,7 +1062,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
                 connectionId,
                 data: message.user as Id<InferIOAuthorizeUser<InferIOAuthorize<TDefs["io"]>>>,
                 presence: data.presence as InferClientPresence<TDefs>,
-                presenceTimer: data.timers.presence,
+                presenceSeq: data.seq.presence,
             });
 
             if (!added.presenceChanged) return;
@@ -1123,7 +1123,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
                 connectionIds: other.connectionIds,
                 data: other.data,
                 presence: other.presence as InferClientPresence<TDefs> | null,
-                presenceTimer: other.timers.presence,
+                presenceSeq: other.seq.presence,
             })),
         );
         this._usersManager.setMyConnectionIds(data.myConnectionIds);
@@ -1183,7 +1183,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             connectionId,
             data: user,
             presence: (data.presence as InferClientPresence<TDefs> | null) ?? undefined,
-            presenceTimer: data.timers.presence,
+            presenceSeq: data.seq.presence,
         });
 
         const presence = this._usersManager.myPresence;
@@ -1389,7 +1389,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             connectionId,
             data: data.user,
             presence: data.presence as InferClientPresence<TDefs>,
-            presenceTimer: data.timers.presence,
+            presenceSeq: data.seq.presence,
         });
 
         if (added.isMyself) return;

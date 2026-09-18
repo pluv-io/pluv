@@ -6,8 +6,8 @@ import type { WebSocketSession, WebSocketType } from "./types";
 
 export interface PatchPresenceParams {
     presence: JsonObject | null;
+    seq?: number | null;
     sessionId: string;
-    timer?: number | null;
 }
 
 export interface RoomSessionsConfig<T extends IODefs = IODefs> {
@@ -56,12 +56,12 @@ export class RoomSessions<T extends IODefs = IODefs> {
     }
 
     public getLatestPresence(userId: string): {
-        timer: number | null;
         presence: JsonObject | null;
+        seq: number | null;
     } {
         const sessionIds = Array.from(this._userSessions.get(userId)?.values() ?? []);
 
-        if (!sessionIds.length) return { timer: null, presence: null };
+        if (!sessionIds.length) return { presence: null, seq: null };
 
         return sessionIds.reduce(
             (state, sessionId) => {
@@ -71,17 +71,17 @@ export class RoomSessions<T extends IODefs = IODefs> {
 
                 const session = pluvWs.session;
                 const presence = session.presence;
-                const timer = session.timers.presence;
+                const seq = session.seq.presence;
 
                 if (session.user.id !== userId) return state;
-                if (typeof state.timer !== "number") return { presence, timer };
-                if (typeof timer !== "number") return state;
+                if (typeof state.seq !== "number") return { presence, seq };
+                if (typeof seq !== "number") return state;
 
-                return timer > state.timer ? { presence, timer } : state;
+                return seq > state.seq ? { presence, seq } : state;
             },
-            { presence: null, timer: null } as {
+            { presence: null, seq: null } as {
                 presence: JsonObject | null;
-                timer: number | null;
+                seq: number | null;
             },
         );
     }
@@ -169,37 +169,44 @@ export class RoomSessions<T extends IODefs = IODefs> {
     }
 
     public setPresence(params: PatchPresenceParams): void {
-        const { presence, sessionId, timer: _timer } = params;
-
-        const requested = _timer ?? new Date().getTime();
+        const { presence, seq: requested, sessionId } = params;
         const pluvWs = this._sessions.get(sessionId) ?? null;
 
         if (!pluvWs) return;
 
         const wsSession = pluvWs.session;
         const user = wsSession.user;
-
         const sessionIds = user
             ? new Set<string>([...(this._userSessions.get(user.id) ?? []), sessionId])
             : new Set([sessionId]);
+        const currentMax = Array.from(sessionIds).reduce<number | null>((max, sId) => {
+            const seq = this._sessions.get(sId)?.session.seq.presence ?? null;
+
+            if (typeof seq !== "number") return max;
+            if (typeof max !== "number") return seq;
+
+            return seq > max ? seq : max;
+        }, null);
+        const next =
+            typeof requested === "number"
+                ? requested
+                : typeof currentMax === "number"
+                  ? currentMax + 1
+                  : 1;
 
         sessionIds.forEach((sId) => {
-            const pWs = this._sessions.get(sId);
-            const session = pWs?.session;
+            const session = this._sessions.get(sId)?.session;
 
             if (!session) return;
 
             const prevState = session.webSocket.state;
-            const previous = prevState.timers.presence;
-            const timer =
-                typeof previous === "number" ? Math.max(requested, previous + 1) : requested;
 
             this._platform.setSerializedState(session.webSocket, {
                 ...prevState,
                 presence,
-                timers: {
-                    ...prevState.timers,
-                    presence: timer,
+                seq: {
+                    ...prevState.seq,
+                    presence: next,
                 },
             });
         });

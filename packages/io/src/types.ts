@@ -54,6 +54,9 @@ export type SendMessageOptions =
 
 export interface WebSocketSessionTimers {
     ping: number;
+}
+
+export interface WebSocketSessionSeq {
     presence: number | null;
 }
 
@@ -61,6 +64,7 @@ export interface WebSocketSerializedState {
     presence: JsonObject | null;
     quit: boolean;
     room: string;
+    seq: WebSocketSessionSeq;
     timers: WebSocketSessionTimers;
 }
 

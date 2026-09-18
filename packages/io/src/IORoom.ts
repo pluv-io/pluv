@@ -437,7 +437,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             this._platform.setSerializedState(pluvWs, {
                 ...prevState,
                 presence: latest.presence,
-                timers: { ...prevState.timers, presence: latest.timer },
+                seq: { ...prevState.seq, presence: latest.seq },
             });
             this._sessions.addUserSession(user.id, pluvWs.sessionId);
 
@@ -583,7 +583,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                     presence,
                     sessionId,
                     state: encodedState,
-                    timers: { presence: session.timers.presence },
+                    seq: { presence: session.seq.presence },
                     userCount: stats.userCount,
                 },
             },
@@ -712,10 +712,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                     null) as JsonObject | null;
             },
             set presence(presence: JsonObject | null) {
-                const previous = session.webSocket.state.timers.presence;
-                const timer = typeof previous === "number" ? Math.max(time, previous + 1) : time;
-
-                roomSessions.setPresence({ presence, sessionId: session.id, timer });
+                roomSessions.setPresence({ presence, sessionId: session.id });
             },
             room: this.id,
             session,

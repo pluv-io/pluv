@@ -78,4 +78,5 @@ export type {
     WebSocketRegistrationMode,
     WebSocketSerializedState,
     WebSocketSession,
+    WebSocketSessionSeq,
 } from "./types";

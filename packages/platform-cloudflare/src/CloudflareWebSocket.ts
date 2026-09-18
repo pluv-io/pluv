@@ -105,9 +105,9 @@ export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
             presence: null,
             quit: false,
             room,
+            seq: { presence: null },
             timers: {
                 ping: new Date().getTime(),
-                presence: null,
             },
         };
 

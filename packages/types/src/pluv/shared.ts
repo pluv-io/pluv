@@ -44,7 +44,7 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = {
             connectionIds: string[];
             data: Id<InferIOAuthorizeUser<TAuthorize>>;
             presence: JsonObject | null;
-            timers: { presence: number | null };
+            seq: { presence: number | null };
         }[];
     };
     $pong: {};
@@ -54,7 +54,7 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = {
     };
     $presenceUpdated: {
         presence: JsonObject;
-        timers: { presence: number | null };
+        seq: { presence: number | null };
         user: Id<InferIOAuthorizeUser<TAuthorize>>;
     };
     $registered: {
@@ -62,7 +62,7 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = {
         presence: JsonObject | null;
         sessionId: string;
         state: string | null;
-        timers: { presence: number | null };
+        seq: { presence: number | null };
         userCount: number;
     };
     $storageReceived: {
@@ -78,7 +78,7 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = {
     $userJoined: {
         connectionId: string;
         presence: JsonObject;
-        timers: { presence: number | null };
+        seq: { presence: number | null };
         user: Id<InferIOAuthorizeUser<TAuthorize>>;
     };
     $usersPage:
