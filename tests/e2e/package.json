@@ -42,7 +42,6 @@
         "@pluv/platform-cloudflare": "workspace:^",
         "@pluv/platform-node": "workspace:^",
         "@pluv/platform-pluv": "workspace:^",
-        "@pluv/pubsub-redis": "workspace:^",
         "@pluv/react": "workspace:^",
         "@pluv/types": "workspace:^",
         "@slate-yjs/core": "^1.0.2",

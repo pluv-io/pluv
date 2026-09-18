@@ -1,4 +1,5 @@
 import { serve, type HttpBindings } from "@hono/node-server";
+import { InferIORoom } from "@pluv/io";
 import { Option, program } from "commander";
 import Crypto, { randomBytes } from "crypto";
 import { Hono } from "hono";
@@ -8,9 +9,9 @@ import Url from "node:url";
 import { match } from "path-to-regexp";
 import { WebSocketServer } from "ws";
 import { cluster } from "./cluster";
-import { io1st, ioServer1st, ioServer2nd, rooms1, rooms2 } from "./pluv-io";
+import { io, ioRooms, ioServer } from "./pluv-io";
 
-export type { ioServer1st as ioServer } from "./pluv-io";
+export type { ioServer } from "./pluv-io";
 
 const options = program
     .description("Pluv server running on node")
@@ -40,7 +41,7 @@ const app = new Hono<{ Bindings: HttpBindings }>()
         }
 
         const id = Crypto.randomUUID();
-        const token = await io1st.createToken({
+        const token = await io.createToken({
             request: c.req.raw,
             room: roomId,
             user: { id, name: `user:${id}` },
@@ -76,34 +77,18 @@ const server = serve(
 ) as Http.Server;
 const wsServer = new WebSocketServer({ server });
 
-const getRoom1 = (roomId: string): ReturnType<typeof ioServer1st.createRoom> => {
-    Array.from(rooms1.values()).forEach((room) => {
-        if (!room.getSize()) rooms1.delete(room.id);
+const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
+    Array.from(ioRooms.values()).forEach((room) => {
+        if (!room.getSize()) ioRooms.delete(room.id);
     });
 
-    const existing = rooms1.get(roomId);
+    const existing = ioRooms.get(roomId);
 
     if (existing) return existing;
 
-    const newRoom = ioServer1st.createRoom(roomId);
+    const newRoom = ioServer.createRoom(roomId);
 
-    rooms1.set(roomId, newRoom);
-
-    return newRoom;
-};
-
-const getRoom2 = (roomId: string): ReturnType<typeof ioServer2nd.createRoom> => {
-    Array.from(rooms2.values()).forEach((room) => {
-        if (!room.getSize()) rooms2.delete(room.id);
-    });
-
-    const existing = rooms2.get(roomId);
-
-    if (existing) return existing;
-
-    const newRoom = ioServer2nd.createRoom(roomId);
-
-    rooms2.set(roomId, newRoom);
+    ioRooms.set(roomId, newRoom);
 
     return newRoom;
 };
@@ -125,8 +110,7 @@ wsServer.on("connection", async (ws, req) => {
     if (!roomId) return ws.close(1003, "Invalid room name");
 
     const token = parsed.query?.token as string | undefined;
-    const io = parsed.query?.io as string | undefined;
-    const room = !io ? getRoom1(roomId) : getRoom2(roomId);
+    const room = getRoom(roomId);
 
     await room.register(ws, { request: req, token });
 });
