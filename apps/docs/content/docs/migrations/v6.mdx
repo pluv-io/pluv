@@ -123,3 +123,13 @@ export const ioServer = io.server({ router, getInitialStorage });
 
 Hosted pluv keeps JWT-less `authorize: { user }` on `.config()` and `secretKey` on `platformPluv({ ... })`. Node and Cloudflare still require `authorize.secret`.
 
+## UserInfo is a person
+
+`UserInfo` is `{ data, presence }`. Lookup is `data.id` (`getOther` / `useOther`).
+
+`getOthers()` / `useOthers()` stay the presence-bearing set in mode `all`. Room size is `getRoomStats` / `useRoomStats`. `listUsers({ cursor, limit })` pages everyone currently in the room (including you), identities only, on the client room and on `IORoom`.
+
+Procedure and size-limit failures arrive on `room.subscribe.error` / `useRoomError`.
+
+Default `maxConnections` is 256. Raising it for a large room requires `dangerouslyAllowHighPresenceFanout: true`.
+
