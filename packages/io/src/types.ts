@@ -129,6 +129,16 @@ export type PluvIOAuthorize<
 
 export interface PluvIOLimits {
     /**
+     * @description Allow a maxConnections value that would otherwise be rejected.
+     */
+    dangerouslyAllowHighPresenceFanout?: boolean | null;
+    /**
+     * @description Maximum live sockets in a room. Extra registers are rejected.
+     * Must be a positive integer. Defaults to 256 so N² stays under the 100_000
+     * fan-out budget.
+     */
+    maxConnections?: number | null;
+    /**
      * @description Maximum size of presence object in bytes
      */
     presenceMaxSize?: number | null;

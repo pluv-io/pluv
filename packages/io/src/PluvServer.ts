@@ -152,6 +152,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             crdt: this._config.crdt,
             debug: debug ?? this._config.debug,
             getInitialStorage: this._getInitialStorage,
+            limits: this._config.limits,
             async onRoomDestroyed(event) {
                 logDebug(`${colors.blue("Deleting empty room:")} ${room}`);
 

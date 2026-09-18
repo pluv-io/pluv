@@ -20,6 +20,7 @@ import type {
     MaybePromise,
     MergeEvents,
     RoomLike,
+    RoomStats,
     UpdateMyPresenceAction,
 } from "@pluv/types";
 import type { Dispatch, FC, ReactNode } from "react";
@@ -120,7 +121,7 @@ export interface CreateBundle<TDefs extends ClientDefs = ClientDefs> {
         options?: SubscriptionHookOptions<Id<TValue> | null>,
     ) => Id<TValue> | null;
     useOther: <TValue extends unknown = UserInfo<TDefs["io"], InferClientPresence<TDefs>>>(
-        connectionId: string,
+        userId: string,
         selector?: (other: UserInfo<TDefs["io"], InferClientPresence<TDefs>>) => TValue,
         options?: SubscriptionHookOptions<TValue | null>,
     ) => TValue | null;
@@ -141,6 +142,10 @@ export interface CreateBundle<TDefs extends ClientDefs = ClientDefs> {
         TDefs["events"],
         InferJson<TDefs["storage"]>
     >;
+    useRoomStats: <TValue extends unknown = RoomStats>(
+        selector?: (stats: RoomStats) => TValue,
+        options?: SubscriptionHookOptions<TValue>,
+    ) => TValue;
     useStorage: <
         TKey extends keyof InferJson<TDefs["storage"]>,
         TData extends unknown = InferJson<TDefs["storage"]>[TKey],

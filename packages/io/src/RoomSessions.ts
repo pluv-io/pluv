@@ -106,6 +106,12 @@ export class RoomSessions<T extends IODefs = IODefs> {
         return Array.from(this._sessions.values()).map((pluvWs) => this.toSession(pluvWs));
     }
 
+    public getLiveSessions(currentTime: number = Date.now()): readonly WebSocketSession<T>[] {
+        return Array.from(this._sessions.values())
+            .filter((pluvWs) => this._isLive(pluvWs, currentTime))
+            .map((pluvWs) => this.toSession(pluvWs));
+    }
+
     public getSize(): number {
         const currentTime = new Date().getTime();
 
@@ -165,7 +171,7 @@ export class RoomSessions<T extends IODefs = IODefs> {
     public setPresence(params: PatchPresenceParams): void {
         const { presence, sessionId, timer: _timer } = params;
 
-        const timer = _timer ?? new Date().getTime();
+        const requested = _timer ?? new Date().getTime();
         const pluvWs = this._sessions.get(sessionId) ?? null;
 
         if (!pluvWs) return;
@@ -184,6 +190,9 @@ export class RoomSessions<T extends IODefs = IODefs> {
             if (!session) return;
 
             const prevState = session.webSocket.state;
+            const previous = prevState.timers.presence;
+            const timer =
+                typeof previous === "number" ? Math.max(requested, previous + 1) : requested;
 
             this._platform.setSerializedState(session.webSocket, {
                 ...prevState,

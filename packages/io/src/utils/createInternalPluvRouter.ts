@@ -1,6 +1,6 @@
 import type { IODefs } from "../IODefs";
 import { PluvRouter } from "../PluvRouter";
-import { assertEventNames } from "./eventNames";
+import { assertEventNames } from "./assertEventNames";
 
 /**
  * Build a router that may include `$` protocol events. Not part of the public

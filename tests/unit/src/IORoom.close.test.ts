@@ -15,7 +15,7 @@ type Room = {
     onMessage: (socket: TestSocket) => (event: { data: string }) => Promise<void>;
 };
 
-const lastMessage = (socket: TestSocket, type: string): { type: string; data: any } => {
+const lastMessage = (socket: TestSocket, type: string): Record<string, any> => {
     const message = socket.messages.findLast((entry) => entry.type === type);
 
     if (!message) throw new Error(`Missing ${type} message`);
@@ -57,8 +57,10 @@ describe("IORoom close", () => {
         expect(disconnected).toEqual(["session-1"]);
         expect(observer.messages.filter((message) => message.type === "$exit")).toHaveLength(1);
         expect(lastMessage(observer, "$exit").data.sessionId).toBe("session-1");
+        expect(lastMessage(observer, "$exit").data.user).toEqual({ id: "session-1" });
+        expect(lastMessage(observer, "$exit").user).toEqual({ id: "session-1" });
         expect(room.getSize()).toBe(1);
-        expect(lastMessage(observer, "$othersReceived").data.others["session-1"]).toBeUndefined();
+        expect(lastMessage(observer, "$othersReceived").data.others).toEqual([]);
     });
 
     it("does not tear down storage when one of two sockets leaves", async () => {
@@ -93,7 +95,9 @@ describe("IORoom close", () => {
         expect(roomDestroyed).toEqual([]);
         expect(storageDestroyed).toEqual([]);
         expect(lastMessage(second, "$exit").data.sessionId).toBe("session-1");
-        expect(lastMessage(second, "$othersReceived").data.others["session-1"]).toBeUndefined();
+        expect(lastMessage(second, "$exit").data.user).toEqual({ id: "session-1" });
+        expect(lastMessage(second, "$exit").user).toEqual({ id: "session-1" });
+        expect(lastMessage(second, "$othersReceived").data.others).toEqual([]);
     });
 
     it("evicts one session without destroying the room", async () => {
@@ -121,6 +125,8 @@ describe("IORoom close", () => {
         expect(room.getSize()).toBe(1);
         expect(roomDestroyed).toEqual([]);
         expect(lastMessage(second, "$exit").data.sessionId).toBe("session-1");
-        expect(lastMessage(second, "$othersReceived").data.others["session-1"]).toBeUndefined();
+        expect(lastMessage(second, "$exit").data.user).toEqual({ id: "session-1" });
+        expect(lastMessage(second, "$exit").user).toEqual({ id: "session-1" });
+        expect(lastMessage(second, "$othersReceived").data.others).toEqual([]);
     });
 });

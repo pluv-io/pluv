@@ -37,6 +37,11 @@ export type {
 } from "./AbstractWebSocket";
 export { authorize } from "./authorize";
 export type { AuthorizeModule, AuthorizeParams, JWT, JWTEncodeParams } from "./authorize";
+export {
+    DEFAULT_MAX_CONNECTIONS,
+    LIST_USERS_DEFAULT_LIMIT,
+    LIST_USERS_MAX_LIMIT,
+} from "./constants";
 export { createIO } from "./createIO";
 export type {
     IOConfigParams,

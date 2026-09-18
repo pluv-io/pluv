@@ -23,6 +23,7 @@ export type {
     CreateClientBuilder,
     CreateRoomOptions,
     EnterRoomParams,
+    InferMetadata,
     PluvClientOptions,
 } from "./PluvClient";
 export type { PluvProcedureConfig } from "./PluvProcedure";
@@ -44,7 +45,6 @@ export type {
     InferClientMetadata,
     InferClientOutput,
     InferClientPresence,
-    InferMetadata,
     InferSchemaInput,
     InferSchemaOutput,
     PublicKey,

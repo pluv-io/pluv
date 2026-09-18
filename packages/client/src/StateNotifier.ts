@@ -2,6 +2,7 @@ import type {
     Id,
     IOLike,
     JsonObject,
+    RoomStats,
     StateNotifierSubjects,
     SubscriptionCallback,
     UserInfo,
@@ -25,6 +26,7 @@ export class StateNotifier<TIO extends IOLike, TPresence extends Record<string, 
         "my-presence": makeSubject<TPresence>(),
         myself: makeSubject<Readonly<Id<UserInfo<TIO, TPresence>>> | null>(),
         others: makeSubject<readonly Id<UserInfo<TIO, TPresence>>[]>(),
+        roomStats: makeSubject<RoomStats>(),
         "storage-loaded": makeSubject<true>(),
     };
 

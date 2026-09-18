@@ -10,6 +10,7 @@ import { PluvServer, PluvServerConfig } from "./PluvServer";
 import type { JWTEncodeParams } from "./authorize";
 import { authorize } from "./authorize";
 import {
+    DEFAULT_MAX_CONNECTIONS,
     MAX_PRESENCE_SIZE_BYTES,
     MAX_STORAGE_SIZE_BYTES,
     MAX_USER_ID_LENGTH,
@@ -22,7 +23,7 @@ import type {
     PluvIOListeners,
     PluvIORouter,
 } from "./types";
-import { oneLine, parsePluvSchema, resolveIOAuthorize } from "./utils";
+import { oneLine, parsePluvSchema, resolveIOAuthorize, assertPresenceFanoutBudget } from "./utils";
 import { __PLUV_VERSION } from "./version";
 
 export type PluvIOConfig<T extends IODefs = IODefs> = {
@@ -84,6 +85,8 @@ export class PluvIO<T extends IODefs = IODefs> {
         this._crdt = crdt as CrdtLibraryType<any>;
         this._debug = debug;
         this._limits = {
+            dangerouslyAllowHighPresenceFanout: false,
+            maxConnections: DEFAULT_MAX_CONNECTIONS,
             presenceMaxSize: MAX_PRESENCE_SIZE_BYTES,
             storageMaxSize: MAX_STORAGE_SIZE_BYTES,
             userIdMaxLength: MAX_USER_ID_LENGTH,
@@ -93,6 +96,8 @@ export class PluvIO<T extends IODefs = IODefs> {
         this._platform = platform;
 
         if (context) this._context = context;
+
+        assertPresenceFanoutBudget(this._limits);
     }
 
     public async createToken(

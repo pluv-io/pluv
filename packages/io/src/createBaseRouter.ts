@@ -1,16 +1,28 @@
-import type { BaseClientEventRecord, JsonObject } from "@pluv/types";
-import { PING_TIMEOUT_MS } from "./constants";
+import type { BaseClientEventRecord } from "@pluv/types";
 import type { IODefs, SetKey } from "./IODefs";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouter } from "./PluvRouter";
 import type { IOStorageUpdatedEvent, PluvIOLimits } from "./types";
-import { createInternalPluvRouter, oneLine, pickBy } from "./utils";
+import {
+    createInternalPluvRouter,
+    getMyConnectionIds,
+    groupLiveUsers,
+    oneLine,
+    pageLiveUsers,
+    pickBy,
+} from "./utils";
 
 export type CreateBaseRouterParams<T extends IODefs = IODefs> = {
     limits: Pick<PluvIOLimits, "presenceMaxSize" | "storageMaxSize">;
     logDebug?: (...data: any[]) => void;
     onStorageUpdated: (event: IOStorageUpdatedEvent<T>) => void;
 };
+
+const baseProcedureFactory =
+    <T extends IODefs>() =>
+    <TEvent extends keyof BaseClientEventRecord>() => {
+        return new PluvProcedure<T, BaseClientEventRecord[TEvent], {}>();
+    };
 
 /**
  * Built-in `$` protocol events. Kept separate from `PluvServer` so the protocol
@@ -21,60 +33,93 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
 ): PluvRouter<SetKey<T, "events", {}>> => {
     const { limits, onStorageUpdated } = params;
     const logDebug = params.logDebug ?? (() => undefined);
+    const baseProcedure = baseProcedureFactory<T>();
 
     return createInternalPluvRouter({
-        $getOthers: new PluvProcedure<T, BaseClientEventRecord["$getOthers"], {}>().sync(
-            (_data, { room, session, sessions }) => {
-                const currentTime = Date.now();
+        $getOthers: baseProcedure<"$getOthers">().self((_data, { session, sessions }) => {
+            const presenceTimerById = new Map(
+                sessions.map((item) => [item.id, item.timers.presence] as const),
+            );
+            const others = groupLiveUsers(sessions, {
+                excludeSessionId: session.id,
+            }).map(({ connectionIds, data, presence }) => ({
+                connectionIds,
+                data,
+                presence,
+                timers: {
+                    presence: connectionIds.reduce<number | null>((max, id) => {
+                        const timer = presenceTimerById.get(id) ?? null;
 
-                const others = sessions
-                    .filter((wsSession) => {
-                        if (wsSession.id === session?.id) return false;
-                        if (wsSession.quit) return false;
-                        if (currentTime - wsSession.timers.ping > PING_TIMEOUT_MS) return false;
+                        if (typeof timer !== "number") return max;
+                        if (typeof max !== "number") return timer;
 
-                        return true;
-                    })
-                    .reduce<
-                        Record<
-                            string,
-                            {
-                                connectionId: string;
-                                presence: unknown;
-                                room: string | null;
-                                timers: { presence: number | null };
-                                user: JsonObject | null;
-                            }
-                        >
-                    >((acc, { id, presence, timers, user }) => {
-                        acc[id] = {
-                            connectionId: id,
-                            presence,
-                            room,
-                            timers: { presence: timers.presence },
-                            user,
-                        };
+                        return timer > max ? timer : max;
+                    }, null),
+                },
+            }));
 
-                        return acc;
-                    }, {});
+            return {
+                $othersReceived: {
+                    myConnectionIds: getMyConnectionIds(sessions, session),
+                    others,
+                },
+            };
+        }),
+        $listUsers: baseProcedure<"$listUsers">().self((data, { sessions }) => {
+            const result = pageLiveUsers(sessions, data);
 
-                return { $othersReceived: { others } };
-            },
-        ),
-        $initializeSession: new PluvProcedure<T, BaseClientEventRecord["$initializeSession"], {}>()
+            if (!result.success) {
+                return {
+                    $usersPage: {
+                        requestId: data.requestId,
+                        success: false,
+                        error: {
+                            code:
+                                result.error.code === "INVALID_LIMIT" ? "INVALID_LIMIT" : "FAILED",
+                            message: result.error.message,
+                        },
+                    },
+                };
+            }
+
+            return {
+                $usersPage: {
+                    requestId: data.requestId,
+                    success: true,
+                    pageInfo: result.pageInfo,
+                    users: result.users,
+                },
+            };
+        }),
+        $initializeSession: baseProcedure<"$initializeSession">()
             .broadcast((data, event) => {
                 const presence = data.presence ?? null;
                 const { session } = event;
 
                 if (!session) return {};
 
-                event.presence = presence;
+                const userId = session.user.id;
+                const latestTimer = event.sessions.reduce<number | null>((max, other) => {
+                    if (other.quit) return max;
+                    if (other.user?.id !== userId) return max;
+
+                    const timer = other.timers.presence;
+
+                    if (typeof timer !== "number") return max;
+                    if (typeof max !== "number") return timer;
+
+                    return timer > max ? timer : max;
+                }, null);
+
+                // Connecting another tab is not a presence write. Keep the last
+                // `$updatePresence` instead of last-connect.
+                if (typeof latestTimer !== "number") event.presence = presence;
 
                 return {
                     $userJoined: {
                         connectionId: session.id,
                         user: session.user,
-                        presence,
+                        presence: session.presence ?? presence ?? {},
                         timers: { presence: session.webSocket.state.timers.presence },
                     },
                 };
@@ -142,29 +187,23 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
 
                 return { $storageReceived: { changeKind: "empty", state: encodedState } };
             }),
-        $ping: new PluvProcedure<T, BaseClientEventRecord["$ping"], {}>().self(
-            (_data, { platform, session }) => {
-                if (!session) return {};
+        $ping: baseProcedure<"$ping">().self((_data, { platform, session }) => {
+            if (!session) return {};
 
-                const currentTime = new Date().getTime();
-                const prevState = session.webSocket.state;
+            const currentTime = new Date().getTime();
+            const prevState = session.webSocket.state;
 
-                platform.setSerializedState(session.webSocket, {
-                    ...prevState,
-                    timers: {
-                        ...prevState.timers,
-                        ping: currentTime,
-                    },
-                });
+            platform.setSerializedState(session.webSocket, {
+                ...prevState,
+                timers: {
+                    ...prevState.timers,
+                    ping: currentTime,
+                },
+            });
 
-                return { $pong: {} };
-            },
-        ),
-        $updatePresence: new PluvProcedure<
-            T,
-            BaseClientEventRecord["$updatePresence"],
-            {}
-        >().broadcast((data, context) => {
+            return { $pong: {} };
+        }),
+        $updatePresence: baseProcedure<"$updatePresence">().broadcast((data, context) => {
             const presence = data.presence;
             const { session } = context;
 
@@ -187,42 +226,41 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
             return {
                 $presenceUpdated: {
                     presence: updated,
-                    timers: { presence: session.timers.presence },
+                    timers: { presence: session.webSocket.state.timers.presence },
+                    user: session.user,
                 },
             };
         }),
-        $updateStorage: new PluvProcedure<
-            T,
-            BaseClientEventRecord["$updateStorage"],
-            {}
-        >().broadcast(async (data, { context, doc, platform, room }) => {
-            const origin = data.origin;
-            const update = data.update ?? null;
+        $updateStorage: baseProcedure<"$updateStorage">().broadcast(
+            async (data, { context, doc, platform, room }) => {
+                const origin = data.origin;
+                const update = data.update ?? null;
 
-            if (origin === "$initialized") return {};
+                if (origin === "$initialized") return {};
 
-            const updated = update === null ? doc : doc.applyEncodedState({ update });
-            const encodedState = updated.getEncodedState();
-            const storageSize = new TextEncoder().encode(encodedState).length;
+                const updated = update === null ? doc : doc.applyEncodedState({ update });
+                const encodedState = updated.getEncodedState();
+                const storageSize = new TextEncoder().encode(encodedState).length;
 
-            if (!!limits.storageMaxSize && storageSize > limits.storageMaxSize) {
-                throw new Error(oneLine`
+                if (!!limits.storageMaxSize && storageSize > limits.storageMaxSize) {
+                    throw new Error(oneLine`
                         Large Storage. Storage must be at most
                         ${limits.storageMaxSize.toLocaleString()} bytes.
                         Current size: ${storageSize.toLocaleString()} bytes
                     `);
-            }
+                }
 
-            await platform.persistence.setStorageState(room, encodedState);
+                await platform.persistence.setStorageState(room, encodedState);
 
-            onStorageUpdated({
-                context,
-                encodedState,
-                platform,
-                room,
-            });
+                onStorageUpdated({
+                    context,
+                    encodedState,
+                    platform,
+                    room,
+                });
 
-            return { $storageUpdated: { state: encodedState } };
-        }),
+                return { $storageUpdated: { state: encodedState } };
+            },
+        ),
     });
 };

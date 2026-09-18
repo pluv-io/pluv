@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 const BASE_CLIENT_EVENT_KEYS = Object.keys({
     $getOthers: true,
     $initializeSession: true,
+    $listUsers: true,
     $ping: true,
     $updatePresence: true,
     $updateStorage: true,
@@ -21,6 +22,7 @@ describe("createBaseRouter", () => {
             [
                 "$getOthers",
                 "$initializeSession",
+                "$listUsers",
                 "$ping",
                 "$updatePresence",
                 "$updateStorage",
