@@ -19,7 +19,9 @@ import type {
     IOEventMessage,
     MaybePromise,
     MergeEvents,
+    PublicEventKey,
     RoomLike,
+    RoomError,
     RoomStats,
     UpdateMyPresenceAction,
 } from "@pluv/types";
@@ -56,7 +58,7 @@ export type MockedRoomProviderProps<TDefs extends ClientDefs = ClientDefs> =
  * `EventProxy`, which is `room.subscribe.event`.
  */
 export type EventProxy<TDefs extends ClientDefs = ClientDefs> = {
-    [event in keyof InferClientOutput<TDefs>]: {
+    [event in PublicEventKey<InferClientOutput<TDefs>>]: {
         useEvent: (
             callback: (
                 data: Id<IOEventMessage<MergeEvents<TDefs["events"], TDefs["io"]>, event>>,
@@ -105,7 +107,7 @@ export interface CreateBundle<TDefs extends ClientDefs = ClientDefs> {
         InferStorage<TDefs["storage"]>,
         InferJson<TDefs["storage"]>
     >;
-    useEvent: <TType extends keyof InferClientOutput<TDefs>>(
+    useEvent: <TType extends PublicEventKey<InferClientOutput<TDefs>>>(
         type: TType,
         callback: Parameters<EventProxy<TDefs>[TType]["useEvent"]>[0],
     ) => void;
@@ -142,6 +144,7 @@ export interface CreateBundle<TDefs extends ClientDefs = ClientDefs> {
         TDefs["events"],
         InferJson<TDefs["storage"]>
     >;
+    useRoomError: (callback: (error: RoomError) => void) => void;
     useRoomStats: <TValue extends unknown = RoomStats>(
         selector?: (stats: RoomStats) => TValue,
         options?: SubscriptionHookOptions<TValue>,

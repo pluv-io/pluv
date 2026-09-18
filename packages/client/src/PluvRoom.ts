@@ -19,6 +19,8 @@ import type {
     MergeEvents,
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
+    RoomError,
+    RoomErrorSubscriptionCallback,
     RoomEventListenerMap,
     RoomLike,
     RoomStats,
@@ -34,6 +36,7 @@ import type {
     WebSocketState,
 } from "@pluv/types";
 import { ConnectionState, StorageState } from "@pluv/types";
+import { makeSubject, subscribe } from "wonka";
 import type { AbstractStorageStore } from "./AbstractStorageStore";
 import type { ClientDefs } from "./ClientDefs";
 import {
@@ -204,6 +207,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     private readonly _eventNotifier = new EventNotifier<
         MergeEvents<TDefs["events"], TDefs["io"]>
     >();
+    private readonly _errorSubject = makeSubject<RoomError>();
     private readonly _intervals: IntervalIds = {
         heartbeat: null,
     };
@@ -613,6 +617,12 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
                         >,
                     ) => {
                         return fn("connection", callback);
+                    };
+                }
+
+                if (prop === "error") {
+                    return (callback: RoomErrorSubscriptionCallback): (() => void) => {
+                        return subscribe(callback)(this._errorSubject.source).unsubscribe;
                     };
                 }
 
@@ -1332,6 +1342,15 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         this._stateNotifier.subjects.others.next(remaining);
     }
 
+    private _handleRoomError(message: IOEventMessage<TDefs["io"]>): void {
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TDefs["io"]>>["$error"];
+
+        this._errorSubject.next({
+            message: data.message,
+            stack: data.stack ?? null,
+        });
+    }
+
     private _handleRoomStats(message: IOEventMessage<TDefs["io"]>): void {
         const data = message.data as BaseIOEventRecord<InferIOAuthorize<TDefs["io"]>>["$roomStats"];
 
@@ -1547,11 +1566,17 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             this._logDebug("WebSocket event received: ", message.type, message);
         }
 
-        this._eventNotifier
-            .subject(message.type as keyof InferClientOutput<TDefs>)
-            .next(message as any);
+        if (!message.type.startsWith("$")) {
+            this._eventNotifier
+                .subject(message.type as keyof InferClientOutput<TDefs>)
+                .next(message as any);
+        }
 
         switch (message.type) {
+            case "$error": {
+                this._handleRoomError(message);
+                return;
+            }
             case "$exit": {
                 this._handleExit(message);
                 return;
