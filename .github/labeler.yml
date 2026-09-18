@@ -29,8 +29,5 @@
 "@pluv/platform-node":
     - any: ["packages/platform-node/**", "!packages/platform-node/package.json"]
 
-"@pluv/pubsub-redis":
-    - any: ["packages/pubsub-redis/**", "!packages/pubsub-redis/package.json"]
-
 "@pluv/react":
     - any: ["packages/react/**", "!packages/react/package.json"]

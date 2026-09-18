@@ -22,7 +22,7 @@ describe("PluvRouter event names and merge", () => {
 
     it("allows $ protocol events via __internal.createInternalPluvRouter", () => {
         const io = createAuthorizedIO({ platform: { mode: "detached" } });
-        const procedure = io.procedure.sync(() => ({ $pong: {} }));
+        const procedure = io.procedure.self(() => ({ $pong: {} }));
 
         expect(() =>
             __internal.createInternalPluvRouter({ $ping: procedure } as any),
@@ -40,7 +40,7 @@ describe("PluvRouter event names and merge", () => {
 
     it("merges an internal base router with a user router when keys do not overlap", () => {
         const io = createAuthorizedIO({ platform: { mode: "detached" } });
-        const ping = io.procedure.sync(() => ({ $pong: {} }));
+        const ping = io.procedure.self(() => ({ $pong: {} }));
         const echo = io.procedure.broadcast(() => ({ ok: {} }));
         const base = __internal.createInternalPluvRouter({ $ping: ping } as any);
         const user = io.router({ echo });

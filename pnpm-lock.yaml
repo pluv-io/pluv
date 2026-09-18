@@ -584,28 +584,6 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
 
-  packages/pubsub-redis:
-    dependencies:
-      '@pluv/io':
-        specifier: workspace:^
-        version: link:../io
-      '@types/node':
-        specifier: ^26.5.1
-        version: 26.5.1
-    devDependencies:
-      '@pluv/tsconfig':
-        specifier: workspace:^
-        version: link:../tsconfig
-      ioredis:
-        specifier: ^6.0.0
-        version: 6.0.0(supports-color@10.2.2)
-      tsdown:
-        specifier: ^0.23.0
-        version: 0.23.0(tsx@4.23.13)(typescript@7.0.2)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-
   packages/react:
     dependencies:
       '@pluv/client':
@@ -711,9 +689,6 @@ importers:
       '@pluv/platform-pluv':
         specifier: workspace:^
         version: link:../../packages/platform-pluv
-      '@pluv/pubsub-redis':
-        specifier: workspace:^
-        version: link:../../packages/pubsub-redis
       '@pluv/react':
         specifier: workspace:^
         version: link:../../packages/react
@@ -871,9 +846,6 @@ importers:
       '@pluv/platform-pluv':
         specifier: workspace:^
         version: link:../../packages/platform-pluv
-      '@pluv/pubsub-redis':
-        specifier: workspace:^
-        version: link:../../packages/pubsub-redis
       '@pluv/react':
         specifier: workspace:^
         version: link:../../packages/react

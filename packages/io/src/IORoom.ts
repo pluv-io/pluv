@@ -43,7 +43,6 @@ import {
 } from "./constants";
 import type {
     EventResolverContext,
-    EventResolverKind,
     GetInitialStorageFn,
     IORoomDestroyedEvent,
     IORoomListenerEvent,
@@ -695,12 +694,12 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         return await Promise.resolve(context);
     }
 
-    private _createEventResolverContext<TKind extends EventResolverKind>(params: {
+    private _createEventResolverContext(params: {
         context: T["context"];
         doc: CrdtDocLike<any, any>;
-        session: TKind extends "sync" ? WebSocketSession<T> | null : WebSocketSession<T>;
+        session: WebSocketSession<T>;
         sessions: readonly WebSocketSession<T>[];
-    }): EventResolverContext<TKind, T> {
+    }): EventResolverContext<T> {
         const { context, doc, session, sessions } = params;
         const roomSessions = this._sessions;
         const storage = this._storage;
@@ -714,19 +713,15 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             },
             platform: this._platform,
             get presence() {
-                return (session?.webSocket.state.presence ??
-                    session?.presence ??
+                return (session.webSocket.state.presence ??
+                    session.presence ??
                     null) as JsonObject | null;
             },
             set presence(presence: JsonObject | null) {
-                const sessionId = session?.id;
-
-                if (!sessionId) return;
-
                 const previous = session.webSocket.state.timers.presence;
                 const timer = typeof previous === "number" ? Math.max(time, previous + 1) : time;
 
-                roomSessions.setPresence({ presence, sessionId, timer });
+                roomSessions.setPresence({ presence, sessionId: session.id, timer });
             },
             room: this.id,
             session,
@@ -738,7 +733,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 storage.storageSeeded = value;
             },
             time,
-        } as EventResolverContext<TKind, T>;
+        };
     }
 
     private _getProcedure(
@@ -789,10 +784,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                     switch (options.type) {
                         case "self": {
                             await this._sendSelfMessage(message, sender);
-                            return;
-                        }
-                        case "sync": {
-                            await this._sendSyncMessage(message, sender);
                             return;
                         }
                         case "broadcast":
@@ -965,12 +956,11 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             }
 
             try {
-                // broadcast, self, and sync resolvers run concurrently and may
+                // broadcast and self resolvers run concurrently and may
                 // race on shared doc / presence state — do not assume ordering.
-                const [broadcast, self, sync] = await Promise.all([
+                const [broadcast, self] = await Promise.all([
                     procedure.config.broadcast?.(inputs, eventContext),
                     procedure.config.self?.(inputs, eventContext),
-                    procedure.config.sync?.(inputs, eventContext),
                 ]);
 
                 const handleBroadcast = async () => {
@@ -996,25 +986,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                     await Promise.all(messages);
                 };
 
-                const handleSync = async () => {
-                    if (!sync) return;
-
-                    await this._platform.pubSub.publish(this.id, {
-                        connectionId: session.id,
-                        options: { type: "sync" },
-                        room: this.id,
-                        user,
-                        ...message,
-                    });
-
-                    const messages = Object.entries(sync).map(async ([type, data]) => {
-                        await this._sendSelfMessage({ data, type }, { sessionId, user });
-                    });
-
-                    await Promise.all(messages);
-                };
-
-                await Promise.all([handleBroadcast(), handleSelf(), handleSync()]);
+                await Promise.all([handleBroadcast(), handleSelf()]);
             } catch (error) {
                 pluvWs.handleError({
                     error,
@@ -1121,55 +1093,5 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 await this.garbageCollect();
             }
         }
-    }
-
-    private async _sendSyncMessage(
-        message: EventMessage<string, any>,
-        sender: SendMessageSender | null,
-    ): Promise<void> {
-        if (!sender) return;
-
-        const connectionId = sender.sessionId;
-
-        if (typeof connectionId !== "string") return;
-
-        const [doc, context] = await Promise.all([this._doc, this._getContext()]);
-        const resolverCtx = this._createEventResolverContext<"sync">({
-            context,
-            doc,
-            session: null,
-            sessions: this._sessions.getLiveSessions(),
-        });
-
-        const resolver = this._getProcedure(message)?.config.sync;
-
-        if (!resolver) return;
-
-        let inputs: InferIOInput<this>[keyof T["events"]];
-
-        try {
-            inputs = this._getProcedureInputs(message);
-        } catch {
-            return;
-        }
-
-        const output = await resolver(inputs, resolverCtx);
-
-        if (!output) return;
-
-        await Promise.all(
-            Object.keys(output).map((type) => {
-                const data = output[type] ?? {};
-
-                return this._platform.pubSub.publish(this.id, {
-                    connectionId,
-                    data,
-                    options: { type: "self" },
-                    room: this.id,
-                    type,
-                    user: sender.user as InferIOAuthorizeUser<T["authorize"]>,
-                });
-            }),
-        );
     }
 }

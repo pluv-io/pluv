@@ -7,9 +7,7 @@ import type { ioServer } from "../../server/yjs/node-redis";
 
 const client = createClient<typeof ioServer>().config({
     authEndpoint: ({ room }) => {
-        const [roomName] = room.split("_");
-
-        return `http://localhost:3103/api/authorize?roomName=${roomName}`;
+        return `http://localhost:3103/api/authorize?roomName=${room}`;
     },
     storage: yjs.storage({
         schema: yjs.schema({
@@ -29,13 +27,7 @@ const client = createClient<typeof ioServer>().config({
         count: z.number(),
     }),
     wsEndpoint: ({ room }) => {
-        const [roomName, io] = room.split("_");
-
-        const url = new URL(`ws://localhost:3103/api/room/${roomName}/websocket`);
-
-        if (io === "1") url.searchParams.set("io", "1");
-
-        return url.toString();
+        return `ws://localhost:3103/api/room/${room}/websocket`;
     },
 });
 

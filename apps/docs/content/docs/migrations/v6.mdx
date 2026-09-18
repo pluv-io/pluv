@@ -133,3 +133,9 @@ Procedure and size-limit failures arrive on `room.subscribe.error` / `useRoomErr
 
 Default `maxConnections` is 256. Raising it for a large room requires `dangerouslyAllowHighPresenceFanout: true`.
 
+## Redis pubsub and procedure.sync are gone
+
+`@pluv/pubsub-redis` is removed. `io.procedure.sync()` is removed. A live room (occupancy, presence, `listUsers`) is not split across Node processes.
+
+`@pluv/persistence-redis` still persists CRDT storage. `platformNode({ persistence })` no longer takes a `pubSub`. If you used `.sync()` on a procedure, move that work to `.self()` or `.broadcast()`.
+
