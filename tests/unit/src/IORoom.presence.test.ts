@@ -83,7 +83,7 @@ describe("IORoom presence", () => {
                 connectionIds: ["session-1"],
                 data: { id: "session-1" },
                 presence: { cursor: 1, name: "ada" },
-                timers: { presence: expect.any(Number) },
+                seq: { presence: expect.any(Number) },
             },
         ]);
 
@@ -103,7 +103,7 @@ describe("IORoom presence", () => {
                 connectionIds: ["session-1"],
                 data: { id: "session-1" },
                 presence: { cursor: 2, name: "ada" },
-                timers: { presence: expect.any(Number) },
+                seq: { presence: expect.any(Number) },
             },
         ]);
     });
@@ -123,10 +123,10 @@ describe("IORoom presence", () => {
             connectionId: "session-2",
             presence: { cursor: 9, name: "bob" },
         });
-        expect(typeof lastMessage(first, "$userJoined").data.timers.presence).toBe("number");
+        expect(typeof lastMessage(first, "$userJoined").data.seq.presence).toBe("number");
     });
 
-    it("stamps a newer timer on the first $presenceUpdated after initialize", async () => {
+    it("stamps a newer seq on the first $presenceUpdated after initialize", async () => {
         const { io, room } = createRoom("presence-first-write");
         const first = new TestSocket("session-1");
         const second = new TestSocket("session-2");
@@ -137,13 +137,13 @@ describe("IORoom presence", () => {
         await registerAuthorized(room, second, { io });
         await initializeSession(room, second, { cursor: 9, name: "bob" });
 
-        const joinTimer = lastMessage(first, "$userJoined").data.timers.presence as number;
+        const joinSeq = lastMessage(first, "$userJoined").data.seq.presence as number;
 
         await updatePresence(room, second, { cursor: 1 });
 
         const updated = lastMessage(first, "$presenceUpdated");
 
         expect(updated.data.presence).toEqual({ cursor: 1, name: "bob" });
-        expect(updated.data.timers.presence).toBeGreaterThan(joinTimer);
+        expect(updated.data.seq.presence).toBeGreaterThan(joinSeq);
     });
 });

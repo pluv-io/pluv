@@ -73,7 +73,7 @@ describe("IORoom EventResolverContext", () => {
                 connectionIds: ["session-1"],
                 data: { id: "session-1" },
                 presence: { name: "ada", mark: 1 },
-                timers: { presence: expect.any(Number) },
+                seq: { presence: expect.any(Number) },
             },
         ]);
     });

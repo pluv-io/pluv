@@ -37,8 +37,8 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
 
     return createInternalPluvRouter({
         $getOthers: baseProcedure<"$getOthers">().self((_data, { session, sessions }) => {
-            const presenceTimerById = new Map(
-                sessions.map((item) => [item.id, item.timers.presence] as const),
+            const presenceSeqById = new Map(
+                sessions.map((item) => [item.id, item.seq.presence] as const),
             );
             const others = groupLiveUsers(sessions, {
                 excludeSessionId: session.id,
@@ -46,14 +46,14 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                 connectionIds,
                 data,
                 presence,
-                timers: {
+                seq: {
                     presence: connectionIds.reduce<number | null>((max, id) => {
-                        const timer = presenceTimerById.get(id) ?? null;
+                        const seq = presenceSeqById.get(id) ?? null;
 
-                        if (typeof timer !== "number") return max;
-                        if (typeof max !== "number") return timer;
+                        if (typeof seq !== "number") return max;
+                        if (typeof max !== "number") return seq;
 
-                        return timer > max ? timer : max;
+                        return seq > max ? seq : max;
                     }, null),
                 },
             }));
@@ -99,28 +99,28 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                 if (!session) return {};
 
                 const userId = session.user.id;
-                const latestTimer = event.sessions.reduce<number | null>((max, other) => {
+                const latestSeq = event.sessions.reduce<number | null>((max, other) => {
                     if (other.quit) return max;
                     if (other.user?.id !== userId) return max;
 
-                    const timer = other.timers.presence;
+                    const seq = other.seq.presence;
 
-                    if (typeof timer !== "number") return max;
-                    if (typeof max !== "number") return timer;
+                    if (typeof seq !== "number") return max;
+                    if (typeof max !== "number") return seq;
 
-                    return timer > max ? timer : max;
+                    return seq > max ? seq : max;
                 }, null);
 
                 // Connecting another tab is not a presence write. Keep the last
                 // `$updatePresence` instead of last-connect.
-                if (typeof latestTimer !== "number") event.presence = presence;
+                if (typeof latestSeq !== "number") event.presence = presence;
 
                 return {
                     $userJoined: {
                         connectionId: session.id,
                         user: session.user,
                         presence: session.presence ?? presence ?? {},
-                        timers: { presence: session.webSocket.state.timers.presence },
+                        seq: { presence: session.webSocket.state.seq.presence },
                     },
                 };
             })
@@ -226,7 +226,7 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
             return {
                 $presenceUpdated: {
                     presence: updated,
-                    timers: { presence: session.webSocket.state.timers.presence },
+                    seq: { presence: session.webSocket.state.seq.presence },
                     user: session.user,
                 },
             };

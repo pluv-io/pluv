@@ -11,7 +11,7 @@ export type GroupedRoomUser = {
 
 /**
  * Group live sockets by `user.id`. Extra tabs share one row; presence is the
- * newest `timers.presence`. `excludeSessionId` drops that person's whole row.
+ * newest `seq.presence`. `excludeSessionId` drops that person's whole row.
  */
 export const groupLiveUsers = (
     sessions: readonly WebSocketSession<any>[],
@@ -23,14 +23,14 @@ export const groupLiveUsers = (
         : null;
     const excludedUserId = typeof excluded?.user?.id === "string" ? excluded.user.id : null;
     const grouped = new Map<string, GroupedRoomUser>();
-    const presenceTimers = new Map<string, number | null>();
+    const presenceSeqs = new Map<string, number | null>();
 
     for (const session of live) {
         const userId = typeof session.user?.id === "string" ? session.user.id : null;
         if (!userId || userId === excludedUserId) continue;
 
         const row = grouped.get(userId);
-        const presenceTimer = session.timers.presence;
+        const presenceSeq = session.seq.presence;
 
         if (!row) {
             grouped.set(userId, {
@@ -39,19 +39,19 @@ export const groupLiveUsers = (
                 key: userId,
                 presence: session.presence,
             });
-            presenceTimers.set(userId, presenceTimer);
+            presenceSeqs.set(userId, presenceSeq);
             continue;
         }
 
         row.connectionIds.push(session.id);
 
-        const previousTimer = presenceTimers.get(userId) ?? null;
+        const previousSeq = presenceSeqs.get(userId) ?? null;
 
-        if (typeof presenceTimer !== "number") continue;
-        if (typeof previousTimer === "number" && presenceTimer <= previousTimer) continue;
+        if (typeof presenceSeq !== "number") continue;
+        if (typeof previousSeq === "number" && presenceSeq <= previousSeq) continue;
 
         row.presence = session.presence;
-        presenceTimers.set(userId, presenceTimer);
+        presenceSeqs.set(userId, presenceSeq);
     }
 
     return [...grouped.values()];

@@ -105,9 +105,9 @@ export class TestWebSocket extends AbstractWebSocket<TestSocket> {
             presence: null,
             quit: false,
             room,
+            seq: { presence: null },
             timers: {
                 ping: new Date().getTime(),
-                presence: null,
             },
         };
     }

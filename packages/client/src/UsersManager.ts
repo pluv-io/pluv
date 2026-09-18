@@ -16,7 +16,7 @@ export type AddConnectionParams<TIO extends IOLike, TPresence extends Record<str
     connectionId: string;
     data: UserInfo<TIO, TPresence>["data"];
     presence?: TPresence;
-    presenceTimer?: number | null;
+    presenceSeq?: number | null;
 };
 
 export type AddConnectionResult<TIO extends IOLike, TPresence extends Record<string, any> = {}> = {
@@ -40,7 +40,7 @@ export type OthersSnapshotRow<TIO extends IOLike, TPresence extends Record<strin
     connectionIds: readonly string[];
     data: UserInfo<TIO, TPresence>["data"];
     presence: TPresence | null;
-    presenceTimer?: number | null;
+    presenceSeq?: number | null;
 };
 
 export type ApplyPresenceResult<TPresence extends Record<string, any> = {}> = {
@@ -67,7 +67,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
     private _myself: UserInfo<TIO, TPresence> | null = null;
     private _others = new Map<[clientId: string][0], UserInfo<TIO, TPresence>>();
     private _presence: StandardSchemaV1<any, TPresence> | null = null;
-    private _presenceTimers = new Map<[clientId: string][0], number | null>();
+    private _presenceSeqs = new Map<[clientId: string][0], number | null>();
     /**
      * Own `$updatePresence` broadcasts not yet echoed on this connection.
      * Per-tab only; other tabs are a different connectionId.
@@ -125,7 +125,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
 
         if (!other) {
             this._others.set(clientId, info);
-            this._setPresenceTimer(clientId, params.presenceTimer ?? null);
+            this._setPresenceSeq(clientId, params.presenceSeq ?? null);
 
             return {
                 clientId,
@@ -136,11 +136,11 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
             };
         }
 
-        const presenceChanged = this._isNewerPresenceTimer(clientId, params.presenceTimer);
+        const presenceChanged = this._isNewerPresenceSeq(clientId, params.presenceSeq);
 
         if (presenceChanged) {
             this._others.set(clientId, info);
-            this._setPresenceTimer(clientId, params.presenceTimer);
+            this._setPresenceSeq(clientId, params.presenceSeq);
         }
 
         return {
@@ -155,7 +155,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
     public clearConnections(): void {
         this.removeMyself();
         this._others.clear();
-        this._presenceTimers.clear();
+        this._presenceSeqs.clear();
         this._localPresenceInFlight = 0;
         this._idMap.fromClientId.clear();
         this._idMap.fromConnectionId.clear();
@@ -188,7 +188,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
          */
         if (!remaining) {
             this._others.delete(clientId);
-            this._presenceTimers.delete(clientId);
+            this._presenceSeqs.delete(clientId);
         }
 
         return result;
@@ -251,7 +251,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
     public patchPresence(
         connectionId: string,
         patch: Partial<TPresence>,
-        presenceTimer?: number | null,
+        presenceSeq?: number | null,
     ): ApplyPresenceResult<TPresence> | null {
         const clientId = this.getClientId(connectionId);
         const myClientId = this._myself ? this.getClientId(this._myself) : null;
@@ -259,18 +259,18 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
         if (!clientId) return null;
 
         if (myClientId === clientId) {
-            if (!this._shouldApplyPresenceTimer(clientId, presenceTimer)) {
+            if (!this._shouldApplyPresenceSeq(clientId, presenceSeq)) {
                 return { applied: false, presence: this._myself?.presence ?? this._myPresence };
             }
 
-            return { applied: true, presence: this.updateMyPresence(patch, presenceTimer) };
+            return { applied: true, presence: this.updateMyPresence(patch, presenceSeq) };
         }
 
         const other = this._others.get(clientId);
 
         if (!other) return null;
 
-        if (!this._shouldApplyPresenceTimer(clientId, presenceTimer)) {
+        if (!this._shouldApplyPresenceSeq(clientId, presenceSeq)) {
             return { applied: false, presence: other.presence };
         }
 
@@ -297,7 +297,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
         }
 
         this._others.set(clientId, { ...other, presence: validated });
-        this._setPresenceTimer(clientId, presenceTimer);
+        this._setPresenceSeq(clientId, presenceSeq);
 
         return { applied: true, presence: validated };
     }
@@ -331,7 +331,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
             this._idMap.fromConnectionId.delete(connectionId);
         });
         this._idMap.fromClientId.delete(clientId);
-        this._presenceTimers.delete(clientId);
+        this._presenceSeqs.delete(clientId);
         this._localPresenceInFlight = 0;
         this._myself = null;
     }
@@ -340,8 +340,8 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
         const myClientId = this._myself ? this.getClientId(this._myself) : null;
         const previousClientIds = Array.from(this._others.keys());
         const previousOthers = new Map(this._others);
-        const previousTimers = new Map(
-            previousClientIds.map((clientId) => [clientId, this._presenceTimers.get(clientId)]),
+        const previousSeqs = new Map(
+            previousClientIds.map((clientId) => [clientId, this._presenceSeqs.get(clientId)]),
         );
 
         Array.from(this._idMap.fromConnectionId.entries()).forEach(([connectionId, clientId]) => {
@@ -356,7 +356,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
         });
         this._others.clear();
         previousClientIds.forEach((clientId) => {
-            this._presenceTimers.delete(clientId);
+            this._presenceSeqs.delete(clientId);
         });
 
         rows.forEach((row) => {
@@ -364,17 +364,17 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
             const snapshotPresence = { ...this.initialPresence, ...cleaned } as TPresence;
             const clientId = this._clientIdFromData(row.data);
             const previous = previousOthers.get(clientId);
-            const snapshotNewer = this._isNewerPresenceTimerValue(
-                previousTimers.get(clientId),
-                row.presenceTimer,
+            const snapshotNewer = this._isNewerPresenceSeqValue(
+                previousSeqs.get(clientId),
+                row.presenceSeq,
             );
 
             if (previous && !snapshotNewer) {
                 this._others.set(clientId, previous);
-                this._setPresenceTimer(clientId, previousTimers.get(clientId) ?? null);
+                this._setPresenceSeq(clientId, previousSeqs.get(clientId) ?? null);
             } else {
                 this._others.set(clientId, { data: row.data, presence: snapshotPresence });
-                this._setPresenceTimer(clientId, row.presenceTimer ?? null);
+                this._setPresenceSeq(clientId, row.presenceSeq ?? null);
             }
 
             row.connectionIds.forEach((connectionId) => {
@@ -394,7 +394,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
 
         this._myself = info;
         this._myPresence = presence;
-        this._setPresenceTimer(clientId, params.presenceTimer ?? null);
+        this._setPresenceSeq(clientId, params.presenceSeq ?? null);
 
         this._setConnectionId(params.connectionId, clientId);
     }
@@ -418,20 +418,20 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
     public setPresence(
         connectionId: string,
         presence: TPresence,
-        presenceTimer?: number | null,
+        presenceSeq?: number | null,
     ): void {
         const clientId = this.getClientId(connectionId);
         const myClientId = this._myself ? this.getClientId(this._myself) : null;
 
         if (!clientId) return;
-        if (!this._shouldApplyPresenceTimer(clientId, presenceTimer)) return;
+        if (!this._shouldApplyPresenceSeq(clientId, presenceSeq)) return;
 
         if (myClientId === clientId) {
             if (!this._myself) return;
 
             this._myself.presence = presence;
             this._myPresence = presence;
-            this._setPresenceTimer(clientId, presenceTimer);
+            this._setPresenceSeq(clientId, presenceSeq);
 
             return;
         }
@@ -441,7 +441,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
         if (!other) return;
 
         this._others.set(clientId, { ...other, presence });
-        this._setPresenceTimer(clientId, presenceTimer);
+        this._setPresenceSeq(clientId, presenceSeq);
     }
 
     /**
@@ -449,7 +449,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
      * be able to view and update their own presence without being online
      * @date April 20, 2025
      */
-    public updateMyPresence(patch: Partial<TPresence>, presenceTimer?: number | null): TPresence {
+    public updateMyPresence(patch: Partial<TPresence>, presenceSeq?: number | null): TPresence {
         const cleanedPatch = pickBy(patch, (value) => typeof value !== "undefined");
         const cleanedPresence = pickBy(this._myPresence, (value) => typeof value !== "undefined");
         const updated = {
@@ -470,7 +470,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
         if (!this._myself) return updated;
 
         this._myself.presence = updated;
-        this._setPresenceTimer(this.getClientId(this._myself), presenceTimer);
+        this._setPresenceSeq(this.getClientId(this._myself), presenceSeq);
 
         return updated;
     }
@@ -483,14 +483,14 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
 
     /**
      * Extra-tab joins and occupancy snapshots only replace presence when the
-     * incoming timer is a newer number. Connecting with no clock is not an
-     * interact. Equal clocks keep the value already applied.
+     * incoming seq is a newer number. Connecting with no seq is not an
+     * interact. Equal seqs keep the value already applied.
      */
-    private _isNewerPresenceTimer(clientId: string, incoming?: number | null): boolean {
-        return this._isNewerPresenceTimerValue(this._presenceTimers.get(clientId), incoming);
+    private _isNewerPresenceSeq(clientId: string, incoming?: number | null): boolean {
+        return this._isNewerPresenceSeqValue(this._presenceSeqs.get(clientId), incoming);
     }
 
-    private _isNewerPresenceTimerValue(
+    private _isNewerPresenceSeqValue(
         previous: number | null | undefined,
         incoming?: number | null,
     ): boolean {
@@ -501,26 +501,26 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
     }
 
     /**
-     * Local writes omit a timer and always apply. Remote writes apply when the
-     * timer is newer or equal (last-applied wins among same-millisecond writes).
-     * A null clock applies only when we do not already have one.
+     * Local writes omit a seq and always apply. Remote writes apply when the
+     * seq is newer or equal (last-applied wins among equal seqs).
+     * A null seq applies only when we do not already have one.
      */
-    private _shouldApplyPresenceTimer(clientId: string, incoming?: number | null): boolean {
+    private _shouldApplyPresenceSeq(clientId: string, incoming?: number | null): boolean {
         if (incoming === undefined) return true;
         if (typeof incoming !== "number") {
-            return typeof this._presenceTimers.get(clientId) !== "number";
+            return typeof this._presenceSeqs.get(clientId) !== "number";
         }
 
-        const previous = this._presenceTimers.get(clientId);
+        const previous = this._presenceSeqs.get(clientId);
 
         if (typeof previous !== "number") return true;
 
         return incoming >= previous;
     }
 
-    private _setPresenceTimer(clientId: string, incoming?: number | null): void {
+    private _setPresenceSeq(clientId: string, incoming?: number | null): void {
         if (typeof incoming === "number") {
-            this._presenceTimers.set(clientId, incoming);
+            this._presenceSeqs.set(clientId, incoming);
             return;
         }
 
@@ -528,7 +528,7 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
             return;
         }
 
-        this._presenceTimers.set(clientId, null);
+        this._presenceSeqs.set(clientId, null);
     }
 
     private _deleteConnectionId(connectionId: string): void {

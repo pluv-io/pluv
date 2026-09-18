@@ -44,9 +44,9 @@ describe("IORoom hibernation", () => {
                                 presence: null,
                                 quit: false,
                                 room: roomId,
+                                seq: { presence: null },
                                 timers: {
                                     ping: now - 60_000,
-                                    presence: null,
                                 },
                             },
                         ],
@@ -114,9 +114,9 @@ describe("IORoom hibernation", () => {
                                 presence: { cursor: 1 },
                                 quit: false,
                                 room: roomId,
+                                seq: { presence: 1 },
                                 timers: {
                                     ping: now - 60_000,
-                                    presence: now,
                                 },
                             },
                         ],
@@ -155,7 +155,7 @@ describe("IORoom hibernation", () => {
                 connectionIds: ["session-1"],
                 data: { id: "ada" },
                 presence: { cursor: 1 },
-                timers: { presence: expect.any(Number) },
+                seq: { presence: expect.any(Number) },
             },
         ]);
         expect(lastMessage(observer, "$othersReceived").data.myConnectionIds).toEqual([

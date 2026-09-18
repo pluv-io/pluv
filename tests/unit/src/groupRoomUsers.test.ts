@@ -8,7 +8,8 @@ const live = (id: string, user: { id: string } | null, presence: JsonObject = {}
         presence,
         quit: false,
         room: "test",
-        timers: { ping: Date.now(), presence: Date.now() },
+        timers: { ping: Date.now() },
+        seq: { presence: Date.now() },
         user,
         webSocket: {} as any,
     }) as any;
@@ -35,7 +36,7 @@ describe("groupRoomUsers", () => {
                 presence: { name: "bob" },
             },
         ]);
-        expect(rows[0]).not.toHaveProperty("presenceTimer");
+        expect(rows[0]).not.toHaveProperty("presenceSeq");
     });
 
     it("omits sockets without a user id", () => {
@@ -64,12 +65,12 @@ describe("groupRoomUsers", () => {
         expect(rows.map((row) => row.key)).toEqual(["bob"]);
     });
 
-    it("picks presence from the session with the newest timer", () => {
+    it("picks presence from the session with the newest seq", () => {
         const older = live("s-ada-1", { id: "ada" }, { cursor: 1 });
         const newer = live("s-ada-2", { id: "ada" }, { cursor: 9 });
 
-        older.timers.presence = 1;
-        newer.timers.presence = 2;
+        older.seq.presence = 1;
+        newer.seq.presence = 2;
 
         expect(__internal.groupLiveUsers([older, newer])[0]?.presence).toEqual({ cursor: 9 });
         expect(__internal.groupLiveUsers([newer, older])[0]?.presence).toEqual({ cursor: 9 });

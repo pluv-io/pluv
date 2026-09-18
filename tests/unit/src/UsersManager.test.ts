@@ -120,7 +120,7 @@ describe("UsersManager", () => {
         expect(manager.getOther("bob")).toBeNull();
     });
 
-    it("applies extra-tab presence only when the timer is newer", () => {
+    it("applies extra-tab presence only when the seq is newer", () => {
         const manager = createManager();
 
         manager.setMyself({
@@ -133,19 +133,19 @@ describe("UsersManager", () => {
             connectionId: "bob-tab-1",
             data: { id: "bob" },
             presence: { cursor: 1 },
-            presenceTimer: 10,
+            presenceSeq: 10,
         });
         const stale = manager.addConnection({
             connectionId: "bob-tab-2",
             data: { id: "bob" },
             presence: { cursor: 9 },
-            presenceTimer: 9,
+            presenceSeq: 9,
         });
         const newer = manager.addConnection({
             connectionId: "bob-tab-3",
             data: { id: "bob" },
             presence: { cursor: 3 },
-            presenceTimer: 11,
+            presenceSeq: 11,
         });
 
         expect(first.presenceChanged).toBe(true);
@@ -166,7 +166,7 @@ describe("UsersManager", () => {
             connectionId: "bob-tab-1",
             data: { id: "bob" },
             presence: { cursor: 1 },
-            presenceTimer: 10,
+            presenceSeq: 10,
         });
 
         const stale = manager.patchPresence("bob-tab-1", { cursor: 9 }, 9);
@@ -177,7 +177,7 @@ describe("UsersManager", () => {
         expect(manager.getOther("bob")?.presence).toEqual({ cursor: 3 });
     });
 
-    it("keeps last-write-wins timers when replacing others from a snapshot", () => {
+    it("keeps last-write-wins seqs when replacing others from a snapshot", () => {
         const manager = createManager();
 
         manager.setMyself({
@@ -190,7 +190,7 @@ describe("UsersManager", () => {
                 connectionIds: ["bob-tab-1"],
                 data: { id: "bob" },
                 presence: { cursor: 2 },
-                presenceTimer: 20,
+                presenceSeq: 20,
             },
         ]);
 
@@ -198,7 +198,7 @@ describe("UsersManager", () => {
             connectionId: "bob-tab-2",
             data: { id: "bob" },
             presence: { cursor: 1 },
-            presenceTimer: 10,
+            presenceSeq: 10,
         });
 
         expect(stale.presenceChanged).toBe(false);
@@ -217,7 +217,7 @@ describe("UsersManager", () => {
             connectionId: "bob-tab-1",
             data: { id: "bob" },
             presence: { cursor: 3 },
-            presenceTimer: 20,
+            presenceSeq: 20,
         });
 
         const left = manager.replaceOthers([
@@ -225,7 +225,7 @@ describe("UsersManager", () => {
                 connectionIds: ["bob-tab-1", "bob-tab-2"],
                 data: { id: "bob" },
                 presence: { cursor: 1 },
-                presenceTimer: 10,
+                presenceSeq: 10,
             },
         ]);
 
@@ -234,7 +234,7 @@ describe("UsersManager", () => {
         expect(manager.getOtherByConnectionId("bob-tab-2")?.presence).toEqual({ cursor: 3 });
     });
 
-    it("applies an equal-timer presence patch as last-write-wins", () => {
+    it("applies an equal-seq presence patch as last-write-wins", () => {
         const manager = createManager();
 
         manager.setMyself({
@@ -246,7 +246,7 @@ describe("UsersManager", () => {
             connectionId: "bob-tab-1",
             data: { id: "bob" },
             presence: { cursor: 1 },
-            presenceTimer: 10,
+            presenceSeq: 10,
         });
 
         const equal = manager.patchPresence("bob-tab-1", { cursor: 9 }, 10);
@@ -255,14 +255,14 @@ describe("UsersManager", () => {
         expect(manager.getOther("bob")?.presence).toEqual({ cursor: 9 });
     });
 
-    it("does not stamp client wall-clock on a local presence write", () => {
+    it("does not stamp a seq on a local presence write", () => {
         const manager = createManager();
 
         manager.setMyself({
             connectionId: "ada-tab-1",
             data: { id: "ada" },
             presence: {},
-            presenceTimer: 10,
+            presenceSeq: 10,
         });
         manager.updateMyPresence({ cursor: 1 });
 
@@ -310,7 +310,7 @@ describe("UsersManager", () => {
             connectionId: "me",
             data: { id: "me" },
             presence: { cursor: 0 },
-            presenceTimer: 40,
+            presenceSeq: 40,
         });
 
         manager.beginLocalPresenceWrite();
@@ -337,7 +337,7 @@ describe("UsersManager", () => {
             connectionId: "me-tab-1",
             data: { id: "me" },
             presence: { cursor: 1 },
-            presenceTimer: 40,
+            presenceSeq: 40,
         });
         manager.addConnection({
             connectionId: "me-tab-2",

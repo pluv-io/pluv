@@ -91,7 +91,7 @@ describe("IORoom multi-session presence", () => {
                 connectionIds: ["session-1", "session-2"],
                 data: { id: "ada" },
                 presence: { cursor: 2, name: "ada" },
-                timers: { presence: expect.any(Number) },
+                seq: { presence: expect.any(Number) },
             },
         ]);
         expect(lastMessage(observer, "$othersReceived").data.myConnectionIds).toEqual([
@@ -107,7 +107,7 @@ describe("IORoom multi-session presence", () => {
                     connectionIds: ["session-3"],
                     data: { id: "bob" },
                     presence: { name: "bob" },
-                    timers: { presence: expect.any(Number) },
+                    seq: { presence: expect.any(Number) },
                 },
             ],
         });
@@ -143,7 +143,7 @@ describe("IORoom multi-session presence", () => {
                 connectionIds: ["session-2"],
                 data: { id: "ada" },
                 presence: { cursor: 2, name: "ada" },
-                timers: { presence: expect.any(Number) },
+                seq: { presence: expect.any(Number) },
             },
         ]);
         expect(lastMessage(observer, "$exit").data.sessionId).toBe("session-1");
@@ -164,7 +164,7 @@ describe("IORoom multi-session presence", () => {
         const registered = lastMessage(second, "$registered");
 
         expect(registered.data.presence).toEqual({ cursor: 1, name: "ada" });
-        expect(typeof registered.data.timers.presence).toBe("number");
+        expect(typeof registered.data.seq.presence).toBe("number");
         expect(registered.data.connectionCount).toBe(2);
         expect(registered.data.userCount).toBe(1);
     });
@@ -199,7 +199,7 @@ describe("IORoom multi-session presence", () => {
                 connectionIds: ["session-1", "session-2"],
                 data: { id: "ada" },
                 presence: { cursor: 2, name: "ada" },
-                timers: { presence: expect.any(Number) },
+                seq: { presence: expect.any(Number) },
             },
         ]);
 
@@ -211,7 +211,7 @@ describe("IORoom multi-session presence", () => {
                 connectionIds: ["session-1", "session-2"],
                 data: { id: "ada" },
                 presence: { cursor: 3, name: "ada" },
-                timers: { presence: expect.any(Number) },
+                seq: { presence: expect.any(Number) },
             },
         ]);
     });
