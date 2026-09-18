@@ -20,6 +20,8 @@ import type { InferDoc, InferJson, InferStorage } from "@pluv/crdt";
 import type {
     BroadcastProxy,
     Id,
+    PublicEventKey,
+    RoomError,
     RoomLike,
     RoomStats,
     StorageState,
@@ -352,7 +354,7 @@ export const createBundle = <
         return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
     };
 
-    const useEvent = <TType extends keyof InferClientOutput<TRoom>>(
+    const useEvent = <TType extends PublicEventKey<InferClientOutput<TRoom>>>(
         type: TType,
         callback: Parameters<EventProxy<TRoom>[TType]["useEvent"]>[0],
     ): void => {
@@ -373,10 +375,10 @@ export const createBundle = <
             get(_, prop) {
                 const useProxyEvent = (
                     callback: Parameters<
-                        EventProxy<TRoom>[keyof InferClientOutput<TRoom>]["useEvent"]
+                        EventProxy<TRoom>[PublicEventKey<InferClientOutput<TRoom>>]["useEvent"]
                     >[0],
                 ): void => {
-                    return useEvent(prop as keyof InferClientOutput<TRoom>, callback);
+                    return useEvent(prop as PublicEventKey<InferClientOutput<TRoom>>, callback);
                 };
 
                 return { useEvent: useProxyEvent };
@@ -515,6 +517,18 @@ export const createBundle = <
         return room.redo;
     };
 
+    const useRoomError = (callback: (error: RoomError) => void): void => {
+        const room = useRoom();
+
+        useEffect(() => {
+            const unsubscribe = room.subscribe.error(callback);
+
+            return () => {
+                unsubscribe();
+            };
+        }, [callback, room]);
+    };
+
     const useRoomStats = <TValue extends unknown = RoomStats>(
         selector = identity as (stats: RoomStats) => TValue,
         hookOptions?: SubscriptionHookOptions<TValue>,
@@ -638,6 +652,7 @@ export const createBundle = <
         useOthers,
         useRedo,
         useRoom,
+        useRoomError,
         useRoomStats,
         useStorage,
         useTransact,

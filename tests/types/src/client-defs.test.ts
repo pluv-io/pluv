@@ -158,6 +158,8 @@ const { event, useBroadcast } = createBundle(client, {
 
 expectTypeOf(event.pong.useEvent).toBeFunction();
 expectTypeOf(event.receiveMessage.useEvent).toBeFunction();
+// @ts-expect-error protocol events are not public
+event.$error.useEvent(() => {});
 const broadcast = useBroadcast();
 expectTypeOf(broadcast.ping).toBeFunction();
 expectTypeOf(broadcast.sendMessage).toBeFunction();

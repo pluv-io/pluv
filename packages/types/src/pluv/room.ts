@@ -90,6 +90,15 @@ export type RoomStats = {
     userCount: number;
 };
 
+export type RoomError = {
+    message: string;
+    stack?: string | null;
+};
+
+export type RoomErrorSubscriptionCallback = (error: RoomError) => void;
+
+export type RoomErrorSubscriptionFn = (callback: RoomErrorSubscriptionCallback) => () => void;
+
 export type ListUsersOptions = {
     cursor?: string | null;
     limit?: number;
@@ -154,13 +163,15 @@ export type BroadcastProxy<TIO extends IOLike, TEvents extends PluvRouterEventCo
     ) => Promise<void>;
 };
 
+export type PublicEventKey<TEvents> = Exclude<Extract<keyof TEvents, string>, `$${string}`>;
+
 export type EventNotifierSubscriptionCallback<
     TIO extends IOLike,
     TEvent extends keyof InferIOOutput<TIO>,
 > = (value: Id<IOEventMessage<TIO, TEvent>>) => void;
 
 export type EventSubscriptionFn<TIO extends IOLike, TEvents extends PluvRouterEventConfig> = <
-    TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>,
+    TEvent extends PublicEventKey<InferIOOutput<MergeEvents<TEvents, TIO>>>,
 >(
     event: TEvent,
     callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, TEvent>,
@@ -170,7 +181,7 @@ export type EventProxy<
     TIO extends IOLike,
     TEvents extends PluvRouterEventConfig,
 > = EventSubscriptionFn<TIO, TEvents> & {
-    [PEvent in keyof InferIOOutput<MergeEvents<TEvents, TIO>>]: (
+    [PEvent in PublicEventKey<InferIOOutput<MergeEvents<TEvents, TIO>>>]: (
         callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, PEvent>,
     ) => () => void;
 };
@@ -210,6 +221,7 @@ export type SubscribeProxy<
     callback: SubscriptionCallback<TIO, TPresence, TSubject>,
 ) => () => void) & {
     connection: SubscribeFn<Id<WebSocketState<TIO>>>;
+    error: RoomErrorSubscriptionFn;
     event: EventProxy<TIO, TEvents>;
     myPresence: SubscribeFn<TPresence | null>;
     myself: SubscribeFn<Id<UserInfo<TIO>> | null>;

@@ -10,6 +10,8 @@ import type {
     ListUsersResult,
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
+    RoomError,
+    RoomErrorSubscriptionCallback,
     RoomEventListenerMap,
     RoomLike,
     RoomStats,
@@ -25,6 +27,7 @@ import type {
     WebSocketState,
 } from "@pluv/types";
 import { ConnectionState, StorageState } from "@pluv/types";
+import { makeSubject, subscribe } from "wonka";
 import type { ClientDefs } from "./ClientDefs";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
@@ -76,6 +79,7 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
     private readonly _eventNotifier = new EventNotifier<
         MergeEvents<TDefs["events"], TDefs["io"]>
     >();
+    private readonly _errorSubject = makeSubject<RoomError>();
     private readonly _events?: MockedRoomEvents<TDefs>;
     private readonly _limits: PluvClientLimits;
     private readonly _usersNotifier = new UsersNotifier<TDefs["io"], InferClientPresence<TDefs>>();
@@ -327,6 +331,12 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
                         >,
                     ) => {
                         return fn("connection", callback);
+                    };
+                }
+
+                if (prop === "error") {
+                    return (callback: RoomErrorSubscriptionCallback): (() => void) => {
+                        return subscribe(callback)(this._errorSubject.source).unsubscribe;
                     };
                 }
 

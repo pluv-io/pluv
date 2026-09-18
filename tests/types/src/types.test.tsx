@@ -73,6 +73,11 @@ room.subscribe.event.receiveMessage((params) => {
     // @ts-expect-error
     expectTypeOf<(typeof params)["data"]>().toEqualTypeOf<{}>();
 });
+// @ts-expect-error protocol events are not public
+room.subscribe.event("$exit", () => {});
+room.subscribe.error((error) => {
+    expectTypeOf(error.message).toEqualTypeOf<string>();
+});
 
 room.subscribe.storage("messages", (messages) => {
     expectTypeOf<typeof messages>().toEqualTypeOf<string[]>();
@@ -175,8 +180,12 @@ expectTypeOf(room.getDoc()).toEqualTypeOf<
     >
 >();
 
-const { PluvRoomProvider, useDoc, useOther, useRoomStats, useStorage } =
+const { PluvRoomProvider, useDoc, useOther, useRoomError, useRoomStats, useStorage } =
     createBundle(client);
+
+useRoomError((error) => {
+    expectTypeOf(error.message).toEqualTypeOf<string>();
+});
 
 <PluvRoomProvider
     initialPresence={{
