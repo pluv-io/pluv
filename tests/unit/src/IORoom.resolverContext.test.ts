@@ -65,12 +65,16 @@ describe("IORoom EventResolverContext", () => {
         await send(room, observer, "$getOthers", {});
 
         expect(readBack).toEqual({
-            presence: { name: "ada" },
+            presence: { name: "ada", mark: 1 },
             seededAfter: true,
         });
-        expect(lastMessage(observer, "$othersReceived").data.others["session-1"].presence).toEqual({
-            name: "ada",
-            mark: 1,
-        });
+        expect(lastMessage(observer, "$othersReceived").data.others).toEqual([
+            {
+                connectionIds: ["session-1"],
+                data: { id: "session-1" },
+                presence: { name: "ada", mark: 1 },
+                timers: { presence: expect.any(Number) },
+            },
+        ]);
     });
 });

@@ -12,6 +12,11 @@ export interface BaseClientEventRecord {
         presence: JsonObject | null;
         update: string | null;
     };
+    $listUsers: {
+        cursor?: string | null;
+        limit?: number;
+        requestId: string;
+    };
     $ping: {};
     $updatePresence: {
         presence: JsonObject | null;
@@ -31,28 +36,34 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = {
     };
     $exit: {
         sessionId: string;
+        user: Id<InferIOAuthorizeUser<TAuthorize>>;
     };
     $othersReceived: {
+        myConnectionIds: string[];
         others: {
-            [connectionId: string]: {
-                connectionId: string;
-                presence: JsonObject | null;
-                room: string | null;
-                timers: { presence: number | null };
-                user: Id<InferIOAuthorizeUser<TAuthorize>>;
-            };
-        };
+            connectionIds: string[];
+            data: Id<InferIOAuthorizeUser<TAuthorize>>;
+            presence: JsonObject | null;
+            timers: { presence: number | null };
+        }[];
     };
     $pong: {};
+    $roomStats: {
+        connectionCount: number;
+        userCount: number;
+    };
     $presenceUpdated: {
         presence: JsonObject;
         timers: { presence: number | null };
+        user: Id<InferIOAuthorizeUser<TAuthorize>>;
     };
     $registered: {
+        connectionCount: number;
         presence: JsonObject | null;
         sessionId: string;
         state: string | null;
         timers: { presence: number | null };
+        userCount: number;
     };
     $storageReceived: {
         changeKind: "empty" | "initialized" | "unchanged";
@@ -70,6 +81,26 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = {
         timers: { presence: number | null };
         user: Id<InferIOAuthorizeUser<TAuthorize>>;
     };
+    $usersPage:
+        | {
+              requestId: string;
+              success: true;
+              pageInfo: {
+                  endCursor: string | null;
+                  hasNextPage: boolean;
+              };
+              users: {
+                  data: Id<InferIOAuthorizeUser<TAuthorize>>;
+              }[];
+          }
+        | {
+              requestId: string;
+              success: false;
+              error: {
+                  code: "FAILED" | "INVALID_LIMIT";
+                  message: string;
+              };
+          };
 };
 
 export interface EventMessage<TEvent extends string, TData extends JsonObject = {}> {
@@ -205,13 +236,18 @@ export type InferEventMessage<
         ? { [P in TEvent]: P extends string ? Id<EventMessage<P, TEvents[P]>> : never }[TEvent]
         : never;
 
+export type ServerOriginEvent = "$error" | "$roomStats" | "$syncStateReceived";
+
 export type IOEventMessage<
     TIO extends IOLike,
     TEvent extends keyof InferIOOutput<TIO> = keyof InferIOOutput<TIO>,
 > = Id<
     { room: string } & InferEventMessage<InferIOOutput<TIO>, TEvent> &
-        (InferEventMessage<InferIOOutput<TIO>, TEvent>["type"] extends "$error"
-            ? Partial<IOAuthorizeEventMessage<TIO>>
+        (InferEventMessage<InferIOOutput<TIO>, TEvent>["type"] extends ServerOriginEvent
+            ? {
+                  connectionId?: string | null;
+                  user?: InferIOAuthorizeUser<InferIOAuthorize<TIO>> | null;
+              }
             : IOAuthorizeEventMessage<TIO>)
 >;
 

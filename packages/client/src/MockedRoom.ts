@@ -6,10 +6,13 @@ import type {
     EventProxy,
     Id,
     MergeEvents,
+    ListUsersOptions,
+    ListUsersResult,
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
     RoomEventListenerMap,
     RoomLike,
+    RoomStats,
     StateNotifierSubjects,
     StorageProxy,
     StorageRootSubscriptionCallback,
@@ -115,6 +118,7 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
             limits: this._limits,
             presence,
         });
+        this._publishRoomStats();
 
         this._crdtManager = new CrdtManager<TDefs["storage"]>({
             initialStorage,
@@ -220,13 +224,28 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
     };
 
     public getOther = (
+        userId: string,
+    ): Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>> | null => {
+        return this._usersManager.getOther(userId);
+    };
+
+    public getOtherByConnectionId = (
         connectionId: string,
     ): Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>> | null => {
-        return this._usersManager.getOther(connectionId);
+        return this._usersManager.getOtherByConnectionId(connectionId);
     };
 
     public getOthers = (): readonly Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>>[] => {
         return this._usersManager.getOthers();
+    };
+
+    /**
+     * Occupancy of mocked people currently tracked in this room. Empty until
+     * occupants exist (`setMyself` / extra connections); MockedRoomProvider
+     * does not seed them.
+     */
+    public getRoomStats = (): RoomStats => {
+        return this._usersManager.getOccupancy();
     };
 
     public getStorage = <TKey extends keyof InferStorage<TDefs["storage"]>>(
@@ -253,6 +272,34 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
     public getStorageLoaded(): boolean {
         return true;
     }
+
+    /**
+     * Identity page of mocked people currently tracked in this room. Empty until
+     * occupants exist; MockedRoomProvider does not seed them. Not a real
+     * listUsers protocol (no limit/cursor).
+     */
+    public listUsers = (_options: ListUsersOptions = {}): Promise<ListUsersResult<TDefs["io"]>> => {
+        const myself = this._usersManager.myself;
+        const users = [
+            ...(myself ? [{ data: myself.data }] : []),
+            ...this._usersManager.getOthers().map((other) => ({ data: other.data })),
+        ].toSorted((left, right) => {
+            const a = String(left.data.id);
+            const b = String(right.data.id);
+
+            if (a < b) return -1;
+            if (a > b) return 1;
+
+            return 0;
+        });
+        const last = users.at(-1);
+
+        return Promise.resolve({
+            success: true,
+            pageInfo: { endCursor: last ? String(last.data.id) : null, hasNextPage: false },
+            users,
+        });
+    };
 
     public redo = (): void => {
         this._crdtManager.doc.redo();
@@ -315,6 +362,18 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
                         >,
                     ) => {
                         return this._usersNotifier.subscribeOthers(callback);
+                    };
+                }
+
+                if (prop === "roomStats") {
+                    return (
+                        callback: SubscriptionCallback<
+                            TDefs["io"],
+                            InferClientPresence<TDefs>,
+                            "roomStats"
+                        >,
+                    ) => {
+                        return fn("roomStats", callback);
                     };
                 }
 
@@ -442,15 +501,15 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
         this._subscriptions.observeCrdt = unsubscribe;
     }
 
+    private _publishRoomStats(): void {
+        this._stateNotifier.subjects.roomStats.next(this._usersManager.getOccupancy());
+    }
+
     private _other = (
-        connectionId: string,
+        userId: string,
         callback: OtherSubscriptionCallback<TDefs["io"], InferClientPresence<TDefs>>,
     ): (() => void) => {
-        const clientId = this._usersManager.getClientId(connectionId);
-
-        if (!clientId) return () => undefined;
-
-        return this._usersNotifier.subscribeOther(clientId, callback);
+        return this._usersNotifier.subscribeOther(userId, callback);
     };
 
     private _simulateEvent<TEvent extends keyof InferClientInput<TDefs>>(

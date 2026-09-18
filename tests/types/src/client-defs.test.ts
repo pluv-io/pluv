@@ -79,8 +79,8 @@ room.subscribe.connection((event) => {
 });
 room.subscribe.myself((myself) => {
     if (myself) {
-        expectTypeOf(myself.user).toEqualTypeOf<{ id: string; name: string }>();
-        expectTypeOf(myself.user).not.toEqualTypeOf<BaseUser>();
+        expectTypeOf(myself.data).toEqualTypeOf<{ id: string; name: string }>();
+        expectTypeOf(myself.data).not.toEqualTypeOf<BaseUser>();
     }
 });
 
@@ -93,7 +93,7 @@ const clientEventRoom = client.createRoom("client-events", {
         shout: client.procedure
             .input(z.object({ text: z.string() }))
             .broadcast(({ text }, { user, doc }) => {
-                expectTypeOf(user.user).toEqualTypeOf<{ id: string; name: string }>();
+                expectTypeOf(user.data).toEqualTypeOf<{ id: string; name: string }>();
                 expectTypeOf(user.presence).toEqualTypeOf<{
                     cursor: { x: number; y: number };
                 }>();

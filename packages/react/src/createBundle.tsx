@@ -21,6 +21,7 @@ import type {
     BroadcastProxy,
     Id,
     RoomLike,
+    RoomStats,
     StorageState,
     UpdateMyPresenceAction,
 } from "@pluv/types";
@@ -442,18 +443,18 @@ export const createBundle = <
     };
 
     const useOther = <TValue extends unknown = UserInfo<TDefs["io"], TPresence>>(
-        connectionId: string,
+        userId: string,
         selector = identity as (other: UserInfo<TDefs["io"], TPresence>) => TValue,
         hookOptions?: SubscriptionHookOptions<TValue | null>,
     ): TValue | null => {
         const room = useRoom();
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => room.subscribe.other(connectionId, onStoreChange),
-            [room, connectionId],
+            (onStoreChange: () => void) => room.subscribe.other(userId, onStoreChange),
+            [room, userId],
         );
 
-        const getSnapshot = useCallback(() => room.getOther(connectionId), [room, connectionId]);
+        const getSnapshot = useCallback(() => room.getOther(userId), [room, userId]);
 
         const _selector = useCallback(
             (snapshot: Id<UserInfo<TDefs["io"], TPresence>> | null) => {
@@ -512,6 +513,28 @@ export const createBundle = <
         const room = useRoom();
 
         return room.redo;
+    };
+
+    const useRoomStats = <TValue extends unknown = RoomStats>(
+        selector = identity as (stats: RoomStats) => TValue,
+        hookOptions?: SubscriptionHookOptions<TValue>,
+    ): TValue => {
+        const room = useRoom();
+
+        const subscribe = useCallback(
+            (onStoreChange: () => void) => room.subscribe.roomStats(onStoreChange),
+            [room],
+        );
+
+        const getSnapshot = room.getRoomStats;
+
+        return useSyncExternalStoreWithSelector(
+            subscribe,
+            getSnapshot,
+            getSnapshot,
+            selector as (stats: RoomStats) => TValue,
+            hookOptions?.isEqual ?? fastDeepEqual,
+        );
     };
 
     const useStorage = <
@@ -615,6 +638,7 @@ export const createBundle = <
         useOthers,
         useRedo,
         useRoom,
+        useRoomStats,
         useStorage,
         useTransact,
         useUndo,

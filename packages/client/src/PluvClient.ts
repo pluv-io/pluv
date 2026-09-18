@@ -25,10 +25,14 @@ import { PluvRouter } from "./PluvRouter";
 import type {
     InferClientMetadata,
     InferSchemaInput,
+    InferSchemaOutput,
     PluvClientLimits,
     PublicKey,
     WithMetadata,
 } from "./types";
+
+export type InferMetadata<TClient extends PluvClient<any>> =
+    TClient extends PluvClient<infer TDefs> ? InferSchemaOutput<TDefs["metadata"]> : never;
 
 export type PluvClientOptions<TDefs extends ClientDefs> = RoomEndpoints<
     InferClientMetadata<TDefs>
