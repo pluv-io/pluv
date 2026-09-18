@@ -39,11 +39,7 @@ import { ConnectionState, StorageState } from "@pluv/types";
 import { makeSubject, subscribe } from "wonka";
 import type { AbstractStorageStore } from "./AbstractStorageStore";
 import type { ClientDefs } from "./ClientDefs";
-import {
-    LIST_USERS_DEFAULT_LIMIT,
-    LIST_USERS_MAX_LIMIT,
-    LIST_USERS_TIMEOUT_MS,
-} from "./constants";
+import { LIST_USERS_DEFAULT_LIMIT, LIST_USERS_MAX_LIMIT, LIST_USERS_TIMEOUT_MS } from "./constants";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
