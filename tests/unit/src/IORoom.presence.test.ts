@@ -6,7 +6,7 @@ type Room = {
     register: (socket: TestSocket) => Promise<void>;
 };
 
-const lastMessage = (socket: TestSocket, type: string): { type: string; data: any } => {
+const lastMessage = (socket: TestSocket, type: string): Record<string, any> => {
     const message = socket.messages.findLast((entry) => entry.type === type);
 
     if (!message) throw new Error(`Missing ${type} message`);
@@ -72,10 +72,20 @@ describe("IORoom presence", () => {
         await initializeSession(room, second, { cursor: 0, name: "bob" });
         await getOthers(room, second);
 
-        expect(lastMessage(second, "$othersReceived").data.others["session-1"].presence).toEqual({
-            cursor: 1,
-            name: "ada",
-        });
+        const initialOthers = lastMessage(second, "$othersReceived").data.others as {
+            connectionIds: string[];
+            data: { id: string };
+            presence: Record<string, unknown>;
+        }[];
+
+        expect(initialOthers).toEqual([
+            {
+                connectionIds: ["session-1"],
+                data: { id: "session-1" },
+                presence: { cursor: 1, name: "ada" },
+                seq: { presence: expect.any(Number) },
+            },
+        ]);
 
         await updatePresence(room, first, { cursor: 2 });
 
@@ -83,13 +93,19 @@ describe("IORoom presence", () => {
             cursor: 2,
             name: "ada",
         });
+        expect(lastMessage(second, "$presenceUpdated").data.user).toEqual({ id: "session-1" });
+        expect(lastMessage(second, "$presenceUpdated").user).toEqual({ id: "session-1" });
 
         await getOthers(room, second);
 
-        expect(lastMessage(second, "$othersReceived").data.others["session-1"].presence).toEqual({
-            cursor: 2,
-            name: "ada",
-        });
+        expect(lastMessage(second, "$othersReceived").data.others).toEqual([
+            {
+                connectionIds: ["session-1"],
+                data: { id: "session-1" },
+                presence: { cursor: 2, name: "ada" },
+                seq: { presence: expect.any(Number) },
+            },
+        ]);
     });
 
     it("still broadcasts $userJoined with the initialize presence payload", async () => {
@@ -107,6 +123,27 @@ describe("IORoom presence", () => {
             connectionId: "session-2",
             presence: { cursor: 9, name: "bob" },
         });
-        expect(typeof lastMessage(first, "$userJoined").data.timers.presence).toBe("number");
+        expect(typeof lastMessage(first, "$userJoined").data.seq.presence).toBe("number");
+    });
+
+    it("stamps a newer seq on the first $presenceUpdated after initialize", async () => {
+        const { io, room } = createRoom("presence-first-write");
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(room, first, { io });
+        await initializeSession(room, first, { cursor: 0, name: "ada" });
+
+        await registerAuthorized(room, second, { io });
+        await initializeSession(room, second, { cursor: 9, name: "bob" });
+
+        const joinSeq = lastMessage(first, "$userJoined").data.seq.presence as number;
+
+        await updatePresence(room, second, { cursor: 1 });
+
+        const updated = lastMessage(first, "$presenceUpdated");
+
+        expect(updated.data.presence).toEqual({ cursor: 1, name: "bob" });
+        expect(updated.data.seq.presence).toBeGreaterThan(joinSeq);
     });
 });

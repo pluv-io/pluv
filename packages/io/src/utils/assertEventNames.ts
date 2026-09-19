@@ -1,13 +1,8 @@
+import { JS_IDENTIFIER } from "../constants";
 import { oneLine } from "./oneLine";
-
-const JS_IDENTIFIER = /^[a-z_$][a-z0-9_$]*$/i;
 
 export type AssertEventNamesOptions = {
     allowDollar?: boolean;
-};
-
-export const isJsIdentifierEventName = (name: string): boolean => {
-    return JS_IDENTIFIER.test(name);
 };
 
 export const assertEventNames = (
@@ -23,7 +18,7 @@ export const assertEventNames = (
             `);
         }
 
-        if (!isJsIdentifierEventName(name)) {
+        if (!JS_IDENTIFIER.test(name)) {
             throw new Error(
                 `Invalid event name. Event names must be formatted as valid JavaScript variable names: "${name}"`,
             );

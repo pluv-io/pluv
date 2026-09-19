@@ -1,7 +1,6 @@
 import type {
     AbstractPersistence,
     AbstractPlatformConfig,
-    AbstractPubSub,
     ConvertWebSocketConfig,
     WebSocketRegistrationMode,
     WebSocketSerializedState,
@@ -22,10 +21,9 @@ export type NodePlatformRoomContext<TMeta extends Record<string, Json>> = keyof 
 export type NodePlatformConfig<TMeta extends Record<string, Json>> = {
     mode?: WebSocketRegistrationMode;
     origin?: string;
-} & (
-    | { persistence?: undefined; pubSub?: undefined }
-    | { persistence: AbstractPersistence; pubSub: AbstractPubSub }
-) & { roomContext?: NodePlatformRoomContext<TMeta> };
+    persistence?: AbstractPersistence;
+    roomContext?: NodePlatformRoomContext<TMeta>;
+};
 
 export class NodePlatform<TMeta extends Record<string, Json> = {}> extends AbstractPlatform<
     NodeWebSocket,
@@ -47,11 +45,11 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
     public readonly origin: string | undefined;
 
     constructor(config: NodePlatformConfig<TMeta> = {}) {
-        const { origin, roomContext, mode = "attached", persistence, pubSub } = config;
+        const { origin, roomContext, mode = "attached", persistence } = config;
 
         super({
             roomContext,
-            ...(persistence && pubSub ? { persistence, pubSub } : {}),
+            ...(persistence ? { persistence } : {}),
         });
 
         this.origin = origin;
@@ -102,9 +100,8 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
             mode: this._config.registrationMode,
             origin: this.origin,
             persistence: this.persistence.initialize(config.roomContext),
-            pubSub: this.pubSub,
             roomContext: config.roomContext,
-        } as NodePlatformConfig<TMeta>)._initialize() as this;
+        })._initialize() as this;
     }
 
     public normalizeInitContext(initContext: NodeRegisterInput): NodeRegisterInput {

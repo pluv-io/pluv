@@ -34,9 +34,9 @@ describe("yjs schema hydrate", () => {
         const message = doc.get("messages").get(0);
 
         expect(note).toBeInstanceOf(YText);
-        expect(note?.toString()).toBe("hi");
+        expect(note instanceof YText ? note.toJSON() : undefined).toBe("hi");
         expect(message).toBeInstanceOf(YMap);
-        expect(message?.get("message")).toBe("hello");
+        expect(message instanceof YMap ? message.get("message") : undefined).toBe("hello");
         expect(doc.toJson()).toEqual({
             chats: { note: "hi" },
             messages: [{ message: "hello", name: "ada" }],

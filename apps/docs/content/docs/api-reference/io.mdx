@@ -286,6 +286,24 @@ Returns the current count of active connections in the room
 room.getSize();
 ```
 
+### listUsers
+
+Returns `ListUsersResult`
+
+On-demand identity page (no presence). Forward-only cursor paging. Grouped by `data.id`. `limit` defaults to 50 and must be an integer from 1 to 100. Wrap this in your own HTTP handler if you need it off-socket.
+
+```ts
+const result = room.listUsers({ cursor: null, limit: 50 });
+
+if (!result.success) {
+  // result.error.code: "INVALID_LIMIT"
+  return;
+}
+
+// result.users: { data }[]
+// result.pageInfo.hasNextPage, result.pageInfo.endCursor
+```
+
 ### id
 
 Type of `string`.

@@ -15,7 +15,6 @@ import type {
     UserInfo,
 } from "@pluv/types";
 import type { ClientDefs } from "./ClientDefs";
-import type { PluvClient } from "./PluvClient";
 
 export type InferSchemaInput<TSchema, TFallback extends Record<string, any> = {}> =
     TSchema extends StandardSchemaV1<infer I extends Record<string, any>, any> ? I : TFallback;
@@ -56,9 +55,6 @@ export interface EventResolverContext<
     room: string;
     user: UserInfo<TIO, TPresence>;
 }
-
-export type InferMetadata<TClient extends PluvClient<any>> =
-    TClient extends PluvClient<infer TDefs> ? InferSchemaOutput<TDefs["metadata"]> : never;
 
 export interface InternalSubscriptions {
     observeCrdt: (() => void) | null;

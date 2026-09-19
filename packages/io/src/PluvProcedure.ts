@@ -10,36 +10,32 @@ export interface PluvProcedureConfig<
     broadcast?: EventResolver<"broadcast", T, TInput, Partial<TOutput>> | null;
     input?: StandardSchemaV1<unknown, TInput>;
     self?: EventResolver<"self", T, TInput, Partial<TOutput>> | null;
-    sync?: EventResolver<"sync", T, TInput, Partial<TOutput>> | null;
 }
 
 export class PluvProcedure<
     T extends IODefs = IODefs,
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
-    TFilled extends "input" | "broadcast" | "self" | "sync" | "" = "",
+    TFilled extends "input" | "broadcast" | "self" | "" = "",
 > {
     private _broadcast: EventResolver<"broadcast", T, TInput, Partial<TOutput>> | null = null;
     private _input: StandardSchemaV1<unknown, TInput> | null = null;
     private _self: EventResolver<"self", T, TInput, Partial<TOutput>> | null = null;
-    private _sync: EventResolver<"sync", T, TInput, Partial<TOutput>> | null = null;
 
     public get config(): ProcedureLike<TInput, TOutput>["config"] {
         return {
             broadcast: this._broadcast?.bind(this) ?? null,
             input: this._input ?? null,
             self: this._self?.bind(this) ?? null,
-            sync: this._sync?.bind(this) ?? null,
         } as ProcedureLike<TInput, TOutput>["config"];
     }
 
     constructor(config: PluvProcedureConfig<T, TInput, TOutput> = {}) {
-        const { broadcast, input, self, sync } = config;
+        const { broadcast, input, self } = config;
 
         this._broadcast = broadcast ?? null;
         this._input = input ?? null;
         this._self = self ?? null;
-        this._sync = sync ?? null;
     }
 
     public broadcast<TResult extends EventRecord<string, any> = {}>(
@@ -94,27 +90,6 @@ export class PluvProcedure<
         >({
             ...(this.config as any),
             self: resolver as any,
-        });
-    }
-
-    public sync<TResult extends EventRecord<string, any> = {}>(
-        resolver: EventResolver<"sync", T, TInput, TResult>,
-    ): Omit<
-        PluvProcedure<T, TInput, MergeEventRecords<[TOutput, TResult]>, TFilled | "input" | "sync">,
-        TFilled | "input" | "sync"
-    > {
-        const { sync } = this.config;
-
-        if (!!sync) throw new Error("Sync was already defined for this procedure");
-
-        return new PluvProcedure<
-            T,
-            TInput,
-            MergeEventRecords<[TOutput, TResult]>,
-            TFilled | "input" | "sync"
-        >({
-            ...(this.config as any),
-            sync: resolver as any,
         });
     }
 }
