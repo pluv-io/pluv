@@ -71,6 +71,7 @@ describe("IORoom $roomStats", () => {
             const third = new TestSocket("session-3");
 
             await registerAuthorized(room, first, { io, user: { id: "ada" } });
+            await vi.advanceTimersByTimeAsync(0);
 
             const leading = first.messages.filter((message) => message.type === "$roomStats");
 

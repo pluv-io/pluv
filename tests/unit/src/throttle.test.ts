@@ -14,9 +14,10 @@ describe("throttle", () => {
                 { wait: 150 },
             );
 
-            await scheduled.schedule();
-            await scheduled.schedule();
-            await scheduled.schedule();
+            void scheduled.schedule();
+            await vi.advanceTimersByTimeAsync(0);
+            void scheduled.schedule();
+            void scheduled.schedule();
 
             expect(calls).toEqual([1]);
 
@@ -35,8 +36,9 @@ describe("throttle", () => {
             const fn = vi.fn();
             const scheduled = __internal.throttle(fn, { wait: 150 });
 
-            await scheduled.schedule();
-            await scheduled.schedule();
+            void scheduled.schedule();
+            await vi.advanceTimersByTimeAsync(0);
+            void scheduled.schedule();
             scheduled.cancel();
 
             await vi.advanceTimersByTimeAsync(150);
@@ -54,9 +56,11 @@ describe("throttle", () => {
             const fn = vi.fn();
             const scheduled = __internal.throttle(fn, { wait: 150 });
 
-            await scheduled.schedule();
+            void scheduled.schedule();
+            await vi.advanceTimersByTimeAsync(0);
             await vi.advanceTimersByTimeAsync(150);
-            await scheduled.schedule();
+            void scheduled.schedule();
+            await vi.advanceTimersByTimeAsync(0);
 
             expect(fn).toHaveBeenCalledTimes(2);
         } finally {

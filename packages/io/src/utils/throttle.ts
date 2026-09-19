@@ -1,6 +1,6 @@
 export type Throttle = {
     cancel: () => void;
-    schedule: () => Promise<void>;
+    schedule: () => void;
 };
 
 export const throttle = (fn: () => void | Promise<void>, options: { wait: number }): Throttle => {
@@ -10,23 +10,18 @@ export const throttle = (fn: () => void | Promise<void>, options: { wait: number
     let pending = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
-    const flush = async (): Promise<void> => {
+    const flush = (): void => {
         lastInvokeMs = Date.now();
         pending = false;
-        await fn();
+        void fn();
     };
 
-    const schedule = async (): Promise<void> => {
-        const remaining = wait - (Date.now() - lastInvokeMs);
-
-        if (remaining <= 0 && !timer) {
-            await flush();
-            return;
-        }
-
+    const schedule = (): void => {
         pending = true;
 
         if (timer) return;
+
+        const remaining = wait - (Date.now() - lastInvokeMs);
 
         timer = setTimeout(
             () => {
@@ -34,10 +29,9 @@ export const throttle = (fn: () => void | Promise<void>, options: { wait: number
 
                 if (!pending) return;
 
-                pending = false;
-                void flush();
+                flush();
             },
-            Math.max(0, remaining),
+            remaining <= 0 ? 0 : remaining,
         );
     };
 

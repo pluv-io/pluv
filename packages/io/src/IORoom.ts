@@ -466,7 +466,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             }
 
             await this._emitRegistered(pluvWs);
-            await this._throttles.roomStats.schedule();
+            this._throttles.roomStats.schedule();
 
             const size = this.getSize();
 
@@ -524,7 +524,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 senderId: sessionId,
                 senderUser: user,
             });
-            await this._throttles.roomStats.schedule();
+            this._throttles.roomStats.schedule();
 
             if (!!user) this._sessions.removeUserSession(user.id, sessionId);
 
