@@ -7,9 +7,12 @@ describe("throttle", () => {
 
         try {
             const calls: number[] = [];
-            const scheduled = __internal.throttle(() => {
-                calls.push(calls.length + 1);
-            }, { wait: 150 });
+            const scheduled = __internal.throttle(
+                () => {
+                    calls.push(calls.length + 1);
+                },
+                { wait: 150 },
+            );
 
             await scheduled.schedule();
             await scheduled.schedule();

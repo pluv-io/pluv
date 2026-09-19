@@ -28,14 +28,17 @@ export const throttle = (fn: () => void | Promise<void>, options: { wait: number
 
         if (timer) return;
 
-        timer = setTimeout(() => {
-            timer = null;
+        timer = setTimeout(
+            () => {
+                timer = null;
 
-            if (!pending) return;
+                if (!pending) return;
 
-            pending = false;
-            void flush();
-        }, Math.max(0, remaining));
+                pending = false;
+                void flush();
+            },
+            Math.max(0, remaining),
+        );
     };
 
     const cancel = (): void => {
