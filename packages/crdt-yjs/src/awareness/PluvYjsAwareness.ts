@@ -35,7 +35,7 @@ export class PluvYjsAwareness<
     public readonly doc: YDoc;
 
     private readonly _field: TField = null as TField;
-    private readonly _idMap = new Map<[connectionId: string][0], [clientID: number][0]>();
+    private readonly _idMap = new Map<[userId: string][0], [clientID: number][0]>();
     private readonly _room: RoomLike<TIO, YDoc, TPresence, TStorage, TEvents>;
     private readonly _unsubscribe: () => void;
 
@@ -158,7 +158,7 @@ export class PluvYjsAwareness<
                 return null;
             }
             case "enter": {
-                const clientID = this._resetIdMap(others).get(event.user.connectionId);
+                const clientID = this._resetIdMap(others).get(event.user.data.id);
 
                 return {
                     added: typeof clientID !== "undefined" ? [clientID] : [],
@@ -167,7 +167,7 @@ export class PluvYjsAwareness<
                 };
             }
             case "leave": {
-                const clientID = this._idMap.get(event.user.connectionId);
+                const clientID = this._idMap.get(event.user.data.id);
 
                 this._resetIdMap(others);
 
@@ -182,7 +182,7 @@ export class PluvYjsAwareness<
                 return null;
             }
             case "update": {
-                const clientID = this._resetIdMap(others).get(event.user.connectionId);
+                const clientID = this._resetIdMap(others).get(event.user.data.id);
 
                 return {
                     added: [],
@@ -202,8 +202,9 @@ export class PluvYjsAwareness<
             const clientID = other.presence[PLUV_PRESENCE_META_KEY]?.[PLUV_PRESENCE_Y_ID_KEY];
 
             if (typeof clientID === "undefined") return map;
+            if (typeof other.data.id !== "string") return map;
 
-            return map.set(other.connectionId, clientID);
+            return map.set(other.data.id, clientID);
         }, this._idMap);
     }
 

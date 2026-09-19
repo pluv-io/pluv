@@ -40,8 +40,8 @@ const messages = io.router({
 });
 
 const pings = io.router({
-    ping: io.procedure.sync((_, { session }) => {
-        expectTypeOf(session).toBeNullable();
+    ping: io.procedure.self((_, { session }) => {
+        expectTypeOf(session).not.toBeNullable();
 
         return { pong: {} };
     }),

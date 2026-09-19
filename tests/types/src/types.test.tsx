@@ -73,6 +73,11 @@ room.subscribe.event.receiveMessage((params) => {
     // @ts-expect-error
     expectTypeOf<(typeof params)["data"]>().toEqualTypeOf<{}>();
 });
+// @ts-expect-error protocol events are not public
+room.subscribe.event("$exit", () => {});
+room.subscribe.error((error) => {
+    expectTypeOf(error.message).toEqualTypeOf<string>();
+});
 
 room.subscribe.storage("messages", (messages) => {
     expectTypeOf<typeof messages>().toEqualTypeOf<string[]>();
@@ -91,25 +96,46 @@ room.subscribe.connection((event) => {
 });
 room.subscribe.myself((myself) => {
     expectTypeOf<typeof myself>().toExtend<{
-        user: { id: string };
+        data: { id: string };
     } | null>();
     if (myself) {
-        expectTypeOf(myself.user).toEqualTypeOf<{ id: string }>();
-        // @ts-expect-error user is non-null when myself is set
-        expectTypeOf(myself.user).toEqualTypeOf<null>();
+        expectTypeOf(myself.data).toEqualTypeOf<{ id: string }>();
+        // @ts-expect-error connectionId is not a person field
+        expectTypeOf(myself.connectionId).toEqualTypeOf<string>();
     }
 });
-room.subscribe.other("example-connection-id", (value) => {
-    const user = value?.user ?? null;
+room.subscribe.other("example-user-id", (value) => {
+    const user = value?.data ?? null;
 
     expectTypeOf<typeof user>().toEqualTypeOf<{ id: string } | null>();
 });
 room.subscribe.others((others, event) => {
-    expectTypeOf<(typeof others)[number]["user"]>().toEqualTypeOf<{ id: string }>();
+    expectTypeOf<(typeof others)[number]["data"]>().toEqualTypeOf<{ id: string }>();
     expectTypeOf<(typeof event)["kind"]>().toExtend<
         "sync" | "clear" | "enter" | "leave" | "update"
     >();
 });
+room.subscribe.roomStats((stats) => {
+    expectTypeOf(stats).toEqualTypeOf<{ connectionCount: number; userCount: number }>();
+});
+expectTypeOf(room.getOther("example-user-id")?.data).toEqualTypeOf<{ id: string } | undefined>();
+expectTypeOf(room.getOtherByConnectionId("example-connection-id")?.presence).toEqualTypeOf<
+    { cursor: { x: number; y: number } | null } | undefined
+>();
+expectTypeOf(room.getRoomStats()).toEqualTypeOf<{ connectionCount: number; userCount: number }>();
+expectTypeOf(room.listUsers).toBeCallableWith();
+declare const listUsersResult: Awaited<ReturnType<typeof room.listUsers>>;
+if (listUsersResult.success) {
+    expectTypeOf<(typeof listUsersResult.users)[number]["data"]>().toEqualTypeOf<{
+        id: string;
+    }>();
+    expectTypeOf(listUsersResult.pageInfo.hasNextPage).toEqualTypeOf<boolean>();
+} else {
+    expectTypeOf(listUsersResult.error.code).toEqualTypeOf<
+        "FAILED" | "INVALID_LIMIT" | "NOT_CONNECTED"
+    >();
+    expectTypeOf(listUsersResult).not.toHaveProperty("users");
+}
 room.subscribe.event("receiveMessage", (event) => {
     expectTypeOf<(typeof event)["data"]>().toEqualTypeOf<{ message: string }>();
     expectTypeOf<(typeof event)["data"]>().toBeObject();
@@ -154,7 +180,12 @@ expectTypeOf(room.getDoc()).toEqualTypeOf<
     >
 >();
 
-const { PluvRoomProvider, useDoc, useStorage } = createBundle(client);
+const { PluvRoomProvider, useDoc, useOther, useRoomError, useRoomStats, useStorage } =
+    createBundle(client);
+
+useRoomError((error) => {
+    expectTypeOf(error.message).toEqualTypeOf<string>();
+});
 
 <PluvRoomProvider
     initialPresence={{
@@ -179,6 +210,10 @@ const { PluvRoomProvider, useDoc, useStorage } = createBundle(client);
 </PluvRoomProvider>;
 
 const storageMessages = useStorage("messages");
+
+expectTypeOf(useRoomStats()).toEqualTypeOf<{ connectionCount: number; userCount: number }>();
+expectTypeOf(useRoomStats((stats) => stats.userCount)).toEqualTypeOf<number>();
+expectTypeOf(useOther("example-user-id")?.data).toEqualTypeOf<{ id: string } | undefined>();
 
 expectTypeOf(storageMessages[0]).toEqualTypeOf<string[] | null>();
 expectTypeOf(storageMessages[1]).toEqualTypeOf<YArray<string> | null>();

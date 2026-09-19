@@ -20,7 +20,10 @@ import type { InferDoc, InferJson, InferStorage } from "@pluv/crdt";
 import type {
     BroadcastProxy,
     Id,
+    PublicEventKey,
+    RoomError,
     RoomLike,
+    RoomStats,
     StorageState,
     UpdateMyPresenceAction,
 } from "@pluv/types";
@@ -351,7 +354,7 @@ export const createBundle = <
         return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
     };
 
-    const useEvent = <TType extends keyof InferClientOutput<TRoom>>(
+    const useEvent = <TType extends PublicEventKey<InferClientOutput<TRoom>>>(
         type: TType,
         callback: Parameters<EventProxy<TRoom>[TType]["useEvent"]>[0],
     ): void => {
@@ -372,10 +375,10 @@ export const createBundle = <
             get(_, prop) {
                 const useProxyEvent = (
                     callback: Parameters<
-                        EventProxy<TRoom>[keyof InferClientOutput<TRoom>]["useEvent"]
+                        EventProxy<TRoom>[PublicEventKey<InferClientOutput<TRoom>>]["useEvent"]
                     >[0],
                 ): void => {
-                    return useEvent(prop as keyof InferClientOutput<TRoom>, callback);
+                    return useEvent(prop as PublicEventKey<InferClientOutput<TRoom>>, callback);
                 };
 
                 return { useEvent: useProxyEvent };
@@ -442,18 +445,18 @@ export const createBundle = <
     };
 
     const useOther = <TValue extends unknown = UserInfo<TDefs["io"], TPresence>>(
-        connectionId: string,
+        userId: string,
         selector = identity as (other: UserInfo<TDefs["io"], TPresence>) => TValue,
         hookOptions?: SubscriptionHookOptions<TValue | null>,
     ): TValue | null => {
         const room = useRoom();
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => room.subscribe.other(connectionId, onStoreChange),
-            [room, connectionId],
+            (onStoreChange: () => void) => room.subscribe.other(userId, onStoreChange),
+            [room, userId],
         );
 
-        const getSnapshot = useCallback(() => room.getOther(connectionId), [room, connectionId]);
+        const getSnapshot = useCallback(() => room.getOther(userId), [room, userId]);
 
         const _selector = useCallback(
             (snapshot: Id<UserInfo<TDefs["io"], TPresence>> | null) => {
@@ -512,6 +515,40 @@ export const createBundle = <
         const room = useRoom();
 
         return room.redo;
+    };
+
+    const useRoomError = (callback: (error: RoomError) => void): void => {
+        const room = useRoom();
+
+        useEffect(() => {
+            const unsubscribe = room.subscribe.error(callback);
+
+            return () => {
+                unsubscribe();
+            };
+        }, [callback, room]);
+    };
+
+    const useRoomStats = <TValue extends unknown = RoomStats>(
+        selector = identity as (stats: RoomStats) => TValue,
+        hookOptions?: SubscriptionHookOptions<TValue>,
+    ): TValue => {
+        const room = useRoom();
+
+        const subscribe = useCallback(
+            (onStoreChange: () => void) => room.subscribe.roomStats(onStoreChange),
+            [room],
+        );
+
+        const getSnapshot = room.getRoomStats;
+
+        return useSyncExternalStoreWithSelector(
+            subscribe,
+            getSnapshot,
+            getSnapshot,
+            selector as (stats: RoomStats) => TValue,
+            hookOptions?.isEqual ?? fastDeepEqual,
+        );
     };
 
     const useStorage = <
@@ -615,6 +652,8 @@ export const createBundle = <
         useOthers,
         useRedo,
         useRoom,
+        useRoomError,
+        useRoomStats,
         useStorage,
         useTransact,
         useUndo,

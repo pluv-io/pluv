@@ -18,7 +18,6 @@
         "@pluv/platform-cloudflare": "workspace:^",
         "@pluv/platform-node": "workspace:^",
         "@pluv/platform-pluv": "workspace:^",
-        "@pluv/pubsub-redis": "workspace:^",
         "@pluv/react": "workspace:^",
         "@pluv/types": "workspace:^",
         "@types/node": "^26.5.1",

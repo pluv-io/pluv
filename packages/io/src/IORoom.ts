@@ -8,11 +8,13 @@ import type {
     IOLike,
     Id,
     InferEventMessage,
+    InferEventsInput,
     InferEventsOutput,
-    InferIOAuthorize,
     InferIOAuthorizeUser,
     InferIOInput,
     JsonObject,
+    ListUsersOptions,
+    ListUsersResult,
     Maybe,
 } from "@pluv/types";
 import colors from "kleur";
@@ -22,6 +24,7 @@ import type {
     InferPlatformWebSocketSource,
     InferRoomContextType,
 } from "./AbstractPlatform";
+import type { IOPubSubEventMessage } from "./AbstractPubSub";
 import type {
     AbstractCloseEvent,
     AbstractErrorEvent,
@@ -33,10 +36,13 @@ import type { PluvRouter } from "./PluvRouter";
 import { RoomSessions } from "./RoomSessions";
 import { RoomStorage } from "./RoomStorage";
 import { authorize } from "./authorize";
-import { GARBAGE_COLLECT_INTERVAL_MS } from "./constants";
+import {
+    GARBAGE_COLLECT_INTERVAL_MS,
+    ROOM_STATS_THROTTLE_MS,
+    isServerOriginEvent,
+} from "./constants";
 import type {
     EventResolverContext,
-    EventResolverKind,
     GetInitialStorageFn,
     IORoomDestroyedEvent,
     IORoomListenerEvent,
@@ -44,19 +50,33 @@ import type {
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
     PluvContext,
+    PluvIOLimits,
     SendMessageOptions,
     WebSocketSession,
     WebSocketType,
 } from "./types";
-import { oneLine, parsePluvSchema, resolveIOAuthorize } from "./utils";
+import {
+    getRoomStatsFromSessions,
+    oneLine,
+    pageLiveUsers,
+    parsePluvSchema,
+    resolveIOAuthorize,
+    resolveMaxConnections,
+    throttle,
+} from "./utils";
+import type { Throttle } from "./utils";
 
-type BroadcastMessage<TIO extends IORoom<any>> =
-    | InferEventMessage<InferIOInput<TIO>>
-    | InferEventMessage<BaseIOEventRecord<InferIOAuthorize<TIO>>>;
+type BroadcastMessage<T extends IODefs> =
+    | InferEventMessage<InferEventsInput<T["events"]>>
+    | InferEventMessage<BaseIOEventRecord<T["authorize"]>>;
 
-interface BroadcastParams<TIO extends IORoom<any>> {
-    message: BroadcastMessage<TIO>;
+interface BroadcastParams<T extends IODefs> {
+    message: BroadcastMessage<T>;
     senderId?: string;
+    /**
+     * Envelope user when the sender session is already gone (e.g. `$exit`).
+     */
+    senderUser?: InferIOAuthorizeUser<T["authorize"]> | null;
 }
 
 export interface IORoomListeners<T extends IODefs = IODefs> {
@@ -67,11 +87,19 @@ export interface IORoomListeners<T extends IODefs = IODefs> {
     onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
 }
 
+type IORoomThrottles = {
+    roomStats: Throttle;
+};
+
 export type BroadcastProxy<TIO extends IORoom<any>> = (<TEvent extends keyof InferIOInput<TIO>>(
     event: TEvent,
     data: Id<InferIOInput<TIO>[TEvent]>,
+    senderId: string,
 ) => Promise<void>) & {
-    [event in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>>[event]) => Promise<void>;
+    [event in keyof InferIOInput<TIO>]: (
+        data: Id<InferIOInput<TIO>>[event],
+        senderId: string,
+    ) => Promise<void>;
 };
 
 export type IORoomConfig<T extends IODefs = IODefs> = Partial<IORoomListeners<T>> & {
@@ -80,6 +108,7 @@ export type IORoomConfig<T extends IODefs = IODefs> = Partial<IORoomListeners<T>
     crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     debug: boolean;
     getInitialStorage: GetInitialStorageFn<T["context"]>;
+    limits: PluvIOLimits;
     platform: T["platform"];
     roomContext: InferRoomContextType<T["platform"]>;
     router: PluvRouter<T>;
@@ -100,6 +129,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     public readonly id: string;
 
     private _lastGarbageCollectMs: number = -1 * (GARBAGE_COLLECT_INTERVAL_MS + 1);
+    private _registering = 0;
     private _teardown: Promise<void> | null = null;
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
@@ -107,12 +137,14 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     private readonly _context: PluvContext<T["platform"], T["context"]>;
     private readonly _crdt: T["crdt"];
     private readonly _debug: boolean;
+    private readonly _limits: PluvIOLimits;
     private readonly _listeners: IORoomListeners<T>;
     private readonly _platform: T["platform"];
     private readonly _roomContext: InferRoomContextType<T["platform"]>;
     private readonly _router: PluvRouter<T>;
     private readonly _sessions: RoomSessions<T>;
     private readonly _storage: RoomStorage<T>;
+    private readonly _throttles: IORoomThrottles;
 
     /**
      * @ignore
@@ -139,15 +171,20 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         const _broadcast = <TEvent extends keyof InferIOInput<this>>(
             event: TEvent,
             data: Id<InferIOInput<this>[TEvent]>,
+            senderId: string,
         ): Promise<void> => {
-            const message = { type: event, data } as BroadcastMessage<this>;
+            if (typeof senderId !== "string") {
+                throw new Error("room.broadcast of a user event requires a senderId");
+            }
 
-            return Promise.resolve(this._broadcast({ message }));
+            const message = { type: event, data } as BroadcastMessage<T>;
+
+            return Promise.resolve(this._broadcast({ message, senderId }));
         };
 
         return new Proxy(_broadcast, {
             get(fn, prop) {
-                return (data: any) => fn(prop as any, data);
+                return (data: any, senderId: string) => fn(prop as any, data, senderId);
             },
         }) as BroadcastProxy<this>;
     }
@@ -165,6 +202,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             crdt = noop,
             debug,
             getInitialStorage,
+            limits,
             onRoomDestroyed,
             onStorageDestroyed,
             onMessage,
@@ -180,6 +218,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         this._context = context;
         this._crdt = crdt as T["crdt"];
         this._debug = debug;
+        this._limits = limits;
         this._roomContext = roomContext;
         this._router = router;
         this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), roomContext });
@@ -200,6 +239,11 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             onMessage: (event) => onMessage?.(event),
             onUserConnected: (event) => onUserConnected?.(event),
             onUserDisconnected: (event) => onUserDisconnected?.(event),
+        };
+        this._throttles = {
+            roomStats: throttle(() => this._emitRoomStats(), {
+                wait: ROOM_STATS_THROTTLE_MS,
+            }),
         };
 
         /**
@@ -276,6 +320,10 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         return this._sessions.getSize();
     }
 
+    public listUsers(options: ListUsersOptions = {}): ListUsersResult<this> {
+        return pageLiveUsers(this._sessions.getLiveSessions(), options) as ListUsersResult<this>;
+    }
+
     public onClose(
         webSocket: WebSocketType<T["platform"]>,
     ): (event: AbstractCloseEvent) => Promise<void> {
@@ -339,81 +387,115 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
 
         if (sessionExists) return;
 
-        // Joining an in-flight teardown lets the room re-initialize from storage below, rather
-        // than binding this connection to the doc that teardown discards.
-        if (this._teardown) await this._teardown;
+        const maxConnections = resolveMaxConnections(this._limits);
+        const rejectMaxConnections = (): void => {
+            const rejected = this._platform.convertWebSocket(webSocket, { room: this.id });
 
-        if (!(await this._initialized)) {
-            this._initialize();
-            await this._initialized;
-        }
+            rejected.handleError({
+                error: new Error(`Room is at maxConnections (${maxConnections.toLocaleString()}).`),
+                room: this.id,
+            });
+            rejected.close(4000, "Room is at maxConnections");
+        };
 
-        const user = await this._getAuthorizedUser(token, registerConfig);
-        const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
-
-        if (!user) {
-            this._logDebug(colors.blue("Authorization failed for connection"));
-            pluvWs.handleError({ error: new Error("Not authorized"), room: this.id });
-            pluvWs.close(3000, "WebSocket unauthorized.");
+        if (this.getSize() + this._registering >= maxConnections) {
+            rejectMaxConnections();
 
             return;
         }
 
-        const latest = this._sessions.getLatestPresence(user.id);
-        const prevState = pluvWs.state;
+        this._registering += 1;
 
-        pluvWs.user = user;
+        let reserved = true;
+        const releaseReservation = (): void => {
+            if (!reserved) return;
 
-        this._platform.setSerializedState(pluvWs, {
-            ...prevState,
-            presence: latest.presence,
-            timers: { ...prevState.timers, presence: latest.timer },
-        });
-        this._sessions.addUserSession(user.id, pluvWs.sessionId);
+            reserved = false;
+            this._registering -= 1;
+        };
 
-        this._logDebug(
-            `${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`,
-        );
+        try {
+            // Joining an in-flight teardown lets the room re-initialize from storage below, rather
+            // than binding this connection to the doc that teardown discards.
+            if (this._teardown) await this._teardown;
 
-        await this._platform.acceptWebSocket(pluvWs);
-        this._sessions.set(pluvWs.sessionId, pluvWs);
-        await this._platform.persistence.addUser(this.id, pluvWs.sessionId, user);
+            if (!(await this._initialized)) {
+                this._initialize();
+                await this._initialized;
+            }
 
-        if (this._platform._config.registrationMode === "attached") {
-            const onClose = this._onClose(pluvWs).bind(this);
-            const onMessage = this._onMessage(pluvWs).bind(this);
+            const user = await this._getAuthorizedUser(token, registerConfig);
+            const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
 
-            pluvWs.addEventListener("close", onClose);
-            pluvWs.addEventListener("error", onClose);
-            pluvWs.addEventListener("message", onMessage);
+            if (!user) {
+                this._logDebug(colors.blue("Authorization failed for connection"));
+                pluvWs.handleError({ error: new Error("Not authorized"), room: this.id });
+                pluvWs.close(3000, "WebSocket unauthorized.");
+
+                return;
+            }
+
+            const latest = this._sessions.getLatestPresence(user.id);
+            const prevState = pluvWs.state;
+
+            pluvWs.user = user;
+
+            this._platform.setSerializedState(pluvWs, {
+                ...prevState,
+                presence: latest.presence,
+                seq: { ...prevState.seq, presence: latest.seq },
+            });
+            this._sessions.addUserSession(user.id, pluvWs.sessionId);
+
+            this._logDebug(
+                `${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`,
+            );
+
+            await this._platform.acceptWebSocket(pluvWs);
+            this._sessions.set(pluvWs.sessionId, pluvWs);
+            releaseReservation();
+            await this._platform.persistence.addUser(this.id, pluvWs.sessionId, user);
+
+            if (this._platform._config.registrationMode === "attached") {
+                const onClose = this._onClose(pluvWs).bind(this);
+                const onMessage = this._onMessage(pluvWs).bind(this);
+
+                pluvWs.addEventListener("close", onClose);
+                pluvWs.addEventListener("error", onClose);
+                pluvWs.addEventListener("message", onMessage);
+            }
+
+            await this._emitRegistered(pluvWs);
+            this._throttles.roomStats.schedule();
+
+            const size = this.getSize();
+
+            this._logDebug(oneLine`
+                ${colors.blue(`Registered connection for room ${this.id}:`)}
+                ${pluvWs.sessionId}
+            `);
+            this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
+        } finally {
+            releaseReservation();
         }
-
-        await this._emitRegistered(pluvWs);
-
-        const size = this.getSize();
-
-        this._logDebug(oneLine`
-            ${colors.blue(`Registered connection for room ${this.id}:`)}
-            ${pluvWs.sessionId}
-        `);
-        this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
     }
 
-    private async _broadcast(params: BroadcastParams<this>): Promise<void> {
-        const { message, senderId } = params;
+    private async _broadcast(params: BroadcastParams<T>): Promise<void> {
+        const { message, senderId, senderUser } = params;
+        const type = (message as { type: string }).type;
+
+        if (typeof senderId !== "string" && !isServerOriginEvent(type)) return;
 
         const sender = senderId ? (this._sessions.get(senderId) ?? null) : null;
         const session = sender?.session ?? null;
-        const user = session?.user ?? null;
-
-        if (typeof senderId !== "string") return;
+        const user = senderUser ?? session?.user ?? null;
 
         await this._platform.pubSub.publish(this.id, {
             connectionId: senderId ?? null,
             room: this.id,
             user,
             ...message,
-        });
+        } as IOPubSubEventMessage<any>);
     }
 
     private async _closeWebSockets(webSockets: readonly AbstractWebSocket[]): Promise<void> {
@@ -423,18 +505,26 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
 
             if (!deleted) return;
 
+            const session = this._sessions.toSession(deleted);
+            const user = session.user;
+
             this._logDebug(
                 `${colors.blue(`Unregistering connection for room ${this.id}:`)} ${sessionId}`,
             );
 
             await this._platform.persistence.deleteUser(this.id, sessionId).catch(() => null);
             await this._broadcast({
-                message: { type: "$exit", data: { sessionId } },
+                message: {
+                    type: "$exit",
+                    data: {
+                        sessionId,
+                        user: user as Id<InferIOAuthorizeUser<T["authorize"]>>,
+                    },
+                },
                 senderId: sessionId,
+                senderUser: user,
             });
-
-            const session = this._sessions.toSession(deleted);
-            const user = session.user;
+            this._throttles.roomStats.schedule();
 
             if (!!user) this._sessions.removeUserSession(user.id, sessionId);
 
@@ -489,15 +579,18 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
 
         const [doc, context] = await Promise.all([this._doc, this._getContext()]);
         const encodedState = doc.isEmpty() ? null : doc.getEncodedState();
+        const stats = getRoomStatsFromSessions(this._sessions.getLiveSessions());
 
         await this._sendSelfMessage(
             {
                 type: "$registered",
                 data: {
+                    connectionCount: stats.connectionCount,
                     presence,
                     sessionId,
                     state: encodedState,
-                    timers: { presence: session.timers.presence },
+                    seq: { presence: session.seq.presence },
+                    userCount: stats.userCount,
                 },
             },
             { sessionId, user },
@@ -517,6 +610,14 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         } catch (err) {
             console.error(err);
         }
+    }
+
+    private async _emitRoomStats(): Promise<void> {
+        const stats = getRoomStatsFromSessions(this._sessions.getLiveSessions());
+
+        await this._broadcast({
+            message: { type: "$roomStats", data: stats },
+        });
     }
 
     private async _emitSyncState(): Promise<void> {
@@ -593,15 +694,16 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         return await Promise.resolve(context);
     }
 
-    private _createEventResolverContext<TKind extends EventResolverKind>(params: {
+    private _createEventResolverContext(params: {
         context: T["context"];
         doc: CrdtDocLike<any, any>;
-        session: TKind extends "sync" ? WebSocketSession<T> | null : WebSocketSession<T>;
+        session: WebSocketSession<T>;
         sessions: readonly WebSocketSession<T>[];
-    }): EventResolverContext<TKind, T> {
+    }): EventResolverContext<T> {
         const { context, doc, session, sessions } = params;
         const roomSessions = this._sessions;
         const storage = this._storage;
+        const time = new Date().getTime();
 
         return {
             context,
@@ -611,14 +713,12 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             },
             platform: this._platform,
             get presence() {
-                return (session?.presence ?? null) as JsonObject | null;
+                return (session.webSocket.state.presence ??
+                    session.presence ??
+                    null) as JsonObject | null;
             },
             set presence(presence: JsonObject | null) {
-                const sessionId = this.session?.id;
-
-                if (!sessionId) return;
-
-                roomSessions.setPresence({ presence, sessionId, timer: this.time });
+                roomSessions.setPresence({ presence, sessionId: session.id });
             },
             room: this.id,
             session,
@@ -629,8 +729,8 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             set storageSeeded(value: boolean) {
                 storage.storageSeeded = value;
             },
-            time: new Date().getTime(),
-        } as EventResolverContext<TKind, T>;
+            time,
+        };
     }
 
     private _getProcedure(
@@ -683,10 +783,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                             await this._sendSelfMessage(message, sender);
                             return;
                         }
-                        case "sync": {
-                            await this._sendSyncMessage(message, sender);
-                            return;
-                        }
                         case "broadcast":
                         default: {
                             const sessionIds = options.sessionIds;
@@ -705,6 +801,10 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 if (this._teardown) return this._teardown;
 
                 this._teardown = (async () => {
+                    Object.values(this._throttles).forEach((item) => {
+                        item.cancel();
+                    });
+
                     this._platform.pubSub.unsubscribe(pubSubId);
 
                     const context = await this._getContext();
@@ -783,7 +883,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             if (!pluvWs) throw new Error("Could not get session");
 
             const session = this._sessions.getSession(pluvWs as WebSocketType<T["platform"]>);
-            const sessions = this._sessions.getSessions();
+            const sessions = this._sessions.getLiveSessions();
             const [doc, context] = await Promise.all([this._doc, this._getContext()]);
             const eventContext = this._createEventResolverContext({
                 context,
@@ -825,6 +925,8 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             const user = session.user;
 
             if (!procedure) {
+                if (message.type.startsWith("$")) return;
+
                 // Unknown event types are broadcast on purpose so client-only
                 // MergeEvents procedures can still relay through the room.
                 await this._broadcast({
@@ -851,12 +953,11 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             }
 
             try {
-                // broadcast, self, and sync resolvers run concurrently and may
+                // broadcast and self resolvers run concurrently and may
                 // race on shared doc / presence state — do not assume ordering.
-                const [broadcast, self, sync] = await Promise.all([
+                const [broadcast, self] = await Promise.all([
                     procedure.config.broadcast?.(inputs, eventContext),
                     procedure.config.self?.(inputs, eventContext),
-                    procedure.config.sync?.(inputs, eventContext),
                 ]);
 
                 const handleBroadcast = async () => {
@@ -882,25 +983,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                     await Promise.all(messages);
                 };
 
-                const handleSync = async () => {
-                    if (!sync) return;
-
-                    await this._platform.pubSub.publish(this.id, {
-                        connectionId: session.id,
-                        options: { type: "sync" },
-                        room: this.id,
-                        user,
-                        ...message,
-                    });
-
-                    const messages = Object.entries(sync).map(async ([type, data]) => {
-                        await this._sendSelfMessage({ data, type }, { sessionId, user });
-                    });
-
-                    await Promise.all(messages);
-                };
-
-                await Promise.all([handleBroadcast(), handleSelf(), handleSync()]);
+                await Promise.all([handleBroadcast(), handleSelf()]);
             } catch (error) {
                 pluvWs.handleError({
                     error,
@@ -945,7 +1028,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         const connectionId = sender?.sessionId ?? null;
         const room = this.id;
 
-        if (typeof connectionId !== "string") return;
+        if (typeof connectionId !== "string" && !isServerOriginEvent(type)) return;
 
         const webSockets =
             sessionIds?.reduce((dict, id) => {
@@ -956,10 +1039,13 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
 
         await Promise.allSettled(
             Array.from(webSockets.values()).map(async (pluvWs) => {
-                const session = pluvWs.session;
-                const user = session.user;
-
-                await this._sendMessage(pluvWs, { connectionId, data, room, type, user });
+                await this._sendMessage(pluvWs, {
+                    connectionId,
+                    data,
+                    room,
+                    type,
+                    user: sender?.user ?? null,
+                } as IOEventMessage<any>);
             }),
         );
     }
@@ -1004,55 +1090,5 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 await this.garbageCollect();
             }
         }
-    }
-
-    private async _sendSyncMessage(
-        message: EventMessage<string, any>,
-        sender: SendMessageSender | null,
-    ): Promise<void> {
-        if (!sender) return;
-
-        const connectionId = sender.sessionId;
-
-        if (typeof connectionId !== "string") return;
-
-        const [doc, context] = await Promise.all([this._doc, this._getContext()]);
-        const resolverCtx = this._createEventResolverContext<"sync">({
-            context,
-            doc,
-            session: null,
-            sessions: this._sessions.getSessions(),
-        });
-
-        const resolver = this._getProcedure(message)?.config.sync;
-
-        if (!resolver) return;
-
-        let inputs: InferIOInput<this>[keyof T["events"]];
-
-        try {
-            inputs = this._getProcedureInputs(message);
-        } catch {
-            return;
-        }
-
-        const output = await resolver(inputs, resolverCtx);
-
-        if (!output) return;
-
-        await Promise.all(
-            Object.keys(output).map((type) => {
-                const data = output[type] ?? {};
-
-                return this._platform.pubSub.publish(this.id, {
-                    connectionId,
-                    data,
-                    options: { type: "self" },
-                    room: this.id,
-                    type,
-                    user: sender.user as InferIOAuthorizeUser<T["authorize"]>,
-                });
-            }),
-        );
     }
 }

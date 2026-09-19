@@ -23,7 +23,7 @@ export type OtherSubscriptionCallback<TIO extends IOLike, TPresence extends Reco
 ) => void;
 
 export type OtherSubscriptionFn<TIO extends IOLike, TPresence extends Record<string, any>> = (
-    connectionId: string,
+    userId: string,
     callback: OtherSubscriptionCallback<TIO, TPresence>,
 ) => () => void;
 
@@ -51,6 +51,7 @@ export interface StateNotifierSubjects<TIO extends IOLike, TPresence extends Rec
     "my-presence": Subject<TPresence | null>;
     myself: Subject<Readonly<Id<UserInfo<TIO, TPresence>>> | null>;
     others: Subject<readonly Id<UserInfo<TIO, TPresence>>[]>;
+    roomStats: Subject<RoomStats>;
     "storage-loaded": Subject<boolean>;
 }
 
@@ -73,11 +74,61 @@ export type UpdateMyPresenceAction<TPresence extends Record<string, any>> =
     | Partial<TPresence>
     | ((oldPresence: TPresence | null) => Partial<TPresence>);
 
-export interface UserInfo<TIO extends IOLike, TPresence extends Record<string, any> = {}> {
-    connectionId: string;
-    presence: TPresence;
-    user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>;
+export interface UserRecord<TIO extends IOLike> {
+    data: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>>;
 }
+
+export interface UserInfo<
+    TIO extends IOLike,
+    TPresence extends Record<string, any> = {},
+> extends UserRecord<TIO> {
+    presence: TPresence;
+}
+
+export type RoomStats = {
+    connectionCount: number;
+    userCount: number;
+};
+
+export type RoomError = {
+    message: string;
+    stack?: string | null;
+};
+
+export type RoomErrorSubscriptionCallback = (error: RoomError) => void;
+
+export type RoomErrorSubscriptionFn = (callback: RoomErrorSubscriptionCallback) => () => void;
+
+export type ListUsersOptions = {
+    cursor?: string | null;
+    limit?: number;
+};
+
+export type UsersPage<TIO extends IOLike> = {
+    pageInfo: {
+        endCursor: string | null;
+        hasNextPage: boolean;
+    };
+    users: UserRecord<TIO>[];
+};
+
+export type ListUsersErrorCode = "FAILED" | "INVALID_LIMIT" | "NOT_CONNECTED";
+
+export type ListUsersError = {
+    code: ListUsersErrorCode;
+    message: string;
+};
+
+export type ListUsersResult<TIO extends IOLike> =
+    | {
+          success: true;
+          pageInfo: UsersPage<TIO>["pageInfo"];
+          users: UsersPage<TIO>["users"];
+      }
+    | {
+          success: false;
+          error: ListUsersError;
+      };
 
 export interface WebSocketConnection {
     /**
@@ -112,13 +163,15 @@ export type BroadcastProxy<TIO extends IOLike, TEvents extends PluvRouterEventCo
     ) => Promise<void>;
 };
 
+export type PublicEventKey<TEvents> = Exclude<Extract<keyof TEvents, string>, `$${string}`>;
+
 export type EventNotifierSubscriptionCallback<
     TIO extends IOLike,
     TEvent extends keyof InferIOOutput<TIO>,
 > = (value: Id<IOEventMessage<TIO, TEvent>>) => void;
 
 export type EventSubscriptionFn<TIO extends IOLike, TEvents extends PluvRouterEventConfig> = <
-    TEvent extends keyof InferIOOutput<MergeEvents<TEvents, TIO>>,
+    TEvent extends PublicEventKey<InferIOOutput<MergeEvents<TEvents, TIO>>>,
 >(
     event: TEvent,
     callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, TEvent>,
@@ -128,7 +181,7 @@ export type EventProxy<
     TIO extends IOLike,
     TEvents extends PluvRouterEventConfig,
 > = EventSubscriptionFn<TIO, TEvents> & {
-    [PEvent in keyof InferIOOutput<MergeEvents<TEvents, TIO>>]: (
+    [PEvent in PublicEventKey<InferIOOutput<MergeEvents<TEvents, TIO>>>]: (
         callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, PEvent>,
     ) => () => void;
 };
@@ -168,11 +221,13 @@ export type SubscribeProxy<
     callback: SubscriptionCallback<TIO, TPresence, TSubject>,
 ) => () => void) & {
     connection: SubscribeFn<Id<WebSocketState<TIO>>>;
+    error: RoomErrorSubscriptionFn;
     event: EventProxy<TIO, TEvents>;
     myPresence: SubscribeFn<TPresence | null>;
     myself: SubscribeFn<Id<UserInfo<TIO>> | null>;
     other: OtherSubscriptionFn<TIO, TPresence>;
     others: OthersSubscriptionFn<TIO, TPresence>;
+    roomStats: SubscribeFn<RoomStats>;
     storage: StorageProxy<TJson>;
     storageLoaded: SubscribeFn<boolean>;
 };
@@ -212,9 +267,13 @@ export interface RoomLike<
 
     getMyself(): Id<UserInfo<TIO, TPresence>> | null;
 
-    getOther(connectionId: string): Id<UserInfo<TIO, TPresence>> | null;
+    getOther(userId: string): Id<UserInfo<TIO, TPresence>> | null;
+
+    getOtherByConnectionId(connectionId: string): Id<UserInfo<TIO, TPresence>> | null;
 
     getOthers(): readonly Id<UserInfo<TIO, TPresence>>[];
+
+    getRoomStats(): RoomStats;
 
     getStorage<TKey extends keyof TStorage>(type: TKey): TStorage[TKey] | null;
 
@@ -222,6 +281,8 @@ export interface RoomLike<
     getStorageJson<TKey extends keyof TJson>(type: TKey): TJson[TKey] | null;
 
     getStorageLoaded: () => boolean;
+
+    listUsers(options?: ListUsersOptions): Promise<ListUsersResult<TIO>>;
 
     redo(): void;
 

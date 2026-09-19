@@ -14,12 +14,16 @@ import type {
     InferIOInput,
     InferIOOutput,
     JsonObject,
+    ListUsersOptions,
+    ListUsersResult,
     MergeEvents,
-    OptionalProps,
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
+    RoomError,
+    RoomErrorSubscriptionCallback,
     RoomEventListenerMap,
     RoomLike,
+    RoomStats,
     StateNotifierSubjects,
     StorageProxy,
     StorageRootSubscriptionCallback,
@@ -32,13 +36,16 @@ import type {
     WebSocketState,
 } from "@pluv/types";
 import { ConnectionState, StorageState } from "@pluv/types";
+import { makeSubject, subscribe } from "wonka";
 import type { AbstractStorageStore } from "./AbstractStorageStore";
 import type { ClientDefs } from "./ClientDefs";
+import { LIST_USERS_DEFAULT_LIMIT, LIST_USERS_MAX_LIMIT, LIST_USERS_TIMEOUT_MS } from "./constants";
 import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
 import { EventNotifier } from "./EventNotifier";
 import { ListenerManager } from "./ListenerManager";
+import { PendingRequestManager } from "./PendingRequestManager";
 import { PluvProcedure } from "./PluvProcedure";
 import { PluvRouter } from "./PluvRouter";
 import { StateNotifier } from "./StateNotifier";
@@ -59,7 +66,7 @@ import type {
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
 import { UsersNotifier } from "./UsersNotifier";
-import { debounce, parsePluvSchema } from "./utils";
+import { debounce, inRange, parsePluvSchema } from "./utils";
 
 const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
 const HEARTBEAT_INTERVAL_MS = 10_000;
@@ -196,6 +203,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     private readonly _eventNotifier = new EventNotifier<
         MergeEvents<TDefs["events"], TDefs["io"]>
     >();
+    private readonly _errorSubject = makeSubject<RoomError>();
     private readonly _intervals: IntervalIds = {
         heartbeat: null,
     };
@@ -204,6 +212,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     private readonly _listeners: InternalListeners;
     private readonly _publicKey: PublicKey<InferClientMetadata<TDefs>> | null = null;
     private readonly _reconnectTimeoutMs: ReconnectTimeoutMs;
+    private readonly _requests = new PendingRequestManager();
     private readonly _router: PluvRouter<TDefs>;
     private readonly _stateNotifier = new StateNotifier<TDefs["io"], InferClientPresence<TDefs>>();
     private readonly _storageStore: AbstractStorageStore;
@@ -216,6 +225,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     };
     private readonly _usersManager: UsersManager<TDefs["io"], InferClientPresence<TDefs>>;
     private readonly _usersNotifier = new UsersNotifier<TDefs["io"], InferClientPresence<TDefs>>();
+    private _roomStats: RoomStats = { connectionCount: 0, userCount: 0 };
 
     private _lastMetadata: InferClientMetadata<TDefs> | null = null;
     private _state: WebSocketState<TDefs["io"]> = {
@@ -484,13 +494,23 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     };
 
     public getOther = (
+        userId: string,
+    ): Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>> | null => {
+        return this._usersManager.getOther(userId);
+    };
+
+    public getOtherByConnectionId = (
         connectionId: string,
     ): Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>> | null => {
-        return this._usersManager.getOther(connectionId);
+        return this._usersManager.getOtherByConnectionId(connectionId);
     };
 
     public getOthers = (): readonly Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>>[] => {
         return this._usersManager.getOthers();
+    };
+
+    public getRoomStats = (): RoomStats => {
+        return this._roomStats;
     };
 
     public getStorage = <TKey extends keyof InferStorage<TDefs["storage"]>>(
@@ -529,6 +549,50 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         );
     };
 
+    public listUsers = (options: ListUsersOptions = {}): Promise<ListUsersResult<TDefs["io"]>> => {
+        const resolved = options.limit ?? LIST_USERS_DEFAULT_LIMIT;
+
+        if (!inRange(resolved, { min: 1, max: LIST_USERS_MAX_LIMIT })) {
+            return Promise.resolve({
+                success: false,
+                error: {
+                    code: "INVALID_LIMIT",
+                    message: `Invalid listUsers limit. Limit must be an integer from 1 to ${LIST_USERS_MAX_LIMIT.toLocaleString()}. Received: ${String(options.limit)}.`,
+                },
+            });
+        }
+
+        if (!this._state.webSocket || this._state.connection.state !== ConnectionState.Open) {
+            return Promise.resolve({
+                success: false,
+                error: { code: "NOT_CONNECTED", message: "Room is not connected" },
+            });
+        }
+
+        const { promise, requestId } = this._requests.request<ListUsersResult<TDefs["io"]>>({
+            onAbort: () => ({
+                success: false,
+                error: { code: "NOT_CONNECTED", message: "Room is not connected" },
+            }),
+            onTimeout: () => ({
+                success: false,
+                error: { code: "FAILED", message: "listUsers timed out" },
+            }),
+            timeoutMs: LIST_USERS_TIMEOUT_MS,
+        });
+
+        this._sendMessage({
+            type: "$listUsers",
+            data: {
+                cursor: options.cursor ?? null,
+                limit: resolved,
+                requestId,
+            },
+        });
+
+        return promise;
+    };
+
     public redo = (): void => {
         this._crdtManager.doc.redo();
     };
@@ -549,6 +613,12 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
                         >,
                     ) => {
                         return fn("connection", callback);
+                    };
+                }
+
+                if (prop === "error") {
+                    return (callback: RoomErrorSubscriptionCallback): (() => void) => {
+                        return subscribe(callback)(this._errorSubject.source).unsubscribe;
                     };
                 }
 
@@ -584,6 +654,18 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
                         >,
                     ) => {
                         return this._usersNotifier.subscribeOthers(callback);
+                    };
+                }
+
+                if (prop === "roomStats") {
+                    return (
+                        callback: SubscriptionCallback<
+                            TDefs["io"],
+                            InferClientPresence<TDefs>,
+                            "roomStats"
+                        >,
+                    ) => {
+                        return fn("roomStats", callback);
                     };
                 }
 
@@ -652,6 +734,11 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
 
         this._stateNotifier.subjects["my-presence"].next(myPresence);
         if (!!myself) this._stateNotifier.subjects.myself.next(myself);
+
+        const canSend =
+            !!this._state.webSocket && this._state.connection.state === ConnectionState.Open;
+
+        if (canSend) this._usersManager.beginLocalPresenceWrite();
 
         this.broadcast(
             "$updatePresence" as keyof InferClientInput<TDefs>,
@@ -722,6 +809,9 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         this._stateNotifier.subjects.myself.next(null);
         this._stateNotifier.subjects.others.next([]);
         this._usersNotifier.others.next({ others: [], event: { kind: "clear" } });
+        this._roomStats = { connectionCount: 0, userCount: 0 };
+        this._stateNotifier.subjects.roomStats.next(this._roomStats);
+        this._requests.failAll();
         this._state.webSocket?.close();
 
         this._detachWsListeners();
@@ -901,31 +991,32 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
         const clientId = this._usersManager.getClientId(connectionId);
+        const myClientId = this._usersManager.myself
+            ? this._usersManager.getClientId(this._usersManager.myself)
+            : null;
         const deleted = this._usersManager.deleteConnection(connectionId);
         const others = this._usersManager.getOthers();
 
         this._stateNotifier.subjects.others.next(others);
 
-        // Should not reach here
         if (!deleted) {
+            // Own sibling tabs live on `_myself`, not `_others`.
+            if (clientId && clientId === myClientId) return;
+
             console.warn("Could not identify exited connection");
             return;
         }
 
         const { data: user, remaining } = deleted;
 
+        if (remaining) return;
+
         this._usersNotifier.others.next({
             others,
             event: { kind: "leave", user },
         });
 
-        /**
-         * @description A single user can have multiple connections. So we're checking that
-         * there isn't a remaining connection before choosing to delete that user for other
-         * connected participants.
-         * @date April 16, 2025
-         */
-        if (!remaining && !!clientId) this._usersNotifier.delete(clientId);
+        if (clientId) this._usersNotifier.delete(clientId);
     }
 
     private _handlePresenceUpdatedMessage(message: IOEventMessage<TDefs["io"]>): void {
@@ -941,24 +1032,58 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         const myself = this._usersManager.myself ?? null;
 
         /**
-         * !HACK
-         * @description We're going to have the user's own presence be patched only via local calls
-         * to this.updateMyPresence. So we'll not update the user's presence in this handler to
-         * avoid weird update delays to the user's own presence.
-         *
-         * However, we will patch the user's own presence if the user has updated their own
-         * presence via another connection that is not this one (e.g. if the user has opened
-         * another connection in another browser tab/window somewhere).
-         * @date April 2, 2025
+         * This is our own presence coming back from the server. Ignore it if we
+         * have already sent a newer local update, so a burst of writes (for
+         * example dragging) cannot snap backward. Apply the last reply so we
+         * can still pick up a newer value from another tab.
          */
-        if (myself?.connectionId === connectionId) return;
+        if (
+            connectionId === this._state.connection.id &&
+            !this._usersManager.ackOwnPresenceEcho()
+        ) {
+            return;
+        }
 
-        const updated = this._usersManager.patchPresence(
+        const patched = this._usersManager.patchPresence(
             connectionId,
             data.presence as InferClientPresence<TDefs>,
+            data.seq.presence,
         );
         const myClientId = !!myself ? this._usersManager.getClientId(myself) : null;
         const clientId = this._usersManager.getClientId(connectionId);
+
+        if (!patched) {
+            /**
+             * !HACK
+             * @description User could not be found. Add the connection to keep others up-to-date
+             * @date April 19, 2025
+             */
+            const added = this._usersManager.addConnection({
+                connectionId,
+                data: message.user as Id<InferIOAuthorizeUser<InferIOAuthorize<TDefs["io"]>>>,
+                presence: data.presence as InferClientPresence<TDefs>,
+                presenceSeq: data.seq.presence,
+            });
+
+            if (!added.presenceChanged) return;
+
+            const other = this._usersManager.getOther(added.clientId);
+            const others = this._usersManager.getOthers();
+
+            this._usersNotifier.other(added.clientId).next(other);
+            this._stateNotifier.subjects.others.next(others);
+
+            this._usersNotifier.others.next({
+                others,
+                event: { kind: "update", user: added.data },
+            });
+
+            return;
+        }
+
+        if (!patched.applied) return;
+
+        const updated = patched.presence;
 
         if (!!clientId && myClientId === clientId) {
             this._stateNotifier.subjects["my-presence"].next(updated);
@@ -968,7 +1093,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         }
 
         if (!!clientId) {
-            const other = this._usersManager.getOther(connectionId);
+            const other = this._usersManager.getOther(clientId);
             const others = this._usersManager.getOthers();
 
             this._usersNotifier.other(clientId).next(other);
@@ -983,31 +1108,9 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
 
             return;
         }
-
-        /**
-         * !HACK
-         * @description User could not be found. Add the connection to keep others up-to-date
-         * @date April 19, 2025
-         */
-        const added = this._usersManager.addConnection({
-            connectionId,
-            presence: data.presence as InferClientPresence<TDefs>,
-            user: message.user as Id<InferIOAuthorizeUser<InferIOAuthorize<TDefs["io"]>>>,
-        });
-        const other = this._usersManager.getOther(connectionId);
-        const others = this._usersManager.getOthers();
-
-        this._usersNotifier.other(added.clientId).next(other);
-        this._stateNotifier.subjects.others.next(others);
-
-        this._usersNotifier.others.next({
-            others,
-            event: { kind: "update", user: added.data },
-        });
     }
 
     private _handleReceiveOthers(message: IOEventMessage<TDefs["io"]>): void {
-        if (!message.connectionId) return;
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
@@ -1015,24 +1118,28 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             InferIOAuthorize<TDefs["io"]>
         >["$othersReceived"];
 
-        Object.keys(data.others).forEach((connectionId) => {
-            const { presence, user } = data.others[connectionId];
+        const leftIds = this._usersManager.replaceOthers(
+            data.others.map((other) => ({
+                connectionIds: other.connectionIds,
+                data: other.data,
+                presence: other.presence as InferClientPresence<TDefs> | null,
+                presenceSeq: other.seq.presence,
+            })),
+        );
+        this._usersManager.setMyConnectionIds(data.myConnectionIds);
 
-            const result = this._usersManager.addConnection({
-                connectionId,
-                presence: presence as InferClientPresence<TDefs>,
-                user,
-            });
+        leftIds.forEach((clientId) => {
+            this._usersNotifier.delete(clientId);
+        });
 
-            if (!!presence)
-                this._usersManager.patchPresence(
-                    connectionId,
-                    presence as InferClientPresence<TDefs>,
-                );
-            if (result.isMyself) return;
+        data.others.forEach((row) => {
+            const connectionId = row.connectionIds[0];
+            if (!connectionId) return;
 
-            const clientId = result.clientId;
-            const other = this._usersManager.getOther(connectionId);
+            const clientId = this._usersManager.getClientId(connectionId);
+            if (!clientId) return;
+
+            const other = this._usersManager.getOther(clientId);
 
             this._usersNotifier.other(clientId).next(other);
         });
@@ -1059,6 +1166,12 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         >["$registered"];
         const state = data.state;
 
+        this._roomStats = {
+            connectionCount: data.connectionCount,
+            userCount: data.userCount,
+        };
+        this._stateNotifier.subjects.roomStats.next(this._roomStats);
+
         this._updateState((oldState) => {
             oldState.connection.id = connectionId;
             oldState.authorization.user = user;
@@ -1066,15 +1179,12 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             return oldState;
         });
 
-        const userInfo: OptionalProps<
-            UserInfo<TDefs["io"], InferClientPresence<TDefs>>,
-            "presence"
-        > = {
+        this._usersManager.setMyself({
             connectionId,
+            data: user,
             presence: (data.presence as InferClientPresence<TDefs> | null) ?? undefined,
-            user,
-        };
-        this._usersManager.setMyself(userInfo);
+            presenceSeq: data.seq.presence,
+        });
 
         const presence = this._usersManager.myPresence;
         const myself = this._usersManager.myself ?? null;
@@ -1202,9 +1312,6 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     }
 
     private _handleSyncStateReceived(message: IOEventMessage<TDefs["io"]>): void {
-        const { connectionId } = message;
-
-        if (!connectionId) return;
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
         if (!this._usersManager.myself) return;
@@ -1213,16 +1320,13 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             InferIOAuthorize<TDefs["io"]>
         >["$syncStateReceived"];
         const active = new Set(data?.connectionIds ?? []);
+        const left = this._usersManager.pruneConnections(active);
 
-        const quitters = this._usersManager
-            .getOthers()
-            .filter((other) => !active.has(other.connectionId));
-
-        quitters.forEach((quitter) => {
-            this._usersManager.deleteConnection(quitter.connectionId);
-
+        left.forEach((quitter) => {
             const remaining = this._usersManager.getOthers();
+            const clientId = this._usersManager.getClientId(quitter);
 
+            this._usersNotifier.delete(clientId);
             this._usersNotifier.others.next({
                 others: remaining,
                 event: { kind: "leave", user: quitter },
@@ -1232,6 +1336,36 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         const remaining = this._usersManager.getOthers();
 
         this._stateNotifier.subjects.others.next(remaining);
+    }
+
+    private _handleRoomError(message: IOEventMessage<TDefs["io"]>): void {
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TDefs["io"]>>["$error"];
+
+        this._errorSubject.next({
+            message: data.message,
+            stack: data.stack ?? null,
+        });
+    }
+
+    private _handleRoomStats(message: IOEventMessage<TDefs["io"]>): void {
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TDefs["io"]>>["$roomStats"];
+
+        this._roomStats = {
+            connectionCount: data.connectionCount,
+            userCount: data.userCount,
+        };
+        this._stateNotifier.subjects.roomStats.next(this._roomStats);
+    }
+
+    private _handleUsersPage(message: IOEventMessage<TDefs["io"]>): void {
+        const data = message.data as BaseIOEventRecord<InferIOAuthorize<TDefs["io"]>>["$usersPage"];
+
+        this._requests.complete(
+            data.requestId,
+            data.success
+                ? { success: true, pageInfo: data.pageInfo, users: data.users }
+                : { success: false, error: data.error },
+        );
     }
 
     private _handleUserJoinedMessage(message: IOEventMessage<TDefs["io"]>): void {
@@ -1245,25 +1379,39 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         const data = message.data as BaseIOEventRecord<
             InferIOAuthorize<TDefs["io"]>
         >["$userJoined"];
-        const myself = this._usersManager.myself;
 
-        if (myself.connectionId === connectionId) {
+        if (connectionId === this._state.connection.id) {
             this._sendMessage({ type: "$getOthers", data: {} });
             return;
         }
 
         const added = this._usersManager.addConnection({
             connectionId,
+            data: data.user,
             presence: data.presence as InferClientPresence<TDefs>,
-            user: data.user,
+            presenceSeq: data.seq.presence,
         });
 
-        const other = this._usersManager.getOther(connectionId);
+        if (added.isMyself) return;
+
+        const other = this._usersManager.getOther(added.clientId);
         const others = this._usersManager.getOthers();
+
+        if (added.remaining !== 1) {
+            if (!added.presenceChanged || !other) return;
+
+            this._usersNotifier.other(added.clientId).next(other);
+            this._stateNotifier.subjects.others.next(others);
+            this._usersNotifier.others.next({
+                others,
+                event: { kind: "update", user: other },
+            });
+
+            return;
+        }
 
         this._usersNotifier.other(added.clientId).next(other);
         this._stateNotifier.subjects.others.next(others);
-
         this._usersNotifier.others.next({
             others,
             event: { kind: "enter", user: added.data },
@@ -1414,11 +1562,17 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             this._logDebug("WebSocket event received: ", message.type, message);
         }
 
-        this._eventNotifier
-            .subject(message.type as keyof InferClientOutput<TDefs>)
-            .next(message as any);
+        if (!message.type.startsWith("$")) {
+            this._eventNotifier
+                .subject(message.type as keyof InferClientOutput<TDefs>)
+                .next(message as any);
+        }
 
         switch (message.type) {
+            case "$error": {
+                this._handleRoomError(message);
+                return;
+            }
             case "$exit": {
                 this._handleExit(message);
                 return;
@@ -1439,6 +1593,10 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
                 this._handleRegisteredMessage(message);
                 return;
             }
+            case "$roomStats": {
+                this._handleRoomStats(message);
+                return;
+            }
             case "$storageReceived": {
                 this._handleStorageReceivedMessage(message);
                 return;
@@ -1453,6 +1611,10 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             }
             case "$userJoined": {
                 this._handleUserJoinedMessage(message);
+                return;
+            }
+            case "$usersPage": {
+                this._handleUsersPage(message);
                 return;
             }
             default:
@@ -1523,14 +1685,10 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     }
 
     private _other = (
-        connectionId: string,
+        userId: string,
         callback: OtherSubscriptionCallback<TDefs["io"], InferClientPresence<TDefs>>,
     ): (() => void) => {
-        const clientId = this._usersManager.getClientId(connectionId);
-
-        if (!clientId) return () => undefined;
-
-        return this._usersNotifier.subscribeOther(clientId, callback);
+        return this._usersNotifier.subscribeOther(userId, callback);
     };
 
     private _parseMessage(message: {

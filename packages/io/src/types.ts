@@ -26,19 +26,16 @@ export type PluvContext<TPlatform extends AbstractPlatform, TContext extends Rec
     | MaybePromise<TContext>
     | ((params: InferRoomContextType<TPlatform>) => MaybePromise<TContext>);
 
-export type EventResolverKind = "broadcast" | "self" | "sync";
+export type EventResolverKind = "broadcast" | "self";
 
 export type EventResolver<
     TKind extends EventResolverKind = EventResolverKind,
     T extends IODefs = IODefs,
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},
-> = (data: TInput, context: EventResolverContext<TKind, T>) => MaybePromise<TOutput | void>;
+> = (data: TInput, context: EventResolverContext<T>) => MaybePromise<TOutput | void>;
 
-export interface EventResolverContext<
-    TKind extends EventResolverKind = EventResolverKind,
-    T extends IODefs = IODefs,
-> {
+export interface EventResolverContext<T extends IODefs = IODefs> {
     context: T["context"];
     doc: CrdtDocLike<any, any>;
     garbageCollect: () => Promise<void>;
@@ -46,18 +43,20 @@ export interface EventResolverContext<
     presence: JsonObject | null;
     room: string;
     storageSeeded: boolean;
-    session: TKind extends "sync" ? WebSocketSession<T> | null : WebSocketSession<T>;
+    session: WebSocketSession<T>;
     sessions: readonly WebSocketSession<T>[];
     time: number;
 }
 
 export type SendMessageOptions =
     | { type?: "broadcast"; sessionIds?: readonly string[] }
-    | { type: "self" }
-    | { type: "sync" };
+    | { type: "self" };
 
 export interface WebSocketSessionTimers {
     ping: number;
+}
+
+export interface WebSocketSessionSeq {
     presence: number | null;
 }
 
@@ -65,6 +64,7 @@ export interface WebSocketSerializedState {
     presence: JsonObject | null;
     quit: boolean;
     room: string;
+    seq: WebSocketSessionSeq;
     timers: WebSocketSessionTimers;
 }
 
@@ -128,6 +128,16 @@ export type PluvIOAuthorize<
     | ((context: TContext) => ResolvedPluvIOAuthorize<TPlatform, TUser>);
 
 export interface PluvIOLimits {
+    /**
+     * @description Allow a maxConnections value that would otherwise be rejected.
+     */
+    dangerouslyAllowHighPresenceFanout?: boolean | null;
+    /**
+     * @description Maximum live sockets in a room. Extra registers are rejected.
+     * Must be a positive integer.
+     * @default 256
+     */
+    maxConnections?: number | null;
     /**
      * @description Maximum size of presence object in bytes
      */
