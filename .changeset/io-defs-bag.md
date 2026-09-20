@@ -10,9 +10,9 @@
 "@pluv/crdt-yjs": major
 ---
 
-Build IO with `createIO().platform(...).config({ authorize })`.
+Build IO with `createIO().platform(...).config({ treaty, secret })`.
 
-`createIO` is no longer a one-shot call. Named platform helpers only take platform options. Pass `authorize`, `context`, and `crdt` to `.config()`.
+`createIO` is no longer a one-shot call. Named platform helpers only take platform options. Pass `treaty`, `secret`, and `context` to `.config()`.
 
 ```ts
 // Before
@@ -28,15 +28,15 @@ const io = createIO(
 const io = createIO()
     .platform(platformNode())
     .config({
-        authorize: { secret, user: schema },
+        treaty,
+        secret,
         context: () => ({ db }),
-        crdt: yjs,
     });
 ```
 
-`platformCloudflare` follows the same split. `authorize.secret` stays on `.config()`.
+`platformCloudflare` follows the same split. `secret` stays on `.config()`.
 
-Hosted pluv is the exception on secrets: `secretKey` / `publicKey` / `basePath` stay on `platformPluv`. `authorize` on `.config()` is JWT-less (`user` only — no `secret`).
+Hosted pluv is the exception on secrets: `secretKey` / `publicKey` / `basePath` stay on `platformPluv`. Omit `secret` on `.config()`. User lives on the treaty.
 
 ```ts
 // Before
@@ -61,8 +61,7 @@ const io = createIO()
         }),
     )
     .config({
-        authorize: { user: schema },
+        treaty,
         context: () => ({ db }),
-        crdt: yjs,
     });
 ```
