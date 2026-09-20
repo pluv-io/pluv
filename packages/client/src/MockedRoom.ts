@@ -10,12 +10,14 @@ import type {
     ListUsersResult,
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
+    PresenceProcedureProxy,
     RoomError,
     RoomErrorSubscriptionCallback,
     RoomEventListenerMap,
     RoomLike,
     RoomStats,
     StateNotifierSubjects,
+    StorageProcedureProxy,
     StorageProxy,
     StorageRootSubscriptionCallback,
     StorageSubscriptionCallback,
@@ -61,6 +63,7 @@ export type MockedRoomConfig<TDefs extends ClientDefs = ClientDefs> = {
     events?: MockedRoomEvents<TDefs>;
     limits?: PluvClientLimits;
     router?: PluvRouter<TDefs>;
+    treaty: TDefs["treaty"];
 } & Pick<CrdtManagerOptions<TDefs["storage"]>, "initialStorage" | "storage"> &
     Omit<UsersManagerConfig<InferClientPresence<TDefs>>, "limits">;
 
@@ -70,7 +73,8 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
     InferClientPresence<TDefs>,
     InferStorage<TDefs["storage"]>,
     TDefs["events"],
-    InferJson<TDefs["storage"]>
+    InferJson<TDefs["storage"]>,
+    TDefs["treaty"]
 > {
     public readonly id: string;
 
@@ -84,6 +88,7 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
     private readonly _limits: PluvClientLimits;
     private readonly _usersNotifier = new UsersNotifier<TDefs["io"], InferClientPresence<TDefs>>();
     private readonly _router: PluvRouter<TDefs>;
+    private readonly _treaty: TDefs["treaty"];
     private _state: WebSocketState<TDefs["io"]> = {
         authorization: {
             token: null,
@@ -106,8 +111,16 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
     private readonly _usersManager: UsersManager<TDefs["io"], InferClientPresence<TDefs>>;
 
     constructor(room: string, options: MockedRoomConfig<TDefs>) {
-        const { events, initialPresence, initialStorage, limits, presence, router, storage } =
-            options;
+        const {
+            events,
+            initialPresence,
+            initialStorage,
+            limits,
+            presence,
+            router,
+            storage,
+            treaty,
+        } = options;
 
         this.id = room;
 
@@ -117,6 +130,7 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
             ...limits,
         };
         this._router = router ?? (new PluvRouter({}) as PluvRouter<TDefs>);
+        this._treaty = treaty;
         this._usersManager = new UsersManager<TDefs["io"], InferClientPresence<TDefs>>({
             initialPresence,
             limits: this._limits,
@@ -305,9 +319,31 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
         });
     };
 
+    public presence = new Proxy(
+        async (name: string, data: unknown): Promise<void> => {
+            this._runPresenceProcedure(name, data);
+        },
+        {
+            get(fn, prop) {
+                return (data: unknown): Promise<void> => fn(prop as string, data);
+            },
+        },
+    ) as PresenceProcedureProxy<TDefs["treaty"]["_defs"]["procedures"]["presence"]>;
+
     public redo = (): void => {
         this._crdtManager.doc.redo();
     };
+
+    public storage = new Proxy(
+        (name: string, data: unknown): void => {
+            this._runStorageProcedure(name, data);
+        },
+        {
+            get(fn, prop) {
+                return (data: unknown): void => fn(prop as string, data);
+            },
+        },
+    ) as StorageProcedureProxy<TDefs["treaty"]["_defs"]["procedures"]["storage"]>;
 
     public storageRoot = (fn: (value: InferJson<TDefs["storage"]>) => void): (() => void) => {
         return this._crdtNotifier.subcribeRoot(fn);
@@ -336,7 +372,11 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
 
                 if (prop === "error") {
                     return (callback: RoomErrorSubscriptionCallback): (() => void) => {
-                        return subscribe(callback)(this._errorSubject.source).unsubscribe;
+                        const subscription = subscribe(callback)(this._errorSubject.source);
+
+                        return () => {
+                            subscription.unsubscribe();
+                        };
                     };
                 }
 
@@ -444,6 +484,10 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
     public updateMyPresence = (
         presence: UpdateMyPresenceAction<InferClientPresence<TDefs>>,
     ): void => {
+        this._applyMyPresence(presence);
+    };
+
+    private _applyMyPresence(presence: UpdateMyPresenceAction<InferClientPresence<TDefs>>): void {
         const newPresence =
             typeof presence === "function" ? presence(this.getMyPresence()) : presence;
 
@@ -454,7 +498,7 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
 
         this._stateNotifier.subjects["my-presence"].next(myPresence);
         if (!!myself) this._stateNotifier.subjects["myself"].next(myself);
-    };
+    }
 
     private _event = new Proxy(
         // oxlint-disable-next-line typescript/no-unnecessary-type-parameters
@@ -521,6 +565,65 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
     ): (() => void) => {
         return this._usersNotifier.subscribeOther(userId, callback);
     };
+
+    private _runPresenceProcedure(name: string, data: unknown): void {
+        const procedures = this._treaty._defs.procedures.presence;
+
+        if (!procedures || !Object.hasOwn(procedures, name)) {
+            throw new Error(`Unknown presence procedure "${name}"`);
+        }
+
+        const procedure = procedures[name];
+        const myself = this._usersManager.myself;
+
+        if (!myself) {
+            throw new Error("Cannot run a treaty procedure before the local user is available");
+        }
+
+        const doc = this._crdtManager.doc;
+        const patch = procedure.apply(data, {
+            user: myself.data,
+            presence: this.getMyPresence(),
+            doc,
+        });
+
+        this._applyMyPresence(patch as InferClientPresence<TDefs>);
+    }
+
+    private _runStorageProcedure(name: string, data: unknown): void {
+        const origin = this._state.connection.id ?? "mocked";
+        const procedures = this._treaty._defs.procedures.storage;
+
+        if (!procedures || !Object.hasOwn(procedures, name)) {
+            throw new Error(`Unknown storage procedure "${name}"`);
+        }
+
+        const procedure = procedures[name];
+        const myself = this._usersManager.myself;
+
+        if (!myself) {
+            throw new Error("Cannot run a treaty procedure before the local user is available");
+        }
+
+        const doc = this._crdtManager.doc;
+
+        const apply = (): void => {
+            procedure.apply(data, {
+                user: myself.data,
+                presence: this.getMyPresence(),
+                doc,
+            });
+        };
+
+        if (procedure.config.transact === false) {
+            apply();
+            return;
+        }
+
+        this.transact(() => {
+            apply();
+        }, origin);
+    }
 
     private _simulateEvent<TEvent extends keyof InferClientInput<TDefs>>(
         event: TEvent,

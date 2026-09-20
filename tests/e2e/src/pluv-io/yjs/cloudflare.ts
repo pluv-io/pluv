@@ -60,6 +60,7 @@ export const {
     useRedo,
     useRoom,
     useStorage,
+    useStorageField,
     useTransact,
     useUndo,
 } = bundle;

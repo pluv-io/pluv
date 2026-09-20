@@ -38,6 +38,14 @@ type HasStorageSchema<TStorage> = [TStorage] extends [undefined]
         ? true
         : false;
 
+type ResolverJson<TStorage> = [InferTreatyStorageJson<TStorage>] extends [never]
+    ? {}
+    : InferTreatyStorageJson<TStorage>;
+
+type ResolverNative<TStorage> = [InferTreatyStorageNative<TStorage>] extends [never]
+    ? {}
+    : InferTreatyStorageNative<TStorage>;
+
 type TreatyProcedureAccessors<
     TUserSchema extends StandardSchemaV1<unknown, BaseUser>,
     TPresenceSchema,
@@ -46,7 +54,9 @@ type TreatyProcedureAccessors<
     ? {
           presence: TreatyPresenceProcedure<
               InferTreatyUserOutput<TUserSchema>,
-              InferTreatyPresenceOutput<TPresenceSchema>
+              InferTreatyPresenceOutput<TPresenceSchema>,
+              ResolverJson<TStorage>,
+              ResolverNative<TStorage>
           >;
       }
     : {}) &
@@ -54,8 +64,9 @@ type TreatyProcedureAccessors<
         ? {
               storage: TreatyStorageProcedure<
                   InferTreatyUserOutput<TUserSchema>,
-                  InferTreatyStorageJson<TStorage>,
-                  InferTreatyStorageNative<TStorage>
+                  ResolverJson<TStorage>,
+                  ResolverNative<TStorage>,
+                  InferTreatyPresenceOutput<TPresenceSchema>
               >;
           }
         : {});
@@ -99,6 +110,16 @@ const getJsonSchemaProducer = (schema: unknown): JsonSchemaProducer | null => {
     if (!jsonSchema || typeof jsonSchema.input !== "function") return null;
 
     return jsonSchema;
+};
+
+const assertResolvedProcedure = (
+    name: string,
+    kind: "presence" | "storage",
+    procedure: TreatyProcedureLike,
+): void => {
+    if (typeof procedure.apply !== "function" || !procedure.config.resolve) {
+        throw new Error(`Treaty ${kind} procedure "${name}" is missing resolve`);
+    }
 };
 
 const assertSerializingSchema = (schema: unknown, label: string): void => {
@@ -150,12 +171,12 @@ export class Treaty<
         const accessors = {} as TreatyProcedureAccessors<TUserSchema, TPresenceSchema, TStorage>;
 
         if (this.presence) {
-            (accessors as { presence: TreatyPresenceProcedure<any, any> }).presence =
+            (accessors as { presence: TreatyPresenceProcedure<any, any, any, any> }).presence =
                 new TreatyPresenceProcedure();
         }
 
         if (this.storage) {
-            (accessors as { storage: TreatyStorageProcedure<any, any, any> }).storage =
+            (accessors as { storage: TreatyStorageProcedure<any, any, any, any> }).storage =
                 new TreatyStorageProcedure();
         }
 
@@ -246,6 +267,7 @@ export class Treaty<
                     throw new Error(`Duplicate presence procedure "${name}"`);
                 }
 
+                assertResolvedProcedure(name, "presence", procedure);
                 (presence as Record<string, TreatyProcedureLike<"presence">>)[name] = procedure;
                 return;
             }
@@ -255,6 +277,7 @@ export class Treaty<
                     throw new Error(`Duplicate storage procedure "${name}"`);
                 }
 
+                assertResolvedProcedure(name, "storage", procedure);
                 (storage as Record<string, TreatyProcedureLike<"storage">>)[name] = procedure;
                 return;
             }

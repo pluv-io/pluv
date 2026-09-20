@@ -43,6 +43,7 @@ export const {
     useRedo,
     useRoom,
     useStorage,
+    useStorageField,
     useTransact,
     useUndo,
 } = createBundle(client);

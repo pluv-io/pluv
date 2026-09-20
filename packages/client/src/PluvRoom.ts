@@ -19,12 +19,14 @@ import type {
     MergeEvents,
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
+    PresenceProcedureProxy,
     RoomError,
     RoomErrorSubscriptionCallback,
     RoomEventListenerMap,
     RoomLike,
     RoomStats,
     StateNotifierSubjects,
+    StorageProcedureProxy,
     StorageProxy,
     StorageRootSubscriptionCallback,
     StorageSubscriptionCallback,
@@ -179,6 +181,7 @@ export type RoomConfig<TDefs extends ClientDefs = ClientDefs> = Id<
         publicKey?: PublicKey<InferClientMetadata<TDefs>>;
         reconnectTimeoutMs?: ReconnectTimeoutMs;
         router?: PluvRouter<TDefs>;
+        treaty: TDefs["treaty"];
     } & RoomEndpoints<InferClientMetadata<TDefs>> &
         Pick<CrdtManagerOptions<TDefs["storage"]>, "initialStorage" | "storage"> &
         UsersManagerConfig<InferClientPresence<TDefs>>
@@ -190,7 +193,8 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     InferClientPresence<TDefs>,
     InferStorage<TDefs["storage"]>,
     TDefs["events"],
-    InferJson<TDefs["storage"]>
+    InferJson<TDefs["storage"]>,
+    TDefs["treaty"]
 > {
     readonly _endpoints: RoomEndpoints<InferClientMetadata<TDefs>>;
 
@@ -223,6 +227,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         pong: null,
         reconnect: null,
     };
+    private readonly _treaty: TDefs["treaty"];
     private readonly _usersManager: UsersManager<TDefs["io"], InferClientPresence<TDefs>>;
     private readonly _usersNotifier = new UsersNotifier<TDefs["io"], InferClientPresence<TDefs>>();
     private _roomStats: RoomStats = { connectionCount: 0, userCount: 0 };
@@ -245,6 +250,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     };
     private _windowListeners: WindowListeners | null = null;
     private _wsListeners: WebSocketListeners | null = null;
+    private _storageProcedureNames: string[] = [];
 
     constructor(room: string, options: RoomConfig<TDefs>) {
         const {
@@ -261,6 +267,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             reconnectTimeoutMs = RECONNECT_TIMEOUT_MS,
             router,
             storage: crdtStorage,
+            treaty,
             wsEndpoint,
         } = options;
 
@@ -279,7 +286,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         this._limits = limits;
         this._reconnectTimeoutMs = reconnectTimeoutMs;
 
-        if (!!publicKey) this._publicKey = publicKey;
+        if (publicKey) this._publicKey = publicKey;
 
         this._listeners = {
             onAuthorizationFail: (error) => {
@@ -288,6 +295,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         };
 
         this._router = router ?? (new PluvRouter({}) as PluvRouter<TDefs>);
+        this._treaty = treaty;
         this._usersManager = new UsersManager<TDefs["io"], InferClientPresence<TDefs>>({
             initialPresence,
             limits: this._limits,
@@ -593,9 +601,31 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         return promise;
     };
 
+    public presence = new Proxy(
+        async (name: string, data: unknown): Promise<void> => {
+            await this._runPresenceProcedure(name, data);
+        },
+        {
+            get(fn, prop) {
+                return (data: unknown): Promise<void> => fn(prop as string, data);
+            },
+        },
+    ) as PresenceProcedureProxy<TDefs["treaty"]["_defs"]["procedures"]["presence"]>;
+
     public redo = (): void => {
         this._crdtManager.doc.redo();
     };
+
+    public storage = new Proxy(
+        (name: string, data: unknown): void => {
+            this._runStorageProcedure(name, data);
+        },
+        {
+            get(fn, prop) {
+                return (data: unknown): void => fn(prop as string, data);
+            },
+        },
+    ) as StorageProcedureProxy<TDefs["treaty"]["_defs"]["procedures"]["storage"]>;
 
     public subscribe = new Proxy(
         <TSubject extends keyof StateNotifierSubjects<TDefs["io"], InferClientPresence<TDefs>>>(
@@ -618,7 +648,11 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
 
                 if (prop === "error") {
                     return (callback: RoomErrorSubscriptionCallback): (() => void) => {
-                        return subscribe(callback)(this._errorSubject.source).unsubscribe;
+                        const subscription = subscribe(callback)(this._errorSubject.source);
+
+                        return () => {
+                            subscription.unsubscribe();
+                        };
                     };
                 }
 
@@ -721,9 +755,16 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         this._crdtManager.doc.undo();
     };
 
-    public updateMyPresence = (
+    public updateMyPresence = async (
         presence: UpdateMyPresenceAction<InferClientPresence<TDefs>>,
-    ): void => {
+    ): Promise<void> => {
+        await this._applyMyPresence(presence);
+    };
+
+    private async _applyMyPresence(
+        presence: UpdateMyPresenceAction<InferClientPresence<TDefs>>,
+        procedure?: string | null,
+    ): Promise<void> {
         const newPresence =
             typeof presence === "function" ? presence(this.getMyPresence()) : presence;
 
@@ -733,18 +774,21 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         const myself = this._usersManager.myself ?? null;
 
         this._stateNotifier.subjects["my-presence"].next(myPresence);
-        if (!!myself) this._stateNotifier.subjects.myself.next(myself);
+        if (myself) this._stateNotifier.subjects.myself.next(myself);
 
         const canSend =
             !!this._state.webSocket && this._state.connection.state === ConnectionState.Open;
 
         if (canSend) this._usersManager.beginLocalPresenceWrite();
 
-        this.broadcast(
+        await this.broadcast(
             "$updatePresence" as keyof InferClientInput<TDefs>,
-            { presence: newPresence } as any,
+            {
+                presence: newPresence,
+                ...(procedure ? { procedure } : {}),
+            } as any,
         );
-    };
+    }
 
     private async _addToStorageStore(update: string): Promise<void> {
         await this._storageStore.addUpdate(update);
@@ -973,7 +1017,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
 
         switch (typeof this._endpoints.wsEndpoint) {
             case "undefined":
-                return !!this._getPublicKey(params)
+                return this._getPublicKey(params)
                     ? `wss://rooms.pluv.io/api/room/${room}`
                     : `/api/pluv/room/${room}`;
             case "string":
@@ -1049,7 +1093,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             data.presence as InferClientPresence<TDefs>,
             data.seq.presence,
         );
-        const myClientId = !!myself ? this._usersManager.getClientId(myself) : null;
+        const myClientId = myself ? this._usersManager.getClientId(myself) : null;
         const clientId = this._usersManager.getClientId(connectionId);
 
         if (!patched) {
@@ -1092,14 +1136,14 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             return;
         }
 
-        if (!!clientId) {
+        if (clientId) {
             const other = this._usersManager.getOther(clientId);
             const others = this._usersManager.getOthers();
 
             this._usersNotifier.other(clientId).next(other);
             this._stateNotifier.subjects.others.next(others);
 
-            if (!!other) {
+            if (other) {
                 this._usersNotifier.others.next({
                     others,
                     event: { kind: "update", user: other },
@@ -1193,7 +1237,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         this._stateNotifier.subjects.myself.next(myself);
 
         const update = await (async () => {
-            if (!!state) {
+            if (state) {
                 this._logDebug("Retrieving initial state");
                 return this._crdtManager.getInitialState();
             }
@@ -1202,7 +1246,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
                 await this._storageStore.getUpdates(),
             );
 
-            if (!!resolved) {
+            if (resolved) {
                 this._logDebug("Retrieving storage store state");
                 return resolved;
             }
@@ -1245,18 +1289,18 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             this._crdtManager.destroy();
             this._crdtManager.initialize({ origin, update: updates });
         } else if (changeKind === "initialized") {
-            if (!!updates.length) updateStorage(updates);
+            if (updates.length) updateStorage(updates);
             else {
                 const encodedState = updateStorage(state).doc.getEncodedState();
 
-                this._addToStorageStore(encodedState);
+                void this._addToStorageStore(encodedState);
             }
         } else {
             const encodedState = updateStorage(state).doc.getEncodedState();
 
-            if (!!updates.length) this._crdtManager.applyUpdate({ update: updates, origin });
+            if (updates.length) this._crdtManager.applyUpdate({ update: updates, origin });
 
-            await this._addToStorageStore(encodedState);
+            void this._addToStorageStore(encodedState);
         }
 
         const encodedState = this._crdtManager.doc.getEncodedState();
@@ -1452,7 +1496,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
                 return;
             }
 
-            this._addToStorageStore(event.update);
+            void this._addToStorageStore(event.update);
 
             const canSend =
                 !!this._state.webSocket &&
@@ -1467,7 +1511,13 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
 
             this._sendMessage({
                 type: "$updateStorage",
-                data: { origin, update: event.update },
+                data: {
+                    origin,
+                    update: event.update,
+                    ...(this._storageProcedureNames.at(-1)
+                        ? { procedure: this._storageProcedureNames.at(-1) }
+                        : {}),
+                },
             });
         });
 
@@ -1491,7 +1541,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         this._listenerManager.subjects.close.next(event);
 
         this._logDebug("WebSocket closed");
-        if (!!event.reason) this._logDebug(event.reason);
+        if (event.reason) this._logDebug(event.reason);
 
         const shouldRetry = [
             // Going away: Client/server is shutting down or navigating
@@ -1590,7 +1640,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
                 return;
             }
             case "$registered": {
-                this._handleRegisteredMessage(message);
+                void this._handleRegisteredMessage(message);
                 return;
             }
             case "$roomStats": {
@@ -1598,7 +1648,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
                 return;
             }
             case "$storageReceived": {
-                this._handleStorageReceivedMessage(message);
+                void this._handleStorageReceivedMessage(message);
                 return;
             }
             case "$storageUpdated": {
@@ -1751,6 +1801,80 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         await this.connect(...params);
     }
 
+    private async _runPresenceProcedure(name: string, data: unknown): Promise<void> {
+        const procedures = this._treaty._defs.procedures.presence;
+
+        if (!procedures || !Object.hasOwn(procedures, name)) {
+            throw new Error(`Unknown presence procedure "${name}"`);
+        }
+
+        const procedure = procedures[name];
+        const myself = this._usersManager.myself;
+
+        if (!myself) {
+            throw new Error("Cannot run a treaty procedure before the local user is available");
+        }
+
+        const doc = this._crdtManager.doc;
+        const patch = procedure.apply(data, {
+            user: myself.data,
+            presence: this.getMyPresence(),
+            doc,
+        });
+
+        await this._applyMyPresence(patch as InferClientPresence<TDefs>, name);
+    }
+
+    private _runStorageProcedure(name: string, data: unknown): void {
+        if (!this.getStorageLoaded()) {
+            throw new Error("Cannot run a treaty storage procedure until storage is loaded");
+        }
+
+        const origin = this._state.connection.id;
+
+        if (typeof origin !== "string") {
+            throw new Error("Cannot run a treaty storage procedure without a connection id");
+        }
+
+        const procedures = this._treaty._defs.procedures.storage;
+
+        if (!procedures || !Object.hasOwn(procedures, name)) {
+            throw new Error(`Unknown storage procedure "${name}"`);
+        }
+
+        const procedure = procedures[name];
+        const myself = this._usersManager.myself;
+
+        if (!myself) {
+            throw new Error("Cannot run a treaty procedure before the local user is available");
+        }
+
+        const doc = this._crdtManager.doc;
+
+        const apply = (): void => {
+            this._storageProcedureNames.push(name);
+
+            try {
+                procedure.apply(data, {
+                    user: myself.data,
+                    presence: this.getMyPresence(),
+                    doc,
+                });
+            } finally {
+                this._storageProcedureNames.pop();
+            }
+        };
+
+        if (procedure.config.transact === false) {
+            apply();
+            return;
+        }
+
+        this.transact(() => {
+            apply();
+        });
+    }
+
     private _sendMessage(data: string): void;
     private _sendMessage<TMessage extends EventMessage<string, any> = EventMessage<string, any>>(
         data: TMessage,
@@ -1802,7 +1926,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             get: (fn, prop) => {
                 type _Json = InferJson<TDefs["storage"]>;
 
-                if (!!prop) {
+                if (prop) {
                     return (callback: StorageRootSubscriptionCallback<_Json>) => {
                         return this._crdtNotifier.subcribeRoot(callback);
                     };

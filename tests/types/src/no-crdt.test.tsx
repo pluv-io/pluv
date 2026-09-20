@@ -13,9 +13,9 @@ const treaty = createTreaty({
 });
 
 // @ts-expect-error presence schema is required for presence procedures
-treaty.procedure.presence;
+void treaty.procedure.presence;
 // @ts-expect-error storage schema is required for storage procedures
-treaty.procedure.storage;
+void treaty.procedure.storage;
 
 const io = createIO().platform(platformCloudflare()).config({
     secret: "test-secret",
@@ -43,9 +43,9 @@ const presenceTreaty = createTreaty({
     }),
 });
 
-presenceTreaty.procedure.presence;
+expectTypeOf(presenceTreaty.procedure).toHaveProperty("presence");
 // @ts-expect-error storage schema is required for storage procedures
-presenceTreaty.procedure.storage;
+void presenceTreaty.procedure.storage;
 
 const storageTreaty = createTreaty({
     user: z.object({ id: z.string() }),
@@ -54,9 +54,9 @@ const storageTreaty = createTreaty({
     }),
 });
 
-storageTreaty.procedure.storage;
+expectTypeOf(storageTreaty.procedure).toHaveProperty("storage");
 // @ts-expect-error presence schema is required for presence procedures
-storageTreaty.procedure.presence;
+void storageTreaty.procedure.presence;
 
 const addMessage = storageTreaty.procedure.storage.resolve((_, { storage }) => {
     storage.messages.push(["hello"]);

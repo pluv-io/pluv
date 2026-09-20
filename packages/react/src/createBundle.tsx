@@ -20,10 +20,12 @@ import type { InferDoc, InferJson, InferStorage } from "@pluv/crdt";
 import type {
     BroadcastProxy,
     Id,
+    PresenceProcedureProxy,
     PublicEventKey,
     RoomError,
     RoomLike,
     RoomStats,
+    StorageProcedureProxy,
     StorageState,
     UpdateMyPresenceAction,
 } from "@pluv/types";
@@ -92,7 +94,8 @@ export const createBundle = <
             TPresence,
             InferStorage<TDefs["storage"]>,
             TEvents,
-            InferJson<TDefs["storage"]>
+            InferJson<TDefs["storage"]>,
+            TDefs["treaty"]
         >
     >(null as any);
 
@@ -102,7 +105,8 @@ export const createBundle = <
         TPresence,
         InferStorage<TDefs["storage"]>,
         TEvents,
-        InferJson<TDefs["storage"]>
+        InferJson<TDefs["storage"]>,
+        TDefs["treaty"]
     > | null>(null);
 
     const MockedRoomProvider = memo<MockedRoomProviderProps<TRoom>>((props) => {
@@ -113,7 +117,9 @@ export const createBundle = <
                 events,
                 initialPresence,
                 initialStorage,
+                presence: client._defs.treaty.presence,
                 storage: client._defs.storage as TDefs["storage"] | undefined,
+                treaty: client._defs.treaty,
             });
         });
 
@@ -173,7 +179,7 @@ export const createBundle = <
                     : metadata,
             );
 
-            return !!room.metadata ? parsePluvSchema(room.metadata, resolved) : resolved;
+            return room.metadata ? parsePluvSchema(room.metadata, resolved) : resolved;
         });
 
         useEffect(() => {
@@ -262,6 +268,14 @@ export const createBundle = <
         return room.broadcast;
     };
 
+    const usePresence = (): PresenceProcedureProxy<
+        TDefs["treaty"]["_defs"]["procedures"]["presence"]
+    > => {
+        const room = useRoom();
+
+        return room.presence;
+    };
+
     const useCanRedo = (): boolean => {
         const room = useRoom();
 
@@ -313,7 +327,7 @@ export const createBundle = <
             [room],
         );
 
-        const getSnapshot = room.getConnection;
+        const getSnapshot = room.getConnection.bind(room);
 
         const _selector = useCallback(
             (snapshot: WebSocketConnection) => selector(snapshot) as Id<TValue>,
@@ -349,7 +363,7 @@ export const createBundle = <
             [room],
         );
 
-        const getSnapshot = room.getDoc;
+        const getSnapshot = room.getDoc.bind(room);
 
         return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
     };
@@ -397,7 +411,7 @@ export const createBundle = <
             [room],
         );
 
-        const getSnapshot = room.getMyPresence;
+        const getSnapshot = room.getMyPresence.bind(room);
 
         const _selector = useCallback(
             (snapshot: TPresence) => selector(snapshot) as Id<TValue>,
@@ -412,7 +426,7 @@ export const createBundle = <
             hookOptions?.isEqual ?? fastDeepEqual,
         );
 
-        return [myPresence, room.updateMyPresence];
+        return [myPresence, room.updateMyPresence.bind(room)];
     };
 
     const useMyself = <TValue extends unknown = UserInfo<TDefs["io"], TPresence>>(
@@ -426,7 +440,7 @@ export const createBundle = <
             [room],
         );
 
-        const getSnapshot = room.getMyself;
+        const getSnapshot = room.getMyself.bind(room);
 
         const _selector = useCallback(
             (snapshot: Id<UserInfo<TDefs["io"], TPresence>> | null) => {
@@ -485,7 +499,7 @@ export const createBundle = <
             [room],
         );
 
-        const getSnapshot = room.getOthers;
+        const getSnapshot = room.getOthers.bind(room);
 
         return useSyncExternalStoreWithSelector(
             subscribe,
@@ -514,7 +528,7 @@ export const createBundle = <
     const useRedo = () => {
         const room = useRoom();
 
-        return room.redo;
+        return room.redo.bind(room);
     };
 
     const useRoomError = (callback: (error: RoomError) => void): void => {
@@ -540,7 +554,7 @@ export const createBundle = <
             [room],
         );
 
-        const getSnapshot = room.getRoomStats;
+        const getSnapshot = room.getRoomStats.bind(room);
 
         return useSyncExternalStoreWithSelector(
             subscribe,
@@ -551,7 +565,15 @@ export const createBundle = <
         );
     };
 
-    const useStorage = <
+    const useStorage = (): StorageProcedureProxy<
+        TDefs["treaty"]["_defs"]["procedures"]["storage"]
+    > => {
+        const room = useRoom();
+
+        return room.storage;
+    };
+
+    const useStorageField = <
         TKey extends keyof InferJson<TDefs["storage"]>,
         TData extends unknown = InferJson<TDefs["storage"]>[TKey],
     >(
@@ -620,13 +642,13 @@ export const createBundle = <
     const useTransact = () => {
         const room = useRoom();
 
-        return room.transact;
+        return room.transact.bind(room);
     };
 
     const useUndo = () => {
         const room = useRoom();
 
-        return room.undo;
+        return room.undo.bind(room);
     };
 
     return {
@@ -650,11 +672,13 @@ export const createBundle = <
         useMyself,
         useOther,
         useOthers,
+        usePresence,
         useRedo,
         useRoom,
         useRoomError,
         useRoomStats,
         useStorage,
+        useStorageField,
         useTransact,
         useUndo,
     } as CreateBundle<TRoom>;

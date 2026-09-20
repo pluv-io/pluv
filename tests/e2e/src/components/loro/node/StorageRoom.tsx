@@ -4,7 +4,7 @@ import {
     useCanRedo,
     useCanUndo,
     useRedo,
-    useStorage,
+    useStorageField,
     useTransact,
     useUndo,
 } from "../../../pluv-io/loro/node";
@@ -12,7 +12,7 @@ import {
 export type StorageRoomProps = Record<string, never>;
 
 export const StorageRoom: FC<StorageRoomProps> = () => {
-    const [messages] = useStorage("messages");
+    const [messages] = useStorageField("messages");
 
     const canUndo = useCanUndo();
     const canRedo = useCanRedo();

@@ -12,6 +12,8 @@ export type {
     PresenceResolverContext,
     StorageResolverContext,
     TreatyPresenceSchema,
+    TreatyResolverContext,
+    TreatyStorageResolveOptions,
     TreatyStorageSchema,
     TreatyUserSchema,
 } from "./types";

@@ -155,6 +155,7 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
             storage:
                 (this._treaty.storage as TDefs["storage"] | undefined) ??
                 (noop.doc() as TDefs["storage"]),
+            treaty: this._treaty,
             wsEndpoint: this._wsEndpoint,
         } as RoomConfig<SetKey<TDefs, "events", TEvents>>);
 

@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import type { Descendant, Node } from "slate";
 import { createEditor, Editor, Transforms } from "slate";
 import { Editable, Slate, withReact } from "slate-react";
-import { useStorage } from "../../../pluv-io/yjs/node";
+import { useStorageField } from "../../../pluv-io/yjs/node";
 
 const initialValue: Descendant[] = [
     {
@@ -16,7 +16,7 @@ const initialValue: Descendant[] = [
 export interface SlateEditorProps {}
 
 export const SlateEditor: FC<SlateEditorProps> = () => {
-    const [, sharedType] = useStorage("slate");
+    const [, sharedType] = useStorageField("slate");
 
     const editor = useMemo(() => {
         if (!sharedType) return null;

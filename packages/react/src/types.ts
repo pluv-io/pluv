@@ -19,10 +19,12 @@ import type {
     IOEventMessage,
     MaybePromise,
     MergeEvents,
+    PresenceProcedureProxy,
     PublicEventKey,
     RoomLike,
     RoomError,
     RoomStats,
+    StorageProcedureProxy,
     UpdateMyPresenceAction,
 } from "@pluv/types";
 import type { Dispatch, FC, ReactNode } from "react";
@@ -135,6 +137,7 @@ export interface CreateBundle<TDefs extends ClientDefs = ClientDefs> {
         ) => TValue,
         options?: SubscriptionHookOptions<TValue>,
     ) => TValue;
+    usePresence: () => PresenceProcedureProxy<TDefs["treaty"]["_defs"]["procedures"]["presence"]>;
     useRedo: () => () => void;
     useRoom: () => RoomLike<
         TDefs["io"],
@@ -142,14 +145,16 @@ export interface CreateBundle<TDefs extends ClientDefs = ClientDefs> {
         InferClientPresence<TDefs>,
         InferStorage<TDefs["storage"]>,
         TDefs["events"],
-        InferJson<TDefs["storage"]>
+        InferJson<TDefs["storage"]>,
+        TDefs["treaty"]
     >;
     useRoomError: (callback: (error: RoomError) => void) => void;
     useRoomStats: <TValue extends unknown = RoomStats>(
         selector?: (stats: RoomStats) => TValue,
         options?: SubscriptionHookOptions<TValue>,
     ) => TValue;
-    useStorage: <
+    useStorage: () => StorageProcedureProxy<TDefs["treaty"]["_defs"]["procedures"]["storage"]>;
+    useStorageField: <
         TKey extends keyof InferJson<TDefs["storage"]>,
         TData extends unknown = InferJson<TDefs["storage"]>[TKey],
     >(
@@ -172,6 +177,7 @@ export type InferBundleRoom<TBundle extends CreateBundle<any>> =
               InferClientPresence<TDefs>,
               InferStorage<TDefs["storage"]>,
               TDefs["events"],
-              InferJson<TDefs["storage"]>
+              InferJson<TDefs["storage"]>,
+              TDefs["treaty"]
           >
         : never;
