@@ -13,13 +13,13 @@ import { devices } from "@playwright/test";
 const config: PlaywrightTestConfig = {
     testDir: "./src/tests",
     /* Maximum time one test can run for. */
-    timeout: 60 * 1_000,
+    timeout: 45 * 1_000,
     expect: {
         /**
          * Maximum time expect() should wait for the condition to be met.
          * For example in `await expect(locator).toHaveText();`
          */
-        timeout: 10_000,
+        timeout: 5_000,
     },
     /* Run tests in files in parallel */
     fullyParallel: true,
@@ -35,7 +35,8 @@ const config: PlaywrightTestConfig = {
     use: {
         headless: !!process.env.CI,
         /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
-        actionTimeout: 0,
+        actionTimeout: 10_000,
+        navigationTimeout: 20_000,
         /* Base URL to use in actions like `await page.goto('/')`. */
         // baseURL: 'http://localhost:3000',
 
@@ -61,26 +62,32 @@ const config: PlaywrightTestConfig = {
         {
             command: "pnpm dev:client",
             port: 3100,
+            timeout: 60 * 1_000,
         },
         {
             command: "pnpm dev:loro:server:node",
             port: 3112,
+            timeout: 60 * 1_000,
         },
         {
             command: "pnpm dev:noop:server:node",
             port: 3122,
+            timeout: 60 * 1_000,
         },
         {
             command: "pnpm dev:yjs:server:cloudflare",
             port: 3101,
+            timeout: 60 * 1_000,
         },
         {
             command: "pnpm dev:yjs:server:node",
             port: 3102,
+            timeout: 60 * 1_000,
         },
         {
             command: "pnpm dev:yjs:server:node-redis",
             port: 3103,
+            timeout: 60 * 1_000,
         },
     ],
 };
