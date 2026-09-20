@@ -1,15 +1,11 @@
-import type { AbstractCrdtDocFactory, InferSeed } from "@pluv/crdt";
-import type {
-    HasCrdtLibrary,
-    InferIOCrdt,
-    InferIOCrdtKind,
-    IOLike,
-    StandardSchemaV1,
-} from "@pluv/types";
+import type { AbstractCrdtDocFactory, HasStorage, InferSeed, NoopCrdtDocFactory } from "@pluv/crdt";
+import { noop } from "@pluv/crdt";
+import type { IOLike, InferIOTreaty, StandardSchemaV1, TreatyLike } from "@pluv/types";
 import type { ClientDefs, SetKey } from "./ClientDefs";
 import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import type { InferIOLike } from "./infer";
 import { PluvProcedure } from "./PluvProcedure";
+import { assertSerializingSchema } from "./utils/assertSerializingSchema";
 import type {
     AuthEndpoint,
     PluvRoomAddon,
@@ -44,11 +40,11 @@ export type PluvClientOptions<TDefs extends ClientDefs> = RoomEndpoints<
      */
     limits?: PluvClientLimits;
     metadata?: TDefs["metadata"];
-    presence?: TDefs["presence"];
     publicKey?: PublicKey<InferClientMetadata<TDefs>>;
-} & (HasCrdtLibrary<InferIOCrdt<TDefs["io"]>> extends true
-        ? { storage?: TDefs["storage"]; initialStorage?: InferSeed<TDefs["storage"]> }
-        : { storage?: "[ERROR]: Must provide crdt to createIO to use storage" });
+    treaty: TDefs["treaty"];
+} & (HasStorage<TDefs["treaty"]["storage"]> extends true
+        ? { initialStorage?: InferSeed<TDefs["storage"]> }
+        : { initialStorage?: "[ERROR]: Must provide storage on treaty to use initialStorage" });
 
 export type CreateRoomOptions<TDefs extends ClientDefs = ClientDefs> = {
     addons?: readonly PluvRoomAddon<any>[];
@@ -65,14 +61,16 @@ export type EnterRoomParams<TMetadata extends Record<string, any> = {}> =
 
 export type ConfiguredClientDefs<
     TIO extends IOLike,
-    TPresenceSchema extends StandardSchemaV1<any, any> | undefined,
-    TCrdt extends AbstractCrdtDocFactory<any, any, any, any>,
+    TTreaty extends TreatyLike,
     TMetadataSchema extends StandardSchemaV1<any, any> | undefined,
 > = {
     io: InferIOLike<TIO>;
-    presence: TPresenceSchema;
+    treaty: TTreaty;
+    presence: TTreaty["presence"];
     metadata: TMetadataSchema;
-    storage: TCrdt;
+    storage: TTreaty["storage"] extends AbstractCrdtDocFactory<any, any, any, any>
+        ? TTreaty["storage"]
+        : NoopCrdtDocFactory;
     events: {};
 };
 
@@ -83,16 +81,16 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
     private readonly _debug: boolean;
     private readonly _initialStorage?: InferSeed<TDefs["storage"]>;
     private readonly _limits: PluvClientLimits;
-    private readonly _presence?: TDefs["presence"];
     private readonly _publicKey: PublicKey<InferClientMetadata<TDefs>> | null = null;
     private readonly _rooms = new Map<string, PluvRoom<SetKey<TDefs, "events", any>>>();
-    private readonly _storage?: TDefs["storage"];
+    private readonly _treaty: TDefs["treaty"];
     private readonly _wsEndpoint: WsEndpoint<InferClientMetadata<TDefs>> | undefined;
 
     public get _defs() {
         return {
             initialStorage: this._initialStorage,
-            storage: this._storage,
+            storage: this._treaty.storage,
+            treaty: this._treaty,
         };
     }
 
@@ -107,16 +105,18 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
             initialStorage,
             limits,
             metadata,
-            presence,
             publicKey,
-            storage,
+            treaty,
             wsEndpoint,
         } = options as PluvClientOptions<TDefs> & {
             initialStorage?: InferSeed<TDefs["storage"]>;
-            storage?: TDefs["storage"];
         };
 
         this.metadata = metadata;
+
+        if (metadata) {
+            assertSerializingSchema(metadata, "Client metadata");
+        }
 
         this._authEndpoint = authEndpoint;
         this._debug = debug;
@@ -125,8 +125,7 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
             presenceMaxSize: MAX_PRESENCE_SIZE_BYTES,
             ...limits,
         };
-        this._presence = presence;
-        this._storage = storage as TDefs["storage"] | undefined;
+        this._treaty = treaty;
         this._wsEndpoint = wsEndpoint;
 
         if (!!publicKey) this._publicKey = publicKey;
@@ -149,11 +148,13 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
             limits: this._limits,
             metadata: this.metadata,
             onAuthorizationFail: options.onAuthorizationFail,
-            presence: this._presence,
+            presence: this._treaty.presence,
             publicKey: this._publicKey ?? undefined,
             reconnectTimeoutMs: options.reconnectTimeoutMs,
             router: options.router,
-            storage: this._storage,
+            storage:
+                (this._treaty.storage as TDefs["storage"] | undefined) ??
+                (noop.doc() as TDefs["storage"]),
             wsEndpoint: this._wsEndpoint,
         } as RoomConfig<SetKey<TDefs, "events", TEvents>>);
 
@@ -223,12 +224,9 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
 
 export interface CreateClientBuilder<TIO extends IOLike> {
     config: <
-        TPresenceSchema extends StandardSchemaV1<any, any> | undefined = undefined,
-        TCrdt extends AbstractCrdtDocFactory<any, any, any, any> = InferIOCrdtKind<TIO>,
+        TTreaty extends InferIOTreaty<TIO>,
         TMetadataSchema extends StandardSchemaV1<any, any> | undefined = undefined,
     >(
-        options: PluvClientOptions<
-            ConfiguredClientDefs<TIO, TPresenceSchema, TCrdt, TMetadataSchema>
-        >,
-    ) => PluvClient<ConfiguredClientDefs<TIO, TPresenceSchema, TCrdt, TMetadataSchema>>;
+        options: PluvClientOptions<ConfiguredClientDefs<TIO, TTreaty, TMetadataSchema>>,
+    ) => PluvClient<ConfiguredClientDefs<TIO, TTreaty, TMetadataSchema>>;
 }

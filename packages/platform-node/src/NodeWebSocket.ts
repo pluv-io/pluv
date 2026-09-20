@@ -9,7 +9,7 @@ import type {
     WebSocketSession,
 } from "@pluv/io";
 import { AbstractWebSocket } from "@pluv/io";
-import type { InferIOAuthorizeUser, IOAuthorize, JsonObject } from "@pluv/types";
+import type { BaseUser, JsonObject } from "@pluv/types";
 import crypto from "node:crypto";
 import type { WebSocket } from "ws";
 
@@ -24,7 +24,7 @@ export type NodeWebSocketConfig = AbstractWebSocketConfig;
 export class NodeWebSocket extends AbstractWebSocket<WebSocket> {
     private _sessionId: string | null = null;
     private _state: WebSocketSerializedState;
-    private _user: InferIOAuthorizeUser<IOAuthorize<any, any>> | null = null;
+    private _user: BaseUser | null = null;
 
     public set presence(presence: JsonObject | null) {
         this._state.presence = presence;
@@ -67,11 +67,11 @@ export class NodeWebSocket extends AbstractWebSocket<WebSocket> {
         this._state = state;
     }
 
-    public get user(): InferIOAuthorizeUser<IOAuthorize<any, any>> | null {
+    public get user(): BaseUser | null {
         return this._user;
     }
 
-    public set user(user: InferIOAuthorizeUser<IOAuthorize<any, any>>) {
+    public set user(user: BaseUser) {
         this._user = user;
     }
 

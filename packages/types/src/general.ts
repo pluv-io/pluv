@@ -48,6 +48,14 @@ export type DeepPartial<T> = {
           : DeepPartial<T[P]>;
 };
 
+export type DeepReadonly<T> = T extends (...args: any[]) => any
+    ? T
+    : T extends Array<infer U>
+      ? ReadonlyArray<DeepReadonly<U>>
+      : T extends object
+        ? { readonly [P in keyof T]: DeepReadonly<T[P]> }
+        : T;
+
 export type DeepWriteable<T> = {
     -readonly [P in keyof T]: DeepWriteable<T[P]>;
 };

@@ -40,6 +40,8 @@ export const {
   useOthers,
   useRedo,
   useRoom,
+  useRoomError,
+  useRoomStats,
   useStorage,
   useTransact,
   useUndo,
@@ -235,6 +237,18 @@ useEvent("messageReceived", ({ message }) => {
 });
 ```
 
+### useRoomError
+
+Returns `void`
+
+Fires a callback whenever the room reports a failure (procedure throw, size limit, rejected register). Not a stored last-error value.
+
+```tsx
+useRoomError((error) => {
+  console.error(error.message);
+});
+```
+
 ### useMyPresence
 
 Returns `[myPresence: TPresence | null, updatePresence: Function]`
@@ -290,38 +304,35 @@ Returns the user-info object for the current user. This hook accepts a selector 
 ```tsx
 const myself = useMyself();
 
-// if you don't need the entire user-info
-const myself = useMyself(({ connectionId }) => connectionId);
+const userId = useMyself(({ data }) => data.id);
 ```
 
 ### useOther
 
 Returns `UserInfo | null`
 
-Returns the user-info object for a connected user by `connectionId` string.
+Returns the user-info object for another person by `data.id`.
 
 ```tsx
-const other = useOther();
+const other = useOther(userId);
 
-// if you don't need the entire user-info
-const other = useOther(({ connectionId }) => connectionId);
+const selectionId = useOther(userId, (other) => other.presence.selectionId);
 ```
 
 ### useOthers
 
 Returns `readonly UserInfo[]`
 
-Returns all user-info objects for all connected users. This may trigger a lot of re-renders if presence updates frequently.
+Returns all user-info objects for other people in the room. This may trigger a lot of re-renders if presence updates frequently.
 
 > **Note**
-> Consider using this hook only for deriving others' `connectionId` values to pass into `useOther`.
+> Consider using this hook only for deriving others' `data.id` values to pass into `useOther`.
 
 ```tsx
 const others = useOthers();
 
-// if you want to just pull out connectionId properties
-const connectionIds = useOthers((others) => {
-  return others.map(({ connectionId }) => connectionId);
+const userIds = useOthers((others) => {
+  return others.map(({ data }) => data.id);
 });
 ```
 
@@ -339,6 +350,17 @@ const redo = useRedo();
 redo();
 ```
 
+### useRoomStats
+
+Returns `RoomStats`
+
+Live socket count (`connectionCount`) and unique-user count (`userCount`). Pass a selector to subscribe to a slice.
+
+```ts
+const { connectionCount, userCount } = useRoomStats();
+const viewers = useRoomStats((stats) => stats.userCount);
+```
+
 ### useStorage
 
 Returns `[TData | null, SharedType | null]`
@@ -351,11 +373,7 @@ import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 
 const io = createClient().config({
-  storage: yjs.storage({
-    schema: yjs.schema({
-      messages: yjs.yArray(s.string()),
-    }),
-  }),
+  treaty,
   initialStorage: {
     messages: ["hello"],
   },

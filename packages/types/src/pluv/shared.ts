@@ -1,6 +1,6 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { Id, IsAny, JsonObject, MaybePromise, UnionToIntersection } from "../general";
-import { CrdtLibraryType } from "./crdt";
+import type { CrdtDocFactory } from "./crdt";
 
 export type BaseUser = {
     id: string;
@@ -29,7 +29,7 @@ export interface BaseClientEventRecord {
 
 export type BaseClientMessage = InferEventMessage<BaseClientEventRecord>;
 
-export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any, any>> = {
+export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any>> = {
     $error: {
         message: string;
         stack?: string | null;
@@ -117,32 +117,69 @@ export type GetEventMessage<
     TEvent extends keyof T,
 > = TEvent extends string ? EventMessage<TEvent, T[TEvent]> : never;
 
+export type InferStandardSchemaOutput<TSchema> =
+    TSchema extends StandardSchemaV1<any, infer TOutput> ? TOutput : never;
+
+export type TreatyProcedureKind = "presence" | "storage";
+
+export type TreatyProcedureLike<
+    TKind extends TreatyProcedureKind = TreatyProcedureKind,
+    TInput extends Record<string, any> = Record<string, any>,
+> = {
+    kind: TKind;
+    config: {
+        input?: StandardSchemaV1<unknown, TInput> | null;
+        resolve?: ((data: never, ...args: any[]) => unknown) | null;
+    };
+};
+
+export type TreatyLike = {
+    user: StandardSchemaV1<unknown, BaseUser>;
+    presence?: StandardSchemaV1<any, any> | undefined;
+    storage?: CrdtDocFactory<any, any, any, any> | undefined;
+    _defs: {
+        user: StandardSchemaV1<unknown, BaseUser>;
+        presence: StandardSchemaV1<any, any> | undefined;
+        storage: CrdtDocFactory<any, any, any, any> | undefined;
+        procedures: {
+            presence: Record<string, TreatyProcedureLike<"presence">>;
+            storage: Record<string, TreatyProcedureLike<"storage">>;
+        };
+    };
+};
+
+export type InferTreatyUser<TTreaty extends TreatyLike | undefined> = TTreaty extends TreatyLike
+    ? InferIOAuthorizeUser<{ user: TTreaty["user"] }>
+    : BaseUser;
+
+export type InferTreatyPresence<TTreaty extends TreatyLike | undefined> = TTreaty extends TreatyLike
+    ? InferStandardSchemaOutput<TTreaty["presence"]>
+    : never;
+
+export type InferTreatyStorage<TTreaty extends TreatyLike | undefined> = TTreaty extends TreatyLike
+    ? TTreaty["storage"]
+    : undefined;
+
 export type InferIOAuthorize<TIO extends IOLike> =
     TIO extends IOLike<infer D>
         ? IsAny<D> extends true
             ? { user: StandardSchemaV1<unknown, any> }
-            : { user: StandardSchemaV1<unknown, InferIOAuthorizeUser<D["authorize"]>> }
+            : { user: D["treaty"]["user"] }
         : never;
 
-export type InferIOAuthorizeUser<TAuthorize extends IOAuthorize<any, any>> =
+export type InferIOAuthorizeUser<TAuthorize> =
     IsAny<TAuthorize> extends true
         ? any
-        : TAuthorize extends IOAuthorize<infer IUser, any>
-          ? IUser
+        : TAuthorize extends { user: infer TUserSchema }
+          ? InferStandardSchemaOutput<TUserSchema> extends infer TUser extends BaseUser
+              ? TUser
+              : BaseUser
           : never;
 
-export type IOAuthorize<
-    TUser extends BaseUser = any,
-    TContext extends Record<string, unknown> = {},
-> =
-    | {
-          secret?: string;
-          user: StandardSchemaV1<unknown, TUser>;
-      }
-    | ((context: TContext) => {
-          secret?: string;
-          user: StandardSchemaV1<unknown, TUser>;
-      });
+export type IOAuthorize<TUser extends BaseUser = any> = {
+    secret?: string;
+    user: StandardSchemaV1<unknown, TUser>;
+};
 
 export type IOAuthorizeEventMessage<TIO extends IOLike> = {
     connectionId: string;
@@ -169,8 +206,7 @@ export interface IORouterLike<TEvents extends Record<string, ProcedureLike<any, 
 }
 
 export type IOLikeDefs = {
-    authorize: IOAuthorize<any, any>;
-    crdt: CrdtLibraryType<any>;
+    treaty: TreatyLike;
     events: Record<string, ProcedureLike<any, any>>;
 };
 
@@ -178,17 +214,15 @@ export interface IOLike<T extends IOLikeDefs = any> extends IORouterLike<T["even
     _defs: T;
 }
 
-export type InferIOCrdtKind<TIO extends IOLike> =
-    TIO extends IOLike<infer D>
-        ? IsAny<D> extends true
-            ? any
-            : D["crdt"] extends CrdtLibraryType<infer IDoc>
-              ? IDoc
-              : never
-        : never;
+export type InferIOCrdtKind<TIO extends IOLike> = InferIOStorage<TIO>;
 
-export type InferIOCrdt<TIO extends IOLike> =
-    TIO extends IOLike<infer D> ? (IsAny<D> extends true ? any : D["crdt"]) : never;
+export type InferIOCrdt<TIO extends IOLike> = InferIOStorage<TIO>;
+
+export type InferIOStorage<TIO extends IOLike> =
+    TIO extends IOLike<infer D> ? (IsAny<D> extends true ? any : D["treaty"]["storage"]) : never;
+
+export type InferIOTreaty<TIO extends IOLike> =
+    TIO extends IOLike<infer D> ? (IsAny<D> extends true ? TreatyLike : D["treaty"]) : TreatyLike;
 
 export type InferIOEvents<TIO extends IOLike> =
     TIO extends IOLike<infer D>
@@ -257,8 +291,7 @@ export type MergeEvents<TClientEvents extends PluvRouterEventConfig, TServerIO e
         ? IsAny<D> extends true
             ? TServerIO
             : IOLike<{
-                  authorize: D["authorize"];
-                  crdt: D["crdt"];
+                  treaty: D["treaty"];
                   events: {
                       [P in keyof TClientEvents]: TClientEvents[P] extends ProcedureLike<
                           infer IClientInput,

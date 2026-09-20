@@ -1,0 +1,94 @@
+---
+title: "Treaty"
+description: "Share user, presence, and storage schemas between @pluv/io and @pluv/client with createTreaty"
+---
+
+User, presence, and storage used to be split across `authorize.user`, `createIO({ crdt })`, and `createClient({ presence, storage })`. Define them once as a **treaty** and import the same value on the server and the client.
+
+User, presence, and client metadata must be [Standard Schema](https://standardschema.dev) libraries that also implement [Standard JSON Schema](https://standardschema.dev/json-schema) on the **same object** (Zod 4.2+ or ArkType today). `createTreaty` and `createClient().config({ metadata })` throw if `jsonSchema` is missing.
+
+## Create a treaty
+
+Put this in a shared module both sides can import:
+
+```ts
+// shared/treaty.ts
+import { createTreaty } from "@pluv/treaty";
+import { s } from "@pluv/crdt";
+import { yjs } from "@pluv/crdt-yjs";
+import { z } from "zod";
+
+const t = createTreaty({
+  user: z.object({
+    id: z.string(),
+    name: z.string(),
+  }),
+  presence: z.object({
+    selectionId: z.string().nullable(),
+  }),
+  storage: yjs.schema({
+    messages: yjs.yArray(s.string()),
+  }),
+});
+
+const select = t.procedure.presence
+  .input(z.object({ id: z.string().nullable() }))
+  .resolve(({ id }, { user, presence }) => ({ selectionId: id }));
+
+const addMessage = t.procedure.storage
+  .input(z.object({ text: z.string() }))
+  .resolve(({ text }, { user, json, storage }) => {
+    storage.messages.push([text]);
+  });
+
+export const treaty = t.router({
+  select,
+  addMessage,
+});
+```
+
+`user` is required. `presence` and `storage` are optional. Procedures are optional too — `createTreaty({ user })` with no `.router()` is valid.
+
+Presence and storage procedures are typed against the treaty schemas. They are **definable** on the treaty for inference; they are not a room API yet (`room.presence.select` / `room.storage.addMessage` come later).
+
+## Pass it to io and the client
+
+```ts
+import { createIO } from "@pluv/io";
+import { platformNode } from "@pluv/platform-node";
+import { treaty } from "../shared/treaty";
+
+const io = createIO()
+  .platform(platformNode())
+  .config({
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
+    context: () => ({ db }),
+  });
+```
+
+```ts
+import { createClient } from "@pluv/client";
+import type { ioServer } from "./server/pluv-io";
+import { treaty } from "../shared/treaty";
+
+const client = createClient<typeof ioServer>().config({
+  treaty,
+  authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,
+  initialStorage: { messages: [] },
+});
+```
+
+Keep `createClient<typeof ioServer>()` for **events**. Presence, storage, and user types come from that server treaty. Always pass the runtime `treaty` too; a type-only import of `ioServer` cannot recover schemas.
+
+- Node and Cloudflare: `secret` is required (`string` or `(initContext) => string`).
+- Hosted `platformPluv`: omit `secret` (`secretKey` stays on `platformPluv(...)`).
+- `getInitialStorage` is required when `treaty.storage` is a real CRDT.
+- `initialPresence` / `initialStorage` remain JSON seeds.
+
+## Related
+
+* [Authorization](/docs/guides/authorization)
+* [Create Client](/docs/guides/create-client)
+* [Using Yjs](/docs/guides/storage/yjs)
+* [Presence](/docs/guides/presence)

@@ -1,21 +1,15 @@
 import { createIO, InferIORoom } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
+import { treaty } from "../../../pluv-io/noop/treaty";
 
 const PLUV_AUTH_SECRET = "secret123";
 
-export const io = createIO()
-    .platform(platformNode())
-    .config({
-        authorize: ({ request: _request }) => ({
-            secret: PLUV_AUTH_SECRET,
-            user: z.object({
-                id: z.string(),
-                name: z.string(),
-            }),
-        }),
-        debug: true,
-    });
+export const io = createIO().platform(platformNode()).config({
+    secret: PLUV_AUTH_SECRET,
+    treaty,
+    debug: true,
+});
 
 export const rooms = new Map<string, InferIORoom<typeof ioServer>>();
 

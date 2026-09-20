@@ -15,28 +15,35 @@ You can view another example of these via your platform's respective quickstart 
 
 ## Enable authorization on io
 
-Set the required `authorize` property on your `createIO` config. The `user` schema must always include `id`.
+Put the user schema on a shared [treaty](/docs/guides/treaty). The `user` schema must always include `id`. Node and Cloudflare also take `secret` on `.config()` (`string` or `(initContext) => string`). Hosted `platformPluv` omits `secret`.
 
-Schemas may be any [Standard Schema](https://standardschema.dev)–compatible library (Zod 3.24+, Valibot 1+, ArkType 2+, and others). The examples below use Zod.
+User, presence, and client metadata must be a [Standard Schema](https://standardschema.dev) library that also implements Standard JSON Schema on the same object (Zod 4.2+ or ArkType). The examples below use Zod.
+
+```ts
+// shared/treaty.ts
+import { createTreaty } from "@pluv/treaty";
+import { z } from "zod";
+
+export const treaty = createTreaty({
+  user: z.object({
+    id: z.string(),
+    name: z.string(),
+  }),
+});
+```
 
 ```ts
 // server/io.ts
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
-import { z } from "zod";
+import { treaty } from "../shared/treaty";
 
 export const io = createIO()
   .platform(platformNode())
   .config({
-    authorize: {
-      secret: process.env.PLUV_AUTH_SECRET!,
-      user: z.object({
-        id: z.string(),
-        name: z.string(),
-      }),
-    },
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
   });
-);
 
 export const ioServer = io.server();
 ```
@@ -55,7 +62,6 @@ import { ioServer } from "./io";
 const PORT = 3000;
 
 const app = new Hono<{ Bindings: HttpBindings }>()
-  // Only if you specified `authorize` on @pluv/io
   .get("/api/pluv/auth", async (c) => {
     const room = c.req.query("room") as string;
     const user = await getUser(c.req.raw);
@@ -78,6 +84,7 @@ import { createClient } from "@pluv/react";
 import type { ioServer } from "server/io";
 
 const client = createClient<typeof ioServer>().config({
+  treaty,
   // Specify your auth endpoint here
   // Set to `true` if you have authorization on your io instance, and you
   // want to use the default of (room) => `/api/pluv/authorize?room=${room}`
@@ -95,6 +102,7 @@ import { createClient } from "@pluv/react";
 import type { ioServer } from "server/io";
 
 const client = createClient<typeof ioServer>().config({
+  treaty,
   authEndpoint: ({ room }) => ({
     url: "/api/authorize",
     // You can use fetch options as well like so
@@ -120,7 +128,6 @@ import { ioServer } from "./io";
 const PORT = 3000;
 
 const app = new Hono<{ Bindings: HttpBindings }>()
-  // Only if you specified `authorize` on @pluv/io
   .get("/api/pluv/auth", async (c) => {
     // ...
     return c.text(token, 200);

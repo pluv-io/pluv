@@ -3,6 +3,7 @@
     "pages": [
         "why-host-on-pluvio",
         "authorization",
+        "treaty",
         "create-client",
         "create-react-bundle",
         "rooms",

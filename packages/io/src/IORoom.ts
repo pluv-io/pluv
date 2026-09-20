@@ -10,8 +10,8 @@ import type {
     InferEventMessage,
     InferEventsInput,
     InferEventsOutput,
-    InferIOAuthorizeUser,
     InferIOInput,
+    InferTreatyUser,
     JsonObject,
     ListUsersOptions,
     ListUsersResult,
@@ -51,6 +51,7 @@ import type {
     IOUserDisconnectedEvent,
     PluvContext,
     PluvIOLimits,
+    PluvIOSecret,
     SendMessageOptions,
     WebSocketSession,
     WebSocketType,
@@ -60,7 +61,7 @@ import {
     oneLine,
     pageLiveUsers,
     parsePluvSchema,
-    resolveIOAuthorize,
+    resolveIOSecret,
     resolveMaxConnections,
     throttle,
 } from "./utils";
@@ -68,7 +69,7 @@ import type { Throttle } from "./utils";
 
 type BroadcastMessage<T extends IODefs> =
     | InferEventMessage<InferEventsInput<T["events"]>>
-    | InferEventMessage<BaseIOEventRecord<T["authorize"]>>;
+    | InferEventMessage<BaseIOEventRecord<{ user: T["treaty"]["user"] }>>;
 
 interface BroadcastParams<T extends IODefs> {
     message: BroadcastMessage<T>;
@@ -76,7 +77,7 @@ interface BroadcastParams<T extends IODefs> {
     /**
      * Envelope user when the sender session is already gone (e.g. `$exit`).
      */
-    senderUser?: InferIOAuthorizeUser<T["authorize"]> | null;
+    senderUser?: InferTreatyUser<T["treaty"]> | null;
 }
 
 export interface IORoomListeners<T extends IODefs = IODefs> {
@@ -103,15 +104,15 @@ export type BroadcastProxy<TIO extends IORoom<any>> = (<TEvent extends keyof Inf
 };
 
 export type IORoomConfig<T extends IODefs = IODefs> = Partial<IORoomListeners<T>> & {
-    authorize: T["authorize"];
     context: PluvContext<T["platform"], T["context"]>;
-    crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     debug: boolean;
     getInitialStorage: GetInitialStorageFn<T["context"]>;
     limits: PluvIOLimits;
     platform: T["platform"];
     roomContext: InferRoomContextType<T["platform"]>;
     router: PluvRouter<T>;
+    secret?: PluvIOSecret<T["platform"]>;
+    treaty: T["treaty"];
 };
 
 interface SendMessageSender {
@@ -133,18 +134,18 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     private _teardown: Promise<void> | null = null;
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
-    private readonly _authorize: T["authorize"];
     private readonly _context: PluvContext<T["platform"], T["context"]>;
-    private readonly _crdt: T["crdt"];
     private readonly _debug: boolean;
     private readonly _limits: PluvIOLimits;
     private readonly _listeners: IORoomListeners<T>;
     private readonly _platform: T["platform"];
     private readonly _roomContext: InferRoomContextType<T["platform"]>;
     private readonly _router: PluvRouter<T>;
+    private readonly _secret?: PluvIOSecret<T["platform"]>;
     private readonly _sessions: RoomSessions<T>;
     private readonly _storage: RoomStorage<T>;
     private readonly _throttles: IORoomThrottles;
+    private readonly _treaty: T["treaty"];
 
     /**
      * @ignore
@@ -153,17 +154,15 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
      */
     public get _defs() {
         return {
-            authorize: this._authorize,
             context: this._context,
-            crdt: this._crdt,
             events: this._router._defs.events,
             platform: this._platform,
+            treaty: this._treaty,
         } as {
-            authorize: T["authorize"];
             context: T["context"];
-            crdt: T["crdt"];
             events: T["events"];
             platform: T["platform"];
+            treaty: T["treaty"];
         };
     }
 
@@ -197,9 +196,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     constructor(id: string, config: IORoomConfig<T>) {
         const {
             _meta,
-            authorize: authorizeConfig,
             context,
-            crdt = noop,
             debug,
             getInitialStorage,
             limits,
@@ -211,21 +208,24 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             platform,
             roomContext,
             router,
+            secret,
+            treaty,
         } = config as IORoomConfig<T> & { _meta?: any };
 
         this.id = id;
 
         this._context = context;
-        this._crdt = crdt as T["crdt"];
         this._debug = debug;
         this._limits = limits;
         this._roomContext = roomContext;
         this._router = router;
+        this._secret = secret;
+        this._treaty = treaty;
         this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), roomContext });
-        this._authorize = authorizeConfig;
         this._sessions = new RoomSessions({ platform: this._platform });
         this._storage = new RoomStorage({
-            docFactory: crdt.doc(() => ({})),
+            docFactory:
+                (treaty.storage as AbstractCrdtDocFactory<any, any> | undefined) ?? noop.doc(),
             getContext: () => this._getContext(),
             getInitialStorage,
             platform: this._platform,
@@ -518,9 +518,9 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                     type: "$exit",
                     data: {
                         sessionId,
-                        user: user as Id<InferIOAuthorizeUser<T["authorize"]>>,
+                        user,
                     },
-                },
+                } as BroadcastMessage<T>,
                 senderId: sessionId,
                 senderUser: user,
             });
@@ -647,17 +647,16 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     private async _getAuthorizedUser(
         token: Maybe<string>,
         options: WebSocketRegisterConfig<T["platform"]>,
-    ): Promise<InferIOAuthorizeUser<T["authorize"]> | null> {
-        const ioAuthorize = resolveIOAuthorize(this._authorize, options);
+    ): Promise<InferTreatyUser<T["treaty"]> | null> {
+        const secret = resolveIOSecret(this._secret, options);
 
         if (!token) return null;
 
-        if (!ioAuthorize.secret)
-            throw new Error("`authorize` was specified without a valid secret");
+        if (!secret) throw new Error("`secret` was not provided");
 
         const payload = await authorize({
             platform: this._platform,
-            secret: ioAuthorize.secret,
+            secret,
         }).decode(token);
 
         if (!payload) {
@@ -676,7 +675,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         }
 
         try {
-            return parsePluvSchema(ioAuthorize.user, payload.user);
+            return parsePluvSchema(this._treaty.user, payload.user) as InferTreatyUser<T["treaty"]>;
         } catch {
             this._logDebug(`${colors.blue("Token fails validation:")} ${token}`);
 
@@ -730,7 +729,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 storage.storageSeeded = value;
             },
             time,
-        };
+        } as EventResolverContext<T>;
     }
 
     private _getProcedure(

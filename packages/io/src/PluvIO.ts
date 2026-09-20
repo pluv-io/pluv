@@ -1,6 +1,5 @@
-import type { AbstractCrdtDocFactory, CrdtLibraryType, HasCrdtLibrary } from "@pluv/crdt";
-import { noop } from "@pluv/crdt";
-import type { BaseUser, HasRequiredProperty, InferIOAuthorizeUser, SetKey } from "@pluv/types";
+import type { HasStorage } from "@pluv/crdt";
+import type { HasRequiredProperty, InferTreatyUser, SetKey } from "@pluv/types";
 import type { InferInitContextType } from "./AbstractPlatform";
 import type { IODefs } from "./IODefs";
 import { PluvProcedure } from "./PluvProcedure";
@@ -22,24 +21,27 @@ import type {
     PluvIOLimits,
     PluvIOListeners,
     PluvIORouter,
+    PluvIOSecret,
 } from "./types";
-import { oneLine, parsePluvSchema, resolveIOAuthorize, assertPresenceFanoutBudget } from "./utils";
+import { oneLine, parsePluvSchema, resolveIOSecret, assertPresenceFanoutBudget } from "./utils";
 import { __PLUV_VERSION } from "./version";
 
 export type PluvIOConfig<T extends IODefs = IODefs> = {
-    authorize: T["authorize"];
     context?: PluvContext<T["platform"], T["context"]>;
-    crdt?: T["crdt"];
     debug?: boolean;
     limits?: PluvIOLimits;
     platform: () => T["platform"];
+    secret?: PluvIOSecret<T["platform"]>;
+    treaty: T["treaty"];
 };
 
 type ResolvedServerConfig<T extends IODefs = IODefs> = Partial<PluvIOListeners<T>> &
     PluvIORouter<T> &
-    (HasCrdtLibrary<T["crdt"]> extends true
+    (HasStorage<T["treaty"]["storage"]> extends true
         ? { getInitialStorage: GetInitialStorageFn<T["context"]> }
-        : { getInitialStorage?: "[ERROR]: Must specify crdt to use getInitialStorage" });
+        : {
+              getInitialStorage?: "[ERROR]: Must specify storage on treaty to use getInitialStorage";
+          });
 
 export type BaseServerConfig<T extends IODefs = IODefs> = {
     [
@@ -57,32 +59,23 @@ export type ServerConfig<T extends IODefs = IODefs> =
 export class PluvIO<T extends IODefs = IODefs> {
     public readonly version: string = __PLUV_VERSION as any;
 
-    private readonly _authorize: T["authorize"];
     private readonly _context: PluvContext<T["platform"], T["context"]> = {} as PluvContext<
         T["platform"],
         T["context"]
     >;
-    private readonly _crdt: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     private readonly _debug: boolean;
     private readonly _limits: PluvIOLimits;
     private readonly _platform: () => T["platform"];
+    private readonly _secret?: PluvIOSecret<T["platform"]>;
+    private readonly _treaty: T["treaty"];
 
     public get procedure(): PluvProcedure<T, {}, {}> {
         return new PluvProcedure();
     }
 
     constructor(options: PluvIOConfig<T>) {
-        const {
-            authorize: authorizeConfig,
-            context,
-            crdt = noop,
-            debug = false,
-            limits,
-            platform,
-        } = options;
+        const { context, debug = false, limits, platform, secret, treaty } = options;
 
-        this._authorize = authorizeConfig;
-        this._crdt = crdt as CrdtLibraryType<any>;
         this._debug = debug;
         this._limits = {
             dangerouslyAllowHighPresenceFanout: false,
@@ -94,6 +87,8 @@ export class PluvIO<T extends IODefs = IODefs> {
             ...limits,
         };
         this._platform = platform;
+        this._secret = secret;
+        this._treaty = treaty;
 
         if (context) this._context = context;
 
@@ -101,7 +96,7 @@ export class PluvIO<T extends IODefs = IODefs> {
     }
 
     public async createToken(
-        params: JWTEncodeParams<InferIOAuthorizeUser<T["authorize"]>, T["platform"]>,
+        params: JWTEncodeParams<InferTreatyUser<T["treaty"]>, T["platform"]>,
     ): Promise<string> {
         const platform = this._platform();
         const { maxAge, room, user, ...initRest } = params;
@@ -109,8 +104,8 @@ export class PluvIO<T extends IODefs = IODefs> {
             initRest as InferInitContextType<T["platform"]>,
         );
         const authorizeParams = { ...params, ...initContext };
-        const ioAuthorize = resolveIOAuthorize(this._authorize, authorizeParams);
-        const parsed = parsePluvSchema(ioAuthorize.user, user);
+        const secret = resolveIOSecret(this._secret, authorizeParams);
+        const parsed = parsePluvSchema(this._treaty.user, user);
 
         if (!!this._limits.userIdMaxLength && user.id.length > this._limits.userIdMaxLength) {
             throw new Error(oneLine`
@@ -130,13 +125,13 @@ export class PluvIO<T extends IODefs = IODefs> {
             `);
         }
 
+        const ioAuthorize = { user: this._treaty.user, secret };
+
         if (platform._createToken) {
             return await platform._createToken({ ...authorizeParams, authorize: ioAuthorize });
         }
 
-        const secret = ioAuthorize.secret ?? null;
-
-        if (!secret) throw new Error("`authorize` was specified without a valid secret");
+        if (!secret) throw new Error("`secret` was not provided");
 
         return await authorize({ platform, secret }).encode(
             authorizeParams as JWTEncodeParams<any, T["platform"]>,
@@ -162,13 +157,13 @@ export class PluvIO<T extends IODefs = IODefs> {
 
         return new PluvServer<SetKey<T, "events", TEvents>>({
             ...serverConfig,
-            authorize: this._authorize,
             context: this._context,
-            crdt: this._crdt,
             debug: this._debug,
             io: this,
             limits: this._limits,
             platform: this._platform,
+            secret: this._secret,
+            treaty: this._treaty,
         });
     }
 }

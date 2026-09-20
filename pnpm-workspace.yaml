@@ -14,6 +14,7 @@ packages:
     - "packages/platform-node"
     - "packages/platform-pluv"
     - "packages/react"
+    - "packages/treaty"
     - "packages/tsconfig"
     - "packages/types"
 

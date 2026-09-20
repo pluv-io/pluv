@@ -1,16 +1,14 @@
 import { addonIndexedDB } from "@pluv/addon-indexeddb";
 import { createClient } from "@pluv/client";
 import { createBundle } from "@pluv/react";
-import { z } from "zod";
 import type { ioServer } from "../../server/noop/node";
+import { treaty } from "./treaty";
 
 const client = createClient<typeof ioServer>().config({
     authEndpoint: ({ room }) => {
         return `http://localhost:3122/api/pluv/authorize?room=${room}`;
     },
-    presence: z.object({
-        count: z.number(),
-    }),
+    treaty,
     wsEndpoint: ({ room }) => {
         return `ws://localhost:3122/api/pluv/room/${room}`;
     },

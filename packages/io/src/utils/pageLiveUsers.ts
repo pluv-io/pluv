@@ -17,5 +17,5 @@ export const pageLiveUsers = (
             cursor: options.cursor ?? null,
             limit: resolved.limit,
         }),
-    };
+    } as ListUsersResult<any>;
 };

@@ -17,7 +17,7 @@ import {
     XmlFragment as YXmlFragment,
     XmlText as YXmlText,
 } from "yjs";
-import type { YjsSchema } from "./schema";
+import type { YjsSchema } from "../doc/YjsSchema";
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> => {
     return typeof value === "object" && value !== null && !Array.isArray(value);

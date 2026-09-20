@@ -1,6 +1,5 @@
 import {
     CrdtSchemaError,
-    createSchemaNode,
     isLoroCrdtKind,
     isSchemaNode,
     isYjsCrdtKind,
@@ -10,30 +9,15 @@ import {
     type InferShapeStorage,
     type SchemaAst,
 } from "@pluv/crdt";
+import { YjsSchema } from "../doc/YjsSchema";
 import { fromJSON as fromJsonNode } from "./fromJSON";
-
-const YJS_SCHEMA_BRAND: unique symbol = Symbol("pluv.yjs.schema");
-
-export type YjsSchema<
-    TShape extends Record<string, AnySchemaNode> = Record<string, AnySchemaNode>,
-> = {
-    readonly kind: "y.doc";
-    readonly shape: TShape;
-    readonly [YJS_SCHEMA_BRAND]: true;
-    toJSON(): { kind: "y.doc"; shape: Record<string, unknown> };
-};
 
 export type InferYjsStorage<TSchema extends YjsSchema<any>> = InferShapeStorage<TSchema["shape"]>;
 export type InferYjsJson<TSchema extends YjsSchema<any>> = InferShapeJson<TSchema["shape"]>;
 export type InferYjsSeed<TSchema extends YjsSchema<any>> = InferShapeSeed<TSchema["shape"]>;
 
 export const isYjsSchema = (value: unknown): value is YjsSchema => {
-    return (
-        typeof value === "object" &&
-        value !== null &&
-        (value as YjsSchema).kind === "y.doc" &&
-        YJS_SCHEMA_BRAND in value
-    );
+    return value instanceof YjsSchema;
 };
 
 export const schema = <TShape extends Record<string, AnySchemaNode>>(
@@ -53,11 +37,7 @@ export const schema = <TShape extends Record<string, AnySchemaNode>>(
         }
     });
 
-    const node = createSchemaNode("y.doc", { shape });
-
-    return Object.assign(node, {
-        [YJS_SCHEMA_BRAND]: true as const,
-    }) as unknown as YjsSchema<TShape>;
+    return new YjsSchema(shape);
 };
 
 schema.fromJSON = (ast: SchemaAst): YjsSchema => {

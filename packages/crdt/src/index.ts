@@ -13,6 +13,7 @@ export type {
     CrdtLibraryKind,
     CrdtLibraryType,
     HasCrdtLibrary,
+    HasStorage,
     InferDoc,
     InferDocLike,
     InferJson,

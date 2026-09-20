@@ -1,7 +1,9 @@
-import type { CrdtLibraryType, NoopCrdtDocFactory } from "@pluv/crdt";
+import { yjs } from "@pluv/crdt-yjs";
+import { loro } from "@pluv/crdt-loro";
 import type { InferIORoom, IOConfigParams, PluvIO, PluvServer } from "@pluv/io";
 import { createIO } from "@pluv/io";
-import type { BaseUser } from "@pluv/types";
+import { createTreaty, type Treaty } from "@pluv/treaty";
+import type { BaseUser, TreatyLike } from "@pluv/types";
 import { z } from "zod";
 import { TestPlatform } from "./TestPlatform";
 import type { TestPlatformConfig } from "./TestPlatform";
@@ -15,22 +17,46 @@ export const testAuthorizeUser = z.object({
 
 export type TestAuthorizeUser = z.infer<typeof testAuthorizeUser>;
 
+export const testTreaty = createTreaty({
+    user: testAuthorizeUser,
+});
+
+type TestYjsStorage = ReturnType<typeof yjs.schema<{}>>;
+type TestYjsTreaty = Treaty<typeof testAuthorizeUser, undefined, TestYjsStorage>;
+
+export const testYjsTreaty: TestYjsTreaty = createTreaty({
+    user: testAuthorizeUser,
+    storage: yjs.schema({}),
+});
+
+export const testLoroTreaty = createTreaty({
+    user: testAuthorizeUser,
+    storage: loro.schema({}),
+});
+
 export const testAuthorize = {
     secret: TEST_AUTH_SECRET,
     user: testAuthorizeUser,
 } as const;
 
-type TestCreateIOOptions<TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>> =
-    Omit<IOConfigParams<TestPlatform, TestAuthorizeUser, {}, TCrdt>, "authorize"> & {
-        platform?: TestPlatformConfig | (() => TestPlatform);
-    };
+type TestCreateIOOptions<TTreaty extends TreatyLike = typeof testTreaty> = Omit<
+    IOConfigParams<TestPlatform, TTreaty>,
+    "secret" | "treaty"
+> & {
+    platform?: TestPlatformConfig | (() => TestPlatform);
+    secret?: string;
+    treaty?: TTreaty;
+};
 
-export const createAuthorizedIO = <
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
->(
-    options: TestCreateIOOptions<TCrdt> = {} as TestCreateIOOptions<TCrdt>,
+export const createAuthorizedIO = <TTreaty extends TreatyLike = typeof testTreaty>(
+    options: TestCreateIOOptions<TTreaty> = {} as TestCreateIOOptions<TTreaty>,
 ) => {
-    const { platform, ...rest } = options;
+    const {
+        platform,
+        secret = TEST_AUTH_SECRET,
+        treaty = testTreaty as unknown as TTreaty,
+        ...rest
+    } = options;
     const platformFactory =
         typeof platform === "function"
             ? platform
@@ -39,7 +65,8 @@ export const createAuthorizedIO = <
     return createIO()
         .platform(platformFactory)
         .config({
-            authorize: testAuthorize,
+            secret,
+            treaty,
             ...rest,
         });
 };

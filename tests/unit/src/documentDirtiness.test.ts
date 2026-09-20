@@ -15,19 +15,15 @@ const scenarios = [
         roomDoc: () => yjs.doc().getEmpty(),
         authoredState: () =>
             yjs
-                .storage({
-                    schema: yjs.schema({
-                        content: yjs.yText(),
-                    }),
+                .schema({
+                    content: yjs.yText(),
                 })
                 .getInitialized({ content: AUTHORED_CONTENT })
                 .getEncodedState(),
         deletedState: () => {
             const doc = yjs
-                .storage({
-                    schema: yjs.schema({
-                        content: yjs.yText(),
-                    }),
+                .schema({
+                    content: yjs.yText(),
                 })
                 .getInitialized({ content: AUTHORED_CONTENT });
             const text = doc.get("content");
@@ -42,19 +38,15 @@ const scenarios = [
         roomDoc: () => loro.doc().getEmpty(),
         authoredState: () =>
             loro
-                .storage({
-                    schema: loro.schema({
-                        content: loro.loroText(),
-                    }),
+                .schema({
+                    content: loro.loroText(),
                 })
                 .getInitialized({ content: AUTHORED_CONTENT })
                 .getEncodedState(),
         deletedState: () => {
             const doc = loro
-                .storage({
-                    schema: loro.schema({
-                        content: loro.loroText(),
-                    }),
+                .schema({
+                    content: loro.loroText(),
                 })
                 .getInitialized({ content: AUTHORED_CONTENT });
             const text = doc.get("content");

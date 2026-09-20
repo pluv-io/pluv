@@ -1,7 +1,7 @@
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { infer, platformCloudflare } from "@pluv/platform-cloudflare";
 import { z } from "zod";
+import { treaty } from "../../../../pluv-io/yjs/cloudflare-treaty";
 
 const PLUV_AUTH_SECRET = "secret123";
 const PLUV_KV_KEY = "TEST_DATA";
@@ -15,15 +15,9 @@ export const io = createIO()
         }),
     )
     .config({
-        authorize: ({ env }) => ({
-            secret: PLUV_AUTH_SECRET,
-            user: z.object({
-                id: z.string(),
-                name: z.string(),
-            }),
-        }),
+        secret: PLUV_AUTH_SECRET,
         context: ({ env }) => ({ env }),
-        crdt: yjs,
+        treaty,
         debug: true,
     });
 

@@ -15,6 +15,7 @@ To install pluv.io for Node.js (self-hosted), we will install the following pack
 | Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client              |
 | React-bindings for @pluv/client                         | Client   | npm install @pluv/react               |
 | Adapter for Node.js runtime                             | Server   | npm install @pluv/platform-node       |
+| Shared user, presence, and storage contract             | Both     | npm install @pluv/treaty              |
 | yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs            |
 
 ### Installation Example
@@ -22,6 +23,9 @@ To install pluv.io for Node.js (self-hosted), we will install the following pack
 Here is an example installation for [npm](https://www.npmjs.com) for you to copy:
 
 ```bash
+# Shared contract
+npm install @pluv/treaty
+
 # For the server
 npm install @pluv/io @pluv/platform-node
 # Server peer dependencies
@@ -41,31 +45,24 @@ Define an io (websocket client) instance on the server codebase:
 ```ts
 // server/io.ts
 
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
-import { z } from "zod";
 import { Database } from "./db";
+import { treaty } from "../shared/treaty";
 
 export const io = createIO()
   .platform(platformNode())
   .config({
-    authorize: {
-      secret: process.env.PLUV_AUTH_SECRET!,
-      user: z.object({
-        id: z.string(),
-        name: z.string(),
-      }),
-    },
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
     context: () => ({
       db: new Database(process.env.DATABASE_URL),
     }),
-    crdt: yjs,
     debug: process.env.NODE_ENV === "development",
   });
 
 export const ioServer = io.server({
-  // Only if you're using storage (i.e. crdt)
+  // Only if you're using storage (`treaty.storage`)
   getInitialStorage: async ({ room, context }) => {
     const { db } = context;
 

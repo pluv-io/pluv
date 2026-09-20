@@ -45,10 +45,8 @@ export const encodedStateWithContent = (text: string): string => {
 
 export const encodedLoroStateWithContent = (text: string): string => {
     const doc = loro
-        .storage({
-            schema: loro.schema({
-                content: loro.loroText(),
-            }),
+        .schema({
+            content: loro.loroText(),
         })
         .getInitialized({ content: text });
     const encodedState = doc.getEncodedState();

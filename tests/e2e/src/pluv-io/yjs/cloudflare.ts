@@ -1,9 +1,8 @@
 import { createClient } from "@pluv/client";
-import { s } from "@pluv/crdt";
-import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "../../server/yjs/cloudflare";
+import { treaty } from "./cloudflare-treaty";
 
 const client = createClient<typeof ioServer>().config({
     authEndpoint: ({ metadata, room }) => {
@@ -19,14 +18,7 @@ const client = createClient<typeof ioServer>().config({
 
         return url.toString();
     },
-    storage: yjs.storage({
-        schema: yjs.schema({
-            blocknote: yjs.yXmlFragment(),
-            messages: yjs.yArray(yjs.yMap(s.string())),
-            root: yjs.yXmlText(),
-            slate: yjs.yXmlText(),
-        }),
-    }),
+    treaty,
     initialStorage: {
         messages: [
             {
@@ -37,11 +29,6 @@ const client = createClient<typeof ioServer>().config({
     },
     metadata: z.object({
         authEndpoint: z.string().default("http://localhost:3101"),
-    }),
-    presence: z.object({
-        blocknote: z.any().default({}),
-        count: z.number(),
-        lexical: z.any().default({}),
     }),
     wsEndpoint: ({ room }) => {
         return `ws://localhost:3101/api/pluv/room/${room}`;

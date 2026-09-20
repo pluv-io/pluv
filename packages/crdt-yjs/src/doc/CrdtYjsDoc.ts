@@ -23,7 +23,8 @@ import {
     mergeUpdates,
 } from "yjs";
 import { getYjsShare, hydrateTopLevel } from "../schema/hydrate";
-import type { InferYjsJson, InferYjsStorage, YjsSchema } from "../schema/schema";
+import type { InferYjsJson, InferYjsStorage } from "../schema/schema";
+import type { YjsSchema } from "./YjsSchema";
 
 const MERGE_INTERVAL_MS = 1_000;
 const PLUV_ID_FIELD = "__$pluv";

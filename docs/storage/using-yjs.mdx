@@ -23,28 +23,41 @@ npm install yjs
 
 > **Note**: The following documentation will use `@pluv/platform-cloudflare`, but these instructions apply for all pluv.io platforms.
 
-To start, we will first need to specify on the server, which CRDT we intend for pluv.io to use.
+To start, put a `yjs.schema` on the shared [treaty](/docs/guides/treaty) and pass that treaty to `createIO`. `getInitialStorage` is required when `treaty.storage` is set.
+
+```ts
+// shared/treaty.ts
+import { createTreaty } from "@pluv/treaty";
+import { s } from "@pluv/crdt";
+import { yjs } from "@pluv/crdt-yjs";
+import { z } from "zod";
+
+export const treaty = createTreaty({
+  user: z.object({ id: z.string() }),
+  storage: yjs.schema({
+    // Top-level fields must be Yjs CRDT nodes (yArray, yMap, yText, …)
+    groceries: yjs.yArray(s.string()),
+  }),
+});
+```
 
 ```ts
 // backend.ts
 import { createIO } from "@pluv/io";
-import { yjs } from "@pluv/crdt-yjs";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
+import { treaty } from "./shared/treaty";
 
 const io = createIO()
   .platform(platformCloudflare())
   .config({
-    authorize: {
-      secret: process.env.PLUV_AUTH_SECRET!,
-      user: z.object({ id: z.string() }),
-    },
-    crdt: yjs,
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
   });
 
 export const ioServer = io.server({
   // Triggered when a room is freshly created. If the room existed
   // before, you can load the storage state for the room by returning it here
-  // This is required if `crdt` has been defined on `createIO`. This is to
+  // This is required if `treaty.storage` is a real CRDT. This is to
     // prevent storage data loss on intermittent connections
   getInitialStorage: async ({ context, room }) => {
     const { db } = context;
@@ -55,25 +68,19 @@ export const ioServer = io.server({
 });
 ```
 
-Then, on the frontend, define a `yjs.schema` and pass it to `createClient` via `yjs.storage`. JSON seeds go in `initialStorage`.
+Then put the `yjs.schema` on the shared [treaty](/docs/guides/treaty) and pass that treaty to `createClient`. JSON seeds go in `initialStorage`.
 
 ```ts
 // frontend/pluv.ts
 
 import { createClient } from "@pluv/client";
-import { s } from "@pluv/crdt";
-import { yjs } from "@pluv/crdt-yjs";
 import type { InferBundleRoom } from "@pluv/react";
 import { createBundle } from "@pluv/react";
 import type { ioServer } from "../backend";
+import { treaty } from "../shared/treaty";
 
 const io = createClient<typeof ioServer>().config({
-  storage: yjs.storage({
-    schema: yjs.schema({
-      // Top-level fields must be Yjs CRDT nodes (yArray, yMap, yText, …)
-      groceries: yjs.yArray(s.string()),
-    }),
-  }),
+  treaty,
   // Optional JSON seed. Missing keys become empty containers
   initialStorage: {
     groceries: [],
@@ -170,13 +177,7 @@ import { yjs } from "@pluv/crdt-yjs";
 
 const io = createClient().config({
   // ...
-  storage: yjs.storage({
-    schema: yjs.schema({
-      groceries: yjs.yArray(s.string()),
-      // Top-level Y.Map named "chats" that nests Y.Text items
-      chats: yjs.yMap(yjs.yText()),
-    }),
-  }),
+  treaty,
   initialStorage: {
     groceries: [],
     chats: {},
@@ -233,16 +234,11 @@ See our docs for [BlockNote](/docs/guides/editors/blocknote), [Lexical](/docs/gu
 import { createClient } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
-import { z } from "zod";
+import { treaty } from "./shared/treaty";
 
 const io = createClient().config({
-  // ...
-  storage: yjs.storage({ schema: yjs.schema({ /* ... */ }) }),
-  presence: z.object({
-    // Many integrations will expect to read/write awareness data to
-    // some location. We are defining one here
-    myAwareness: z.any().default({}),
-  }),
+  treaty,
+  // ... authEndpoint, wsEndpoint, and other client config
 });
 const { useRoom } = createBundle(io);
 
@@ -252,8 +248,8 @@ const room = useRoom();
 const provider = useMemo(() => {
   return yjs.provider({
     room,
-    // Specify which pluv.io presence field to read/write Yjs Awareness
-    // data to
+    // Specify which treaty presence field to read/write Yjs awareness to.
+    // The name is yours; it must match a key on your treaty presence schema.
     presenceField: "myAwareness",
   });
 }, [room]);

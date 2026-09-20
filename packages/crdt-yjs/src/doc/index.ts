@@ -1,3 +1,3 @@
 export { CrdtYjsDoc } from "./CrdtYjsDoc";
-export { CrdtYjsDocFactory } from "./CrdtYjsDocFactory";
+export { YjsSchema } from "./YjsSchema";
 export { doc } from "./doc";

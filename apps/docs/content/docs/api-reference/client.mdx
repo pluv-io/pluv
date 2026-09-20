@@ -7,35 +7,24 @@ description: "API reference for @pluv/client — create clients, rooms, event ro
 
 Returns a builder whose `.config()` method creates a `PluvClient`
 
-Bind your server type as a type argument, then pass presence, storage, metadata, and endpoints to `.config()`. Do not pass options to `createClient` itself — that would freeze presence and storage inference.
+Bind your server type as a type argument, then pass the shared `treaty`, metadata, and endpoints to `.config()`. Do not pass options to `createClient` itself — that would freeze inference.
 
 ### createClient basic example
 
-If you've created a basic `PluvIO` backend without any auth, you can create a `PluvClient` with your websocket connection endpoint.
+Bind your server type and pass the shared treaty. Hosted pluv uses `publicKey`; self-hosted uses `authEndpoint`.
 
 See the [Create Client](/docs/guides/create-client) docs for more details.
 
 ```ts
 import { createClient } from "@pluv/client";
-import { s } from "@pluv/crdt";
-import { yjs } from "@pluv/crdt-yjs";
 import type { ioServer } from "./server/pluv-io";
-import { z } from "zod";
+import { treaty } from "./shared/treaty";
 
 const io = createClient<typeof ioServer>().config({
-  // Optional: Define the storage schema and an optional JSON seed.
-  storage: yjs.storage({
-    schema: yjs.schema({
-      messages: yjs.yArray(s.string()),
-    }),
-  }),
+  treaty,
   initialStorage: {
     messages: [],
   },
-  // Optional: Define your presence schema
-  presence: z.object({
-    selectionId: z.string().nullable(),
-  }),
   // Required if you are using `@pluv/platform-pluv`: This is the
   // publishable-key that was created for your project on pluv.io
   // This can either be a string or a function returning a string
@@ -49,10 +38,11 @@ If your `PluvIO` implements auth, you will need to specify an `authEndpoint` on 
 
 ```ts
 import { createClient } from "@pluv/client";
+import { treaty } from "./shared/treaty";
 
 const io = createClient().config({
+  treaty,
   authEndpoint: ({ room }) => `/api/room/auth?room=${room}`,
-  // ...
 });
 ```
 
@@ -64,8 +54,10 @@ If you need to use a POST request or specify additional headers, you can return 
 // frontend/io.ts
 
 import { createClient } from "@pluv/client";
+import { treaty } from "./shared/treaty";
 
 const io = createClient().config({
+  treaty,
   authEndpoint: ({ room }) => ({
     url: "/api/room/auth",
     // specify fetch options here
@@ -74,7 +66,6 @@ const io = createClient().config({
       body: JSON.stringify({ room }),
     },
   }),
-  // ...
 });
 ```
 
@@ -92,25 +83,14 @@ See the [Create Rooms](/docs/guides/rooms/client) docs for more details.
 
 ```ts
 export const io = createClient().config({
-  // Optional: Define the storage schema and an optional JSON seed.
-  storage: yjs.storage({
-    schema: yjs.schema({
-      messages: yjs.yArray(s.string()),
-    }),
-  }),
+  treaty,
   initialStorage: {
     messages: [],
   },
-  // Optional: Define your presence schema
-  presence: z.object({
-    selectionId: z.string().nullable(),
-  }),
-  // ...
 });
 
 const room = io.createRoom("my-example-room", {
-  // Required (if presence is defined on the client): Define
-  // the user's initial presence value
+  // Required if presence is defined on the treaty
   initialPresence: {
     selectionId: null,
   },

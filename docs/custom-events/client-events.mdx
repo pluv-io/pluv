@@ -18,8 +18,11 @@ import { createClient } from "@pluv/client";
 import { createBundle } from "@pluv/react";
 import { z } from "zod";
 import type { ioServer } from "./backend/pluv-io";
+import { treaty } from "./shared/treaty";
 
-const io = createClient<typeof ioServer>().config({});
+const io = createClient<typeof ioServer>().config({
+  treaty,
+});
 
 // Create your custom events as procedures
 const sendMessage = io.procedure

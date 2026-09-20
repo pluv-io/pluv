@@ -1,23 +1,15 @@
-import { loro } from "@pluv/crdt-loro";
 import { createIO, InferIORoom } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
+import { treaty } from "../../../pluv-io/loro/treaty";
 
 const PLUV_AUTH_SECRET = "secret123";
 
-export const io = createIO()
-    .platform(platformNode())
-    .config({
-        authorize: {
-            secret: PLUV_AUTH_SECRET,
-            user: z.object({
-                id: z.string(),
-                name: z.string(),
-            }),
-        },
-        crdt: loro,
-        debug: true,
-    });
+export const io = createIO().platform(platformNode()).config({
+    secret: PLUV_AUTH_SECRET,
+    treaty,
+    debug: true,
+});
 
 const router = io.router({
     SEND_MESSAGE: io.procedure

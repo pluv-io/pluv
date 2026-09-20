@@ -1,46 +1,39 @@
-import type { CrdtLibraryType, NoopCrdtDocFactory } from "@pluv/crdt";
-import type { BaseUser } from "@pluv/types";
-import type { AbstractPlatform, InferInitContextType } from "./AbstractPlatform";
+import type { TreatyLike } from "@pluv/types";
+import type { AbstractPlatform } from "./AbstractPlatform";
 import { PluvIO } from "./PluvIO";
-import type { PluvContext, PluvIOAuthorize, PluvIOLimits } from "./types";
+import type { PluvContext, PluvIOLimits, PluvIOSecret } from "./types";
 
 export type IOConfigParams<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-    TUser extends BaseUser = BaseUser,
+    TTreaty extends TreatyLike = TreatyLike,
     TContext extends Record<string, any> = {},
-    TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
 > = {
-    authorize: PluvIOAuthorize<TPlatform, TUser, InferInitContextType<TPlatform>>;
     context?: PluvContext<TPlatform, TContext>;
-    crdt?: TCrdt;
     debug?: boolean;
     limits?: PluvIOLimits;
-};
+    treaty: TTreaty;
+} & (TPlatform["_config"]["authorize"]["secret"] extends true
+    ? { secret: PluvIOSecret<TPlatform> }
+    : { secret?: PluvIOSecret<TPlatform> });
 
 export type IOPlatformFactory<TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>> =
     () => TPlatform;
 
 type ConfiguredIODefs<
     TPlatform extends AbstractPlatform<any>,
-    TUser extends BaseUser,
+    TTreaty extends TreatyLike,
     TContext extends Record<string, any>,
-    TCrdt extends CrdtLibraryType<any>,
 > = {
     platform: TPlatform;
-    authorize: PluvIOAuthorize<TPlatform, TUser, InferInitContextType<TPlatform>>;
+    treaty: TTreaty;
     context: TContext;
-    crdt: TCrdt;
     events: {};
 };
 
 export interface IOConfigBuilder<TPlatform extends AbstractPlatform<any>> {
-    config: <
-        TUser extends BaseUser,
-        TContext extends Record<string, any> = {},
-        TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
-    >(
-        params: IOConfigParams<TPlatform, TUser, TContext, TCrdt>,
-    ) => PluvIO<ConfiguredIODefs<TPlatform, TUser, TContext, TCrdt>>;
+    config: <TTreaty extends TreatyLike, TContext extends Record<string, any> = {}>(
+        params: IOConfigParams<TPlatform, TTreaty, TContext>,
+    ) => PluvIO<ConfiguredIODefs<TPlatform, TTreaty, TContext>>;
 }
 
 export interface IOPlatformBuilder {
@@ -53,22 +46,18 @@ export const createIO = (): IOPlatformBuilder => ({
     platform: <TPlatform extends AbstractPlatform<any>>(
         platform: IOPlatformFactory<TPlatform>,
     ) => ({
-        config: <
-            TUser extends BaseUser,
-            TContext extends Record<string, any> = {},
-            TCrdt extends CrdtLibraryType<any> = CrdtLibraryType<NoopCrdtDocFactory>,
-        >(
-            params: IOConfigParams<TPlatform, TUser, TContext, TCrdt>,
-        ): PluvIO<ConfiguredIODefs<TPlatform, TUser, TContext, TCrdt>> => {
-            const { authorize, context, crdt, debug, limits } = params;
+        config: <TTreaty extends TreatyLike, TContext extends Record<string, any> = {}>(
+            params: IOConfigParams<TPlatform, TTreaty, TContext>,
+        ): PluvIO<ConfiguredIODefs<TPlatform, TTreaty, TContext>> => {
+            const { context, debug, limits, secret, treaty } = params;
 
-            return new PluvIO<ConfiguredIODefs<TPlatform, TUser, TContext, TCrdt>>({
-                authorize,
+            return new PluvIO<ConfiguredIODefs<TPlatform, TTreaty, TContext>>({
                 context,
-                crdt,
                 debug,
                 limits,
                 platform,
+                secret,
+                treaty,
             });
         },
     }),

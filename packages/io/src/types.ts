@@ -1,3 +1,4 @@
+import type { AbstractCrdtDocFactory, InferDocLike } from "@pluv/crdt";
 import type {
     BaseUser,
     CrdtDocLike,
@@ -5,15 +6,16 @@ import type {
     Id,
     InferEventMessage,
     InferEventsOutput,
-    InferIOAuthorizeUser,
+    InferTreatyUser,
     JsonObject,
     Maybe,
     MaybePromise,
+    StandardSchemaV1,
     UndefinedProps,
 } from "@pluv/types";
-import type { StandardSchemaV1 } from "@pluv/types";
 import type {
     AbstractPlatform,
+    InferInitContextType,
     InferPlatformWebSocketSource,
     InferPlatformWebSocketType,
     InferRoomContextType,
@@ -37,10 +39,14 @@ export type EventResolver<
 
 export interface EventResolverContext<T extends IODefs = IODefs> {
     context: T["context"];
-    doc: CrdtDocLike<any, any>;
+    doc: T["treaty"]["storage"] extends AbstractCrdtDocFactory<any, any, any, any>
+        ? InferDocLike<T["treaty"]["storage"]>
+        : CrdtDocLike<any, any>;
     garbageCollect: () => Promise<void>;
     platform: T["platform"];
-    presence: JsonObject | null;
+    presence: T["treaty"]["presence"] extends StandardSchemaV1<any, infer TPresence>
+        ? TPresence | null
+        : JsonObject | null;
     room: string;
     storageSeeded: boolean;
     session: WebSocketSession<T>;
@@ -70,7 +76,7 @@ export interface WebSocketSerializedState {
 
 export type WebSocketSession<T extends IODefs = IODefs> = WebSocketSerializedState & {
     id: string;
-    user: InferIOAuthorizeUser<T["authorize"]>;
+    user: InferTreatyUser<T["treaty"]>;
     webSocket: AbstractWebSocket;
 };
 
@@ -119,13 +125,9 @@ export type ResolvedPluvIOAuthorize<
     ? { user: StandardSchemaV1<unknown, TUser>; secret: string }
     : { user: StandardSchemaV1<unknown, TUser>; secret?: string };
 
-export type PluvIOAuthorize<
-    TPlatform extends AbstractPlatform<any, any, any, any>,
-    TUser extends BaseUser = any,
-    TContext extends Record<string, unknown> = {},
-> =
-    | ResolvedPluvIOAuthorize<TPlatform, TUser>
-    | ((context: TContext) => ResolvedPluvIOAuthorize<TPlatform, TUser>);
+export type PluvIOSecret<
+    TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
+> = string | ((context: InferInitContextType<TPlatform>) => string);
 
 export interface PluvIOLimits {
     /**
@@ -207,22 +209,22 @@ export type IORoomMessageEvent<T extends IODefs = IODefs> = IORoomListenerEvent<
         InferEventsOutput<T["events"]>,
         keyof InferEventsOutput<T["events"]>
     >;
-    user?: InferIOAuthorizeUser<T["authorize"]>;
+    user?: InferTreatyUser<T["treaty"]>;
     webSocket?: InferPlatformWebSocketSource<T["platform"]>;
 };
 
 export type IOStorageUpdatedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
-    user?: InferIOAuthorizeUser<T["authorize"]>;
+    user?: InferTreatyUser<T["treaty"]>;
     webSocket?: InferPlatformWebSocketSource<T["platform"]>;
 };
 
 export type IOUserConnectedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
-    user?: InferIOAuthorizeUser<T["authorize"]>;
+    user?: InferTreatyUser<T["treaty"]>;
     webSocket?: InferPlatformWebSocketSource<T["platform"]>;
 };
 
 export type IOUserDisconnectedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
-    user?: InferIOAuthorizeUser<T["authorize"]>;
+    user?: InferTreatyUser<T["treaty"]>;
 };
 
 export type WebSocketType<TPlatform extends AbstractPlatform> =

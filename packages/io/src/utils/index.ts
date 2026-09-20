@@ -12,7 +12,7 @@ export { pageLiveUsers } from "./pageLiveUsers";
 export { oneLine } from "./oneLine";
 export { parsePluvSchema } from "./parsePluvSchema";
 export { pickBy } from "./pickBy";
-export { resolveIOAuthorize } from "./resolveIOAuthorize";
+export { resolveIOSecret } from "./resolveIOSecret";
 export { resolveListUsersLimit } from "./resolveListUsersLimit";
 export { throttle } from "./throttle";
 export type { Throttle } from "./throttle";

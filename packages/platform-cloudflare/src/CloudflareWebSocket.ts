@@ -6,7 +6,7 @@ import type {
     WebSocketSession,
 } from "@pluv/io";
 import { AbstractWebSocket } from "@pluv/io";
-import type { InferIOAuthorizeUser, IOAuthorize, JsonObject } from "@pluv/types";
+import type { BaseUser, JsonObject } from "@pluv/types";
 
 export type CloudflareWebSocketConfig = AbstractWebSocketConfig;
 
@@ -80,17 +80,14 @@ export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
         this.webSocket.serializeAttachment({ ...deserialized, state });
     }
 
-    public get user(): InferIOAuthorizeUser<IOAuthorize<any, any>> | null {
+    public get user(): BaseUser | null {
         const deserialized = this.webSocket.deserializeAttachment();
-        const user = deserialized?.user as
-            | InferIOAuthorizeUser<IOAuthorize<any, any>>
-            | null
-            | undefined;
+        const user = deserialized?.user as BaseUser | null | undefined;
 
         return user ?? null;
     }
 
-    public set user(user: InferIOAuthorizeUser<IOAuthorize<any, any>>) {
+    public set user(user: BaseUser) {
         const deserialized = this.webSocket.deserializeAttachment();
 
         this.webSocket.serializeAttachment({ ...deserialized, user });

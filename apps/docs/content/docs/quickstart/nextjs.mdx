@@ -15,6 +15,7 @@ To install pluv.io for Next.js, we will install the following packages from pluv
 | Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client              |
 | React-bindings for @pluv/client                         | Client   | npm install @pluv/react               |
 | Adapter for running on the pluv.io network              | Server   | npm install @pluv/platform-pluv       |
+| Shared user, presence, and storage contract             | Both     | npm install @pluv/treaty              |
 | yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs            |
 
 ### Installation Example
@@ -81,11 +82,10 @@ Similar to how `@pluv/io` is initialized for Node.js and Cloudflare, `@pluv/plat
 ```ts
 // backend/pluv.ts
 
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformPluv } from "@pluv/platform-pluv";
-import { z } from "zod";
 import { db } from "./database";
+import { treaty } from "../shared/treaty";
 
 export const io = createIO()
   .platform(
@@ -96,20 +96,14 @@ export const io = createIO()
     }),
   )
   .config({
-    authorize: {
-      user: z.object({
-        id: z.string(),
-        name: z.string(),
-      }),
-    },
+    treaty,
     context: () => ({
       db,
     }),
-    crdt: yjs,
   });
 
 export const ioServer = io.server({
-  // Only if you're using storage (i.e. crdt)
+  // Only if you're using storage (`treaty.storage`)
   getInitialStorage: async ({ room, context }) => {
     const { db } = context;
 

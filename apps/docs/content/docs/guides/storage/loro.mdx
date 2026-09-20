@@ -34,17 +34,14 @@ import { platformCloudflare } from "@pluv/platform-cloudflare";
 const io = createIO()
   .platform(platformCloudflare())
   .config({
-    authorize: {
-      secret: process.env.PLUV_AUTH_SECRET!,
-      user: z.object({ id: z.string() }),
-    },
-    crdt: loro,
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
   });
 
 export const ioServer = io.server({
   // Triggered when a room is freshly created. If the room existed
   // before, you can load the storage state for the room by returning it here
-  // This is required if `crdt` has been defined on `createIO`. This is to
+  // This is required if `treaty.storage` is a real CRDT. This is to
   // prevent storage data loss on intermittent connections
   getInitialStorage: async ({ context, room }) => {
     const { db } = context;
@@ -55,7 +52,7 @@ export const ioServer = io.server({
 });
 ```
 
-Then, on the frontend, define a `loro.schema` and pass it to `createClient` via `loro.storage`. JSON seeds go in `initialStorage`.
+Then put the `loro.schema` on the shared [treaty](/docs/guides/treaty) and pass that treaty to `createClient`. JSON seeds go in `initialStorage`.
 
 ```ts
 // frontend/pluv.ts
@@ -68,12 +65,7 @@ import { createBundle } from "@pluv/react";
 import type { ioServer } from "../backend";
 
 const io = createClient<typeof ioServer>().config({
-  storage: loro.storage({
-    schema: loro.schema({
-      // Top-level fields must be Loro CRDT nodes (loroList, loroMap, loroText, …)
-      groceries: loro.loroList(s.string()),
-    }),
-  }),
+  treaty,
   initialStorage: {
     groceries: [],
   },
@@ -185,13 +177,7 @@ import { loro } from "@pluv/crdt-loro";
 
 const io = createClient().config({
   // ...
-  storage: loro.storage({
-    schema: loro.schema({
-      groceries: loro.loroList(s.string()),
-      // Top-level LoroMap named "chats" that nests LoroText items
-      chats: loro.loroMap(loro.loroText()),
-    }),
-  }),
+  treaty,
   initialStorage: {
     groceries: [],
     chats: {},

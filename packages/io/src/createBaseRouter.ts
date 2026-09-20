@@ -2,7 +2,7 @@ import type { BaseClientEventRecord } from "@pluv/types";
 import type { IODefs, SetKey } from "./IODefs";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouter } from "./PluvRouter";
-import type { IOStorageUpdatedEvent, PluvIOLimits } from "./types";
+import type { IOStorageUpdatedEvent, PluvIOLimits, EventResolverContext } from "./types";
 import {
     createInternalPluvRouter,
     getMyConnectionIds,
@@ -113,7 +113,9 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
 
                 // Connecting another tab is not a presence write. Keep the last
                 // `$updatePresence` instead of last-connect.
-                if (typeof latestSeq !== "number") event.presence = presence;
+                if (typeof latestSeq !== "number") {
+                    event.presence = presence as EventResolverContext<T>["presence"];
+                }
 
                 return {
                     $userJoined: {

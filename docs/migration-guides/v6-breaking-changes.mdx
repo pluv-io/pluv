@@ -1,14 +1,81 @@
 ---
 title: "Migrate to v6"
-description: "Breaking changes when upgrading from pluv.io v5 to v6, including the CRDT schema builder, createIO/createClient builders, and JSON-only storage seeds."
+description: "Breaking changes when upgrading from pluv.io v5 to v6, including the treaty contract, CRDT schema builder, createIO/createClient builders, and JSON-only storage seeds."
 ---
+
+## Treaty replaces authorize.user, crdt, and client presence/storage
+
+User, presence, and storage are one isomorphic [treaty](/docs/guides/treaty). Import the same value on the server and the client. `authorize.user`, `crdt: yjs | loro`, and client `presence` / `storage` options are removed. JWT leftover is `secret`. `yjs.storage` / `loro.storage` are gone — `yjs.schema` / `loro.schema` are the factories.
+
+```ts
+// shared/treaty.ts
+import { createTreaty } from "@pluv/treaty";
+import { s } from "@pluv/crdt";
+import { yjs } from "@pluv/crdt-yjs";
+import { z } from "zod";
+
+const t = createTreaty({
+  user: z.object({
+    id: z.string(),
+    name: z.string(),
+  }),
+  presence: z.object({
+    selectionId: z.string().nullable(),
+  }),
+  storage: yjs.schema({
+    messages: yjs.yArray(s.string()),
+  }),
+});
+
+export const treaty = t.router({
+  // Optional presence/storage procedures. Definable, not a room API yet.
+});
+```
+
+```ts
+// Before
+const io = createIO()
+  .platform(platformNode())
+  .config({
+    authorize: { secret, user: schema },
+    context,
+  });
+
+const client = createClient<typeof ioServer>().config({
+  authEndpoint: () => "",
+  presence: z.object({ selectionId: z.string().nullable() }),
+  storage: yjs.storage({
+    schema: yjs.schema({ messages: yjs.yArray(s.string()) }),
+  }),
+});
+
+// After
+const io = createIO()
+  .platform(platformNode())
+  .config({
+    treaty,
+    secret,
+    context,
+  });
+
+const client = createClient<typeof ioServer>().config({
+  authEndpoint: () => "",
+  treaty,
+  initialStorage: { messages: [] },
+});
+```
+
+Hosted pluv omits `secret` (`secretKey` stays on `platformPluv({ ... })`). Node and Cloudflare still require `secret` (`string` or `(initContext) => string`).
+
+User, presence, and client metadata must implement Standard Schema and Standard JSON Schema on the same object (Zod 4.2+ or ArkType). `createTreaty` and `createClient().config({ metadata })` throw if `jsonSchema` is missing.
 
 ## createClient is type-arg then config
 
-`infer((i) => ({ io }))` and `createClient({ types, ... })` are removed. Bind the server type as a type argument, then pass presence, storage, and metadata to `.config()`.
+`infer((i) => ({ io }))` and `createClient({ types, ... })` are removed. Bind the server type as a type argument for **events**, then pass the shared `treaty` and metadata to `.config()`.
 
 ```ts
 import type { ioServer } from "./server/pluv-io";
+import { treaty } from "./shared/treaty";
 
 // Before
 const types = infer((i) => ({ io: i<typeof ioServer> }));
@@ -21,17 +88,17 @@ const client = createClient({
 // After
 const client = createClient<typeof ioServer>().config({
   authEndpoint: () => "",
-  presence: z.object({ selectionId: z.string().nullable() }),
+  treaty,
 });
 ```
 
-Do not call `createClient<TIO>(options)` — that freezes presence and storage inference. `createClient().config({ ... })` still works when you do not have a server type.
+Do not call `createClient<TIO>(options)` — that freezes inference. `createClient().config({ ... })` still works when you do not have a server type. Always pass the runtime treaty; a type-only import of `ioServer` cannot recover schemas.
 
 Cloudflare/Node `infer((i) => ({ env }))` on the platform is unchanged.
 
 ## Storage schema and JSON seeds
 
-`yjs.doc((t) => …)` and `loro.doc((t) => …)` builders are removed. Declare storage with `yjs.schema` / `loro.schema`, wrap it in `yjs.storage` / `loro.storage` on `createClient().config()`, and seed with JSON in `initialStorage`.
+`yjs.doc((t) => …)` and `loro.doc((t) => …)` builders are removed. Declare storage with `yjs.schema` / `loro.schema` on the treaty. Seed with JSON in `initialStorage`.
 
 JSON schema leaves live on `s` from `@pluv/crdt`. Top-level fields must be that library's CRDT nodes (`yjs.yArray`, `loro.loroList`, …).
 
@@ -39,6 +106,7 @@ JSON schema leaves live on `s` from `@pluv/crdt`. Top-level fields must be that 
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import type { ioServer } from "./server/pluv-io";
+import { treaty } from "./shared/treaty";
 
 // Before
 createClient({
@@ -50,11 +118,7 @@ createClient({
 
 // After
 createClient<typeof ioServer>().config({
-  storage: yjs.storage({
-    schema: yjs.schema({
-      messages: yjs.yArray(s.string()),
-    }),
-  }),
+  treaty,
   initialStorage: {
     messages: ["hello"],
   },
@@ -83,7 +147,7 @@ Room-level `initialStorage` is JSON only, not a builder function:
 
 Missing seed keys become empty containers. Extra keys throw. Xml/tree types are not JSON-seedable — declare them on the schema and initialize at editor bind time.
 
-The server still takes `createIO().platform(...).config({ crdt: yjs })` (or `loro`) and an empty `doc()`. Do not pass `storage` to `.config()` or `io.server`.
+`getInitialStorage` is required when `treaty.storage` is a real CRDT. Do not pass `storage` or `crdt` to `createIO().config()` or `io.server`.
 
 ## Native shared types
 
@@ -107,18 +171,32 @@ Unions, intersections, optionals, and similar combinators are `$`-prefixed on `s
 
 ## createIO is platform-then-config
 
-`createIO` is no longer a one-shot call. Pass a named platform helper to `.platform()`, then put `authorize`, `context`, and `crdt` on `.config()`. Platform helpers no longer take authorize or crdt.
+`createIO` is no longer a one-shot call. Pass a named platform helper to `.platform()`, then put `treaty`, `secret`, and `context` on `.config()`. Platform helpers no longer take authorize or crdt.
 
 ```ts
 const io = createIO()
   .platform(platformNode())
   .config({
-    authorize: { secret, user: schema },
+    treaty,
+    secret,
     context,
-    crdt: yjs,
   });
 
 export const ioServer = io.server({ router, getInitialStorage });
 ```
 
-Hosted pluv keeps JWT-less `authorize: { user }` on `.config()` and `secretKey` on `platformPluv({ ... })`. Node and Cloudflare still require `authorize.secret`.
+## UserInfo is a person
+
+`UserInfo` is `{ data, presence }`. Lookup is `data.id` (`getOther` / `useOther`).
+
+`getOthers()` / `useOthers()` stay the presence-bearing set in mode `all`. Room size is `getRoomStats` / `useRoomStats`. `listUsers({ cursor, limit })` pages everyone currently in the room (including you), identities only, on the client room and on `IORoom`.
+
+Procedure and size-limit failures arrive on `room.subscribe.error` / `useRoomError`.
+
+Default `maxConnections` is 256. Raising it for a large room requires `dangerouslyAllowHighPresenceFanout: true`.
+
+## Redis pubsub and procedure.sync are gone
+
+`@pluv/pubsub-redis` is removed. `io.procedure.sync()` is removed. A live room (occupancy, presence, `listUsers`) is not split across Node processes.
+
+`@pluv/persistence-redis` still persists CRDT storage. `platformNode({ persistence })` no longer takes a `pubSub`. If you used `.sync()` on a procedure, move that work to `.self()` or `.broadcast()`.

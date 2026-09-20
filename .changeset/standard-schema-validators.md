@@ -8,6 +8,9 @@
 "@pluv/platform-pluv": major
 ---
 
-Accept any Standard Schema validator for authorize, presence, metadata, and procedure inputs.
+User, presence, metadata, and event inputs all take the same validator libraries:
 
-Zod still works as before on recent versions (3.24+/4). You can also use Valibot, ArkType, or other Standard Schema–compatible libraries. The old `InputZodLike` duck type (`{ parse, _input }`) is removed — schemas must expose `~standard.validate`.
+- Zod 4.2+
+- ArkType
+
+The old Zod-like `{ parse, _input }` duck type no longer works.

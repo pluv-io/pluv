@@ -10,18 +10,14 @@ const scenarios = [
         empty: () => yjs.doc().getEmpty(),
         authored: () =>
             yjs
-                .storage({
-                    schema: yjs.schema({
-                        content: yjs.yText(),
-                    }),
+                .schema({
+                    content: yjs.yText(),
                 })
                 .getInitialized({ content: AUTHORED_CONTENT }),
         encoded: () =>
             yjs
-                .storage({
-                    schema: yjs.schema({
-                        content: yjs.yText(),
-                    }),
+                .schema({
+                    content: yjs.yText(),
                 })
                 .getInitialized({ content: AUTHORED_CONTENT })
                 .getEncodedState(),
@@ -32,18 +28,14 @@ const scenarios = [
         empty: () => loro.doc().getEmpty(),
         authored: () =>
             loro
-                .storage({
-                    schema: loro.schema({
-                        content: loro.loroText(),
-                    }),
+                .schema({
+                    content: loro.loroText(),
                 })
                 .getInitialized({ content: AUTHORED_CONTENT }),
         encoded: () =>
             loro
-                .storage({
-                    schema: loro.schema({
-                        content: loro.loroText(),
-                    }),
+                .schema({
+                    content: loro.loroText(),
                 })
                 .getInitialized({ content: AUTHORED_CONTENT })
                 .getEncodedState(),

@@ -5,7 +5,7 @@ import type {
     InferStorage as InferSchemaStorage,
 } from "./schema";
 
-export type { CrdtLibraryKind, CrdtLibraryType, HasCrdtLibrary } from "@pluv/types";
+export type { CrdtLibraryKind, CrdtLibraryType, HasCrdtLibrary, HasStorage } from "@pluv/types";
 
 export type InferDoc<TFactory extends AbstractCrdtDocFactory<any, any, any, any>> =
     InferDocLike<TFactory>["value"];

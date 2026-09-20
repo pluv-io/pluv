@@ -14,6 +14,9 @@ export {
     registerAuthorized,
     testAuthorize,
     testAuthorizeUser,
+    testLoroTreaty,
+    testTreaty,
+    testYjsTreaty,
 } from "./testAuthorize";
 export type { TestAuthorizeUser } from "./testAuthorize";
 export { TestPersistence } from "./TestPersistence";

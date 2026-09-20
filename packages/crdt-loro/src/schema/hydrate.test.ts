@@ -1,14 +1,12 @@
 import { CrdtSchemaError, s } from "@pluv/crdt";
 import { LoroList, LoroMap, LoroText } from "loro-crdt";
 import { describe, expect, it } from "vitest";
-import { loroList, loroMap, loroText, schema, storage } from "./index";
+import { loroList, loroMap, loroText, schema } from "./index";
 
 describe("loro schema hydrate", () => {
     it("inserts JSON leaves into loroList", () => {
-        const doc = storage({
-            schema: schema({
-                groceries: loroList(s.string()),
-            }),
+        const doc = schema({
+            groceries: loroList(s.string()),
         }).getInitialized({
             groceries: ["milk", "eggs"],
         });
@@ -20,11 +18,9 @@ describe("loro schema hydrate", () => {
     });
 
     it("wraps nested CRDT nodes instead of inserting JSON objects", () => {
-        const doc = storage({
-            schema: schema({
-                chats: loroMap(loroText()),
-                messages: loroList(loroMap(s.string())),
-            }),
+        const doc = schema({
+            chats: loroMap(loroText()),
+            messages: loroList(loroMap(s.string())),
         }).getInitialized({
             chats: { note: "hi" },
             messages: [{ message: "hello", name: "ada" }],
@@ -44,10 +40,8 @@ describe("loro schema hydrate", () => {
     });
 
     it("hydrates $union with first-match on seed", () => {
-        const doc = storage({
-            schema: schema({
-                mixed: loroList(s.$union([s.string(), loroMap(s.number())])),
-            }),
+        const doc = schema({
+            mixed: loroList(s.$union([s.string(), loroMap(s.number())])),
         }).getInitialized({
             mixed: ["hello", { n: 1 }],
         });
@@ -58,10 +52,8 @@ describe("loro schema hydrate", () => {
     });
 
     it("throws on extra seed keys", () => {
-        const factory = storage({
-            schema: schema({
-                groceries: loroList(s.string()),
-            }),
+        const factory = schema({
+            groceries: loroList(s.string()),
         });
 
         expect(() =>
@@ -91,10 +83,8 @@ describe("loro schema hydrate", () => {
     });
 
     it("rebuilds storage from schema kinds after applying encoded state", () => {
-        const factory = storage({
-            schema: schema({
-                messages: loroList(s.string()),
-            }),
+        const factory = schema({
+            messages: loroList(s.string()),
         });
         const initialized = factory.getInitialized({ messages: ["hi"] });
         const empty = factory.getEmpty();

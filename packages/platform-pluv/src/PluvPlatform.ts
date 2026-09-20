@@ -193,9 +193,9 @@ export class PluvPlatform extends AbstractPlatform<
     public validateConfig(config: any): void {
         this._logDebug("validating config with properties:", Object.keys(config ?? {}));
 
-        if (!config.authorize) {
-            this._logDebug("Config `authorize` must be provided to `platformPluv`");
-            throw new Error("Config `authorize` must be provided to `platformPluv`");
+        if (!config.treaty) {
+            this._logDebug("Config `treaty` must be provided to `platformPluv`");
+            throw new Error("Config `treaty` must be provided to `platformPluv`");
         }
         if (!!config.onRoomMessage) {
             this._logDebug("Config `onRoomMessage` is not supported on `platformPluv`");

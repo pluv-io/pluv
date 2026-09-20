@@ -1,19 +1,13 @@
 import { createClient } from "@pluv/client";
-import { s } from "@pluv/crdt";
-import { loro } from "@pluv/crdt-loro";
 import { createBundle } from "@pluv/react";
-import { z } from "zod";
 import type { ioServer } from "../../server/loro/node";
+import { treaty } from "./treaty";
 
 const client = createClient<typeof ioServer>().config({
     authEndpoint: ({ room }) => {
         return `http://localhost:3112/api/pluv/authorize?room=${room}`;
     },
-    storage: loro.storage({
-        schema: loro.schema({
-            messages: loro.loroList(loro.loroMap(s.string())),
-        }),
-    }),
+    treaty,
     initialStorage: {
         messages: [
             {
@@ -22,9 +16,6 @@ const client = createClient<typeof ioServer>().config({
             },
         ],
     },
-    presence: z.object({
-        count: z.number(),
-    }),
     wsEndpoint: ({ room }) => {
         return `ws://localhost:3112/api/pluv/room/${room}`;
     },

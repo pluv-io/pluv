@@ -1,4 +1,3 @@
-import { yjs } from "@pluv/crdt-yjs";
 import { describe, expect, it } from "vitest";
 import type { Deferred } from "./__utils__";
 import {
@@ -10,6 +9,7 @@ import {
     TestSocket,
     tick,
     waitUntil,
+    testYjsTreaty,
 } from "./__utils__";
 
 const SEEDED_CONTENT = "content that must survive teardown";
@@ -26,7 +26,7 @@ const setupRoom = (roomId: string) => {
 
     let shouldBlock = true;
 
-    const io = createAuthorizedIO({ crdt: yjs });
+    const io = createAuthorizedIO({ treaty: testYjsTreaty });
     const server = io.server({
         getInitialStorage: () => Promise.resolve(seeded),
         onStorageDestroyed: async ({ encodedState }) => {

@@ -1,10 +1,4 @@
-import type {
-    InferIOAuthorizeUser,
-    IOAuthorize,
-    IOEventMessage,
-    JsonObject,
-    MaybePromise,
-} from "@pluv/types";
+import type { BaseUser, IOEventMessage, JsonObject, MaybePromise } from "@pluv/types";
 import type { AbstractPersistence } from "./AbstractPersistence";
 import type { AbstractPlatform } from "./AbstractPlatform";
 import type { WebSocketSerializedState, WebSocketSession } from "./types";
@@ -79,8 +73,8 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
      * @description Authorized user for this socket. `null` until `register` (or hibernation
      * reattach) has assigned one.
      */
-    public abstract get user(): InferIOAuthorizeUser<IOAuthorize<any, any>> | null;
-    public abstract set user(user: InferIOAuthorizeUser<IOAuthorize<any, any>>);
+    public abstract get user(): BaseUser | null;
+    public abstract set user(user: BaseUser);
 
     constructor(webSocket: TWebSocket, config: AbstractWebSocketConfig) {
         const { persistence, platform, room } = config;
@@ -123,7 +117,7 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
             data: { message, stack },
             room,
             type: "$error" as const,
-            user: session?.user ?? null,
+            user: (session?.user ?? null) as IOEventMessage<any>["user"],
         });
     }
 

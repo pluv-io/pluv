@@ -373,11 +373,7 @@ import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 
 const io = createClient().config({
-  storage: yjs.storage({
-    schema: yjs.schema({
-      messages: yjs.yArray(s.string()),
-    }),
-  }),
+  treaty,
   initialStorage: {
     messages: ["hello"],
   },

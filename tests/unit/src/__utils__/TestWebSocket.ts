@@ -6,7 +6,7 @@ import type {
     WebSocketSession,
 } from "@pluv/io";
 import { AbstractWebSocket } from "@pluv/io";
-import type { InferIOAuthorizeUser, IOAuthorize, JsonObject } from "@pluv/types";
+import type { BaseUser, JsonObject } from "@pluv/types";
 
 type TestSocketListener = (event: any) => unknown;
 
@@ -51,7 +51,7 @@ export class TestSocket {
 
 export class TestWebSocket extends AbstractWebSocket<TestSocket> {
     private _state: WebSocketSerializedState;
-    private _user: InferIOAuthorizeUser<IOAuthorize<any, any>> | null = null;
+    private _user: BaseUser | null = null;
 
     public set presence(presence: JsonObject | null) {
         this._state.presence = presence;
@@ -88,11 +88,11 @@ export class TestWebSocket extends AbstractWebSocket<TestSocket> {
         this._state = state;
     }
 
-    public get user(): InferIOAuthorizeUser<IOAuthorize<any, any>> | null {
+    public get user(): BaseUser | null {
         return this._user;
     }
 
-    public set user(user: InferIOAuthorizeUser<IOAuthorize<any, any>>) {
+    public set user(user: BaseUser) {
         this._user = user;
     }
 
