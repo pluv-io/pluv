@@ -7,18 +7,16 @@ Presence is a per-person state that lets users see what others are doing in the 
 
 ## Set presence
 
-To get started with presence for pluv.io, first set a `presence` config on your `createClient` config and create your react bundle.
+To get started with presence for pluv.io, put a `presence` schema on your shared [treaty](/docs/guides/treaty) and pass that treaty to `createClient`.
 
 ```ts
 import { createClient } from "@pluv/client";
 import { createBundle } from "@pluv/react";
-import { z } from "zod";
 import type { ioServer } from "./backend/io";
+import { treaty } from "./shared/treaty";
 
 const client = createClient<typeof ioServer>().config({
-  presence: z.object({
-    selectionId: z.string().nullable(),
-  }),
+  treaty,
   // ...
 });
 

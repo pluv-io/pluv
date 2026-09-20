@@ -17,16 +17,14 @@ You can view examples of setting up the `PluvIO` instance via your platform's re
 
 ```ts
 // backend/io.ts
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformPluv } from "@pluv/platform-pluv";
+import { treaty } from "../shared/treaty";
 
 export const io = createIO()
   .platform(platformPluv({ /* ... */}))
   .config({
-    authorize: {
-      user: z.object({ id: z.string() }),
-    },
+    treaty,
   });
 
 // Export the ioServer, so that this can be type-imported on the frontend
@@ -39,14 +37,16 @@ Then, import your `PluvIO` type to the frontend, and create your type-safe react
 
 ```ts
 // frontend/io.ts
-import { yjs } from "@pluv/crdt-yjs";
 import { createClient } from "@pluv/client";
 import { createBundle } from "@pluv/react";
-import { z } from "zod";
 // import your ioServer type from your backend codebase
 import type { ioServer } from "./backend/io";
+import { treaty } from "./shared/treaty";
 
-const client = createClient<typeof ioServer>().config({ /* ... */});
+const client = createClient<typeof ioServer>().config({
+  treaty,
+  /* ... */
+});
 
 export const {
   // components

@@ -28,10 +28,8 @@ import { db } from "./db";
 const io = createIO()
   .platform(platformNode())
   .config({
-    authorize: {
-      secret: process.env.PLUV_AUTH_SECRET!,
-      user: z.object({ id: z.string() }),
-    },
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
     context: { db },
   });
 
@@ -85,8 +83,11 @@ Client procedures are created from the `PluvClient` instance created from `creat
 ```ts
 import { createClient } from "@pluv/client";
 import type { ioServer } from "./backend/pluv-io";
+import { treaty } from "./shared/treaty";
 
-const io = createClient<typeof ioServer>().config({});
+const io = createClient<typeof ioServer>().config({
+  treaty,
+});
 
 // Basic example of a procedure, that works like a server procedure
 const add5 = io.procedure

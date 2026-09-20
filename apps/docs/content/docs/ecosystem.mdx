@@ -23,8 +23,11 @@ npm install @pluv/addon-indexeddb
 import { addonIndexedDB } from "@pluv/addon-indexeddb";
 import { createClient } from "@pluv/client";
 import type { io } from "../server/io";
+import { treaty } from "../shared/treaty";
 
-const client = createClient<typeof io>().config({});
+const client = createClient<typeof io>().config({
+  treaty,
+});
 
 const room = client.createRoom("my-room", {
   // ... other configs here,
@@ -38,8 +41,11 @@ const room = client.createRoom("my-room", {
 
 import { addonIndexedDB } from "@pluv/addon-indexeddb";
 import { createBundle, createClient } from "@pluv/react";
+import { treaty } from "../shared/treaty";
 
-const client = createClient<typeof io>().config({});
+const client = createClient<typeof io>().config({
+  treaty,
+});
 
 const { useRoom } = createBundle(client, {
   // ... other configs here,
@@ -84,9 +90,7 @@ export const io = createIO()
     }),
   )
   .config({
-    authorize: {
-      secret: process.env.PLUV_AUTH_SECRET!,
-      user: z.object({ id: z.string() }),
-    },
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
   });
 ```

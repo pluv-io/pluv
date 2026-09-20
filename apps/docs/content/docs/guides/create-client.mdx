@@ -12,7 +12,8 @@ To install pluv.io for your framework-agnostic frontend, we will install the fol
 | Purpose                                                 | Location | Install command                       |
 |---------------------------------------------------------|----------|---------------------------------------|
 | Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client              |
-| Storage schema                                          | Client   | npm install @pluv/crdt                |
+| Shared user, presence, and storage contract             | Both     | npm install @pluv/treaty              |
+| Storage schema                                          | Both     | npm install @pluv/crdt                |
 | yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs            |
 
 
@@ -22,8 +23,8 @@ Here is an example installation for [npm](https://www.npmjs.com) for you to copy
 
 ```bash
 # For the frontend
-npm install @pluv/client
-# Client peer dependencyes
+npm install @pluv/client @pluv/treaty
+# Client peer dependencies
 npm install zod
 
 # Optional if you wish to use CRDT storage
@@ -37,35 +38,27 @@ npm install yjs
 
 > **Note**: This example assumes that you've already created a backend pluv.io
 > instance. Refer to the [quickstart](/docs/quickstart/nextjs) to learn more.
+>
+> Define user, presence, and storage once as a [treaty](/docs/guides/treaty) and pass the same value to `createIO` and `createClient`.
 
 ```ts
 // frontend/io.ts
 
 import { createClient } from "@pluv/client";
-import { s } from "@pluv/crdt";
-import { yjs } from "@pluv/crdt-yjs";
 import { z } from "zod";
 
 // Use a type import to avoid including the code in your frontend
 import type { ioServer } from "./server/pluv-io";
+import { treaty } from "./shared/treaty";
 
 export const client = createClient<typeof ioServer>().config({
-  // Optional: Define the storage schema for rooms. This sets
-  // the types for storage when using it in your application.
-  // `initialStorage` is an optional JSON seed and can be overwritten
-  // when creating a room via `client.createRoom`.
-  storage: yjs.storage({
-    schema: yjs.schema({
-      messages: yjs.yArray(s.string()),
-    }),
-  }),
+  // Required: the same treaty passed to createIO. Presence, storage,
+  // and user come from the treaty — not from separate client options.
+  treaty,
+  // Optional JSON seed. Overwrite when creating a room via `client.createRoom`.
   initialStorage: {
     messages: [],
   },
-  // Optional: Define your presence schema
-  presence: z.object({
-    selectionId: z.string().nullable(),
-  }),
 
   // Optional: Provide additional data at the point of connecting to
   // to the room for use in `publicKey`, `wsEndpoint` or `authEndpoint`.
@@ -87,9 +80,8 @@ export const client = createClient<typeof ioServer>().config({
     return `ws://localhost:3000/api/room?room=${room}`;
   },
 
-  // Required if `authorize` was specified on `createIO`: This is
-  // the endpoint where you've defined your own authorization
-  // for your room's participants
+  // Required: This is the endpoint where you've defined your own
+  // authorization for your room's participants
   authEndpoint: ({ metadata, room }) => {
     // This can either return a url string, or an object
     // containing a url and options (fetch options) if
@@ -101,5 +93,6 @@ export const client = createClient<typeof ioServer>().config({
 
 ## Related
 
+* [Treaty](/docs/guides/treaty)
 * [Enable authorization](/docs/guides/authorization)
 * [Create rooms](/docs/guides/rooms/client)

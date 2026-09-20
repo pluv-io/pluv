@@ -17,10 +17,8 @@ import { z } from "zod";
 const io = createIO()
   .platform(platformNode())
   .config({
-    authorize: {
-      secret: process.env.PLUV_AUTH_SECRET!,
-      user: z.object({ id: z.string() }),
-    },
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
   });
 
 // Create your custom events as procedures

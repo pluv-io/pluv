@@ -18,7 +18,7 @@ To setup Lexical for collaborative editing with pluv.io, the following packages 
 npm install lexical @lexical/react @lexical/yjs
 
 # pluv.io packages
-npm install @pluv/crdt-yjs
+npm install @pluv/client @pluv/crdt-yjs @pluv/react @pluv/treaty
 
 # Peer dependencies
 npm install yjs zod
@@ -61,37 +61,42 @@ export const LexicalEditor: FC<LexicalEditorProps> = () => {
 };
 ```
 
-Then we will need to setup:
-1. Yjs storage on pluv.io with a [Yjs.XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext) onto which Lexical's editor contents will live.
-2. Presence onto which Lexical's presence and awareness state will live.
+Then define a shared [treaty](/docs/guides/treaty) with Yjs storage and presence for Lexical:
 
-> **Note**: Lexical internally depends on a `Y.XmlText` called `root` that must exist as a top-level type on the Yjs document. In order for pluv.io to correctly connect with Lexical, this will need to be declared exactly as below until [this GitHub issue](https://github.com/facebook/lexical/issues/7537) has a resolution (meanwhile, we would appreciate an upvote on the GitHub issue to boost visibility).
+1. Storage: a top-level [Yjs.XmlText](https://docs.yjs.dev/api/shared-types/y.xmltext) named `root` (required by Lexical until [this issue](https://github.com/facebook/lexical/issues/7537) is resolved).
+2. Presence: a field for Lexical awareness (we recommend `z.any()`).
 
 ```ts
-import { createClient } from "@pluv/client";
+// shared/treaty.ts
+import { createTreaty } from "@pluv/treaty";
 import { yjs } from "@pluv/crdt-yjs";
-import type { InferBundleRoom } from "@pluv/react";
-import { createBundle } from "@pluv/react";
 import { z } from "zod";
 
-const io = createClient().config({
-  storage: yjs.storage({
-    schema: yjs.schema({
-      // IMPORTANT!
-      // Must be called "root" due to @lexical/yjs's internals!
-      root: yjs.yXmlText(),
-    }),
+export const treaty = createTreaty({
+  user: z.object({
+    id: z.string(),
   }),
-  presense: z.object({
-    // We'll put Lexical's awareness data here.
-
-    // We recommend having this be `any`, as this data is internal to
-    // Lexical and is complex
-
-    // The field name can be whatever you choose
+  presence: z.object({
     myAwareness: z.any().default({}),
   }),
-  // ... other pluv.io configs
+  storage: yjs.schema({
+    root: yjs.yXmlText(),
+  }),
+});
+```
+
+Pass the same treaty to the client bundle:
+
+```ts
+// pluv.ts
+import { createClient } from "@pluv/client";
+import type { InferBundleRoom } from "@pluv/react";
+import { createBundle } from "@pluv/react";
+import { treaty } from "./shared/treaty";
+
+const io = createClient().config({
+  treaty,
+  // ... authEndpoint, wsEndpoint, and other client config
 });
 
 const bundle = createBundle(io);
@@ -151,7 +156,7 @@ export const LexicalEditor: FC<LexicalEditorProps> = () => {
 
       return yjs.provider({
         room,
-        // This is the field we created on createClient's presence.
+        // Field from the treaty's presence schema.
         // If this is not provided, all of the user awareness data will be
         // attempted to be stored on the presence root (and fail if not handled
         // in the presence schema).

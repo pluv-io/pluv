@@ -7,35 +7,24 @@ description: "API reference for @pluv/client — create clients, rooms, event ro
 
 Returns a builder whose `.config()` method creates a `PluvClient`
 
-Bind your server type as a type argument, then pass presence, storage, metadata, and endpoints to `.config()`. Do not pass options to `createClient` itself — that would freeze presence and storage inference.
+Bind your server type as a type argument, then pass the shared `treaty`, metadata, and endpoints to `.config()`. Do not pass options to `createClient` itself — that would freeze inference.
 
 ### createClient basic example
 
-If you've created a basic `PluvIO` backend without any auth, you can create a `PluvClient` with your websocket connection endpoint.
+Bind your server type and pass the shared treaty. Hosted pluv uses `publicKey`; self-hosted uses `authEndpoint`.
 
 See the [Create Client](/docs/guides/create-client) docs for more details.
 
 ```ts
 import { createClient } from "@pluv/client";
-import { s } from "@pluv/crdt";
-import { yjs } from "@pluv/crdt-yjs";
 import type { ioServer } from "./server/pluv-io";
-import { z } from "zod";
+import { treaty } from "./shared/treaty";
 
 const io = createClient<typeof ioServer>().config({
-  // Optional: Define the storage schema and an optional JSON seed.
-  storage: yjs.storage({
-    schema: yjs.schema({
-      messages: yjs.yArray(s.string()),
-    }),
-  }),
+  treaty,
   initialStorage: {
     messages: [],
   },
-  // Optional: Define your presence schema
-  presence: z.object({
-    selectionId: z.string().nullable(),
-  }),
   // Required if you are using `@pluv/platform-pluv`: This is the
   // publishable-key that was created for your project on pluv.io
   // This can either be a string or a function returning a string
@@ -49,10 +38,11 @@ If your `PluvIO` implements auth, you will need to specify an `authEndpoint` on 
 
 ```ts
 import { createClient } from "@pluv/client";
+import { treaty } from "./shared/treaty";
 
 const io = createClient().config({
+  treaty,
   authEndpoint: ({ room }) => `/api/room/auth?room=${room}`,
-  // ...
 });
 ```
 
@@ -64,8 +54,10 @@ If you need to use a POST request or specify additional headers, you can return 
 // frontend/io.ts
 
 import { createClient } from "@pluv/client";
+import { treaty } from "./shared/treaty";
 
 const io = createClient().config({
+  treaty,
   authEndpoint: ({ room }) => ({
     url: "/api/room/auth",
     // specify fetch options here
@@ -74,7 +66,6 @@ const io = createClient().config({
       body: JSON.stringify({ room }),
     },
   }),
-  // ...
 });
 ```
 
@@ -92,25 +83,14 @@ See the [Create Rooms](/docs/guides/rooms/client) docs for more details.
 
 ```ts
 export const io = createClient().config({
-  // Optional: Define the storage schema and an optional JSON seed.
-  storage: yjs.storage({
-    schema: yjs.schema({
-      messages: yjs.yArray(s.string()),
-    }),
-  }),
+  treaty,
   initialStorage: {
     messages: [],
   },
-  // Optional: Define your presence schema
-  presence: z.object({
-    selectionId: z.string().nullable(),
-  }),
-  // ...
 });
 
 const room = io.createRoom("my-example-room", {
-  // Required (if presence is defined on the client): Define
-  // the user's initial presence value
+  // Required if presence is defined on the treaty
   initialPresence: {
     selectionId: null,
   },
@@ -335,7 +315,7 @@ const myPresence = room.getMyPresence();
 
 Returns `UserInfo | null`
 
-Returns a user info object containing data used when generating the JWT during authentication (see [Authorization](/docs/guides/authorization)), the user's presence, and the user's connection id.
+Returns a user info object containing the authorized user `data` and the user's presence.
 
 ```ts
 const myself = room.getMyself();
@@ -345,22 +325,59 @@ const myself = room.getMyself();
 
 Returns `UserInfo | null`
 
-Returns a user info object for the given `connectionId`.
+Returns a user info object for the given user id (`data.id`).
 
 ```ts
-// const connectionId = "some connection id of another connection"
+const other = room.getOther(userId);
+```
 
-const other = room.getOther(connectionId);
+### PluvRoom.getOtherByConnectionId
+
+Returns `UserInfo | null`
+
+Resolves a connection id to the person that owns it.
+
+```ts
+const other = room.getOtherByConnectionId(connectionId);
 ```
 
 ### PluvRoom.getOthers
 
 Returns `UserInfo[]`
 
-Returns all user info objects for connections that are not the current user's.
+Returns all user info objects for other people in the room.
 
 ```ts
 const others = room.getOthers();
+```
+
+### PluvRoom.getRoomStats
+
+Returns `RoomStats`
+
+Live socket count and unique-user count for the room.
+
+```ts
+const { connectionCount, userCount } = room.getRoomStats();
+```
+
+### PluvRoom.listUsers
+
+Returns `Promise<ListUsersResult>`
+
+On-demand identity page (no presence). Forward-only cursor paging. Includes yourself. Grouped by `data.id`. `limit` defaults to 50 and must be an integer from 1 to 100. The promise always settles: check `success` before reading `users`. `FAILED` is a timeout (or a dropped request while the socket is open). `NOT_CONNECTED` is returned immediately when the room is not connected.
+
+```ts
+const result = await room.listUsers({ cursor: null, limit: 50 });
+
+if (!result.success) {
+  // result.error.code: "FAILED" | "INVALID_LIMIT" | "NOT_CONNECTED"
+  // result.error.message
+  return;
+}
+
+// result.users: { data }[]
+// result.pageInfo.hasNextPage, result.pageInfo.endCursor
 ```
 
 ### PluvRoom.getStorage
@@ -445,6 +462,18 @@ const unsubscribe = room.subscribe.event.receiveMessage(({ data }) => {
 unsubscribe();
 ```
 
+### PluvRoom.subscribe.error
+
+Returns `() => void`
+
+Fires when the room reports a failure (procedure throw, size limit, rejected register). This is not the WebSocket `error` event from `room.addEventListener("error")`.
+
+```ts
+const unsubscribe = room.subscribe.error((error) => {
+  console.error(error.message);
+});
+```
+
 ### PluvRoom.subscribe.myPresence
 
 Returns `() => void`
@@ -486,12 +515,10 @@ Returns `() => void`
 Subscribes to a given user info object. This only returns other users, not the currently connected user. Returns a function to unsubscribe.
 
 ```ts
-// const connectionId = "some connection id of another connection"
+const unsubscribe = room.subscribe.other(userId, (userInfo) => {
+  const { data, presence } = userInfo;
 
-const unsubscribe = room.subscribe.other(connectionId, (userInfo) => {
-  const { connectionId, presence, user } = userInfo;
-
-  console.log(connectionId, presence, user);
+  console.log(data, presence);
 });
 
 // ...
@@ -515,6 +542,18 @@ const unsubscribe = room.subscribe.others((others) => {
 
 // Unsubscribe to the listener later on.
 unsubscribe();
+```
+
+### PluvRoom.subscribe.roomStats
+
+Returns `() => void`
+
+Subscribes to live room connection/user counts.
+
+```ts
+const unsubscribe = room.subscribe.roomStats((stats) => {
+  console.log(stats.connectionCount, stats.userCount);
+});
 ```
 
 ### PluvRoom.subscribe.storage

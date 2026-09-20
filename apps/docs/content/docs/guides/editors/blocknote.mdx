@@ -18,7 +18,7 @@ To setup BlockNote for collaborative editing with pluv.io, the following package
 npm install @blocknote/core @blocknote/mantine @blocknote/react
 
 # pluv.io packages
-npm install @pluv/crdt-yjs
+npm install @pluv/client @pluv/crdt-yjs @pluv/react @pluv/treaty
 
 # Peer dependencies
 npm install yjs zod
@@ -44,33 +44,42 @@ export const BlockNoteEditor: FC<BlockNoteEditorProps> = () => {
 };
 ```
 
-Then we will need to setup:
-1. Yjs storage on pluv.io with a [Yjs.XmlFragment](https://docs.yjs.dev/api/shared-types/y.xmlfragment) onto which BlockNote's editor contents will live.
-2. Presence onto which BlockNote's presence and awareness state will live.
+Then define a shared [treaty](/docs/guides/treaty) with Yjs storage and presence for BlockNote:
+
+1. Storage: a [Yjs.XmlFragment](https://docs.yjs.dev/api/shared-types/y.xmlfragment) for editor contents.
+2. Presence: a field for BlockNote awareness (we recommend `z.any()`; the shape is internal to BlockNote).
 
 ```ts
-import { createClient } from "@pluv/client";
+// shared/treaty.ts
+import { createTreaty } from "@pluv/treaty";
 import { yjs } from "@pluv/crdt-yjs";
-import type { InferBundleRoom } from "@pluv/react";
-import { createBundle } from "@pluv/react";
 import { z } from "zod";
 
-const io = createClient().config({
-  storage: yjs.storage({
-    schema: yjs.schema({
-      myEditor: yjs.yXmlFragment(),
-    }),
+export const treaty = createTreaty({
+  user: z.object({
+    id: z.string(),
   }),
-  presense: z.object({
-    // We'll put BlockNote's awareness data here.
-
-    // We recommend having this be `any`, as this data is internal to
-    // BlockNote and is complex
-
-    // The field name can be whatever you choose
+  presence: z.object({
     myAwareness: z.any().default({}),
   }),
-  // ... other pluv.io configs
+  storage: yjs.schema({
+    myEditor: yjs.yXmlFragment(),
+  }),
+});
+```
+
+Pass the same treaty to the client bundle:
+
+```ts
+// pluv.ts
+import { createClient } from "@pluv/client";
+import type { InferBundleRoom } from "@pluv/react";
+import { createBundle } from "@pluv/react";
+import { treaty } from "./shared/treaty";
+
+const io = createClient().config({
+  treaty,
+  // ... authEndpoint, wsEndpoint, and other client config
 });
 
 const bundle = createBundle(io);
@@ -109,7 +118,7 @@ const BlockNoteEditorInner: FC<BlockNoteEditorInnerProps> = ({ fragment }) => {
   const provider = useMemo(() => {
     return yjs.provider({
       room,
-      // This is the field we created on createClient's presence.
+      // Field from the treaty's presence schema.
       // If this is not provided, all of the user awareness data will be
       // attempted to be stored on the presence root (and fail if not handled
       // in the presence schema).

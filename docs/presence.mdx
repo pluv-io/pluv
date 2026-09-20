@@ -3,24 +3,20 @@ title: "Presence"
 description: "Learn how to apply awareness and presence to your real-time applications with @pluv/react"
 ---
 
-# Presence
-
-Presence is a per-connection state that allows users to view what others are doing within the same room. Presence can be used to represent things such as movement and selections and can be really valuable for users to understand an experience to be multiplayer.
+Presence is a per-person state that lets users see what others are doing in the same room. Presence can represent movement, selections, and similar awareness signals.
 
 ## Set presence
 
-To get started with presence for pluv.io, first set a `presence` config on your `createClient` config and create your react bundle.
+To get started with presence for pluv.io, put a `presence` schema on your shared [treaty](/docs/guides/treaty) and pass that treaty to `createClient`.
 
 ```ts
 import { createClient } from "@pluv/client";
 import { createBundle } from "@pluv/react";
-import { z } from "zod";
 import type { ioServer } from "./backend/io";
+import { treaty } from "./shared/treaty";
 
 const client = createClient<typeof ioServer>().config({
-  presence: z.object({
-    selectionId: z.string().nullable(),
-  }),
+  treaty,
   // ...
 });
 
@@ -30,6 +26,7 @@ export const {
   useMyself,
   useOther,
   useOthers,
+  useRoomStats,
 } = createBundle(client);
 ```
 
@@ -60,6 +57,8 @@ The following example usages of react hooks pertain to users' presence in rooms.
 
 > **Note**: The hooks will trigger a re-render of your component if the values returned change. So consider using the selectors within these hooks to return data that changes as little as you need.
 
+Presence is keyed by `data.id`.
+
 ### Current user's presence
 
 ```tsx
@@ -77,9 +76,8 @@ const [mySelectionId] = useMyPresence((presence) => presence.selectionId);
 
 const myself = useMyself();
 //    ^? const myself: {
-//        connectionId: string;
+//        data: { id: string; name: string };
 //        presence: { selectionId: string | null };
-//        user: null;
 //    } | null;
 
 const mySelectionId = useMyself(({ presence }) => presence.selectionId);
@@ -98,27 +96,37 @@ import { useOther, useOthers } from "./frontend/io";
 
 const others = useOthers();
 //    ^? const others: readonly {
-//        connectionId: string;
+//        data: { id: string; name: string };
 //        presence: { selectionId: string | null };
-//        user: null;
 //    }[] | null;
 
-// Recommended that you actually map connection ids, and use useOther
+// Recommended that you actually map user ids, and use useOther
 // in another component
 const others = useOthers((others) => {
-//    ^? const others: readonly string[] | null;
-  return others.map((other) => other.connectionId);
+  return others.map((other) => other.data.id);
 });
 
-const other = useOther(connectionId);
-//    ^? const other: {
-//        connectionId: string;
-//        presence: { selectionId: string | null };
-//        user: null;
-//    } | null;
+const other = useOther(userId);
 
-// Example with selector
-const other = useOther(connectionId, (other) => {
+const other = useOther(userId, (other) => {
   return other.presence.selectionId;
 });
+```
+
+### Room size
+
+```tsx
+const { connectionCount, userCount } = useRoomStats();
+const viewers = useRoomStats((stats) => stats.userCount);
+
+### Listing identities (not realtime)
+
+`listUsers` is an on-demand page of everyone currently in the room (including you) — identities only, no presence, and not a live store. People who join or leave while you page can be skipped or duplicated; re-fetch from the start if you need a consistent list. `limit` defaults to 50 and must be an integer from 1 to 100. The result is a success/error union. Call it from `useRoom()`:
+
+```tsx
+const room = useRoom();
+const result = await room.listUsers({ cursor: null, limit: 50 });
+if (!result.success) return;
+// result.users[number].data
+// result.pageInfo.hasNextPage / result.pageInfo.endCursor
 ```

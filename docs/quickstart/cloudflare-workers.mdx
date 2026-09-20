@@ -17,6 +17,7 @@ To install pluv.io for Cloudflare Workers (self-hosted), we will install the fol
 | Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client              |
 | React-bindings for @pluv/client                         | Client   | npm install @pluv/react               |
 | Adapter for Cloudflare runtime                          | Server   | npm install @pluv/platform-cloudflare |
+| Shared user, presence, and storage contract             | Both     | npm install @pluv/treaty              |
 | yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs            |
 
 ### Installation Example
@@ -43,10 +44,10 @@ Define an io (websocket client) instance on the server codebase:
 ```ts
 // server/io.ts
 
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { infer, platformCloudflare } from "@pluv/platform-cloudflare";
 import { Database } from "./db";
+import { treaty } from "../shared/treaty";
 
 export type Env = {
   DB: D1Database;
@@ -66,29 +67,19 @@ export const io = createIO()
     }),
   )
   .config({
-    authorize: ({ env }) => ({
-      // Your own secret for generating JWTs
-      secret: env.PLUV_AUTH_SECRET,
-      // The shape of your user object. `id` must be provided
-      user: z.object({
-        id: z.string(),
-        // Here is an additional field we can add
-        name: z.string(),
-      }),
-    }),
+    treaty,
+    secret: ({ env }) => env.PLUV_AUTH_SECRET,
     // Optional: Context that will be made available in event
     // handlers and procedures
     context: ({ env }) => ({
       db: new Database(env.DATABASE_URL),
     }),
-    // Optional: Only if you want to use CRDT storage features
-    crdt: yjs,
     // Optional: If you want to enable development logging
     debug: true,
   });
 
 export const ioServer = io.server({
-  // Only if you're using storage (i.e. crdt)
+  // Only if you're using storage (`treaty.storage`)
   getInitialStorage: async ({ room, context }) => {
     const { db } = context;
 

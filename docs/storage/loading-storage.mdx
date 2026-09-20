@@ -21,18 +21,15 @@ import { db } from "./db";
 export const io = createIO()
   .platform(platformNode())
   .config({
-    authorize: {
-      secret: process.env.PLUV_AUTH_SECRET!,
-      user: z.object({ id: z.string() }),
-    },
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
     context: () => ({ db }),
-    crdt: yjs,
   });
 
 export const ioServer = io.server({
   // Triggered when a room is freshly created. If the room existed
   // before, you can load the storage state for the room by returning it here
-  // This is required if `crdt` has been defined on `createIO`. This is to
+  // This is required if `treaty.storage` is a real CRDT. This is to
   // prevent storage data loss on intermittent connections
   getInitialStorage: async ({ context, room }) => {
     const { db } = context;

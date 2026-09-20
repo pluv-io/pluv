@@ -10,26 +10,19 @@ Returns a `PluvIO` instance.
 Creates a server-side `PluvIO` client that can be used to create event procedures, routers and servers. Below is an example configuration for `createIO`. To learn more about `createIO`, read [Authorization](/docs/guides/authorization), [Cloudflare Workers](/docs/quickstart/cloudflare-workers) and [Node.js](/docs/quickstart/nodejs).
 
 ```ts
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
-import { z } from "zod";
 import { Database } from "./db";
+import { treaty } from "./shared/treaty";
 
 const io = createIO()
   .platform(platformNode())
   .config({
-    authorize: {
-      secret: process.env.PLUV_AUTH_SECRET!,
-      user: z.object({
-        id: z.string(),
-        name: z.string(),
-      }),
-    },
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
     context: () => ({
       db: new Database(process.env.DATABASE_URL!),
     }),
-    crdt: yjs,
   });
 ```
 
@@ -78,10 +71,8 @@ import { z } from "zod";
 const io = createIO()
   .platform(platformNode())
   .config({
-    authorize: {
-      secret: process.env.PLUV_AUTH_SECRET!,
-      user: z.object({ id: z.string() }),
-    },
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
   });
 
 const sendMessage = io.procedure
@@ -108,10 +99,8 @@ import { z } from "zod";
 const io = createIO()
   .platform(platformNode())
   .config({
-    authorize: {
-      secret: process.env.PLUV_AUTH_SECRET!,
-      user: z.object({ id: z.string() }),
-    },
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
   });
 
 const sendMessage = io.procedure
@@ -146,17 +135,15 @@ import { z } from "zod";
 const io = createIO()
   .platform(platformNode())
   .config({
-    authorize: {
-      secret: process.env.PLUV_AUTH_SECRET!,
-      user: z.object({ id: z.string() }),
-    },
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
   });
 const router = io.router({ /* ... */ });
 
 const server = io.server({
   // Triggered when a room is freshly created. If the room existed before, you
   // can load the storage state for the room by returning it here
-  // This is required if `crdt` has been defined on `createIO`. This is to
+  // This is required if `treaty.storage` is a real CRDT. This is to
   // prevent storage data loss on intermittent connections
   getInitialStorage: async ({ context, room }) => {
     const { db } = context;
@@ -284,6 +271,24 @@ Returns the current count of active connections in the room
 
 ```ts
 room.getSize();
+```
+
+### listUsers
+
+Returns `ListUsersResult`
+
+On-demand identity page (no presence). Forward-only cursor paging. Grouped by `data.id`. `limit` defaults to 50 and must be an integer from 1 to 100. Wrap this in your own HTTP handler if you need it off-socket.
+
+```ts
+const result = room.listUsers({ cursor: null, limit: 50 });
+
+if (!result.success) {
+  // result.error.code: "INVALID_LIMIT"
+  return;
+}
+
+// result.users: { data }[]
+// result.pageInfo.hasNextPage, result.pageInfo.endCursor
 ```
 
 ### id
