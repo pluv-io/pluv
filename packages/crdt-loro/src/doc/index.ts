@@ -1,3 +1,3 @@
 export { CrdtLoroDoc } from "./CrdtLoroDoc";
-export { CrdtLoroDocFactory } from "./CrdtLoroDocFactory";
+export { LoroSchema } from "./LoroSchema";
 export { doc } from "./doc";

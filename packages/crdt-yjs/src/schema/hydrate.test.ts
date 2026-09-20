@@ -1,14 +1,12 @@
 import { CrdtSchemaError, s } from "@pluv/crdt";
 import { Array as YArray, Map as YMap, Text as YText } from "yjs";
 import { describe, expect, it } from "vitest";
-import { schema, storage, yArray, yMap, yText, yXmlText } from "./index";
+import { schema, yArray, yMap, yText, yXmlText } from "./index";
 
 describe("yjs schema hydrate", () => {
     it("inserts JSON leaves into yArray", () => {
-        const doc = storage({
-            schema: schema({
-                groceries: yArray(s.string()),
-            }),
+        const doc = schema({
+            groceries: yArray(s.string()),
         }).getInitialized({
             groceries: ["milk", "eggs"],
         });
@@ -20,11 +18,9 @@ describe("yjs schema hydrate", () => {
     });
 
     it("wraps nested CRDT nodes instead of inserting JSON objects", () => {
-        const doc = storage({
-            schema: schema({
-                chats: yMap(yText()),
-                messages: yArray(yMap(s.string())),
-            }),
+        const doc = schema({
+            chats: yMap(yText()),
+            messages: yArray(yMap(s.string())),
         }).getInitialized({
             chats: { note: "hi" },
             messages: [{ message: "hello", name: "ada" }],
@@ -44,10 +40,8 @@ describe("yjs schema hydrate", () => {
     });
 
     it("hydrates $union with first-match on seed", () => {
-        const doc = storage({
-            schema: schema({
-                mixed: yArray(s.$union([s.string(), yMap(s.number())])),
-            }),
+        const doc = schema({
+            mixed: yArray(s.$union([s.string(), yMap(s.number())])),
         }).getInitialized({
             mixed: ["hello", { n: 1 }],
         });
@@ -59,10 +53,8 @@ describe("yjs schema hydrate", () => {
     });
 
     it("throws on extra seed keys", () => {
-        const factory = storage({
-            schema: schema({
-                groceries: yArray(s.string()),
-            }),
+        const factory = schema({
+            groceries: yArray(s.string()),
         });
 
         expect(() =>
@@ -74,10 +66,8 @@ describe("yjs schema hydrate", () => {
     });
 
     it("does not JSON-seed xml types", () => {
-        const factory = storage({
-            schema: schema({
-                slate: yXmlText(),
-            }),
+        const factory = schema({
+            slate: yXmlText(),
         });
 
         expect(() => factory.getInitialized({ slate: "" } as never)).toThrow(CrdtSchemaError);
@@ -105,10 +95,8 @@ describe("yjs schema hydrate", () => {
     });
 
     it("rebuilds storage from schema kinds after applying encoded state", () => {
-        const factory = storage({
-            schema: schema({
-                messages: yArray(s.string()),
-            }),
+        const factory = schema({
+            messages: yArray(s.string()),
         });
         const initialized = factory.getInitialized({ messages: ["hi"] });
         const empty = factory.getEmpty();

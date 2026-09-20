@@ -1,6 +1,5 @@
 import {
     CrdtSchemaError,
-    createSchemaNode,
     isSchemaNode,
     isYjsCrdtKind,
     isLoroCrdtKind,
@@ -10,30 +9,15 @@ import {
     type InferShapeStorage,
     type SchemaAst,
 } from "@pluv/crdt";
+import { LoroSchema } from "../doc/LoroSchema";
 import { fromJSON as fromJsonNode } from "./fromJSON";
-
-const LORO_SCHEMA_BRAND: unique symbol = Symbol("pluv.loro.schema");
-
-export type LoroSchema<
-    TShape extends Record<string, AnySchemaNode> = Record<string, AnySchemaNode>,
-> = {
-    readonly kind: "loro.doc";
-    readonly shape: TShape;
-    readonly [LORO_SCHEMA_BRAND]: true;
-    toJSON(): { kind: "loro.doc"; shape: Record<string, unknown> };
-};
 
 export type InferLoroStorage<TSchema extends LoroSchema<any>> = InferShapeStorage<TSchema["shape"]>;
 export type InferLoroJson<TSchema extends LoroSchema<any>> = InferShapeJson<TSchema["shape"]>;
 export type InferLoroSeed<TSchema extends LoroSchema<any>> = InferShapeSeed<TSchema["shape"]>;
 
 export const isLoroSchema = (value: unknown): value is LoroSchema => {
-    return (
-        typeof value === "object" &&
-        value !== null &&
-        (value as LoroSchema).kind === "loro.doc" &&
-        LORO_SCHEMA_BRAND in value
-    );
+    return value instanceof LoroSchema;
 };
 
 export const schema = <TShape extends Record<string, AnySchemaNode>>(
@@ -53,11 +37,7 @@ export const schema = <TShape extends Record<string, AnySchemaNode>>(
         }
     });
 
-    const node = createSchemaNode("loro.doc", { shape });
-
-    return Object.assign(node, {
-        [LORO_SCHEMA_BRAND]: true as const,
-    }) as unknown as LoroSchema<TShape>;
+    return new LoroSchema(shape);
 };
 
 schema.fromJSON = (ast: SchemaAst): LoroSchema => {

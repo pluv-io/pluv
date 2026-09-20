@@ -18,7 +18,8 @@ import {
     UndoManager,
 } from "loro-crdt";
 import { getLoroShare, hydrateTopLevel } from "../schema/hydrate";
-import type { InferLoroJson, InferLoroStorage, LoroSchema } from "../schema/schema";
+import type { InferLoroJson, InferLoroStorage } from "../schema/schema";
+import type { LoroSchema } from "./LoroSchema";
 
 const MAX_UNDO_STEPS = 100;
 const MERGE_INTERVAL_MS = 1_000;

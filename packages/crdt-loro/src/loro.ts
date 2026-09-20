@@ -6,7 +6,6 @@ export { movableList } from "./movableList";
 export { object } from "./object";
 export {
     schema,
-    storage,
     loroCounter,
     loroList,
     loroMap,
