@@ -18,7 +18,9 @@ test.describe("CloudflareSQLite lexical", () => {
 
         await waitMs(ms("1s"));
 
-        await firstPage.locator("#lexical-editable").fill("hello world");
+        const firstEditor = firstPage.locator("#lexical-editable");
+        await firstEditor.click();
+        await firstEditor.pressSequentially("hello world");
         await waitMs(ms("0.25s"));
 
         await secondPage
@@ -27,7 +29,10 @@ test.describe("CloudflareSQLite lexical", () => {
             .then((text) => expect(text.trim()).toEqual("hello world"));
         await waitMs(ms("0.25s"));
 
-        await secondPage.locator("#lexical-editable").clear();
+        const secondEditor = secondPage.locator("#lexical-editable");
+        await secondEditor.click();
+        await secondPage.keyboard.press("ControlOrMeta+A");
+        await secondPage.keyboard.press("Backspace");
         await waitMs(ms("0.25s"));
 
         await firstPage
