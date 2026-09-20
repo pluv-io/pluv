@@ -1,6 +1,6 @@
-import { yjs } from "@pluv/crdt-yjs";
 import { PersistenceCloudflareTransactionalStorage } from "@pluv/persistence-cloudflare-transactional-storage";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
+import { yjs } from "@pluv/crdt-yjs";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
     createAuthorizedIO,
@@ -10,6 +10,7 @@ import {
     registerAuthorized,
     TestPersistence,
     TestSocket,
+    testYjsTreaty,
 } from "./__utils__";
 
 const LATEST_SNAPSHOT = "snapshot-after-second-edit";
@@ -80,7 +81,7 @@ describe("CloudflarePlatform persistence", () => {
 
         const afterHibernation = platform().initialize({ roomContext });
         const io = createAuthorizedIO({
-            crdt: yjs,
+            treaty: testYjsTreaty,
             platform: {
                 mode: "detached",
                 persistence: afterHibernation.persistence,
@@ -108,10 +109,7 @@ describe("CloudflarePlatform persistence", () => {
         });
 
         const received = socket.messages.findLast((message) => message.type === "$storageReceived");
-        const doc = yjs
-            .doc(() => ({}))
-            .getEmpty()
-            .applyEncodedState({ update: received?.data.state });
+        const doc = yjs.schema({}).getEmpty().applyEncodedState({ update: received?.data.state });
 
         expect((doc.toJson() as { content?: string }).content).toBe("do");
         expect(reads).toBe(0);

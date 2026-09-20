@@ -4,22 +4,71 @@ import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { createBundle } from "@pluv/react";
+import { createTreaty } from "@pluv/treaty";
 import type { CrdtDocLike } from "@pluv/types";
 import { expectTypeOf } from "expect-type";
 import type { Array as YArray, Doc as YDoc } from "yjs";
 import { z } from "zod";
 
+const user = z.object({
+    id: z.string(),
+});
+
+const storage = yjs.schema({
+    messages: yjs.yArray(s.string()),
+});
+
+const treaty = createTreaty({
+    user,
+    presence: z.object({
+        cursor: z.nullable(z.object({ x: z.number(), y: z.number() })),
+    }),
+    storage,
+});
+
+const select = treaty.procedure.presence
+    .input(z.object({ id: z.string().nullable() }))
+    .resolve(({ id }, { user: sessionUser, presence }) => {
+        expectTypeOf(sessionUser).toEqualTypeOf<{ id: string }>();
+        expectTypeOf(presence).toEqualTypeOf<{
+            cursor: { x: number; y: number } | null;
+        }>();
+
+        return { cursor: id ? { x: 0, y: 0 } : null };
+    });
+
+const addMessage = treaty.procedure.storage
+    .input(z.object({ text: z.string() }))
+    .resolve(({ text }, { user: sessionUser, json, storage: docStorage }) => {
+        expectTypeOf(sessionUser).toEqualTypeOf<{ id: string }>();
+        expectTypeOf(json.messages).toEqualTypeOf<readonly string[]>();
+        expectTypeOf(docStorage.messages).toEqualTypeOf<YArray<string>>();
+        docStorage.messages.push([text]);
+    });
+
+const routedTreaty = treaty.router({
+    select,
+    addMessage,
+});
+
+expectTypeOf(routedTreaty._defs.procedures.presence).toHaveProperty("select");
+expectTypeOf(routedTreaty._defs.procedures.storage).toHaveProperty("addMessage");
+expectTypeOf(routedTreaty._defs.procedures.presence.select.kind).toEqualTypeOf<"presence">();
+expectTypeOf(routedTreaty._defs.procedures.storage.addMessage.kind).toEqualTypeOf<"storage">();
+
+const presenceOnlyTreaty = treaty.router({ select });
+const storageOnlyTreaty = treaty.router({ addMessage });
+const mergedTreaty = presenceOnlyTreaty.mergeRouters(storageOnlyTreaty);
+
+expectTypeOf(mergedTreaty._defs.procedures.presence).toHaveProperty("select");
+expectTypeOf(mergedTreaty._defs.procedures.storage).toHaveProperty("addMessage");
+
 const io = createIO()
     .platform(platformCloudflare())
     .config({
-        authorize: {
-            secret: "",
-            user: z.object({
-                id: z.string(),
-            }),
-        },
+        secret: "",
+        treaty: routedTreaty,
         context: ({ env, meta, state }) => ({ env, meta, state }),
-        crdt: yjs,
     });
 
 const router = io.router({
@@ -29,9 +78,17 @@ const router = io.router({
                 message: z.string(),
             }),
         )
-        .broadcast(({ message }) => ({
-            receiveMessage: { message },
-        })),
+        .broadcast(({ message }, { session, presence, doc }) => {
+            expectTypeOf(session.user).toEqualTypeOf<{ id: string }>();
+            expectTypeOf(presence).toEqualTypeOf<{
+                cursor: { x: number; y: number } | null;
+            } | null>();
+            expectTypeOf(doc.value).toEqualTypeOf<YDoc>();
+
+            return {
+                receiveMessage: { message },
+            };
+        }),
 });
 
 const ioServer = io.server({
@@ -48,18 +105,16 @@ const ioServer = io.server({
 
 const client = createClient<typeof ioServer>().config({
     authEndpoint: () => "",
-    storage: yjs.storage({
-        schema: yjs.schema({
-            messages: yjs.yArray(s.string()),
-        }),
-    }),
+    treaty: routedTreaty,
     initialStorage: {
         messages: [],
     },
-    presence: z.object({
-        cursor: z.nullable(z.object({ x: z.number(), y: z.number() })),
-    }),
 });
+
+expectTypeOf(ioServer._defs.treaty._defs.procedures.presence).toHaveProperty("select");
+expectTypeOf(ioServer._defs.treaty._defs.procedures.storage).toHaveProperty("addMessage");
+expectTypeOf(client._defs.treaty._defs.procedures.presence).toHaveProperty("select");
+expectTypeOf(client._defs.treaty._defs.procedures.storage).toHaveProperty("addMessage");
 
 const room = client.createRoom("test-room", {
     initialStorage: {
@@ -242,15 +297,30 @@ expectTypeOf(useDoc()).toEqualTypeOf<
     >
 >();
 
-const defaultedClient = createClient<typeof ioServer>().config({
-    authEndpoint: ({ metadata }) => metadata.authEndpoint,
-    metadata: z.object({
-        authEndpoint: z.string().default("/api/pluv/authorize"),
-    }),
+const defaultedTreaty = createTreaty({
+    user,
     presence: z.object({
         blocknote: z.any().default({}),
         count: z.number(),
     }),
+    storage,
+});
+
+const defaultedIO = createIO().platform(platformCloudflare()).config({
+    secret: "",
+    treaty: defaultedTreaty,
+});
+
+const defaultedIOServer = defaultedIO.server({
+    getInitialStorage: () => null,
+});
+
+const defaultedClient = createClient<typeof defaultedIOServer>().config({
+    authEndpoint: ({ metadata }) => metadata.authEndpoint,
+    metadata: z.object({
+        authEndpoint: z.string().default("/api/pluv/authorize"),
+    }),
+    treaty: defaultedTreaty,
 });
 
 const { PluvRoomProvider: DefaultedRoomProvider } = createBundle(defaultedClient);

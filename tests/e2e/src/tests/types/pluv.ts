@@ -1,6 +1,13 @@
 import { platformPluv } from "@pluv/platform-pluv";
 import { createIO } from "@pluv/io";
+import { createTreaty } from "@pluv/treaty";
 import { z } from "zod";
+
+const treaty = createTreaty({
+    user: z.object({
+        id: z.string(),
+    }),
+});
 
 const io = createIO()
     .platform(
@@ -11,11 +18,7 @@ const io = createIO()
         }),
     )
     .config({
-        authorize: {
-            user: z.object({
-                id: z.string(),
-            }),
-        },
+        treaty,
     });
 
 io.server();

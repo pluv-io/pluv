@@ -2,24 +2,27 @@ import { createClient, type PluvClient } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO, type IODefs } from "@pluv/io";
 import { platformCloudflare, type CloudflarePlatform } from "@pluv/platform-cloudflare";
+import { createTreaty } from "@pluv/treaty";
 import type { InferIOInput, InferIOOutput, IOLikeDefs } from "@pluv/types";
 import { expectTypeOf } from "expect-type";
 import { z } from "zod";
 
 expectTypeOf<IODefs>().toExtend<IOLikeDefs>();
 
+const treaty = createTreaty({
+    user: z.object({
+        id: z.string(),
+        name: z.string(),
+    }),
+    storage: yjs.schema({}),
+});
+
 const io = createIO()
     .platform(platformCloudflare())
     .config({
-        authorize: {
-            secret: "test-secret",
-            user: z.object({
-                id: z.string(),
-                name: z.string(),
-            }),
-        },
+        secret: "test-secret",
+        treaty,
         context: ({ env, meta, state }) => ({ env, meta, state }),
-        crdt: yjs,
     });
 
 const messages = io.router({
@@ -55,15 +58,17 @@ const ioServer = io.server({
 
 const client = createClient<typeof ioServer>().config({
     authEndpoint: () => "",
+    treaty,
 });
 type InferredIO = typeof client extends PluvClient<infer TDefs> ? TDefs["io"] : never;
 type InferredDefs = InferredIO["_defs"];
 
-expectTypeOf<InferredDefs>().toHaveProperty("authorize");
-expectTypeOf<InferredDefs>().toHaveProperty("crdt");
+expectTypeOf<InferredDefs>().toHaveProperty("treaty");
 expectTypeOf<InferredDefs>().toHaveProperty("events");
 expectTypeOf<"platform" extends keyof InferredDefs ? true : false>().toEqualTypeOf<false>();
 expectTypeOf<"context" extends keyof InferredDefs ? true : false>().toEqualTypeOf<false>();
+expectTypeOf<"authorize" extends keyof InferredDefs ? true : false>().toEqualTypeOf<false>();
+expectTypeOf<"crdt" extends keyof InferredDefs ? true : false>().toEqualTypeOf<false>();
 
 expectTypeOf<InferIOInput<InferredIO>["sendMessage"]>().toEqualTypeOf<{ message: string }>();
 expectTypeOf<InferIOInput<InferredIO>["ping"]>().toEqualTypeOf<{}>();

@@ -1,13 +1,19 @@
-import { yjs } from "@pluv/crdt-yjs";
 import { describe, expect, it } from "vitest";
-import { createAuthorizedIO, deferred, registerAuthorized, TestSocket, tick } from "./__utils__";
+import {
+    createAuthorizedIO,
+    deferred,
+    registerAuthorized,
+    TestSocket,
+    tick,
+    testYjsTreaty,
+} from "./__utils__";
 
 describe("IORoom initialization", () => {
     it("waits for getInitialStorage before finishing register", async () => {
         const webhook = deferred<string | null>();
         let storageReads = 0;
         const io = createAuthorizedIO({
-            crdt: yjs,
+            treaty: testYjsTreaty,
             platform: { mode: "detached" },
         });
         const server = io.server({

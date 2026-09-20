@@ -19,6 +19,7 @@
         "@pluv/platform-node": "workspace:^",
         "@pluv/platform-pluv": "workspace:^",
         "@pluv/react": "workspace:^",
+        "@pluv/treaty": "workspace:^",
         "@pluv/types": "workspace:^",
         "@types/node": "^26.5.1",
         "@types/react": "^19.3.0",

@@ -3,17 +3,20 @@ import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
+import { createTreaty } from "@pluv/treaty";
 import { z } from "zod";
 
-const io = createIO()
-    .platform(platformCloudflare())
-    .config({
-        authorize: {
-            secret: "test-secret",
-            user: z.object({ id: z.string() }),
-        },
-        crdt: yjs,
-    });
+const treaty = createTreaty({
+    user: z.object({ id: z.string() }),
+    storage: yjs.schema({
+        messages: yjs.yArray(s.string()),
+    }),
+});
+
+const io = createIO().platform(platformCloudflare()).config({
+    secret: "test-secret",
+    treaty,
+});
 
 // @ts-expect-error
 const ioServer = io.server();
@@ -26,11 +29,7 @@ io.server({
 
 createClient<typeof ioServer>().config({
     authEndpoint: () => "",
-    storage: yjs.storage({
-        schema: yjs.schema({
-            messages: yjs.yArray(s.string()),
-        }),
-    }),
+    treaty,
     initialStorage: {
         messages: [],
     },
@@ -38,9 +37,5 @@ createClient<typeof ioServer>().config({
 
 // @ts-expect-error authEndpoint is required
 createClient<typeof ioServer>().config({
-    storage: yjs.storage({
-        schema: yjs.schema({
-            messages: yjs.yArray(s.string()),
-        }),
-    }),
+    treaty,
 });

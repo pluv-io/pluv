@@ -1,26 +1,18 @@
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO, InferIORoom } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { treaty } from "../../../pluv-io/yjs/treaty";
 import { db } from "../../../db";
 import { rooms } from "../../../db/schema";
 
 const PLUV_AUTH_SECRET = "secret123";
 
-export const io = createIO()
-    .platform(platformNode())
-    .config({
-        authorize: {
-            secret: PLUV_AUTH_SECRET,
-            user: z.object({
-                id: z.string(),
-                name: z.string(),
-            }),
-        },
-        crdt: yjs,
-        debug: true,
-    });
+export const io = createIO().platform(platformNode()).config({
+    secret: PLUV_AUTH_SECRET,
+    treaty,
+    debug: true,
+});
 
 const router = io.router({
     sendMessage: io.procedure

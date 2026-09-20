@@ -1,6 +1,6 @@
-import type { AbstractCrdtDocFactory, CrdtLibraryType, HasCrdtLibrary } from "@pluv/crdt";
+import type { AbstractCrdtDocFactory, HasStorage } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type { IOLike, Id, InferIOAuthorizeUser, NonNilProps } from "@pluv/types";
+import type { IOLike, Id, InferTreatyUser, NonNilProps } from "@pluv/types";
 import colors from "kleur";
 import type { InferRoomContextType } from "./AbstractPlatform";
 import { createBaseRouter } from "./createBaseRouter";
@@ -15,6 +15,7 @@ import type {
     PluvContext,
     PluvIOLimits,
     PluvIOListeners,
+    PluvIOSecret,
 } from "./types";
 import { __PLUV_VERSION } from "./version";
 
@@ -22,17 +23,19 @@ export type InferIORoom<TServer extends PluvServer<any>> =
     TServer extends PluvServer<infer IDefs extends IODefs> ? IORoom<IDefs> : never;
 
 export type PluvServerConfig<T extends IODefs = IODefs> = Partial<PluvIOListeners<T>> & {
-    authorize: T["authorize"];
     context?: PluvContext<T["platform"], T["context"]>;
-    crdt?: { doc: (value: any) => AbstractCrdtDocFactory<any, any> };
     debug?: boolean;
     limits: PluvIOLimits;
     io: PluvIO<SetKey<T, "events", {}>>;
     platform: () => T["platform"];
     router?: PluvRouter<T>;
-} & (HasCrdtLibrary<T["crdt"]> extends true
+    secret?: PluvIOSecret<T["platform"]>;
+    treaty: T["treaty"];
+} & (HasStorage<T["treaty"]["storage"]> extends true
         ? { getInitialStorage: GetInitialStorageFn<T["context"]> }
-        : { getInitialStorage?: "[ERROR]: Must specify crdt to use getInitialStorage" });
+        : {
+              getInitialStorage?: "[ERROR]: Must specify storage on treaty to use getInitialStorage";
+          });
 
 type BaseCreateRoomOptions<T extends IODefs> = {
     debug?: boolean;
@@ -72,12 +75,11 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
      */
     public get _defs() {
         return {
-            authorize: this._config.authorize,
             context: this._config.context,
-            crdt: this._config.crdt,
             events: this._router._defs.events,
             platform: this._config.platform(),
-        } as T;
+            treaty: this._config.treaty,
+        } as unknown as T;
     }
 
     private get _baseRouter(): PluvRouter<SetKey<T, "events", {}>> {
@@ -98,7 +100,6 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
 
     constructor(options: PluvServerConfig<T>) {
         this._config = {
-            crdt: noop,
             debug: false,
             router: new PluvRouter<T>({} as T["events"]),
             ...options,
@@ -113,7 +114,9 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             onUserDisconnected,
         } = options as Partial<BasePluvIOListeners<T>>;
 
-        this._docFactory = this._config.crdt.doc(() => ({}));
+        this._docFactory =
+            (this._config.treaty.storage as AbstractCrdtDocFactory<any, any> | undefined) ??
+            noop.doc();
         this._listeners = {
             onRoomDestroyed: (event) => onRoomDestroyed?.(event),
             onRoomMessage: (event) => onRoomMessage?.(event),
@@ -147,9 +150,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
 
         const newRoom = new IORoom<T>(room, {
             ...(!!_meta ? { _meta } : {}),
-            authorize: this._config.authorize,
             context: this._config.context,
-            crdt: this._config.crdt,
             debug: debug ?? this._config.debug,
             getInitialStorage: this._getInitialStorage,
             limits: this._config.limits,
@@ -180,6 +181,8 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             async onUserDisconnected(event) {
                 await Promise.resolve(listeners.onUserDisconnected(event));
             },
+            secret: this._config.secret,
+            treaty: this._config.treaty,
             platform,
             roomContext,
             router: this._router,
@@ -191,7 +194,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
     }
 
     public async createToken(
-        params: JWTEncodeParams<InferIOAuthorizeUser<T["authorize"]>, T["platform"]>,
+        params: JWTEncodeParams<InferTreatyUser<T["treaty"]>, T["platform"]>,
     ): Promise<string> {
         return await this._config.io.createToken(params);
     }

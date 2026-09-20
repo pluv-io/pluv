@@ -1,4 +1,3 @@
-import { yjs } from "@pluv/crdt-yjs";
 import { applyUpdate, Doc as YDoc, encodeStateAsUpdate, encodeStateVector } from "yjs";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -8,6 +7,7 @@ import {
     TestPersistence,
     TestPlatform,
     TestSocket,
+    testYjsTreaty,
 } from "./__utils__";
 
 const lastMessage = (socket: TestSocket, type: string): Record<string, any> => {
@@ -29,7 +29,7 @@ describe("IORoom hibernation", () => {
         await persistence.setStorageState(roomId, encodedStateWithContent("current"));
 
         const io = createAuthorizedIO({
-            crdt: yjs,
+            treaty: testYjsTreaty,
             platform: () =>
                 new TestPlatform({
                     hibernatedWebSockets: [socket],

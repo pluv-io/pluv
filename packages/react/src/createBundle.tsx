@@ -113,7 +113,7 @@ export const createBundle = <
                 events,
                 initialPresence,
                 initialStorage,
-                storage: client._defs.storage,
+                storage: client._defs.storage as TDefs["storage"] | undefined,
             });
         });
 

@@ -1,20 +1,13 @@
 import { createClient } from "@pluv/client";
-import { s } from "@pluv/crdt";
-import { yjs } from "@pluv/crdt-yjs";
 import { createBundle } from "@pluv/react";
-import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node-redis";
+import { treaty } from "./node-redis-treaty";
 
 const client = createClient<typeof ioServer>().config({
     authEndpoint: ({ room }) => {
         return `http://localhost:3103/api/authorize?roomName=${room}`;
     },
-    storage: yjs.storage({
-        schema: yjs.schema({
-            messages: yjs.yArray(yjs.yMap(s.string())),
-            slate: yjs.yXmlText(),
-        }),
-    }),
+    treaty,
     initialStorage: {
         messages: [
             {
@@ -23,9 +16,6 @@ const client = createClient<typeof ioServer>().config({
             },
         ],
     },
-    presence: z.object({
-        count: z.number(),
-    }),
     wsEndpoint: ({ room }) => {
         return `ws://localhost:3103/api/room/${room}/websocket`;
     },

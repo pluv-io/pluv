@@ -1,5 +1,3 @@
-import { loro } from "@pluv/crdt-loro";
-import { yjs } from "@pluv/crdt-yjs";
 import { LoroDoc } from "loro-crdt";
 import { applyUpdate, Doc as YDoc, encodeStateAsUpdate, encodeStateVector } from "yjs";
 import { describe, expect, it } from "vitest";
@@ -12,6 +10,8 @@ import {
     TestPersistence,
     TestSocket,
     tick,
+    testLoroTreaty,
+    testYjsTreaty,
 } from "./__utils__";
 
 type Room = {
@@ -87,11 +87,10 @@ class GatedPersistence extends TestPersistence {
 const scenarios = [
     {
         name: "yjs",
-        crdt: yjs,
+        treaty: testYjsTreaty,
         encode: encodedStateWithContent,
         decode: (encodedState: string) => {
-            const doc = yjs
-                .doc(() => ({}))
+            const doc = testYjsTreaty.storage
                 .getEmpty()
                 .applyEncodedState({ update: encodedState });
             const content = (doc.toJson() as { content?: string }).content ?? "";
@@ -104,11 +103,10 @@ const scenarios = [
     },
     {
         name: "loro",
-        crdt: loro,
+        treaty: testLoroTreaty,
         encode: encodedLoroStateWithContent,
         decode: (encodedState: string) => {
-            const doc = loro
-                .doc(() => ({}))
+            const doc = testLoroTreaty.storage
                 .getEmpty()
                 .applyEncodedState({ update: encodedState });
             const content = (doc.toJson() as { content?: string }).content ?? "";
@@ -121,7 +119,7 @@ const scenarios = [
     },
 ];
 
-describe.each(scenarios)("$name IORoom storage init", ({ append, crdt, decode, encode }) => {
+describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode, treaty }) => {
     const createRoom = (config: {
         getInitialStorage: () => Promise<string | null>;
         persistence?: TestPersistence;
@@ -129,7 +127,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, crdt, decode, e
     }) => {
         const persistence = config.persistence ?? new TestPersistence();
         const io = createAuthorizedIO({
-            crdt,
+            treaty,
             platform: { mode: "detached", persistence },
         });
         const server = io.server({ getInitialStorage: config.getInitialStorage });

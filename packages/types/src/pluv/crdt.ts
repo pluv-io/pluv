@@ -30,6 +30,17 @@ export type HasCrdtLibrary<TCrdt> = [TCrdt] extends [never]
         ? true
         : false;
 
+/** True when `TStorage` is a real doc schema/factory (`y.doc` / `loro.doc`), not the noop default. */
+export type HasStorage<TStorage> = [TStorage] extends [never]
+    ? false
+    : [TStorage] extends [undefined]
+      ? false
+      : IsAny<TStorage> extends true
+        ? false
+        : [TStorage] extends [{ kind: "loro.doc" | "y.doc"; getEmpty: (...args: any[]) => any }]
+          ? true
+          : false;
+
 export interface DocApplyEncodedStateParams {
     origin?: string;
     update?: Maybe<string | Uint8Array>;

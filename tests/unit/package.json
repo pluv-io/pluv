@@ -16,6 +16,7 @@
         "@pluv/io": "workspace:^",
         "@pluv/persistence-cloudflare-transactional-storage": "workspace:^",
         "@pluv/platform-cloudflare": "workspace:^",
+        "@pluv/treaty": "workspace:^",
         "@pluv/types": "workspace:^",
         "loro-crdt": "^1.16.1",
         "yjs": "^13.6.32"

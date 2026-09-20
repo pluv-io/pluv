@@ -1,14 +1,15 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
-import type { IOLike, ProcedureLike, SetKey, StandardSchemaV1 } from "@pluv/types";
+import type { IOLike, ProcedureLike, SetKey, StandardSchemaV1, TreatyLike } from "@pluv/types";
 
 export type { SetKey };
 
 /**
- * Client snapshot. Dependent constraints (storage vs IO crdt library) are
+ * Client snapshot. Dependent constraints (storage vs treaty) are
  * enforced on `createClient().config()`, not inside this object type.
  */
 export type ClientDefs = {
     io: IOLike;
+    treaty: TreatyLike;
     presence: StandardSchemaV1<any, any> | undefined;
     metadata: StandardSchemaV1<any, any> | undefined;
     storage: AbstractCrdtDocFactory<any, any>;

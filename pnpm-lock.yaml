@@ -615,6 +615,31 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
 
+  packages/treaty:
+    dependencies:
+      '@pluv/crdt':
+        specifier: workspace:^
+        version: link:../crdt
+      '@pluv/types':
+        specifier: workspace:^
+        version: link:../types
+    devDependencies:
+      '@pluv/tsconfig':
+        specifier: workspace:^
+        version: link:../tsconfig
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(tsx@4.23.13)(typescript@7.0.2)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.0(@types/node@26.5.1)(vite@8.3.0(@types/node@26.5.1)(jiti@2.7.0)(tsx@4.23.13))
+      zod:
+        specifier: ^4.6.4
+        version: 4.6.4
+
   packages/tsconfig: {}
 
   packages/types:
@@ -692,6 +717,9 @@ importers:
       '@pluv/react':
         specifier: workspace:^
         version: link:../../packages/react
+      '@pluv/treaty':
+        specifier: workspace:^
+        version: link:../../packages/treaty
       '@pluv/types':
         specifier: workspace:^
         version: link:../../packages/types
@@ -849,6 +877,9 @@ importers:
       '@pluv/react':
         specifier: workspace:^
         version: link:../../packages/react
+      '@pluv/treaty':
+        specifier: workspace:^
+        version: link:../../packages/treaty
       '@pluv/types':
         specifier: workspace:^
         version: link:../../packages/types
@@ -919,6 +950,9 @@ importers:
       '@pluv/platform-cloudflare':
         specifier: workspace:^
         version: link:../../packages/platform-cloudflare
+      '@pluv/treaty':
+        specifier: workspace:^
+        version: link:../../packages/treaty
       '@pluv/types':
         specifier: workspace:^
         version: link:../../packages/types

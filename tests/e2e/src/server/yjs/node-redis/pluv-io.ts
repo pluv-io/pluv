@@ -1,8 +1,8 @@
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO, InferIORoom } from "@pluv/io";
 import { PersistenceRedis } from "@pluv/persistence-redis";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
+import { treaty } from "../../../pluv-io/yjs/node-redis-treaty";
 import { cluster } from "./cluster";
 
 const PLUV_AUTH_SECRET = "secret123";
@@ -14,14 +14,8 @@ export const io = createIO()
         }),
     )
     .config({
-        authorize: {
-            secret: PLUV_AUTH_SECRET,
-            user: z.object({
-                id: z.string(),
-                name: z.string(),
-            }),
-        },
-        crdt: yjs,
+        secret: PLUV_AUTH_SECRET,
+        treaty,
         debug: true,
     });
 

@@ -1,10 +1,10 @@
-import { yjs } from "@pluv/crdt-yjs";
 import { describe, expect, it } from "vitest";
 import {
     createAuthorizedIO,
     encodedStateWithContent,
     registerAuthorized,
     TestSocket,
+    testYjsTreaty,
 } from "./__utils__";
 
 type Room = {
@@ -67,7 +67,7 @@ describe("IORoom close", () => {
         const roomDestroyed: string[] = [];
         const storageDestroyed: string[] = [];
         const io = createAuthorizedIO({
-            crdt: yjs,
+            treaty: testYjsTreaty,
             platform: { mode: "detached" },
         });
         const server = io.server({

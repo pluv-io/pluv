@@ -1,4 +1,3 @@
-import { yjs } from "@pluv/crdt-yjs";
 import { applyUpdate, Doc as YDoc, encodeStateAsUpdate, encodeStateVector } from "yjs";
 import { describe, expect, it } from "vitest";
 import {
@@ -8,6 +7,7 @@ import {
     TestPersistence,
     TestPlatform,
     TestSocket,
+    testYjsTreaty,
 } from "./__utils__";
 
 const ROOM_ID = "repeated-persistence";
@@ -59,7 +59,7 @@ describe("IORoom repeated persistence", () => {
         let externalStorage = encodedStateWithContent("initial");
 
         const io = createAuthorizedIO({
-            crdt: yjs,
+            treaty: testYjsTreaty,
             platform: { mode: "detached" },
         });
         const server = io.server({
@@ -110,7 +110,7 @@ describe("IORoom repeated persistence", () => {
         const persistence = new TestPersistence();
 
         const io = createAuthorizedIO({
-            crdt: yjs,
+            treaty: testYjsTreaty,
             platform: () =>
                 new TestPlatform({
                     hibernatedWebSockets: hibernatedSockets,
