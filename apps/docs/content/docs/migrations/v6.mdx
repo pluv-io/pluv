@@ -5,7 +5,7 @@ description: "Breaking changes when upgrading from pluv.io v5 to v6, including t
 
 ## Treaty replaces authorize.user, crdt, and client presence/storage
 
-User, presence, and storage are one isomorphic [treaty](/docs/guides/treaty). Import the same value on the server and the client. `authorize.user`, `crdt: yjs | loro`, and client `presence` / `storage` options are removed. JWT leftover is `secret`. `yjs.storage` / `loro.storage` are gone — `yjs.schema` / `loro.schema` are the factories.
+User, presence, and storage are one isomorphic [treaty](/docs/guides/treaty). Import the same value on the server and the client. `authorize.user`, `crdt: yjs | loro`, and client `presence` / `storage` options are removed. JWT leftover is `secret`. `yjs.storage` / `loro.storage` are gone. `yjs.schema` / `loro.schema` are the factories.
 
 ```ts
 // shared/treaty.ts
@@ -27,8 +27,19 @@ const t = createTreaty({
   }),
 });
 
+const select = t.procedure.presence
+  .input(z.object({ id: z.string().nullable() }))
+  .resolve(({ id }) => ({ selectionId: id }));
+
+const addMessage = t.procedure.storage
+  .input(z.object({ text: z.string() }))
+  .resolve(({ text }, { storage }) => {
+    storage.messages.push([text]);
+  });
+
 export const treaty = t.router({
-  // Optional presence/storage procedures. Definable, not a room API yet.
+  select,
+  addMessage,
 });
 ```
 
@@ -92,7 +103,7 @@ const client = createClient<typeof ioServer>().config({
 });
 ```
 
-Do not call `createClient<TIO>(options)` — that freezes inference. `createClient().config({ ... })` still works when you do not have a server type. Always pass the runtime treaty; a type-only import of `ioServer` cannot recover schemas.
+Do not call `createClient<TIO>(options)`. That freezes inference. `createClient().config({ ... })` still works when you do not have a server type. Always pass the runtime treaty; a type-only import of `ioServer` cannot recover schemas.
 
 Cloudflare/Node `infer((i) => ({ env }))` on the platform is unchanged.
 
@@ -145,13 +156,33 @@ Room-level `initialStorage` is JSON only, not a builder function:
 />
 ```
 
-Missing seed keys become empty containers. Extra keys throw. Xml/tree types are not JSON-seedable — declare them on the schema and initialize at editor bind time.
+Missing seed keys become empty containers. Extra keys throw. Xml/tree types are not JSON-seedable. Declare them on the schema and initialize at editor bind time.
 
 `getInitialStorage` is required when `treaty.storage` is a real CRDT. Do not pass `storage` or `crdt` to `createIO().config()` or `io.server`.
 
+## Named presence/storage calls and `useStorageField`
+
+Invoke procedures on the client room:
+
+```ts
+room.presence.select({ id: "item-1" });
+room.storage.addMessage({ text: "hello" });
+```
+
+React: `usePresence()` / `useStorage()` return those proxies. `useStorage(key)` is now `useStorageField(key)`:
+
+```ts
+const [messages, sharedType] = useStorageField("messages");
+const storage = useStorage();
+
+storage.addMessage({ text: "hello" });
+```
+
+Storage procedures wrap `room.transact` unless `.resolve(fn, { transact: false })`. Do not destructure the proxies.
+
 ## Native shared types
 
-`CrdtType`, `YjsType`, `LoroType`, and `InferCrdtJson` are removed. `useStorage` and `getStorage` return native types (`Y.Array`, `LoroList`, …), not wrappers with a `.value` property.
+`CrdtType`, `YjsType`, `LoroType`, and `InferCrdtJson` are removed. `useStorageField` and `getStorage` return native types (`Y.Array`, `LoroList`, …), not wrappers with a `.value` property.
 
 ```ts
 // Before

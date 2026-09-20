@@ -37,7 +37,7 @@ const select = t.procedure.presence
 
 const addMessage = t.procedure.storage
   .input(z.object({ text: z.string() }))
-  .resolve(({ text }, { user, json, storage }) => {
+  .resolve(({ text }, { storage }) => {
     storage.messages.push([text]);
   });
 
@@ -47,9 +47,30 @@ export const treaty = t.router({
 });
 ```
 
-`user` is required. `presence` and `storage` are optional. Procedures are optional too — `createTreaty({ user })` with no `.router()` is valid.
+`user` is required. `presence` and `storage` are optional. Procedures are optional too. `createTreaty({ user })` with no `.router()` is valid.
 
-Presence and storage procedures are typed against the treaty schemas. They are **definable** on the treaty for inference; they are not a room API yet (`room.presence.select` / `room.storage.addMessage` come later).
+Presence resolvers receive `{ user, presence, json }`. Storage resolvers also receive writable `storage`. `presence` is a snapshot; mutating it does not update the room. Presence updates only via the returned patch. `json` is computed on first access. Invoke them on the room. Remotes apply the resulting `$presenceUpdated` / storage updates and do **not** re-run `select` / `addMessage`.
+
+```ts
+room.presence.select({ id: "item-1" });
+room.storage.addMessage({ text: "hello" });
+```
+
+Storage resolvers run inside `room.transact` by default. Pass `{ transact: false }` when the resolver should own commit (for example Loro):
+
+```ts
+const addMessage = t.procedure.storage
+  .input(z.object({ text: z.string() }))
+  .resolve(({ text }, { storage }) => {
+    storage.messages.push([text]);
+  }, { transact: false });
+```
+
+If `transact: false` and you commit **after** `resolve` returns, `$updateStorage` will not include the procedure name.
+
+Do not destructure `room.presence` / `room.storage` (or `usePresence()` / `useStorage()`). Each property access allocates a new function, same as `room.broadcast`. Hold the proxy.
+
+`useStorage()` is that command proxy. Read a CRDT field with `useStorageField("messages")`. Raw `updateMyPresence`, `transact`, and native types from `useStorageField` stay as escape hatches.
 
 ## Pass it to io and the client
 

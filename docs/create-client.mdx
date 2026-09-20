@@ -53,7 +53,7 @@ import { treaty } from "./shared/treaty";
 
 export const client = createClient<typeof ioServer>().config({
   // Required: the same treaty passed to createIO. Presence, storage,
-  // and user come from the treaty — not from separate client options.
+  // and user come from the treaty, not from separate client options.
   treaty,
   // Optional JSON seed. Overwrite when creating a room via `client.createRoom`.
   initialStorage: {

@@ -87,7 +87,9 @@ const bundle = createBundle(io);
 export const {
   // ... other utils
   useRoom,
+  usePresence,
   useStorage,
+  useStorageField,
 } = bundle;
 
 export type PluvIORoom = InferBundleRoom<typeof bundle>;
@@ -104,7 +106,7 @@ import { yjs } from "@pluv/crdt-yjs";
 import type { FC } from "react";
 import { useMemo } from "react";
 import type { XmlFragment as YXmlFragment } from "yjs";
-import { useRoom, useStorage } from "./pluv";
+import { useRoom, useStorageField } from "./pluv";
 
 const EXAMPLE_USER = { name: "john doe", color: "#6B5CFF" };
 
@@ -149,7 +151,7 @@ const BlockNoteEditorInner: FC<BlockNoteEditorInnerProps> = ({ fragment }) => {
 export interface BlockNoteEditorProps {}
 
 export const BlockNoteEditor: FC<BlockNoteEditorProps> = () => {
-  const [, fragment] = useStorage("myEditor");
+  const [, fragment] = useStorageField("myEditor");
 
   // While the fragment is still null (i.e. room is still connecting), we can
   // show a loading state in the meantime

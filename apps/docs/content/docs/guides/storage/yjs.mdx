@@ -89,7 +89,7 @@ const io = createClient<typeof ioServer>().config({
 
 const bundle = createBundle(io);
 
-export const { PluvRoomProvider, useStorage } = bundle;
+export const { PluvRoomProvider, useStorageField } = bundle;
 
 export type PluvIORoom = InferBundleRoom<typeof bundle>;
 ```
@@ -123,18 +123,18 @@ export const PluvRoom: FC = ({ children, id }) => {
 };
 ```
 
-Finally, we can then read and write to our [Yjs shared-type](https://docs.yjs.dev/getting-started/working-with-shared-types) via the `useStorage` hook we exported earlier.
+Finally, we can then read and write to our [Yjs shared-type](https://docs.yjs.dev/getting-started/working-with-shared-types) via the `useStorageField` hook we exported earlier.
 
 ```tsx
 // frontend/GroceryList.tsx
 
 import type { FC } from "react";
-import { useStorage } from "./pluv";
+import { useStorageField } from "./pluv";
 
 export interface GroceryListProps {}
 
 export const GroceryList: FC<GroceryListProps> = () => {
-  const [groceries, yArray] = useStorage("groceries");
+  const [groceries, yArray] = useStorageField("groceries");
 
   // These values will be null while the room is still connecting
   if (!groceries || !yArray) return <div>Loading...</div>
@@ -155,18 +155,18 @@ To mutate the value of `groceries`, we simply need to perform a mutation to the 
 ```tsx
 import { yjs } from "@pluv/crdt-yjs";
 import { Array as YArray, Map as YMap, Text as YText } from "yjs";
-import { useStorage } from "./pluv";
+import { useStorageField } from "./pluv";
 
 // "groceries" is a key from the root properties of `yjs.schema`
 // yArray is a native Y.Array
-const [groceries, yArray] = useStorage("groceries");
+const [groceries, yArray] = useStorageField("groceries");
 //                ^? const yArray: YArray<string> | null
 yArray.push(["bread"]);
 ```
 
 ## Nesting Yjs shared types
 
-It isn't so uncommon to want to create a nested structure containing multiple Yjs shared-types. Declare the nested shape on `yjs.schema`. JSON seeds stay JSON — nested CRDT nodes are constructed from that seed at hydrate time.
+It isn't so uncommon to want to create a nested structure containing multiple Yjs shared-types. Declare the nested shape on `yjs.schema`. JSON seeds stay JSON. Nested CRDT nodes are constructed from that seed at hydrate time.
 
 To declare a top-level shared-type on the `Y.Doc`, use `yjs.yArray`, `yjs.yMap`, `yjs.yText`, and the xml helpers on `yjs.schema`. JSON-only leaves use `s` from `@pluv/crdt`.
 
@@ -197,7 +197,7 @@ Then, to insert a nested shared-type at runtime, use the `@pluv/crdt-yjs` helper
 ```tsx
 import { yjs } from "@pluv/crdt-yjs";
 import { Text as YText } from "yjs";
-import { PluvRoomProvider, useStorage } from "./pluv";
+import { PluvRoomProvider, useStorageField } from "./pluv";
 
 // initialStorage is JSON only
 <PluvRoomProvider
@@ -215,7 +215,7 @@ import { PluvRoomProvider, useStorage } from "./pluv";
 
 // "chats" is a key from the root properties of `yjs.schema`
 // yMap is a native Y.Map
-const [chats, yMap] = useStorage("chats");
+const [chats, yMap] = useStorageField("chats");
 //            ^? const yMap: YMap<YText> | null
 
 // The `yjs` module from @pluv/crdt-yjs returns the native Yjs shared-types

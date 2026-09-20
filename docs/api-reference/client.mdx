@@ -1,13 +1,13 @@
 ---
 title: "@pluv/client"
-description: "API reference for @pluv/client — create clients, rooms, event routers, and interact with presence and storage."
+description: "API reference for @pluv/client: create clients, rooms, event routers, and interact with presence and storage."
 ---
 
 ## createClient
 
 Returns a builder whose `.config()` method creates a `PluvClient`
 
-Bind your server type as a type argument, then pass the shared `treaty`, metadata, and endpoints to `.config()`. Do not pass options to `createClient` itself — that would freeze inference.
+Bind your server type as a type argument, then pass the shared `treaty`, metadata, and endpoints to `.config()`. Do not pass options to `createClient` itself. That would freeze inference.
 
 ### createClient basic example
 

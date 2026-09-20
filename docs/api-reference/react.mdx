@@ -1,6 +1,6 @@
 ---
 title: "@pluv/react"
-description: "API reference for @pluv/react — createBundle, PluvRoomProvider, and hooks for events, presence, storage, and history."
+description: "API reference for @pluv/react: createBundle, PluvRoomProvider, and hooks for events, presence, storage, and history."
 ---
 
 ## createBundle
@@ -38,11 +38,13 @@ export const {
   useMyself,
   useOther,
   useOthers,
+  usePresence,
   useRedo,
   useRoom,
   useRoomError,
   useRoomStats,
   useStorage,
+  useStorageField,
   useTransact,
   useUndo,
 } = createBundle(io);
@@ -361,7 +363,27 @@ const { connectionCount, userCount } = useRoomStats();
 const viewers = useRoomStats((stats) => stats.userCount);
 ```
 
+### usePresence
+
+Returns the room presence procedure proxy (`room.presence`). Do not destructure it.
+
+```ts
+const presence = usePresence();
+
+presence.select({ id: "item-1" });
+```
+
 ### useStorage
+
+Returns the room storage procedure proxy (`room.storage`). Do not destructure it.
+
+```ts
+const storage = useStorage();
+
+storage.addMessage({ text: "hello" });
+```
+
+### useStorageField
 
 Returns `[TData | null, SharedType | null]`
 
@@ -382,9 +404,9 @@ const io = createClient().config({
 
 // ...
 
-const { useStorage } = createBundle(io);
+const { useStorageField } = createBundle(io);
 
-const [messages, sharedType] = useStorage("messages");
+const [messages, sharedType] = useStorageField("messages");
 
 sharedType?.push(["world~!"]);
 
@@ -402,7 +424,7 @@ You can specify a 2nd parameter to transact with a different transaction origin.
 For more information see: [History](/docs/guides/history)
 
 ```ts
-const [messages, sharedType] = useStorage("messages");
+const [messages, sharedType] = useStorageField("messages");
 const transact = useTransact();
 
 transact((tx) => {
