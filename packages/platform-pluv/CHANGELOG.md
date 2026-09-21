@@ -1,5 +1,172 @@
 # @pluv/platform-pluv
 
+## 6.0.0
+
+### Major Changes
+
+- ba6805a: Require Cloudflare WebSocket hibernation and SQLite-backed Durable Object storage.
+
+    `platformCloudflare({ mode: "attached" })` (standard WebSocket API listeners) is no longer supported. Durable Objects must implement `webSocketMessage`, `webSocketClose`, and `webSocketError` and forward them to the room.
+
+    Key-value Durable Object storage is no longer supported. `PersistenceCloudflareTransactionalStorage({ mode: "kv" })` has been removed; persistence always uses SQLite. Create rooms with `new_sqlite_classes` (or `"storage": "sqlite"`). Existing KV-backed namespaces need a new SQLite Durable Object class and a data move—Cloudflare does not offer an in-place storage-backend switch.
+
+- 67ab7f2: Build IO with `createIO().platform(...).config({ treaty, secret })`.
+
+    `createIO` is no longer a one-shot call. Named platform helpers only take platform options. Pass `treaty`, `secret`, and `context` to `.config()`.
+
+    ```ts
+    // Before
+    const io = createIO(
+        platformNode({
+            authorize: { secret, user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+        }),
+    );
+
+    // After
+    const io = createIO()
+        .platform(platformNode())
+        .config({
+            treaty,
+            secret,
+            context: () => ({ db }),
+        });
+    ```
+
+    `platformCloudflare` follows the same split. `secret` stays on `.config()`.
+
+    Hosted pluv is the exception on secrets: `secretKey` / `publicKey` / `basePath` stay on `platformPluv`. Omit `secret` on `.config()`. User lives on the treaty.
+
+    ```ts
+    // Before
+    const io = createIO(
+        platformPluv({
+            authorize: { user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+            publicKey,
+            secretKey,
+            basePath: "/api/pluv",
+        }),
+    );
+
+    // After
+    const io = createIO()
+        .platform(
+            platformPluv({
+                publicKey,
+                secretKey,
+                basePath: "/api/pluv",
+            }),
+        )
+        .config({
+            treaty,
+            context: () => ({ db }),
+        });
+    ```
+
+- 80a5c16: Require authorization for every room connection.
+
+    Open (unauthorized) rooms are removed: `createIO` must configure a `treaty` (and `secret` on platforms that sign JWTs), clients must provide an `authEndpoint`, and connections without a valid token are rejected. Session users are always typed from `treaty.user` (at least `{ id: string }`), not `null`.
+
+- 1f6f749: User, presence, metadata, and event inputs all take the same validator libraries:
+
+    - Zod 4.2+
+    - ArkType
+
+    The old Zod-like `{ parse, _input }` duck type no longer works.
+
+- 861da09: Define user, presence, and storage once as a **treaty**, then import the same value on the server and the client.
+
+    You no longer split schemas across `authorize.user`, `createIO({ crdt })`, and `createClient({ presence, storage })`. Optional presence/storage procedures live on the treaty and are invoked as `room.presence.select` / `room.storage.addMessage`.
+
+    ```ts
+    // shared/treaty.ts
+    import { createTreaty } from "@pluv/treaty";
+    import { s } from "@pluv/crdt";
+    import { yjs } from "@pluv/crdt-yjs";
+    import { z } from "zod";
+
+    export const treaty = createTreaty({
+        user: z.object({
+            id: z.string(),
+            name: z.string(),
+        }),
+        presence: z.object({
+            selectionId: z.string().nullable(),
+        }),
+        storage: yjs.schema({
+            messages: yjs.yArray(s.string()),
+        }),
+    });
+    ```
+
+    ```ts
+    // Before
+    const io = createIO()
+        .platform(platformNode())
+        .config({
+            authorize: { secret, user: schema },
+            context: () => ({ db }),
+        });
+
+    const client = createClient<typeof ioServer>().config({
+        authEndpoint: () => "",
+        presence: z.object({ selectionId: z.string().nullable() }),
+        storage: yjs.storage({
+            schema: yjs.schema({ messages: yjs.yArray(s.string()) }),
+        }),
+        initialStorage: { messages: [] },
+    });
+
+    // After
+    const io = createIO()
+        .platform(platformNode())
+        .config({
+            treaty,
+            secret,
+            context: () => ({ db }),
+        });
+
+    const client = createClient<typeof ioServer>().config({
+        authEndpoint: () => "",
+        treaty,
+        initialStorage: { messages: [] },
+    });
+    ```
+
+    `yjs.schema` / `loro.schema` are the storage factories (`yjs.storage` / `loro.storage` are removed). Node and Cloudflare still pass `secret` on `.config()`. Hosted `platformPluv` omits `secret` (`secretKey` stays on `platformPluv(...)`).
+
+    Use `createClient<typeof ioServer>()` when you need server event types. `createClient().config({ treaty, ... })` still works without a server type; pass the runtime treaty so presence and storage infer correctly.
+
+    Treaty user, presence, and client metadata must use Zod 4.2+ or ArkType (Standard Schema and Standard JSON Schema on the same object). See the standard-schema validators changeset for the full validator list.
+
+### Patch Changes
+
+- Updated dependencies [4058575]
+- Updated dependencies [b5d7caf]
+- Updated dependencies [d55f1f7]
+- Updated dependencies [a521c50]
+- Updated dependencies [ba6805a]
+- Updated dependencies [0ee9d2d]
+- Updated dependencies [d10f401]
+- Updated dependencies [4058575]
+- Updated dependencies [d46b156]
+- Updated dependencies [4058575]
+- Updated dependencies [67ab7f2]
+- Updated dependencies [7d858b0]
+- Updated dependencies [8ca1791]
+- Updated dependencies [80a5c16]
+- Updated dependencies [392a989]
+- Updated dependencies [ba4ab54]
+- Updated dependencies [1f6f749]
+- Updated dependencies [ad09444]
+- Updated dependencies [861da09]
+    - @pluv/types@6.0.0
+    - @pluv/io@6.0.0
+    - @pluv/crdt@6.0.0
+
 ## 5.2.3
 
 ### Patch Changes
