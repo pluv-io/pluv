@@ -1,5 +1,169 @@
 # @pluv/addon-indexeddb
 
+## 6.0.0
+
+### Major Changes
+
+- aa94a5b: Create clients with `createClient<typeof ioServer>().config({ ... })`.
+
+    `createClient` is no longer a one-shot call. `infer((i) => ({ io }))` and the `types` option are removed. Bind the server type as a type argument, then pass the shared `treaty` and metadata to `.config()`.
+
+    ```ts
+    // Before
+    const types = infer((i) => ({ io: i<typeof ioServer> }));
+    const client = createClient({
+        types,
+        authEndpoint: () => "",
+        presence: z.object({ selectionId: z.string().nullable() }),
+    });
+
+    // After
+    const client = createClient<typeof ioServer>().config({
+        authEndpoint: () => "",
+        treaty,
+    });
+    ```
+
+    Pass options to `.config()`, not to `createClient` itself. `createClient().config({ ... })` still works when you do not have a server type.
+
+- 67ab7f2: Build IO with `createIO().platform(...).config({ treaty, secret })`.
+
+    `createIO` is no longer a one-shot call. Named platform helpers only take platform options. Pass `treaty`, `secret`, and `context` to `.config()`.
+
+    ```ts
+    // Before
+    const io = createIO(
+        platformNode({
+            authorize: { secret, user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+        }),
+    );
+
+    // After
+    const io = createIO()
+        .platform(platformNode())
+        .config({
+            treaty,
+            secret,
+            context: () => ({ db }),
+        });
+    ```
+
+    `platformCloudflare` follows the same split. `secret` stays on `.config()`.
+
+    Hosted pluv is the exception on secrets: `secretKey` / `publicKey` / `basePath` stay on `platformPluv`. Omit `secret` on `.config()`. User lives on the treaty.
+
+    ```ts
+    // Before
+    const io = createIO(
+        platformPluv({
+            authorize: { user: schema },
+            context: () => ({ db }),
+            crdt: yjs,
+            publicKey,
+            secretKey,
+            basePath: "/api/pluv",
+        }),
+    );
+
+    // After
+    const io = createIO()
+        .platform(
+            platformPluv({
+                publicKey,
+                secretKey,
+                basePath: "/api/pluv",
+            }),
+        )
+        .config({
+            treaty,
+            context: () => ({ db }),
+        });
+    ```
+
+- 861da09: Define user, presence, and storage once as a **treaty**, then import the same value on the server and the client.
+
+    You no longer split schemas across `authorize.user`, `createIO({ crdt })`, and `createClient({ presence, storage })`. Optional presence/storage procedures live on the treaty and are invoked as `room.presence.select` / `room.storage.addMessage`.
+
+    ```ts
+    // shared/treaty.ts
+    import { createTreaty } from "@pluv/treaty";
+    import { s } from "@pluv/crdt";
+    import { yjs } from "@pluv/crdt-yjs";
+    import { z } from "zod";
+
+    export const treaty = createTreaty({
+        user: z.object({
+            id: z.string(),
+            name: z.string(),
+        }),
+        presence: z.object({
+            selectionId: z.string().nullable(),
+        }),
+        storage: yjs.schema({
+            messages: yjs.yArray(s.string()),
+        }),
+    });
+    ```
+
+    ```ts
+    // Before
+    const io = createIO()
+        .platform(platformNode())
+        .config({
+            authorize: { secret, user: schema },
+            context: () => ({ db }),
+        });
+
+    const client = createClient<typeof ioServer>().config({
+        authEndpoint: () => "",
+        presence: z.object({ selectionId: z.string().nullable() }),
+        storage: yjs.storage({
+            schema: yjs.schema({ messages: yjs.yArray(s.string()) }),
+        }),
+        initialStorage: { messages: [] },
+    });
+
+    // After
+    const io = createIO()
+        .platform(platformNode())
+        .config({
+            treaty,
+            secret,
+            context: () => ({ db }),
+        });
+
+    const client = createClient<typeof ioServer>().config({
+        authEndpoint: () => "",
+        treaty,
+        initialStorage: { messages: [] },
+    });
+    ```
+
+    `yjs.schema` / `loro.schema` are the storage factories (`yjs.storage` / `loro.storage` are removed). Node and Cloudflare still pass `secret` on `.config()`. Hosted `platformPluv` omits `secret` (`secretKey` stays on `platformPluv(...)`).
+
+    Use `createClient<typeof ioServer>()` when you need server event types. `createClient().config({ treaty, ... })` still works without a server type; pass the runtime treaty so presence and storage infer correctly.
+
+    Treaty user, presence, and client metadata must use Zod 4.2+ or ArkType (Standard Schema and Standard JSON Schema on the same object). See the standard-schema validators changeset for the full validator list.
+
+### Patch Changes
+
+- Updated dependencies [4058575]
+- Updated dependencies [aa94a5b]
+- Updated dependencies [ba6805a]
+- Updated dependencies [0ee9d2d]
+- Updated dependencies [d10f401]
+- Updated dependencies [4058575]
+- Updated dependencies [67ab7f2]
+- Updated dependencies [5036555]
+- Updated dependencies [80a5c16]
+- Updated dependencies [1f6f749]
+- Updated dependencies [ad09444]
+- Updated dependencies [861da09]
+    - @pluv/client@6.0.0
+    - @pluv/crdt@6.0.0
+
 ## 5.2.3
 
 ### Patch Changes
