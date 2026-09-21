@@ -81,6 +81,28 @@ export const {
 } = createBundle(client);
 ```
 
+## Suspend storage hooks
+
+By default, storage hooks return `null` until CRDT storage is loaded. Pass `{ suspense: true }` to `createBundle` to make them wait instead.
+
+Wrap the components that use those hooks in `<Suspense>`.
+
+```tsx
+export const {
+  PluvRoomProvider,
+  useStorage,
+  useStorageField,
+} = createBundle(client, { suspense: true });
+
+<PluvRoomProvider room="room-id" initialPresence={{}} initialStorage={{ messages: [] }}>
+  <Suspense fallback="Loading storage...">
+    <Chat />
+  </Suspense>
+</PluvRoomProvider>
+```
+
+This applies to `useStorage`, `useStorageField`, `useDoc`, `useTransact`, and the undo/redo hooks. Presence and connection hooks do not wait.
+
 ## Related
 
 * [Setup authorization](/docs/guides/authorization)
