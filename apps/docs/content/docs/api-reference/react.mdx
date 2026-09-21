@@ -57,6 +57,16 @@ const router = io.router({ /* ... */ });
 const { /* ... */} = createBundle(io, { router });
 ```
 
+### suspense
+
+By default, storage hooks return `null` until CRDT storage is loaded. Pass `{ suspense: true }` to make them wait instead.
+
+Wrap the components that use those hooks in `<Suspense>`. This applies to `useStorage`, `useStorageField`, `useDoc`, `useTransact`, and the undo/redo hooks. Presence and connection hooks do not wait. If the room closes or storage becomes unavailable while a hook is waiting, the nearest error boundary handles the rejection.
+
+```ts
+const { useStorageField } = createBundle(io, { suspense: true });
+```
+
 ## CreateBundle
 
 This is the bundle returned from `createBundle`.
@@ -375,7 +385,7 @@ presence.select({ id: "item-1" });
 
 ### useStorage
 
-Returns the room storage procedure proxy (`room.storage`). Do not destructure it.
+Returns the room storage procedure proxy (`room.storage`). Do not destructure it. Procedures throw until CRDT storage is loaded.
 
 ```ts
 const storage = useStorage();
@@ -388,7 +398,7 @@ storage.addMessage({ text: "hello" });
 Returns `[TData | null, SharedType | null]`
 
 Returns a base-level property of our CRDT storage as a serialized JSON value and the native shared type (for example `Y.Array`). The component is re-rendered whenever the shared type is updated. The returned values are null while the room is still connecting or
-initializing its storage.
+initializing its storage. With `createBundle(io, { suspense: true })`, this hook waits until storage is loaded and returns `[TData, SharedType]` instead.
 
 ```tsx
 import { s } from "@pluv/crdt";

@@ -56,6 +56,8 @@ room.presence.select({ id: "item-1" });
 room.storage.addMessage({ text: "hello" });
 ```
 
+Storage procedures throw until CRDT storage is loaded. Presence procedures throw until the local user is available.
+
 Storage resolvers run inside `room.transact` by default. Pass `{ transact: false }` when the resolver should own commit (for example Loro):
 
 ```ts
@@ -109,6 +111,7 @@ Keep `createClient<typeof ioServer>()` for **events**. Presence, storage, and us
 
 ## Related
 
+* [Create React Bundle](/docs/guides/create-react-bundle)
 * [Authorization](/docs/guides/authorization)
 * [Create Client](/docs/guides/create-client)
 * [Using Yjs](/docs/guides/storage/yjs)
