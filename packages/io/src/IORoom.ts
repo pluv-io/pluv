@@ -4,6 +4,7 @@ import type {
     BaseIOEventRecord,
     CrdtDocLike,
     EventMessage,
+    InferTreatyProcedureInput,
     IOEventMessage,
     IOLike,
     Id,
@@ -103,6 +104,50 @@ export type BroadcastProxy<TIO extends IORoom<any>> = (<TEvent extends keyof Inf
     ) => Promise<void>;
 };
 
+/**
+ * @experimental
+ * @description Host invoke for treaty presence procedures. Requires a live `senderId`. Breaking
+ * changes may ship without a major version bump.
+ */
+export type PresenceProcedureProxy<TIO extends IORoom<any>> = (<
+    TName extends Extract<keyof TIO["_defs"]["treaty"]["_defs"]["procedures"]["presence"], string>,
+>(
+    name: TName,
+    data: InferTreatyProcedureInput<
+        TIO["_defs"]["treaty"]["_defs"]["procedures"]["presence"][TName]
+    >,
+    senderId: string,
+) => Promise<void>) & {
+    [TName in Extract<keyof TIO["_defs"]["treaty"]["_defs"]["procedures"]["presence"], string>]: (
+        data: InferTreatyProcedureInput<
+            TIO["_defs"]["treaty"]["_defs"]["procedures"]["presence"][TName]
+        >,
+        senderId: string,
+    ) => Promise<void>;
+};
+
+/**
+ * @experimental
+ * @description Host invoke for treaty storage procedures. Requires a live `senderId`. Breaking
+ * changes may ship without a major version bump.
+ */
+export type StorageProcedureProxy<TIO extends IORoom<any>> = (<
+    TName extends Extract<keyof TIO["_defs"]["treaty"]["_defs"]["procedures"]["storage"], string>,
+>(
+    name: TName,
+    data: InferTreatyProcedureInput<
+        TIO["_defs"]["treaty"]["_defs"]["procedures"]["storage"][TName]
+    >,
+    senderId: string,
+) => Promise<void>) & {
+    [TName in Extract<keyof TIO["_defs"]["treaty"]["_defs"]["procedures"]["storage"], string>]: (
+        data: InferTreatyProcedureInput<
+            TIO["_defs"]["treaty"]["_defs"]["procedures"]["storage"][TName]
+        >,
+        senderId: string,
+    ) => Promise<void>;
+};
+
 export type IORoomConfig<T extends IODefs = IODefs> = Partial<IORoomListeners<T>> & {
     context: PluvContext<T["platform"], T["context"]>;
     debug: boolean;
@@ -164,6 +209,40 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             platform: T["platform"];
             treaty: T["treaty"];
         };
+    }
+
+    /**
+     * @experimental
+     * @description Invoke a treaty presence procedure as a live session. Requires a live
+     * `senderId`. Breaking changes may ship without a major version bump.
+     */
+    public get __experimental_presence(): PresenceProcedureProxy<this> {
+        const invoke = (name: string, data: unknown, senderId: string): Promise<void> => {
+            return this._runPresenceProcedure(name, data, senderId);
+        };
+
+        return new Proxy(invoke, {
+            get(fn, prop) {
+                return (data: unknown, senderId: string) => fn(prop as string, data, senderId);
+            },
+        }) as PresenceProcedureProxy<this>;
+    }
+
+    /**
+     * @experimental
+     * @description Invoke a treaty storage procedure as a live session. Requires a live
+     * `senderId`. Breaking changes may ship without a major version bump.
+     */
+    public get __experimental_storage(): StorageProcedureProxy<this> {
+        const invoke = (name: string, data: unknown, senderId: string): Promise<void> => {
+            return this._runStorageProcedure(name, data, senderId);
+        };
+
+        return new Proxy(invoke, {
+            get(fn, prop) {
+                return (data: unknown, senderId: string) => fn(prop as string, data, senderId);
+            },
+        }) as StorageProcedureProxy<this>;
     }
 
     public get broadcast(): BroadcastProxy<this> {
@@ -1007,6 +1086,122 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         } catch {
             return null;
         }
+    }
+
+    private async _runPresenceProcedure(
+        name: string,
+        data: unknown,
+        senderId: string,
+    ): Promise<void> {
+        if (typeof senderId !== "string") {
+            throw new Error("room.__experimental_presence of a user procedure requires a senderId");
+        }
+
+        const sender = this._sessions.get(senderId);
+
+        if (!sender) {
+            throw new Error(`Unknown senderId: ${senderId}`);
+        }
+
+        const procedures = this._treaty._defs.procedures.presence;
+
+        if (!procedures || !Object.hasOwn(procedures, name)) {
+            throw new Error(`Unknown presence procedure "${name}"`);
+        }
+
+        const procedure = procedures[name];
+        const session = this._sessions.toSession(sender);
+        const [doc, context] = await Promise.all([this._doc, this._getContext()]);
+        const patch = procedure.apply(data, {
+            user: session.user,
+            presence: session.presence,
+            doc,
+        });
+
+        const eventContext = this._createEventResolverContext({
+            context,
+            doc,
+            session,
+            sessions: this._sessions.getLiveSessions(),
+        });
+        const broadcast = await this._router._defs.events.$updatePresence.config.broadcast?.(
+            { presence: patch, procedure: name },
+            eventContext,
+        );
+
+        if (!broadcast) return;
+
+        await Promise.all(
+            Object.entries(broadcast).map(([eventType, payload]) => {
+                return this._broadcast({
+                    message: { type: eventType, data: payload } as BroadcastMessage<T>,
+                    senderId,
+                });
+            }),
+        );
+    }
+
+    private async _runStorageProcedure(
+        name: string,
+        data: unknown,
+        senderId: string,
+    ): Promise<void> {
+        if (typeof senderId !== "string") {
+            throw new Error("room.__experimental_storage of a user procedure requires a senderId");
+        }
+
+        const sender = this._sessions.get(senderId);
+
+        if (!sender) {
+            throw new Error(`Unknown senderId: ${senderId}`);
+        }
+
+        const procedures = this._treaty._defs.procedures.storage;
+
+        if (!procedures || !Object.hasOwn(procedures, name)) {
+            throw new Error(`Unknown storage procedure "${name}"`);
+        }
+
+        const procedure = procedures[name];
+        const session = this._sessions.toSession(sender);
+        const doc = await this._doc;
+
+        const apply = (): void => {
+            procedure.apply(data, {
+                user: session.user,
+                presence: session.presence,
+                doc,
+            });
+        };
+
+        if (procedure.config.transact === false) {
+            apply();
+        } else {
+            doc.transact(apply, senderId);
+        }
+
+        const context = await this._getContext();
+        const eventContext = this._createEventResolverContext({
+            context,
+            doc,
+            session,
+            sessions: this._sessions.getLiveSessions(),
+        });
+        const broadcast = await this._router._defs.events.$updateStorage.config.broadcast?.(
+            { origin: senderId, update: null, procedure: name },
+            eventContext,
+        );
+
+        if (!broadcast) return;
+
+        await Promise.all(
+            Object.entries(broadcast).map(([eventType, payload]) => {
+                return this._broadcast({
+                    message: { type: eventType, data: payload } as BroadcastMessage<T>,
+                    senderId,
+                });
+            }),
+        );
     }
 
     private async _sendMessage(

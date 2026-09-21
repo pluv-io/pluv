@@ -88,10 +88,7 @@ export const validateJson = (node: AnySchemaNode, value: unknown): boolean => {
         case "intersection": {
             try {
                 const shape = flattenObjectShape(current);
-                return validateJson(
-                    { ...current, kind: "object", shape, toJSON: current.toJSON } as AnySchemaNode,
-                    value,
-                );
+                return validateJson({ ...current, kind: "object", shape } as AnySchemaNode, value);
             } catch {
                 return false;
             }

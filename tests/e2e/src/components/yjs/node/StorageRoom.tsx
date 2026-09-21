@@ -4,7 +4,7 @@ import {
     useCanRedo,
     useCanUndo,
     useRedo,
-    useStorage,
+    useStorageField,
     useTransact,
     useUndo,
 } from "../../../pluv-io/yjs/node";
@@ -12,7 +12,7 @@ import {
 export type StorageRoomProps = Record<string, never>;
 
 export const StorageRoom: FC<StorageRoomProps> = () => {
-    const [messages, sharedType] = useStorage("messages");
+    const [messages, sharedType] = useStorageField("messages");
 
     const canUndo = useCanUndo();
     const canRedo = useCanRedo();

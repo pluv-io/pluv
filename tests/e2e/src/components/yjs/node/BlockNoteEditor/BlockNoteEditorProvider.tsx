@@ -1,7 +1,7 @@
 import { ConnectionState } from "@pluv/types";
 import type { FC, ReactNode } from "react";
 import { useMemo } from "react";
-import { useConnection, useRoom, useStorage } from "../../../../pluv-io/yjs/node";
+import { useConnection, useRoom, useStorageField } from "../../../../pluv-io/yjs/node";
 import { BlockNoteEditorContext } from "./context";
 
 export interface BlockNoteEditorProviderProps {
@@ -11,7 +11,7 @@ export interface BlockNoteEditorProviderProps {
 export const BlockNoteEditorProvider: FC<BlockNoteEditorProviderProps> = ({ children }) => {
     const state = useConnection((connection) => connection.state);
     const room = useRoom();
-    const [, fragment] = useStorage("blocknote", () => true);
+    const [, fragment] = useStorageField("blocknote", () => true);
 
     const value = useMemo(() => (!!fragment ? { fragment, room } : null), [fragment, room]);
 

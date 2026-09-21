@@ -28,25 +28,44 @@ export type InferTreatyStorageNative<TStorage> =
 export type InferTreatyStorageJson<TStorage> =
     TStorage extends AbstractCrdtDocFactory<any, any, any, any> ? InferJson<TStorage> : never;
 
+export type TreatyResolverContext<
+    TUser extends BaseUser,
+    TPresence extends Record<string, any>,
+    TJson extends Record<string, any>,
+> = {
+    json: DeepReadonly<TJson>;
+    presence: DeepReadonly<TPresence>;
+    user: TUser;
+};
+
+export type TreatyResolverDoc<
+    TJson extends Record<string, any>,
+    TNative extends Record<string, any>,
+> = {
+    get(): TNative;
+    toJson(): TJson;
+};
+
 export type PresenceResolverContext<
     TUser extends BaseUser,
     TPresence extends Record<string, any>,
-> = {
-    presence: TPresence;
-    user: TUser;
-};
+    TJson extends Record<string, any> = {},
+> = TreatyResolverContext<TUser, TPresence, TJson>;
 
 export type StorageResolverContext<
     TUser extends BaseUser,
     TJson extends Record<string, any>,
     TNative extends Record<string, any>,
-> = {
-    json: DeepReadonly<TJson>;
+    TPresence extends Record<string, any> = {},
+> = TreatyResolverContext<TUser, TPresence, TJson> & {
     storage: TNative;
-    user: TUser;
 };
 
 export type JsonSchemaProducer = {
     input: (options?: { target?: string }) => unknown;
     output?: (options?: { target?: string }) => unknown;
+};
+
+export type TreatyStorageResolveOptions = {
+    transact?: boolean;
 };

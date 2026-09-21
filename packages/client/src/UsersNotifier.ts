@@ -1,7 +1,6 @@
 import type {
     Id,
     IOLike,
-    JsonObject,
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
     OthersSubscriptionEvent,
@@ -53,7 +52,9 @@ export class UsersNotifier<TIO extends IOLike, TPresence extends Record<string, 
         const source = this.other(clientId).source;
         const subscription = subscribe(callback)(source);
 
-        return subscription.unsubscribe;
+        return () => {
+            subscription.unsubscribe();
+        };
     }
 
     public subscribeOthers(callback: OthersSubscriptionCallback<TIO, TPresence>): () => void {
@@ -61,6 +62,8 @@ export class UsersNotifier<TIO extends IOLike, TPresence extends Record<string, 
             ({ others, event }) => callback(others, event),
         )(this.others.source);
 
-        return subscription.unsubscribe;
+        return () => {
+            subscription.unsubscribe();
+        };
     }
 }

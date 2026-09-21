@@ -1,7 +1,7 @@
 import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
-import { createIO } from "@pluv/io";
+import { createIO, type InferIORoom } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { createBundle } from "@pluv/react";
 import { createTreaty } from "@pluv/treaty";
@@ -28,19 +28,27 @@ const treaty = createTreaty({
 
 const select = treaty.procedure.presence
     .input(z.object({ id: z.string().nullable() }))
-    .resolve(({ id }, { user: sessionUser, presence }) => {
+    .resolve(({ id }, context) => {
+        const { user: sessionUser, presence, json } = context;
+
         expectTypeOf(sessionUser).toEqualTypeOf<{ id: string }>();
         expectTypeOf(presence).toEqualTypeOf<{
-            cursor: { x: number; y: number } | null;
+            readonly cursor: { readonly x: number; readonly y: number } | null;
         }>();
+        expectTypeOf(json.messages).toEqualTypeOf<readonly string[]>();
+        // @ts-expect-error presence resolvers do not receive storage natives
+        void context.storage;
 
         return { cursor: id ? { x: 0, y: 0 } : null };
     });
 
 const addMessage = treaty.procedure.storage
     .input(z.object({ text: z.string() }))
-    .resolve(({ text }, { user: sessionUser, json, storage: docStorage }) => {
+    .resolve(({ text }, { user: sessionUser, json, presence, storage: docStorage }) => {
         expectTypeOf(sessionUser).toEqualTypeOf<{ id: string }>();
+        expectTypeOf(presence).toEqualTypeOf<{
+            readonly cursor: { readonly x: number; readonly y: number } | null;
+        }>();
         expectTypeOf(json.messages).toEqualTypeOf<readonly string[]>();
         expectTypeOf(docStorage.messages).toEqualTypeOf<YArray<string>>();
         docStorage.messages.push([text]);
@@ -142,8 +150,8 @@ room.subscribe.storage.messages((messages) => {
     expectTypeOf<typeof messages>().toEqualTypeOf<string[]>();
 });
 
-room.subscribe.storage((storage) => {
-    expectTypeOf<typeof storage>().toEqualTypeOf<{ messages: string[] }>();
+room.subscribe.storage((exampleStorage) => {
+    expectTypeOf<typeof exampleStorage>().toEqualTypeOf<{ messages: string[] }>();
 });
 
 room.subscribe.connection((event) => {
@@ -160,9 +168,9 @@ room.subscribe.myself((myself) => {
     }
 });
 room.subscribe.other("example-user-id", (value) => {
-    const user = value?.data ?? null;
+    const exampleUser = value?.data ?? null;
 
-    expectTypeOf<typeof user>().toEqualTypeOf<{ id: string } | null>();
+    expectTypeOf<typeof exampleUser>().toEqualTypeOf<{ id: string } | null>();
 });
 room.subscribe.others((others, event) => {
     expectTypeOf<(typeof others)[number]["data"]>().toEqualTypeOf<{ id: string }>();
@@ -235,8 +243,90 @@ expectTypeOf(room.getDoc()).toEqualTypeOf<
     >
 >();
 
-const { PluvRoomProvider, useDoc, useOther, useRoomError, useRoomStats, useStorage } =
-    createBundle(client);
+expectTypeOf(room.presence).toHaveProperty("select");
+expectTypeOf(room.presence).not.toHaveProperty("addMessage");
+expectTypeOf(room.storage).toHaveProperty("addMessage");
+expectTypeOf(room.storage).not.toHaveProperty("select");
+
+expectTypeOf(room.presence.select).toBeCallableWith({ id: "item" });
+expectTypeOf(room.presence.select).toBeCallableWith({ id: null });
+expectTypeOf(room.presence.select).parameters.toEqualTypeOf<[{ id: string | null }]>();
+expectTypeOf(room.presence.select).returns.toEqualTypeOf<Promise<void>>();
+expectTypeOf(room.presence).toBeCallableWith("select", { id: "item" });
+expectTypeOf(room.presence).toBeCallableWith("select", { id: null });
+
+expectTypeOf(room.storage.addMessage).toBeCallableWith({ text: "hello" });
+expectTypeOf(room.storage.addMessage).parameters.toEqualTypeOf<[{ text: string }]>();
+expectTypeOf(room.storage.addMessage).returns.toBeVoid();
+expectTypeOf(room.storage).toBeCallableWith("addMessage", { text: "world" });
+
+void room.presence.select({ id: "item" });
+void room.presence("select", { id: null });
+room.storage.addMessage({ text: "hello" });
+room.storage("addMessage", { text: "world" });
+
+// @ts-expect-error presence input must match the procedure schema
+void room.presence.select({ id: 1 });
+// @ts-expect-error presence input does not accept storage fields
+void room.presence.select({ text: "hello" });
+// @ts-expect-error presence procedures do not take a senderId on the client
+void room.presence.select({ id: "item" }, "sender-id");
+// @ts-expect-error unknown presence procedure
+void room.presence.missing({ id: null });
+// @ts-expect-error storage procedure name is not a presence procedure
+void room.presence("addMessage", { text: "hello" });
+// @ts-expect-error presence procedure name is not a storage procedure
+room.storage("select", { id: null });
+// @ts-expect-error storage input must match the procedure schema
+room.storage.addMessage({ text: 1 });
+// @ts-expect-error storage input does not accept presence fields
+room.storage.addMessage({ id: "item" });
+// @ts-expect-error unknown storage procedure
+room.storage.missing({ text: "hello" });
+
+declare const ioRoom: InferIORoom<typeof ioServer>;
+
+expectTypeOf(ioRoom.__experimental_presence.select).toBeCallableWith({ id: "item" }, "sender-id");
+expectTypeOf(ioRoom.__experimental_presence.select).parameters.toEqualTypeOf<
+    [{ id: string | null }, string]
+>();
+expectTypeOf(ioRoom.__experimental_presence.select).returns.toEqualTypeOf<Promise<void>>();
+expectTypeOf(ioRoom.__experimental_presence).toBeCallableWith("select", { id: null }, "sender-id");
+expectTypeOf(ioRoom.__experimental_storage.addMessage).toBeCallableWith(
+    { text: "hello" },
+    "sender-id",
+);
+expectTypeOf(ioRoom.__experimental_storage.addMessage).parameters.toEqualTypeOf<
+    [{ text: string }, string]
+>();
+expectTypeOf(ioRoom.__experimental_storage).toBeCallableWith(
+    "addMessage",
+    { text: "world" },
+    "sender-id",
+);
+
+void ioRoom.__experimental_presence.select({ id: "item" }, "sender-id");
+void ioRoom.__experimental_storage.addMessage({ text: "hello" }, "sender-id");
+
+// @ts-expect-error IORoom presence invoke requires senderId
+void ioRoom.__experimental_presence.select({ id: "item" });
+// @ts-expect-error IORoom storage invoke requires senderId
+void ioRoom.__experimental_storage.addMessage({ text: "hello" });
+// @ts-expect-error IORoom presence input must match the procedure schema
+void ioRoom.__experimental_presence.select({ id: 1 }, "sender-id");
+// @ts-expect-error unknown IORoom presence procedure
+void ioRoom.__experimental_presence.missing({ id: null }, "sender-id");
+
+const {
+    PluvRoomProvider,
+    useDoc,
+    useOther,
+    usePresence,
+    useRoomError,
+    useRoomStats,
+    useStorage,
+    useStorageField,
+} = createBundle(client);
 
 useRoomError((error) => {
     expectTypeOf(error.message).toEqualTypeOf<string>();
@@ -264,7 +354,30 @@ useRoomError((error) => {
     <div />
 </PluvRoomProvider>;
 
-const storageMessages = useStorage("messages");
+const storageMessages = useStorageField("messages");
+const presence = usePresence();
+const storageCommands = useStorage();
+
+expectTypeOf(presence.select).toBeCallableWith({ id: "item" });
+expectTypeOf(presence.select).parameters.toEqualTypeOf<[{ id: string | null }]>();
+expectTypeOf(presence).toBeCallableWith("select", { id: null });
+expectTypeOf(storageCommands.addMessage).toBeCallableWith({ text: "hello" });
+expectTypeOf(storageCommands.addMessage).parameters.toEqualTypeOf<[{ text: string }]>();
+expectTypeOf(storageCommands).toBeCallableWith("addMessage", { text: "world" });
+
+void presence.select({ id: "item" });
+storageCommands.addMessage({ text: "hello" });
+
+// @ts-expect-error presence input must match the procedure schema
+void presence.select({ id: 1 });
+// @ts-expect-error storage input must match the procedure schema
+storageCommands.addMessage({ text: 1 });
+// @ts-expect-error unknown presence procedure
+presence.missing({ id: null });
+// @ts-expect-error unknown storage procedure
+storageCommands.missing({ text: "hello" });
+// @ts-expect-error useStorageField keys must be storage fields
+useStorageField("missing");
 
 expectTypeOf(useRoomStats()).toEqualTypeOf<{ connectionCount: number; userCount: number }>();
 expectTypeOf(useRoomStats((stats) => stats.userCount)).toEqualTypeOf<number>();
@@ -279,7 +392,7 @@ expectTypeOf(storageMessages).toEqualTypeOf<
 
 const [storageMessagesData, storageMessagesSharedType] = storageMessages;
 
-if (!!storageMessagesSharedType) {
+if (storageMessagesSharedType) {
     expectTypeOf(storageMessagesData).toEqualTypeOf<string[]>();
 } else {
     expectTypeOf(storageMessagesData).toEqualTypeOf<null>();

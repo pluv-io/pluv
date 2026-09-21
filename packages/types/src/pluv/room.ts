@@ -7,10 +7,13 @@ import type {
     InferIOAuthorizeUser,
     InferIOInput,
     InferIOOutput,
+    InferTreatyProcedureInput,
     IOEventMessage,
     IOLike,
     MergeEvents,
     PluvRouterEventConfig,
+    TreatyLike,
+    TreatyProcedureLike,
 } from "./shared";
 
 export interface AuthorizationState<TIO extends IOLike> {
@@ -163,6 +166,28 @@ export type BroadcastProxy<TIO extends IOLike, TEvents extends PluvRouterEventCo
     ) => Promise<void>;
 };
 
+export type PresenceProcedureProxy<
+    TProcedures extends Record<string, TreatyProcedureLike<"presence">> = {},
+> = (<TName extends Extract<keyof TProcedures, string>>(
+    name: TName,
+    data: InferTreatyProcedureInput<TProcedures[TName]>,
+) => Promise<void>) & {
+    [TName in Extract<keyof TProcedures, string>]: (
+        data: InferTreatyProcedureInput<TProcedures[TName]>,
+    ) => Promise<void>;
+};
+
+export type StorageProcedureProxy<
+    TProcedures extends Record<string, TreatyProcedureLike<"storage">> = {},
+> = (<TName extends Extract<keyof TProcedures, string>>(
+    name: TName,
+    data: InferTreatyProcedureInput<TProcedures[TName]>,
+) => void) & {
+    [TName in Extract<keyof TProcedures, string>]: (
+        data: InferTreatyProcedureInput<TProcedures[TName]>,
+    ) => void;
+};
+
 export type PublicEventKey<TEvents> = Exclude<Extract<keyof TEvents, string>, `$${string}`>;
 
 export type EventNotifierSubscriptionCallback<
@@ -246,9 +271,12 @@ export interface RoomLike<
     TStorage extends Record<string, any> = {},
     TEvents extends PluvRouterEventConfig = {},
     TJson extends Record<string, any> = any,
+    TTreaty extends TreatyLike = TreatyLike,
 > {
     id: string;
     broadcast: BroadcastProxy<TIO, TEvents>;
+    presence: PresenceProcedureProxy<TTreaty["_defs"]["procedures"]["presence"]>;
+    storage: StorageProcedureProxy<TTreaty["_defs"]["procedures"]["storage"]>;
 
     addEventListener<TKind extends keyof RoomEventListenerMap>(
         kind: TKind,

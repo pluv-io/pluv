@@ -20,10 +20,12 @@ export interface BaseClientEventRecord {
     $ping: {};
     $updatePresence: {
         presence: JsonObject | null;
+        procedure?: string | null;
     };
     $updateStorage: {
         origin: string | null;
         update: string | null;
+        procedure?: string | null;
     };
 }
 
@@ -130,8 +132,19 @@ export type TreatyProcedureLike<
     config: {
         input?: StandardSchemaV1<unknown, TInput> | null;
         resolve?: ((data: never, ...args: any[]) => unknown) | null;
+        transact?: boolean | null;
     };
+    apply: (data: unknown, context: any) => unknown;
 };
+
+export type InferTreatyProcedureInput<TProcedure extends TreatyProcedureLike<any, any>> =
+    TProcedure extends TreatyProcedureLike<any, infer TInput> ? Id<TInput> : never;
+
+export type InferTreatyPresenceProcedures<TTreaty extends TreatyLike | undefined> =
+    TTreaty extends TreatyLike ? TTreaty["_defs"]["procedures"]["presence"] : {};
+
+export type InferTreatyStorageProcedures<TTreaty extends TreatyLike | undefined> =
+    TTreaty extends TreatyLike ? TTreaty["_defs"]["procedures"]["storage"] : {};
 
 export type TreatyLike = {
     user: StandardSchemaV1<unknown, BaseUser>;

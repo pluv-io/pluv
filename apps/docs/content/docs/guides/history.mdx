@@ -15,7 +15,7 @@ This will allow users to apply undos and redos to Pluv storage mutations.
 * [useCanRedo](/docs/api-reference/react#useCanRedo)
 * [useCanUndo](/docs/api-reference/react#useCanUndo)
 * [useRedo](/docs/api-reference/react#useRedo)
-* [useStorage](/docs/api-reference/react#useStorage)
+* [useStorageField](/docs/api-reference/react#useStorageField)
 * [useUndo](/docs/api-reference/react#useUndo)
 
 ## Undoing a storage mutation
@@ -39,7 +39,9 @@ export const {
   useCanRedo,
   useCanUndo,
   useUndo,
+  usePresence,
   useStorage,
+  useStorageField,
   useRedo,
 } = createBundle(client);
 ```
@@ -47,7 +49,7 @@ export const {
 To get started with modifying your storage history, first make storage mutations.
 
 ```ts
-const [messages, yArray] = useStorage();
+const [messages, yArray] = useStorageField("messages");
 
 yArray?.push(["hello"]);
 yArray?.push(["world"]);

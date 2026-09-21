@@ -6,7 +6,7 @@ import {
     useMyself,
     useOthers,
     useRedo,
-    useStorage,
+    useStorageField,
     useTransact,
     useUndo,
 } from "../../../pluv-io/yjs/cloudflare";
@@ -14,7 +14,7 @@ import {
 export type StorageRoomProps = Record<string, never>;
 
 export const StorageRoom: FC<StorageRoomProps> = () => {
-    const [messages, sharedType] = useStorage("messages");
+    const [messages, sharedType] = useStorageField("messages");
 
     const myself = useMyself((myUser) => myUser.data?.id);
     const others = useOthers((otherUsers) => otherUsers.map((other) => other.data?.id));

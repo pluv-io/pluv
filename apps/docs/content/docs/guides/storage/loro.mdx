@@ -73,7 +73,7 @@ const io = createClient<typeof ioServer>().config({
 
 const bundle = createBundle(io);
 
-export const { PluvRoomProvider, useStorage, useTransact } = bundle;
+export const { PluvRoomProvider, useStorageField, useTransact } = bundle;
 
 export type PluvIORoom = InferBundleRoom<typeof bundle>;
 ```
@@ -108,18 +108,18 @@ export const PluvRoom: FC = ({ children, id }) => {
 };
 ```
 
-Finally, we can then read and write to our [Loro container type](https://loro.dev/docs/tutorial/loro_doc#container-types) via the `useStorage` hook we exported earlier.
+Finally, we can then read and write to our [Loro container type](https://loro.dev/docs/tutorial/loro_doc#container-types) via the `useStorageField` hook we exported earlier.
 
 ```tsx
 // frontend/GroceryList.tsx
 
 import type { FC } from "react";
-import { useStorage } from "./pluv";
+import { useStorageField } from "./pluv";
 
 export interface GroceryListProps {}
 
 export const GroceryList: FC<GroceryListProps> = () => {
-  const [groceries, loroList] = useStorage("groceries");
+  const [groceries, loroList] = useStorageField("groceries");
 
   // These values will be null while the room is still connecting
   if (!groceries || !loroList) return <div>Loading...</div>
@@ -142,13 +142,13 @@ To mutate the value of `groceries`, we simply need to perform a mutation to the 
 ```tsx
 import { loro } from "@pluv/crdt-loro";
 import { LoroList, LoroMap, LoroText } from "loro-crdt";
-import { useStorage, useTransact } from "./pluv";
+import { useStorageField, useTransact } from "./pluv";
 
 const transact = useTransact();
 
 // "groceries" is a key from the root properties of `loro.schema`
 // loroList is a container-type from loro
-const [groceries, loroList] = useStorage("groceries");
+const [groceries, loroList] = useStorageField("groceries");
 //                ^? const loroList: LoroList<string> | null
 
 // IMPORTANT!
@@ -166,7 +166,7 @@ transact((tx) => {
 
 ## Nesting Loro container types
 
-It isn't so uncommon to want to create a nested structure containing multiple Loro container types. Declare the nested shape on `loro.schema`. JSON seeds stay JSON — nested CRDT nodes are constructed from that seed at hydrate time.
+It isn't so uncommon to want to create a nested structure containing multiple Loro container types. Declare the nested shape on `loro.schema`. JSON seeds stay JSON. Nested CRDT nodes are constructed from that seed at hydrate time.
 
 To declare a top-level container type on the `LoroDoc`, use `loro.loroList`, `loro.loroMap`, `loro.loroText`, and the other schema helpers on `loro.schema`. JSON-only leaves use `s` from `@pluv/crdt`.
 
@@ -198,7 +198,7 @@ The functions that are available include the following (linked to their respecti
 ```tsx
 import { loro } from "@pluv/crdt-loro";
 import { LoroText } from "loro-crdt";
-import { PluvRoomProvider, useStorage, useTransact } from "./pluv";
+import { PluvRoomProvider, useStorageField, useTransact } from "./pluv";
 
 // initialStorage is JSON only
 <PluvRoomProvider
@@ -217,7 +217,7 @@ import { PluvRoomProvider, useStorage, useTransact } from "./pluv";
 const transact = useTransact();
 // "chats" is a key from the root properties of `loro.schema`
 // loroMap is a container-type from Loro
-const [chats, loroMap] = useStorage("chats");
+const [chats, loroMap] = useStorageField("chats");
 //            ^? const loroMap: LoroMap<Record<string, LoroText>> | null
 
 transact(() => {

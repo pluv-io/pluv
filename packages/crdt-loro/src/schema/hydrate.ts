@@ -68,10 +68,7 @@ export const hydrateValue = (node: AnySchemaNode, json: unknown): unknown => {
 
     if (current.kind === "intersection") {
         const shape = flattenObjectShape(current);
-        return hydrateValue(
-            { ...current, kind: "object", shape, toJSON: current.toJSON } as AnySchemaNode,
-            json,
-        );
+        return hydrateValue({ ...current, kind: "object", shape } as AnySchemaNode, json);
     }
 
     if (current.kind === "object") {

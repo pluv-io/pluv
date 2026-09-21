@@ -15,7 +15,7 @@
 
 Define user, presence, and storage once as a **treaty**, then import the same value on the server and the client.
 
-You no longer split schemas across `authorize.user`, `createIO({ crdt })`, and `createClient({ presence, storage })`. Optional presence/storage procedures can live on the treaty for typing; they are not a room API yet.
+You no longer split schemas across `authorize.user`, `createIO({ crdt })`, and `createClient({ presence, storage })`. Optional presence/storage procedures live on the treaty and are invoked as `room.presence.select` / `room.storage.addMessage`.
 
 ```ts
 // shared/treaty.ts

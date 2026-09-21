@@ -932,6 +932,9 @@ importers:
 
   tests/unit:
     dependencies:
+      '@pluv/client':
+        specifier: workspace:^
+        version: link:../../packages/client
       '@pluv/crdt':
         specifier: workspace:^
         version: link:../../packages/crdt

@@ -8,15 +8,7 @@ import {
     unwrapOptional,
     type AnySchemaNode,
 } from "@pluv/crdt";
-import {
-    Array as YArray,
-    Doc as YDoc,
-    Map as YMap,
-    Text as YText,
-    XmlElement as YXmlElement,
-    XmlFragment as YXmlFragment,
-    XmlText as YXmlText,
-} from "yjs";
+import { Array as YArray, Doc as YDoc, Map as YMap, Text as YText, XmlText as YXmlText } from "yjs";
 import type { YjsSchema } from "../doc/YjsSchema";
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> => {
@@ -57,10 +49,7 @@ export const hydrateValue = (node: AnySchemaNode, json: unknown): unknown => {
 
     if (current.kind === "intersection") {
         const shape = flattenObjectShape(current);
-        return hydrateValue(
-            { ...current, kind: "object", shape, toJSON: current.toJSON } as AnySchemaNode,
-            json,
-        );
+        return hydrateValue({ ...current, kind: "object", shape } as AnySchemaNode, json);
     }
 
     if (current.kind === "object") {
