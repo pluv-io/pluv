@@ -86,7 +86,10 @@ export interface SubscriptionHookOptions<T extends unknown> {
     isEqual?: (a: T, b: T) => boolean;
 }
 
-export interface CreateBundle<TDefs extends ClientDefs = ClientDefs> {
+export interface CreateBundle<
+    TDefs extends ClientDefs = ClientDefs,
+    TSuspense extends boolean = false,
+> {
     // components
     MockedRoomProvider: FC<MockedRoomProviderProps<TDefs>>;
     PluvProvider: FC<PluvProviderProps>;
@@ -161,7 +164,9 @@ export interface CreateBundle<TDefs extends ClientDefs = ClientDefs> {
         key: TKey,
         selector?: (data: InferJson<TDefs["storage"]>[TKey]) => TData,
         options?: SubscriptionHookOptions<TData | null>,
-    ) => UseStorageResult<TData, InferStorage<TDefs["storage"]>[TKey]>;
+    ) => TSuspense extends true
+        ? [data: TData, sharedType: InferStorage<TDefs["storage"]>[TKey]]
+        : UseStorageResult<TData, InferStorage<TDefs["storage"]>[TKey]>;
     useTransact: () => (
         fn: (storage: InferStorage<TDefs["storage"]>) => void,
         origin?: string,
@@ -169,8 +174,8 @@ export interface CreateBundle<TDefs extends ClientDefs = ClientDefs> {
     useUndo: () => () => void;
 }
 
-export type InferBundleRoom<TBundle extends CreateBundle<any>> =
-    TBundle extends CreateBundle<infer TDefs>
+export type InferBundleRoom<TBundle extends CreateBundle<any, any>> =
+    TBundle extends CreateBundle<infer TDefs, any>
         ? RoomLike<
               TDefs["io"],
               InferDoc<TDefs["storage"]>,

@@ -390,6 +390,12 @@ expectTypeOf(storageMessages).toEqualTypeOf<
     [data: null, sharedType: null] | [data: string[], sharedType: YArray<string>]
 >();
 
+const { useStorageField: useStorageFieldSuspense } = createBundle(client, { suspense: true });
+
+expectTypeOf(useStorageFieldSuspense("messages")).toEqualTypeOf<
+    [data: string[], sharedType: YArray<string>]
+>();
+
 const [storageMessagesData, storageMessagesSharedType] = storageMessages;
 
 if (storageMessagesSharedType) {

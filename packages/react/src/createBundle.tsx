@@ -41,6 +41,7 @@ import {
     useSyncExternalStore,
 } from "react";
 import {
+    getStorageReady,
     identity,
     shallowArrayEqual,
     useAsyncQueue,
@@ -58,18 +59,26 @@ import type {
     UseStorageResult,
 } from "./types";
 
-export type CreateBundleOptions<TDefs extends ClientDefs = ClientDefs> = {
+export type CreateBundleOptions<
+    TDefs extends ClientDefs = ClientDefs,
+    TSuspense extends boolean = false,
+> = {
     addons?: readonly PluvRoomAddon<any>[];
     router?: PluvRouter<TDefs>;
+    suspense?: TSuspense;
 };
 
 export const createBundle = <
     TDefs extends ClientDefs,
     TEvents extends PluvRouterEventConfig<TDefs> = {},
+    const TSuspense extends boolean = false,
 >(
     client: PluvClient<TDefs>,
-    options: CreateBundleOptions<SetKey<TDefs, "events", TEvents>> = {},
-): CreateBundle<SetKey<TDefs, "events", TEvents>> => {
+    options: CreateBundleOptions<
+        SetKey<TDefs, "events", TEvents>,
+        TSuspense
+    > = {} as CreateBundleOptions<SetKey<TDefs, "events", TEvents>, TSuspense>,
+): CreateBundle<SetKey<TDefs, "events", TEvents>, TSuspense> => {
     type TRoom = SetKey<TDefs, "events", TEvents>;
     type TPresence = InferClientPresence<TRoom>;
     type TMetadata = InferClientMetadata<TRoom>;
@@ -262,6 +271,23 @@ export const createBundle = <
         return room;
     };
 
+    const throwIfStoragePending = (
+        room: RoomLike<
+            TDefs["io"],
+            InferDoc<TDefs["storage"]>,
+            TPresence,
+            InferStorage<TDefs["storage"]>,
+            TEvents,
+            InferJson<TDefs["storage"]>,
+            TDefs["treaty"]
+        >,
+    ): void => {
+        if (!options.suspense) return;
+        if (room.getStorageLoaded()) return;
+
+        throw getStorageReady(room);
+    };
+
     const useBroadcast = (): BroadcastProxy<TDefs["io"], TEvents> => {
         const room = useRoom();
 
@@ -293,6 +319,8 @@ export const createBundle = <
             identity,
         );
 
+        throwIfStoragePending(room);
+
         return canRedo;
     };
 
@@ -312,6 +340,8 @@ export const createBundle = <
             getSnapshot,
             identity,
         );
+
+        throwIfStoragePending(room);
 
         return canUndo;
     };
@@ -365,7 +395,11 @@ export const createBundle = <
 
         const getSnapshot = room.getDoc.bind(room);
 
-        return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+        const doc = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+
+        throwIfStoragePending(room);
+
+        return doc;
     };
 
     const useEvent = <TType extends PublicEventKey<InferClientOutput<TRoom>>>(
@@ -528,6 +562,8 @@ export const createBundle = <
     const useRedo = () => {
         const room = useRoom();
 
+        throwIfStoragePending(room);
+
         return room.redo.bind(room);
     };
 
@@ -569,6 +605,8 @@ export const createBundle = <
         TDefs["treaty"]["_defs"]["procedures"]["storage"]
     > => {
         const room = useRoom();
+
+        throwIfStoragePending(room);
 
         return room.storage;
     };
@@ -634,7 +672,15 @@ export const createBundle = <
 
         const sharedType = room.getStorage(key) ?? null;
 
-        if (data === null || sharedType === null) return [null, null];
+        throwIfStoragePending(room);
+
+        if (data === null || sharedType === null) {
+            if (options.suspense) {
+                throw new Error("Storage is loaded but the requested field is missing");
+            }
+
+            return [null, null];
+        }
 
         return [data, sharedType];
     };
@@ -642,11 +688,15 @@ export const createBundle = <
     const useTransact = () => {
         const room = useRoom();
 
+        throwIfStoragePending(room);
+
         return room.transact.bind(room);
     };
 
     const useUndo = () => {
         const room = useRoom();
+
+        throwIfStoragePending(room);
 
         return room.undo.bind(room);
     };
@@ -681,5 +731,5 @@ export const createBundle = <
         useStorageField,
         useTransact,
         useUndo,
-    } as CreateBundle<TRoom>;
+    } as CreateBundle<TRoom, TSuspense>;
 };

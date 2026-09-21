@@ -4,4 +4,4 @@ export {
     useRerender,
     useSyncExternalStoreWithSelector,
 } from "./hooks";
-export { identity, shallowArrayEqual } from "./utils";
+export { getStorageReady, identity, shallowArrayEqual } from "./utils";
