@@ -33,7 +33,7 @@
         "commitizen": "^4.3.2",
         "cz-conventional-changelog": "^3.3.0",
         "eslint-plugin-turbo": "^2.11.2",
-        "oxfmt": "^0.68.0",
+        "oxfmt": "^0.70.0",
         "oxlint": "^1.83.0",
         "oxlint-tsgolint": "^7.0.2002",
         "turbo": "^2.11.2"
