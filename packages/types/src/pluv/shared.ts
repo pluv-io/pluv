@@ -1,6 +1,7 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { Id, IsAny, JsonObject, MaybePromise, UnionToIntersection } from "../general";
 import type { CrdtDocFactory } from "./crdt";
+import type { OperatorUser, ParticipantKind } from "./operator";
 
 export type BaseUser = {
     id: string;
@@ -39,6 +40,7 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any>> = {
     $exit: {
         sessionId: string;
         user: Id<InferIOAuthorizeUser<TAuthorize>>;
+        operator: OperatorUser | null;
     };
     $othersReceived: {
         myConnectionIds: string[];
@@ -47,17 +49,25 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any>> = {
             data: Id<InferIOAuthorizeUser<TAuthorize>>;
             presence: JsonObject | null;
             seq: { presence: number | null };
+            kind: ParticipantKind;
+            operator: OperatorUser | null;
         }[];
     };
     $pong: {};
     $roomStats: {
         connectionCount: number;
         userCount: number;
+        operators: {
+            connectionCount: number;
+            userCount: number;
+        };
     };
     $presenceUpdated: {
         presence: JsonObject;
         seq: { presence: number | null };
         user: Id<InferIOAuthorizeUser<TAuthorize>>;
+        kind: ParticipantKind;
+        operator: OperatorUser | null;
     };
     $registered: {
         connectionCount: number;
@@ -66,6 +76,12 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any>> = {
         state: string | null;
         seq: { presence: number | null };
         userCount: number;
+        kind: ParticipantKind;
+        operator: OperatorUser | null;
+        operators: {
+            connectionCount: number;
+            userCount: number;
+        };
     };
     $storageReceived: {
         changeKind: "empty" | "initialized" | "unchanged";
@@ -82,6 +98,8 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any>> = {
         presence: JsonObject;
         seq: { presence: number | null };
         user: Id<InferIOAuthorizeUser<TAuthorize>>;
+        kind: ParticipantKind;
+        operator: OperatorUser | null;
     };
     $usersPage:
         | {
@@ -197,6 +215,7 @@ export type IOAuthorize<TUser extends BaseUser = any> = {
 export type IOAuthorizeEventMessage<TIO extends IOLike> = {
     connectionId: string;
     user: InferIOAuthorizeUser<InferIOAuthorize<TIO>>;
+    operator: OperatorUser | null;
 };
 
 export type ProcedureLike<
@@ -293,6 +312,7 @@ export type IOEventMessage<
             ? {
                   connectionId?: string | null;
                   user?: InferIOAuthorizeUser<InferIOAuthorize<TIO>> | null;
+                  operator?: OperatorUser | null;
               }
             : IOAuthorizeEventMessage<TIO>)
 >;

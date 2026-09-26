@@ -20,7 +20,14 @@ export type {
     SpreadProperties,
     UndefinedProps,
 } from "./general";
-export { ConnectionState, StorageState } from "./pluv";
+export {
+    ConnectionState,
+    DEFAULT_PARTICIPANT_KIND,
+    DEFAULT_PARTICIPANT_KINDS,
+    resolveParticipantKind,
+    resolveParticipantKinds,
+    StorageState,
+} from "./pluv";
 export type { StandardSchemaV1 } from "@standard-schema/spec";
 export type {
     BaseClientEventRecord,
@@ -68,6 +75,11 @@ export type {
     IOLikeDefs,
     IORouterLike,
     MergeEvents,
+    OnGetOperator,
+    OperatorUser,
+    ParticipantKind,
+    ParticipantKindOptions,
+    ParticipantKindsOptions,
     ServerOriginEvent,
     ListUsersError,
     ListUsersErrorCode,
