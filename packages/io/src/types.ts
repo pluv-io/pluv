@@ -10,6 +10,8 @@ import type {
     JsonObject,
     Maybe,
     MaybePromise,
+    OperatorUser,
+    ParticipantKind,
     StandardSchemaV1,
     UndefinedProps,
 } from "@pluv/types";
@@ -67,6 +69,8 @@ export interface WebSocketSessionSeq {
 }
 
 export interface WebSocketSerializedState {
+    kind: ParticipantKind;
+    operator: OperatorUser | null;
     presence: JsonObject | null;
     quit: boolean;
     room: string;
@@ -76,6 +80,8 @@ export interface WebSocketSerializedState {
 
 export type WebSocketSession<T extends IODefs = IODefs> = WebSocketSerializedState & {
     id: string;
+    kind: ParticipantKind;
+    operator: OperatorUser | null;
     user: InferTreatyUser<T["treaty"]>;
     webSocket: AbstractWebSocket;
 };
@@ -153,7 +159,9 @@ export interface PluvIOLimits {
      */
     userIdMaxLength?: number | null;
     /**
-     * @description Maximum size of user object in bytes
+     * @description Maximum combined size, in bytes, of the objects stored for one
+     * session. User sessions measure the user object. Operator sessions measure
+     * that user object and the operator profile together. Email is not included.
      */
     userMaxSize?: number | null;
 }
@@ -209,21 +217,29 @@ export type IORoomMessageEvent<T extends IODefs = IODefs> = IORoomListenerEvent<
         InferEventsOutput<T["events"]>,
         keyof InferEventsOutput<T["events"]>
     >;
+    kind?: ParticipantKind;
+    operator?: OperatorUser | null;
     user?: InferTreatyUser<T["treaty"]>;
     webSocket?: InferPlatformWebSocketSource<T["platform"]>;
 };
 
 export type IOStorageUpdatedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
+    kind?: ParticipantKind;
+    operator?: OperatorUser | null;
     user?: InferTreatyUser<T["treaty"]>;
     webSocket?: InferPlatformWebSocketSource<T["platform"]>;
 };
 
 export type IOUserConnectedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
+    kind?: ParticipantKind;
+    operator?: OperatorUser | null;
     user?: InferTreatyUser<T["treaty"]>;
     webSocket?: InferPlatformWebSocketSource<T["platform"]>;
 };
 
 export type IOUserDisconnectedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
+    kind?: ParticipantKind;
+    operator?: OperatorUser | null;
     user?: InferTreatyUser<T["treaty"]>;
 };
 

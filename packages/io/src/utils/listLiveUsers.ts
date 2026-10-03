@@ -9,7 +9,7 @@ export const listLiveUsers = (
     pageInfo: { endCursor: string | null; hasNextPage: boolean };
     users: { data: JsonObject }[];
 } => {
-    const rows = groupLiveUsers(sessions).toSorted((a, b) => {
+    const rows = groupLiveUsers(sessions, { kinds: ["user"] }).toSorted((a, b) => {
         if (a.key < b.key) return -1;
         if (a.key > b.key) return 1;
 

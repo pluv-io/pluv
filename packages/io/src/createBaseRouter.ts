@@ -6,6 +6,7 @@ import type { IOStorageUpdatedEvent, PluvIOLimits, EventResolverContext } from "
 import {
     createInternalPluvRouter,
     getMyConnectionIds,
+    getSessionKind,
     groupLiveUsers,
     oneLine,
     pageLiveUsers,
@@ -42,9 +43,11 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
             );
             const others = groupLiveUsers(sessions, {
                 excludeSessionId: session.id,
-            }).map(({ connectionIds, data, presence }) => ({
+            }).map(({ connectionIds, data, presence, kind, operator }) => ({
                 connectionIds,
                 data,
+                kind,
+                operator,
                 presence,
                 seq: {
                     presence: connectionIds.reduce<number | null>((max, id) => {
@@ -98,10 +101,13 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
 
                 if (!session) return {};
 
-                const userId = session.user.id;
+                const kind = getSessionKind(session);
+                const participantId = session.user.id;
                 const latestSeq = event.sessions.reduce<number | null>((max, other) => {
                     if (other.quit) return max;
-                    if (other.user?.id !== userId) return max;
+                    const otherKind = getSessionKind(other);
+                    const otherId = other.user?.id;
+                    if (otherKind !== kind || otherId !== participantId) return max;
 
                     const seq = other.seq.presence;
 
@@ -121,6 +127,8 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                     $userJoined: {
                         connectionId: session.id,
                         user: session.user,
+                        kind,
+                        operator: session.operator ?? null,
                         presence: session.presence ?? presence ?? {},
                         seq: { presence: session.webSocket.state.seq.presence },
                     },
@@ -174,6 +182,8 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                     onStorageUpdated({
                         context,
                         encodedState,
+                        kind: session?.kind,
+                        operator: session?.operator ?? null,
                         platform,
                         room,
                         user: session?.user,
@@ -230,11 +240,13 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                     presence: updated,
                     seq: { presence: session.webSocket.state.seq.presence },
                     user: session.user,
+                    kind: session.kind,
+                    operator: session.operator ?? null,
                 },
             };
         }),
         $updateStorage: baseProcedure<"$updateStorage">().broadcast(
-            async (data, { context, doc, platform, room }) => {
+            async (data, { context, doc, platform, room, session }) => {
                 const origin = data.origin;
                 const update = data.update ?? null;
 
@@ -257,6 +269,8 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                 onStorageUpdated({
                     context,
                     encodedState,
+                    kind: session?.kind,
+                    operator: session?.operator ?? null,
                     platform,
                     room,
                 });

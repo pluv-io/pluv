@@ -3,6 +3,7 @@ import { createBaseRouter } from "./createBaseRouter";
 import {
     assertPresenceFanoutBudget,
     createInternalPluvRouter,
+    getMyConnectionIds,
     getRoomStatsFromSessions,
     groupLiveUsers,
     listLiveUsers,
@@ -20,6 +21,7 @@ export const __internal = {
     assertPresenceFanoutBudget,
     createBaseRouter,
     createInternalPluvRouter,
+    getMyConnectionIds,
     getRoomStatsFromSessions,
     groupLiveUsers,
     isServerOriginEvent,
