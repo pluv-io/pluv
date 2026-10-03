@@ -20,6 +20,8 @@ import type { InferDoc, InferJson, InferStorage } from "@pluv/crdt";
 import type {
     BroadcastProxy,
     Id,
+    ParticipantKindOptions,
+    ParticipantKindsOptions,
     PresenceProcedureProxy,
     PublicEventKey,
     RoomError,
@@ -43,6 +45,7 @@ import {
 import {
     getStorageReady,
     identity,
+    participantKindsKey,
     shallowArrayEqual,
     useAsyncQueue,
     useDeepAsyncMemo,
@@ -495,16 +498,26 @@ export const createBundle = <
     const useOther = <TValue extends unknown = UserInfo<TDefs["io"], TPresence>>(
         userId: string,
         selector = identity as (other: UserInfo<TDefs["io"], TPresence>) => TValue,
-        hookOptions?: SubscriptionHookOptions<TValue | null>,
+        hookOptions?: SubscriptionHookOptions<TValue | null> & ParticipantKindOptions,
     ): TValue | null => {
         const room = useRoom();
+        const kind = hookOptions?.kind;
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => room.subscribe.other(userId, onStoreChange),
-            [room, userId],
+            (onStoreChange: () => void) => {
+                return room.subscribe.other(
+                    userId,
+                    onStoreChange,
+                    kind === undefined ? undefined : { kind },
+                );
+            },
+            [kind, room, userId],
         );
 
-        const getSnapshot = useCallback(() => room.getOther(userId), [room, userId]);
+        const getSnapshot = useCallback(
+            () => room.getOther(userId, kind === undefined ? undefined : { kind }),
+            [kind, room, userId],
+        );
 
         const _selector = useCallback(
             (snapshot: Id<UserInfo<TDefs["io"], TPresence>> | null) => {
@@ -524,16 +537,22 @@ export const createBundle = <
 
     const useOthers = <TValue extends unknown = readonly UserInfo<TDefs["io"], TPresence>[]>(
         selector = identity as (other: readonly Id<UserInfo<TDefs["io"], TPresence>>[]) => TValue,
-        hookOptions?: SubscriptionHookOptions<TValue>,
+        hookOptions?: SubscriptionHookOptions<TValue> & ParticipantKindsOptions,
     ): TValue => {
         const room = useRoom();
+        const kindsKey = participantKindsKey.toKey(hookOptions?.kinds);
 
         const subscribe = useCallback(
-            (onStoreChange: () => void) => room.subscribe.others(onStoreChange),
-            [room],
+            (onStoreChange: () => void) => {
+                return room.subscribe.others(onStoreChange, participantKindsKey.fromKey(kindsKey));
+            },
+            [kindsKey, room],
         );
 
-        const getSnapshot = room.getOthers.bind(room);
+        const getSnapshot = useCallback(
+            () => room.getOthers(participantKindsKey.fromKey(kindsKey)),
+            [kindsKey, room],
+        );
 
         return useSyncExternalStoreWithSelector(
             subscribe,
@@ -581,16 +600,20 @@ export const createBundle = <
 
     const useRoomStats = <TValue extends unknown = RoomStats>(
         selector = identity as (stats: RoomStats) => TValue,
-        hookOptions?: SubscriptionHookOptions<TValue>,
+        hookOptions?: SubscriptionHookOptions<TValue> & ParticipantKindsOptions,
     ): TValue => {
         const room = useRoom();
+        const kindsKey = participantKindsKey.toKey(hookOptions?.kinds);
 
         const subscribe = useCallback(
             (onStoreChange: () => void) => room.subscribe.roomStats(onStoreChange),
             [room],
         );
 
-        const getSnapshot = room.getRoomStats.bind(room);
+        const getSnapshot = useCallback(
+            () => room.getRoomStats(participantKindsKey.fromKey(kindsKey)),
+            [kindsKey, room],
+        );
 
         return useSyncExternalStoreWithSelector(
             subscribe,

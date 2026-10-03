@@ -19,6 +19,8 @@ import type {
     IOEventMessage,
     MaybePromise,
     MergeEvents,
+    ParticipantKindOptions,
+    ParticipantKindsOptions,
     PresenceProcedureProxy,
     PublicEventKey,
     RoomLike,
@@ -130,7 +132,7 @@ export interface CreateBundle<
     useOther: <TValue extends unknown = UserInfo<TDefs["io"], InferClientPresence<TDefs>>>(
         userId: string,
         selector?: (other: UserInfo<TDefs["io"], InferClientPresence<TDefs>>) => TValue,
-        options?: SubscriptionHookOptions<TValue | null>,
+        options?: SubscriptionHookOptions<TValue | null> & ParticipantKindOptions,
     ) => TValue | null;
     useOthers: <
         TValue extends unknown = readonly UserInfo<TDefs["io"], InferClientPresence<TDefs>>[],
@@ -138,7 +140,7 @@ export interface CreateBundle<
         selector?: (
             other: readonly Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>>[],
         ) => TValue,
-        options?: SubscriptionHookOptions<TValue>,
+        options?: SubscriptionHookOptions<TValue> & ParticipantKindsOptions,
     ) => TValue;
     usePresence: () => PresenceProcedureProxy<TDefs["treaty"]["_defs"]["procedures"]["presence"]>;
     useRedo: () => () => void;
@@ -154,7 +156,7 @@ export interface CreateBundle<
     useRoomError: (callback: (error: RoomError) => void) => void;
     useRoomStats: <TValue extends unknown = RoomStats>(
         selector?: (stats: RoomStats) => TValue,
-        options?: SubscriptionHookOptions<TValue>,
+        options?: SubscriptionHookOptions<TValue> & ParticipantKindsOptions,
     ) => TValue;
     useStorage: () => StorageProcedureProxy<TDefs["treaty"]["_defs"]["procedures"]["storage"]>;
     useStorageField: <
