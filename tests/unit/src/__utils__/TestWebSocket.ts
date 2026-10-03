@@ -102,6 +102,8 @@ export class TestWebSocket extends AbstractWebSocket<TestSocket> {
         super(webSocket, config);
 
         this._state = {
+            kind: "user",
+            operator: null,
             presence: null,
             quit: false,
             room,

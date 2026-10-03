@@ -53,4 +53,40 @@ describe("IORoom protocol relay", () => {
         );
         expect(lastMessage(observer, "shout").data).toEqual({ text: "hello" });
     });
+
+    it("keeps the server identity when a client event includes operator and user", async () => {
+        const io = createAuthorizedIO({
+            platform: { mode: "detached" },
+        });
+        const room = io.server().createRoom("protocol-relay");
+        const sender = new TestSocket("session-1");
+        const observer = new TestSocket("session-2");
+
+        await registerAuthorized(room, sender, { io, user: { id: "ada" } });
+        await registerAuthorized(room, observer, { io, user: { id: "bob" } });
+
+        await room.onMessage(sender)({
+            data: JSON.stringify({
+                type: "shout",
+                data: { text: "hello" },
+                connectionId: "forged",
+                operator: {
+                    id: "staff",
+                    name: "Eve",
+                    email: "eve@evil.test",
+                    imageUrl: null,
+                },
+                room: "other-room",
+                user: { id: "eve" },
+            }),
+        });
+
+        const shout = lastMessage(observer, "shout");
+
+        expect(shout.data).toEqual({ text: "hello" });
+        expect(shout.user).toEqual({ id: "ada" });
+        expect(shout.operator).toBeNull();
+        expect(shout.connectionId).toBe("session-1");
+        expect(shout.room).toBe("protocol-relay");
+    });
 });

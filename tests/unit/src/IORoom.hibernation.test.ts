@@ -41,6 +41,8 @@ describe("IORoom hibernation", () => {
                         [
                             socket,
                             {
+                                kind: "user",
+                                operator: null,
                                 presence: null,
                                 quit: false,
                                 room: roomId,
@@ -111,6 +113,8 @@ describe("IORoom hibernation", () => {
                         [
                             socket,
                             {
+                                kind: "user",
+                                operator: null,
                                 presence: { cursor: 1 },
                                 quit: false,
                                 room: roomId,
@@ -129,8 +133,8 @@ describe("IORoom hibernation", () => {
         expect(room.getSize()).toBe(1);
         expect(room.listUsers()).toEqual({
             success: true,
-            pageInfo: { endCursor: "ada", hasNextPage: false },
-            users: [{ data: { id: "ada" } }],
+            pageInfo: { endCursor: { kind: "user", id: "ada" }, hasNextPage: false },
+            users: [{ data: { id: "ada" }, kind: "user", operator: null }],
         });
 
         await registerAuthorized(room, observer, { io, user: { id: "bob" } });
@@ -139,8 +143,11 @@ describe("IORoom hibernation", () => {
         expect(room.getSize()).toBe(2);
         expect(room.listUsers({ limit: 10 })).toEqual({
             success: true,
-            pageInfo: { endCursor: "bob", hasNextPage: false },
-            users: [{ data: { id: "ada" } }, { data: { id: "bob" } }],
+            pageInfo: { endCursor: { kind: "user", id: "bob" }, hasNextPage: false },
+            users: [
+                { data: { id: "ada" }, kind: "user", operator: null },
+                { data: { id: "bob" }, kind: "user", operator: null },
+            ],
         });
 
         await room.onMessage(observer)({
@@ -154,6 +161,8 @@ describe("IORoom hibernation", () => {
             {
                 connectionIds: ["session-1"],
                 data: { id: "ada" },
+                kind: "user",
+                operator: null,
                 presence: { cursor: 1 },
                 seq: { presence: expect.any(Number) },
             },
@@ -161,5 +170,58 @@ describe("IORoom hibernation", () => {
         expect(lastMessage(observer, "$othersReceived").data.myConnectionIds).toEqual([
             "session-2",
         ]);
+    });
+
+    it("keeps a hibernated operator out of listUsers and in operator stats", async () => {
+        const roomId = "hibernated-operator";
+        const socket = new TestSocket("session-staff");
+        const now = Date.now();
+        const operator = { id: "staff-1", name: "Ada Lovelace", imageUrl: null };
+        const io = createAuthorizedIO({
+            platform: () =>
+                new TestPlatform({
+                    hibernatedWebSockets: [socket],
+                    hibernatedUsers: new Map([[socket, { id: "owner:staff-1" }]]),
+                    lastPings: new Map([[socket, now]]),
+                    mode: "detached",
+                    serializedStates: new Map([
+                        [
+                            socket,
+                            {
+                                kind: "operator",
+                                operator,
+                                presence: { cursor: 1 },
+                                quit: false,
+                                room: roomId,
+                                seq: { presence: 1 },
+                                timers: {
+                                    ping: now - 60_000,
+                                },
+                            },
+                        ],
+                    ]),
+                }),
+        });
+        const room = io.server().createRoom(roomId);
+        const observer = new TestSocket("session-bob");
+
+        expect(room.getSize()).toBe(1);
+        expect(room.listUsers()).toEqual({
+            success: true,
+            pageInfo: { endCursor: null, hasNextPage: false },
+            users: [],
+        });
+
+        await registerAuthorized(room, observer, { io, user: { id: "bob" } });
+
+        expect(room.listUsers()).toEqual({
+            success: true,
+            pageInfo: { endCursor: { kind: "user", id: "bob" }, hasNextPage: false },
+            users: [{ data: { id: "bob" }, kind: "user", operator: null }],
+        });
+        expect(lastMessage(observer, "$registered").data.operators).toEqual({
+            connectionCount: 1,
+            userCount: 1,
+        });
     });
 });

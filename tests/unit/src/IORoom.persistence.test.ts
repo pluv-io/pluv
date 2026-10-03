@@ -120,6 +120,8 @@ describe("IORoom repeated persistence", () => {
                         hibernatedSockets.map((socket) => [
                             socket,
                             {
+                                kind: "user",
+                                operator: null,
                                 presence: null,
                                 quit: false,
                                 room: ROOM_ID,
