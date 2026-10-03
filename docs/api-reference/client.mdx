@@ -315,7 +315,7 @@ const myPresence = room.getMyPresence();
 
 Returns `UserInfo | null`
 
-Returns a user info object containing the authorized user `data` and the user's presence.
+Returns a user info object containing the authorized user `data`, presence, `kind`, and `operator` (`null` for users).
 
 ```ts
 const myself = room.getMyself();
@@ -325,10 +325,11 @@ const myself = room.getMyself();
 
 Returns `UserInfo | null`
 
-Returns a user info object for the given user id (`data.id`).
+Returns a user info object for one person. The id is `data.id` for both a user and an operator. Omit `kind` to look up a user. Pass `{ kind: "operator" }` to look up an operator. An id-only lookup does not return someone who is only an operator. A list of both is `getOthers`.
 
 ```ts
 const other = room.getOther(userId);
+const operator = room.getOther(userId, { kind: "operator" });
 ```
 
 ### PluvRoom.getOtherByConnectionId
@@ -345,27 +346,29 @@ const other = room.getOtherByConnectionId(connectionId);
 
 Returns `UserInfo[]`
 
-Returns all user info objects for other people in the room.
+Returns other people currently in the room. Defaults to users. Pass `{ kinds: ["operator"] }` or `{ kinds: ["user", "operator"] }` to include operators.
 
 ```ts
 const others = room.getOthers();
+const operators = room.getOthers({ kinds: ["operator"] });
 ```
 
 ### PluvRoom.getRoomStats
 
 Returns `RoomStats`
 
-Live socket count and unique-user count for the room.
+Live socket count and unique-user count. Defaults to users. The same `kinds` filter scopes both fields.
 
 ```ts
 const { connectionCount, userCount } = room.getRoomStats();
+const operators = room.getRoomStats({ kinds: ["operator"] });
 ```
 
 ### PluvRoom.listUsers
 
 Returns `Promise<ListUsersResult>`
 
-On-demand identity page (no presence). Forward-only cursor paging. Includes yourself. Grouped by `data.id`. `limit` defaults to 50 and must be an integer from 1 to 100. The promise always settles: check `success` before reading `users`. `FAILED` is a timeout (or a dropped request while the socket is open). `NOT_CONNECTED` is returned immediately when the room is not connected.
+On-demand identity page (no presence). Forward-only cursor paging. Users only, including yourself. Grouped by `data.id`. Operators are a live set (`getOthers({ kinds: ["operator"] })`), not a paged directory. `limit` defaults to 50 and must be an integer from 1 to 100. The promise always settles: check `success` before reading `users`. `FAILED` is a timeout (or a dropped request while the socket is open). `NOT_CONNECTED` is returned immediately when the room is not connected.
 
 ```ts
 const result = await room.listUsers({ cursor: null, limit: 50 });
@@ -512,7 +515,7 @@ unsubscribe();
 
 Returns `() => void`
 
-Subscribes to a given user info object. This only returns other users, not the currently connected user. Returns a function to unsubscribe.
+Subscribes to one other person, not the currently connected user. Omit `kind` for a user. Pass `{ kind: "operator" }` for an operator. Returns a function to unsubscribe.
 
 ```ts
 const unsubscribe = room.subscribe.other(userId, (userInfo) => {

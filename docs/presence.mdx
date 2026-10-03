@@ -111,6 +111,8 @@ const other = useOther(userId);
 const other = useOther(userId, (other) => {
   return other.presence.selectionId;
 });
+
+const operators = useOthers((others) => others, { kinds: ["operator"] });
 ```
 
 ### Room size
@@ -118,10 +120,12 @@ const other = useOther(userId, (other) => {
 ```tsx
 const { connectionCount, userCount } = useRoomStats();
 const viewers = useRoomStats((stats) => stats.userCount);
+const operators = useRoomStats((stats) => stats.userCount, { kinds: ["operator"] });
+```
 
 ### Listing identities (not realtime)
 
-`listUsers` is an on-demand page of everyone currently in the room (including you): identities only, no presence, and not a live store. People who join or leave while you page can be skipped or duplicated; re-fetch from the start if you need a consistent list. `limit` defaults to 50 and must be an integer from 1 to 100. The result is a success/error union. Call it from `useRoom()`:
+`listUsers` is an on-demand page of users currently in the room (including you): identities only, no presence, and not a live store. Operators stay on `getOthers({ kinds: ["operator"] })`. People who join or leave while you page can be skipped or duplicated; re-fetch from the start if you need a consistent list. `limit` defaults to 50 and must be an integer from 1 to 100. The result is a success/error union. Call it from `useRoom()`:
 
 ```tsx
 const room = useRoom();
