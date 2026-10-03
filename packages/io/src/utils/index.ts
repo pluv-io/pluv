@@ -1,3 +1,4 @@
+export { assertExhaustive } from "./assertExhaustive";
 export { assertPresenceFanoutBudget, resolveMaxConnections } from "./assertPresenceFanoutBudget";
 export { createInternalPluvRouter } from "./createInternalPluvRouter";
 export { assertEventNames } from "./assertEventNames";
@@ -10,7 +11,9 @@ export type { GroupedRoomUser } from "./groupLiveUsers";
 export { listLiveUsers } from "./listLiveUsers";
 export { pageLiveUsers } from "./pageLiveUsers";
 export { oneLine } from "./oneLine";
+export { parseOperatorUser } from "./parseOperatorUser";
 export { parsePluvSchema } from "./parsePluvSchema";
+export { getSessionKind, getSessionOperator } from "./sessionKind";
 export { pickBy } from "./pickBy";
 export { resolveIOSecret } from "./resolveIOSecret";
 export { resolveListUsersLimit } from "./resolveListUsersLimit";

@@ -81,6 +81,8 @@ export class NodeWebSocket extends AbstractWebSocket<WebSocket> {
         super(webSocket, config);
 
         this._state = {
+            kind: "user",
+            operator: null,
             presence: null,
             quit: false,
             room,
