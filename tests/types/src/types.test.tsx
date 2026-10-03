@@ -5,7 +5,7 @@ import { createIO, type InferIORoom } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { createBundle } from "@pluv/react";
 import { createTreaty } from "@pluv/treaty";
-import type { CrdtDocLike } from "@pluv/types";
+import type { CrdtDocLike, OperatorUser } from "@pluv/types";
 import { expectTypeOf } from "expect-type";
 import type { Array as YArray, Doc as YDoc } from "yjs";
 import { z } from "zod";
@@ -29,9 +29,14 @@ const treaty = createTreaty({
 const select = treaty.procedure.presence
     .input(z.object({ id: z.string().nullable() }))
     .resolve(({ id }, context) => {
-        const { user: sessionUser, presence, json } = context;
+        const { user: sessionUser, presence, json, operator } = context;
 
         expectTypeOf(sessionUser).toEqualTypeOf<{ id: string }>();
+        expectTypeOf(operator).toEqualTypeOf<{
+            id: string;
+            name: string;
+            imageUrl: string | null;
+        } | null>();
         expectTypeOf(presence).toEqualTypeOf<{
             readonly cursor: { readonly x: number; readonly y: number } | null;
         }>();
@@ -44,8 +49,13 @@ const select = treaty.procedure.presence
 
 const addMessage = treaty.procedure.storage
     .input(z.object({ text: z.string() }))
-    .resolve(({ text }, { user: sessionUser, json, presence, storage: docStorage }) => {
+    .resolve(({ text }, { user: sessionUser, json, presence, operator, storage: docStorage }) => {
         expectTypeOf(sessionUser).toEqualTypeOf<{ id: string }>();
+        expectTypeOf(operator).toEqualTypeOf<{
+            id: string;
+            name: string;
+            imageUrl: string | null;
+        } | null>();
         expectTypeOf(presence).toEqualTypeOf<{
             readonly cursor: { readonly x: number; readonly y: number } | null;
         }>();
@@ -79,6 +89,21 @@ const io = createIO()
         context: ({ env, meta, state }) => ({ env, meta, state }),
     });
 
+void io.createToken({
+    env: {},
+    request: {} as Request,
+    room: "test-room",
+    user: { id: "ada" },
+});
+void io.createToken({
+    env: {},
+    request: {} as Request,
+    room: "test-room",
+    // @ts-expect-error operator tokens are minted with io.server().createToken
+    kind: "operator",
+    operator: { id: "staff", name: "Ada", email: "ada@pluv.io", imageUrl: null },
+});
+
 const router = io.router({
     sendMessage: io.procedure
         .input(
@@ -88,6 +113,12 @@ const router = io.router({
         )
         .broadcast(({ message }, { session, presence, doc }) => {
             expectTypeOf(session.user).toEqualTypeOf<{ id: string }>();
+            expectTypeOf(session.kind).toEqualTypeOf<"user" | "operator">();
+            expectTypeOf(session.operator).toEqualTypeOf<{
+                id: string;
+                name: string;
+                imageUrl: string | null;
+            } | null>();
             expectTypeOf(presence).toEqualTypeOf<{
                 cursor: { x: number; y: number } | null;
             } | null>();
@@ -99,8 +130,16 @@ const router = io.router({
         }),
 });
 
+type MintOperator = OperatorUser & { email: string };
+
 const ioServer = io.server({
     getInitialStorage: () => null,
+    onGetOperator: ({ room, operator }) => {
+        expectTypeOf(room).toEqualTypeOf<string>();
+        expectTypeOf(operator).toEqualTypeOf(null as unknown as MintOperator);
+
+        return { id: `owner:${operator.id}` };
+    },
     router,
     onRoomDestroyed: async ({ context }) => {
         expectTypeOf<typeof context>().toEqualTypeOf<{
@@ -109,6 +148,23 @@ const ioServer = io.server({
             state: DurableObjectState;
         }>();
     },
+});
+
+void ioServer.createToken({
+    env: {},
+    request: {} as Request,
+    room: "test-room",
+    kind: "operator",
+    operator: { id: "staff", name: "Ada", email: "ada@pluv.io", imageUrl: null },
+});
+void ioServer.createToken({
+    env: {},
+    request: {} as Request,
+    room: "test-room",
+    kind: "operator",
+    operator: { id: "staff", name: "Ada", email: "ada@pluv.io", imageUrl: null },
+    // @ts-expect-error operator tokens do not accept user
+    user: { id: "ada" },
 });
 
 const client = createClient<typeof ioServer>().config({
@@ -156,6 +212,12 @@ room.subscribe.storage((exampleStorage) => {
 
 room.subscribe.connection((event) => {
     expectTypeOf<typeof event.authorization.user>().toEqualTypeOf<{ id: string } | null>();
+    expectTypeOf<typeof event.authorization.kind>().toEqualTypeOf<"user" | "operator">();
+    expectTypeOf<typeof event.authorization.operator>().toEqualTypeOf<{
+        id: string;
+        name: string;
+        imageUrl: string | null;
+    } | null>();
 });
 room.subscribe.myself((myself) => {
     expectTypeOf<typeof myself>().toExtend<{
@@ -182,6 +244,18 @@ room.subscribe.roomStats((stats) => {
     expectTypeOf(stats).toEqualTypeOf<{ connectionCount: number; userCount: number }>();
 });
 expectTypeOf(room.getOther("example-user-id")?.data).toEqualTypeOf<{ id: string } | undefined>();
+expectTypeOf(room.getOther("example-user-id")?.kind).toEqualTypeOf<
+    "user" | "operator" | undefined
+>();
+expectTypeOf(room.getOther).toBeCallableWith("example-user-id", { kind: "operator" });
+expectTypeOf(room.getOthers).toBeCallableWith({ kinds: ["operator"] });
+expectTypeOf(room.getOthers).toBeCallableWith({ kinds: ["user", "operator"] });
+expectTypeOf(room.getRoomStats).toBeCallableWith({ kinds: ["user", "operator"] });
+expectTypeOf(room.getRoomStats({ kinds: ["user", "operator"] })).toEqualTypeOf<{
+    connectionCount: number;
+    userCount: number;
+}>();
+expectTypeOf(room.getMyself()?.kind).toEqualTypeOf<"user" | "operator" | undefined>();
 expectTypeOf(room.getOtherByConnectionId("example-connection-id")?.presence).toEqualTypeOf<
     { cursor: { x: number; y: number } | null } | undefined
 >();
@@ -321,6 +395,7 @@ const {
     PluvRoomProvider,
     useDoc,
     useOther,
+    useOthers,
     usePresence,
     useRoomError,
     useRoomStats,
@@ -381,7 +456,14 @@ useStorageField("missing");
 
 expectTypeOf(useRoomStats()).toEqualTypeOf<{ connectionCount: number; userCount: number }>();
 expectTypeOf(useRoomStats((stats) => stats.userCount)).toEqualTypeOf<number>();
+expectTypeOf(
+    useRoomStats((stats) => stats.userCount, { kinds: ["operator"] }),
+).toEqualTypeOf<number>();
 expectTypeOf(useOther("example-user-id")?.data).toEqualTypeOf<{ id: string } | undefined>();
+expectTypeOf(useOther).toBeCallableWith("example-user-id", (other) => other.kind, {
+    kind: "operator",
+});
+expectTypeOf(useOthers).toBeCallableWith((others) => others, { kinds: ["operator"] });
 
 expectTypeOf(storageMessages[0]).toEqualTypeOf<string[] | null>();
 expectTypeOf(storageMessages[1]).toEqualTypeOf<YArray<string> | null>();

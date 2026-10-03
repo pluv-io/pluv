@@ -82,6 +82,8 @@ describe("IORoom presence", () => {
             {
                 connectionIds: ["session-1"],
                 data: { id: "session-1" },
+                kind: "user",
+                operator: null,
                 presence: { cursor: 1, name: "ada" },
                 seq: { presence: expect.any(Number) },
             },
@@ -102,6 +104,8 @@ describe("IORoom presence", () => {
             {
                 connectionIds: ["session-1"],
                 data: { id: "session-1" },
+                kind: "user",
+                operator: null,
                 presence: { cursor: 2, name: "ada" },
                 seq: { presence: expect.any(Number) },
             },
