@@ -1,5 +1,5 @@
 import type { AbstractCrdtDocFactory, InferJson, InferStorage } from "@pluv/crdt";
-import type { BaseUser, DeepReadonly, StandardSchemaV1 } from "@pluv/types";
+import type { BaseUser, DeepReadonly, OperatorUser, StandardSchemaV1 } from "@pluv/types";
 
 export type TreatyUserSchema<TUser extends BaseUser = BaseUser> = StandardSchemaV1<unknown, TUser>;
 
@@ -34,6 +34,7 @@ export type TreatyResolverContext<
     TJson extends Record<string, any>,
 > = {
     json: DeepReadonly<TJson>;
+    operator: OperatorUser | null;
     presence: DeepReadonly<TPresence>;
     user: TUser;
 };

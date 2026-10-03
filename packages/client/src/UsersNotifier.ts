@@ -4,10 +4,20 @@ import type {
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
     OthersSubscriptionEvent,
+    ParticipantKind,
+    ParticipantKindOptions,
+    ParticipantKindsOptions,
     UserInfo,
 } from "@pluv/types";
+import { resolveParticipantKind, resolveParticipantKinds } from "@pluv/types";
 import type { Subject } from "wonka";
 import { makeSubject, subscribe, TypeOfSource } from "wonka";
+import { assertExhaustive } from "./utils/assertExhaustive";
+
+export interface OtherSubjectParams {
+    id: string;
+    kind: ParticipantKind;
+}
 
 export class UsersNotifier<TIO extends IOLike, TPresence extends Record<string, any> = {}> {
     public readonly others = makeSubject<{
@@ -15,55 +25,99 @@ export class UsersNotifier<TIO extends IOLike, TPresence extends Record<string, 
         event: OthersSubscriptionEvent<TIO, TPresence>;
     }>();
 
-    private _otherSubjects = new Map<
-        [clientId: string][0],
-        Subject<Id<UserInfo<TIO, TPresence>> | null>
-    >();
+    private readonly _otherSubjects = {
+        operator: new Map<string, Subject<Id<UserInfo<TIO, TPresence>> | null>>(),
+        user: new Map<string, Subject<Id<UserInfo<TIO, TPresence>> | null>>(),
+    };
 
     public clear(): void {
-        this._otherSubjects.forEach((subject) => {
+        this._subjectsForKind("user").forEach((subject) => {
             subject.next(null);
         });
-
-        this._otherSubjects.clear();
+        this._subjectsForKind("operator").forEach((subject) => {
+            subject.next(null);
+        });
+        this._subjectsForKind("user").clear();
+        this._subjectsForKind("operator").clear();
     }
 
-    public delete(clientId: string): void {
-        this.other(clientId).next(null);
-        this._otherSubjects.delete(clientId);
+    public delete(params: OtherSubjectParams): void {
+        const { id, kind } = params;
+        const subjects = this._subjectsForKind(kind);
+        const subject = subjects.get(id);
+
+        if (!subject) return;
+
+        subject.next(null);
+        subjects.delete(id);
     }
 
-    public other(clientId: string): Subject<Id<UserInfo<TIO, TPresence>> | null> {
-        const subject = this._otherSubjects.get(clientId);
+    public other(params: OtherSubjectParams): Subject<Id<UserInfo<TIO, TPresence>> | null> {
+        const { id, kind } = params;
+        const subjects = this._subjectsForKind(kind);
+        const subject = subjects.get(id);
 
         if (subject) return subject;
 
-        const newSubject = makeSubject<Id<UserInfo<TIO, TPresence>>>();
+        const created = makeSubject<Id<UserInfo<TIO, TPresence>> | null>();
 
-        this._otherSubjects.set(clientId, newSubject);
+        subjects.set(id, created);
 
-        return newSubject;
+        return created;
     }
 
     public subscribeOther(
-        clientId: string,
+        id: string,
         callback: OtherSubscriptionCallback<TIO, TPresence>,
+        options?: ParticipantKindOptions,
     ): () => void {
-        const source = this.other(clientId).source;
-        const subscription = subscribe(callback)(source);
+        const kind = resolveParticipantKind(options?.kind);
+        const subscription = subscribe(callback)(this.other({ id, kind }).source);
 
         return () => {
             subscription.unsubscribe();
         };
     }
 
-    public subscribeOthers(callback: OthersSubscriptionCallback<TIO, TPresence>): () => void {
+    public subscribeOthers(
+        callback: OthersSubscriptionCallback<TIO, TPresence>,
+        options?: ParticipantKindsOptions,
+    ): () => void {
+        const kinds = resolveParticipantKinds(options?.kinds);
         const subscription = subscribe<TypeOfSource<typeof this.others.source>>(
-            ({ others, event }) => callback(others, event),
+            ({ others, event }) => {
+                switch (event.kind) {
+                    case "clear":
+                    case "sync":
+                        break;
+                    case "enter":
+                    case "leave":
+                    case "update":
+                        if (!kinds.includes(event.user.kind)) return;
+                        break;
+                    default:
+                        assertExhaustive(event);
+                }
+
+                callback(others, event);
+            },
         )(this.others.source);
 
         return () => {
             subscription.unsubscribe();
         };
+    }
+
+    private _subjectsForKind(
+        kind: ParticipantKind,
+    ): Map<string, Subject<Id<UserInfo<TIO, TPresence>> | null>> {
+        switch (kind) {
+            case "operator":
+                return this._otherSubjects.operator;
+            case "user":
+                return this._otherSubjects.user;
+            default:
+                return assertExhaustive(kind);
+        }
     }
 }

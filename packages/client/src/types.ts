@@ -11,6 +11,8 @@ import type {
     IOLike,
     JsonObject,
     MaybePromise,
+    OperatorUser,
+    ParticipantKind,
     StandardSchemaV1,
     UserInfo,
 } from "@pluv/types";
@@ -32,6 +34,8 @@ export type InferClientOutput<TDefs extends ClientDefs> = InferEventsOutput<TDef
 export interface AuthorizationState<TIO extends IOLike> {
     token: string | null;
     user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>> | null;
+    kind: ParticipantKind;
+    operator: OperatorUser | null;
 }
 
 export type EventResolver<
