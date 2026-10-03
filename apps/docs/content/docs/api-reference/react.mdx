@@ -323,19 +323,20 @@ const userId = useMyself(({ data }) => data.id);
 
 Returns `UserInfo | null`
 
-Returns the user-info object for another person by `data.id`.
+Returns one other person by `data.id`. Omit `kind` for the user. Pass `{ kind: "operator" }` for the operator. An id-only lookup does not return someone who is only an operator.
 
 ```tsx
 const other = useOther(userId);
 
 const selectionId = useOther(userId, (other) => other.presence.selectionId);
+const operator = useOther(userId, (other) => other, { kind: "operator" });
 ```
 
 ### useOthers
 
 Returns `readonly UserInfo[]`
 
-Returns all user-info objects for other people in the room. This may trigger a lot of re-renders if presence updates frequently.
+Returns other people currently in the room. Defaults to users. This may trigger a lot of re-renders if presence updates frequently.
 
 > **Note**
 > Consider using this hook only for deriving others' `data.id` values to pass into `useOther`.
@@ -346,6 +347,8 @@ const others = useOthers();
 const userIds = useOthers((others) => {
   return others.map(({ data }) => data.id);
 });
+
+const operators = useOthers((others) => others, { kinds: ["operator"] });
 ```
 
 ### useRedo
@@ -366,11 +369,12 @@ redo();
 
 Returns `RoomStats`
 
-Live socket count (`connectionCount`) and unique-user count (`userCount`). Pass a selector to subscribe to a slice.
+Live socket count (`connectionCount`) and unique-user count (`userCount`). Defaults to users. Pass `kinds` on the options bag to scope the same two fields.
 
 ```ts
 const { connectionCount, userCount } = useRoomStats();
 const viewers = useRoomStats((stats) => stats.userCount);
+const operators = useRoomStats((stats) => stats.userCount, { kinds: ["operator"] });
 ```
 
 ### usePresence

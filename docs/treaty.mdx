@@ -49,7 +49,7 @@ export const treaty = t.router({
 
 `user` is required. `presence` and `storage` are optional. Procedures are optional too. `createTreaty({ user })` with no `.router()` is valid.
 
-Presence resolvers receive `{ user, presence, json }`. Storage resolvers also receive writable `storage`. `presence` is a snapshot; mutating it does not update the room. Presence updates only via the returned patch. `json` is computed on first access. Invoke them on the room. Remotes apply the resulting `$presenceUpdated` / storage updates and do **not** re-run `select` / `addMessage`.
+Presence resolvers receive `{ user, presence, json, operator }`. Storage resolvers also receive writable `storage`. `user` is always the treaty user after a successful join. `operator` is set for operators and `null` for users. `presence` is a snapshot; mutating it does not update the room. Presence updates only via the returned patch. `json` is computed on first access. Invoke them on the room. Remotes apply the resulting `$presenceUpdated` / storage updates and do **not** re-run `select` / `addMessage`.
 
 ```ts
 room.presence.select({ id: "item-1" });
