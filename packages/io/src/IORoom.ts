@@ -17,6 +17,8 @@ import type {
     ListUsersOptions,
     ListUsersResult,
     Maybe,
+    OperatorUser,
+    ParticipantKind,
 } from "@pluv/types";
 import colors from "kleur";
 import type {
@@ -58,9 +60,13 @@ import type {
     WebSocketType,
 } from "./types";
 import {
+    assertExhaustive,
     getRoomStatsFromSessions,
+    getSessionKind,
+    getSessionOperator,
     oneLine,
     pageLiveUsers,
+    parseOperatorUser,
     parsePluvSchema,
     resolveIOSecret,
     resolveMaxConnections,
@@ -79,6 +85,7 @@ interface BroadcastParams<T extends IODefs> {
      * Envelope user when the sender session is already gone (e.g. `$exit`).
      */
     senderUser?: InferTreatyUser<T["treaty"]> | null;
+    senderOperator?: OperatorUser | null;
 }
 
 export interface IORoomListeners<T extends IODefs = IODefs> {
@@ -160,7 +167,20 @@ export type IORoomConfig<T extends IODefs = IODefs> = Partial<IORoomListeners<T>
     treaty: T["treaty"];
 };
 
+type AuthorizedIdentity<TUser> =
+    | {
+          kind: "operator";
+          operator: OperatorUser;
+          user: TUser;
+      }
+    | {
+          kind: "user";
+          operator: null;
+          user: TUser;
+      };
+
 interface SendMessageSender {
+    operator: OperatorUser | null;
     sessionId: string | null;
     user: JsonObject | null;
 }
@@ -345,9 +365,16 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
 
             this._sessions.set(sessionId, pluvWs);
 
-            const userId = pluvWs.user?.id;
+            const session = pluvWs.user ? pluvWs.session : null;
 
-            if (!!userId) this._sessions.addUserSession(userId, sessionId);
+            if (!session) return;
+
+            const kind = getSessionKind(session);
+            const participantId = pluvWs.user?.id ?? null;
+
+            if (participantId) {
+                this._sessions.addParticipantSession({ id: participantId, kind, sessionId });
+            }
         });
 
         this._initialize();
@@ -503,10 +530,10 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 await this._initialized;
             }
 
-            const user = await this._getAuthorizedUser(token, registerConfig);
+            const identity = await this._getAuthorizedUser(token, registerConfig);
             const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
 
-            if (!user) {
+            if (!identity) {
                 this._logDebug(colors.blue("Authorization failed for connection"));
                 pluvWs.handleError({ error: new Error("Not authorized"), room: this.id });
                 pluvWs.close(3000, "WebSocket unauthorized.");
@@ -514,17 +541,25 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 return;
             }
 
-            const latest = this._sessions.getLatestPresence(user.id);
+            const { kind, operator, user } = identity;
+            const participantId = user.id;
+            const latest = this._sessions.getLatestPresence(participantId, kind);
             const prevState = pluvWs.state;
 
             pluvWs.user = user;
 
             this._platform.setSerializedState(pluvWs, {
                 ...prevState,
+                kind,
+                operator,
                 presence: latest.presence,
                 seq: { ...prevState.seq, presence: latest.seq },
             });
-            this._sessions.addUserSession(user.id, pluvWs.sessionId);
+            this._sessions.addParticipantSession({
+                id: participantId,
+                kind,
+                sessionId: pluvWs.sessionId,
+            });
 
             this._logDebug(
                 `${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`,
@@ -560,7 +595,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     }
 
     private async _broadcast(params: BroadcastParams<T>): Promise<void> {
-        const { message, senderId, senderUser } = params;
+        const { message, senderId, senderUser, senderOperator } = params;
         const type = (message as { type: string }).type;
 
         if (typeof senderId !== "string" && !isServerOriginEvent(type)) return;
@@ -568,12 +603,19 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         const sender = senderId ? (this._sessions.get(senderId) ?? null) : null;
         const session = sender?.session ?? null;
         const user = senderUser ?? session?.user ?? null;
+        const operator = (() => {
+            if (senderOperator !== undefined) return senderOperator;
+            if (session) return getSessionOperator(session);
+
+            return null;
+        })();
 
         await this._platform.pubSub.publish(this.id, {
+            ...message,
             connectionId: senderId ?? null,
+            operator,
             room: this.id,
             user,
-            ...message,
         } as IOPubSubEventMessage<any>);
     }
 
@@ -586,6 +628,9 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
 
             const session = this._sessions.toSession(deleted);
             const user = session.user;
+            const kind = getSessionKind(session);
+            const operator = getSessionOperator(session);
+            const participantId = user.id;
 
             this._logDebug(
                 `${colors.blue(`Unregistering connection for room ${this.id}:`)} ${sessionId}`,
@@ -598,14 +643,18 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                     data: {
                         sessionId,
                         user,
+                        operator,
                     },
                 } as BroadcastMessage<T>,
                 senderId: sessionId,
                 senderUser: user,
+                senderOperator: operator,
             });
             this._throttles.roomStats.schedule();
 
-            if (!!user) this._sessions.removeUserSession(user.id, sessionId);
+            if (!!participantId) {
+                this._sessions.removeParticipantSession({ id: participantId, kind, sessionId });
+            }
 
             try {
                 const [doc, context] = await Promise.all([this._doc, this._getContext()]);
@@ -615,6 +664,8 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                     this._listeners.onUserDisconnected({
                         context,
                         encodedState,
+                        kind,
+                        operator,
                         platform: this._platform,
                         room: this.id,
                         user,
@@ -655,6 +706,8 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         const sessionId = session.id;
         const presence = session.presence;
         const user = session.user;
+        const kind = getSessionKind(session);
+        const operator = getSessionOperator(session);
 
         const [doc, context] = await Promise.all([this._doc, this._getContext()]);
         const encodedState = doc.isEmpty() ? null : doc.getEncodedState();
@@ -670,9 +723,12 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                     state: encodedState,
                     seq: { presence: session.seq.presence },
                     userCount: stats.userCount,
+                    kind,
+                    operator,
+                    operators: stats.operators,
                 },
             },
-            { sessionId, user },
+            { sessionId, user, operator },
         );
 
         try {
@@ -680,6 +736,8 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 this._listeners.onUserConnected({
                     context,
                     encodedState,
+                    kind,
+                    operator,
                     platform: this._platform,
                     room: this.id,
                     user,
@@ -726,7 +784,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     private async _getAuthorizedUser(
         token: Maybe<string>,
         options: WebSocketRegisterConfig<T["platform"]>,
-    ): Promise<InferTreatyUser<T["treaty"]> | null> {
+    ): Promise<AuthorizedIdentity<InferTreatyUser<T["treaty"]>> | null> {
         const secret = resolveIOSecret(this._secret, options);
 
         if (!token) return null;
@@ -753,12 +811,39 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             return null;
         }
 
-        try {
-            return parsePluvSchema(this._treaty.user, payload.user) as InferTreatyUser<T["treaty"]>;
-        } catch {
-            this._logDebug(`${colors.blue("Token fails validation:")} ${token}`);
+        switch (payload.kind) {
+            case "operator": {
+                try {
+                    return {
+                        kind: "operator",
+                        operator: parseOperatorUser(payload.operator),
+                        user: parsePluvSchema(this._treaty.user, payload.user) as InferTreatyUser<
+                            T["treaty"]
+                        >,
+                    };
+                } catch {
+                    this._logDebug(`${colors.blue("Operator token fails validation:")} ${token}`);
 
-            return null;
+                    return null;
+                }
+            }
+            case "user": {
+                try {
+                    return {
+                        kind: "user",
+                        operator: null,
+                        user: parsePluvSchema(this._treaty.user, payload.user) as InferTreatyUser<
+                            T["treaty"]
+                        >,
+                    };
+                } catch {
+                    this._logDebug(`${colors.blue("Token fails validation:")} ${token}`);
+
+                    return null;
+                }
+            }
+            default:
+                return assertExhaustive(payload.kind);
         }
     }
 
@@ -852,6 +937,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                     await promise;
 
                     const sender: SendMessageSender = {
+                        operator: message.operator ?? null,
                         sessionId: message.connectionId,
                         user: message.user,
                     };
@@ -993,6 +1079,8 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                     InferEventsOutput<T["events"]>,
                     keyof InferEventsOutput<T["events"]>
                 >,
+                kind: session.kind,
+                operator: session.operator,
                 platform: this._platform,
                 room: this.id,
                 user: session.user,
@@ -1055,7 +1143,10 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                     if (!self) return;
 
                     const messages = Object.entries(self).map(async ([type, data]) => {
-                        await this._sendSelfMessage({ data, type }, { sessionId, user });
+                        await this._sendSelfMessage(
+                            { data, type },
+                            { sessionId, user, operator: getSessionOperator(session) },
+                        );
                     });
 
                     await Promise.all(messages);
@@ -1114,6 +1205,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         const [doc, context] = await Promise.all([this._doc, this._getContext()]);
         const patch = procedure.apply(data, {
             user: session.user,
+            operator: session.operator ?? null,
             presence: session.presence,
             doc,
         });
@@ -1169,6 +1261,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         const apply = (): void => {
             procedure.apply(data, {
                 user: session.user,
+                operator: session.operator ?? null,
                 presence: session.presence,
                 doc,
             });
@@ -1236,6 +1329,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 await this._sendMessage(pluvWs, {
                     connectionId,
                     data,
+                    operator: sender?.operator ?? null,
                     room,
                     type,
                     user: sender?.user ?? null,
@@ -1258,9 +1352,11 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
 
         const session = pluvWs.session;
         const user = session.user;
+        const operator = sender?.operator ?? getSessionOperator(session);
 
         await this._sendMessage(pluvWs, {
             connectionId: senderId,
+            operator,
             room: this.id,
             user,
             ...message,

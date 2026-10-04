@@ -48,6 +48,55 @@ export const io = createIO()
 export const ioServer = io.server();
 ```
 
+## Owner operator sessions
+
+App owners can join the same room WebSocket with a different JWT **kind**, not a second protocol and not impersonation. Opt in with `onGetOperator` on `io.server()`. The hook maps a closed `OperatorUser` to your treaty user, and that user is stored on the token. Missing hook, `null`, or a parse failure means no token. Mint operator tokens with `ioServer.createToken`.
+
+```ts
+type OperatorUser = {
+  id: string;
+  name: string;
+  imageUrl: string | null;
+};
+
+export const io = createIO()
+  .platform(platformNode())
+  .config({
+    treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
+  });
+
+export const ioServer = io.server({
+  onGetOperator: ({ room, operator }) => {
+    if (!canOperate(room, operator.id)) return null;
+
+    return { id: `owner:${operator.id}`, name: operator.name };
+  },
+});
+
+const token = await ioServer.createToken({
+  request: c.req.raw,
+  room,
+  kind: "operator",
+  operator: {
+    id: owner.id,
+    name: owner.name,
+    email: owner.email,
+    imageUrl: owner.imageUrl,
+  },
+});
+```
+
+`email` is passed to `onGetOperator` while minting, then dropped. It is not stored on the token, the session, or room events.
+
+`register` reads `user` and `operator` from the token. The hook does not run again. A token stays valid until it expires. An open socket keeps that answer until it disconnects. The websocket is not tied to the token lifetime.
+
+`maxConnections` and room lifetime count every open socket, including operators. Default `connectionCount` and `userCount` stay users. An open operator socket uses a slot and holds the room after the last user leaves.
+
+`listUsers` stays users. Default `getOthers`, `useOthers`, `getRoomStats`, and `useRoomStats` stay users. Pass `{ kinds: ["operator"] }` or `{ kinds: ["user", "operator"] }` on `getOthers`, `useOthers`, `getRoomStats`, and `useRoomStats`. A single person is `getOther` / `useOther` with that user's id. Pass `{ kind: "operator" }` for the operator. Omit `kind` and a person who is only an operator is null. Treaty resolvers still receive mapped `user`; operators also get `operator`. ACL on `user.id` sees that mapped identity — prefer derived ids that do not collide with live users unless the owner is the same person in two tabs (still two kinds; presence is not shared).
+
+Hosted `@pluv/platform-pluv` cannot mint operator tokens yet.
+
 ## Setup an authorization endpoint
 
 To add custom authorization, you'll need to define an http endpoint to return a JWT from.

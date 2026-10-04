@@ -3,6 +3,12 @@ import type { Id } from "../general";
 import type { CrdtDocLike } from "./crdt";
 import type { ConnectionState, StorageState } from "./enums";
 import type {
+    OperatorUser,
+    ParticipantKind,
+    ParticipantKindOptions,
+    ParticipantKindsOptions,
+} from "./operator";
+import type {
     InferIOAuthorize,
     InferIOAuthorizeUser,
     InferIOInput,
@@ -19,6 +25,8 @@ import type {
 export interface AuthorizationState<TIO extends IOLike> {
     token: string | null;
     user: Id<InferIOAuthorizeUser<InferIOAuthorize<TIO>>> | null;
+    kind: ParticipantKind;
+    operator: OperatorUser | null;
 }
 
 export type OtherSubscriptionCallback<TIO extends IOLike, TPresence extends Record<string, any>> = (
@@ -28,6 +36,7 @@ export type OtherSubscriptionCallback<TIO extends IOLike, TPresence extends Reco
 export type OtherSubscriptionFn<TIO extends IOLike, TPresence extends Record<string, any>> = (
     userId: string,
     callback: OtherSubscriptionCallback<TIO, TPresence>,
+    options?: ParticipantKindOptions,
 ) => () => void;
 
 export type OthersSubscriptionEvent<TIO extends IOLike, TPresence extends Record<string, any>> =
@@ -47,6 +56,7 @@ export type OthersSubscriptionCallback<
 
 export type OthersSubscriptionFn<TIO extends IOLike, TPresence extends Record<string, any>> = (
     callback: OthersSubscriptionCallback<TIO, TPresence>,
+    options?: ParticipantKindsOptions,
 ) => () => void;
 
 export interface StateNotifierSubjects<TIO extends IOLike, TPresence extends Record<string, any>> {
@@ -86,6 +96,8 @@ export interface UserInfo<
     TPresence extends Record<string, any> = {},
 > extends UserRecord<TIO> {
     presence: TPresence;
+    kind: ParticipantKind;
+    operator: OperatorUser | null;
 }
 
 export type RoomStats = {
@@ -295,13 +307,16 @@ export interface RoomLike<
 
     getMyself(): Id<UserInfo<TIO, TPresence>> | null;
 
-    getOther(userId: string): Id<UserInfo<TIO, TPresence>> | null;
+    getOther(userId: string, options?: ParticipantKindOptions): Id<UserInfo<TIO, TPresence>> | null;
 
-    getOtherByConnectionId(connectionId: string): Id<UserInfo<TIO, TPresence>> | null;
+    getOtherByConnectionId(
+        connectionId: string,
+        options?: ParticipantKindsOptions,
+    ): Id<UserInfo<TIO, TPresence>> | null;
 
-    getOthers(): readonly Id<UserInfo<TIO, TPresence>>[];
+    getOthers(options?: ParticipantKindsOptions): readonly Id<UserInfo<TIO, TPresence>>[];
 
-    getRoomStats(): RoomStats;
+    getRoomStats(options?: ParticipantKindsOptions): RoomStats;
 
     getStorage<TKey extends keyof TStorage>(type: TKey): TStorage[TKey] | null;
 

@@ -118,6 +118,7 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
             room,
             type: "$error" as const,
             user: (session?.user ?? null) as IOEventMessage<any>["user"],
+            operator: session?.operator ?? null,
         });
     }
 

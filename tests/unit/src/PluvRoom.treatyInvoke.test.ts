@@ -44,6 +44,7 @@ const seedMyself = (room: MockedRoom<TestDefs>): void => {
     )._usersManager.setMyself({
         connectionId: "mocked",
         data: { id: "ada" },
+        kind: "user",
         presence: { selectionId: null },
     });
 };
@@ -108,6 +109,7 @@ describe("PluvRoom treaty invoke", () => {
         internals._usersManager.setMyself({
             connectionId: "conn-1",
             data: { id: "ada" },
+            kind: "user",
             presence: { selectionId: null },
         });
 
@@ -138,6 +140,7 @@ describe("PluvRoom treaty invoke", () => {
         internals._usersManager.setMyself({
             connectionId: "conn-1",
             data: { id: "ada" },
+            kind: "user",
             presence: { selectionId: null },
         });
 
@@ -206,5 +209,61 @@ describe("MockedRoom treaty invoke", () => {
         expect(() =>
             (room.storage as (name: string, data: unknown) => void)("missing", { text: "x" }),
         ).toThrow('Unknown storage procedure "missing"');
+    });
+
+    it("can enter as an operator and keep occupant-only defaults", async () => {
+        const operator = {
+            id: "staff-1",
+            name: "Ada",
+            imageUrl: null,
+        };
+        const room = new MockedRoom<TestDefs>("mocked-operator", {
+            initialPresence: { selectionId: null },
+            initialStorage: { messages: [] },
+            myself: {
+                data: { id: "owner:staff-1" },
+                kind: "operator",
+                operator,
+            },
+            presence: treaty.presence,
+            storage: treaty.storage,
+            treaty,
+        });
+        const internals = room as unknown as {
+            _usersManager: { addConnection: (params: any) => void };
+        };
+
+        internals._usersManager.addConnection({
+            connectionId: "ada-tab",
+            data: { id: "ada" },
+            kind: "user",
+            presence: { selectionId: null },
+        });
+
+        expect(room.getMyself()).toEqual({
+            data: { id: "owner:staff-1" },
+            kind: "operator",
+            operator: { id: "staff-1", name: "Ada", imageUrl: null },
+            presence: { selectionId: null },
+        });
+        expect(room.getOthers()).toHaveLength(1);
+        expect(room.getOthers({ kinds: ["operator"] })).toHaveLength(0);
+        expect(room.getRoomStats()).toEqual({ connectionCount: 1, userCount: 1 });
+        expect(room.getRoomStats({ kinds: ["operator"] })).toEqual({
+            connectionCount: 1,
+            userCount: 1,
+        });
+        expect(room.getRoomStats({ kinds: ["user", "operator"] })).toEqual({
+            connectionCount: 2,
+            userCount: 2,
+        });
+        await expect(room.listUsers()).resolves.toMatchObject({
+            success: true,
+            users: [{ data: { id: "ada" } }],
+        });
+
+        await room.presence.select({ id: "item" });
+
+        expect(room.getMyPresence()).toEqual({ selectionId: "item" });
     });
 });

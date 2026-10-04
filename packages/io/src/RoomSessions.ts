@@ -1,8 +1,15 @@
-import type { JsonObject } from "@pluv/types";
+import type { JsonObject, ParticipantKind } from "@pluv/types";
 import { AbstractWebSocket } from "./AbstractWebSocket";
 import { PING_TIMEOUT_MS } from "./constants";
 import type { IODefs } from "./IODefs";
 import type { WebSocketSession, WebSocketType } from "./types";
+import { assertExhaustive, getSessionKind } from "./utils";
+
+export interface ParticipantSessionParams {
+    id: string;
+    kind: ParticipantKind;
+    sessionId: string;
+}
 
 export interface PatchPresenceParams {
     presence: JsonObject | null;
@@ -16,8 +23,11 @@ export interface RoomSessionsConfig<T extends IODefs = IODefs> {
 
 export class RoomSessions<T extends IODefs = IODefs> {
     private readonly _platform: T["platform"];
+    private readonly _participantSessions = {
+        operator: new Map<string, Set<string>>(),
+        user: new Map<string, Set<string>>(),
+    };
     private readonly _sessions = new Map<[sessionId: string][0], AbstractWebSocket>();
-    private readonly _userSessions = new Map<[userId: string][0], Set<[sessionId: string][0]>>();
 
     constructor(config: RoomSessionsConfig<T>) {
         this._platform = config.platform;
@@ -28,10 +38,16 @@ export class RoomSessions<T extends IODefs = IODefs> {
     }
 
     public addUserSession(userId: string, sessionId: string): Set<[sessionId: string][0]> {
-        const set = this._userSessions.get(userId) ?? new Set<string>();
+        return this.addParticipantSession({ id: userId, kind: "user", sessionId });
+    }
+
+    public addParticipantSession(params: ParticipantSessionParams): Set<[sessionId: string][0]> {
+        const { id, kind, sessionId } = params;
+        const sessions = this._sessionsForKind(kind);
+        const set = sessions.get(id) ?? new Set<string>();
         const updated = set.add(sessionId);
 
-        this._userSessions.set(userId, updated);
+        sessions.set(id, updated);
 
         return updated;
     }
@@ -55,11 +71,14 @@ export class RoomSessions<T extends IODefs = IODefs> {
         return this._sessions.get(sessionId);
     }
 
-    public getLatestPresence(userId: string): {
+    public getLatestPresence(
+        id: string,
+        kind: ParticipantKind = "user",
+    ): {
         presence: JsonObject | null;
         seq: number | null;
     } {
-        const sessionIds = Array.from(this._userSessions.get(userId)?.values() ?? []);
+        const sessionIds = Array.from(this._sessionsForKind(kind).get(id)?.values() ?? []);
 
         if (!sessionIds.length) return { presence: null, seq: null };
 
@@ -72,8 +91,10 @@ export class RoomSessions<T extends IODefs = IODefs> {
                 const session = pluvWs.session;
                 const presence = session.presence;
                 const seq = session.seq.presence;
+                const sessionKind = getSessionKind(session);
+                const participantId = session.user?.id;
 
-                if (session.user.id !== userId) return state;
+                if (sessionKind !== kind || participantId !== id) return state;
                 if (typeof state.seq !== "number") return { presence, seq };
                 if (typeof seq !== "number") return state;
 
@@ -133,7 +154,15 @@ export class RoomSessions<T extends IODefs = IODefs> {
         userId: string,
         sessionId: string,
     ): Set<[sessionId: string][0]> | null {
-        const set = this._userSessions.get(userId);
+        return this.removeParticipantSession({ id: userId, kind: "user", sessionId });
+    }
+
+    public removeParticipantSession(
+        params: ParticipantSessionParams,
+    ): Set<[sessionId: string][0]> | null {
+        const { id, kind, sessionId } = params;
+        const sessions = this._sessionsForKind(kind);
+        const set = sessions.get(id);
 
         if (!set) return null;
 
@@ -141,7 +170,7 @@ export class RoomSessions<T extends IODefs = IODefs> {
 
         if (!!set.size) return set;
 
-        this._userSessions.delete(userId);
+        sessions.delete(id);
 
         return set;
     }
@@ -175,9 +204,13 @@ export class RoomSessions<T extends IODefs = IODefs> {
         if (!pluvWs) return;
 
         const wsSession = pluvWs.session;
-        const user = wsSession.user;
-        const sessionIds = user
-            ? new Set<string>([...(this._userSessions.get(user.id) ?? []), sessionId])
+        const kind = getSessionKind(wsSession);
+        const participantId = wsSession.user?.id;
+        const sessionIds = participantId
+            ? new Set<string>([
+                  ...(this._sessionsForKind(kind).get(participantId) ?? []),
+                  sessionId,
+              ])
             : new Set([sessionId]);
         const currentMax = Array.from(sessionIds).reduce<number | null>((max, sId) => {
             const seq = this._sessions.get(sId)?.session.seq.presence ?? null;
@@ -218,6 +251,17 @@ export class RoomSessions<T extends IODefs = IODefs> {
 
     public values(): IterableIterator<AbstractWebSocket> {
         return this._sessions.values();
+    }
+
+    private _sessionsForKind(kind: ParticipantKind): Map<string, Set<string>> {
+        switch (kind) {
+            case "operator":
+                return this._participantSessions.operator;
+            case "user":
+                return this._participantSessions.user;
+            default:
+                return assertExhaustive(kind);
+        }
     }
 
     private _isLive(pluvWs: AbstractWebSocket, currentTime: number): boolean {

@@ -1,4 +1,4 @@
-import type { StandardSchemaV1, TreatyProcedureLike } from "@pluv/types";
+import type { OperatorUser, StandardSchemaV1, TreatyProcedureLike } from "@pluv/types";
 import { parseProcedureInput } from "./parseProcedureInput";
 import { toStorageResolverContext } from "./toStorageResolverContext";
 import type {
@@ -59,6 +59,7 @@ export class TreatyStorageProcedure<
         data: unknown,
         params: {
             doc: TreatyResolverDoc<TJson, TNative>;
+            operator?: OperatorUser | null;
             presence?: TPresence | null;
             user: TUser;
         },

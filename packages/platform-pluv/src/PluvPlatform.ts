@@ -76,6 +76,12 @@ export class PluvPlatform extends AbstractPlatform<
     private readonly _webhookSecret?: WebhookSecret;
 
     public _createToken = async (params: JWTEncodeParams<any, any>): Promise<string> => {
+        if (params.kind === "operator") {
+            throw new Error(
+                "Operator tokens are not supported on @pluv/platform-pluv until hosted authorization accepts kind/operator",
+            );
+        }
+
         const parsed = parsePluvSchema(params.authorize.user, params.user);
 
         const [endpoints, publicKey, secretKey] = await Promise.all([

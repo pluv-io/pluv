@@ -90,6 +90,8 @@ describe("IORoom multi-session presence", () => {
             {
                 connectionIds: ["session-1", "session-2"],
                 data: { id: "ada" },
+                kind: "user",
+                operator: null,
                 presence: { cursor: 2, name: "ada" },
                 seq: { presence: expect.any(Number) },
             },
@@ -106,6 +108,8 @@ describe("IORoom multi-session presence", () => {
                 {
                     connectionIds: ["session-3"],
                     data: { id: "bob" },
+                    kind: "user",
+                    operator: null,
                     presence: { name: "bob" },
                     seq: { presence: expect.any(Number) },
                 },
@@ -142,6 +146,8 @@ describe("IORoom multi-session presence", () => {
             {
                 connectionIds: ["session-2"],
                 data: { id: "ada" },
+                kind: "user",
+                operator: null,
                 presence: { cursor: 2, name: "ada" },
                 seq: { presence: expect.any(Number) },
             },
@@ -198,6 +204,8 @@ describe("IORoom multi-session presence", () => {
             {
                 connectionIds: ["session-1", "session-2"],
                 data: { id: "ada" },
+                kind: "user",
+                operator: null,
                 presence: { cursor: 2, name: "ada" },
                 seq: { presence: expect.any(Number) },
             },
@@ -210,6 +218,8 @@ describe("IORoom multi-session presence", () => {
             {
                 connectionIds: ["session-1", "session-2"],
                 data: { id: "ada" },
+                kind: "user",
+                operator: null,
                 presence: { cursor: 3, name: "ada" },
                 seq: { presence: expect.any(Number) },
             },
