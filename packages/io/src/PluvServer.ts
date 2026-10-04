@@ -1,6 +1,6 @@
 import type { AbstractCrdtDocFactory, HasStorage } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
-import type { IOLike, Id, InferTreatyUser, NonNilProps } from "@pluv/types";
+import type { IOLike, Id, InferTreatyUser, NonNilProps, OnGetOperator } from "@pluv/types";
 import colors from "kleur";
 import type { InferRoomContextType } from "./AbstractPlatform";
 import { createBaseRouter } from "./createBaseRouter";
@@ -8,7 +8,7 @@ import type { IODefs, IOLikeFromDefs, SetKey } from "./IODefs";
 import { IORoom } from "./IORoom";
 import type { PluvIO } from "./PluvIO";
 import { PluvRouter } from "./PluvRouter";
-import type { JWTEncodeParams } from "./authorize";
+import type { CreateTokenParams } from "./authorize";
 import type {
     BasePluvIOListeners,
     GetInitialStorageFn,
@@ -27,6 +27,7 @@ export type PluvServerConfig<T extends IODefs = IODefs> = Partial<PluvIOListener
     debug?: boolean;
     limits: PluvIOLimits;
     io: PluvIO<SetKey<T, "events", {}>>;
+    onGetOperator?: OnGetOperator<InferTreatyUser<T["treaty"]>>;
     platform: () => T["platform"];
     router?: PluvRouter<T>;
     secret?: PluvIOSecret<T["platform"]>;
@@ -54,6 +55,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
     private readonly _config: NonNilProps<PluvServerConfig<T>>;
     private readonly _docFactory: AbstractCrdtDocFactory<any, any>;
     private readonly _listeners: BasePluvIOListeners<T>;
+    private readonly _onGetOperator: OnGetOperator<InferTreatyUser<T["treaty"]>> | null;
 
     public get fetch(): (...args: any[]) => Promise<any> {
         return (...args: any[]): Promise<any> => {
@@ -105,6 +107,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             ...options,
         } as NonNilProps<PluvServerConfig<T>>;
 
+        const { onGetOperator } = options;
         const {
             onRoomDestroyed,
             onRoomMessage,
@@ -114,6 +117,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             onUserDisconnected,
         } = options as Partial<BasePluvIOListeners<T>>;
 
+        this._onGetOperator = onGetOperator ?? null;
         this._docFactory =
             (this._config.treaty.storage as AbstractCrdtDocFactory<any, any> | undefined) ??
             noop.doc();
@@ -194,9 +198,11 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
     }
 
     public async createToken(
-        params: JWTEncodeParams<InferTreatyUser<T["treaty"]>, T["platform"]>,
+        params: CreateTokenParams<InferTreatyUser<T["treaty"]>, T["platform"]>,
     ): Promise<string> {
-        return await this._config.io.createToken(params);
+        return await this._config.io.createToken(params, {
+            onGetOperator: this._onGetOperator,
+        });
     }
 
     private _getInitialStorage: GetInitialStorageFn<T["context"]> = (...args) => {

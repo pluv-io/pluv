@@ -99,6 +99,8 @@ export class CloudflareWebSocket extends AbstractWebSocket<WebSocket> {
         super(webSocket, config);
 
         const state: WebSocketSerializedState = {
+            kind: "user",
+            operator: null,
             presence: null,
             quit: false,
             room,

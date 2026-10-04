@@ -23,6 +23,8 @@ import type {
     RoomError,
     RoomErrorSubscriptionCallback,
     RoomEventListenerMap,
+    ParticipantKindOptions,
+    ParticipantKindsOptions,
     RoomLike,
     RoomStats,
     StateNotifierSubjects,
@@ -67,6 +69,7 @@ import type {
 } from "./types";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
+import type { OtherSubjectParams } from "./UsersNotifier";
 import { UsersNotifier } from "./UsersNotifier";
 import { debounce, inRange, parsePluvSchema } from "./utils";
 
@@ -231,12 +234,15 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     private readonly _usersManager: UsersManager<TDefs["io"], InferClientPresence<TDefs>>;
     private readonly _usersNotifier = new UsersNotifier<TDefs["io"], InferClientPresence<TDefs>>();
     private _roomStats: RoomStats = { connectionCount: 0, userCount: 0 };
+    private _operatorStats: RoomStats = { connectionCount: 0, userCount: 0 };
 
     private _lastMetadata: InferClientMetadata<TDefs> | null = null;
     private _state: WebSocketState<TDefs["io"]> = {
         authorization: {
             token: null,
             user: null,
+            kind: "user",
+            operator: null,
         },
         connection: {
             attempts: 0,
@@ -503,22 +509,41 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
 
     public getOther = (
         userId: string,
+        options?: ParticipantKindOptions,
     ): Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>> | null => {
-        return this._usersManager.getOther(userId);
+        return this._usersManager.getOther(userId, options);
     };
 
     public getOtherByConnectionId = (
         connectionId: string,
+        options?: ParticipantKindsOptions,
     ): Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>> | null => {
-        return this._usersManager.getOtherByConnectionId(connectionId);
+        return this._usersManager.getOtherByConnectionId(connectionId, options);
     };
 
-    public getOthers = (): readonly Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>>[] => {
-        return this._usersManager.getOthers();
+    public getOthers = (
+        options?: ParticipantKindsOptions,
+    ): readonly Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>>[] => {
+        return this._usersManager.getOthers(options);
     };
 
-    public getRoomStats = (): RoomStats => {
-        return this._roomStats;
+    public getRoomStats = (options?: ParticipantKindsOptions): RoomStats => {
+        const kinds = options?.kinds;
+
+        if (kinds === undefined) return this._roomStats;
+        if (kinds.length === 0) return { connectionCount: 0, userCount: 0 };
+
+        const includeUsers = kinds.includes("user");
+        const includeOperators = kinds.includes("operator");
+
+        return {
+            connectionCount:
+                (includeUsers ? this._roomStats.connectionCount : 0) +
+                (includeOperators ? this._operatorStats.connectionCount : 0),
+            userCount:
+                (includeUsers ? this._roomStats.userCount : 0) +
+                (includeOperators ? this._operatorStats.userCount : 0),
+        };
     };
 
     public getStorage = <TKey extends keyof InferStorage<TDefs["storage"]>>(
@@ -593,6 +618,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             type: "$listUsers",
             data: {
                 cursor: options.cursor ?? null,
+                kinds: options.kinds,
                 limit: resolved,
                 requestId,
             },
@@ -686,8 +712,18 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
                             TDefs["io"],
                             InferClientPresence<TDefs>
                         >,
+                        options?: ParticipantKindsOptions,
                     ) => {
-                        return this._usersNotifier.subscribeOthers(callback);
+                        return this._usersNotifier.subscribeOthers((_listed, event) => {
+                            const others = this._usersManager.getOthers(options);
+
+                            if (event.kind === "sync") {
+                                callback(others, { kind: "sync", users: others });
+                                return;
+                            }
+
+                            callback(others, event);
+                        }, options);
                     };
                 }
 
@@ -854,6 +890,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         this._stateNotifier.subjects.others.next([]);
         this._usersNotifier.others.next({ others: [], event: { kind: "clear" } });
         this._roomStats = { connectionCount: 0, userCount: 0 };
+        this._operatorStats = { connectionCount: 0, userCount: 0 };
         this._stateNotifier.subjects.roomStats.next(this._roomStats);
         this._requests.failAll();
         this._state.webSocket?.close();
@@ -1034,10 +1071,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
-        const clientId = this._usersManager.getClientId(connectionId);
-        const myClientId = this._usersManager.myself
-            ? this._usersManager.getClientId(this._usersManager.myself)
-            : null;
+        const isMyself = this._usersManager.isMyselfConnection(connectionId);
         const deleted = this._usersManager.deleteConnection(connectionId);
         const others = this._usersManager.getOthers();
 
@@ -1045,7 +1079,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
 
         if (!deleted) {
             // Own sibling tabs live on `_myself`, not `_others`.
-            if (clientId && clientId === myClientId) return;
+            if (isMyself) return;
 
             console.warn("Could not identify exited connection");
             return;
@@ -1060,7 +1094,10 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             event: { kind: "leave", user },
         });
 
-        if (clientId) this._usersNotifier.delete(clientId);
+        this._deleteOtherNotifier({
+            id: this._usersManager.getParticipantId(user),
+            kind: user.kind,
+        });
     }
 
     private _handlePresenceUpdatedMessage(message: IOEventMessage<TDefs["io"]>): void {
@@ -1073,7 +1110,6 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         const data = message.data as BaseIOEventRecord<
             InferIOAuthorize<TDefs["io"]>
         >["$presenceUpdated"];
-        const myself = this._usersManager.myself ?? null;
 
         /**
          * This is our own presence coming back from the server. Ignore it if we
@@ -1088,13 +1124,10 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             return;
         }
 
-        const patched = this._usersManager.patchPresence(
+        const patched = this._usersManager.patchPresence({
             connectionId,
-            data.presence as InferClientPresence<TDefs>,
-            data.seq.presence,
-        );
-        const myClientId = myself ? this._usersManager.getClientId(myself) : null;
-        const clientId = this._usersManager.getClientId(connectionId);
+            ...data,
+        });
 
         if (!patched) {
             /**
@@ -1105,16 +1138,20 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             const added = this._usersManager.addConnection({
                 connectionId,
                 data: message.user as Id<InferIOAuthorizeUser<InferIOAuthorize<TDefs["io"]>>>,
+                kind: data.kind,
+                operator: data.operator,
                 presence: data.presence as InferClientPresence<TDefs>,
                 presenceSeq: data.seq.presence,
             });
 
             if (!added.presenceChanged) return;
 
-            const other = this._usersManager.getOther(added.clientId);
+            const other = this._usersManager.getOtherByConnectionId(connectionId, {
+                kinds: ["user", "operator"],
+            });
             const others = this._usersManager.getOthers();
 
-            this._usersNotifier.other(added.clientId).next(other);
+            if (other) this._notifyOther(other);
             this._stateNotifier.subjects.others.next(others);
 
             this._usersNotifier.others.next({
@@ -1129,28 +1166,26 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
 
         const updated = patched.presence;
 
-        if (!!clientId && myClientId === clientId) {
+        if (this._usersManager.isMyselfConnection(connectionId)) {
             this._stateNotifier.subjects["my-presence"].next(updated);
             this._stateNotifier.subjects.myself.next(this._usersManager.myself);
 
             return;
         }
 
-        if (clientId) {
-            const other = this._usersManager.getOther(clientId);
-            const others = this._usersManager.getOthers();
+        const other = this._usersManager.getOtherByConnectionId(connectionId, {
+            kinds: ["user", "operator"],
+        });
+        const others = this._usersManager.getOthers();
 
-            this._usersNotifier.other(clientId).next(other);
-            this._stateNotifier.subjects.others.next(others);
+        if (other) this._notifyOther(other);
+        this._stateNotifier.subjects.others.next(others);
 
-            if (other) {
-                this._usersNotifier.others.next({
-                    others,
-                    event: { kind: "update", user: other },
-                });
-            }
-
-            return;
+        if (other) {
+            this._usersNotifier.others.next({
+                others,
+                event: { kind: "update", user: other },
+            });
         }
     }
 
@@ -1166,26 +1201,27 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             data.others.map((other) => ({
                 connectionIds: other.connectionIds,
                 data: other.data,
+                kind: other.kind,
+                operator: other.operator,
                 presence: other.presence as InferClientPresence<TDefs> | null,
                 presenceSeq: other.seq.presence,
             })),
         );
         this._usersManager.setMyConnectionIds(data.myConnectionIds);
 
-        leftIds.forEach((clientId) => {
-            this._usersNotifier.delete(clientId);
+        leftIds.forEach((subject) => {
+            this._deleteOtherNotifier(subject);
         });
 
         data.others.forEach((row) => {
             const connectionId = row.connectionIds[0];
             if (!connectionId) return;
 
-            const clientId = this._usersManager.getClientId(connectionId);
-            if (!clientId) return;
+            const other = this._usersManager.getOtherByConnectionId(connectionId, {
+                kinds: ["user", "operator"],
+            });
 
-            const other = this._usersManager.getOther(clientId);
-
-            this._usersNotifier.other(clientId).next(other);
+            if (other) this._notifyOther(other);
         });
 
         const others = this._usersManager.getOthers();
@@ -1210,15 +1246,19 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         >["$registered"];
         const state = data.state;
 
-        this._roomStats = {
-            connectionCount: data.connectionCount,
-            userCount: data.userCount,
-        };
-        this._stateNotifier.subjects.roomStats.next(this._roomStats);
+        this._setRoomStats(
+            {
+                connectionCount: data.connectionCount,
+                userCount: data.userCount,
+            },
+            data.operators,
+        );
 
         this._updateState((oldState) => {
             oldState.connection.id = connectionId;
             oldState.authorization.user = user;
+            oldState.authorization.kind = data.kind;
+            oldState.authorization.operator = data.operator;
 
             return oldState;
         });
@@ -1226,6 +1266,8 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         this._usersManager.setMyself({
             connectionId,
             data: user,
+            kind: data.kind,
+            operator: data.operator,
             presence: (data.presence as InferClientPresence<TDefs> | null) ?? undefined,
             presenceSeq: data.seq.presence,
         });
@@ -1368,9 +1410,11 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
 
         left.forEach((quitter) => {
             const remaining = this._usersManager.getOthers();
-            const clientId = this._usersManager.getClientId(quitter);
 
-            this._usersNotifier.delete(clientId);
+            this._deleteOtherNotifier({
+                id: this._usersManager.getParticipantId(quitter),
+                kind: quitter.kind,
+            });
             this._usersNotifier.others.next({
                 others: remaining,
                 event: { kind: "leave", user: quitter },
@@ -1394,11 +1438,13 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     private _handleRoomStats(message: IOEventMessage<TDefs["io"]>): void {
         const data = message.data as BaseIOEventRecord<InferIOAuthorize<TDefs["io"]>>["$roomStats"];
 
-        this._roomStats = {
-            connectionCount: data.connectionCount,
-            userCount: data.userCount,
-        };
-        this._stateNotifier.subjects.roomStats.next(this._roomStats);
+        this._setRoomStats(
+            {
+                connectionCount: data.connectionCount,
+                userCount: data.userCount,
+            },
+            data.operators,
+        );
     }
 
     private _handleUsersPage(message: IOEventMessage<TDefs["io"]>): void {
@@ -1432,19 +1478,23 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         const added = this._usersManager.addConnection({
             connectionId,
             data: data.user,
+            kind: data.kind,
+            operator: data.operator,
             presence: data.presence as InferClientPresence<TDefs>,
             presenceSeq: data.seq.presence,
         });
 
         if (added.isMyself) return;
 
-        const other = this._usersManager.getOther(added.clientId);
+        const other = this._usersManager.getOtherByConnectionId(connectionId, {
+            kinds: ["user", "operator"],
+        });
         const others = this._usersManager.getOthers();
 
         if (added.remaining !== 1) {
             if (!added.presenceChanged || !other) return;
 
-            this._usersNotifier.other(added.clientId).next(other);
+            this._notifyOther(other);
             this._stateNotifier.subjects.others.next(others);
             this._usersNotifier.others.next({
                 others,
@@ -1454,7 +1504,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             return;
         }
 
-        this._usersNotifier.other(added.clientId).next(other);
+        if (other) this._notifyOther(other);
         this._stateNotifier.subjects.others.next(others);
         this._usersNotifier.others.next({
             others,
@@ -1737,8 +1787,9 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     private _other = (
         userId: string,
         callback: OtherSubscriptionCallback<TDefs["io"], InferClientPresence<TDefs>>,
+        options?: ParticipantKindOptions,
     ): (() => void) => {
-        return this._usersNotifier.subscribeOther(userId, callback);
+        return this._usersNotifier.subscribeOther(userId, callback, options);
     };
 
     private _parseMessage(message: {
@@ -1818,6 +1869,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         const doc = this._crdtManager.doc;
         const patch = procedure.apply(data, {
             user: myself.data,
+            operator: myself.operator,
             presence: this.getMyPresence(),
             doc,
         });
@@ -1857,6 +1909,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             try {
                 procedure.apply(data, {
                     user: myself.data,
+                    operator: myself.operator,
                     presence: this.getMyPresence(),
                     doc,
                 });
@@ -1938,6 +1991,25 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             },
         },
     ) as StorageProxy<InferJson<TDefs["storage"]>>;
+
+    private _setRoomStats(occupant: RoomStats, operators?: RoomStats): void {
+        this._roomStats = occupant;
+        if (operators) this._operatorStats = operators;
+        this._stateNotifier.subjects.roomStats.next(this._roomStats);
+    }
+
+    private _notifyOther(other: Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>>): void {
+        this._usersNotifier
+            .other({
+                id: this._usersManager.getParticipantId(other),
+                kind: other.kind,
+            })
+            .next(other);
+    }
+
+    private _deleteOtherNotifier(params: OtherSubjectParams): void {
+        this._usersNotifier.delete(params);
+    }
 
     private _updateState(
         updater: (oldState: WebSocketState<TDefs["io"]>) => WebSocketState<TDefs["io"]>,

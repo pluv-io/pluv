@@ -218,9 +218,9 @@ export const ioServer = io.server({ router, getInitialStorage });
 
 ## UserInfo is a person
 
-`UserInfo` is `{ data, presence }`. Lookup is `data.id` (`getOther` / `useOther`).
+`UserInfo` is `{ data, presence, kind, operator }`. Lookup is `data.id` for both kinds (`getOther` / `useOther`). Omit `kind` for the user. Pass `{ kind: "operator" }` for an operator.
 
-`getOthers()` / `useOthers()` stay the presence-bearing set in mode `all`. Room size is `getRoomStats` / `useRoomStats`. `listUsers({ cursor, limit })` pages everyone currently in the room (including you), identities only, on the client room and on `IORoom`.
+`getOthers()` / `useOthers()` stay the user set by default. Pass `{ kinds: ["operator"] }` or `{ kinds: ["user", "operator"] }` to include operators. Room size is `getRoomStats` / `useRoomStats` with the same filter. `listUsers({ cursor, limit, kinds })` pages people currently in the room (including you), identities only, on the client room and on `IORoom`. It defaults to users. `endCursor` is `{ kind, id }`.
 
 Procedure and size-limit failures arrive on `room.subscribe.error` / `useRoomError`.
 

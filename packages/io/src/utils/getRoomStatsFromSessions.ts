@@ -1,17 +1,48 @@
+import type { RoomStats } from "@pluv/types";
 import type { WebSocketSession } from "../types";
+import { assertExhaustive } from "./assertExhaustive";
 import { getLiveSessions } from "./getLiveSessions";
+import { getSessionKind } from "./sessionKind";
+
+export type RoomStatsFromSessions = RoomStats & {
+    operators: RoomStats;
+};
 
 export const getRoomStatsFromSessions = (
     sessions: readonly WebSocketSession<any>[],
-): { connectionCount: number; userCount: number } => {
+): RoomStatsFromSessions => {
     const live = getLiveSessions(sessions);
-    const userIds = live.reduce((set, session) => {
+    const occupantIds = new Set<string>();
+    const operatorIds = new Set<string>();
+    let occupantConnections = 0;
+    let operatorConnections = 0;
+
+    for (const session of live) {
+        const kind = getSessionKind(session);
         const userId = session.user?.id;
-        return typeof userId === "string" ? set.add(userId) : set;
-    }, new Set<string>());
+
+        switch (kind) {
+            case "operator": {
+                operatorConnections += 1;
+                if (typeof userId === "string") operatorIds.add(userId);
+                break;
+            }
+            case "user": {
+                occupantConnections += 1;
+                if (typeof userId === "string") occupantIds.add(userId);
+                break;
+            }
+            default:
+                assertExhaustive(kind);
+        }
+    }
 
     return {
-        connectionCount: live.length,
-        userCount: userIds.size,
+        connectionCount: occupantConnections,
+        userCount: occupantIds.size,
+        operators: {
+            connectionCount: operatorConnections,
+            userCount: operatorIds.size,
+        },
     };
 };

@@ -14,6 +14,10 @@ import type {
     RoomError,
     RoomErrorSubscriptionCallback,
     RoomEventListenerMap,
+    OperatorUser,
+    ParticipantKind,
+    ParticipantKindOptions,
+    ParticipantKindsOptions,
     RoomLike,
     RoomStats,
     StateNotifierSubjects,
@@ -51,7 +55,7 @@ import type {
     InternalSubscriptions,
     PluvClientLimits,
 } from "./types";
-import { parsePluvSchema } from "./utils";
+import { assertExhaustive, parsePluvSchema } from "./utils";
 
 export type MockedRoomEvents<TDefs extends ClientDefs = ClientDefs> = Partial<{
     [P in keyof InferClientInput<TDefs>]: (
@@ -62,10 +66,27 @@ export type MockedRoomEvents<TDefs extends ClientDefs = ClientDefs> = Partial<{
 export type MockedRoomConfig<TDefs extends ClientDefs = ClientDefs> = {
     events?: MockedRoomEvents<TDefs>;
     limits?: PluvClientLimits;
+    myself?: {
+        connectionId?: string;
+        data: UserInfo<TDefs["io"], InferClientPresence<TDefs>>["data"];
+        kind?: ParticipantKind;
+        operator?: OperatorUser | null;
+    };
     router?: PluvRouter<TDefs>;
     treaty: TDefs["treaty"];
 } & Pick<CrdtManagerOptions<TDefs["storage"]>, "initialStorage" | "storage"> &
     Omit<UsersManagerConfig<InferClientPresence<TDefs>>, "limits">;
+
+const participantOrder = (kind: ParticipantKind): number => {
+    switch (kind) {
+        case "user":
+            return 0;
+        case "operator":
+            return 1;
+        default:
+            return assertExhaustive(kind);
+    }
+};
 
 export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike<
     TDefs["io"],
@@ -93,6 +114,8 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
         authorization: {
             token: null,
             user: null,
+            kind: "user",
+            operator: null,
         },
         connection: {
             attempts: 0,
@@ -116,6 +139,7 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
             initialPresence,
             initialStorage,
             limits,
+            myself,
             presence,
             router,
             storage,
@@ -136,6 +160,25 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
             limits: this._limits,
             presence,
         });
+
+        if (myself) {
+            const connectionId = myself.connectionId ?? "mocked";
+            const kind = myself.kind ?? "user";
+
+            this._usersManager.setMyself({
+                connectionId,
+                data: myself.data,
+                kind,
+                operator: myself.operator,
+                presence: initialPresence as InferClientPresence<TDefs> | undefined,
+            });
+            this._state.authorization.user = myself.data;
+            this._state.authorization.kind = kind;
+            this._state.authorization.operator = myself.operator ?? null;
+            this._state.connection.id = connectionId;
+            this._state.connection.state = ConnectionState.Open;
+        }
+
         this._publishRoomStats();
 
         this._crdtManager = new CrdtManager<TDefs["storage"]>({
@@ -243,18 +286,22 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
 
     public getOther = (
         userId: string,
+        options?: ParticipantKindOptions,
     ): Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>> | null => {
-        return this._usersManager.getOther(userId);
+        return this._usersManager.getOther(userId, options);
     };
 
     public getOtherByConnectionId = (
         connectionId: string,
+        options?: ParticipantKindsOptions,
     ): Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>> | null => {
-        return this._usersManager.getOtherByConnectionId(connectionId);
+        return this._usersManager.getOtherByConnectionId(connectionId, options);
     };
 
-    public getOthers = (): readonly Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>>[] => {
-        return this._usersManager.getOthers();
+    public getOthers = (
+        options?: ParticipantKindsOptions,
+    ): readonly Id<UserInfo<TDefs["io"], InferClientPresence<TDefs>>>[] => {
+        return this._usersManager.getOthers(options);
     };
 
     /**
@@ -262,8 +309,8 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
      * occupants exist (`setMyself` / extra connections); MockedRoomProvider
      * does not seed them.
      */
-    public getRoomStats = (): RoomStats => {
-        return this._usersManager.getOccupancy();
+    public getRoomStats = (options?: ParticipantKindsOptions): RoomStats => {
+        return this._usersManager.getOccupancy(options);
     };
 
     public getStorage = <TKey extends keyof InferStorage<TDefs["storage"]>>(
@@ -294,27 +341,41 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
     /**
      * Identity page of mocked people currently tracked in this room. Empty until
      * occupants exist; MockedRoomProvider does not seed them. Not a real
-     * listUsers protocol (no limit/cursor).
+     * listUsers protocol (no limit/cursor paging).
      */
-    public listUsers = (_options: ListUsersOptions = {}): Promise<ListUsersResult<TDefs["io"]>> => {
+    public listUsers = (options: ListUsersOptions = {}): Promise<ListUsersResult<TDefs["io"]>> => {
+        const kinds = new Set<ParticipantKind>(options.kinds ?? ["user"]);
         const myself = this._usersManager.myself;
         const users = [
-            ...(myself ? [{ data: myself.data }] : []),
-            ...this._usersManager.getOthers().map((other) => ({ data: other.data })),
-        ].toSorted((left, right) => {
-            const a = String(left.data.id);
-            const b = String(right.data.id);
+            ...(myself && kinds.has(myself.kind) ? [myself] : []),
+            ...this._usersManager.getOthers({ kinds: [...kinds] }),
+        ]
+            .map((person) => ({
+                data: person.data,
+                kind: person.kind,
+                operator: person.operator,
+            }))
+            .toSorted((left, right) => {
+                const byKind = participantOrder(left.kind) - participantOrder(right.kind);
 
-            if (a < b) return -1;
-            if (a > b) return 1;
+                if (byKind !== 0) return byKind;
 
-            return 0;
-        });
+                const a = String(left.data.id);
+                const b = String(right.data.id);
+
+                if (a < b) return -1;
+                if (a > b) return 1;
+
+                return 0;
+            });
         const last = users.at(-1);
 
         return Promise.resolve({
             success: true,
-            pageInfo: { endCursor: last ? String(last.data.id) : null, hasNextPage: false },
+            pageInfo: {
+                endCursor: last ? { kind: last.kind, id: String(last.data.id) } : null,
+                hasNextPage: false,
+            },
             users,
         });
     };
@@ -410,8 +471,18 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
                             TDefs["io"],
                             InferClientPresence<TDefs>
                         >,
+                        options?: ParticipantKindsOptions,
                     ) => {
-                        return this._usersNotifier.subscribeOthers(callback);
+                        return this._usersNotifier.subscribeOthers((_listed, event) => {
+                            const others = this._usersManager.getOthers(options);
+
+                            if (event.kind === "sync") {
+                                callback(others, { kind: "sync", users: others });
+                                return;
+                            }
+
+                            callback(others, event);
+                        }, options);
                     };
                 }
 
@@ -562,8 +633,9 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
     private _other = (
         userId: string,
         callback: OtherSubscriptionCallback<TDefs["io"], InferClientPresence<TDefs>>,
+        options?: ParticipantKindOptions,
     ): (() => void) => {
-        return this._usersNotifier.subscribeOther(userId, callback);
+        return this._usersNotifier.subscribeOther(userId, callback, options);
     };
 
     private _runPresenceProcedure(name: string, data: unknown): void {
@@ -583,6 +655,7 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
         const doc = this._crdtManager.doc;
         const patch = procedure.apply(data, {
             user: myself.data,
+            operator: myself.operator,
             presence: this.getMyPresence(),
             doc,
         });
@@ -610,6 +683,7 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
         const apply = (): void => {
             procedure.apply(data, {
                 user: myself.data,
+                operator: myself.operator,
                 presence: this.getMyPresence(),
                 doc,
             });

@@ -1,13 +1,24 @@
 import type { HasStorage } from "@pluv/crdt";
-import type { HasRequiredProperty, InferTreatyUser, SetKey } from "@pluv/types";
+import type {
+    HasRequiredProperty,
+    InferTreatyUser,
+    OnGetOperator,
+    OperatorUser,
+    SetKey,
+} from "@pluv/types";
 import type { InferInitContextType } from "./AbstractPlatform";
 import type { IODefs } from "./IODefs";
 import { PluvProcedure } from "./PluvProcedure";
 import type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 import { PluvRouter } from "./PluvRouter";
 import { PluvServer, PluvServerConfig } from "./PluvServer";
-import type { JWTEncodeParams } from "./authorize";
-import { authorize } from "./authorize";
+import type {
+    CreateTokenIdentity,
+    CreateTokenParams,
+    CreateUserTokenParams,
+    JWTEncodeParams,
+} from "./authorize";
+import { authorize, isOperatorToken } from "./authorize";
 import {
     DEFAULT_MAX_CONNECTIONS,
     MAX_PRESENCE_SIZE_BYTES,
@@ -23,7 +34,14 @@ import type {
     PluvIORouter,
     PluvIOSecret,
 } from "./types";
-import { oneLine, parsePluvSchema, resolveIOSecret, assertPresenceFanoutBudget } from "./utils";
+import {
+    oneLine,
+    parseOperatorUser,
+    parsePluvSchema,
+    resolveIOSecret,
+    assertExhaustive,
+    assertPresenceFanoutBudget,
+} from "./utils";
 import { __PLUV_VERSION } from "./version";
 
 export type PluvIOConfig<T extends IODefs = IODefs> = {
@@ -36,8 +54,9 @@ export type PluvIOConfig<T extends IODefs = IODefs> = {
 };
 
 type ResolvedServerConfig<T extends IODefs = IODefs> = Partial<PluvIOListeners<T>> &
-    PluvIORouter<T> &
-    (HasStorage<T["treaty"]["storage"]> extends true
+    PluvIORouter<T> & {
+        onGetOperator?: OnGetOperator<InferTreatyUser<T["treaty"]>>;
+    } & (HasStorage<T["treaty"]["storage"]> extends true
         ? { getInitialStorage: GetInitialStorageFn<T["context"]> }
         : {
               getInitialStorage?: "[ERROR]: Must specify storage on treaty to use getInitialStorage";
@@ -55,6 +74,12 @@ export type ServerConfig<T extends IODefs = IODefs> =
     HasRequiredProperty<BaseServerConfig<T>> extends true
         ? [BaseServerConfig<T>]
         : [BaseServerConfig<T>?];
+
+type ResolveEncodeParams<T extends IODefs = IODefs> = {
+    initContext: InferInitContextType<T["platform"]>;
+    onGetOperator: OnGetOperator<InferTreatyUser<T["treaty"]>> | null;
+    token: CreateTokenIdentity<InferTreatyUser<T["treaty"]>>;
+};
 
 export class PluvIO<T extends IODefs = IODefs> {
     public readonly version: string = __PLUV_VERSION as any;
@@ -96,46 +121,152 @@ export class PluvIO<T extends IODefs = IODefs> {
     }
 
     public async createToken(
-        params: JWTEncodeParams<InferTreatyUser<T["treaty"]>, T["platform"]>,
+        params: CreateUserTokenParams<InferTreatyUser<T["treaty"]>, T["platform"]>,
+    ): Promise<string>;
+    public async createToken(
+        params: CreateTokenParams<InferTreatyUser<T["treaty"]>, T["platform"]>,
+        options: { onGetOperator?: OnGetOperator<InferTreatyUser<T["treaty"]>> | null },
+    ): Promise<string>;
+    public async createToken(
+        params: CreateTokenParams<InferTreatyUser<T["treaty"]>, T["platform"]>,
+        options?: { onGetOperator?: OnGetOperator<InferTreatyUser<T["treaty"]>> | null },
     ): Promise<string> {
         const platform = this._platform();
-        const { maxAge, room, user, ...initRest } = params;
+        const token = params as {
+            kind?: "user" | "operator";
+            maxAge?: number;
+            operator?: unknown;
+            room: string;
+            user?: unknown;
+        };
+        const { maxAge, room, ...rest } = token;
+        const initRest = isOperatorToken(token)
+            ? (() => {
+                  const { operator: _operator, kind: _kind, ...init } = rest;
+                  return init;
+              })()
+            : (() => {
+                  const { user: _user, kind: _kind, ...init } = rest;
+                  return init;
+              })();
         const initContext = platform.normalizeInitContext(
             initRest as InferInitContextType<T["platform"]>,
         );
-        const authorizeParams = { ...params, ...initContext };
-        const secret = resolveIOSecret(this._secret, authorizeParams);
-        const parsed = parsePluvSchema(this._treaty.user, user);
 
-        if (!!this._limits.userIdMaxLength && user.id.length > this._limits.userIdMaxLength) {
-            throw new Error(oneLine`
-                createToken was called with a long user id. User ID must be at
-                most ${this._limits.userIdMaxLength.toLocaleString()} characters.
-                Current length: ${user.id.length.toLocaleString()}
-            `);
-        }
-
-        const bytes = new TextEncoder().encode(JSON.stringify(parsed)).length;
-
-        if (!!this._limits.userMaxSize && bytes > this._limits.userMaxSize) {
-            throw new Error(oneLine`
-                createToken called with large payload. User must be at most
-                ${this._limits.userMaxSize.toLocaleString()} bytes. Current size:
-                ${bytes.toLocaleString()} bytes
-            `);
-        }
-
+        const encodeParams = await this._resolveEncodeParams({
+            initContext,
+            onGetOperator: options?.onGetOperator ?? null,
+            token: params,
+        });
+        const secret = resolveIOSecret(this._secret, encodeParams);
         const ioAuthorize = { user: this._treaty.user, secret };
 
         if (platform._createToken) {
-            return await platform._createToken({ ...authorizeParams, authorize: ioAuthorize });
+            return await platform._createToken({ ...encodeParams, authorize: ioAuthorize });
         }
 
         if (!secret) throw new Error("`secret` was not provided");
 
         return await authorize({ platform, secret }).encode(
-            authorizeParams as JWTEncodeParams<any, T["platform"]>,
+            encodeParams as JWTEncodeParams<any, T["platform"]>,
         );
+    }
+
+    private async _resolveEncodeParams(
+        params: ResolveEncodeParams<T>,
+    ): Promise<JWTEncodeParams<InferTreatyUser<T["treaty"]>, T["platform"]>> {
+        const { initContext, onGetOperator, token } = params;
+        switch (token.kind) {
+            case "operator": {
+                if (!onGetOperator) {
+                    throw new Error(
+                        "`onGetOperator` must be set on `io.server()`; mint operator tokens with `ioServer.createToken`",
+                    );
+                }
+
+                const operator = parseOperatorUser(token.operator);
+
+                if (typeof token.operator.email !== "string" || token.operator.email.length === 0) {
+                    throw new Error("Invalid operator email");
+                }
+
+                this._assertIdLength(operator.id, "operator");
+
+                const derived = await onGetOperator({
+                    operator: { ...operator, email: token.operator.email },
+                    room: token.room,
+                });
+
+                if (!derived) {
+                    throw new Error("`onGetOperator` returned null");
+                }
+
+                const parsed = parsePluvSchema(this._treaty.user, derived) as InferTreatyUser<
+                    T["treaty"]
+                >;
+
+                this._assertUserLimits({ operator, user: parsed });
+
+                return {
+                    ...token,
+                    ...initContext,
+                    kind: "operator",
+                    operator,
+                    user: parsed,
+                };
+            }
+            case "user":
+            case undefined: {
+                const parsed = parsePluvSchema(this._treaty.user, token.user) as InferTreatyUser<
+                    T["treaty"]
+                >;
+
+                this._assertUserLimits({ user: parsed });
+
+                return {
+                    ...token,
+                    ...initContext,
+                    kind: "user",
+                    user: parsed,
+                };
+            }
+            default:
+                return assertExhaustive(token);
+        }
+    }
+
+    private _assertIdLength(id: string, label: "user" | "operator"): void {
+        if (!this._limits.userIdMaxLength || id.length <= this._limits.userIdMaxLength) return;
+
+        throw new Error(oneLine`
+            createToken was called with a long ${label} id. ID must be at
+            most ${this._limits.userIdMaxLength.toLocaleString()} characters.
+            Current length: ${id.length.toLocaleString()}
+        `);
+    }
+
+    private _assertUserLimits(params: {
+        operator?: OperatorUser | null;
+        user: InferTreatyUser<T["treaty"]>;
+    }): void {
+        const { operator, user } = params;
+        this._assertIdLength(user.id, "user");
+
+        const userBytes = new TextEncoder().encode(JSON.stringify(user)).length;
+        const operatorBytes = operator
+            ? new TextEncoder().encode(JSON.stringify(operator)).length
+            : 0;
+        const bytes = userBytes + operatorBytes;
+
+        if (!this._limits.userMaxSize || bytes <= this._limits.userMaxSize) return;
+
+        const subject = operator ? "User and operator together must" : "User must";
+
+        throw new Error(oneLine`
+            createToken called with large payload. ${subject} be at most
+            ${this._limits.userMaxSize.toLocaleString()} bytes. Current size:
+            ${bytes.toLocaleString()} bytes
+        `);
     }
 
     public mergeRouters<TRouters extends PluvRouter<SetKey<T, "events", any>>[]>(

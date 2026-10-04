@@ -15,6 +15,8 @@ export {
     testAuthorize,
     testAuthorizeUser,
     testLoroTreaty,
+    testOperatorUser,
+    testOperatorTokenUser,
     testTreaty,
     testYjsTreaty,
 } from "./testAuthorize";

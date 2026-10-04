@@ -36,7 +36,14 @@ export type {
     AbstractWebSocketHandleErrorParams,
 } from "./AbstractWebSocket";
 export { authorize } from "./authorize";
-export type { AuthorizeModule, AuthorizeParams, JWT, JWTEncodeParams } from "./authorize";
+export type {
+    AuthorizeModule,
+    AuthorizeParams,
+    CreateTokenParams,
+    JWT,
+    JWTEncodeParams,
+} from "./authorize";
+export type { OnGetOperator, OperatorUser, ParticipantKind } from "@pluv/types";
 export {
     DEFAULT_MAX_CONNECTIONS,
     LIST_USERS_DEFAULT_LIMIT,

@@ -17,7 +17,12 @@ const lastMessage = (socket: TestSocket, type: string): { type: string; data: an
 const sendListUsers = async (
     room: Room,
     socket: TestSocket,
-    params: { cursor?: string | null; limit?: number; requestId?: string } = {},
+    params: {
+        cursor?: { kind: "user" | "operator"; id: string } | null;
+        kinds?: readonly ("user" | "operator")[];
+        limit?: number;
+        requestId?: string;
+    } = {},
 ): Promise<void> => {
     await room.onMessage(socket)({
         data: JSON.stringify({
@@ -30,7 +35,11 @@ const sendListUsers = async (
 const listUsers = async (
     room: Room,
     socket: TestSocket,
-    params: { cursor?: string | null; limit?: number } = {},
+    params: {
+        cursor?: { kind: "user" | "operator"; id: string } | null;
+        kinds?: readonly ("user" | "operator")[];
+        limit?: number;
+    } = {},
 ): Promise<any> => {
     await sendListUsers(room, socket, params);
 
@@ -63,8 +72,14 @@ describe("IORoom listUsers", () => {
 
         const first = await listUsers(room, requester, { limit: 2 });
 
-        expect(first.users).toEqual([{ data: { id: "ada" } }, { data: { id: "bob" } }]);
-        expect(first.pageInfo).toEqual({ endCursor: "bob", hasNextPage: true });
+        expect(first.users).toEqual([
+            { data: { id: "ada" }, kind: "user", operator: null },
+            { data: { id: "bob" }, kind: "user", operator: null },
+        ]);
+        expect(first.pageInfo).toEqual({
+            endCursor: { kind: "user", id: "bob" },
+            hasNextPage: true,
+        });
         expect(first.users[0]).not.toHaveProperty("presence");
         expect(first.users[0]).not.toHaveProperty("connectionIds");
 
@@ -84,9 +99,11 @@ describe("IORoom listUsers", () => {
             limit: 2,
         });
 
-        expect(last.users).toEqual([{ data: { id: "zzz-requester" } }]);
+        expect(last.users).toEqual([
+            { data: { id: "zzz-requester" }, kind: "user", operator: null },
+        ]);
         expect(last.pageInfo.hasNextPage).toBe(false);
-        expect(last.pageInfo.endCursor).toBe("zzz-requester");
+        expect(last.pageInfo.endCursor).toEqual({ kind: "user", id: "zzz-requester" });
     });
 
     it("echoes requestId so overlapping pages can be correlated", async () => {
@@ -130,8 +147,14 @@ describe("IORoom listUsers", () => {
 
         const page = await listUsers(room, observer, { limit: 10 });
 
-        expect(page.users).toEqual([{ data: { id: "ada" } }, { data: { id: "bob" } }]);
-        expect(page.pageInfo).toEqual({ endCursor: "bob", hasNextPage: false });
+        expect(page.users).toEqual([
+            { data: { id: "ada" }, kind: "user", operator: null },
+            { data: { id: "bob" }, kind: "user", operator: null },
+        ]);
+        expect(page.pageInfo).toEqual({
+            endCursor: { kind: "user", id: "bob" },
+            hasNextPage: false,
+        });
     });
 
     it("rejects a limit outside 1..100 instead of clamping", async () => {
@@ -174,7 +197,10 @@ describe("IORoom listUsers", () => {
 
         await registerAuthorized(room, socket, { io, user: { id: "ada" } });
 
-        const page = await listUsers(room, socket, { cursor: "zzz", limit: 10 });
+        const page = await listUsers(room, socket, {
+            cursor: { kind: "user", id: "zzz" },
+            limit: 10,
+        });
 
         expect(page.users).toEqual([]);
         expect(page.pageInfo).toEqual({ endCursor: null, hasNextPage: false });
@@ -196,8 +222,11 @@ describe("IORoom listUsers", () => {
 
         expect(first).toEqual({
             success: true,
-            pageInfo: { endCursor: "bob", hasNextPage: true },
-            users: [{ data: { id: "ada" } }, { data: { id: "bob" } }],
+            pageInfo: { endCursor: { kind: "user", id: "bob" }, hasNextPage: true },
+            users: [
+                { data: { id: "ada" }, kind: "user", operator: null },
+                { data: { id: "bob" }, kind: "user", operator: null },
+            ],
         });
 
         if (!first.success) throw new Error("expected a page");
@@ -206,8 +235,8 @@ describe("IORoom listUsers", () => {
 
         expect(second).toEqual({
             success: true,
-            pageInfo: { endCursor: "cara", hasNextPage: false },
-            users: [{ data: { id: "cara" } }],
+            pageInfo: { endCursor: { kind: "user", id: "cara" }, hasNextPage: false },
+            users: [{ data: { id: "cara" }, kind: "user", operator: null }],
         });
 
         const invalid = room.listUsers({ limit: 0 });
@@ -216,5 +245,60 @@ describe("IORoom listUsers", () => {
         if (invalid.success) throw new Error("expected INVALID_LIMIT");
         expect(invalid.error.code).toBe("INVALID_LIMIT");
         expect(invalid.error.message).toMatch(/Invalid listUsers limit/);
+    });
+
+    it("pages a user and an operator who share an id as separate rows", async () => {
+        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const server = io.server({
+            onGetOperator: () => ({ id: "ada" }),
+        });
+        const room = server.createRoom("list-users-kinds");
+        const occupant = new TestSocket("session-ada");
+        const operator = new TestSocket("session-staff");
+        const bob = new TestSocket("session-bob");
+
+        await registerAuthorized(room, occupant, { io, user: { id: "ada" } });
+        await registerAuthorized(room, bob, { io, user: { id: "bob" } });
+        await registerAuthorized(room, operator, { io: server, kind: "operator" });
+
+        const operatorProfile = {
+            id: "staff-1",
+            name: "Ada Lovelace",
+            imageUrl: null,
+        };
+        const first = room.listUsers({ kinds: ["user", "operator"], limit: 2 });
+
+        expect(first).toEqual({
+            success: true,
+            pageInfo: { endCursor: { kind: "user", id: "bob" }, hasNextPage: true },
+            users: [
+                { data: { id: "ada" }, kind: "user", operator: null },
+                { data: { id: "bob" }, kind: "user", operator: null },
+            ],
+        });
+
+        if (!first.success) throw new Error("expected a page");
+
+        const second = room.listUsers({
+            kinds: ["user", "operator"],
+            cursor: first.pageInfo.endCursor,
+            limit: 2,
+        });
+
+        expect(second).toEqual({
+            success: true,
+            pageInfo: { endCursor: { kind: "operator", id: "ada" }, hasNextPage: false },
+            users: [{ data: { id: "ada" }, kind: "operator", operator: operatorProfile }],
+        });
+        expect(room.listUsers({ kinds: ["operator"] })).toEqual({
+            success: true,
+            pageInfo: { endCursor: { kind: "operator", id: "ada" }, hasNextPage: false },
+            users: [{ data: { id: "ada" }, kind: "operator", operator: operatorProfile }],
+        });
+        expect(room.listUsers({ kinds: [] })).toEqual({
+            success: true,
+            pageInfo: { endCursor: null, hasNextPage: false },
+            users: [],
+        });
     });
 });

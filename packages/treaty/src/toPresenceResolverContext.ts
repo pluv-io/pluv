@@ -1,4 +1,4 @@
-import type { BaseUser, DeepReadonly } from "@pluv/types";
+import type { BaseUser, DeepReadonly, OperatorUser } from "@pluv/types";
 import type { PresenceResolverContext, TreatyResolverDoc } from "./types";
 
 export const toPresenceResolverContext = <
@@ -8,6 +8,7 @@ export const toPresenceResolverContext = <
     TNative extends Record<string, any>,
 >(params: {
     doc: TreatyResolverDoc<TJson, TNative>;
+    operator?: OperatorUser | null;
     presence?: TPresence | null;
     user: TUser;
 }): PresenceResolverContext<TUser, TPresence, TJson> => {
@@ -18,6 +19,7 @@ export const toPresenceResolverContext = <
         get json() {
             return (json ??= doc.toJson() as DeepReadonly<TJson>);
         },
+        operator: params.operator ?? null,
         presence: JSON.parse(JSON.stringify(params.presence ?? {})) as DeepReadonly<TPresence>,
         user,
     };

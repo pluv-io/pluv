@@ -34,7 +34,7 @@ This is the client returned by `createIO`.
 
 Returns `Promise<string>`.
 
-Creates a JWT for a user trying to connect to a room. This should be called within a custom authentication endpoint you define. See [Authorization](/docs/guides/authorization) for more information.
+Creates a JWT for a user trying to connect to a room. This should be called within a custom authentication endpoint you define. User tokens stay `{ room, user }` on `io.createToken`. Operator tokens are `{ room, kind: "operator", operator }` and require `onGetOperator` on `io.server()`; mint them with `ioServer.createToken`. See [Authorization](/docs/guides/authorization) for more information.
 
 ```ts
 // If using `@pluv/platform-pluv`
@@ -56,6 +56,15 @@ const token = await io.createToken({
   request: request as Request,
   room: "my-example-room",
   user: { id: "...", name: "..." },
+});
+
+// Owner operator sessions. Requires onGetOperator on io.server().
+// @pluv/platform-pluv cannot mint these yet.
+const operatorToken = await ioServer.createToken({
+  request: request as Request,
+  room: "my-example-room",
+  kind: "operator",
+  operator: { id: "...", name: "...", email: "...", imageUrl: null },
 });
 ```
 
@@ -190,6 +199,11 @@ const server = io.server({
   onUserDisconnected: ({ context, encodedState, room, user }) => {
     // ...
   },
+  // Optional: Map an operator JWT to a treaty user. Required to mint or
+  // register owner operator sessions
+  onGetOperator: ({ room, operator }) => {
+    return { id: `owner:${operator.id}` };
+  },
   // Optional. Only needed if specifying events
   router,
 });
@@ -277,7 +291,7 @@ room.getSize();
 
 Returns `ListUsersResult`
 
-On-demand identity page (no presence). Forward-only cursor paging. Grouped by `data.id`. `limit` defaults to 50 and must be an integer from 1 to 100. Wrap this in your own HTTP handler if you need it off-socket.
+On-demand identity page (no presence). Forward-only cursor paging. Defaults to users. Pass `{ kinds: ["operator"] }` or `{ kinds: ["user", "operator"] }` to include operators. Grouped by `kind` and `data.id`. Each row is `{ data, kind, operator }`. `endCursor` is `{ kind, id }` for the last row. `limit` defaults to 50 and must be an integer from 1 to 100. Wrap this in your own HTTP handler if you need it off-socket.
 
 ```ts
 const result = room.listUsers({ cursor: null, limit: 50 });
@@ -287,7 +301,7 @@ if (!result.success) {
   return;
 }
 
-// result.users: { data }[]
+// result.users: { data, kind, operator }[]
 // result.pageInfo.hasNextPage, result.pageInfo.endCursor
 ```
 

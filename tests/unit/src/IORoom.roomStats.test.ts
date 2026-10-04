@@ -54,7 +54,11 @@ describe("IORoom $roomStats", () => {
 
         expect(message.connectionId).toBeNull();
         expect(message.user).toBeNull();
-        expect(message.data).toEqual({ connectionCount: 1, userCount: 1 });
+        expect(message.data).toEqual({
+            connectionCount: 1,
+            userCount: 1,
+            operators: { connectionCount: 0, userCount: 0 },
+        });
         expect(lastMessage(socket, "$registered").data).toMatchObject({
             connectionCount: 1,
             userCount: 1,
@@ -76,7 +80,11 @@ describe("IORoom $roomStats", () => {
             const leading = first.messages.filter((message) => message.type === "$roomStats");
 
             expect(leading).toHaveLength(1);
-            expect(leading[0]?.data).toEqual({ connectionCount: 1, userCount: 1 });
+            expect(leading[0]?.data).toEqual({
+                connectionCount: 1,
+                userCount: 1,
+                operators: { connectionCount: 0, userCount: 0 },
+            });
 
             await registerAuthorized(room, second, { io, user: { id: "bob" } });
             await registerAuthorized(room, third, { io, user: { id: "cara" } });
@@ -90,7 +98,11 @@ describe("IORoom $roomStats", () => {
             const emits = first.messages.filter((message) => message.type === "$roomStats");
 
             expect(emits).toHaveLength(2);
-            expect(emits[1]?.data).toEqual({ connectionCount: 3, userCount: 3 });
+            expect(emits[1]?.data).toEqual({
+                connectionCount: 3,
+                userCount: 3,
+                operators: { connectionCount: 0, userCount: 0 },
+            });
         } finally {
             vi.useRealTimers();
         }
@@ -113,6 +125,7 @@ describe("IORoom $roomStats", () => {
         expect(lastMessage(bob, "$roomStats").data).toEqual({
             connectionCount: 3,
             userCount: 2,
+            operators: { connectionCount: 0, userCount: 0 },
         });
 
         await room.onClose(ada1)({ code: 1000, reason: "" });
@@ -121,6 +134,7 @@ describe("IORoom $roomStats", () => {
         expect(lastMessage(bob, "$roomStats").data).toEqual({
             connectionCount: 2,
             userCount: 2,
+            operators: { connectionCount: 0, userCount: 0 },
         });
     });
 });

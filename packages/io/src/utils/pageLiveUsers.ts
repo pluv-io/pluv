@@ -15,6 +15,7 @@ export const pageLiveUsers = (
         success: true,
         ...listLiveUsers(sessions, {
             cursor: options.cursor ?? null,
+            kinds: options.kinds,
             limit: resolved.limit,
         }),
     } as ListUsersResult<any>;
