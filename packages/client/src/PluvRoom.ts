@@ -54,6 +54,7 @@ import { PluvProcedure } from "./PluvProcedure";
 import { PluvRouter } from "./PluvRouter";
 import { StateNotifier } from "./StateNotifier";
 import { StorageStore } from "./StorageStore";
+import { StorageSync } from "./StorageSync";
 import type {
     AuthorizationState,
     EventResolver,
@@ -83,7 +84,6 @@ const MAX_RECONNECT_TIMEOUT_MS = 60_000;
 
 const ORIGIN_INITIALIZED = "$initialized";
 const ORIGIN_STORAGE_UPDATED = "$storageUpdated";
-const STORAGE_DIFF_ATTEMPT_LIMIT = 8;
 
 declare global {
     var process: {
@@ -238,7 +238,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     private _operatorStats: RoomStats = { connectionCount: 0, userCount: 0 };
 
     private _lastMetadata: InferClientMetadata<TDefs> | null = null;
-    private _storageDiffAttempts = 0;
+    private readonly _storageSync = new StorageSync();
     private _state: WebSocketState<TDefs["io"]> = {
         authorization: {
             token: null,
@@ -880,7 +880,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     }
 
     private _closeWs(): void {
-        this._storageDiffAttempts = 0;
+        this._storageSync.reset();
         this._subscriptions.observeCrdt?.();
 
         this._clearInterval(this._intervals.heartbeat);
@@ -1352,6 +1352,13 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             void this._addToStorageStore(encodedState);
         }
 
+        for (const update of this._storageSync.markReady()) {
+            this._crdtManager.doc.applyEncodedState({
+                origin: ORIGIN_STORAGE_UPDATED,
+                update,
+            });
+        }
+
         const encodedState = this._crdtManager.doc.getEncodedState();
 
         // Must precede `_emitSharedTypes`, since `getStorage` returns null until loaded.
@@ -1382,18 +1389,41 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             InferIOAuthorize<TDefs["io"]>
         >[typeof ORIGIN_STORAGE_UPDATED];
 
+        if (!this._storageSync.isReady) {
+            this._storageSync.hold(data.state);
+
+            return;
+        }
+
+        this._storageSync.clearAttempts();
         this._applyRemoteStorage(data.state);
     }
 
     private _handleStorageDiffMessage(message: IOEventMessage<TDefs["io"]>): void {
+        const { connectionId } = message;
+
+        if (!connectionId) return;
+        // Should not reach here
         if (!this._state.webSocket) throw new Error("Could not find WebSocket");
 
         const data = message.data as BaseIOEventRecord<
             InferIOAuthorize<TDefs["io"]>
         >["$storageDiff"];
 
+        if (!this._storageSync.isReady) {
+            if (data.update) this._storageSync.hold(data.update);
+
+            return;
+        }
+
         if (!data.update) {
-            this._storageDiffAttempts = 0;
+            if (this._crdtManager.doc.hasPending()) {
+                this._requestStorageDiff();
+
+                return;
+            }
+
+            this._storageSync.clearAttempts();
 
             return;
         }
@@ -1428,7 +1458,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
 
     private _settleStorageDiff(): void {
         if (!this._crdtManager.doc.hasPending()) {
-            this._storageDiffAttempts = 0;
+            this._storageSync.clearAttempts();
 
             return;
         }
@@ -1437,13 +1467,13 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     }
 
     private _requestStorageDiff(): void {
-        if (this._storageDiffAttempts >= STORAGE_DIFF_ATTEMPT_LIMIT) return;
+        if (!this._storageSync.canRequest()) return;
 
         const webSocket = this._state.webSocket;
 
         if (!webSocket || webSocket.readyState !== WebSocket.OPEN) return;
 
-        this._storageDiffAttempts += 1;
+        this._storageSync.recordRequest();
         this._sendMessage({
             type: "$syncStorage",
             data: { stateVector: this._crdtManager.doc.getStateVector() },
