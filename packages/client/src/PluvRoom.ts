@@ -83,6 +83,7 @@ const MAX_RECONNECT_TIMEOUT_MS = 60_000;
 
 const ORIGIN_INITIALIZED = "$initialized";
 const ORIGIN_STORAGE_UPDATED = "$storageUpdated";
+const STORAGE_DIFF_ATTEMPT_LIMIT = 8;
 
 declare global {
     var process: {
@@ -237,6 +238,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     private _operatorStats: RoomStats = { connectionCount: 0, userCount: 0 };
 
     private _lastMetadata: InferClientMetadata<TDefs> | null = null;
+    private _storageDiffAttempts = 0;
     private _state: WebSocketState<TDefs["io"]> = {
         authorization: {
             token: null,
@@ -878,6 +880,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     }
 
     private _closeWs(): void {
+        this._storageDiffAttempts = 0;
         this._subscriptions.observeCrdt?.();
 
         this._clearInterval(this._intervals.heartbeat);
@@ -1299,7 +1302,11 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
 
         this._sendMessage({
             type: "$initializeSession",
-            data: { presence, update },
+            data: {
+                presence,
+                stateVector: this._crdtManager.doc.getStateVector(),
+                update,
+            },
         });
     }
 
@@ -1356,6 +1363,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         this._emitSharedTypes();
         this._observeCrdt();
         this._stateNotifier.subjects["storage-loaded"].next(true);
+        this._settleStorageDiff();
 
         this._sendMessage({
             type: "$updateStorage",
@@ -1374,9 +1382,29 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             InferIOAuthorize<TDefs["io"]>
         >[typeof ORIGIN_STORAGE_UPDATED];
 
+        this._applyRemoteStorage(data.state);
+    }
+
+    private _handleStorageDiffMessage(message: IOEventMessage<TDefs["io"]>): void {
+        if (!this._state.webSocket) throw new Error("Could not find WebSocket");
+
+        const data = message.data as BaseIOEventRecord<
+            InferIOAuthorize<TDefs["io"]>
+        >["$storageDiff"];
+
+        if (!data.update) {
+            this._storageDiffAttempts = 0;
+
+            return;
+        }
+
+        this._applyRemoteStorage(data.update);
+    }
+
+    private _applyRemoteStorage(update: string): void {
         this._crdtManager.doc.applyEncodedState({
             origin: ORIGIN_STORAGE_UPDATED,
-            update: data.state,
+            update,
         });
 
         const sharedTypes = this._crdtManager.doc.get();
@@ -1395,6 +1423,31 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         );
 
         this._crdtNotifier.rootSubject.next(storageRoot);
+        this._settleStorageDiff();
+    }
+
+    private _settleStorageDiff(): void {
+        if (!this._crdtManager.doc.hasPending()) {
+            this._storageDiffAttempts = 0;
+
+            return;
+        }
+
+        this._requestStorageDiff();
+    }
+
+    private _requestStorageDiff(): void {
+        if (this._storageDiffAttempts >= STORAGE_DIFF_ATTEMPT_LIMIT) return;
+
+        const webSocket = this._state.webSocket;
+
+        if (!webSocket || webSocket.readyState !== WebSocket.OPEN) return;
+
+        this._storageDiffAttempts += 1;
+        this._sendMessage({
+            type: "$syncStorage",
+            data: { stateVector: this._crdtManager.doc.getStateVector() },
+        });
     }
 
     private _handleSyncStateReceived(message: IOEventMessage<TDefs["io"]>): void {
@@ -1699,6 +1752,10 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             }
             case "$storageReceived": {
                 void this._handleStorageReceivedMessage(message);
+                return;
+            }
+            case "$storageDiff": {
+                this._handleStorageDiffMessage(message);
                 return;
             }
             case "$storageUpdated": {
