@@ -139,7 +139,7 @@ export class PluvIO<T extends IODefs = IODefs> {
             room: string;
             user?: unknown;
         };
-        const { maxAge, room, ...rest } = token;
+        const { maxAge: _maxAge, room: _room, ...rest } = token;
         const initRest = isOperatorToken(token)
             ? (() => {
                   const { operator: _operator, kind: _kind, ...init } = rest;

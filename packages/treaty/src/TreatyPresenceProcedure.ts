@@ -8,7 +8,7 @@ type PresenceProcedureDefs<
     TUser extends { id: string },
     TPresence extends Record<string, any>,
     TJson extends Record<string, any>,
-    TNative extends Record<string, any>,
+    _TNative extends Record<string, any>,
 > = {
     input: StandardSchemaV1<unknown, TInput> | null;
     resolve:

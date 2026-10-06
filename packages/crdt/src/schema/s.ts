@@ -10,7 +10,7 @@ import type {
     RecordNode,
     UnionNode,
 } from "./infer";
-import type { AnySchemaNode, SchemaAst, SchemaNode } from "./node";
+import type { AnySchemaNode, SchemaAst } from "./node";
 import {
     assertJsonSchema,
     assertNotOptional,

@@ -38,7 +38,7 @@ export type PluvServerConfig<T extends IODefs = IODefs> = Partial<PluvIOListener
               getInitialStorage?: "[ERROR]: Must specify storage on treaty to use getInitialStorage";
           });
 
-type BaseCreateRoomOptions<T extends IODefs> = {
+type BaseCreateRoomOptions<_T extends IODefs> = {
     debug?: boolean;
 };
 

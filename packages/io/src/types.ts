@@ -33,7 +33,7 @@ export type PluvContext<TPlatform extends AbstractPlatform, TContext extends Rec
 export type EventResolverKind = "broadcast" | "self";
 
 export type EventResolver<
-    TKind extends EventResolverKind = EventResolverKind,
+    _TKind extends EventResolverKind = EventResolverKind,
     T extends IODefs = IODefs,
     TInput extends JsonObject = {},
     TOutput extends EventRecord<string, any> = {},

@@ -18,7 +18,6 @@ import type {
     ListUsersResult,
     Maybe,
     OperatorUser,
-    ParticipantKind,
 } from "@pluv/types";
 import colors from "kleur";
 import type {
