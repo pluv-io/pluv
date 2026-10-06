@@ -9,13 +9,13 @@ import type { Container } from "loro-crdt";
 import {
     LoroCounter,
     LoroDoc,
-    LoroEventBatch,
     LoroList,
     LoroMap,
     LoroMovableList,
     LoroText,
     LoroTree,
     UndoManager,
+    VersionVector,
 } from "loro-crdt";
 import { getLoroShare, hydrateTopLevel } from "../schema/hydrate";
 import type { InferLoroJson, InferLoroStorage } from "../schema/schema";
@@ -32,6 +32,8 @@ export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements Crd
 > {
     public value: LoroDoc = new LoroDoc();
 
+    #_hasPending: boolean = false;
+    #_importOrigin: string | null = null;
     #_schema: TSchema;
     #_storage: InferLoroStorage<TSchema>;
     #_undoManager: UndoManager | null = null;
@@ -55,7 +57,7 @@ export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements Crd
 
         if (!update) return this;
 
-        this.value.import(update);
+        this.#_import(update, params.origin);
 
         return this;
     }
@@ -81,17 +83,48 @@ export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements Crd
 
         if (!filtered.length) return this;
 
-        if (filtered.length === 1) {
-            const update = filtered[0] ?? null;
+        const [first] = filtered;
 
-            if (!!update) this.value.import(update);
+        if (filtered.length === 1 && first) {
+            this.#_import(first, params.origin);
 
             return this;
         }
 
-        this.value.importBatch(filtered);
+        this.#_importOrigin = params.origin ?? null;
+
+        try {
+            const status = this.value.importBatch(filtered);
+
+            this.#_hasPending = status.pending !== null;
+        } finally {
+            this.#_importOrigin = null;
+        }
 
         return this;
+    }
+
+    public captureUpdate(fn: () => void): string | null {
+        const from = this.value.oplogVersion();
+
+        try {
+            fn();
+            this.value.commit();
+
+            const after = this.value.oplogVersion();
+
+            try {
+                if (from.compare(after) === 0) return null;
+
+                const update = fromUint8Array(this.value.export({ mode: "update", from }));
+
+                return update === "" ? null : update;
+            } finally {
+                after.free();
+            }
+        } finally {
+            from.free();
+        }
     }
 
     public canRedo(): boolean {
@@ -122,8 +155,34 @@ export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements Crd
         return this.#_storage[key as TKey];
     }
 
+    public encodeDiff(stateVector: string): string {
+        if (!stateVector) return fromUint8Array(this.value.export({ mode: "update" }));
+
+        const from = VersionVector.decode(toUint8Array(stateVector));
+
+        try {
+            return fromUint8Array(this.value.export({ mode: "update", from }));
+        } finally {
+            from.free();
+        }
+    }
+
     public getEncodedState(): string {
         return fromUint8Array(this.value.export({ mode: "snapshot" }));
+    }
+
+    public getStateVector(): string {
+        const version = this.value.oplogVersion();
+
+        try {
+            return fromUint8Array(version.encode());
+        } finally {
+            version.free();
+        }
+    }
+
+    public hasPending(): boolean {
+        return this.#_hasPending;
     }
 
     public toJson(): InferLoroJson<TSchema>;
@@ -193,31 +252,40 @@ export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements Crd
             >,
         ) => void,
     ): () => void {
-        const fn = (event: LoroEventBatch) => {
-            const update = fromUint8Array(this.value.export({ mode: "update" }));
+        return this.value.subscribe((event) => {
+            const from = this.value.frontiersToVV(event.from);
+            let update: string;
+
+            try {
+                update = fromUint8Array(this.value.export({ mode: "update", from }));
+            } finally {
+                from.free();
+            }
+
+            const origin =
+                event.by === "import"
+                    ? (this.#_importOrigin ?? (event.origin || null))
+                    : event.origin || null;
 
             listener({
                 doc: this,
                 local: event.by === "local",
-                origin: event.origin ? event.origin : null,
+                origin,
                 update,
             });
-        };
+        });
+    }
 
-        const unsubcribeAll = Object.values(this.#_storage).reduce<() => void>(
-            (acc, crdtType) => {
-                const container = crdtType as unknown as Container;
-                const unsubscribe = container.subscribe(fn);
+    #_import(update: Uint8Array, origin?: string): void {
+        this.#_importOrigin = origin ?? null;
 
-                return () => {
-                    acc();
-                    unsubscribe();
-                };
-            },
-            () => undefined,
-        );
+        try {
+            const status = this.value.import(update);
 
-        return unsubcribeAll;
+            this.#_hasPending = status.pending !== null;
+        } finally {
+            this.#_importOrigin = null;
+        }
     }
 
     public track(): this {

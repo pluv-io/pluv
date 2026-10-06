@@ -20,6 +20,7 @@ import {
     XmlText as YXmlText,
     applyUpdate,
     encodeStateAsUpdate,
+    encodeStateVector,
     mergeUpdates,
 } from "yjs";
 import { getYjsShare, hydrateTopLevel } from "../schema/hydrate";
@@ -90,6 +91,30 @@ export class CrdtYjsDoc<TSchema extends YjsSchema = YjsSchema> implements CrdtDo
         return this.applyEncodedState({ origin, update: merged });
     }
 
+    public captureUpdate(fn: () => void): string | null {
+        const updates: Uint8Array[] = [];
+        const onUpdate = (update: Uint8Array) => {
+            updates.push(update);
+        };
+
+        this.value.on("update", onUpdate);
+
+        try {
+            fn();
+        } finally {
+            this.value.off("update", onUpdate);
+        }
+
+        const [first] = updates;
+
+        if (!first) return null;
+
+        const update =
+            updates.length === 1 ? fromUint8Array(first) : fromUint8Array(mergeUpdates(updates));
+
+        return update === "" ? null : update;
+    }
+
     public canRedo(): boolean {
         return !!this.#_undoManager?.canRedo();
     }
@@ -115,8 +140,23 @@ export class CrdtYjsDoc<TSchema extends YjsSchema = YjsSchema> implements CrdtDo
         return this.#_storage[type as TKey];
     }
 
+    public encodeDiff(stateVector: string): string {
+        if (!stateVector) return this.getEncodedState();
+
+        // encodeStateAsUpdate decodes the vector itself.
+        return fromUint8Array(encodeStateAsUpdate(this.value, toUint8Array(stateVector)));
+    }
+
     public getEncodedState(): string {
         return fromUint8Array(encodeStateAsUpdate(this.value));
+    }
+
+    public getStateVector(): string {
+        return fromUint8Array(encodeStateVector(this.value));
+    }
+
+    public hasPending(): boolean {
+        return this.value.store.pendingStructs !== null || this.value.store.pendingDs !== null;
     }
 
     public isDirty(): boolean {

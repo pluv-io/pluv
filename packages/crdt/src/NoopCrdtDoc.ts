@@ -16,6 +16,12 @@ export class NoopCrdtDoc implements CrdtDocLike<any, {}, {}> {
         return this;
     }
 
+    public captureUpdate(fn: () => void): string | null {
+        fn();
+
+        return null;
+    }
+
     public canRedo(): boolean {
         return false;
     }
@@ -34,8 +40,20 @@ export class NoopCrdtDoc implements CrdtDocLike<any, {}, {}> {
         return typeof key === "string" ? undefined : {};
     }
 
+    public encodeDiff(_stateVector: string): string {
+        return "";
+    }
+
     public getEncodedState(): string {
         return "";
+    }
+
+    public getStateVector(): string {
+        return "";
+    }
+
+    public hasPending(): boolean {
+        return false;
     }
 
     public isDirty(): boolean {
