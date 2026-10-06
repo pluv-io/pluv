@@ -11,6 +11,7 @@ export interface BaseClientEventRecord {
     $getOthers: {};
     $initializeSession: {
         presence: JsonObject | null;
+        stateVector?: string | null;
         update: string | null;
     };
     $listUsers: {
@@ -23,6 +24,9 @@ export interface BaseClientEventRecord {
     $updatePresence: {
         presence: JsonObject | null;
         procedure?: string | null;
+    };
+    $syncStorage: {
+        stateVector: string;
     };
     $updateStorage: {
         origin: string | null;
@@ -87,6 +91,9 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any>> = {
     $storageReceived: {
         changeKind: "empty" | "initialized" | "unchanged";
         state: string;
+    };
+    $storageDiff: {
+        update: string;
     };
     $storageUpdated: {
         state: string;

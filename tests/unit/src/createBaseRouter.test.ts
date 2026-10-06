@@ -7,6 +7,7 @@ const BASE_CLIENT_EVENT_KEYS = Object.keys({
     $initializeSession: true,
     $listUsers: true,
     $ping: true,
+    $syncStorage: true,
     $updatePresence: true,
     $updateStorage: true,
 } satisfies Record<keyof BaseClientEventRecord, true>);
@@ -24,6 +25,7 @@ describe("createBaseRouter", () => {
                 "$initializeSession",
                 "$listUsers",
                 "$ping",
+                "$syncStorage",
                 "$updatePresence",
                 "$updateStorage",
             ].toSorted(),

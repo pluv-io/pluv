@@ -1253,11 +1253,15 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             });
         };
 
-        if (procedure.config.transact === false) {
-            apply();
-        } else {
+        const update = doc.captureUpdate(() => {
+            if (procedure.config.transact === false) {
+                apply();
+
+                return;
+            }
+
             doc.transact(apply, senderId);
-        }
+        });
 
         const context = await this._getContext();
         const eventContext = this._createEventResolverContext({
@@ -1267,7 +1271,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             sessions: this._sessions.getLiveSessions(),
         });
         const broadcast = await this._router._defs.events.$updateStorage.config.broadcast?.(
-            { origin: senderId, update: null, procedure: name },
+            { origin: senderId, update, procedure: name },
             eventContext,
         );
 

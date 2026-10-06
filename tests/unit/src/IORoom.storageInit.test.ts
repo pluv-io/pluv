@@ -284,6 +284,62 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
         expect(await persistence.getStorageState("storage-init")).toBeNull();
     });
 
+    it("broadcasts the storage update instead of the full document", async () => {
+        const { io, room } = createRoom({
+            getInitialStorage: () => Promise.resolve(encode("server")),
+        });
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await Promise.all([
+            registerAuthorized(room, first, { io }),
+            registerAuthorized(room, second, { io }),
+        ]);
+        await initializeSession(room, first, encode("client"));
+
+        const base = lastMessage(first, "$storageReceived").data.state as string;
+        const diff = append(base, " live");
+
+        await updateStorage(room, first, null, diff);
+
+        expect(lastMessage(second, "$storageUpdated").data.state).toBe(diff);
+    });
+
+    it("fills a caller's state vector with the operations it is missing", async () => {
+        const { io, room } = createRoom({
+            getInitialStorage: () => Promise.resolve(encode("server")),
+        });
+        const socket = new TestSocket("session-1");
+
+        await registerAuthorized(room, socket, { io });
+        await initializeSession(room, socket, encode("client"));
+
+        const base = lastMessage(socket, "$storageReceived").data.state as string;
+
+        await updateStorage(room, socket, null, append(base, " live"));
+
+        const behind = treaty.storage.getEmpty().applyEncodedState({ update: base });
+        const stateVector = behind.getStateVector();
+
+        behind.destroy();
+
+        await room.onMessage(socket)({
+            data: JSON.stringify({
+                type: "$syncStorage",
+                data: { stateVector },
+            }),
+        });
+
+        const diff = lastMessage(socket, "$storageDiff").data.update as string;
+        const synced = treaty.storage
+            .getEmpty()
+            .applyEncodedState({ update: base })
+            .applyEncodedState({ update: diff });
+
+        expect(decode(synced.getEncodedState())).toBe("server live");
+        synced.destroy();
+    });
+
     it("still applies $updateStorage origin null", async () => {
         const { io, persistence, room } = createRoom({
             getInitialStorage: () => Promise.resolve(encode("server")),
