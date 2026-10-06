@@ -6,20 +6,11 @@ import type {
 import type { CrdtDocLike } from "@pluv/types";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import type { Container } from "loro-crdt";
-import {
-    LoroCounter,
-    LoroDoc,
-    LoroList,
-    LoroMap,
-    LoroMovableList,
-    LoroText,
-    LoroTree,
-    UndoManager,
-    VersionVector,
-} from "loro-crdt";
+import { LoroCounter, LoroDoc, LoroText, UndoManager, VersionVector } from "loro-crdt";
 import { getLoroShare, hydrateTopLevel } from "../schema/hydrate";
 import type { InferLoroJson, InferLoroStorage } from "../schema/schema";
 import type { LoroSchema } from "./LoroSchema";
+import { PendingSpans } from "./PendingSpans";
 
 const MAX_UNDO_STEPS = 100;
 const MERGE_INTERVAL_MS = 1_000;
@@ -32,8 +23,8 @@ export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements Crd
 > {
     public value: LoroDoc = new LoroDoc();
 
-    #_hasPending: boolean = false;
     #_importOrigin: string | null = null;
+    #_pendingSpans = new PendingSpans();
     #_schema: TSchema;
     #_storage: InferLoroStorage<TSchema>;
     #_undoManager: UndoManager | null = null;
@@ -94,9 +85,7 @@ export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements Crd
         this.#_importOrigin = params.origin ?? null;
 
         try {
-            const status = this.value.importBatch(filtered);
-
-            this.#_hasPending = status.pending !== null;
+            this.#_pendingSpans.record(this.value.importBatch(filtered));
         } finally {
             this.#_importOrigin = null;
         }
@@ -182,7 +171,7 @@ export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements Crd
     }
 
     public hasPending(): boolean {
-        return this.#_hasPending;
+        return this.#_pendingSpans.isPending;
     }
 
     public toJson(): InferLoroJson<TSchema>;
@@ -280,9 +269,7 @@ export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements Crd
         this.#_importOrigin = origin ?? null;
 
         try {
-            const status = this.value.import(update);
-
-            this.#_hasPending = status.pending !== null;
+            this.#_pendingSpans.record(this.value.import(update));
         } finally {
             this.#_importOrigin = null;
         }

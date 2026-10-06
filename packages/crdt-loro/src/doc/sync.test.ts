@@ -126,6 +126,39 @@ describe("loro storage sync", () => {
         expect(behind.toJson()).toEqual({ content: "hello world" });
     });
 
+    it("stays pending when a later import does not include the missing changes", () => {
+        const source = create();
+
+        source.transact(() => {
+            source.get("content").insert(0, "hello");
+        });
+
+        const earlier = source.getEncodedState();
+        const later = required(
+            source.captureUpdate(() => {
+                source.get("content").insert(5, " world");
+            }),
+        );
+        const other = create();
+
+        other.transact(() => {
+            other.get("content").insert(0, "other");
+        });
+
+        const behind = create();
+
+        behind.applyEncodedState({ update: later });
+        behind.applyEncodedState({ update: other.getEncodedState() });
+
+        expect(behind.hasPending()).toBe(true);
+        expect(behind.toJson()).not.toEqual({ content: "hello world" });
+
+        behind.applyEncodedState({ update: earlier });
+
+        expect(behind.hasPending()).toBe(false);
+        expect(String((behind.toJson() as { content?: string }).content)).toContain("hello world");
+    });
+
     it("reports an applied update with the origin it was given", () => {
         const source = create();
 
