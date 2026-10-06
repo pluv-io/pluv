@@ -96,6 +96,10 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any>> = {
         update: string;
     };
     $storageUpdated: {
+        /**
+         * @description Bytes to merge into the local document. The caller's new changes when
+         * they sent some, and the whole document when they did not.
+         */
         state: string;
     };
     $syncStateReceived: {

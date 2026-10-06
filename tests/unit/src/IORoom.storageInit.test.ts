@@ -37,12 +37,18 @@ const appendLoro = (encodedState: string, text: string): string => {
 
     doc.import(Buffer.from(encodedState, "base64"));
 
-    const content = doc.getText("content");
+    const from = doc.oplogVersion();
 
-    content.insert(content.length, text);
-    doc.commit();
+    try {
+        const content = doc.getText("content");
 
-    return Buffer.from(doc.export({ mode: "update" })).toString("base64");
+        content.insert(content.length, text);
+        doc.commit();
+
+        return Buffer.from(doc.export({ mode: "update", from })).toString("base64");
+    } finally {
+        from.free();
+    }
 };
 
 const lastMessage = (socket: TestSocket, type: string): { type: string; data: any } => {
@@ -302,7 +308,18 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
 
         await updateStorage(room, first, null, diff);
 
-        expect(lastMessage(second, "$storageUpdated").data.state).toBe(diff);
+        const echoed = lastMessage(second, "$storageUpdated").data.state as string;
+
+        expect(echoed).toBe(diff);
+        expect(decode(echoed)).not.toBe("server live");
+
+        const caughtUp = treaty.storage
+            .getEmpty()
+            .applyEncodedState({ update: base })
+            .applyEncodedState({ update: echoed });
+
+        expect(decode(caughtUp.getEncodedState())).toBe("server live");
+        caughtUp.destroy();
     });
 
     it("fills a caller's state vector with the operations it is missing", async () => {

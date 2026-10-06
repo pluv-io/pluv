@@ -24,7 +24,8 @@ const addMessage = t.procedure.storage
     .resolve(({ text }, { storage: docStorage }) => {
         docStorage.messages.push([text]);
     });
-const treaty = t.router({ select, addMessage });
+const touch = t.procedure.storage.input(z.object({})).resolve(() => undefined);
+const treaty = t.router({ select, addMessage, touch });
 
 type Room = {
     onMessage: (socket: TestSocket) => (event: { data: string }) => Promise<void>;
@@ -33,6 +34,7 @@ type Room = {
     };
     __experimental_storage: {
         addMessage: (input: { text: string }, senderId: string) => Promise<void>;
+        touch: (input: Record<string, never>, senderId: string) => Promise<void>;
     };
 };
 
@@ -112,9 +114,33 @@ describe("IORoom treaty invoke", () => {
 
         await room.__experimental_storage.addMessage({ text: "hello" }, first.id);
 
-        const encodedState = lastMessage(second, "$storageUpdated").data.state;
-        const doc = storage.getEmpty().applyEncodedState({ update: encodedState });
+        const firstUpdate = lastMessage(second, "$storageUpdated").data.state as string;
+        const once = storage.getEmpty().applyEncodedState({ update: firstUpdate });
 
-        expect(doc.toJson()).toEqual({ messages: ["hello"] });
+        expect(once.toJson()).toEqual({ messages: ["hello"] });
+        once.destroy();
+
+        await room.__experimental_storage.addMessage({ text: "again" }, first.id);
+
+        const secondUpdate = lastMessage(second, "$storageUpdated").data.state as string;
+        const both = storage
+            .getEmpty()
+            .applyEncodedState({ update: firstUpdate })
+            .applyEncodedState({ update: secondUpdate });
+        const onlySecond = storage.getEmpty().applyEncodedState({ update: secondUpdate });
+
+        expect(secondUpdate).not.toBe(firstUpdate);
+        expect(both.toJson()).toEqual({ messages: ["hello", "again"] });
+        expect(onlySecond.toJson()).not.toEqual({ messages: ["hello", "again"] });
+        both.destroy();
+        onlySecond.destroy();
+
+        await room.__experimental_storage.touch({}, first.id);
+
+        const snapshot = lastMessage(second, "$storageUpdated").data.state as string;
+        const fromSnapshot = storage.getEmpty().applyEncodedState({ update: snapshot });
+
+        expect(fromSnapshot.toJson()).toEqual({ messages: ["hello", "again"] });
+        fromSnapshot.destroy();
     });
 });
