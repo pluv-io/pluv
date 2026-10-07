@@ -261,7 +261,9 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
             };
         }),
         $syncStorage: baseProcedure<"$syncStorage">().self((data, { doc }) => {
-            const update = data.stateVector ? doc.encodeDiff(data.stateVector) : "";
+            const update = data.stateVector
+                ? doc.encodeDiff(data.stateVector)
+                : doc.getEncodedState();
 
             return { $storageDiff: { update } };
         }),
@@ -271,9 +273,26 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                 const update = data.update ?? null;
 
                 if (origin === "$initialized") return {};
+                if (!update) return {};
 
-                if (update) doc.applyEncodedState({ update });
+                const before = doc.getStateVector();
+                const wasPending = doc.hasPending();
 
+                doc.applyEncodedState({ update });
+
+                const integrated = doc.getStateVector() !== before;
+
+                // These bytes did not enter the document. Ask the sender for the missing
+                // history. A resync reply that still does not integrate stops here.
+                if (!integrated && (doc.hasPending() || !doc.canDetectPending())) {
+                    logDebug("Storage update did not integrate");
+
+                    if (data.resync) return {};
+
+                    return { $storageResync: { stateVector: doc.getStateVector() } };
+                }
+
+                const state = integrated ? doc.encodeDiff(before) : update;
                 const encodedState = doc.getEncodedState();
                 const storageSize = new TextEncoder().encode(encodedState).length;
 
@@ -296,8 +315,14 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                     room,
                 });
 
-                // Persistence keeps the snapshot. Occupants only need this update.
-                return { $storageUpdated: { state: update || encodedState } };
+                if (doc.hasPending() && !wasPending) {
+                    return {
+                        $storageUpdated: { state },
+                        $storageResync: { stateVector: doc.getStateVector() },
+                    };
+                }
+
+                return { $storageUpdated: { state } };
             },
         ),
     });

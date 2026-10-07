@@ -135,12 +135,52 @@ describe("IORoom treaty invoke", () => {
         both.destroy();
         onlySecond.destroy();
 
+        const beforeTouch = second.messages.filter((message) => message.type === "$storageUpdated");
+
         await room.__experimental_storage.touch({}, first.id);
 
-        const snapshot = lastMessage(second, "$storageUpdated").data.state as string;
-        const fromSnapshot = storage.getEmpty().applyEncodedState({ update: snapshot });
+        expect(second.messages.filter((message) => message.type === "$storageUpdated")).toEqual(
+            beforeTouch,
+        );
+    });
 
-        expect(fromSnapshot.toJson()).toEqual({ messages: ["hello", "again"] });
-        fromSnapshot.destroy();
+    it("broadcasts a storage procedure while an earlier update is still pending", async () => {
+        const { io, room } = createRoom("treaty-storage-pending");
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(room, first, { io });
+        await initializeSession(room, first, { selectionId: null });
+        await registerAuthorized(room, second, { io });
+        await initializeSession(room, second, { selectionId: null });
+
+        const source = storage.getInitialized();
+
+        source.get("messages").push(["hidden"]);
+
+        const later = source.captureUpdate(() => {
+            source.get("messages").push(["tail"]);
+        });
+
+        source.destroy();
+
+        if (!later) throw new Error("Expected a later update");
+
+        await room.onMessage(first)({
+            data: JSON.stringify({
+                type: "$updateStorage",
+                data: { origin: null, update: later },
+            }),
+        });
+
+        expect(second.messages.some((message) => message.type === "$storageUpdated")).toBe(false);
+
+        await room.__experimental_storage.addMessage({ text: "kept" }, first.id);
+
+        const echoed = lastMessage(second, "$storageUpdated").data.state as string;
+        const doc = storage.getEmpty().applyEncodedState({ update: echoed });
+
+        expect(doc.toJson()).toEqual({ messages: ["kept"] });
+        doc.destroy();
     });
 });

@@ -176,6 +176,9 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
 
                 logDebug(`${colors.blue("Destroyed storage for room:")} ${room}`);
             },
+            onStorageUpdated(event) {
+                return listeners.onStorageUpdated(event);
+            },
             async onMessage(event) {
                 await Promise.resolve(listeners.onRoomMessage(event));
             },

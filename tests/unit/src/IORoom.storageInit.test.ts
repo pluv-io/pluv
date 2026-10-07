@@ -73,11 +73,12 @@ const updateStorage = async (
     socket: TestSocket,
     origin: string | null,
     update: string,
+    resync?: boolean,
 ): Promise<void> => {
     await room.onMessage(socket)({
         data: JSON.stringify({
             type: "$updateStorage",
-            data: { origin, update },
+            data: { origin, update, ...(resync ? { resync: true } : {}) },
         }),
     });
 };
@@ -399,5 +400,66 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
 
         expect(stored).toContain("A");
         expect(stored).toContain("B");
+    });
+
+    it("asks the sender for history when an update does not integrate", async () => {
+        const { io, persistence, room } = createRoom({
+            getInitialStorage: () => Promise.resolve(encode("server")),
+        });
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await Promise.all([
+            registerAuthorized(room, first, { io }),
+            registerAuthorized(room, second, { io }),
+        ]);
+        await initializeSession(room, first, encode("client"));
+
+        const hello = encode("hello");
+        const later = append(hello, " world");
+        const source = treaty.storage.getEmpty().applyEncodedState({ update: hello });
+
+        source.applyEncodedState({ update: later });
+
+        const resyncCount = (socket: TestSocket): number => {
+            return socket.messages.filter((message) => message.type === "$storageResync").length;
+        };
+
+        await updateStorage(room, first, null, later);
+
+        expect(second.messages.some((message) => message.type === "$storageUpdated")).toBe(false);
+        expect(resyncCount(first)).toBe(1);
+
+        await updateStorage(room, first, null, later, true);
+
+        expect(resyncCount(first)).toBe(1);
+
+        await updateStorage(room, first, null, later);
+
+        expect(second.messages.some((message) => message.type === "$storageUpdated")).toBe(false);
+        expect(resyncCount(first)).toBe(2);
+
+        const stored = await persistence.getStorageState("storage-init");
+
+        expect(stored == null || !decode(stored).includes("hello world")).toBe(true);
+
+        const stateVector = lastMessage(first, "$storageResync").data.stateVector as string;
+        const repair = source.encodeDiff(stateVector);
+
+        await updateStorage(room, first, null, repair);
+        source.destroy();
+
+        expect(decode((await persistence.getStorageState("storage-init")) ?? "")).toContain(
+            "hello world",
+        );
+
+        const echoed = lastMessage(second, "$storageUpdated").data.state as string;
+        const caughtUp = treaty.storage
+            .getEmpty()
+            .applyEncodedState({ update: encode("server") })
+            .applyEncodedState({ update: echoed });
+
+        expect(decode(caughtUp.getEncodedState())).toContain("hello world");
+        caughtUp.destroy();
     });
 });

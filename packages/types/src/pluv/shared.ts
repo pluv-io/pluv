@@ -26,10 +26,19 @@ export interface BaseClientEventRecord {
         procedure?: string | null;
     };
     $syncStorage: {
+        /**
+         * @description This client's `getStateVector()`. An empty string asks for the whole
+         * document.
+         */
         stateVector: string;
     };
     $updateStorage: {
         origin: string | null;
+        /**
+         * @description This update is the reply to `$storageResync`. The server does not ask
+         * again when the reply leaves the document unchanged.
+         */
+        resync?: boolean | null;
         update: string | null;
         procedure?: string | null;
     };
@@ -95,10 +104,16 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any>> = {
     $storageDiff: {
         update: string;
     };
+    $storageResync: {
+        /**
+         * @description The server's `getStateVector()`. The caller who sent the update replies
+         * with `encodeDiff` of this, because the server could not integrate that update.
+         */
+        stateVector: string;
+    };
     $storageUpdated: {
         /**
-         * @description Bytes to merge into the local document. The caller's new changes when
-         * they sent some, and the whole document when they did not.
+         * @description Bytes to merge into the local document. The changes the server integrated.
          */
         state: string;
     };
