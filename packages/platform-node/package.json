@@ -32,15 +32,15 @@
         "@pluv/crdt": "workspace:^",
         "@pluv/io": "workspace:^",
         "@pluv/types": "workspace:^",
-        "@types/node": "^26.6.2",
-        "@types/ws": "^8.18.1",
+        "@types/node": "^26.6.4",
+        "@types/ws": "^8.18.2",
         "path-to-regexp": "^8.4.2"
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
         "tsdown": "^0.23.0",
         "typescript": "^7.0.2",
-        "ws": "^8.21.3"
+        "ws": "^8.22.0"
     },
     "peerDependencies": {
         "ws": "^8.0.0"
