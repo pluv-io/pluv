@@ -31,7 +31,7 @@
     "dependencies": {
         "@pluv/client": "workspace:^",
         "@pluv/crdt": "workspace:^",
-        "idb": "^8.0.3"
+        "idb": "^8.0.4"
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",

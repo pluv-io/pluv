@@ -10,23 +10,23 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@pluv/client": "workspace:^",
         "@pluv/crdt": "workspace:^",
         "@pluv/crdt-loro": "workspace:^",
         "@pluv/crdt-yjs": "workspace:^",
-        "@pluv/client": "workspace:^",
         "@pluv/io": "workspace:^",
         "@pluv/persistence-cloudflare-transactional-storage": "workspace:^",
         "@pluv/platform-cloudflare": "workspace:^",
         "@pluv/treaty": "workspace:^",
         "@pluv/types": "workspace:^",
-        "loro-crdt": "^1.16.1",
-        "yjs": "^13.6.32"
+        "loro-crdt": "^1.16.4",
+        "yjs": "^13.6.33"
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
-        "@types/node": "^26.6.2",
+        "@types/node": "^26.6.4",
         "typescript": "^7.0.2",
-        "vitest": "^5.0.1",
+        "vitest": "^5.0.3",
         "zod": "^4.6.5"
     }
 }
