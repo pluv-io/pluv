@@ -98,9 +98,8 @@ describe("groupRoomUsers", () => {
                 live("s-anon-1", null),
             ]),
         ).toEqual({
-            connectionCount: 4,
-            userCount: 2,
-            operators: { connectionCount: 0, userCount: 0 },
+            user: { connectionCount: 4, userCount: 2 },
+            operator: { connectionCount: 0, userCount: 0 },
         });
     });
 
@@ -168,9 +167,8 @@ describe("groupRoomUsers", () => {
             { data: { id: "ada" }, kind: "user", operator: null },
         ]);
         expect(__internal.getRoomStatsFromSessions([occupant, operator])).toEqual({
-            connectionCount: 1,
-            userCount: 1,
-            operators: { connectionCount: 1, userCount: 1 },
+            user: { connectionCount: 1, userCount: 1 },
+            operator: { connectionCount: 1, userCount: 1 },
         });
     });
 
@@ -184,9 +182,8 @@ describe("groupRoomUsers", () => {
         second.operator = { id: "staff-2", name: "Ada", imageUrl: null };
 
         expect(__internal.getRoomStatsFromSessions([first, second])).toEqual({
-            connectionCount: 0,
-            userCount: 0,
-            operators: { connectionCount: 2, userCount: 1 },
+            user: { connectionCount: 0, userCount: 0 },
+            operator: { connectionCount: 2, userCount: 1 },
         });
         expect(__internal.getMyConnectionIds([first, second], first).toSorted()).toEqual([
             "s-1",

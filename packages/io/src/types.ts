@@ -12,6 +12,8 @@ import type {
     MaybePromise,
     OperatorUser,
     ParticipantKind,
+    PresenceSeq,
+    SessionPresence,
     StandardSchemaV1,
     UndefinedProps,
 } from "@pluv/types";
@@ -64,17 +66,11 @@ export interface WebSocketSessionTimers {
     ping: number;
 }
 
-export interface WebSocketSessionSeq {
-    presence: number | null;
-}
+export type WebSocketSessionSeq = PresenceSeq;
 
-export interface WebSocketSerializedState {
-    kind: ParticipantKind;
-    operator: OperatorUser | null;
-    presence: JsonObject | null;
+export interface WebSocketSerializedState extends SessionPresence<JsonObject | null> {
     quit: boolean;
     room: string;
-    seq: WebSocketSessionSeq;
     timers: WebSocketSessionTimers;
 }
 

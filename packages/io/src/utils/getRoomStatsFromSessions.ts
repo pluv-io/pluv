@@ -1,16 +1,12 @@
-import type { RoomStats } from "@pluv/types";
+import type { RoomStatsByKind } from "@pluv/types";
 import type { WebSocketSession } from "../types";
 import { assertExhaustive } from "./assertExhaustive";
 import { getLiveSessions } from "./getLiveSessions";
 import { getSessionKind } from "./sessionKind";
 
-export type RoomStatsFromSessions = RoomStats & {
-    operators: RoomStats;
-};
-
 export const getRoomStatsFromSessions = (
     sessions: readonly WebSocketSession<any>[],
-): RoomStatsFromSessions => {
+): RoomStatsByKind => {
     const live = getLiveSessions(sessions);
     const occupantIds = new Set<string>();
     const operatorIds = new Set<string>();
@@ -38,9 +34,11 @@ export const getRoomStatsFromSessions = (
     }
 
     return {
-        connectionCount: occupantConnections,
-        userCount: occupantIds.size,
-        operators: {
+        user: {
+            connectionCount: occupantConnections,
+            userCount: occupantIds.size,
+        },
+        operator: {
             connectionCount: operatorConnections,
             userCount: operatorIds.size,
         },

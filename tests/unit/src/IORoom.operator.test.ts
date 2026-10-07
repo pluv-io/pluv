@@ -249,12 +249,11 @@ describe("IORoom operator sessions", () => {
 
         expect(registered.user).toEqual({ id: "ada" });
         expect(registered.operator).toEqual(operatorProfile);
-        expect(registered.data.kind).toBe("operator");
-        expect(registered.data.operator).toEqual(operatorProfile);
-        expect(registered.data.connectionCount).toBe(1);
-        expect(registered.data.userCount).toBe(1);
-        expect(registered.data.operators).toEqual({ connectionCount: 1, userCount: 1 });
-        expect(registered.data.presence).not.toEqual({ name: "player" });
+        expect(registered.data.session.kind).toBe("operator");
+        expect(registered.data.session.operator).toEqual(operatorProfile);
+        expect(registered.data.stats.user).toEqual({ connectionCount: 1, userCount: 1 });
+        expect(registered.data.stats.operator).toEqual({ connectionCount: 1, userCount: 1 });
+        expect(registered.data.session.presence).not.toEqual({ name: "player" });
 
         const others = lastMessage(observer, "$othersReceived").data.others;
 
@@ -263,22 +262,26 @@ describe("IORoom operator sessions", () => {
                 {
                     connectionIds: ["session-ada"],
                     data: { id: "ada" },
-                    kind: "user",
-                    operator: null,
-                    presence: { name: "player" },
-                    seq: { presence: expect.any(Number) },
+                    session: {
+                        kind: "user",
+                        operator: null,
+                        presence: { name: "player" },
+                        seq: { presence: expect.any(Number) },
+                    },
                 },
                 {
                     connectionIds: ["session-staff"],
                     data: { id: "ada" },
-                    kind: "operator",
-                    operator: {
-                        id: testOperatorUser.id,
-                        name: testOperatorUser.name,
-                        imageUrl: testOperatorUser.imageUrl,
+                    session: {
+                        kind: "operator",
+                        operator: {
+                            id: testOperatorUser.id,
+                            name: testOperatorUser.name,
+                            imageUrl: testOperatorUser.imageUrl,
+                        },
+                        presence: { name: "staff" },
+                        seq: { presence: expect.any(Number) },
                     },
-                    presence: { name: "staff" },
-                    seq: { presence: expect.any(Number) },
                 },
             ]),
         );
@@ -293,10 +296,9 @@ describe("IORoom operator sessions", () => {
                 { data: { id: "bob" }, kind: "user", operator: null },
             ],
         });
-        expect(lastMessage(observer, "$registered").data).toMatchObject({
-            connectionCount: 2,
-            userCount: 2,
-            operators: { connectionCount: 1, userCount: 1 },
+        expect(lastMessage(observer, "$registered").data.stats).toEqual({
+            user: { connectionCount: 2, userCount: 2 },
+            operator: { connectionCount: 1, userCount: 1 },
         });
         expect(room.getSize()).toBe(3);
     });
@@ -439,11 +441,11 @@ describe("IORoom operator treaty context", () => {
         await room.__experimental_presence.select({ id: "item" }, occupant.id);
         await room.__experimental_presence.select({ id: "item" }, operator.id);
 
-        expect(lastMessage(operator, "$presenceUpdated").data.presence).toEqual({
+        expect(lastMessage(operator, "$presenceUpdated").data.session.presence).toEqual({
             selectionId: "item",
             actor: "staff-1",
         });
-        expect(lastMessage(occupant, "$presenceUpdated").data.operator).toEqual({
+        expect(lastMessage(occupant, "$presenceUpdated").data.session.operator).toEqual({
             id: testOperatorUser.id,
             name: testOperatorUser.name,
             imageUrl: testOperatorUser.imageUrl,
@@ -451,10 +453,11 @@ describe("IORoom operator treaty context", () => {
 
         const occupantPresence = occupant.messages.findLast(
             (message) =>
-                message.type === "$presenceUpdated" && message.data.presence.actor === "ada",
+                message.type === "$presenceUpdated" &&
+                message.data.session.presence.actor === "ada",
         );
 
-        expect(occupantPresence?.data.presence).toEqual({
+        expect(occupantPresence?.data.session.presence).toEqual({
             selectionId: "item",
             actor: "ada",
         });

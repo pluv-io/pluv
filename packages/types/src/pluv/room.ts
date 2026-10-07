@@ -16,8 +16,12 @@ import type {
     InferTreatyProcedureInput,
     IOEventMessage,
     IOLike,
+    KindStats,
+    ListUsersCursor,
     MergeEvents,
+    ParticipantRecord,
     PluvRouterEventConfig,
+    RoomError,
     TreatyLike,
     TreatyProcedureLike,
 } from "./shared";
@@ -100,24 +104,11 @@ export interface UserInfo<
     operator: OperatorUser | null;
 }
 
-export type RoomStats = {
-    connectionCount: number;
-    userCount: number;
-};
-
-export type RoomError = {
-    message: string;
-    stack?: string | null;
-};
+export type RoomStats = KindStats;
 
 export type RoomErrorSubscriptionCallback = (error: RoomError) => void;
 
 export type RoomErrorSubscriptionFn = (callback: RoomErrorSubscriptionCallback) => () => void;
-
-export type ListUsersCursor = {
-    kind: ParticipantKind;
-    id: string;
-};
 
 export type ListUsersOptions = {
     cursor?: ListUsersCursor | null;
@@ -125,11 +116,9 @@ export type ListUsersOptions = {
     limit?: number;
 };
 
-export type ListUsersRow<TIO extends IOLike> = {
-    data: UserRecord<TIO>["data"];
-    kind: ParticipantKind;
-    operator: OperatorUser | null;
-};
+export type ListUsersRow<TIO extends IOLike> = ParticipantRecord<
+    InferIOAuthorizeUser<InferIOAuthorize<TIO>>
+>;
 
 export type UsersPage<TIO extends IOLike> = {
     pageInfo: {

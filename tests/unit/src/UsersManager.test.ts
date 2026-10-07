@@ -192,19 +192,23 @@ describe("UsersManager", () => {
 
         const stale = manager.patchPresence({
             connectionId: "bob-tab-1",
-            kind: "user",
-            operator: null,
-            presence: { cursor: 9 },
-            seq: { presence: 9 },
             user: { id: "bob" },
+            session: {
+                kind: "user",
+                operator: null,
+                presence: { cursor: 9 },
+                seq: { presence: 9 },
+            },
         });
         const newer = manager.patchPresence({
             connectionId: "bob-tab-1",
-            kind: "user",
-            operator: null,
-            presence: { cursor: 3 },
-            seq: { presence: 11 },
             user: { id: "bob" },
+            session: {
+                kind: "user",
+                operator: null,
+                presence: { cursor: 3 },
+                seq: { presence: 11 },
+            },
         });
 
         expect(stale).toEqual({ applied: false, presence: { cursor: 1 } });
@@ -297,11 +301,13 @@ describe("UsersManager", () => {
 
         const echo = manager.patchPresence({
             connectionId: "me",
-            kind: "user",
-            operator: null,
-            presence: { cursor: 1 },
-            seq: { presence: 10 },
             user: { id: "me" },
+            session: {
+                kind: "user",
+                operator: null,
+                presence: { cursor: 1 },
+                seq: { presence: 10 },
+            },
         });
 
         expect(echo).toEqual({ applied: false, presence: { cursor: 5 } });
@@ -329,19 +335,23 @@ describe("UsersManager", () => {
 
         const stale = manager.patchPresence({
             connectionId: "staff-tab",
-            kind: "operator",
-            operator: { id: "staff-9", name: "Stale", imageUrl: null },
-            presence: { cursor: 0 },
-            seq: { presence: 1 },
             user: { id: "ada" },
+            session: {
+                kind: "operator",
+                operator: { id: "staff-9", name: "Stale", imageUrl: null },
+                presence: { cursor: 0 },
+                seq: { presence: 1 },
+            },
         });
         const applied = manager.patchPresence({
             connectionId: "staff-tab",
-            kind: "operator",
-            operator: next,
-            presence: { cursor: 9 },
-            seq: { presence: 3 },
             user: { id: "ada" },
+            session: {
+                kind: "operator",
+                operator: next,
+                presence: { cursor: 9 },
+                seq: { presence: 3 },
+            },
         });
 
         expect(stale).toEqual({ applied: false, presence: { cursor: 1 } });
@@ -373,11 +383,13 @@ describe("UsersManager", () => {
 
         const equal = manager.patchPresence({
             connectionId: "bob-tab-1",
-            kind: "user",
-            operator: null,
-            presence: { cursor: 9 },
-            seq: { presence: 10 },
             user: { id: "bob" },
+            session: {
+                kind: "user",
+                operator: null,
+                presence: { cursor: 9 },
+                seq: { presence: 10 },
+            },
         });
 
         expect(equal).toEqual({ applied: true, presence: { cursor: 9 } });
@@ -398,11 +410,13 @@ describe("UsersManager", () => {
 
         const sibling = manager.patchPresence({
             connectionId: "ada-tab-1",
-            kind: "user",
-            operator: null,
-            presence: { cursor: 2 },
-            seq: { presence: 11 },
             user: { id: "ada" },
+            session: {
+                kind: "user",
+                operator: null,
+                presence: { cursor: 2 },
+                seq: { presence: 11 },
+            },
         });
 
         expect(sibling).toEqual({ applied: true, presence: { cursor: 2 } });
@@ -468,11 +482,13 @@ describe("UsersManager", () => {
 
         const echo = manager.patchPresence({
             connectionId: "me",
-            kind: "user",
-            operator: null,
-            presence: { cursor: 3 },
-            seq: { presence: 54 },
             user: { id: "me" },
+            session: {
+                kind: "user",
+                operator: null,
+                presence: { cursor: 3 },
+                seq: { presence: 54 },
+            },
         });
 
         expect(echo).toEqual({ applied: true, presence: { cursor: 3 } });
@@ -501,11 +517,13 @@ describe("UsersManager", () => {
 
         const sibling = manager.patchPresence({
             connectionId: "me-tab-2",
-            kind: "user",
-            operator: null,
-            presence: { cursor: 9 },
-            seq: { presence: 45 },
             user: { id: "me" },
+            session: {
+                kind: "user",
+                operator: null,
+                presence: { cursor: 9 },
+                seq: { presence: 45 },
+            },
         });
 
         expect(sibling).toEqual({ applied: true, presence: { cursor: 9 } });
@@ -514,11 +532,13 @@ describe("UsersManager", () => {
 
         const echo = manager.patchPresence({
             connectionId: "me-tab-1",
-            kind: "user",
-            operator: null,
-            presence: { cursor: 2 },
-            seq: { presence: 50 },
             user: { id: "me" },
+            session: {
+                kind: "user",
+                operator: null,
+                presence: { cursor: 2 },
+                seq: { presence: 50 },
+            },
         });
 
         expect(echo).toEqual({ applied: true, presence: { cursor: 2 } });

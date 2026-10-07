@@ -48,20 +48,19 @@ describe("IORoom $roomStats", () => {
         const socket = new TestSocket("session-1");
 
         await registerAuthorized(room, socket, { io, user: { id: "ada" } });
-        await waitForRoomStats(socket, (data) => data.connectionCount === 1);
+        await waitForRoomStats(socket, (data) => data.user.connectionCount === 1);
 
         const message = lastMessage(socket, "$roomStats");
 
         expect(message.connectionId).toBeNull();
         expect(message.user).toBeNull();
         expect(message.data).toEqual({
-            connectionCount: 1,
-            userCount: 1,
-            operators: { connectionCount: 0, userCount: 0 },
+            user: { connectionCount: 1, userCount: 1 },
+            operator: { connectionCount: 0, userCount: 0 },
         });
-        expect(lastMessage(socket, "$registered").data).toMatchObject({
-            connectionCount: 1,
-            userCount: 1,
+        expect(lastMessage(socket, "$registered").data.stats).toEqual({
+            user: { connectionCount: 1, userCount: 1 },
+            operator: { connectionCount: 0, userCount: 0 },
         });
     });
 
@@ -81,9 +80,8 @@ describe("IORoom $roomStats", () => {
 
             expect(leading).toHaveLength(1);
             expect(leading[0]?.data).toEqual({
-                connectionCount: 1,
-                userCount: 1,
-                operators: { connectionCount: 0, userCount: 0 },
+                user: { connectionCount: 1, userCount: 1 },
+                operator: { connectionCount: 0, userCount: 0 },
             });
 
             await registerAuthorized(room, second, { io, user: { id: "bob" } });
@@ -99,9 +97,8 @@ describe("IORoom $roomStats", () => {
 
             expect(emits).toHaveLength(2);
             expect(emits[1]?.data).toEqual({
-                connectionCount: 3,
-                userCount: 3,
-                operators: { connectionCount: 0, userCount: 0 },
+                user: { connectionCount: 3, userCount: 3 },
+                operator: { connectionCount: 0, userCount: 0 },
             });
         } finally {
             vi.useRealTimers();
@@ -120,21 +117,25 @@ describe("IORoom $roomStats", () => {
         await initializeSession(room, ada2);
         await registerAuthorized(room, bob, { io, user: { id: "bob" } });
         await initializeSession(room, bob);
-        await waitForRoomStats(bob, (data) => data.connectionCount === 3 && data.userCount === 2);
+        await waitForRoomStats(
+            bob,
+            (data) => data.user.connectionCount === 3 && data.user.userCount === 2,
+        );
 
         expect(lastMessage(bob, "$roomStats").data).toEqual({
-            connectionCount: 3,
-            userCount: 2,
-            operators: { connectionCount: 0, userCount: 0 },
+            user: { connectionCount: 3, userCount: 2 },
+            operator: { connectionCount: 0, userCount: 0 },
         });
 
         await room.onClose(ada1)({ code: 1000, reason: "" });
-        await waitForRoomStats(bob, (data) => data.connectionCount === 2 && data.userCount === 2);
+        await waitForRoomStats(
+            bob,
+            (data) => data.user.connectionCount === 2 && data.user.userCount === 2,
+        );
 
         expect(lastMessage(bob, "$roomStats").data).toEqual({
-            connectionCount: 2,
-            userCount: 2,
-            operators: { connectionCount: 0, userCount: 0 },
+            user: { connectionCount: 2, userCount: 2 },
+            operator: { connectionCount: 0, userCount: 0 },
         });
     });
 });

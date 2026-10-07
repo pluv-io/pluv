@@ -24,7 +24,10 @@ describe("IORoom protocol relay", () => {
         await room.onMessage(sender)({
             data: JSON.stringify({
                 type: "$roomStats",
-                data: { connectionCount: 999, userCount: 999 },
+                data: {
+                    user: { connectionCount: 999, userCount: 999 },
+                    operator: { connectionCount: 0, userCount: 0 },
+                },
             }),
         });
         await room.onMessage(sender)({
@@ -44,8 +47,8 @@ describe("IORoom protocol relay", () => {
             observer.messages.some(
                 (message) =>
                     message.type === "$roomStats" &&
-                    message.data?.connectionCount === 999 &&
-                    message.data?.userCount === 999,
+                    message.data?.user?.connectionCount === 999 &&
+                    message.data?.user?.userCount === 999,
             ),
         ).toBe(false);
         expect(observer.messages.some((message) => message.type === "$notARealProtocol")).toBe(

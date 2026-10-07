@@ -75,23 +75,25 @@ describe("IORoom presence", () => {
         const initialOthers = lastMessage(second, "$othersReceived").data.others as {
             connectionIds: string[];
             data: { id: string };
-            presence: Record<string, unknown>;
+            session: { presence: Record<string, unknown> };
         }[];
 
         expect(initialOthers).toEqual([
             {
                 connectionIds: ["session-1"],
                 data: { id: "session-1" },
-                kind: "user",
-                operator: null,
-                presence: { cursor: 1, name: "ada" },
-                seq: { presence: expect.any(Number) },
+                session: {
+                    kind: "user",
+                    operator: null,
+                    presence: { cursor: 1, name: "ada" },
+                    seq: { presence: expect.any(Number) },
+                },
             },
         ]);
 
         await updatePresence(room, first, { cursor: 2 });
 
-        expect(lastMessage(second, "$presenceUpdated").data.presence).toEqual({
+        expect(lastMessage(second, "$presenceUpdated").data.session.presence).toEqual({
             cursor: 2,
             name: "ada",
         });
@@ -104,10 +106,12 @@ describe("IORoom presence", () => {
             {
                 connectionIds: ["session-1"],
                 data: { id: "session-1" },
-                kind: "user",
-                operator: null,
-                presence: { cursor: 2, name: "ada" },
-                seq: { presence: expect.any(Number) },
+                session: {
+                    kind: "user",
+                    operator: null,
+                    presence: { cursor: 2, name: "ada" },
+                    seq: { presence: expect.any(Number) },
+                },
             },
         ]);
     });
@@ -125,9 +129,9 @@ describe("IORoom presence", () => {
 
         expect(lastMessage(first, "$userJoined").data).toMatchObject({
             connectionId: "session-2",
-            presence: { cursor: 9, name: "bob" },
+            session: { presence: { cursor: 9, name: "bob" } },
         });
-        expect(typeof lastMessage(first, "$userJoined").data.seq.presence).toBe("number");
+        expect(typeof lastMessage(first, "$userJoined").data.session.seq.presence).toBe("number");
     });
 
     it("stamps a newer seq on the first $presenceUpdated after initialize", async () => {
@@ -141,13 +145,13 @@ describe("IORoom presence", () => {
         await registerAuthorized(room, second, { io });
         await initializeSession(room, second, { cursor: 9, name: "bob" });
 
-        const joinSeq = lastMessage(first, "$userJoined").data.seq.presence as number;
+        const joinSeq = lastMessage(first, "$userJoined").data.session.seq.presence as number;
 
         await updatePresence(room, second, { cursor: 1 });
 
         const updated = lastMessage(first, "$presenceUpdated");
 
-        expect(updated.data.presence).toEqual({ cursor: 1, name: "bob" });
-        expect(updated.data.seq.presence).toBeGreaterThan(joinSeq);
+        expect(updated.data.session.presence).toEqual({ cursor: 1, name: "bob" });
+        expect(updated.data.session.seq.presence).toBeGreaterThan(joinSeq);
     });
 });
