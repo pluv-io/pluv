@@ -132,4 +132,15 @@ describe("yjs storage sync", () => {
 
         expect(replay.toJson()).toEqual({ content: "hello" });
     });
+
+    it("treats a missing pending field as unknown", () => {
+        const doc = create();
+
+        expect(doc.canDetectPending()).toBe(true);
+
+        delete (doc.value.store as { pendingStructs?: unknown }).pendingStructs;
+
+        expect(doc.canDetectPending()).toBe(false);
+        expect(doc.hasPending()).toBe(true);
+    });
 });

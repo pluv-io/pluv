@@ -56,6 +56,10 @@ export class NoopCrdtDoc implements CrdtDocLike<any, {}, {}> {
         return false;
     }
 
+    public canDetectPending(): boolean {
+        return true;
+    }
+
     public isDirty(): boolean {
         return false;
     }

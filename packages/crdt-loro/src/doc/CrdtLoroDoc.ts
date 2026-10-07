@@ -174,6 +174,10 @@ export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements Crd
         return this.#_pendingSpans.isPending;
     }
 
+    public canDetectPending(): boolean {
+        return true;
+    }
+
     public toJson(): InferLoroJson<TSchema>;
     public toJson<TKey extends keyof InferLoroJson<TSchema>>(
         type: TKey,

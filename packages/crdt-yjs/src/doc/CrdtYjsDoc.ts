@@ -156,7 +156,19 @@ export class CrdtYjsDoc<TSchema extends YjsSchema = YjsSchema> implements CrdtDo
     }
 
     public hasPending(): boolean {
+        if (!this.canDetectPending()) return true;
+
         return this.value.store.pendingStructs !== null || this.value.store.pendingDs !== null;
+    }
+
+    /**
+     * @description Yjs keeps updates that could not be applied on `store.pendingStructs`
+     * and `store.pendingDs`. A missing field means this check cannot tell.
+     */
+    public canDetectPending(): boolean {
+        const store = this.value.store;
+
+        return !!store && "pendingStructs" in store && "pendingDs" in store;
     }
 
     public isDirty(): boolean {

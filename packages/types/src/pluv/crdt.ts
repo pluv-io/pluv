@@ -99,6 +99,11 @@ export interface CrdtDocLike<
      */
     hasPending(): boolean;
     /**
+     * @description Whether `hasPending()` can tell that a change is waiting. When this is
+     * false, ask for the whole document instead of a diff.
+     */
+    canDetectPending(): boolean;
+    /**
      * @description Whether the document has ever received an operation. Not the inverse of
      * `isEmpty()`: a document whose content was deleted is still dirty.
      */
