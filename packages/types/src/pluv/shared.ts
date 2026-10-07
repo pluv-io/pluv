@@ -11,6 +11,7 @@ export interface BaseClientEventRecord {
     $getOthers: {};
     $initializeSession: {
         presence: JsonObject | null;
+        stateVector?: string | null;
         update: string | null;
     };
     $listUsers: {
@@ -24,8 +25,20 @@ export interface BaseClientEventRecord {
         presence: JsonObject | null;
         procedure?: string | null;
     };
+    $syncStorage: {
+        /**
+         * @description This client's `getStateVector()`. An empty string asks for the whole
+         * document.
+         */
+        stateVector: string;
+    };
     $updateStorage: {
         origin: string | null;
+        /**
+         * @description This update is the reply to `$storageResync`. The server does not ask
+         * again when the reply leaves the document unchanged.
+         */
+        resync?: boolean | null;
         update: string | null;
         procedure?: string | null;
     };
@@ -88,7 +101,20 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any>> = {
         changeKind: "empty" | "initialized" | "unchanged";
         state: string;
     };
+    $storageDiff: {
+        update: string;
+    };
+    $storageResync: {
+        /**
+         * @description The server's `getStateVector()`. The caller who sent the update replies
+         * with `encodeDiff` of this, because the server could not integrate that update.
+         */
+        stateVector: string;
+    };
     $storageUpdated: {
+        /**
+         * @description Bytes to merge into the local document. The changes the server integrated.
+         */
         state: string;
     };
     $syncStateReceived: {

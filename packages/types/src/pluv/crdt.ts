@@ -76,7 +76,33 @@ export interface CrdtDocLike<
     destroy(): void;
     get(key?: undefined): TStorage;
     get<TKey extends keyof TStorage>(key: TKey): TStorage[TKey];
+    /**
+     * @description Run `fn` and return only the changes it made. Returns `null` when `fn`
+     * does not change the document.
+     */
+    captureUpdate(fn: () => void): string | null;
+    /**
+     * @description The changes this document has that another copy is missing.
+     * `stateVector` is that copy's `getStateVector()` result. An empty string means the
+     * other copy has nothing, so this returns every change.
+     */
+    encodeDiff(stateVector: string): string;
     getEncodedState(): string;
+    /**
+     * @description Gets which changes this document already contains. Another copy passes
+     * the result to `encodeDiff` to learn what it is missing.
+     */
+    getStateVector(): string;
+    /**
+     * @description Whether a received change is waiting because an earlier change has not
+     * arrived yet.
+     */
+    hasPending(): boolean;
+    /**
+     * @description Whether `hasPending()` can tell that a change is waiting. When this is
+     * false, ask for the whole document instead of a diff.
+     */
+    canDetectPending(): boolean;
     /**
      * @description Whether the document has ever received an operation. Not the inverse of
      * `isEmpty()`: a document whose content was deleted is still dirty.

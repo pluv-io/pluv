@@ -60,6 +60,7 @@ describe("PluvRouter event names and merge", () => {
                 "$getOthers",
                 "$initializeSession",
                 "$ping",
+                "$syncStorage",
                 "$updatePresence",
                 "$updateStorage",
             ]),

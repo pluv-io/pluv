@@ -38,7 +38,7 @@ export type PluvServerConfig<T extends IODefs = IODefs> = Partial<PluvIOListener
               getInitialStorage?: "[ERROR]: Must specify storage on treaty to use getInitialStorage";
           });
 
-type BaseCreateRoomOptions<T extends IODefs> = {
+type BaseCreateRoomOptions<_T extends IODefs> = {
     debug?: boolean;
 };
 
@@ -175,6 +175,9 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
                 await event.platform.persistence.deleteStorageState(room);
 
                 logDebug(`${colors.blue("Destroyed storage for room:")} ${room}`);
+            },
+            onStorageUpdated(event) {
+                return listeners.onStorageUpdated(event);
             },
             async onMessage(event) {
                 await Promise.resolve(listeners.onRoomMessage(event));

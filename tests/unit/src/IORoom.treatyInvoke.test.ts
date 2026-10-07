@@ -24,7 +24,8 @@ const addMessage = t.procedure.storage
     .resolve(({ text }, { storage: docStorage }) => {
         docStorage.messages.push([text]);
     });
-const treaty = t.router({ select, addMessage });
+const touch = t.procedure.storage.input(z.object({})).resolve(() => undefined);
+const treaty = t.router({ select, addMessage, touch });
 
 type Room = {
     onMessage: (socket: TestSocket) => (event: { data: string }) => Promise<void>;
@@ -33,6 +34,7 @@ type Room = {
     };
     __experimental_storage: {
         addMessage: (input: { text: string }, senderId: string) => Promise<void>;
+        touch: (input: Record<string, never>, senderId: string) => Promise<void>;
     };
 };
 
@@ -112,9 +114,73 @@ describe("IORoom treaty invoke", () => {
 
         await room.__experimental_storage.addMessage({ text: "hello" }, first.id);
 
-        const encodedState = lastMessage(second, "$storageUpdated").data.state;
-        const doc = storage.getEmpty().applyEncodedState({ update: encodedState });
+        const firstUpdate = lastMessage(second, "$storageUpdated").data.state as string;
+        const once = storage.getEmpty().applyEncodedState({ update: firstUpdate });
 
-        expect(doc.toJson()).toEqual({ messages: ["hello"] });
+        expect(once.toJson()).toEqual({ messages: ["hello"] });
+        once.destroy();
+
+        await room.__experimental_storage.addMessage({ text: "again" }, first.id);
+
+        const secondUpdate = lastMessage(second, "$storageUpdated").data.state as string;
+        const both = storage
+            .getEmpty()
+            .applyEncodedState({ update: firstUpdate })
+            .applyEncodedState({ update: secondUpdate });
+        const onlySecond = storage.getEmpty().applyEncodedState({ update: secondUpdate });
+
+        expect(secondUpdate).not.toBe(firstUpdate);
+        expect(both.toJson()).toEqual({ messages: ["hello", "again"] });
+        expect(onlySecond.toJson()).not.toEqual({ messages: ["hello", "again"] });
+        both.destroy();
+        onlySecond.destroy();
+
+        const beforeTouch = second.messages.filter((message) => message.type === "$storageUpdated");
+
+        await room.__experimental_storage.touch({}, first.id);
+
+        expect(second.messages.filter((message) => message.type === "$storageUpdated")).toEqual(
+            beforeTouch,
+        );
+    });
+
+    it("broadcasts a storage procedure while an earlier update is still pending", async () => {
+        const { io, room } = createRoom("treaty-storage-pending");
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(room, first, { io });
+        await initializeSession(room, first, { selectionId: null });
+        await registerAuthorized(room, second, { io });
+        await initializeSession(room, second, { selectionId: null });
+
+        const source = storage.getInitialized();
+
+        source.get("messages").push(["hidden"]);
+
+        const later = source.captureUpdate(() => {
+            source.get("messages").push(["tail"]);
+        });
+
+        source.destroy();
+
+        if (!later) throw new Error("Expected a later update");
+
+        await room.onMessage(first)({
+            data: JSON.stringify({
+                type: "$updateStorage",
+                data: { origin: null, update: later },
+            }),
+        });
+
+        expect(second.messages.some((message) => message.type === "$storageUpdated")).toBe(false);
+
+        await room.__experimental_storage.addMessage({ text: "kept" }, first.id);
+
+        const echoed = lastMessage(second, "$storageUpdated").data.state as string;
+        const doc = storage.getEmpty().applyEncodedState({ update: echoed });
+
+        expect(doc.toJson()).toEqual({ messages: ["kept"] });
+        doc.destroy();
     });
 });

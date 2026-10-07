@@ -1,24 +1,13 @@
 import type {
     Id,
     IOLike,
-    JsonObject,
     RoomStats,
     StateNotifierSubjects,
     SubscriptionCallback,
     UserInfo,
     WebSocketState,
 } from "@pluv/types";
-import type { Subject } from "wonka";
 import { makeSubject, subscribe } from "wonka";
-
-type InferSubjectValue<
-    TIO extends IOLike,
-    TPresence extends Record<string, any>,
-    TSubject extends keyof StateNotifierSubjects<TIO, TPresence>,
-> =
-    StateNotifierSubjects<TIO, TPresence>[TSubject] extends Subject<infer IValue>
-        ? Id<IValue>
-        : never;
 
 export class StateNotifier<TIO extends IOLike, TPresence extends Record<string, any> = {}> {
     public subjects: StateNotifierSubjects<TIO, TPresence> = {

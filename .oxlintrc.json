@@ -25,7 +25,18 @@
         "typescript/no-unnecessary-type-arguments": "off",
         "typescript/no-unnecessary-type-assertion": "off",
         "typescript/no-unnecessary-type-constraint": "off",
-        "typescript/no-unused-vars": "off",
+        "typescript/no-unused-vars": [
+            "error",
+            {
+                "args": "none",
+                "caughtErrors": "none",
+                "varsIgnorePattern": "^_",
+                "fix": {
+                    "imports": "safe-fix",
+                    "variables": "off"
+                }
+            }
+        ],
         "typescript/no-unsafe-type-assertion": "off",
         "no-extra-boolean-cast": "off",
         "turbo/no-undeclared-env-vars": "warn",

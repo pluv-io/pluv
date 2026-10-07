@@ -18,7 +18,6 @@ import type {
     ListUsersResult,
     Maybe,
     OperatorUser,
-    ParticipantKind,
 } from "@pluv/types";
 import colors from "kleur";
 import type {
@@ -50,6 +49,7 @@ import type {
     IORoomDestroyedEvent,
     IORoomListenerEvent,
     IORoomMessageEvent,
+    IOStorageUpdatedEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
     PluvContext,
@@ -92,6 +92,7 @@ export interface IORoomListeners<T extends IODefs = IODefs> {
     onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;
     onStorageDestroyed: (event: IORoomListenerEvent<T>) => void;
     onMessage: (event: IORoomMessageEvent<T>) => void;
+    onStorageUpdated: (event: IOStorageUpdatedEvent<T>) => void;
     onUserConnected: (event: IOUserConnectedEvent<T>) => void;
     onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
 }
@@ -279,11 +280,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         }) as BroadcastProxy<this>;
     }
 
-    private get _initialized(): Promise<boolean> {
-        if (!this._uninitialize) return Promise.resolve(false);
-        return this._uninitialize.then(() => true);
-    }
-
     constructor(id: string, config: IORoomConfig<T>) {
         const {
             _meta,
@@ -293,6 +289,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             limits,
             onRoomDestroyed,
             onStorageDestroyed,
+            onStorageUpdated,
             onMessage,
             onUserConnected,
             onUserDisconnected,
@@ -327,6 +324,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         this._listeners = {
             onRoomDestroyed: (event) => onRoomDestroyed?.(event),
             onStorageDestroyed: (event) => onStorageDestroyed?.(event),
+            onStorageUpdated: (event) => onStorageUpdated?.(event),
             onMessage: (event) => onMessage?.(event),
             onUserConnected: (event) => onUserConnected?.(event),
             onUserDisconnected: (event) => onUserDisconnected?.(event),
@@ -370,12 +368,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         });
 
         this._initialize();
-    }
-
-    private get _doc(): Promise<CrdtDocLike<any, any>> {
-        if (!this._uninitialize) return this._storage.doc;
-
-        return this._uninitialize.then(() => this._storage.doc);
     }
 
     /**
@@ -689,6 +681,51 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         await uninitialize();
     }
 
+    private _createEventResolverContext(params: {
+        context: T["context"];
+        doc: CrdtDocLike<any, any>;
+        session: WebSocketSession<T>;
+        sessions: readonly WebSocketSession<T>[];
+    }): EventResolverContext<T> {
+        const { context, doc, session, sessions } = params;
+        const roomSessions = this._sessions;
+        const storage = this._storage;
+        const time = new Date().getTime();
+
+        return {
+            context,
+            doc,
+            garbageCollect: async () => {
+                await this.garbageCollect();
+            },
+            platform: this._platform,
+            get presence() {
+                return (session.webSocket.state.presence ??
+                    session.presence ??
+                    null) as JsonObject | null;
+            },
+            set presence(presence: JsonObject | null) {
+                roomSessions.setPresence({ presence, sessionId: session.id });
+            },
+            room: this.id,
+            session,
+            sessions,
+            get storageSeeded() {
+                return storage.storageSeeded;
+            },
+            set storageSeeded(value: boolean) {
+                storage.storageSeeded = value;
+            },
+            time,
+        } as EventResolverContext<T>;
+    }
+
+    private get _doc(): Promise<CrdtDocLike<any, any>> {
+        if (!this._uninitialize) return this._storage.doc;
+
+        return this._uninitialize.then(() => this._storage.doc);
+    }
+
     private async _emitQuitters(): Promise<void> {
         await this._closeWebSockets(this._sessions.getQuitters());
     }
@@ -843,45 +880,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         return await Promise.resolve(context);
     }
 
-    private _createEventResolverContext(params: {
-        context: T["context"];
-        doc: CrdtDocLike<any, any>;
-        session: WebSocketSession<T>;
-        sessions: readonly WebSocketSession<T>[];
-    }): EventResolverContext<T> {
-        const { context, doc, session, sessions } = params;
-        const roomSessions = this._sessions;
-        const storage = this._storage;
-        const time = new Date().getTime();
-
-        return {
-            context,
-            doc,
-            garbageCollect: async () => {
-                await this.garbageCollect();
-            },
-            platform: this._platform,
-            get presence() {
-                return (session.webSocket.state.presence ??
-                    session.presence ??
-                    null) as JsonObject | null;
-            },
-            set presence(presence: JsonObject | null) {
-                roomSessions.setPresence({ presence, sessionId: session.id });
-            },
-            room: this.id,
-            session,
-            sessions,
-            get storageSeeded() {
-                return storage.storageSeeded;
-            },
-            set storageSeeded(value: boolean) {
-                storage.storageSeeded = value;
-            },
-            time,
-        } as EventResolverContext<T>;
-    }
-
     private _getProcedure(
         message: EventMessage<string, any>,
     ):
@@ -1009,6 +1007,11 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         })();
 
         this._uninitialize = promise.then((result) => result.uninitialize);
+    }
+
+    private get _initialized(): Promise<boolean> {
+        if (!this._uninitialize) return Promise.resolve(false);
+        return this._uninitialize.then(() => true);
     }
 
     private _logDebug(...data: any[]): void {
@@ -1253,43 +1256,61 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             });
         };
 
-        if (procedure.config.transact === false) {
-            apply();
-        } else {
+        const update = doc.captureUpdate(() => {
+            if (procedure.config.transact === false) {
+                apply();
+
+                return;
+            }
+
             doc.transact(apply, senderId);
-        }
-
-        const context = await this._getContext();
-        const eventContext = this._createEventResolverContext({
-            context,
-            doc,
-            session,
-            sessions: this._sessions.getLiveSessions(),
         });
-        const broadcast = await this._router._defs.events.$updateStorage.config.broadcast?.(
-            { origin: senderId, update: null, procedure: name },
-            eventContext,
-        );
 
-        if (!broadcast) return;
+        if (!update) return;
 
-        await Promise.all(
-            Object.entries(broadcast).map(([eventType, payload]) => {
-                return this._broadcast({
-                    message: { type: eventType, data: payload } as BroadcastMessage<T>,
-                    senderId,
-                });
-            }),
-        );
+        await this._saveStorageSnapshot({
+            context: await this._getContext(),
+            doc,
+            kind: session.kind,
+            operator: session.operator,
+        });
+
+        await this._broadcast({
+            message: {
+                type: "$storageUpdated",
+                data: { state: update },
+            } as BroadcastMessage<T>,
+            senderId,
+        });
     }
 
-    private async _sendMessage(
-        pluvWs: AbstractWebSocket,
-        message: IOEventMessage<any>,
-    ): Promise<void> {
-        if (!(await this._initialized)) return;
+    private async _saveStorageSnapshot(params: {
+        context: T["context"];
+        doc: CrdtDocLike<any, any>;
+        kind: IOStorageUpdatedEvent<T>["kind"];
+        operator: IOStorageUpdatedEvent<T>["operator"];
+    }): Promise<void> {
+        const encodedState = params.doc.getEncodedState();
+        const storageSize = new TextEncoder().encode(encodedState).length;
 
-        await Promise.resolve(pluvWs.sendMessage(message));
+        if (!!this._limits.storageMaxSize && storageSize > this._limits.storageMaxSize) {
+            throw new Error(oneLine`
+                Large Storage. Storage must be at most
+                ${this._limits.storageMaxSize.toLocaleString()} bytes.
+                Current size: ${storageSize.toLocaleString()} bytes
+            `);
+        }
+
+        await this._platform.persistence.setStorageState(this.id, encodedState);
+
+        this._listeners.onStorageUpdated({
+            context: params.context,
+            encodedState,
+            kind: params.kind,
+            operator: params.operator,
+            platform: this._platform,
+            room: this.id,
+        });
     }
 
     private async _sendBroadcastMessage(
@@ -1322,6 +1343,15 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 } as IOEventMessage<any>);
             }),
         );
+    }
+
+    private async _sendMessage(
+        pluvWs: AbstractWebSocket,
+        message: IOEventMessage<any>,
+    ): Promise<void> {
+        if (!(await this._initialized)) return;
+
+        await Promise.resolve(pluvWs.sendMessage(message));
     }
 
     private async _sendSelfMessage(

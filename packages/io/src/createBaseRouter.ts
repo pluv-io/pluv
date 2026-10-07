@@ -142,18 +142,28 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                  * getInitialStorage, or an earlier client seed).
                  */
                 const update = data.update;
+                const stateVector = data.stateVector ?? null;
+                const stateForClient = (encodedState: string): string => {
+                    if (!stateVector) return encodedState;
+
+                    return doc.encodeDiff(stateVector);
+                };
 
                 /**
                  * @description Storage was already initialized. Don't overwrite the current
-                 * storage state with the incoming initialStorage. Return what the current state
-                 * is without changes.
+                 * storage state with the incoming initialStorage. Return the operations the
+                 * caller's state vector is missing, or the whole document when they did not
+                 * send one.
                  * @date May 7, 2025
                  */
                 if (event.storageSeeded) {
-                    const encodedState = doc.getEncodedState();
-
                     return {
-                        $storageReceived: { changeKind: "unchanged", state: encodedState },
+                        $storageReceived: {
+                            changeKind: "unchanged",
+                            state: stateVector
+                                ? doc.encodeDiff(stateVector)
+                                : doc.getEncodedState(),
+                        },
                     };
                 }
 
@@ -191,13 +201,18 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                     });
 
                     return {
-                        $storageReceived: { changeKind: "initialized", state: encodedState },
+                        $storageReceived: {
+                            changeKind: "initialized",
+                            state: stateForClient(encodedState),
+                        },
                     };
                 }
 
                 const encodedState = doc.getEncodedState();
 
-                return { $storageReceived: { changeKind: "empty", state: encodedState } };
+                return {
+                    $storageReceived: { changeKind: "empty", state: stateForClient(encodedState) },
+                };
             }),
         $ping: baseProcedure<"$ping">().self((_data, { platform, session }) => {
             if (!session) return {};
@@ -245,15 +260,40 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                 },
             };
         }),
+        $syncStorage: baseProcedure<"$syncStorage">().self((data, { doc }) => {
+            const update = data.stateVector
+                ? doc.encodeDiff(data.stateVector)
+                : doc.getEncodedState();
+
+            return { $storageDiff: { update } };
+        }),
         $updateStorage: baseProcedure<"$updateStorage">().broadcast(
             async (data, { context, doc, platform, room, session }) => {
                 const origin = data.origin;
                 const update = data.update ?? null;
 
                 if (origin === "$initialized") return {};
+                if (!update) return {};
 
-                const updated = update === null ? doc : doc.applyEncodedState({ update });
-                const encodedState = updated.getEncodedState();
+                const before = doc.getStateVector();
+                const wasPending = doc.hasPending();
+
+                doc.applyEncodedState({ update });
+
+                const integrated = doc.getStateVector() !== before;
+
+                // These bytes did not enter the document. Ask the sender for the missing
+                // history. A resync reply that still does not integrate stops here.
+                if (!integrated && (doc.hasPending() || !doc.canDetectPending())) {
+                    logDebug("Storage update did not integrate");
+
+                    if (data.resync) return {};
+
+                    return { $storageResync: { stateVector: doc.getStateVector() } };
+                }
+
+                const state = integrated ? doc.encodeDiff(before) : update;
+                const encodedState = doc.getEncodedState();
                 const storageSize = new TextEncoder().encode(encodedState).length;
 
                 if (!!limits.storageMaxSize && storageSize > limits.storageMaxSize) {
@@ -275,7 +315,14 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                     room,
                 });
 
-                return { $storageUpdated: { state: encodedState } };
+                if (doc.hasPending() && !wasPending) {
+                    return {
+                        $storageUpdated: { state },
+                        $storageResync: { stateVector: doc.getStateVector() },
+                    };
+                }
+
+                return { $storageUpdated: { state } };
             },
         ),
     });
