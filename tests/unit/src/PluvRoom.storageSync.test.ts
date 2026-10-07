@@ -51,7 +51,10 @@ const createRoom = (storage: SyncStorage) => {
     const internal = room as unknown as {
         _crdtManager: { doc: SyncDoc };
         _onMessage: (event: { data: string }) => void;
-        _state: { webSocket: { readyState: number; send: (data: string) => void } | null };
+        _state: {
+            connection: { id: string | null };
+            webSocket: { readyState: number; send: (data: string) => void } | null;
+        };
     };
 
     internal._state.webSocket = {
@@ -149,7 +152,7 @@ describe.each(scenarios)("PluvRoom storage sync ($name)", ({ storage }) => {
         expect(syncCount(sent)).toBe(1);
     });
 
-    it("stops asking after empty diffs and starts again when another update arrives", async () => {
+    it("stops asking when a diff does not change the document", async () => {
         const { deliver, internal, sent } = createRoom(storage);
         const { later } = history(storage);
 
@@ -160,22 +163,6 @@ describe.each(scenarios)("PluvRoom storage sync ($name)", ({ storage }) => {
             deliver("$storageDiff", { update: "" });
         }
 
-        expect(internal._crdtManager.doc.hasPending()).toBe(true);
-        expect(syncCount(sent)).toBe(8);
-
-        deliver("$storageUpdated", { state: later });
-
-        expect(syncCount(sent)).toBe(9);
-        expect(internal._crdtManager.doc.hasPending()).toBe(true);
-    });
-
-    it("stops asking when a caught-up diff adds nothing", async () => {
-        const { deliver, internal, sent } = createRoom(storage);
-        const { later } = history(storage);
-
-        deliver("$storageReceived", { changeKind: "unchanged", state: later });
-        await flush();
-
         const update = nothingNew(storage, internal._crdtManager.doc);
 
         expect(update).not.toBe("");
@@ -184,8 +171,47 @@ describe.each(scenarios)("PluvRoom storage sync ($name)", ({ storage }) => {
             deliver("$storageDiff", { update });
         }
 
+        deliver("$storageUpdated", { state: later });
+
         expect(internal._crdtManager.doc.hasPending()).toBe(true);
-        expect(syncCount(sent)).toBe(8);
+        expect(syncCount(sent)).toBe(2);
+    });
+
+    it("replies each time the server asks for the missing history", async () => {
+        const { deliver, internal, sent } = createRoom(storage);
+        const { earlier } = history(storage);
+
+        internal._state.connection = {
+            ...internal._state.connection,
+            id: "session-1",
+        };
+        deliver("$storageReceived", { changeKind: "unchanged", state: earlier });
+        await flush();
+
+        const stateVector = internal._crdtManager.doc.getStateVector();
+        const sentBefore = sent.length;
+
+        deliver("$storageResync", { stateVector });
+        deliver("$storageResync", { stateVector });
+        deliver("$storageResync", { stateVector: `${stateVector}x` }, "someone-else");
+
+        const replies = sent
+            .slice(sentBefore)
+            .filter((message) => message.type === "$updateStorage");
+
+        expect(replies).toHaveLength(2);
+        expect(replies.map((message) => message.data)).toEqual([
+            {
+                origin: "session-1",
+                resync: true,
+                update: internal._crdtManager.doc.encodeDiff(stateVector),
+            },
+            {
+                origin: "session-1",
+                resync: true,
+                update: internal._crdtManager.doc.encodeDiff(stateVector),
+            },
+        ]);
     });
 
     it("ignores a storage diff that has no connection id", async () => {

@@ -1370,7 +1370,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         this._emitSharedTypes();
         this._observeCrdt();
         this._stateNotifier.subjects["storage-loaded"].next(true);
-        this._settleStorageDiff();
+        this._settleStorageDiff({ fromDiff: false, moved: true });
 
         this._sendMessage({
             type: "$updateStorage",
@@ -1395,8 +1395,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             return;
         }
 
-        this._storageSync.clearAttempts();
-        this._applyRemoteStorage(data.state);
+        this._applyRemoteStorage(data.state, { fromDiff: false });
     }
 
     private _handleStorageDiffMessage(message: IOEventMessage<TDefs["io"]>): void {
@@ -1417,26 +1416,48 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         }
 
         if (!data.update) {
-            if (this._crdtManager.doc.hasPending()) {
-                this._requestStorageDiff();
-
-                return;
+            if (this._crdtManager.doc.hasPending() || !this._crdtManager.doc.canDetectPending()) {
+                this._noteUnchangedStorage();
             }
-
-            this._storageSync.clearAttempts();
 
             return;
         }
 
-        this._applyRemoteStorage(data.update);
+        this._applyRemoteStorage(data.update, { fromDiff: true });
     }
 
-    private _applyRemoteStorage(update: string): void {
+    private _handleStorageResyncMessage(message: IOEventMessage<TDefs["io"]>): void {
+        const { connectionId } = message;
+
+        if (!connectionId || connectionId !== this._state.connection.id) return;
+        if (!this._state.webSocket) return;
+
+        const data = message.data as BaseIOEventRecord<
+            InferIOAuthorize<TDefs["io"]>
+        >["$storageResync"];
+        const stateVector = data.stateVector;
+
+        if (!stateVector) return;
+
+        const update = this._crdtManager.doc.encodeDiff(stateVector);
+
+        if (!update) return;
+
+        this._sendMessage({
+            type: "$updateStorage",
+            data: { origin: connectionId, resync: true, update },
+        });
+    }
+
+    private _applyRemoteStorage(update: string, params: { fromDiff: boolean }): void {
+        const before = this._crdtManager.doc.getStateVector();
+
         this._crdtManager.doc.applyEncodedState({
             origin: ORIGIN_STORAGE_UPDATED,
             update,
         });
 
+        const moved = this._crdtManager.doc.getStateVector() !== before;
         const sharedTypes = this._crdtManager.doc.get();
 
         const storageRoot = Object.keys(sharedTypes).reduce(
@@ -1453,30 +1474,49 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         );
 
         this._crdtNotifier.rootSubject.next(storageRoot);
-        this._settleStorageDiff();
+        this._settleStorageDiff({ fromDiff: params.fromDiff, moved });
     }
 
-    private _settleStorageDiff(): void {
-        if (!this._crdtManager.doc.hasPending()) {
-            this._storageSync.clearAttempts();
+    private _noteUnchangedStorage(): void {
+        if (!this._storageSync.noteStall()) return;
+
+        console.warn("Storage update did not change the document");
+    }
+
+    private _settleStorageDiff(params: { fromDiff: boolean; moved: boolean }): void {
+        const { fromDiff, moved } = params;
+        const doc = this._crdtManager.doc;
+        const pending = doc.hasPending() || !doc.canDetectPending();
+
+        if (!pending) {
+            this._storageSync.clearStall();
 
             return;
         }
 
+        // The server answered and the document did not move. It has nothing new.
+        if (fromDiff && !moved) {
+            this._noteUnchangedStorage();
+
+            return;
+        }
+
+        this._storageSync.clearStall();
         this._requestStorageDiff();
     }
 
     private _requestStorageDiff(): void {
-        if (!this._storageSync.canRequest()) return;
-
         const webSocket = this._state.webSocket;
 
         if (!webSocket || webSocket.readyState !== WebSocket.OPEN) return;
 
-        this._storageSync.recordRequest();
         this._sendMessage({
             type: "$syncStorage",
-            data: { stateVector: this._crdtManager.doc.getStateVector() },
+            data: {
+                stateVector: this._crdtManager.doc.canDetectPending()
+                    ? this._crdtManager.doc.getStateVector()
+                    : "",
+            },
         });
     }
 
@@ -1786,6 +1826,10 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             }
             case "$storageDiff": {
                 this._handleStorageDiffMessage(message);
+                return;
+            }
+            case "$storageResync": {
+                this._handleStorageResyncMessage(message);
                 return;
             }
             case "$storageUpdated": {
