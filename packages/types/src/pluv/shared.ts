@@ -7,6 +7,45 @@ export type BaseUser = {
     id: string;
 };
 
+export type ParticipantRef = {
+    kind: ParticipantKind;
+    operator: OperatorUser | null;
+};
+
+export type ParticipantRecord<TUser extends BaseUser> = ParticipantRef & {
+    data: Id<TUser>;
+};
+
+export type PresenceSeq = {
+    presence: number | null;
+};
+
+export interface SessionPresence<
+    TPresence extends JsonObject | null = JsonObject | null,
+> extends ParticipantRef {
+    presence: TPresence;
+    seq: PresenceSeq;
+}
+
+export type KindStats = {
+    connectionCount: number;
+    userCount: number;
+};
+
+export type RoomStatsByKind = {
+    [Kind in ParticipantKind]: KindStats;
+};
+
+export type ListUsersCursor = {
+    kind: ParticipantKind;
+    id: string;
+};
+
+export type RoomError = {
+    message: string;
+    stack?: string | null;
+};
+
 export interface BaseClientEventRecord {
     $getOthers: {};
     $initializeSession: {
@@ -15,7 +54,7 @@ export interface BaseClientEventRecord {
         update: string | null;
     };
     $listUsers: {
-        cursor?: { kind: ParticipantKind; id: string } | null;
+        cursor?: ListUsersCursor | null;
         kinds?: readonly ParticipantKind[];
         limit?: number;
         requestId: string;
@@ -47,10 +86,7 @@ export interface BaseClientEventRecord {
 export type BaseClientMessage = InferEventMessage<BaseClientEventRecord>;
 
 export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any>> = {
-    $error: {
-        message: string;
-        stack?: string | null;
-    };
+    $error: RoomError;
     $exit: {
         sessionId: string;
         user: Id<InferIOAuthorizeUser<TAuthorize>>;
@@ -61,41 +97,20 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any>> = {
         others: {
             connectionIds: string[];
             data: Id<InferIOAuthorizeUser<TAuthorize>>;
-            presence: JsonObject | null;
-            seq: { presence: number | null };
-            kind: ParticipantKind;
-            operator: OperatorUser | null;
+            session: SessionPresence<JsonObject | null>;
         }[];
     };
     $pong: {};
-    $roomStats: {
-        connectionCount: number;
-        userCount: number;
-        operators: {
-            connectionCount: number;
-            userCount: number;
-        };
-    };
+    $roomStats: RoomStatsByKind;
     $presenceUpdated: {
-        presence: JsonObject;
-        seq: { presence: number | null };
         user: Id<InferIOAuthorizeUser<TAuthorize>>;
-        kind: ParticipantKind;
-        operator: OperatorUser | null;
+        session: SessionPresence<JsonObject>;
     };
     $registered: {
-        connectionCount: number;
-        presence: JsonObject | null;
         sessionId: string;
         state: string | null;
-        seq: { presence: number | null };
-        userCount: number;
-        kind: ParticipantKind;
-        operator: OperatorUser | null;
-        operators: {
-            connectionCount: number;
-            userCount: number;
-        };
+        stats: RoomStatsByKind;
+        session: SessionPresence<JsonObject | null>;
     };
     $storageReceived: {
         changeKind: "empty" | "initialized" | "unchanged";
@@ -122,25 +137,18 @@ export type BaseIOEventRecord<TAuthorize extends IOAuthorize<any>> = {
     };
     $userJoined: {
         connectionId: string;
-        presence: JsonObject;
-        seq: { presence: number | null };
         user: Id<InferIOAuthorizeUser<TAuthorize>>;
-        kind: ParticipantKind;
-        operator: OperatorUser | null;
+        session: SessionPresence<JsonObject>;
     };
     $usersPage:
         | {
               requestId: string;
               success: true;
               pageInfo: {
-                  endCursor: { kind: ParticipantKind; id: string } | null;
+                  endCursor: ListUsersCursor | null;
                   hasNextPage: boolean;
               };
-              users: {
-                  data: Id<InferIOAuthorizeUser<TAuthorize>>;
-                  kind: ParticipantKind;
-                  operator: OperatorUser | null;
-              }[];
+              users: ParticipantRecord<InferIOAuthorizeUser<TAuthorize>>[];
           }
         | {
               requestId: string;

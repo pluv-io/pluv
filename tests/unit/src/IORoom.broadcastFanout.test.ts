@@ -46,7 +46,9 @@ describe("IORoom broadcast fan-out", () => {
         // drain microtasks so the fan-out has settled.
         await tick(2);
 
-        expect(lastMessage(healthy, "$presenceUpdated").data.presence).toEqual({ cursor: 1 });
+        expect(lastMessage(healthy, "$presenceUpdated").data.session.presence).toEqual({
+            cursor: 1,
+        });
         expect(broken.sent.some((raw) => JSON.parse(raw).type === "$presenceUpdated")).toBe(false);
     });
 });

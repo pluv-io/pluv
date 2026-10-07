@@ -746,15 +746,15 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             {
                 type: "$registered",
                 data: {
-                    connectionCount: stats.connectionCount,
-                    presence,
                     sessionId,
                     state: encodedState,
-                    seq: { presence: session.seq.presence },
-                    userCount: stats.userCount,
-                    kind,
-                    operator,
-                    operators: stats.operators,
+                    stats,
+                    session: {
+                        presence,
+                        seq: { presence: session.seq.presence },
+                        kind,
+                        operator,
+                    },
                 },
             },
             { sessionId, user, operator },

@@ -27,6 +27,7 @@ import type {
     ParticipantKindsOptions,
     RoomLike,
     RoomStats,
+    RoomStatsByKind,
     StateNotifierSubjects,
     StorageProcedureProxy,
     StorageProxy,
@@ -1141,10 +1142,10 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             const added = this._usersManager.addConnection({
                 connectionId,
                 data: message.user as Id<InferIOAuthorizeUser<InferIOAuthorize<TDefs["io"]>>>,
-                kind: data.kind,
-                operator: data.operator,
-                presence: data.presence as InferClientPresence<TDefs>,
-                presenceSeq: data.seq.presence,
+                kind: data.session.kind,
+                operator: data.session.operator,
+                presence: data.session.presence as InferClientPresence<TDefs>,
+                presenceSeq: data.session.seq.presence,
             });
 
             if (!added.presenceChanged) return;
@@ -1204,10 +1205,10 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             data.others.map((other) => ({
                 connectionIds: other.connectionIds,
                 data: other.data,
-                kind: other.kind,
-                operator: other.operator,
-                presence: other.presence as InferClientPresence<TDefs> | null,
-                presenceSeq: other.seq.presence,
+                kind: other.session.kind,
+                operator: other.session.operator,
+                presence: other.session.presence as InferClientPresence<TDefs> | null,
+                presenceSeq: other.session.seq.presence,
             })),
         );
         this._usersManager.setMyConnectionIds(data.myConnectionIds);
@@ -1249,19 +1250,13 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         >["$registered"];
         const state = data.state;
 
-        this._setRoomStats(
-            {
-                connectionCount: data.connectionCount,
-                userCount: data.userCount,
-            },
-            data.operators,
-        );
+        this._setRoomStats(data.stats);
 
         this._updateState((oldState) => {
             oldState.connection.id = connectionId;
             oldState.authorization.user = user;
-            oldState.authorization.kind = data.kind;
-            oldState.authorization.operator = data.operator;
+            oldState.authorization.kind = data.session.kind;
+            oldState.authorization.operator = data.session.operator;
 
             return oldState;
         });
@@ -1269,10 +1264,10 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         this._usersManager.setMyself({
             connectionId,
             data: user,
-            kind: data.kind,
-            operator: data.operator,
-            presence: (data.presence as InferClientPresence<TDefs> | null) ?? undefined,
-            presenceSeq: data.seq.presence,
+            kind: data.session.kind,
+            operator: data.session.operator,
+            presence: (data.session.presence as InferClientPresence<TDefs> | null) ?? undefined,
+            presenceSeq: data.session.seq.presence,
         });
 
         const presence = this._usersManager.myPresence;
@@ -1561,13 +1556,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     private _handleRoomStats(message: IOEventMessage<TDefs["io"]>): void {
         const data = message.data as BaseIOEventRecord<InferIOAuthorize<TDefs["io"]>>["$roomStats"];
 
-        this._setRoomStats(
-            {
-                connectionCount: data.connectionCount,
-                userCount: data.userCount,
-            },
-            data.operators,
-        );
+        this._setRoomStats(data);
     }
 
     private _handleUsersPage(message: IOEventMessage<TDefs["io"]>): void {
@@ -1601,10 +1590,10 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         const added = this._usersManager.addConnection({
             connectionId,
             data: data.user,
-            kind: data.kind,
-            operator: data.operator,
-            presence: data.presence as InferClientPresence<TDefs>,
-            presenceSeq: data.seq.presence,
+            kind: data.session.kind,
+            operator: data.session.operator,
+            presence: data.session.presence as InferClientPresence<TDefs>,
+            presenceSeq: data.session.seq.presence,
         });
 
         if (added.isMyself) return;
@@ -2123,9 +2112,9 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         },
     ) as StorageProxy<InferJson<TDefs["storage"]>>;
 
-    private _setRoomStats(occupant: RoomStats, operators?: RoomStats): void {
-        this._roomStats = occupant;
-        if (operators) this._operatorStats = operators;
+    private _setRoomStats(stats: RoomStatsByKind): void {
+        this._roomStats = stats.user;
+        this._operatorStats = stats.operator;
         this._stateNotifier.subjects.roomStats.next(this._roomStats);
     }
 

@@ -161,10 +161,12 @@ describe("IORoom hibernation", () => {
             {
                 connectionIds: ["session-1"],
                 data: { id: "ada" },
-                kind: "user",
-                operator: null,
-                presence: { cursor: 1 },
-                seq: { presence: expect.any(Number) },
+                session: {
+                    kind: "user",
+                    operator: null,
+                    presence: { cursor: 1 },
+                    seq: { presence: expect.any(Number) },
+                },
             },
         ]);
         expect(lastMessage(observer, "$othersReceived").data.myConnectionIds).toEqual([
@@ -219,7 +221,7 @@ describe("IORoom hibernation", () => {
             pageInfo: { endCursor: { kind: "user", id: "bob" }, hasNextPage: false },
             users: [{ data: { id: "bob" }, kind: "user", operator: null }],
         });
-        expect(lastMessage(observer, "$registered").data.operators).toEqual({
+        expect(lastMessage(observer, "$registered").data.stats.operator).toEqual({
             connectionCount: 1,
             userCount: 1,
         });

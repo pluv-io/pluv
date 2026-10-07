@@ -96,7 +96,7 @@ describe("IORoom treaty invoke", () => {
 
         await room.__experimental_presence.select({ id: "item-1" }, first.id);
 
-        expect(lastMessage(second, "$presenceUpdated").data.presence).toEqual({
+        expect(lastMessage(second, "$presenceUpdated").data.session.presence).toEqual({
             selectionId: "item-1",
         });
         expect(lastMessage(second, "$presenceUpdated").data.user).toEqual({ id: "session-1" });

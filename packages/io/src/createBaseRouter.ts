@@ -46,18 +46,20 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
             }).map(({ connectionIds, data, presence, kind, operator }) => ({
                 connectionIds,
                 data,
-                kind,
-                operator,
-                presence,
-                seq: {
-                    presence: connectionIds.reduce<number | null>((max, id) => {
-                        const seq = presenceSeqById.get(id) ?? null;
+                session: {
+                    kind,
+                    operator,
+                    presence,
+                    seq: {
+                        presence: connectionIds.reduce<number | null>((max, id) => {
+                            const seq = presenceSeqById.get(id) ?? null;
 
-                        if (typeof seq !== "number") return max;
-                        if (typeof max !== "number") return seq;
+                            if (typeof seq !== "number") return max;
+                            if (typeof max !== "number") return seq;
 
-                        return seq > max ? seq : max;
-                    }, null),
+                            return seq > max ? seq : max;
+                        }, null),
+                    },
                 },
             }));
 
@@ -127,10 +129,12 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
                     $userJoined: {
                         connectionId: session.id,
                         user: session.user,
-                        kind,
-                        operator: session.operator,
-                        presence: session.presence ?? presence ?? {},
-                        seq: { presence: session.webSocket.state.seq.presence },
+                        session: {
+                            kind,
+                            operator: session.operator,
+                            presence: session.presence ?? presence ?? {},
+                            seq: { presence: session.webSocket.state.seq.presence },
+                        },
                     },
                 };
             })
@@ -252,11 +256,13 @@ export const createBaseRouter = <T extends IODefs = IODefs>(
 
             return {
                 $presenceUpdated: {
-                    presence: updated,
-                    seq: { presence: session.webSocket.state.seq.presence },
                     user: session.user,
-                    kind: session.kind,
-                    operator: session.operator,
+                    session: {
+                        presence: updated,
+                        seq: { presence: session.webSocket.state.seq.presence },
+                        kind: session.kind,
+                        operator: session.operator,
+                    },
                 },
             };
         }),

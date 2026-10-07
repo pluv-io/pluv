@@ -13,7 +13,7 @@ export type GroupedRoomUser = {
     presence: JsonObject | null;
 };
 
-type ParticipantRef = {
+type LiveUserKey = {
     id: string;
     kind: ParticipantKind;
 };
@@ -32,7 +32,7 @@ export const groupLiveUsers = (
     const excluded = options.excludeSessionId
         ? live.find((session) => session.id === options.excludeSessionId)
         : null;
-    const excludedRef = excluded ? participantRef(excluded) : null;
+    const excludedRef = excluded ? liveUserKey(excluded) : null;
     const kinds = options.kinds ? new Set(options.kinds) : null;
     const grouped = {
         operator: new Map<string, GroupedRoomUser>(),
@@ -44,7 +44,7 @@ export const groupLiveUsers = (
     };
 
     for (const session of live) {
-        const ref = participantRef(session);
+        const ref = liveUserKey(session);
         if (!ref) continue;
         if (kinds && !kinds.has(ref.kind)) continue;
         if (sameParticipant(ref, excludedRef)) continue;
@@ -84,7 +84,7 @@ export const groupLiveUsers = (
     return [...grouped.user.values(), ...grouped.operator.values()];
 };
 
-const participantRef = (session: WebSocketSession<any>): ParticipantRef | null => {
+const liveUserKey = (session: WebSocketSession<any>): LiveUserKey | null => {
     const kind = getSessionKind(session);
     const id = session.user?.id;
 
@@ -93,7 +93,7 @@ const participantRef = (session: WebSocketSession<any>): ParticipantRef | null =
     return { kind, id };
 };
 
-const sameParticipant = (a: ParticipantRef | null, b: ParticipantRef | null): boolean => {
+const sameParticipant = (a: LiveUserKey | null, b: LiveUserKey | null): boolean => {
     return !!a && !!b && a.kind === b.kind && a.id === b.id;
 };
 

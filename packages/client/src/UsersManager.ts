@@ -321,7 +321,8 @@ export class UsersManager<TIO extends IOLike, TPresence extends Record<string, a
             InferIOAuthorize<TIO>
         >["$presenceUpdated"],
     ): ApplyPresenceResult<TPresence> | null {
-        const { connectionId, operator, presence: patch, seq, user } = params;
+        const { connectionId, session, user } = params;
+        const { operator, presence: patch, seq } = session;
         const presenceSeq = seq.presence;
         const clientKey = this._clientKeyForConnection(connectionId);
         const myClientKey = this._myself ? this._clientKeyFromInfo(this._myself) : null;
