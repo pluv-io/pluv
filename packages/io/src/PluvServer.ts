@@ -57,6 +57,13 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
     private readonly _listeners: BasePluvIOListeners<T>;
     private readonly _onGetOperator: OnGetOperator<InferTreatyUser<T["treaty"]>> | null;
 
+    /**
+     * @description The `createIO()` instance this server was built from.
+     */
+    public get io(): PluvIO<SetKey<T, "events", {}>> {
+        return this._config.io;
+    }
+
     public get fetch(): (...args: any[]) => Promise<any> {
         return (...args: any[]): Promise<any> => {
             const platform = this._config.platform();
