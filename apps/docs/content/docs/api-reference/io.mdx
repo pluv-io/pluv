@@ -214,6 +214,16 @@ const server = io.server();
 
 ## PluvServer
 
+### io
+
+The `createIO()` instance this server was built from.
+
+```ts
+const ioServer = io.server();
+
+ioServer.io;
+```
+
 ### createRoom
 
 Returns `IORoom`.
