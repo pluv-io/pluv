@@ -60,7 +60,6 @@ describe("IORoom repeated persistence", () => {
 
         const io = createAuthorizedIO({
             treaty: testYjsTreaty,
-            platform: { mode: "detached" },
         });
         const server = io.server({
             getInitialStorage: () => Promise.resolve(externalStorage),
@@ -114,7 +113,6 @@ describe("IORoom repeated persistence", () => {
             platform: () =>
                 new TestPlatform({
                     hibernatedWebSockets: hibernatedSockets,
-                    mode: "detached",
                     persistence,
                     serializedStates: new Map(
                         hibernatedSockets.map((socket) => [

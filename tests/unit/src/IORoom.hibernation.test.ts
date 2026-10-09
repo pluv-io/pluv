@@ -35,7 +35,6 @@ describe("IORoom hibernation", () => {
                     hibernatedWebSockets: [socket],
                     hibernatedUsers: new Map([[socket, { id: "session-1" }]]),
                     lastPings: new Map([[socket, now]]),
-                    mode: "detached",
                     persistence,
                     serializedStates: new Map([
                         [
@@ -108,7 +107,6 @@ describe("IORoom hibernation", () => {
                     hibernatedWebSockets: [socket],
                     hibernatedUsers: new Map([[socket, { id: "ada" }]]),
                     lastPings: new Map([[socket, now]]),
-                    mode: "detached",
                     serializedStates: new Map([
                         [
                             socket,
@@ -185,7 +183,6 @@ describe("IORoom hibernation", () => {
                     hibernatedWebSockets: [socket],
                     hibernatedUsers: new Map([[socket, { id: "owner:staff-1" }]]),
                     lastPings: new Map([[socket, now]]),
-                    mode: "detached",
                     serializedStates: new Map([
                         [
                             socket,

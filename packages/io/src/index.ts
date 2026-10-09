@@ -82,7 +82,6 @@ export type {
     PluvIOLimits,
     PluvIOListeners,
     PluvIOSecret,
-    WebSocketRegistrationMode,
     WebSocketSerializedState,
     WebSocketSession,
     WebSocketSessionSeq,

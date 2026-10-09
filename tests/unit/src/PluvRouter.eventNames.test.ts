@@ -4,7 +4,7 @@ import { createAuthorizedIO } from "./__utils__";
 
 describe("PluvRouter event names and merge", () => {
     it("rejects $ event names on the public constructor and io.router", () => {
-        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const io = createAuthorizedIO();
         const procedure = io.procedure.broadcast(() => ({ ok: {} }));
 
         expect(() => new PluvRouter({ $secret: procedure } as any)).toThrow(/must not contain \$/);
@@ -12,7 +12,7 @@ describe("PluvRouter event names and merge", () => {
     });
 
     it("rejects non-identifier event names", () => {
-        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const io = createAuthorizedIO();
         const procedure = io.procedure.broadcast(() => ({ ok: {} }));
 
         expect(() => new PluvRouter({ "not-valid": procedure } as any)).toThrow(
@@ -21,7 +21,7 @@ describe("PluvRouter event names and merge", () => {
     });
 
     it("allows $ protocol events via __internal.createInternalPluvRouter", () => {
-        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const io = createAuthorizedIO();
         const procedure = io.procedure.self(() => ({ $pong: {} }));
 
         expect(() =>
@@ -30,7 +30,7 @@ describe("PluvRouter event names and merge", () => {
     });
 
     it("throws when merging routers with duplicate event names", () => {
-        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const io = createAuthorizedIO();
         const procedure = io.procedure.broadcast(() => ({ ok: {} }));
         const left = io.router({ echo: procedure });
         const right = io.router({ echo: procedure });
@@ -39,7 +39,7 @@ describe("PluvRouter event names and merge", () => {
     });
 
     it("merges an internal base router with a user router when keys do not overlap", () => {
-        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const io = createAuthorizedIO();
         const ping = io.procedure.self(() => ({ $pong: {} }));
         const echo = io.procedure.broadcast(() => ({ ok: {} }));
         const base = __internal.createInternalPluvRouter({ $ping: ping } as any);
@@ -51,7 +51,7 @@ describe("PluvRouter event names and merge", () => {
     });
 
     it("exposes built-in $ events on the server after createRoom", () => {
-        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const io = createAuthorizedIO();
         const server = io.server();
         const room = server.createRoom("router-builtins");
 

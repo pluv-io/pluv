@@ -14,7 +14,6 @@ describe("IORoom initialization", () => {
         let storageReads = 0;
         const io = createAuthorizedIO({
             treaty: testYjsTreaty,
-            platform: { mode: "detached" },
         });
         const server = io.server({
             getInitialStorage: async () => {

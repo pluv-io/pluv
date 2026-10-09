@@ -22,9 +22,7 @@ const send = async (room: Room, socket: TestSocket, type: string, data: unknown)
 
 describe("IORoom procedure errors", () => {
     it("sends $error when a procedure resolver throws", async () => {
-        const io = createAuthorizedIO({
-            platform: { mode: "detached" },
-        });
+        const io = createAuthorizedIO({});
         const server = io.server({
             router: io.router({
                 boom: io.procedure.broadcast(() => {
@@ -44,7 +42,6 @@ describe("IORoom procedure errors", () => {
     it("sends $error when presence exceeds the size limit", async () => {
         const io = createAuthorizedIO({
             limits: { presenceMaxSize: 32 },
-            platform: { mode: "detached" },
         });
         const server = io.server();
         const room = server.createRoom("presence-limit");
@@ -60,9 +57,7 @@ describe("IORoom procedure errors", () => {
     });
 
     it("still sends $error for invalid procedure input", async () => {
-        const io = createAuthorizedIO({
-            platform: { mode: "detached" },
-        });
+        const io = createAuthorizedIO({});
         const server = io.server({
             router: io.router({
                 echo: io.procedure

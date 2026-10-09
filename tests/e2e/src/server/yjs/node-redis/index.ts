@@ -112,5 +112,15 @@ wsServer.on("connection", async (ws, req) => {
     const token = parsed.query?.token as string | undefined;
     const room = getRoom(roomId);
 
+    ws.on("message", async (data) => {
+        await room.onMessage(ws)({ data });
+    });
+    ws.on("close", async (code, reason) => {
+        await room.onClose(ws)({ code, reason: reason.toString() });
+    });
+    ws.on("error", async (error) => {
+        await room.onError(ws)({ error, message: error.message });
+    });
+
     await room.register(ws, { request: req, token });
 });

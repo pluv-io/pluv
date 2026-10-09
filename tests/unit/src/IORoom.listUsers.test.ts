@@ -48,9 +48,7 @@ const listUsers = async (
 
 describe("IORoom listUsers", () => {
     const createRoom = (roomId: string) => {
-        const io = createAuthorizedIO({
-            platform: { mode: "detached" },
-        });
+        const io = createAuthorizedIO({});
         const room = io.server().createRoom(roomId);
 
         return { io, room };
@@ -248,7 +246,7 @@ describe("IORoom listUsers", () => {
     });
 
     it("pages a user and an operator who share an id as separate rows", async () => {
-        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const io = createAuthorizedIO();
         const server = io.server({
             onGetOperator: () => ({ id: "ada" }),
         });

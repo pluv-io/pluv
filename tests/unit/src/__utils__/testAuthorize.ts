@@ -58,9 +58,7 @@ export const createAuthorizedIO = <TTreaty extends TreatyLike = typeof testTreat
         ...rest
     } = options;
     const platformFactory =
-        typeof platform === "function"
-            ? platform
-            : () => new TestPlatform(platform ?? { mode: "detached" });
+        typeof platform === "function" ? platform : () => new TestPlatform(platform);
 
     return createIO()
         .platform(platformFactory)

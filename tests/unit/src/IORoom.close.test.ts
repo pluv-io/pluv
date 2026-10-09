@@ -35,9 +35,7 @@ const getOthers = async (room: Room, socket: TestSocket): Promise<void> => {
 describe("IORoom close", () => {
     it("runs disconnect once when a socket errors then closes", async () => {
         const disconnected: string[] = [];
-        const io = createAuthorizedIO({
-            platform: { mode: "detached" },
-        });
+        const io = createAuthorizedIO({});
         const server = io.server({
             onUserDisconnected: ({ user }) => {
                 disconnected.push(user?.id ?? "missing");
@@ -68,7 +66,6 @@ describe("IORoom close", () => {
         const storageDestroyed: string[] = [];
         const io = createAuthorizedIO({
             treaty: testYjsTreaty,
-            platform: { mode: "detached" },
         });
         const server = io.server({
             getInitialStorage: () => encodedStateWithContent("keep me"),
@@ -102,9 +99,7 @@ describe("IORoom close", () => {
 
     it("evicts one session without destroying the room", async () => {
         const roomDestroyed: string[] = [];
-        const io = createAuthorizedIO({
-            platform: { mode: "detached" },
-        });
+        const io = createAuthorizedIO({});
         const server = io.server({
             onRoomDestroyed: ({ room }) => {
                 roomDestroyed.push(room);

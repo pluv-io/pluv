@@ -62,7 +62,6 @@ const initializeSession = async (
 describe("IORoom treaty invoke", () => {
     const createRoom = (roomId: string = "treaty-invoke") => {
         const io = createAuthorizedIO({
-            platform: { mode: "detached" },
             treaty,
         });
         const server = io.server({

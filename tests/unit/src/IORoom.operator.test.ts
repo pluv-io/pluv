@@ -54,7 +54,7 @@ const getOthers = async (
 
 describe("IORoom operator sessions", () => {
     it("throws when minting an operator token without onGetOperator", async () => {
-        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const io = createAuthorizedIO();
 
         await expect(
             io.server().createToken({
@@ -66,7 +66,7 @@ describe("IORoom operator sessions", () => {
     });
 
     it("throws when the operator email is empty", async () => {
-        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const io = createAuthorizedIO();
         const server = io.server({
             onGetOperator: () => ({ id: "owner:staff-1" }),
         });
@@ -81,7 +81,7 @@ describe("IORoom operator sessions", () => {
     });
 
     it("throws when onGetOperator returns null or an invalid treaty user", async () => {
-        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const io = createAuthorizedIO();
         const denied = io.server({
             onGetOperator: () => null,
         });
@@ -106,7 +106,7 @@ describe("IORoom operator sessions", () => {
     });
 
     it("seals the treaty user into the operator token", async () => {
-        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const io = createAuthorizedIO();
         const server = io.server({
             onGetOperator: () => ({ id: "owner:staff-1" }),
         });
@@ -115,7 +115,7 @@ describe("IORoom operator sessions", () => {
             kind: "operator",
         });
         const payload = await authorize({
-            platform: new TestPlatform({ mode: "detached" }),
+            platform: new TestPlatform(),
             secret: TEST_AUTH_SECRET,
         }).decode(token);
 
@@ -130,7 +130,6 @@ describe("IORoom operator sessions", () => {
 
     it("measures the treaty user and operator profile against one size limit", async () => {
         const together = createAuthorizedIO({
-            platform: { mode: "detached" },
             limits: { userMaxSize: 70 },
         }).server({
             onGetOperator: () => ({ id: "owner:staff-1" }),
@@ -145,7 +144,6 @@ describe("IORoom operator sessions", () => {
         ).rejects.toThrow(/User and operator together must be at most/);
 
         const fits = createAuthorizedIO({
-            platform: { mode: "detached" },
             limits: { userMaxSize: 80 },
         }).server({
             onGetOperator: () => ({ id: "owner:staff-1" }),
@@ -173,7 +171,6 @@ describe("IORoom operator sessions", () => {
         ).rejects.toThrow(/User and operator together must be at most/);
 
         const users = createAuthorizedIO({
-            platform: { mode: "detached" },
             limits: { userMaxSize: 50 },
         });
 
@@ -186,7 +183,7 @@ describe("IORoom operator sessions", () => {
     });
 
     it("connects an operator token without calling onGetOperator again", async () => {
-        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const io = createAuthorizedIO();
         const mint = io.server({
             onGetOperator: () => ({ id: "owner:staff-1" }),
         });
@@ -221,7 +218,7 @@ describe("IORoom operator sessions", () => {
     });
 
     it("attaches kind, operator, and derived user without collapsing occupant identity", async () => {
-        const io = createAuthorizedIO({ platform: { mode: "detached" } });
+        const io = createAuthorizedIO();
         const server = io.server({
             onGetOperator: () => ({ id: "ada" }),
         });
@@ -317,7 +314,6 @@ describe("IORoom operator sessions", () => {
             hasWebSocket: boolean;
         }[] = [];
         const io = createAuthorizedIO({
-            platform: { mode: "detached" },
             treaty: testYjsTreaty,
         });
         const server = io.server({
@@ -422,7 +418,6 @@ describe("IORoom operator treaty context", () => {
 
     it("passes operator on staff presence procedures and null for occupants", async () => {
         const io = createAuthorizedIO({
-            platform: { mode: "detached" },
             treaty,
         });
         const server = io.server({

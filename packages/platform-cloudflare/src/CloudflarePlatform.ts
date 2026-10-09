@@ -33,7 +33,6 @@ export class CloudflarePlatform<
             secret: true;
         };
         handleMode: "io";
-        registrationMode: "detached";
         listeners: "all";
         router: true;
     }
@@ -62,7 +61,6 @@ export class CloudflarePlatform<
                 secret: true as const,
             },
             handleMode: "io" as const,
-            registrationMode: "detached" as const,
             listeners: "all" as const,
             router: true as const,
         };

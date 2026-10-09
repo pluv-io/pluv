@@ -135,7 +135,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
         const persistence = config.persistence ?? new TestPersistence();
         const io = createAuthorizedIO({
             treaty,
-            platform: { mode: "detached", persistence },
+            platform: { persistence },
         });
         const server = io.server({ getInitialStorage: config.getInitialStorage });
         const room = server.createRoom(config.roomId ?? "storage-init");

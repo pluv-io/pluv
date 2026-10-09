@@ -23,9 +23,7 @@ describe("IORoom EventResolverContext", () => {
     it("keeps storageSeeded live and writes presence through setPresence", async () => {
         let readBack: { presence: unknown; seededAfter: boolean } | null = null;
 
-        const io = createAuthorizedIO({
-            platform: { mode: "detached" },
-        });
+        const io = createAuthorizedIO({});
         const server = io.server({
             router: io.router({
                 stamp: io.procedure.broadcast((_data, ctx) => {

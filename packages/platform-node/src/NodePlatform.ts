@@ -2,7 +2,6 @@ import type {
     AbstractPersistence,
     AbstractPlatformConfig,
     ConvertWebSocketConfig,
-    WebSocketRegistrationMode,
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
@@ -19,7 +18,6 @@ export type NodePlatformRoomContext<TMeta extends Record<string, Json>> = keyof 
     : { meta: TMeta };
 
 export type NodePlatformConfig<TMeta extends Record<string, Json>> = {
-    mode?: WebSocketRegistrationMode;
     origin?: string;
     persistence?: AbstractPersistence;
     roomContext?: NodePlatformRoomContext<TMeta>;
@@ -34,7 +32,6 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
             secret: true;
         };
         handleMode: "io";
-        registrationMode: WebSocketRegistrationMode;
         listeners: "all";
         router: true;
     }
@@ -45,7 +42,7 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
     public readonly origin: string | undefined;
 
     constructor(config: NodePlatformConfig<TMeta> = {}) {
-        const { origin, roomContext, mode = "attached", persistence } = config;
+        const { origin, roomContext, persistence } = config;
 
         super({
             roomContext,
@@ -59,7 +56,6 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
                 secret: true as const,
             },
             handleMode: "io" as const,
-            registrationMode: mode,
             listeners: "all" as const,
             router: true as const,
         };
@@ -97,7 +93,6 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
 
     public initialize(config: AbstractPlatformConfig<NodePlatformRoomContext<TMeta>>): this {
         return new NodePlatform({
-            mode: this._config.registrationMode,
             origin: this.origin,
             persistence: this.persistence.initialize(config.roomContext),
             roomContext: config.roomContext,

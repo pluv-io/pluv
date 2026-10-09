@@ -35,9 +35,7 @@ const waitForRoomStats = async (socket: TestSocket, predicate: (data: any) => bo
 
 describe("IORoom $roomStats", () => {
     const createRoom = (roomId: string) => {
-        const io = createAuthorizedIO({
-            platform: { mode: "detached" },
-        });
+        const io = createAuthorizedIO({});
         const room = io.server().createRoom(roomId);
 
         return { io, room };
