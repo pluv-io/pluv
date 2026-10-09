@@ -109,7 +109,7 @@ export const ioServer = io.server({
 
 ### Attach to a RoomDurableObject
 
-Next, create a `RoomDurableObject` and attach our new `PluvServer` to the `RoomDurableObject`:
+Next, create a `RoomDurableObject` and attach our new `PluvServer` to the `RoomDurableObject`. Open the object with `idFromName(room)` or `getByName(room)`, and use `state.id.name` as the room id. That string is what `createToken` receives as `room`. `state.id.toString()` is the hex id, and a token minted with the room name will not match it. A room that already stores data under the hex id should keep using that id.
 
 ```ts
 // server/RoomDurableObject.ts
@@ -122,7 +122,15 @@ export class RoomDurableObject extends DurableObject<Env> {
   private _room: InferIORoom<typeof ioServer>;
 
   constructor(state: DurableObjectState, env: Env) {
-    this._room = ioServer.createRoom(state.id.toString(), { env, state });
+    const room = state.id.name;
+
+    if (!room) {
+      throw new Error(
+        "Address this Durable Object with idFromName() or getByName()",
+      );
+    }
+
+    this._room = ioServer.createRoom(room, { env, state });
   }
 
   public async webSocketClose(
@@ -166,7 +174,7 @@ export class RoomDurableObject extends DurableObject<Env> {
 
     // Only needed if you have specified authorize
     const token = new URL(request.url).searchParams.get("token");
-    await this._room.register(server, { request, token });
+    await this._room.register(server, { env: this.env, request, token });
 
     return new Response(null, { status: 101, webSocket: client });
   }
