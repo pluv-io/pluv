@@ -43,7 +43,6 @@ describe("presence fan-out seatbelt", () => {
     it("rejects extra sockets at maxConnections", async () => {
         const io = createAuthorizedIO({
             limits: { maxConnections: 2 },
-            platform: { mode: "detached" },
         });
         const room = io.server().createRoom("max-connections");
         const first = new TestSocket("session-1");
@@ -64,7 +63,6 @@ describe("presence fan-out seatbelt", () => {
     it("rejects a concurrent extra socket at maxConnections", async () => {
         const io = createAuthorizedIO({
             limits: { maxConnections: 1 },
-            platform: { mode: "detached" },
         });
         const room = io.server().createRoom("max-connections-race");
         const first = new TestSocket("session-1");

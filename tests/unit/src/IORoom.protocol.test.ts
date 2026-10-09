@@ -11,9 +11,7 @@ const lastMessage = (socket: TestSocket, type: string): Record<string, any> => {
 
 describe("IORoom protocol relay", () => {
     it("drops unknown $ events instead of relaying them", async () => {
-        const io = createAuthorizedIO({
-            platform: { mode: "detached" },
-        });
+        const io = createAuthorizedIO({});
         const room = io.server().createRoom("protocol-relay");
         const sender = new TestSocket("session-1");
         const observer = new TestSocket("session-2");
@@ -58,9 +56,7 @@ describe("IORoom protocol relay", () => {
     });
 
     it("keeps the server identity when a client event includes operator and user", async () => {
-        const io = createAuthorizedIO({
-            platform: { mode: "detached" },
-        });
+        const io = createAuthorizedIO({});
         const room = io.server().createRoom("protocol-relay");
         const sender = new TestSocket("session-1");
         const observer = new TestSocket("session-2");

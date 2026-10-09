@@ -47,7 +47,6 @@ export class PluvPlatform extends AbstractPlatform<
             secret: false;
         };
         handleMode: "fetch";
-        registrationMode: "attached";
         listeners: "webhook";
         router: false;
     }
@@ -58,7 +57,6 @@ export class PluvPlatform extends AbstractPlatform<
             secret: false as const,
         },
         handleMode: "fetch" as const,
-        registrationMode: "attached" as const,
         listeners: "webhook" as const,
         router: false as const,
     };

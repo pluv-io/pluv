@@ -108,14 +108,12 @@ export type GetInitialStorageFn<TContext extends Record<string, any>> = (
 
 export type HandleMode = "io" | "fetch";
 export type ListenerMode = "all" | "webhook";
-export type WebSocketRegistrationMode = "attached" | "detached";
 
 export interface PlatformConfig {
     authorize: {
         secret?: boolean;
     };
     handleMode: HandleMode;
-    registrationMode: WebSocketRegistrationMode;
     listeners: ListenerMode;
     router?: boolean;
 }

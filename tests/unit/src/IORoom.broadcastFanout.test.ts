@@ -22,9 +22,7 @@ const send = async (room: Room, socket: TestSocket, type: string, data: unknown)
 
 describe("IORoom broadcast fan-out", () => {
     it("still delivers to healthy sockets when another send throws", async () => {
-        const io = createAuthorizedIO({
-            platform: { mode: "detached" },
-        });
+        const io = createAuthorizedIO({});
         const server = io.server();
         const room = server.createRoom("fanout");
         const healthy = new TestSocket("session-healthy");

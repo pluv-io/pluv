@@ -417,8 +417,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     public onClose(
         webSocket: WebSocketType<T["platform"]>,
     ): (event: AbstractCloseEvent) => Promise<void> {
-        this._ensureDetached();
-
         const wsSession = this._sessions.resolve(webSocket);
 
         if (!wsSession) return async () => undefined;
@@ -429,8 +427,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     public onError(
         webSocket: WebSocketType<T["platform"]>,
     ): (event: AbstractErrorEvent) => Promise<void> {
-        this._ensureDetached();
-
         const wsSession = this._sessions.resolve(webSocket);
 
         if (!wsSession) return async () => undefined;
@@ -441,8 +437,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
     public onMessage(
         webSocket: WebSocketType<T["platform"]>,
     ): (event: AbstractMessageEvent) => Promise<void> {
-        this._ensureDetached();
-
         const wsSession = this._sessions.resolve(webSocket);
 
         if (!wsSession) return async () => undefined;
@@ -553,15 +547,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             this._sessions.set(pluvWs.sessionId, pluvWs);
             releaseReservation();
             await this._platform.persistence.addUser(this.id, pluvWs.sessionId, user);
-
-            if (this._platform._config.registrationMode === "attached") {
-                const onClose = this._onClose(pluvWs).bind(this);
-                const onMessage = this._onMessage(pluvWs).bind(this);
-
-                pluvWs.addEventListener("close", onClose);
-                pluvWs.addEventListener("error", onClose);
-                pluvWs.addEventListener("message", onMessage);
-            }
 
             await this._emitRegistered(pluvWs);
             this._throttles.roomStats.schedule();
@@ -797,12 +782,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 data: { connectionIds },
             },
         });
-    }
-
-    private _ensureDetached(): void {
-        if (this._platform._config.registrationMode === "detached") return;
-
-        throw new Error("Platform must use detached mode");
     }
 
     /**

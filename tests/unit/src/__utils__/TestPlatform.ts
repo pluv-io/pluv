@@ -3,7 +3,6 @@ import type {
     AbstractPlatformConfig,
     AbstractPubSub,
     ConvertWebSocketConfig,
-    WebSocketRegistrationMode,
     WebSocketSerializedState,
 } from "@pluv/io";
 import { AbstractPlatform } from "@pluv/io";
@@ -12,7 +11,6 @@ import crypto from "node:crypto";
 import { TestSocket, TestWebSocket } from "./TestWebSocket";
 
 export type TestPlatformConfig = {
-    mode?: WebSocketRegistrationMode;
     persistence?: AbstractPersistence;
     pubSub?: AbstractPubSub;
     /** Sockets reported as pre-existing, as Cloudflare does after waking from hibernation. */
@@ -30,7 +28,6 @@ export class TestPlatform extends AbstractPlatform<
     {
         authorize: { secret: true };
         handleMode: "io";
-        registrationMode: WebSocketRegistrationMode;
         listeners: "all";
         router: true;
     }
@@ -42,7 +39,6 @@ export class TestPlatform extends AbstractPlatform<
     private readonly _hibernatedWebSockets: readonly TestSocket[];
     private readonly _hibernatedUsers: ReadonlyMap<TestSocket, BaseUser>;
     private readonly _lastPings: ReadonlyMap<TestSocket, number>;
-    private readonly _mode: WebSocketRegistrationMode;
     private readonly _serializedStates: ReadonlyMap<TestSocket, WebSocketSerializedState>;
     // Stable per socket, otherwise presence/quit/ping state is discarded between calls.
     private readonly _wrapped = new Map<TestSocket, TestWebSocket>();
@@ -52,7 +48,6 @@ export class TestPlatform extends AbstractPlatform<
             hibernatedWebSockets = [],
             hibernatedUsers = new Map<TestSocket, BaseUser>(),
             lastPings = new Map<TestSocket, number>(),
-            mode = "attached",
             persistence,
             pubSub,
             serializedStates = new Map<TestSocket, WebSocketSerializedState>(),
@@ -63,13 +58,11 @@ export class TestPlatform extends AbstractPlatform<
         this._hibernatedWebSockets = hibernatedWebSockets;
         this._hibernatedUsers = hibernatedUsers;
         this._lastPings = lastPings;
-        this._mode = mode;
         this._serializedStates = serializedStates;
 
         this._config = {
             authorize: { secret: true as const },
             handleMode: "io" as const,
-            registrationMode: mode,
             listeners: "all" as const,
             router: true as const,
         };
@@ -120,7 +113,6 @@ export class TestPlatform extends AbstractPlatform<
             hibernatedWebSockets: this._hibernatedWebSockets,
             hibernatedUsers: this._hibernatedUsers,
             lastPings: this._lastPings,
-            mode: this._mode,
             persistence: this.persistence.initialize(config.roomContext),
             pubSub: this.pubSub,
             serializedStates: this._serializedStates,

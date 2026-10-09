@@ -144,13 +144,26 @@ const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
 // Handle room cleanup in the server-level onRoomDestroyed listener
 // (configured in io.server() above)
 
-// Setup your websocket request handler
+// Setup your websocket request handler.
+// Attach message, close, and error before register. ws drops frames
+// that arrive with no listener, and register waits on authorization.
 wsServer.on("connection", async (ws, req) => {
   const roomId = parseRoomId(req.url);
   const room = getRoom(roomId);
 
   // Token is only needed if you have configured authorization
   const token = new URL(req.url).searchParams.get("token");
+
+  ws.on("message", async (data) => {
+    await room.onMessage(ws)({ data });
+  });
+  ws.on("close", async (code, reason) => {
+    await room.onClose(ws)({ code, reason: reason.toString() });
+  });
+  ws.on("error", async (error) => {
+    await room.onError(ws)({ error, message: error.message });
+  });
+
   await room.register(ws, { request: req, token });
 });
 ```

@@ -51,9 +51,7 @@ const getOthers = async (room: Room, socket: TestSocket): Promise<void> => {
 
 describe("IORoom presence", () => {
     const createRoom = (roomId: string = "presence") => {
-        const io = createAuthorizedIO({
-            platform: { mode: "detached" },
-        });
+        const io = createAuthorizedIO({});
         const server = io.server();
         const room = server.createRoom(roomId);
 

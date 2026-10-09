@@ -83,7 +83,6 @@ describe("CloudflarePlatform persistence", () => {
         const io = createAuthorizedIO({
             treaty: testYjsTreaty,
             platform: {
-                mode: "detached",
                 persistence: afterHibernation.persistence,
             },
         });
