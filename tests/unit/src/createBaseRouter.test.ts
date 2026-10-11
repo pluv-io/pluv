@@ -42,4 +42,29 @@ describe("createBaseRouter", () => {
             expect.arrayContaining(BASE_CLIENT_EVENT_KEYS),
         );
     });
+
+    it("keeps broadcast and self on the procedures that already had them", () => {
+        const router = __internal.createBaseRouter({
+            limits: {},
+            onStorageUpdated: vi.fn(),
+        });
+        const events = router._defs.events as Record<
+            string,
+            { config: { broadcast: unknown; self: unknown } }
+        >;
+        const shape = (name: string) => ({
+            broadcast: typeof events[name]?.config.broadcast === "function",
+            self: typeof events[name]?.config.self === "function",
+        });
+
+        expect(shape("$initializeSession")).toEqual({ broadcast: true, self: true });
+
+        for (const name of ["$updatePresence", "$updateStorage"]) {
+            expect(shape(name)).toEqual({ broadcast: true, self: false });
+        }
+
+        for (const name of ["$ping", "$getOthers", "$listUsers", "$syncStorage"]) {
+            expect(shape(name)).toEqual({ broadcast: false, self: true });
+        }
+    });
 });
