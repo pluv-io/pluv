@@ -1,70 +1,37 @@
-import type { Subject } from "wonka";
-import { makeSubject, subscribe } from "wonka";
 import type { IOPubSubEventMessage } from "./AbstractPubSub";
 import { AbstractPubSub } from "./AbstractPubSub";
 
+type PubSubHandler = (message: IOPubSubEventMessage<any>) => void | Promise<void>;
+
 export class PubSub extends AbstractPubSub {
-    private _currentSubscriptionId: number = 0;
-    // Map of roomName to subjects
-    private _subjects = new Map<string, Subject<IOPubSubEventMessage<any>>>();
-    // Map of roomName to subscription ids
-    private _subscriptionsRefs = new Map<string, readonly number[]>();
-    // Map of
-    private _unsubscriptions = new Map<number, [roomName: string, unsubscribe: () => void]>();
+    private _nextId: number = 0;
+    private _rooms = new Map<string, Map<number, PubSubHandler>>();
 
     public async publish(roomName: string, payload: IOPubSubEventMessage<any>): Promise<void> {
-        const subject = this._subjects.get(roomName);
+        const room = this._rooms.get(roomName);
 
-        if (!subject) return;
+        if (!room?.size) return;
 
-        Promise.resolve(subject.next(payload));
+        await Promise.all([...room.values()].map((handler) => Promise.resolve(handler(payload))));
     }
 
-    public subscribe(
-        roomName: string,
-        onMessage: (message: IOPubSubEventMessage<any>) => void,
-    ): Promise<number> {
-        const id = this._currentSubscriptionId++;
-        const refs = this._subscriptionsRefs.get(roomName) ?? [];
+    public subscribe(roomName: string, onMessage: PubSubHandler): Promise<number> {
+        const id = this._nextId++;
+        const room = this._rooms.get(roomName) ?? new Map<number, PubSubHandler>();
 
-        const subject = makeSubject<IOPubSubEventMessage<any>>();
-
-        this._subjects.set(roomName, subject);
-        this._subscriptionsRefs.set(roomName, [...refs, id]);
-
-        const unsubscribe = subscribe(onMessage)(subject.source).unsubscribe;
-
-        this._unsubscriptions.set(id, [roomName, unsubscribe]);
+        room.set(id, onMessage);
+        this._rooms.set(roomName, room);
 
         return Promise.resolve(id);
     }
 
     public unsubscribe(subscriptionId: number): void {
-        const [roomName, unsubscribe] = this._unsubscriptions.get(subscriptionId) ?? [];
+        for (const [roomName, room] of this._rooms) {
+            if (!room.delete(subscriptionId)) continue;
 
-        if (!roomName || !unsubscribe) return;
-
-        const refs = this._subscriptionsRefs.get(roomName);
-
-        if (!refs) return;
-
-        if (refs.length === 1) {
-            this._subjects.delete(roomName);
-            this._subscriptionsRefs.delete(roomName);
-            this._unsubscriptions.delete(subscriptionId);
+            if (room.size === 0) this._rooms.delete(roomName);
 
             return;
         }
-
-        const index = refs.indexOf(subscriptionId);
-
-        this._subscriptionsRefs.set(
-            roomName,
-            index === -1 ? refs : [...refs.slice(0, index), ...refs.slice(index + 1)],
-        );
-
-        unsubscribe();
-
-        this._unsubscriptions.delete(subscriptionId);
     }
 }
