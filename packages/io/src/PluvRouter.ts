@@ -17,10 +17,15 @@ export type MergedRouter<
 
 export class PluvRouter<T extends IODefs = IODefs> implements IORouterLike<T["events"]> {
     readonly _defs: { events: T["events"] } = { events: {} as T["events"] };
+    /** Event names this router defines. */
+    readonly eventNames: ReadonlySet<string> = new Set();
 
     constructor(events: T["events"]) {
-        assertEventNames(Object.keys(events as Record<string, unknown>), { allowDollar: false });
+        const names = Object.keys(events as Record<string, unknown>);
+
+        assertEventNames(names, { allowDollar: false });
         this._defs = { events };
+        this.eventNames = new Set(names);
     }
 
     public static merge<TRouters extends PluvRouter<any>[]>(
