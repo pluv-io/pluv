@@ -194,7 +194,7 @@ export type BasePluvIOListeners<T extends IODefs = IODefs> = {
     onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;
     onRoomMessage: (event: IORoomMessageEvent<T>) => void;
     onStorageDestroyed: (event: IORoomListenerEvent<T>) => void;
-    onStorageUpdated: (event: IOStorageUpdatedEvent<T>) => void;
+    onStorageUpdated: (event: IOStorageUpdatedEvent<T>) => MaybePromise<void>;
     onUserConnected: (event: IOUserConnectedEvent<T>) => void;
     onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
 };
@@ -246,11 +246,7 @@ export type IORoomMessageEvent<T extends IODefs = IODefs> = {
     user?: InferTreatyUser<T["treaty"]>;
 };
 
-export type IOStorageUpdatedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
-    kind?: ParticipantKind;
-    operator?: OperatorUser | null;
-    user?: InferTreatyUser<T["treaty"]>;
-};
+export type IOStorageUpdatedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T>;
 
 export type IOUserConnectedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
     kind?: ParticipantKind;
@@ -267,6 +263,8 @@ export type IOUserDisconnectedEvent<T extends IODefs = IODefs> = IORoomListenerE
 export type WebSocketType<TPlatform extends AbstractPlatform> =
     | InferPlatformWebSocketType<TPlatform>
     | InferPlatformWebSocketSource<TPlatform>;
+
+export type CheckpointFlush = "clean" | "dirty" | "closed";
 
 export interface RoomSessionSnapshot<T extends IODefs = IODefs> {
     id: string;
@@ -300,6 +298,8 @@ export interface RoomEffects<T extends IODefs = IODefs> {
     destroy: boolean;
     attachments: RoomAttachment[];
     error: unknown;
+    /** The saved copy is stale. A hosted supervisor reads this off the call result. */
+    storageDirty: boolean;
 }
 
 export interface RoomRegisterResult<T extends IODefs = IODefs> {
@@ -340,6 +340,7 @@ export const emptyRoomEffects = <T extends IODefs = IODefs>(): RoomEffects<T> =>
     destroy: false,
     error: null,
     self: [],
+    storageDirty: false,
 });
 
 export type WebSocketRegisterConfig<
@@ -359,14 +360,22 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
         name: string;
         data: unknown;
         actor: Pick<RoomSessionSnapshot<T>, "id" | "kind" | "operator" | "presence" | "user">;
-    }): Promise<RoomEffectFrame<T> | null>;
+    }): Promise<RoomEffects<T>>;
     close(session: RoomSessionSnapshot<T>): Promise<RoomEffects<T>>;
     destroy(): Promise<void>;
+    flushCheckpoint(): Promise<{
+        broadcast: RoomEffectFrame<T>[];
+        status: CheckpointFlush;
+    }>;
     garbageCollect(sessions: readonly RoomSessionSnapshot<T>[]): Promise<RoomEffects<T>>;
     initializeStorage(params: {
         input: { stateVector?: string | null; update?: string | null };
         actor: Pick<RoomSessionSnapshot<T>, "kind" | "operator" | "user">;
-    }): Promise<{ changeKind: "unchanged" | "initialized" | "empty"; state: string | null }>;
+    }): Promise<{
+        changeKind: "unchanged" | "initialized" | "empty";
+        state: string | null;
+        storageDirty: boolean;
+    }>;
     logDebug(...data: unknown[]): void;
     message(
         session: RoomSessionSnapshot<T>,
@@ -377,12 +386,14 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
             ? [{ token?: string }?]
             : [WebSocketRegisterConfig<T["platform"]>]
     ): Promise<RoomRegisterResult<T>>;
+    storageDirty(): boolean;
     userConnected(params: {
+        id: string;
         encodedState: string | null;
         kind: ParticipantKind;
         operator: OperatorUser | null;
         user: InferTreatyUser<T["treaty"]>;
-    }): Promise<void>;
+    }): Promise<RoomEffects<T>>;
     whenReady(): Promise<boolean>;
 }
 

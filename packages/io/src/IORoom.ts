@@ -9,6 +9,7 @@ import type {
     InferTreatyUser,
     JsonObject,
     Maybe,
+    MaybePromise,
     OperatorUser,
     ParticipantKind,
 } from "@pluv/types";
@@ -17,6 +18,7 @@ import type { InferInitContextType, InferRoomContextType } from "./AbstractPlatf
 import type { IODefs, IOLikeFromDefs } from "./IODefs";
 import type { PluvRouter } from "./PluvRouter";
 import { RoomStorage } from "./RoomStorage";
+import { StorageCheckpoint } from "./StorageCheckpoint";
 import { authorize } from "./authorize";
 import { PING_TIMEOUT_MS } from "./constants";
 import type {
@@ -47,7 +49,7 @@ import type {
 import { emptyRoomEffects, userTurn } from "./types";
 import {
     assertExhaustive,
-    oneLine,
+    isThenable,
     parseOperatorUser,
     parsePluvSchema,
     resolveIOSecret,
@@ -61,11 +63,6 @@ const snapshotIsLive = (
 
     return now - session.lastPing <= PING_TIMEOUT_MS;
 };
-
-const isThenable = (value: unknown): value is PromiseLike<unknown> =>
-    typeof value === "object" &&
-    value !== null &&
-    typeof (value as PromiseLike<unknown>).then === "function";
 
 /**
  * @experimental
@@ -115,7 +112,7 @@ export interface IORoomListeners<T extends IODefs = IODefs> {
     onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;
     onStorageDestroyed: (event: IORoomListenerEvent<T>) => void;
     onMessage: (event: IORoomMessageEvent<T>) => void;
-    onStorageUpdated: (event: IOStorageUpdatedEvent<T>) => void;
+    onStorageUpdated: (event: IOStorageUpdatedEvent<T>) => MaybePromise<void>;
     onUserConnected: (event: IOUserConnectedEvent<T>) => void;
     onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
 }
@@ -135,6 +132,9 @@ export type IORoomConfig<T extends IODefs = IODefs> = Partial<IORoomListeners<T>
 type AuthorizedIdentity<TUser> =
     | { kind: "operator"; operator: OperatorUser; user: TUser }
     | { kind: "user"; operator: null; user: TUser };
+
+/** Clients ignore `$storageUpdated` when `connectionId` is missing. A listener write has no session. */
+const SERVER_STORAGE_CONNECTION_ID = "$server";
 
 const effectFrame = <T extends IODefs>(
     type: string,
@@ -167,6 +167,7 @@ export class IORoom<T extends IODefs = IODefs>
     private _teardown: Promise<void> | null = null;
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
+    private readonly _checkpoint: StorageCheckpoint<T["context"]>;
     private readonly _context: PluvContext<T["platform"], T["context"]>;
     private readonly _debug: boolean;
     private readonly _listeners: IORoomListeners<T>;
@@ -235,11 +236,42 @@ export class IORoom<T extends IODefs = IODefs>
             room: this.id,
         });
 
+        this._checkpoint = new StorageCheckpoint({
+            getContext: () => this._getContext(),
+            getDoc: () => this._doc,
+            keepAlive: (promise) => {
+                this._platform.keepAlive(promise);
+            },
+            limits: this.limits,
+            onStored: (event) => {
+                void this._listeners.onStorageUpdated(event);
+            },
+            room: this.id,
+            setStorageState: (encodedState) =>
+                this._platform.persistence.setStorageState(this.id, encodedState),
+        });
+
         this._listeners = {
             onRoomDestroyed: (event) => onRoomDestroyed?.(event),
             onStorageDestroyed: (event) => onStorageDestroyed?.(event),
-            onStorageUpdated: (event) => onStorageUpdated?.(event),
-            onMessage: (event) => onMessage?.(event),
+            onStorageUpdated: (event) => {
+                // Already settled when the listener returns nothing. A returned promise
+                // is kept until it settles. The checkpoint does not wait for it.
+                this._platform.keepAlive(
+                    Promise.resolve(onStorageUpdated?.(event)).catch((error: unknown) => {
+                        console.error(error);
+                    }),
+                );
+            },
+            onMessage: (event) => {
+                // Already settled when the listener returns nothing. A returned promise
+                // is kept until it settles. The message handler does not wait for it.
+                this._platform.keepAlive(
+                    Promise.resolve(onMessage?.(event)).catch((error: unknown) => {
+                        console.error(error);
+                    }),
+                );
+            },
             onUserConnected: (event) => onUserConnected?.(event),
             onUserDisconnected: (event) => onUserDisconnected?.(event),
         };
@@ -249,11 +281,27 @@ export class IORoom<T extends IODefs = IODefs>
             applyStorageProcedure: this._applyStorageProcedure.bind(this),
             close: this._close.bind(this),
             destroy: this._destroyRoom.bind(this),
+            flushCheckpoint: async () => {
+                const status = await this._checkpoint.flush();
+                const updates = this._checkpoint.takeUpdates();
+
+                return {
+                    broadcast: updates.map((update): RoomEffectFrame<T> => ({
+                        connectionId: SERVER_STORAGE_CONNECTION_ID,
+                        data: { state: update },
+                        operator: null,
+                        type: "$storageUpdated",
+                        user: null,
+                    })),
+                    status,
+                };
+            },
             garbageCollect: this._garbageCollect.bind(this),
             initializeStorage: this._initializeStorage.bind(this),
             logDebug: this._logDebug.bind(this),
             message: this._message.bind(this),
             register: this._register.bind(this),
+            storageDirty: () => this._checkpoint.dirty,
             userConnected: this._userConnected.bind(this),
             whenReady: () => this._initialized,
         };
@@ -294,8 +342,10 @@ export class IORoom<T extends IODefs = IODefs>
         name: string;
         data: unknown;
         actor: Pick<RoomSessionSnapshot<T>, "id" | "kind" | "operator" | "presence" | "user">;
-    }): Promise<RoomEffectFrame<T> | null> {
-        if (!(await this._initialized)) return null;
+    }): Promise<RoomEffects<T>> {
+        if (!(await this._initialized) || this._checkpoint.closed) {
+            return this._releaseStorage(emptyRoomEffects<T>(), params.actor);
+        }
 
         const { name, data, actor } = params;
         const procedures = this._treaty._defs.procedures.storage;
@@ -316,46 +366,52 @@ export class IORoom<T extends IODefs = IODefs>
             });
         };
 
-        const update = doc.captureUpdate(() => {
-            if (procedure.config.transact === false) {
-                apply();
+        const update = this._checkpoint.hold(() =>
+            doc.captureUpdate(() => {
+                if (procedure.config.transact === false) {
+                    apply();
 
-                return;
-            }
+                    return;
+                }
 
-            doc.transact(apply, actor.id);
-        });
+                doc.transact(apply, actor.id);
+            }),
+        );
 
-        if (!update) return null;
+        if (!update) return this._releaseStorage(emptyRoomEffects<T>(), actor);
 
-        await this._saveStorageSnapshot({
-            context: await this._getContext(),
-            doc,
-            kind: actor.kind,
-            operator: actor.operator,
-        });
+        this._checkpoint.assertSize(doc.getEncodedState());
 
-        return effectFrame("$storageUpdated", { state: update }, actor);
+        return this._releaseStorage(
+            {
+                ...emptyRoomEffects<T>(),
+                broadcast: [effectFrame("$storageUpdated", { state: update }, actor)],
+            },
+            actor,
+        );
     }
 
     private async _close(session: RoomSessionSnapshot<T>): Promise<RoomEffects<T>> {
         await this._emitDisconnected(session);
 
-        return {
-            ...emptyRoomEffects<T>(),
-            broadcast: [
-                effectFrame(
-                    "$exit",
-                    {
-                        operator: session.operator,
-                        sessionId: session.id,
-                        user: session.user,
-                    },
-                    session,
-                ),
-            ],
-            closes: [session.id],
-        };
+        return this._releaseStorage(
+            {
+                ...emptyRoomEffects<T>(),
+                broadcast: [
+                    effectFrame(
+                        "$exit",
+                        {
+                            operator: session.operator,
+                            sessionId: session.id,
+                            user: session.user,
+                        },
+                        session,
+                    ),
+                ],
+                closes: [session.id],
+            },
+            session,
+        );
     }
 
     private async _destroyRoom(): Promise<void> {
@@ -407,6 +463,7 @@ export class IORoom<T extends IODefs = IODefs>
             // oxlint-disable-next-line eslint/no-await-in-loop
             await this._emitDisconnected(session);
             broadcast.push(
+                ...this._releaseStorage(emptyRoomEffects<T>(), session).broadcast,
                 effectFrame(
                     "$exit",
                     {
@@ -425,6 +482,7 @@ export class IORoom<T extends IODefs = IODefs>
             broadcast,
             closes,
             destroy: quitters.length > 0 && live === 0,
+            storageDirty: this._checkpoint.dirty,
         };
     }
 
@@ -523,11 +581,16 @@ export class IORoom<T extends IODefs = IODefs>
             }
 
             await this._storage.initialize();
+            this._checkpoint.reopen();
+            this._checkpoint.attach(await this._storage.doc);
 
             const uninitialize = async (): Promise<void> => {
                 if (this._teardown) return this._teardown;
 
                 this._teardown = (async () => {
+                    await this._checkpoint.seal();
+                    this._checkpoint.detach();
+
                     const context = await this._getContext();
                     const { encodedState, refusedEmptyPersist, shouldDestroyStorage } =
                         await this._storage.destroy();
@@ -589,10 +652,15 @@ export class IORoom<T extends IODefs = IODefs>
     private async _initializeStorage(params: {
         input: { stateVector?: string | null; update?: string | null };
         actor: Pick<RoomSessionSnapshot<T>, "kind" | "operator" | "user">;
-    }): Promise<{ changeKind: "unchanged" | "initialized" | "empty"; state: string | null }> {
-        if (!(await this._initialized)) return { changeKind: "empty", state: null };
+    }): Promise<{
+        changeKind: "unchanged" | "initialized" | "empty";
+        state: string | null;
+        storageDirty: boolean;
+    }> {
+        if (!(await this._initialized))
+            return { changeKind: "empty", state: null, storageDirty: false };
 
-        const { actor, input } = params;
+        const { input } = params;
         const doc = await this._doc;
         const context = await this._getContext();
         const update = input.update ?? null;
@@ -607,11 +675,14 @@ export class IORoom<T extends IODefs = IODefs>
             return {
                 changeKind: "unchanged",
                 state: stateVector ? doc.encodeDiff(stateVector) : doc.getEncodedState(),
+                storageDirty: this._checkpoint.dirty,
             };
         }
 
         if (update) {
-            const encodedState = doc.applyEncodedState({ update }).getEncodedState();
+            const encodedState = this._checkpoint.hold(() =>
+                doc.applyEncodedState({ update }).getEncodedState(),
+            );
             const storageSize = new TextEncoder().encode(encodedState).length;
 
             if (!!this.limits.storageMaxSize && storageSize > this.limits.storageMaxSize) {
@@ -620,27 +691,39 @@ export class IORoom<T extends IODefs = IODefs>
 
             this._storage.storageSeeded = true;
 
-            await this._platform.persistence
+            const epoch = this._checkpoint.epoch;
+            const saved = await this._platform.persistence
                 .setStorageState(this.id, encodedState)
+                .then(() => true)
                 .catch((error: unknown) => {
                     this._logDebug(error);
+
+                    return false;
                 });
 
-            this._listeners.onStorageUpdated({
-                context,
-                encodedState,
-                kind: actor.kind,
-                operator: actor.operator,
-                room: this.id,
-                user: actor.user,
-            });
+            if (saved) {
+                this._checkpoint.acknowledge(epoch);
+                void this._listeners.onStorageUpdated({
+                    context,
+                    encodedState,
+                    room: this.id,
+                });
+            }
 
-            return { changeKind: "initialized", state: stateForClient(encodedState) };
+            return {
+                changeKind: "initialized",
+                state: stateForClient(encodedState),
+                storageDirty: this._checkpoint.dirty,
+            };
         }
 
         const encodedState = doc.getEncodedState();
 
-        return { changeKind: "empty", state: stateForClient(encodedState) };
+        return {
+            changeKind: "empty",
+            state: stateForClient(encodedState),
+            storageDirty: this._checkpoint.dirty,
+        };
     }
 
     private _logDebug(...data: unknown[]): void {
@@ -651,38 +734,39 @@ export class IORoom<T extends IODefs = IODefs>
         session: RoomSessionSnapshot<T>,
         event: { data: unknown; type: string },
     ): Promise<RoomEffects<T> | UserTurn<RoomEffects<T>>> {
-        if (!(await this._initialized)) return emptyRoomEffects<T>();
+        if (!(await this._initialized)) return this._releaseStorage(emptyRoomEffects<T>(), session);
 
         const context = await this._getContext();
 
-        void Promise.resolve(
-            this._listeners.onMessage({
-                ...("_meta" in this._platform && !!this._platform._meta
-                    ? { _meta: this._platform._meta }
-                    : {}),
-                context,
-                message: event as InferEventMessage<
-                    InferEventsOutput<T["events"]>,
-                    keyof InferEventsOutput<T["events"]>
-                >,
-                kind: session.kind,
-                operator: session.operator,
-                room: this.id,
-                user: session.user,
-            }),
-        ).catch((error: unknown) => {
-            console.error(error);
+        void this._listeners.onMessage({
+            ...("_meta" in this._platform && !!this._platform._meta
+                ? { _meta: this._platform._meta }
+                : {}),
+            context,
+            message: event as InferEventMessage<
+                InferEventsOutput<T["events"]>,
+                keyof InferEventsOutput<T["events"]>
+            >,
+            kind: session.kind,
+            operator: session.operator,
+            room: this.id,
+            user: session.user,
         });
 
         const procedure = this._getProcedure(event);
 
         if (!procedure) {
-            if (event.type.startsWith("$")) return emptyRoomEffects<T>();
+            if (event.type.startsWith("$")) {
+                return this._releaseStorage(emptyRoomEffects<T>(), session);
+            }
 
-            return {
-                ...emptyRoomEffects<T>(),
-                broadcast: [effectFrame(event.type, event.data, session)],
-            };
+            return this._releaseStorage(
+                {
+                    ...emptyRoomEffects<T>(),
+                    broadcast: [effectFrame(event.type, event.data, session)],
+                },
+                session,
+            );
         }
 
         let inputs: unknown;
@@ -692,13 +776,18 @@ export class IORoom<T extends IODefs = IODefs>
                 ? parsePluvSchema(procedure.config.input, event.data)
                 : event.data;
         } catch (error) {
-            return { ...emptyRoomEffects<T>(), error };
+            return this._releaseStorage({ ...emptyRoomEffects<T>(), error }, session);
         }
 
         const attachments: RoomAttachment[] = [];
         let presence = session.presence;
         const doc = await this._doc;
         const storageEvent = event.type === "$syncStorage" || event.type === "$updateStorage";
+
+        if (storageEvent && this._checkpoint.closed) {
+            return this._releaseStorage(emptyRoomEffects<T>(), session);
+        }
+
         const wide = this._resolverContext({
             attachments,
             context,
@@ -713,19 +802,32 @@ export class IORoom<T extends IODefs = IODefs>
         const finish = (
             broadcast: Record<string, unknown> | null | undefined,
             self: Record<string, unknown> | null | undefined,
-        ): RoomEffects<T> => ({
-            ...emptyRoomEffects<T>(),
-            attachments,
-            broadcast: framesFromRecord(broadcast, session),
-            self: framesFromRecord(self, session),
-        });
-
+        ): RoomEffects<T> =>
+            this._releaseStorage(
+                {
+                    ...emptyRoomEffects<T>(),
+                    attachments,
+                    broadcast: framesFromRecord(broadcast, session),
+                    self: framesFromRecord(self, session),
+                },
+                session,
+            );
         try {
-            const broadcastResult = procedure.config.broadcast?.(inputs, resolverContext);
-            const selfResult = procedure.config.self?.(inputs, resolverContext);
+            let broadcastResult: unknown;
+            let selfResult: unknown;
 
-            // Storage writes stay on this join. Other resolvers can await the session
-            // manager, so this join must finish before those promises do.
+            if (storageEvent) {
+                broadcastResult = this._checkpoint.hold(() =>
+                    procedure.config.broadcast?.(inputs, resolverContext),
+                );
+                selfResult = procedure.config.self?.(inputs, resolverContext);
+            } else {
+                broadcastResult = procedure.config.broadcast?.(inputs, resolverContext);
+                selfResult = procedure.config.self?.(inputs, resolverContext);
+            }
+
+            // The storage broadcast stays on this join. Other resolvers can await the
+            // session manager, so this join must finish before those promises do.
             if (!storageEvent && (isThenable(broadcastResult) || isThenable(selfResult))) {
                 return userTurn(
                     Promise.all([broadcastResult, selfResult])
@@ -735,11 +837,16 @@ export class IORoom<T extends IODefs = IODefs>
                                 self as Record<string, unknown> | null,
                             ),
                         )
-                        .catch((error: unknown) => ({
-                            ...emptyRoomEffects<T>(),
-                            attachments,
-                            error,
-                        })),
+                        .catch((error: unknown) =>
+                            this._releaseStorage(
+                                {
+                                    ...emptyRoomEffects<T>(),
+                                    attachments,
+                                    error,
+                                },
+                                session,
+                            ),
+                        ),
                 );
             }
 
@@ -750,7 +857,7 @@ export class IORoom<T extends IODefs = IODefs>
                 self as Record<string, unknown> | null,
             );
         } catch (error) {
-            return { ...emptyRoomEffects<T>(), attachments, error };
+            return this._releaseStorage({ ...emptyRoomEffects<T>(), attachments, error }, session);
         }
     }
 
@@ -863,41 +970,37 @@ export class IORoom<T extends IODefs = IODefs>
         } as unknown as StorageEventContext<T> & SessionEventContext<T>;
     }
 
-    private async _saveStorageSnapshot(params: {
-        context: T["context"];
-        doc: CrdtDocLike<any, any>;
-        kind: IOStorageUpdatedEvent<T>["kind"];
-        operator: IOStorageUpdatedEvent<T>["operator"];
-    }): Promise<void> {
-        const encodedState = params.doc.getEncodedState();
-        const storageSize = new TextEncoder().encode(encodedState).length;
+    private _releaseStorage(
+        effects: RoomEffects<T>,
+        session: Pick<RoomSessionSnapshot<T>, "id" | "operator" | "user">,
+    ): RoomEffects<T> {
+        const updates = this._checkpoint.takeUpdates();
+        const broadcast = updates.length
+            ? [
+                  ...effects.broadcast,
+                  ...updates.map((update) =>
+                      effectFrame("$storageUpdated", { state: update }, session),
+                  ),
+              ]
+            : effects.broadcast;
 
-        if (!!this.limits.storageMaxSize && storageSize > this.limits.storageMaxSize) {
-            throw new Error(oneLine`
-                Large Storage. Storage must be at most
-                ${this.limits.storageMaxSize.toLocaleString()} bytes.
-                Current size: ${storageSize.toLocaleString()} bytes
-            `);
-        }
-
-        await this._platform.persistence.setStorageState(this.id, encodedState);
-
-        this._listeners.onStorageUpdated({
-            context: params.context,
-            encodedState,
-            kind: params.kind,
-            operator: params.operator,
-            room: this.id,
-        });
+        return {
+            ...effects,
+            broadcast,
+            storageDirty:
+                this._checkpoint.dirty ||
+                broadcast.some((frame) => frame.type === "$storageUpdated"),
+        };
     }
 
     private async _userConnected(params: {
+        id: string;
         encodedState: string | null;
         kind: ParticipantKind;
         operator: OperatorUser | null;
         user: InferTreatyUser<T["treaty"]>;
-    }): Promise<void> {
-        const { encodedState, kind, operator, user } = params;
+    }): Promise<RoomEffects<T>> {
+        const { encodedState, id, kind, operator, user } = params;
         const context = await this._getContext();
 
         try {
@@ -914,6 +1017,8 @@ export class IORoom<T extends IODefs = IODefs>
         } catch (error) {
             console.error(error);
         }
+
+        return this._releaseStorage(emptyRoomEffects<T>(), { id, operator, user });
     }
 
     private _userContext(
