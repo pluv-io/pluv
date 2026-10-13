@@ -203,6 +203,10 @@ export class RoomSessions<T extends IODefs = IODefs> {
 
         if (!pluvWs) return;
 
+        // `seq` is the value the caller observed. A newer write, such as
+        // $updatePresence during an async procedure, bumps the socket first.
+        if (requested !== undefined && (pluvWs.session.seq.presence ?? null) !== requested) return;
+
         const wsSession = pluvWs.session;
         const kind = getSessionKind(wsSession);
         const participantId = wsSession.user?.id;
@@ -220,12 +224,7 @@ export class RoomSessions<T extends IODefs = IODefs> {
 
             return seq > max ? seq : max;
         }, null);
-        const next =
-            typeof requested === "number"
-                ? requested
-                : typeof currentMax === "number"
-                  ? currentMax + 1
-                  : 1;
+        const next = typeof currentMax === "number" ? currentMax + 1 : 1;
 
         sessionIds.forEach((sId) => {
             const session = this._sessions.get(sId)?.session;

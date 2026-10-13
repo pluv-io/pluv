@@ -3,6 +3,7 @@ import type { IODefs, SetKey } from "./IODefs";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouter } from "./PluvRouter";
 import type { CreateBaseRouterParams } from "./createBaseRouter";
+import type { StorageEventContext } from "./types";
 import { createInternalPluvRouter, oneLine } from "./utils";
 
 const baseProcedureFactory =
@@ -12,6 +13,10 @@ const baseProcedureFactory =
     };
 
 type BaseRouter<T extends IODefs> = PluvRouter<SetKey<T, "events", {}>>;
+
+const asStorage = <T extends IODefs>(event: object): StorageEventContext<T> => {
+    return event as StorageEventContext<T>;
+};
 
 /** Storage `$` events. These run beside the doc. */
 export const createStorageRouter = <T extends IODefs = IODefs>(
@@ -29,63 +34,61 @@ export const createStorageRouter = <T extends IODefs = IODefs>(
 
             return { $storageDiff: { update } };
         }),
-        $updateStorage: baseProcedure<"$updateStorage">().broadcast(
-            async (data, { context, doc, platform, room, session }) => {
-                const origin = data.origin;
-                const update = data.update ?? null;
+        $updateStorage: baseProcedure<"$updateStorage">().broadcast(async (data, raw) => {
+            const { context, doc, platform, room, session } = asStorage<T>(raw);
+            const origin = data.origin;
+            const update = data.update ?? null;
 
-                if (origin === "$initialized") return {};
-                if (!update) return {};
+            if (origin === "$initialized") return {};
+            if (!update) return {};
 
-                const before = doc.getStateVector();
-                const wasPending = doc.hasPending();
+            const before = doc.getStateVector();
+            const wasPending = doc.hasPending();
 
-                doc.applyEncodedState({ update });
+            doc.applyEncodedState({ update });
 
-                const integrated = doc.getStateVector() !== before;
+            const integrated = doc.getStateVector() !== before;
 
-                // These bytes did not enter the document. Ask the sender for the missing
-                // history. A resync reply that still does not integrate stops here.
-                if (!integrated && (doc.hasPending() || !doc.canDetectPending())) {
-                    logDebug("Storage update did not integrate");
+            // These bytes did not enter the document. Ask the sender for the missing
+            // history. A resync reply that still does not integrate stops here.
+            if (!integrated && (doc.hasPending() || !doc.canDetectPending())) {
+                logDebug("Storage update did not integrate");
 
-                    if (data.resync) return {};
+                if (data.resync) return {};
 
-                    return { $storageResync: { stateVector: doc.getStateVector() } };
-                }
+                return { $storageResync: { stateVector: doc.getStateVector() } };
+            }
 
-                const state = integrated ? doc.encodeDiff(before) : update;
-                const encodedState = doc.getEncodedState();
-                const storageSize = new TextEncoder().encode(encodedState).length;
+            const state = integrated ? doc.encodeDiff(before) : update;
+            const encodedState = doc.getEncodedState();
+            const storageSize = new TextEncoder().encode(encodedState).length;
 
-                if (!!limits.storageMaxSize && storageSize > limits.storageMaxSize) {
-                    throw new Error(oneLine`
+            if (!!limits.storageMaxSize && storageSize > limits.storageMaxSize) {
+                throw new Error(oneLine`
                         Large Storage. Storage must be at most
                         ${limits.storageMaxSize.toLocaleString()} bytes.
                         Current size: ${storageSize.toLocaleString()} bytes
                     `);
-                }
+            }
 
-                await platform.persistence.setStorageState(room, encodedState);
+            await platform.persistence.setStorageState(room, encodedState);
 
-                onStorageUpdated({
-                    context,
-                    encodedState,
-                    kind: session?.kind,
-                    operator: session?.operator,
-                    platform,
-                    room,
-                });
+            onStorageUpdated({
+                context,
+                encodedState,
+                kind: session?.kind,
+                operator: session?.operator,
+                room,
+            });
 
-                if (doc.hasPending() && !wasPending) {
-                    return {
-                        $storageUpdated: { state },
-                        $storageResync: { stateVector: doc.getStateVector() },
-                    };
-                }
+            if (doc.hasPending() && !wasPending) {
+                return {
+                    $storageUpdated: { state },
+                    $storageResync: { stateVector: doc.getStateVector() },
+                };
+            }
 
-                return { $storageUpdated: { state } };
-            },
-        ),
+            return { $storageUpdated: { state } };
+        }),
     });
 };

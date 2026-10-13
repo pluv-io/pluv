@@ -59,6 +59,8 @@ export type {
 export { __internal } from "./internal";
 export type { IODefs, IOLikeFromDefs, PatchDefs } from "./IODefs";
 export type { IORoom } from "./IORoom";
+export { manageSessions } from "./manageSessions";
+export type { RoomSessionManager } from "./RoomSessionManager";
 export { PluvIO } from "./PluvIO";
 export type { PluvIOConfig, ServerConfig } from "./PluvIO";
 export { PluvProcedure } from "./PluvProcedure";
@@ -71,6 +73,7 @@ export type {
     GetInitialStorageFn,
     HandleMode,
     IORoomDestroyedEvent,
+    IORoomInternal,
     IORoomListenerEvent,
     IORoomMessageEvent,
     IOStorageUpdatedEvent,
@@ -82,6 +85,8 @@ export type {
     PluvIOLimits,
     PluvIOListeners,
     PluvIOSecret,
+    SessionRoom,
+    Suspended,
     WebSocketSerializedState,
     WebSocketSession,
     WebSocketSessionSeq,
