@@ -32,9 +32,9 @@ import type {
     IOUserDisconnectedEvent,
     PluvContext,
     PluvIOLimits,
+    PluvIOSecret,
     IORoomInternal,
     RoomAttachment,
-    PluvIOSecret,
     RoomEffectFrame,
     RoomEffects,
     RoomRegisterResult,
@@ -49,6 +49,7 @@ import type {
 import { emptyRoomEffects, userTurn } from "./types";
 import {
     assertExhaustive,
+    invokeProcedureResolvers,
     isThenable,
     parseOperatorUser,
     parsePluvSchema,
@@ -809,19 +810,25 @@ export class IORoom<T extends IODefs = IODefs>
                 },
                 session,
             );
-        try {
-            let broadcastResult: unknown;
-            let selfResult: unknown;
+        const invoked = invokeProcedureResolvers({
+            broadcast: () =>
+                storageEvent
+                    ? this._checkpoint.hold(() =>
+                          procedure.config.broadcast?.(inputs, resolverContext),
+                      )
+                    : procedure.config.broadcast?.(inputs, resolverContext),
+            self: () => procedure.config.self?.(inputs, resolverContext),
+        });
 
-            if (storageEvent) {
-                broadcastResult = this._checkpoint.hold(() =>
-                    procedure.config.broadcast?.(inputs, resolverContext),
+        try {
+            if (!invoked.ok) {
+                return this._releaseStorage(
+                    { ...emptyRoomEffects<T>(), attachments, error: invoked.error },
+                    session,
                 );
-                selfResult = procedure.config.self?.(inputs, resolverContext);
-            } else {
-                broadcastResult = procedure.config.broadcast?.(inputs, resolverContext);
-                selfResult = procedure.config.self?.(inputs, resolverContext);
             }
+
+            const { broadcast: broadcastResult, self: selfResult } = invoked;
 
             // The storage broadcast stays on this join. Other resolvers can await the
             // session manager, so this join must finish before those promises do.
