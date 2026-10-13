@@ -41,21 +41,51 @@ export type EventResolver<
     TOutput extends EventRecord<string, any> = {},
 > = (data: TInput, context: EventResolverContext<T>) => MaybePromise<TOutput | void>;
 
-export interface EventResolverContext<T extends IODefs = IODefs> {
-    context: T["context"];
-    doc: T["treaty"]["storage"] extends AbstractCrdtDocFactory<any, any, any, any>
-        ? InferDocLike<T["treaty"]["storage"]>
-        : CrdtDocLike<any, any>;
-    garbageCollect: () => Promise<void>;
-    platform: T["platform"];
-    presence: T["treaty"]["presence"] extends StandardSchemaV1<any, infer TPresence>
+export type EventResolverPresence<T extends IODefs = IODefs> =
+    T["treaty"]["presence"] extends StandardSchemaV1<any, infer TPresence>
         ? TPresence | null
         : JsonObject | null;
+
+export type EventResolverDoc<T extends IODefs = IODefs> =
+    T["treaty"]["storage"] extends AbstractCrdtDocFactory<any, any, any, any>
+        ? InferDocLike<T["treaty"]["storage"]>
+        : CrdtDocLike<any, any>;
+
+/**
+ * Context passed to user procedures. Session and storage protocol procedures
+ * use a wider internal context.
+ */
+export interface EventResolverContext<T extends IODefs = IODefs> {
+    connectionId: string;
+    context: T["context"];
+    doc: EventResolverDoc<T>;
+    kind: ParticipantKind;
+    operator: OperatorUser | null;
+    presence: EventResolverPresence<T>;
     room: string;
+    time: number;
+    user: InferTreatyUser<T["treaty"]>;
+}
+
+/** @internal Storage `$` procedures still see persistence and the seeded flag. */
+export interface StorageEventContext<T extends IODefs = IODefs> extends EventResolverContext<T> {
+    platform: T["platform"];
+    session: WebSocketSession<T>;
     storageSeeded: boolean;
+}
+
+/** @internal Session `$` procedures see the connection list and attachment sink. */
+export interface SessionEventContext<T extends IODefs = IODefs> {
+    connectionId: string;
+    kind: ParticipantKind;
+    operator: OperatorUser | null;
+    platform: T["platform"];
+    presence: EventResolverPresence<T>;
+    room: string;
     session: WebSocketSession<T>;
     sessions: readonly WebSocketSession<T>[];
     time: number;
+    user: InferTreatyUser<T["treaty"]>;
 }
 
 export type SendMessageOptions =
@@ -196,39 +226,36 @@ export type InferPlatformRouter<TPlatform extends AbstractPlatform<any, any, any
 export type IORoomListenerEvent<T extends IODefs = IODefs> = {
     context: T["context"];
     encodedState: string | null;
-    platform: T["platform"];
     room: string;
 };
 
 export type IORoomDestroyedEvent<T extends IODefs = IODefs> = {
     context: T["context"];
-    platform: T["platform"];
     room: string;
 };
 
-export type IORoomMessageEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
+export type IORoomMessageEvent<T extends IODefs = IODefs> = {
+    context: T["context"];
     message: InferEventMessage<
         InferEventsOutput<T["events"]>,
         keyof InferEventsOutput<T["events"]>
     >;
     kind?: ParticipantKind;
     operator?: OperatorUser | null;
+    room: string;
     user?: InferTreatyUser<T["treaty"]>;
-    webSocket?: InferPlatformWebSocketSource<T["platform"]>;
 };
 
 export type IOStorageUpdatedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
     kind?: ParticipantKind;
     operator?: OperatorUser | null;
     user?: InferTreatyUser<T["treaty"]>;
-    webSocket?: InferPlatformWebSocketSource<T["platform"]>;
 };
 
 export type IOUserConnectedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
     kind?: ParticipantKind;
     operator?: OperatorUser | null;
     user?: InferTreatyUser<T["treaty"]>;
-    webSocket?: InferPlatformWebSocketSource<T["platform"]>;
 };
 
 export type IOUserDisconnectedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
@@ -240,3 +267,131 @@ export type IOUserDisconnectedEvent<T extends IODefs = IODefs> = IORoomListenerE
 export type WebSocketType<TPlatform extends AbstractPlatform> =
     | InferPlatformWebSocketType<TPlatform>
     | InferPlatformWebSocketSource<TPlatform>;
+
+export interface RoomSessionSnapshot<T extends IODefs = IODefs> {
+    id: string;
+    user: InferTreatyUser<T["treaty"]>;
+    presence: JsonObject | null;
+    kind: ParticipantKind;
+    operator: OperatorUser | null;
+    seq: { presence: number | null };
+    lastPing: number;
+    quit: boolean;
+}
+
+export interface RoomEffectFrame<T extends IODefs = IODefs> {
+    type: string;
+    data: unknown;
+    user: InferTreatyUser<T["treaty"]> | null;
+    operator: OperatorUser | null;
+    connectionId: string | null;
+}
+
+export interface RoomAttachment {
+    presence: JsonObject | null;
+    seq: number | null;
+    sessionId: string;
+}
+
+export interface RoomEffects<T extends IODefs = IODefs> {
+    broadcast: RoomEffectFrame<T>[];
+    self: RoomEffectFrame<T>[];
+    closes: string[];
+    destroy: boolean;
+    attachments: RoomAttachment[];
+    error: unknown;
+}
+
+export interface RoomRegisterResult<T extends IODefs = IODefs> {
+    user: InferTreatyUser<T["treaty"]> | null;
+    kind: ParticipantKind | null;
+    operator: OperatorUser | null;
+    encodedState: string | null;
+    error: Error | null;
+}
+
+const userTurnBrand: unique symbol = Symbol("userTurn");
+
+/** User work the queue must not wait on. The session manager settles this on a later join. */
+export type UserTurn<T> = { readonly [userTurnBrand]: Promise<T> };
+
+export const userTurn = <T>(promise: Promise<T>): UserTurn<T> => ({
+    [userTurnBrand]: promise,
+});
+
+export const isUserTurn = <T>(value: T | UserTurn<T>): value is UserTurn<T> =>
+    typeof value === "object" && value !== null && userTurnBrand in value;
+
+export const userTurnPromise = <T>(turn: UserTurn<T>): Promise<T> => turn[userTurnBrand];
+
+/** A hosted call released the queue. The supervisor applies the effects on a later call. */
+export type Suspended = { readonly suspended: true };
+
+export const isSuspended = (value: unknown): value is Suspended =>
+    typeof value === "object" &&
+    value !== null &&
+    "suspended" in value &&
+    (value as { suspended?: unknown }).suspended === true;
+
+export const emptyRoomEffects = <T extends IODefs = IODefs>(): RoomEffects<T> => ({
+    attachments: [],
+    broadcast: [],
+    closes: [],
+    destroy: false,
+    error: null,
+    self: [],
+});
+
+export type WebSocketRegisterConfig<
+    TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
+> = {
+    token?: string | null;
+} & InferInitContextType<TPlatform>;
+
+/** Internal methods `RoomSessionManager` uses. */
+export interface IORoomInternal<T extends IODefs = IODefs> {
+    applyPresencePatch(params: {
+        name: string;
+        data: unknown;
+        session: Pick<RoomSessionSnapshot<T>, "operator" | "presence" | "user">;
+    }): Promise<JsonObject | null | UserTurn<JsonObject | null> | Suspended>;
+    applyStorageProcedure(params: {
+        name: string;
+        data: unknown;
+        actor: Pick<RoomSessionSnapshot<T>, "id" | "kind" | "operator" | "presence" | "user">;
+    }): Promise<RoomEffectFrame<T> | null>;
+    close(session: RoomSessionSnapshot<T>): Promise<RoomEffects<T>>;
+    destroy(): Promise<void>;
+    garbageCollect(sessions: readonly RoomSessionSnapshot<T>[]): Promise<RoomEffects<T>>;
+    initializeStorage(params: {
+        input: { stateVector?: string | null; update?: string | null };
+        actor: Pick<RoomSessionSnapshot<T>, "kind" | "operator" | "user">;
+    }): Promise<{ changeKind: "unchanged" | "initialized" | "empty"; state: string | null }>;
+    logDebug(...data: unknown[]): void;
+    message(
+        session: RoomSessionSnapshot<T>,
+        event: { data: unknown; type: string },
+    ): Promise<RoomEffects<T> | UserTurn<RoomEffects<T>> | Suspended>;
+    register(
+        ...options: keyof InferInitContextType<T["platform"]> extends never
+            ? [{ token?: string }?]
+            : [WebSocketRegisterConfig<T["platform"]>]
+    ): Promise<RoomRegisterResult<T>>;
+    userConnected(params: {
+        encodedState: string | null;
+        kind: ParticipantKind;
+        operator: OperatorUser | null;
+        user: InferTreatyUser<T["treaty"]>;
+    }): Promise<void>;
+    whenReady(): Promise<boolean>;
+}
+
+/**
+ * What `manageSessions` calls. `IORoom` implements this in-process.
+ * A hosted supervisor passes a stub of the same shape beside its own platform.
+ */
+export interface SessionRoom<T extends IODefs = IODefs> {
+    readonly id: string;
+    readonly limits: PluvIOLimits;
+    readonly "~": IORoomInternal<T>;
+}

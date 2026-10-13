@@ -3,7 +3,7 @@ import type { IODefs, SetKey } from "./IODefs";
 import { PluvProcedure } from "./PluvProcedure";
 import type { PluvRouter } from "./PluvRouter";
 import type { CreateBaseRouterParams } from "./createBaseRouter";
-import type { EventResolverContext } from "./types";
+import type { SessionEventContext } from "./types";
 import {
     createInternalPluvRouter,
     getMyConnectionIds,
@@ -22,19 +22,23 @@ const baseProcedureFactory =
 
 type BaseRouter<T extends IODefs> = PluvRouter<SetKey<T, "events", {}>>;
 
+const asSession = <T extends IODefs>(event: object): SessionEventContext<T> => {
+    return event as SessionEventContext<T>;
+};
+
 /**
- * Session `$` events. `$initializeSession` still includes its storage `self`
- * resolver. Splitting that resolver waits for the room construction change.
+ * Session `$` events. `$initializeSession` only broadcasts `$userJoined`.
+ * `manageSessions` calls `initializeStorage` for the storage half.
  */
 export const createSessionRouter = <T extends IODefs = IODefs>(
-    params: CreateBaseRouterParams<T>,
+    params: Pick<CreateBaseRouterParams<T>, "limits">,
 ): BaseRouter<T> => {
-    const { limits, onStorageUpdated } = params;
-    const logDebug = params.logDebug ?? (() => undefined);
+    const { limits } = params;
     const baseProcedure = baseProcedureFactory<T>();
 
     return createInternalPluvRouter({
-        $getOthers: baseProcedure<"$getOthers">().self((_data, { session, sessions }) => {
+        $getOthers: baseProcedure<"$getOthers">().self((_data, raw) => {
+            const { session, sessions } = asSession<T>(raw);
             const presenceSeqById = new Map(
                 sessions.map((item) => [item.id, item.seq.presence] as const),
             );
@@ -67,7 +71,8 @@ export const createSessionRouter = <T extends IODefs = IODefs>(
                 },
             };
         }),
-        $listUsers: baseProcedure<"$listUsers">().self((data, { sessions }) => {
+        $listUsers: baseProcedure<"$listUsers">().self((data, raw) => {
+            const { sessions } = asSession<T>(raw);
             const result = pageLiveUsers(sessions, data);
 
             if (!result.success) {
@@ -93,129 +98,50 @@ export const createSessionRouter = <T extends IODefs = IODefs>(
                 },
             };
         }),
-        $initializeSession: baseProcedure<"$initializeSession">()
-            .broadcast((data, event) => {
-                const presence = data.presence ?? null;
-                const { session } = event;
+        $initializeSession: baseProcedure<"$initializeSession">().broadcast((data, raw) => {
+            const event = asSession<T>(raw);
+            const presence = data.presence ?? null;
+            const { session } = event;
 
-                if (!session) return {};
+            if (!session) return {};
 
-                const kind = getSessionKind(session);
-                const participantId = session.user.id;
-                const latestSeq = event.sessions.reduce<number | null>((max, other) => {
-                    if (other.quit) return max;
-                    const otherKind = getSessionKind(other);
-                    const otherId = other.user?.id;
-                    if (otherKind !== kind || otherId !== participantId) return max;
+            const kind = getSessionKind(session);
+            const participantId = session.user.id;
+            const latestSeq = event.sessions.reduce<number | null>((max, other) => {
+                if (other.quit) return max;
+                const otherKind = getSessionKind(other);
+                const otherId = other.user?.id;
+                if (otherKind !== kind || otherId !== participantId) return max;
 
-                    const seq = other.seq.presence;
+                const seq = other.seq.presence;
 
-                    if (typeof seq !== "number") return max;
-                    if (typeof max !== "number") return seq;
+                if (typeof seq !== "number") return max;
+                if (typeof max !== "number") return seq;
 
-                    return seq > max ? seq : max;
-                }, null);
+                return seq > max ? seq : max;
+            }, null);
 
-                // Connecting another tab is not a presence write. Keep the last
-                // `$updatePresence` instead of last-connect.
-                if (typeof latestSeq !== "number") {
-                    event.presence = presence as EventResolverContext<T>["presence"];
-                }
+            // Connecting another tab is not a presence write. Keep the last
+            // `$updatePresence` instead of last-connect.
+            if (typeof latestSeq !== "number") {
+                event.presence = presence as SessionEventContext<T>["presence"];
+            }
 
-                return {
-                    $userJoined: {
-                        connectionId: session.id,
-                        user: session.user,
-                        session: {
-                            kind,
-                            operator: session.operator,
-                            presence: session.presence ?? presence ?? {},
-                            seq: { presence: session.webSocket.state.seq.presence },
-                        },
+            return {
+                $userJoined: {
+                    connectionId: session.id,
+                    user: session.user,
+                    session: {
+                        kind,
+                        operator: session.operator,
+                        presence: session.presence ?? presence ?? {},
+                        seq: { presence: session.webSocket.state.seq.presence },
                     },
-                };
-            })
-            .self(async (data, event) => {
-                const { context, doc, platform, room, session } = event;
-                /**
-                 * @description This is the frontend's initialStorage. We only want to
-                 * apply this if the server has not already been seeded (persistence,
-                 * getInitialStorage, or an earlier client seed).
-                 */
-                const update = data.update;
-                const stateVector = data.stateVector ?? null;
-                const stateForClient = (encodedState: string): string => {
-                    if (!stateVector) return encodedState;
-
-                    return doc.encodeDiff(stateVector);
-                };
-
-                /**
-                 * @description Storage was already initialized. Don't overwrite the current
-                 * storage state with the incoming initialStorage. Return the operations the
-                 * caller's state vector is missing, or the whole document when they did not
-                 * send one.
-                 * @date May 7, 2025
-                 */
-                if (event.storageSeeded) {
-                    return {
-                        $storageReceived: {
-                            changeKind: "unchanged",
-                            state: stateVector
-                                ? doc.encodeDiff(stateVector)
-                                : doc.getEncodedState(),
-                        },
-                    };
-                }
-
-                /**
-                 * @description Storage was never initialized, and there is an incoming
-                 * initialStorage from the client. Apply the initialStorage and persist the state
-                 * as an update.
-                 * @date May 7, 2025
-                 */
-                if (!!update) {
-                    const encodedState = doc.applyEncodedState({ update }).getEncodedState();
-                    const storageSize = new TextEncoder().encode(encodedState).length;
-
-                    if (!!limits.storageMaxSize && storageSize > limits.storageMaxSize) {
-                        throw new Error("Storage has exceeded the size limit");
-                    }
-
-                    event.storageSeeded = true;
-
-                    await platform.persistence
-                        .setStorageState(room, encodedState)
-                        .catch((error: unknown) => {
-                            logDebug(error);
-                        });
-
-                    onStorageUpdated({
-                        context,
-                        encodedState,
-                        kind: session?.kind,
-                        operator: session?.operator,
-                        platform,
-                        room,
-                        user: session?.user,
-                        webSocket: session?.webSocket.webSocket,
-                    });
-
-                    return {
-                        $storageReceived: {
-                            changeKind: "initialized",
-                            state: stateForClient(encodedState),
-                        },
-                    };
-                }
-
-                const encodedState = doc.getEncodedState();
-
-                return {
-                    $storageReceived: { changeKind: "empty", state: stateForClient(encodedState) },
-                };
-            }),
-        $ping: baseProcedure<"$ping">().self((_data, { platform, session }) => {
+                },
+            };
+        }),
+        $ping: baseProcedure<"$ping">().self((_data, raw) => {
+            const { platform, session } = asSession<T>(raw);
             if (!session) return {};
 
             const currentTime = new Date().getTime();
@@ -231,7 +157,8 @@ export const createSessionRouter = <T extends IODefs = IODefs>(
 
             return { $pong: {} };
         }),
-        $updatePresence: baseProcedure<"$updatePresence">().broadcast((data, context) => {
+        $updatePresence: baseProcedure<"$updatePresence">().broadcast((data, raw) => {
+            const context = asSession<T>(raw);
             const presence = data.presence;
             const { session } = context;
 

@@ -40,6 +40,10 @@ export class RoomStorage<T extends IODefs = IODefs> {
         return this._doc;
     }
 
+    public getEmptyDoc(): CrdtDocLike<any, any> {
+        return this._docFactory.getEmpty();
+    }
+
     public get storageSeeded(): boolean {
         return this._storageSeeded;
     }
