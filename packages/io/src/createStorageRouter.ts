@@ -22,7 +22,7 @@ const asStorage = <T extends IODefs>(event: object): StorageEventContext<T> => {
 export const createStorageRouter = <T extends IODefs = IODefs>(
     params: CreateBaseRouterParams<T>,
 ): BaseRouter<T> => {
-    const { limits, onStorageUpdated } = params;
+    const { limits } = params;
     const logDebug = params.logDebug ?? (() => undefined);
     const baseProcedure = baseProcedureFactory<T>();
 
@@ -34,8 +34,8 @@ export const createStorageRouter = <T extends IODefs = IODefs>(
 
             return { $storageDiff: { update } };
         }),
-        $updateStorage: baseProcedure<"$updateStorage">().broadcast(async (data, raw) => {
-            const { context, doc, platform, room, session } = asStorage<T>(raw);
+        $updateStorage: baseProcedure<"$updateStorage">().broadcast((data, raw) => {
+            const { doc } = asStorage<T>(raw);
             const origin = data.origin;
             const update = data.update ?? null;
 
@@ -70,16 +70,6 @@ export const createStorageRouter = <T extends IODefs = IODefs>(
                         Current size: ${storageSize.toLocaleString()} bytes
                     `);
             }
-
-            await platform.persistence.setStorageState(room, encodedState);
-
-            onStorageUpdated({
-                context,
-                encodedState,
-                kind: session?.kind,
-                operator: session?.operator,
-                room,
-            });
 
             if (doc.hasPending() && !wasPending) {
                 return {

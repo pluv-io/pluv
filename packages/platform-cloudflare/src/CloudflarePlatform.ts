@@ -186,6 +186,11 @@ export class CloudflarePlatform<
         return state;
     }
 
+    public override keepAlive(promise: Promise<unknown>): void {
+        super.keepAlive(promise);
+        this._getDurableObjectState()?.waitUntil(promise);
+    }
+
     private _getDurableObjectState(): DurableObjectState | null {
         return this._roomContext?.state ?? null;
     }

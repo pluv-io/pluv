@@ -32,6 +32,7 @@ import {
     GARBAGE_COLLECT_INTERVAL_MS,
     PING_TIMEOUT_MS,
     ROOM_STATS_THROTTLE_MS,
+    STORAGE_CHECKPOINT_INTERVAL_MS,
     isServerOriginEvent,
 } from "./constants";
 import type { SendMessageOptions, SessionEventContext, WebSocketType } from "./types";
@@ -76,6 +77,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     private _closing = 0;
     private _connecting = 0;
     private _registering = 0;
+    private _checkpoint: Promise<void> | null = null;
     private _lastGarbageCollectMs = -1 * (GARBAGE_COLLECT_INTERVAL_MS + 1);
 
     constructor(
@@ -144,7 +146,10 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
             this._registering -= 1;
         };
 
-        await this._queue.finish<AbstractWebSocket | null>(
+        await this._queue.finish<{
+            effects: RoomEffects<T> | null;
+            socket: AbstractWebSocket;
+        } | null>(
             async () => {
                 try {
                     const result = await this._room["~"].register(...options);
@@ -231,16 +236,17 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                         pending: this._room["~"]
                             .userConnected({
                                 encodedState,
+                                id: pluvWs.sessionId,
                                 kind,
                                 operator,
                                 user,
                             })
                             .then(
-                                () => pluvWs,
+                                (effects) => ({ effects, socket: pluvWs }),
                                 (error: unknown) => {
                                     console.error(error);
 
-                                    return pluvWs;
+                                    return { effects: null, socket: pluvWs };
                                 },
                             ),
                     };
@@ -250,14 +256,15 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                     throw error;
                 }
             },
-            async (socket) => {
+            async (connected) => {
                 try {
-                    if (!socket) return;
+                    if (!connected?.effects) return;
 
+                    await this._applyEffects(connected.effects, connected.socket);
                     this._roomStats.schedule();
                     this._room["~"].logDebug(oneLine`
                         ${colors.blue(`Registered connection for room ${this._room.id}:`)}
-                        ${socket.sessionId}
+                        ${connected.socket.sessionId}
                     `);
                     this._room["~"].logDebug(
                         `${colors.blue(`Room ${this._room.id} size:`)} ${this._sessions.getSize()}`,
@@ -265,7 +272,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                 } finally {
                     releaseReservation();
 
-                    if (!socket) return;
+                    if (!connected) return;
 
                     this._connecting -= 1;
                     await this._destroyEmptyRoom();
@@ -367,11 +374,19 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         effects: RoomEffects<T>,
         sender: AbstractWebSocket | null,
     ): Promise<void> {
+        this._noteStorage(effects);
+
         for (const attachment of effects.attachments) {
             this._sessions.setPresence(attachment);
         }
 
         if (effects.error) {
+            const storageFrames = effects.broadcast.filter(
+                (frame) => frame.type === "$storageUpdated",
+            );
+
+            if (storageFrames.length) await this._writeFrames(storageFrames, "broadcast");
+
             sender?.handleError({
                 error: effects.error,
                 room: this._room.id,
@@ -484,15 +499,14 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
             if (!socket) throw new Error(`Unknown senderId: ${senderId}`);
 
             await this._queue.join(async () => {
-                const frame = await this._room["~"].applyStorageProcedure({
+                const effects = await this._room["~"].applyStorageProcedure({
                     name,
                     data,
                     actor: this._toSnapshot(socket),
                 });
 
-                if (!frame) return;
-
-                await this._writeFrames([frame], "broadcast");
+                this._noteStorage(effects);
+                await this._writeFrames(effects.broadcast, "broadcast");
             });
         };
 
@@ -645,6 +659,12 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         return now - pingTime <= PING_TIMEOUT_MS;
     }
 
+    private _noteStorage(effects: { storageDirty: boolean }): void {
+        if (!effects.storageDirty) return;
+
+        this._scheduleCheckpoint();
+    }
+
     private async _onPublished(payload: IOPubSubEventMessage<any>): Promise<void> {
         if (!(await this._room["~"].whenReady())) return;
 
@@ -773,13 +793,16 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                     input: inputs ?? {},
                     actor: this._toSnapshot(socket),
                 });
+                const { storageDirty, ...received } = storage;
+
+                if (storageDirty) this._scheduleCheckpoint();
 
                 await this._deliverRecord(
                     broadcast as Record<string, unknown> | null,
                     socket,
                     "broadcast",
                 );
-                await this._deliverRecord({ $storageReceived: storage }, socket, "self");
+                await this._deliverRecord({ $storageReceived: received }, socket, "self");
             });
         } catch (error) {
             socket.handleError({ error, room: this._room.id, session });
@@ -887,6 +910,57 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         }
     }
 
+    /** One promise. Wait, ask the room to copy, and repeat until the copy is clean. */
+    private async _saveUntilClean(): Promise<void> {
+        for (;;) {
+            // oxlint-disable-next-line eslint/no-await-in-loop
+            await new Promise<void>((resolve) => {
+                setTimeout(resolve, STORAGE_CHECKPOINT_INTERVAL_MS);
+            });
+
+            try {
+                // oxlint-disable-next-line eslint/no-await-in-loop
+                const status = await this._queue.join(async () => {
+                    const flushed = await this._room["~"].flushCheckpoint();
+
+                    if (flushed.broadcast.length) {
+                        await this._writeFrames(flushed.broadcast, "broadcast");
+                    }
+
+                    return flushed.status;
+                });
+
+                if (status === "closed") return;
+                if (status === "dirty" || this._room["~"].storageDirty()) continue;
+            } catch (error) {
+                console.error(error);
+
+                if (this._room["~"].storageDirty()) continue;
+
+                return;
+            }
+
+            // A write queued during the flush runs before the next macrotask.
+            // oxlint-disable-next-line eslint/no-await-in-loop
+            await Promise.resolve();
+            if (this._room["~"].storageDirty()) continue;
+
+            return;
+        }
+    }
+
+    private _scheduleCheckpoint(): void {
+        if (this._checkpoint) return;
+
+        const run = this._saveUntilClean();
+
+        this._checkpoint = run;
+        this._platform.keepAlive(run);
+        void run.finally(() => {
+            if (this._checkpoint === run) this._checkpoint = null;
+        });
+    }
+
     private _sessionContext(socket: AbstractWebSocket): SessionEventContext<T> {
         const sessions = this._sessions;
         const session = sessions.toSession(socket);
@@ -979,6 +1053,8 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                 if (!effects) continue;
 
                 const produced = effects;
+
+                this._noteStorage(produced);
 
                 // oxlint-disable-next-line eslint/no-await-in-loop
                 await this._queue.join(async () => {
