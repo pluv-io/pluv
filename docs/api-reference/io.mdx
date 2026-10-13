@@ -182,7 +182,7 @@ const server = io.server({
   // other participants
   // It is advised not to perform any heavy operations in this listener
   // due to the frequency of invocations
-  onRoomMessage: async ({ context, encodedState, room }) => {
+  onRoomMessage: async ({ context, room }) => {
     // ...
   },
   // Optional: Triggered each time the room's storage is updated.
@@ -226,9 +226,16 @@ ioServer.io;
 
 ### createRoom
 
-Returns `IORoom`.
+Returns the room. Attach sockets with `manageSessions`.
 
-Creates a room with the specified id. For platforms that require room context (e.g., Cloudflare requires `env` and `state`), these must be provided as the second argument.
+Creates a room with the specified id. For platforms that require room context (e.g., Cloudflare requires `env` and `state`), these must be provided as the second argument. `register`, `onMessage`, `broadcast`, `evict`, and `garbageCollect` are called on the `manageSessions` return value. `__experimental_presence` and `__experimental_storage` are on that return value.
+
+```ts
+import { manageSessions } from "@pluv/io";
+
+const room = server.createRoom("my-example-room");
+const sessions = manageSessions(room);
+```
 
 ```ts
 // For platforms without required room context (e.g., Node.js)
@@ -242,7 +249,7 @@ const room = server.createRoom("my-example-room", { env, state });
 
 ## IORoom
 
-This is the room returned by `PluvServer.createRoom`. This is what websockets are registered to.
+This is the room returned by `PluvServer.createRoom`. Websockets are registered through `manageSessions`. The methods below are on `sessions`.
 
 ### broadcast
 
@@ -252,9 +259,9 @@ Broadcasts an event to all connected websockets to the room.
 
 ```ts
 // The below 2 statements are equivalent
-room.broadcast("sendMessage", { message: "Hello world~!" });
+sessions.broadcast("sendMessage", { message: "Hello world~!" });
 
-room.broadcast.sendMessage({ message: "Hello world~!" });
+sessions.broadcast.sendMessage({ message: "Hello world~!" });
 ```
 
 ### evict
@@ -264,7 +271,7 @@ Returns `Promise<void>`
 Disconnects a connection from the room by connection id.
 
 ```ts
-room.evict(connectionId);
+sessions.evict(connectionId);
 ```
 
 ### evictAll
@@ -274,7 +281,7 @@ Returns `Promise<void>`
 Disconnects all connections from the room. Effectively destroys the room, as rooms automatically destroy when empty.
 
 ```ts
-room.evictAll();
+sessions.evictAll();
 ```
 
 ### garbageCollect
@@ -284,7 +291,7 @@ Returns `Promise<void>`
 While uncommon and unusual, there may be edge cases that may cause stale connections to persist either in user's browsers, or in the `IORoom`. Such can be missed websocket messages or server errors that weren't gracefully handled. `@pluv/platform-node` will automatically run garbage collection periodically; however, for `@pluv/platform-cloudflare`, it is recommended that this is called in a Durable Object alarm periodically.
 
 ```ts
-room.garbageCollect();
+sessions.garbageCollect();
 ```
 
 ### getSize
@@ -294,7 +301,7 @@ Returns `number`
 Returns the current count of active connections in the room
 
 ```ts
-room.getSize();
+sessions.getSize();
 ```
 
 ### listUsers
@@ -304,7 +311,7 @@ Returns `ListUsersResult`
 On-demand identity page (no presence). Forward-only cursor paging. Defaults to users. Pass `{ kinds: ["operator"] }` or `{ kinds: ["user", "operator"] }` to include operators. Grouped by `kind` and `data.id`. Each row is `{ data, kind, operator }`. `endCursor` is `{ kind, id }` for the last row. `limit` defaults to 50 and must be an integer from 1 to 100. Wrap this in your own HTTP handler if you need it off-socket.
 
 ```ts
-const result = room.listUsers({ cursor: null, limit: 50 });
+const result = sessions.listUsers({ cursor: null, limit: 50 });
 
 if (!result.success) {
   // result.error.code: "INVALID_LIMIT"
@@ -322,7 +329,7 @@ Type of `string`.
 This is the id of the room, when the room was created.
 
 ```ts
-const roomId = room.id;
+const roomId = sessions.id;
 ```
 
 ### register
@@ -335,13 +342,13 @@ Registers a websocket to the room. Accepts a secondary options parameter to pass
 // const token: string = ...
 
 // For @pluv/platform-cloudflare
-room.register(webSocket, {
+sessions.register(webSocket, {
   env: env as Env,
   request: request as Request,
   token,
 });
 // For @pluv/platform-node
-room.register(webSocket, {
+sessions.register(webSocket, {
   request: req as Http.IncomingMessage,
   token,
 });
