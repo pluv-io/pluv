@@ -1,16 +1,18 @@
-import type { InferIORoom } from "@pluv/io";
+import { manageSessions, type RoomSessionManager } from "@pluv/io";
 import { DurableObject } from "cloudflare:workers";
 import { ioServer } from "../pluv-io/sqlite";
 
 const GARBAGE_COLLECT_INTERVAL_MS = 30_000;
 
 export class RoomSQLiteDurableObject extends DurableObject<CloudflareEnv> {
-    private _room: InferIORoom<typeof ioServer>;
+    private _sessions: RoomSessionManager;
 
     constructor(state: DurableObjectState, env: CloudflareEnv) {
         super(state, env);
 
-        this._room = ioServer.createRoom(state.id.toString(), { env, state });
+        const room = ioServer.createRoom(state.id.toString(), { env, state });
+
+        this._sessions = manageSessions(room);
     }
 
     public async webSocketClose(
@@ -19,20 +21,20 @@ export class RoomSQLiteDurableObject extends DurableObject<CloudflareEnv> {
         reason: string,
         wasClean: boolean,
     ): Promise<void> {
-        const onCloseHandler = this._room.onClose(ws);
+        const onCloseHandler = this._sessions.onClose(ws);
 
         await onCloseHandler({ code, reason });
     }
 
     public async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
-        const onErrorHandler = this._room.onError(ws);
+        const onErrorHandler = this._sessions.onError(ws);
         const eventError = error instanceof Error ? error : new Error("Internal Error");
 
         await onErrorHandler({ error: eventError, message: eventError.message });
     }
 
     public async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
-        const onMessageHandler = this._room.onMessage(ws);
+        const onMessageHandler = this._sessions.onMessage(ws);
 
         await onMessageHandler({ data: message });
     }
@@ -50,13 +52,13 @@ export class RoomSQLiteDurableObject extends DurableObject<CloudflareEnv> {
             await this.ctx.storage.setAlarm(Date.now() + GARBAGE_COLLECT_INTERVAL_MS);
         }
 
-        await this._room.register(server, { env: this.env, request, token });
+        await this._sessions.register(server, { env: this.env, request, token });
 
         return new Response(null, { status: 101, webSocket: client });
     }
 
     public async alarm(alarmInfo?: AlarmInvocationInfo): Promise<void> {
-        await this._room.garbageCollect();
+        await this._sessions.garbageCollect();
         await this.ctx.storage.setAlarm(Date.now() + GARBAGE_COLLECT_INTERVAL_MS);
     }
 }

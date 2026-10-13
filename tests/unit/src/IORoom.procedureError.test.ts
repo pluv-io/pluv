@@ -1,9 +1,11 @@
+import { manageSessions } from "@pluv/io";
 import { describe, expect, it } from "vitest";
 import { createAuthorizedIO, registerAuthorized, TestSocket } from "./__utils__";
 
 type Room = {
+    id: string;
     onMessage: (socket: TestSocket) => (event: { data: string }) => Promise<void>;
-    register: (socket: TestSocket) => Promise<void>;
+    register: (socket: TestSocket, ...options: any[]) => Promise<void>;
 };
 
 const lastMessage = (socket: TestSocket, type: string): { type: string; data: any } => {
@@ -30,7 +32,7 @@ describe("IORoom procedure errors", () => {
                 }),
             }),
         });
-        const room = server.createRoom("procedure-throw");
+        const room = manageSessions(server.createRoom("procedure-throw"));
         const socket = new TestSocket("session-1");
 
         await registerAuthorized(room, socket, { io });
@@ -44,7 +46,7 @@ describe("IORoom procedure errors", () => {
             limits: { presenceMaxSize: 32 },
         });
         const server = io.server();
-        const room = server.createRoom("presence-limit");
+        const room = manageSessions(server.createRoom("presence-limit"));
         const socket = new TestSocket("session-1");
 
         await registerAuthorized(room, socket, { io });
@@ -83,7 +85,7 @@ describe("IORoom procedure errors", () => {
                     .broadcast(({ message }) => ({ echoed: { message } })),
             }),
         });
-        const room = server.createRoom("invalid-input");
+        const room = manageSessions(server.createRoom("invalid-input"));
         const socket = new TestSocket("session-1");
 
         await registerAuthorized(room, socket, { io });

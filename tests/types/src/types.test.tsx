@@ -1,7 +1,7 @@
 import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
-import { createIO, type InferIORoom } from "@pluv/io";
+import { manageSessions, createIO, type InferIORoom } from "@pluv/io";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { createBundle } from "@pluv/react";
 import { createTreaty } from "@pluv/treaty";
@@ -111,10 +111,10 @@ const router = io.router({
                 message: z.string(),
             }),
         )
-        .broadcast(({ message }, { session, presence, doc }) => {
-            expectTypeOf(session.user).toEqualTypeOf<{ id: string }>();
-            expectTypeOf(session.kind).toEqualTypeOf<"user" | "operator">();
-            expectTypeOf(session.operator).toEqualTypeOf<{
+        .broadcast(({ message }, { user, kind, operator, presence, doc }) => {
+            expectTypeOf(user).toEqualTypeOf<{ id: string }>();
+            expectTypeOf(kind).toEqualTypeOf<"user" | "operator">();
+            expectTypeOf(operator).toEqualTypeOf<{
                 id: string;
                 name: string;
                 imageUrl: string | null;
@@ -372,37 +372,42 @@ room.storage.addMessage({ id: "item" });
 room.storage.missing({ text: "hello" });
 
 declare const ioRoom: InferIORoom<typeof ioServer>;
+const sessions = manageSessions(ioRoom);
 
-expectTypeOf(ioRoom.__experimental_presence.select).toBeCallableWith({ id: "item" }, "sender-id");
-expectTypeOf(ioRoom.__experimental_presence.select).parameters.toEqualTypeOf<
+expectTypeOf(sessions.__experimental_presence.select).toBeCallableWith({ id: "item" }, "sender-id");
+expectTypeOf(sessions.__experimental_presence.select).parameters.toEqualTypeOf<
     [{ id: string | null }, string]
 >();
-expectTypeOf(ioRoom.__experimental_presence.select).returns.toEqualTypeOf<Promise<void>>();
-expectTypeOf(ioRoom.__experimental_presence).toBeCallableWith("select", { id: null }, "sender-id");
-expectTypeOf(ioRoom.__experimental_storage.addMessage).toBeCallableWith(
+expectTypeOf(sessions.__experimental_presence.select).returns.toEqualTypeOf<Promise<void>>();
+expectTypeOf(sessions.__experimental_presence).toBeCallableWith(
+    "select",
+    { id: null },
+    "sender-id",
+);
+expectTypeOf(sessions.__experimental_storage.addMessage).toBeCallableWith(
     { text: "hello" },
     "sender-id",
 );
-expectTypeOf(ioRoom.__experimental_storage.addMessage).parameters.toEqualTypeOf<
+expectTypeOf(sessions.__experimental_storage.addMessage).parameters.toEqualTypeOf<
     [{ text: string }, string]
 >();
-expectTypeOf(ioRoom.__experimental_storage).toBeCallableWith(
+expectTypeOf(sessions.__experimental_storage).toBeCallableWith(
     "addMessage",
     { text: "world" },
     "sender-id",
 );
 
-void ioRoom.__experimental_presence.select({ id: "item" }, "sender-id");
-void ioRoom.__experimental_storage.addMessage({ text: "hello" }, "sender-id");
+void sessions.__experimental_presence.select({ id: "item" }, "sender-id");
+void sessions.__experimental_storage.addMessage({ text: "hello" }, "sender-id");
 
-// @ts-expect-error IORoom presence invoke requires senderId
-void ioRoom.__experimental_presence.select({ id: "item" });
-// @ts-expect-error IORoom storage invoke requires senderId
-void ioRoom.__experimental_storage.addMessage({ text: "hello" });
-// @ts-expect-error IORoom presence input must match the procedure schema
-void ioRoom.__experimental_presence.select({ id: 1 }, "sender-id");
-// @ts-expect-error unknown IORoom presence procedure
-void ioRoom.__experimental_presence.missing({ id: null }, "sender-id");
+// @ts-expect-error presence invoke requires senderId
+void sessions.__experimental_presence.select({ id: "item" });
+// @ts-expect-error storage invoke requires senderId
+void sessions.__experimental_storage.addMessage({ text: "hello" });
+// @ts-expect-error presence input must match the procedure schema
+void sessions.__experimental_presence.select({ id: 1 }, "sender-id");
+// @ts-expect-error unknown presence procedure
+void sessions.__experimental_presence.missing({ id: null }, "sender-id");
 
 const {
     PluvRoomProvider,

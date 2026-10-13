@@ -1,6 +1,6 @@
 import type { HttpBindings } from "@hono/node-server";
 import { serve } from "@hono/node-server";
-import type { InferIORoom } from "@pluv/io";
+import { manageSessions, type RoomSessionManager } from "@pluv/io";
 import { Option, program } from "commander";
 import Crypto from "crypto";
 import { Hono } from "hono";
@@ -48,14 +48,14 @@ const server = serve(
 ) as Http.Server;
 const wsServer = new WebSocketServer({ server });
 
-const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
+const getRoom = (roomId: string): RoomSessionManager => {
     const existing = rooms.get(roomId);
     if (existing) return existing;
 
-    const newRoom = ioServer.createRoom(roomId);
-    rooms.set(roomId, newRoom);
+    const sessions = manageSessions(ioServer.createRoom(roomId));
+    rooms.set(roomId, sessions);
 
-    return newRoom;
+    return sessions;
 };
 
 wsServer.on("connection", async (ws, req) => {

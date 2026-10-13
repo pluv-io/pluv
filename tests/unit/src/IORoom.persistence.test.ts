@@ -1,3 +1,4 @@
+import { manageSessions } from "@pluv/io";
 import { applyUpdate, Doc as YDoc, encodeStateAsUpdate, encodeStateVector } from "yjs";
 import { describe, expect, it } from "vitest";
 import {
@@ -68,7 +69,7 @@ describe("IORoom repeated persistence", () => {
             },
         });
 
-        const firstRoom = server.createRoom(ROOM_ID);
+        const firstRoom = manageSessions(server.createRoom(ROOM_ID));
         const firstSocket = new TestSocket("session-1");
 
         await registerAuthorized(firstRoom, firstSocket, { io });
@@ -81,7 +82,7 @@ describe("IORoom repeated persistence", () => {
 
         expect(decodeText(externalStorage)).toBe("initial first");
 
-        const secondRoom = server.createRoom(ROOM_ID);
+        const secondRoom = manageSessions(server.createRoom(ROOM_ID));
         const secondSocket = new TestSocket("session-2");
 
         await registerAuthorized(secondRoom, secondSocket, { io });
@@ -94,7 +95,7 @@ describe("IORoom repeated persistence", () => {
 
         expect(decodeText(externalStorage)).toBe("initial first second");
 
-        const thirdRoom = server.createRoom(ROOM_ID);
+        const thirdRoom = manageSessions(server.createRoom(ROOM_ID));
         const thirdSocket = new TestSocket("session-3");
 
         await registerAuthorized(thirdRoom, thirdSocket, { io });
@@ -113,6 +114,9 @@ describe("IORoom repeated persistence", () => {
             platform: () =>
                 new TestPlatform({
                     hibernatedWebSockets: hibernatedSockets,
+                    hibernatedUsers: new Map(
+                        hibernatedSockets.map((socket) => [socket, { id: socket.id }]),
+                    ),
                     persistence,
                     serializedStates: new Map(
                         hibernatedSockets.map((socket) => [
@@ -141,7 +145,7 @@ describe("IORoom repeated persistence", () => {
             },
         });
 
-        const firstRoom = server.createRoom(ROOM_ID);
+        const firstRoom = manageSessions(server.createRoom(ROOM_ID));
         const firstSocket = new TestSocket("session-1");
 
         await registerAuthorized(firstRoom, firstSocket, { io });
@@ -153,7 +157,7 @@ describe("IORoom repeated persistence", () => {
 
         hibernatedSockets = [firstSocket];
 
-        const firstWake = server.createRoom(ROOM_ID);
+        const firstWake = manageSessions(server.createRoom(ROOM_ID));
 
         await firstWake.onClose(firstSocket)({ code: 1_000, reason: "reload" });
         expect(initialStorageReads).toBe(1);
@@ -172,7 +176,7 @@ describe("IORoom repeated persistence", () => {
 
         hibernatedSockets = [secondSocket];
 
-        const secondWake = server.createRoom(ROOM_ID);
+        const secondWake = manageSessions(server.createRoom(ROOM_ID));
 
         await secondWake.onClose(secondSocket)({ code: 1_000, reason: "reload" });
         expect(initialStorageReads).toBe(2);
