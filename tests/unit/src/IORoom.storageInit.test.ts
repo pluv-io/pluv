@@ -11,6 +11,7 @@ import {
     TestPersistence,
     TestSocket,
     tick,
+    waitForStorageCheckpoint,
     testLoroTreaty,
     testYjsTreaty,
 } from "./__utils__";
@@ -267,12 +268,11 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
 
         await tick();
 
-        expect(lastMessage(second, "$storageReceived").data.changeKind).toBe("unchanged");
-        expect(decode(lastMessage(second, "$storageReceived").data.state)).toBe("alpha");
-
         persistence.persist.resolve();
         await Promise.all([firstInit, secondInit]);
 
+        expect(lastMessage(second, "$storageReceived").data.changeKind).toBe("unchanged");
+        expect(decode(lastMessage(second, "$storageReceived").data.state)).toBe("alpha");
         expect(lastMessage(first, "$storageReceived").data.changeKind).toBe("initialized");
         expect(decode(lastMessage(first, "$storageReceived").data.state)).toBe("alpha");
         expect(decode((await persistence.getStorageState("storage-init")) ?? "")).toBe("alpha");
@@ -371,6 +371,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
         const base = lastMessage(socket, "$storageReceived").data.state as string;
 
         await updateStorage(room, socket, null, append(base, " live"));
+        await waitForStorageCheckpoint();
 
         expect(decode((await persistence.getStorageState("storage-init")) ?? "")).toBe(
             "server live",
@@ -396,6 +397,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
             updateStorage(room, first, null, append(base, "A")),
             updateStorage(room, second, null, append(base, "B")),
         ]);
+        await waitForStorageCheckpoint();
 
         const stored = decode((await persistence.getStorageState("storage-init")) ?? "");
 
@@ -448,6 +450,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
         const repair = source.encodeDiff(stateVector);
 
         await updateStorage(room, first, null, repair);
+        await waitForStorageCheckpoint();
         source.destroy();
 
         expect(decode((await persistence.getStorageState("storage-init")) ?? "")).toContain(

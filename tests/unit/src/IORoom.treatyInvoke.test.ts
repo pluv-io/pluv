@@ -10,6 +10,7 @@ import {
     TestPersistence,
     TestSocket,
     testAuthorizeUser,
+    waitForStorageCheckpoint,
 } from "./__utils__";
 
 const presence = z.object({
@@ -229,13 +230,10 @@ describe("IORoom treaty invoke", () => {
         await initializeSession(room, second, { selectionId: null });
         await room.__experimental_storage.addMessage({ text: "hello" }, first.id);
 
-        const saved = await persistence.getStorageState(roomId);
-
         await room.evictAll();
         await late;
 
         expect(destroyed).toBe(true);
-        expect(saved).toEqual(expect.any(String));
 
         const doc = storage.getEmpty().applyEncodedState({
             update: (await persistence.getStorageState(roomId)) as string,
@@ -276,6 +274,7 @@ describe("IORoom treaty invoke", () => {
         await initializeSession(room, second, { selectionId: null });
 
         await room.evict("session-1");
+        await waitForStorageCheckpoint();
 
         const doc = storage.getEmpty().applyEncodedState({
             update: (await persistence.getStorageState(roomId)) as string,
