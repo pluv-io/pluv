@@ -309,12 +309,7 @@ describe("IORoom operator sessions", () => {
             imageUrl: testOperatorUser.imageUrl,
         };
         const messages: { kind?: string; operator: unknown }[] = [];
-        const storageUpdates: {
-            kind?: string;
-            operator: unknown;
-            hasUser: boolean;
-            hasWebSocket: boolean;
-        }[] = [];
+        const storageUpdates: string[][] = [];
         const io = createAuthorizedIO({
             treaty: testYjsTreaty,
         });
@@ -328,12 +323,7 @@ describe("IORoom operator sessions", () => {
                 });
             },
             onStorageUpdated: (event) => {
-                storageUpdates.push({
-                    kind: event.kind,
-                    operator: event.operator,
-                    hasUser: "user" in event,
-                    hasWebSocket: "webSocket" in event,
-                });
+                storageUpdates.push(Object.keys(event).toSorted());
             },
         });
         const room = manageSessions(server.createRoom("operator-listeners"));
@@ -373,26 +363,7 @@ describe("IORoom operator sessions", () => {
             { kind: "operator", operator: operatorProfile },
             { kind: "operator", operator: operatorProfile },
         ]);
-        expect(storageUpdates).toEqual([
-            {
-                kind: "operator",
-                operator: operatorProfile,
-                hasUser: true,
-                hasWebSocket: false,
-            },
-            {
-                kind: "user",
-                operator: null,
-                hasUser: false,
-                hasWebSocket: false,
-            },
-            {
-                kind: "operator",
-                operator: operatorProfile,
-                hasUser: false,
-                hasWebSocket: false,
-            },
-        ]);
+        expect(storageUpdates).toEqual([["context", "encodedState", "room"]]);
     });
 });
 

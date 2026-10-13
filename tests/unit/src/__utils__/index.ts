@@ -5,6 +5,7 @@ export {
     encodedStateWithContent,
     isEmptyEncodedState,
     tick,
+    waitForStorageCheckpoint,
     waitUntil,
 } from "./helpers";
 export {

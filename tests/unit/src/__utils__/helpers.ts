@@ -35,6 +35,12 @@ export const waitUntil = async (predicate: () => boolean, timeoutMs: number = 5_
     }
 };
 
+/** The session manager copies storage one second after the write. */
+export const waitForStorageCheckpoint = (): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, 1_100);
+    });
+
 export const encodedStateWithContent = (text: string): string => {
     const doc = new YDoc();
 

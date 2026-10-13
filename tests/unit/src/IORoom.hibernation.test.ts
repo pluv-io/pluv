@@ -8,6 +8,7 @@ import {
     TestPersistence,
     TestPlatform,
     TestSocket,
+    waitForStorageCheckpoint,
     testYjsTreaty,
 } from "./__utils__";
 
@@ -89,6 +90,7 @@ describe("IORoom hibernation", () => {
                 },
             }),
         });
+        await waitForStorageCheckpoint();
 
         const updated = new YDoc();
         const updatedState = await persistence.getStorageState(roomId);
