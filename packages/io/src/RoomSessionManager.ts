@@ -41,6 +41,7 @@ import {
     getRoomStatsFromSessions,
     getSessionKind,
     getSessionOperator,
+    invokeProcedureResolvers,
     oneLine,
     pageLiveUsers,
     parsePluvSchema,
@@ -894,10 +895,18 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
         try {
             const context = this._sessionContext(socket);
-            const [broadcast, self] = await Promise.all([
-                procedure.config.broadcast?.(inputs, context),
-                procedure.config.self?.(inputs, context),
-            ]);
+            const invoked = invokeProcedureResolvers({
+                broadcast: () => procedure.config.broadcast?.(inputs, context),
+                self: () => procedure.config.self?.(inputs, context),
+            });
+
+            if (!invoked.ok) {
+                socket.handleError({ error: invoked.error, room: this._room.id, session });
+
+                return;
+            }
+
+            const [broadcast, self] = await Promise.all([invoked.broadcast, invoked.self]);
 
             await this._deliverRecord(
                 broadcast as Record<string, unknown> | null,
