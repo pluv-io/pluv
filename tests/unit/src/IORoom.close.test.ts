@@ -1,3 +1,4 @@
+import { manageSessions } from "@pluv/io";
 import { describe, expect, it } from "vitest";
 import {
     createAuthorizedIO,
@@ -41,7 +42,7 @@ describe("IORoom close", () => {
                 disconnected.push(user?.id ?? "missing");
             },
         });
-        const room = server.createRoom("error-then-close");
+        const room = manageSessions(server.createRoom("error-then-close"));
         const first = new TestSocket("session-1");
         const observer = new TestSocket("session-2");
 
@@ -76,7 +77,7 @@ describe("IORoom close", () => {
                 storageDestroyed.push(room);
             },
         });
-        const room = server.createRoom("partial-teardown");
+        const room = manageSessions(server.createRoom("partial-teardown"));
         const first = new TestSocket("session-1");
         const second = new TestSocket("session-2");
 
@@ -105,7 +106,7 @@ describe("IORoom close", () => {
                 roomDestroyed.push(room);
             },
         });
-        const room = server.createRoom("evict-one");
+        const room = manageSessions(server.createRoom("evict-one"));
         const first = new TestSocket("session-1");
         const second = new TestSocket("session-2");
 
@@ -123,5 +124,70 @@ describe("IORoom close", () => {
         expect(lastMessage(second, "$exit").data.user).toEqual({ id: "session-1" });
         expect(lastMessage(second, "$exit").user).toEqual({ id: "session-1" });
         expect(lastMessage(second, "$othersReceived").data.others).toEqual([]);
+    });
+
+    it("does not destroy the room while a quiet socket is still connected", async () => {
+        const roomDestroyed: string[] = [];
+        const lastPings = new Map<TestSocket, number>();
+        const io = createAuthorizedIO({ platform: { lastPings } });
+        const server = io.server({
+            onRoomDestroyed: ({ room }) => {
+                roomDestroyed.push(room);
+            },
+        });
+        const room = manageSessions(server.createRoom("quiet-socket"));
+        const live = new TestSocket("session-live");
+        const quiet = new TestSocket("session-quiet");
+
+        await registerAuthorized(room, live, { io });
+        await registerAuthorized(room, quiet, { io });
+        lastPings.set(quiet, Date.now() - 60_000);
+
+        expect(room.getSize()).toBe(1);
+
+        await room.onClose(live)({ code: 1000, reason: "" });
+
+        expect(room.getSize()).toBe(0);
+        expect(roomDestroyed).toEqual([]);
+
+        await room.garbageCollect();
+
+        expect(roomDestroyed).toEqual(["quiet-socket"]);
+    });
+
+    it("does not destroy the room until the connect listener finishes", async () => {
+        const roomDestroyed: string[] = [];
+        let releaseConnect: () => void = () => undefined;
+        const connectGate = new Promise<void>((resolve) => {
+            releaseConnect = resolve;
+        });
+        let markStarted: () => void = () => undefined;
+        const connectStarted = new Promise<void>((resolve) => {
+            markStarted = resolve;
+        });
+        const io = createAuthorizedIO({});
+        const server = io.server({
+            onRoomDestroyed: ({ room }) => {
+                roomDestroyed.push(room);
+            },
+            onUserConnected: async () => {
+                markStarted();
+                await connectGate;
+            },
+        });
+        const room = manageSessions(server.createRoom("held-connect"));
+        const socket = new TestSocket("session-1");
+        const pending = registerAuthorized(room, socket, { io });
+
+        await connectStarted;
+        await room.onClose(socket)({ code: 1000, reason: "" });
+
+        expect(room.getSize()).toBe(0);
+        expect(roomDestroyed).toEqual([]);
+
+        releaseConnect();
+        await pending;
+
+        expect(roomDestroyed).toEqual(["held-connect"]);
     });
 });

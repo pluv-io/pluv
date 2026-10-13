@@ -1,3 +1,4 @@
+import { manageSessions } from "@pluv/io";
 import { LoroDoc } from "loro-crdt";
 import { applyUpdate, Doc as YDoc, encodeStateAsUpdate, encodeStateVector } from "yjs";
 import { describe, expect, it } from "vitest";
@@ -138,7 +139,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
             platform: { persistence },
         });
         const server = io.server({ getInitialStorage: config.getInitialStorage });
-        const room = server.createRoom(config.roomId ?? "storage-init");
+        const room = manageSessions(server.createRoom(config.roomId ?? "storage-init"));
 
         return { io, persistence, room };
     };

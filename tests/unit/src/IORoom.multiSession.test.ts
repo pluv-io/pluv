@@ -1,3 +1,4 @@
+import { manageSessions } from "@pluv/io";
 import { describe, expect, it } from "vitest";
 import { createAuthorizedIO, registerAuthorized, TestSocket } from "./__utils__";
 
@@ -59,7 +60,7 @@ describe("IORoom multi-session presence", () => {
     const createRoom = (roomId: string) => {
         const io = createAuthorizedIO({});
         const server = io.server();
-        const room = server.createRoom(roomId);
+        const room = manageSessions(server.createRoom(roomId));
 
         return { io, room };
     };

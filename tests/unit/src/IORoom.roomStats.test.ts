@@ -1,4 +1,4 @@
-import { __internal } from "@pluv/io";
+import { manageSessions, __internal } from "@pluv/io";
 import { describe, expect, it, vi } from "vitest";
 import { createAuthorizedIO, registerAuthorized, TestSocket, waitUntil } from "./__utils__";
 
@@ -36,7 +36,7 @@ const waitForRoomStats = async (socket: TestSocket, predicate: (data: any) => bo
 describe("IORoom $roomStats", () => {
     const createRoom = (roomId: string) => {
         const io = createAuthorizedIO({});
-        const room = io.server().createRoom(roomId);
+        const room = manageSessions(io.server().createRoom(roomId));
 
         return { io, room };
     };

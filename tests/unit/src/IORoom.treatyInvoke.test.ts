@@ -1,9 +1,16 @@
+import { manageSessions } from "@pluv/io";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createTreaty } from "@pluv/treaty";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { createAuthorizedIO, registerAuthorized, TestSocket, testAuthorizeUser } from "./__utils__";
+import {
+    createAuthorizedIO,
+    registerAuthorized,
+    TestPersistence,
+    TestSocket,
+    testAuthorizeUser,
+} from "./__utils__";
 
 const presence = z.object({
     selectionId: z.string().nullable(),
@@ -28,7 +35,9 @@ const touch = t.procedure.storage.input(z.object({})).resolve(() => undefined);
 const treaty = t.router({ select, addMessage, touch });
 
 type Room = {
+    id: string;
     onMessage: (socket: TestSocket) => (event: { data: string }) => Promise<void>;
+    register: (socket: TestSocket, ...options: any[]) => Promise<void>;
     __experimental_presence: {
         select: (input: { id: string | null }, senderId: string) => Promise<void>;
     };
@@ -67,7 +76,7 @@ describe("IORoom treaty invoke", () => {
         const server = io.server({
             getInitialStorage: () => null,
         });
-        const room = server.createRoom(roomId);
+        const room = manageSessions(server.createRoom(roomId));
 
         return { io, room };
     };
@@ -181,5 +190,133 @@ describe("IORoom treaty invoke", () => {
 
         expect(doc.toJson()).toEqual({ messages: ["kept"] });
         doc.destroy();
+    });
+
+    it("persists a disconnect listener's storage procedure before destroy", async () => {
+        const persistence = new TestPersistence();
+        const roomId = "storage-after-destroy";
+        let room!: Room & { evictAll: () => Promise<void> };
+        let late: Promise<void> = Promise.resolve();
+        let queued = false;
+        let destroyed = false;
+        const io = createAuthorizedIO({
+            treaty,
+            platform: { persistence },
+        });
+        const server = io.server({
+            getInitialStorage: () => null,
+            onRoomDestroyed: () => {
+                destroyed = true;
+            },
+            onUserDisconnected: ({ user }) => {
+                if (queued) return;
+
+                queued = true;
+                const senderId = user?.id === "session-1" ? "session-2" : "session-1";
+
+                late = room.__experimental_storage.addMessage({ text: "after" }, senderId);
+            },
+        });
+
+        room = manageSessions(server.createRoom(roomId));
+
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(room, first, { io });
+        await initializeSession(room, first, { selectionId: null });
+        await registerAuthorized(room, second, { io });
+        await initializeSession(room, second, { selectionId: null });
+        await room.__experimental_storage.addMessage({ text: "hello" }, first.id);
+
+        const saved = await persistence.getStorageState(roomId);
+
+        await room.evictAll();
+        await late;
+
+        expect(destroyed).toBe(true);
+        expect(saved).toEqual(expect.any(String));
+
+        const doc = storage.getEmpty().applyEncodedState({
+            update: (await persistence.getStorageState(roomId)) as string,
+        });
+
+        expect(doc.toJson()).toEqual({ messages: ["hello", "after"] });
+        doc.destroy();
+    });
+
+    it("lets a disconnect listener await a storage procedure", async () => {
+        const persistence = new TestPersistence();
+        const roomId = "disconnect-awaits-storage";
+        let room!: Room & { evict: (sessionId: string) => Promise<void>; getSize: () => number };
+        const io = createAuthorizedIO({
+            treaty,
+            platform: { persistence },
+        });
+        const server = io.server({
+            getInitialStorage: () => null,
+            onUserDisconnected: ({ user }) => {
+                if (user?.id !== "session-1") return Promise.resolve();
+
+                return room.__experimental_storage.addMessage(
+                    { text: "from-disconnect" },
+                    "session-2",
+                );
+            },
+        });
+
+        room = manageSessions(server.createRoom(roomId));
+
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(room, first, { io });
+        await initializeSession(room, first, { selectionId: null });
+        await registerAuthorized(room, second, { io });
+        await initializeSession(room, second, { selectionId: null });
+
+        await room.evict("session-1");
+
+        const doc = storage.getEmpty().applyEncodedState({
+            update: (await persistence.getStorageState(roomId)) as string,
+        });
+
+        expect(doc.toJson()).toEqual({ messages: ["from-disconnect"] });
+        expect(room.getSize()).toBe(1);
+        doc.destroy();
+    });
+
+    it("lets an event procedure await evict", async () => {
+        const io = createAuthorizedIO({});
+        let room!: {
+            evict: (sessionId: string) => Promise<void>;
+            getSize: () => number;
+            id: string;
+            onMessage: (socket: TestSocket) => (event: { data: string }) => Promise<void>;
+            register: (socket: TestSocket, ...options: any[]) => Promise<void>;
+        };
+        const server = io.server({
+            router: io.router({
+                kick: io.procedure.broadcast(async () => {
+                    await room.evict("session-2");
+
+                    return {};
+                }),
+            }),
+        });
+
+        room = manageSessions(server.createRoom("procedure-evict"));
+
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(room, first, { io });
+        await registerAuthorized(room, second, { io });
+        await room.onMessage(first)({
+            data: JSON.stringify({ type: "kick", data: {} }),
+        });
+
+        expect(room.getSize()).toBe(1);
+        expect(lastMessage(first, "$exit").data.sessionId).toBe("session-2");
     });
 });
