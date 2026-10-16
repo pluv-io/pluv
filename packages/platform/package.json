@@ -1,0 +1,47 @@
+{
+    "name": "@pluv/platform",
+    "version": "5.2.3",
+    "description": "Hosted room facet for @pluv/io",
+    "author": {
+        "email": "david@pluv.io",
+        "name": "i3dly",
+        "url": "https://github.com/i3dly"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/pluv-io/pluv",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/pluv-io/pluv.git",
+        "directory": "packages/platform"
+    },
+    "type": "module",
+    "types": "./dist/index.d.mts",
+    "files": [
+        "dist"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "build": "tsdown",
+        "dev": "tsdown --watch",
+        "typecheck": "tsc --noEmit",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    },
+    "dependencies": {
+        "@pluv/io": "workspace:^",
+        "@pluv/persistence-cloudflare-transactional-storage": "workspace:^",
+        "@pluv/types": "workspace:^"
+    },
+    "devDependencies": {
+        "@cloudflare/workers-types": "^5.20261006.1",
+        "@pluv/tsconfig": "workspace:^",
+        "tsdown": "^0.23.0",
+        "typescript": "^7.0.2"
+    },
+    "exports": {
+        ".": "./dist/index.mjs",
+        "./load-user-facet": "./dist/loadUserFacet.mjs",
+        "./*": "./*"
+    }
+}
