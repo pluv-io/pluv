@@ -37,8 +37,11 @@ import type {
     RoomAttachment,
     RoomEffectFrame,
     RoomEffects,
+    RoomJoinActor,
+    RoomPresenceSession,
     RoomRegisterResult,
     RoomSessionSnapshot,
+    RoomStorageActor,
     SessionEventContext,
     SessionRoom,
     StorageEventContext,
@@ -46,7 +49,7 @@ import type {
     WebSocketRegisterConfig,
     WebSocketSession,
 } from "./types";
-import { emptyRoomEffects, userTurn } from "./types";
+import { emptyRoomEffects, userTurn } from "./roomEffects";
 import {
     assertExhaustive,
     invokeProcedureResolvers,
@@ -316,7 +319,7 @@ export class IORoom<T extends IODefs = IODefs>
     private async _applyPresencePatch(params: {
         name: string;
         data: unknown;
-        session: Pick<RoomSessionSnapshot<T>, "operator" | "presence" | "user">;
+        session: RoomPresenceSession<T>;
     }): Promise<JsonObject | null | UserTurn<JsonObject | null>> {
         const { name, data, session } = params;
         const procedures = this._treaty._defs.procedures.presence;
@@ -342,7 +345,7 @@ export class IORoom<T extends IODefs = IODefs>
     private async _applyStorageProcedure(params: {
         name: string;
         data: unknown;
-        actor: Pick<RoomSessionSnapshot<T>, "id" | "kind" | "operator" | "presence" | "user">;
+        actor: RoomStorageActor<T>;
     }): Promise<RoomEffects<T>> {
         if (!(await this._initialized) || this._checkpoint.closed) {
             return this._releaseStorage(emptyRoomEffects<T>(), params.actor);
@@ -393,6 +396,10 @@ export class IORoom<T extends IODefs = IODefs>
     }
 
     private async _close(session: RoomSessionSnapshot<T>): Promise<RoomEffects<T>> {
+        if (!(await this._initialized)) {
+            return { ...emptyRoomEffects<T>(), connectionId: session.id };
+        }
+
         await this._emitDisconnected(session);
 
         return this._releaseStorage(
@@ -652,7 +659,7 @@ export class IORoom<T extends IODefs = IODefs>
 
     private async _initializeStorage(params: {
         input: { stateVector?: string | null; update?: string | null };
-        actor: Pick<RoomSessionSnapshot<T>, "kind" | "operator" | "user">;
+        actor: RoomJoinActor<T>;
     }): Promise<{
         changeKind: "unchanged" | "initialized" | "empty";
         state: string | null;
@@ -923,7 +930,7 @@ export class IORoom<T extends IODefs = IODefs>
         getPresence: () => JsonObject | null;
         session: RoomSessionSnapshot<T>;
         setPresence: (presence: JsonObject | null) => void;
-    }): StorageEventContext<T> & SessionEventContext<T> {
+    }): StorageEventContext<T> & SessionEventContext<T> & { context: T["context"] } {
         const { attachments, context, doc, getPresence, session, setPresence } = params;
         const storage = this._storage;
         const time = new Date().getTime();
@@ -936,8 +943,9 @@ export class IORoom<T extends IODefs = IODefs>
             operator: session.operator,
             platform: this._platform,
             get presence() {
-                return getPresence() as StorageEventContext<T>["presence"];
+                return getPresence() as SessionEventContext<T>["presence"];
             },
+            persistence: this._platform.persistence,
             set presence(presence) {
                 const next = (presence ?? null) as JsonObject | null;
 
@@ -974,7 +982,7 @@ export class IORoom<T extends IODefs = IODefs>
             },
             user: session.user,
             time,
-        } as unknown as StorageEventContext<T> & SessionEventContext<T>;
+        } as unknown as StorageEventContext<T> & SessionEventContext<T> & { context: T["context"] };
     }
 
     private _releaseStorage(
@@ -994,6 +1002,7 @@ export class IORoom<T extends IODefs = IODefs>
         return {
             ...effects,
             broadcast,
+            connectionId: session.id,
             storageDirty:
                 this._checkpoint.dirty ||
                 broadcast.some((frame) => frame.type === "$storageUpdated"),
@@ -1029,7 +1038,7 @@ export class IORoom<T extends IODefs = IODefs>
     }
 
     private _userContext(
-        event: StorageEventContext<T> & SessionEventContext<T>,
+        event: SessionEventContext<T> & Pick<EventResolverContext<T>, "context" | "doc">,
     ): EventResolverContext<T> {
         return {
             connectionId: event.connectionId,

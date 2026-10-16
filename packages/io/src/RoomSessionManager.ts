@@ -24,7 +24,8 @@ import type {
     SessionRoom,
     WebSocketRegisterConfig,
 } from "./types";
-import { isSuspended, isUserTurn, userTurnPromise } from "./types";
+import { isSuspended, isUserTurn, userTurnPromise } from "./roomEffects";
+import { ExclusiveUntil } from "./ExclusiveUntil";
 import { JoinQueue } from "./JoinQueue";
 import { RoomSessions } from "./RoomSessions";
 import { createSessionRouter } from "./createSessionRouter";
@@ -75,6 +76,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     private readonly _sessionRouter: ReturnType<typeof createSessionRouter<T>>;
     private readonly _roomStats: ReturnType<typeof throttle>;
     private readonly _queue = new JoinQueue();
+    private readonly _limits = new ExclusiveUntil(() => this._room.limits !== null);
     private _closing = 0;
     private _connecting = 0;
     private _registering = 0;
@@ -88,7 +90,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         this._platform = platform;
         this._sessions = new RoomSessions<T>({ platform: this._platform });
         this._sessionRouter = createSessionRouter<T>({
-            limits: _room.limits,
+            limits: () => this._room.limits,
         });
         this._roomStats = throttle(
             () => {
@@ -120,166 +122,208 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
         if (typeof sessionId === "string" && this._sessions.has(sessionId)) return;
 
-        const maxConnections = resolveMaxConnections(this._room.limits);
-        const rejectMaxConnections = (): void => {
-            const rejected = this._platform.convertWebSocket(webSocket, { room: this._room.id });
+        await this._limits.run(async () => {
+            const limits = this._room.limits;
+            const maxConnections = limits ? resolveMaxConnections(limits) : null;
+            const rejectMaxConnections = (): void => {
+                const rejected = this._platform.convertWebSocket(webSocket, {
+                    room: this._room.id,
+                });
+                const limit = maxConnections ?? 0;
 
-            rejected.handleError({
-                error: new Error(`Room is at maxConnections (${maxConnections.toLocaleString()}).`),
-                room: this._room.id,
-            });
-            rejected.close(4000, "Room is at maxConnections");
-        };
+                rejected.handleError({
+                    error: new Error(`Room is at maxConnections (${limit.toLocaleString()}).`),
+                    room: this._room.id,
+                });
+                rejected.close(4000, "Room is at maxConnections");
+            };
 
-        if (this._sessions.getSize() + this._registering >= maxConnections) {
-            rejectMaxConnections();
+            if (
+                maxConnections !== null &&
+                this._sessions.getSize() + this._registering >= maxConnections
+            ) {
+                rejectMaxConnections();
 
-            return;
-        }
+                return;
+            }
 
-        this._registering += 1;
+            this._registering += 1;
 
-        let reserved = true;
-        const releaseReservation = (): void => {
-            if (!reserved) return;
+            let reserved = true;
+            const releaseReservation = (): void => {
+                if (!reserved) return;
 
-            reserved = false;
-            this._registering -= 1;
-        };
+                reserved = false;
+                this._registering -= 1;
+            };
 
-        await this._queue.finish<{
-            effects: RoomEffects<T> | null;
-            socket: AbstractWebSocket;
-        } | null>(
-            async () => {
-                try {
-                    const result = await this._room["~"].register(...options);
+            await this._queue.finish<{
+                effects: RoomEffects<T> | null;
+                socket: AbstractWebSocket;
+            } | null>(
+                async () => {
+                    try {
+                        const result = await this._room["~"].register(...options);
 
-                    if (result.error || !result.user || !result.kind) {
-                        const rejected = this._platform.convertWebSocket(webSocket, {
+                        if (result.error || !result.user || !result.kind) {
+                            const rejected = this._platform.convertWebSocket(webSocket, {
+                                room: this._room.id,
+                            });
+
+                            rejected.handleError({
+                                error: result.error ?? new Error("Not authorized"),
+                                room: this._room.id,
+                            });
+                            rejected.close(3000, "WebSocket unauthorized.");
+
+                            return { value: null };
+                        }
+
+                        const pluvWs = this._platform.convertWebSocket(webSocket, {
                             room: this._room.id,
                         });
+                        const participantId = result.user.id;
+                        const latest = this._sessions.getLatestPresence(participantId, result.kind);
+                        const prevState = pluvWs.state;
 
-                        rejected.handleError({
-                            error: result.error ?? new Error("Not authorized"),
-                            room: this._room.id,
+                        pluvWs.user = result.user;
+                        this._platform.setSerializedState(pluvWs, {
+                            ...prevState,
+                            kind: result.kind,
+                            operator: result.operator,
+                            presence: latest.presence,
+                            seq: { ...prevState.seq, presence: latest.seq },
                         });
-                        rejected.close(3000, "WebSocket unauthorized.");
+                        this._sessions.addParticipantSession({
+                            id: participantId,
+                            kind: result.kind,
+                            sessionId: pluvWs.sessionId,
+                        });
+                        this._room["~"].logDebug(
+                            `${colors.blue(`Registering connection for room ${this._room.id}:`)} ${pluvWs.sessionId}`,
+                        );
+                        await this._platform.acceptWebSocket(pluvWs);
+                        this._sessions.set(pluvWs.sessionId, pluvWs);
+                        releaseReservation();
+                        await this._platform.persistence.addUser(
+                            this._room.id,
+                            pluvWs.sessionId,
+                            result.user,
+                        );
 
-                        return { value: null };
-                    }
+                        const registered = this._sessions.toSession(pluvWs);
+                        const stats = getRoomStatsFromSessions(this._sessions.getLiveSessions());
 
-                    const pluvWs = this._platform.convertWebSocket(webSocket, {
-                        room: this._room.id,
-                    });
-                    const participantId = result.user.id;
-                    const latest = this._sessions.getLatestPresence(participantId, result.kind);
-                    const prevState = pluvWs.state;
-
-                    pluvWs.user = result.user;
-                    this._platform.setSerializedState(pluvWs, {
-                        ...prevState,
-                        kind: result.kind,
-                        operator: result.operator,
-                        presence: latest.presence,
-                        seq: { ...prevState.seq, presence: latest.seq },
-                    });
-                    this._sessions.addParticipantSession({
-                        id: participantId,
-                        kind: result.kind,
-                        sessionId: pluvWs.sessionId,
-                    });
-                    this._room["~"].logDebug(
-                        `${colors.blue(`Registering connection for room ${this._room.id}:`)} ${pluvWs.sessionId}`,
-                    );
-                    await this._platform.acceptWebSocket(pluvWs);
-                    this._sessions.set(pluvWs.sessionId, pluvWs);
-                    releaseReservation();
-                    await this._platform.persistence.addUser(
-                        this._room.id,
-                        pluvWs.sessionId,
-                        result.user,
-                    );
-
-                    const registered = this._sessions.toSession(pluvWs);
-                    const stats = getRoomStatsFromSessions(this._sessions.getLiveSessions());
-
-                    await this._writeFrames(
-                        [
-                            {
-                                connectionId: registered.id,
-                                data: {
-                                    session: {
-                                        kind: result.kind,
-                                        operator: result.operator,
-                                        presence: registered.presence,
-                                        seq: { presence: registered.seq.presence },
+                        await this._writeFrames(
+                            [
+                                {
+                                    connectionId: registered.id,
+                                    data: {
+                                        session: {
+                                            kind: result.kind,
+                                            operator: result.operator,
+                                            presence: registered.presence,
+                                            seq: { presence: registered.seq.presence },
+                                        },
+                                        sessionId: registered.id,
+                                        state: result.encodedState,
+                                        stats,
                                     },
-                                    sessionId: registered.id,
-                                    state: result.encodedState,
-                                    stats,
+                                    operator: result.operator,
+                                    type: "$registered",
+                                    user: result.user,
                                 },
-                                operator: result.operator,
-                                type: "$registered",
-                                user: result.user,
-                            },
-                        ],
-                        "self",
-                    );
+                            ],
+                            "self",
+                        );
 
-                    const { encodedState, kind, operator, user } = result;
+                        const { encodedState, kind, operator, user } = result;
 
-                    if (!kind || !user) return { value: null };
+                        if (!kind || !user) return { value: null };
 
-                    this._connecting += 1;
+                        this._connecting += 1;
 
-                    return {
-                        pending: this._room["~"]
-                            .userConnected({
-                                encodedState,
-                                id: pluvWs.sessionId,
-                                kind,
-                                operator,
-                                user,
-                            })
-                            .then(
-                                (effects) => ({ effects, socket: pluvWs }),
-                                (error: unknown) => {
-                                    console.error(error);
+                        return {
+                            pending: this._room["~"]
+                                .userConnected({
+                                    encodedState,
+                                    id: pluvWs.sessionId,
+                                    kind,
+                                    operator,
+                                    user,
+                                })
+                                .then(
+                                    (effects) => ({ effects, socket: pluvWs }),
+                                    (error: unknown) => {
+                                        console.error(error);
 
-                                    return { effects: null, socket: pluvWs };
-                                },
-                            ),
-                    };
-                } catch (error) {
-                    releaseReservation();
+                                        return { effects: null, socket: pluvWs };
+                                    },
+                                ),
+                        };
+                    } catch (error) {
+                        releaseReservation();
 
-                    throw error;
-                }
-            },
-            async (connected) => {
-                try {
-                    if (!connected?.effects) return;
+                        throw error;
+                    }
+                },
+                async (connected) => {
+                    try {
+                        if (!connected?.effects) return;
 
-                    await this._applyEffects(connected.effects, connected.socket);
-                    this._roomStats.schedule();
-                    this._room["~"].logDebug(oneLine`
-                        ${colors.blue(`Registered connection for room ${this._room.id}:`)}
-                        ${connected.socket.sessionId}
-                    `);
-                    this._room["~"].logDebug(
-                        `${colors.blue(`Room ${this._room.id} size:`)} ${this._sessions.getSize()}`,
-                    );
-                } finally {
-                    releaseReservation();
+                        await this._applyEffects(connected.effects, connected.socket);
+                        this._roomStats.schedule();
+                        this._room["~"].logDebug(oneLine`
+                            ${colors.blue(`Registered connection for room ${this._room.id}:`)}
+                            ${connected.socket.sessionId}
+                        `);
+                        this._room["~"].logDebug(
+                            `${colors.blue(`Room ${this._room.id} size:`)} ${this._sessions.getSize()}`,
+                        );
+                    } finally {
+                        releaseReservation();
 
-                    if (!connected) return;
+                        if (!connected) return;
 
-                    this._connecting -= 1;
-                    await this._destroyEmptyRoom();
-                }
-            },
-        );
+                        this._connecting -= 1;
+                        await this._destroyEmptyRoom();
+                    }
+                },
+            );
+        });
+    }
+
+    public applyFrames(effects: RoomEffects<T>, senderId: string): Promise<void> {
+        const socket = this._sessions.get(senderId) ?? null;
+
+        return this._queue.join(async () => {
+            await this._applyEffects(effects, socket);
+        });
+    }
+
+    public applyPresence(params: {
+        name: string;
+        patch: JsonObject | null;
+        senderId: string;
+    }): Promise<void> {
+        const socket = this._sessions.get(params.senderId) ?? null;
+
+        if (!socket) return Promise.resolve();
+
+        return this._queue.join(async () => {
+            const context = this._sessionContext(socket);
+            const broadcastResult =
+                await this._sessionRouter._defs.events.$updatePresence.config.broadcast?.(
+                    { presence: params.patch, procedure: params.name },
+                    context,
+                );
+
+            await this._deliverRecord(
+                broadcastResult as Record<string, unknown> | null,
+                socket,
+                "broadcast",
+            );
+        });
     }
 
     public onMessage(
@@ -299,7 +343,6 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
             const socket = this._sessions.resolve(webSocket);
 
             if (!socket) return;
-            if (!(await this._room["~"].whenReady())) return;
             if (!this._sessions.has(socket.sessionId)) return;
 
             await this._disconnect(socket, event.code, event.reason, false);
@@ -313,7 +356,6 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
             const socket = this._sessions.resolve(webSocket);
 
             if (!socket) return;
-            if (!(await this._room["~"].whenReady())) return;
             if (!this._sessions.has(socket.sessionId)) return;
 
             await this._disconnect(socket, 1011, "", false);
@@ -667,8 +709,6 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     }
 
     private async _onPublished(payload: IOPubSubEventMessage<any>): Promise<void> {
-        if (!(await this._room["~"].whenReady())) return;
-
         const { options = {} as SendMessageOptions, ...message } = payload;
         const frame: RoomEffectFrame<T> = {
             connectionId: message.connectionId,
@@ -691,8 +731,6 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                           .filter((socket): socket is AbstractWebSocket => !!socket)
                     : Array.from(this._sessions.all().values());
 
-                if (!(await this._room["~"].whenReady())) return;
-
                 await Promise.allSettled(
                     targets.map(async (socket) => {
                         await Promise.resolve(
@@ -708,8 +746,6 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
             }
             case undefined: {
                 const targets = Array.from(this._sessions.all().values());
-
-                if (!(await this._room["~"].whenReady())) return;
 
                 await Promise.allSettled(
                     targets.map(async (socket) => {
@@ -731,8 +767,6 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
     private _onSocketMessage(webSocket: WebSocketType<T["platform"]>) {
         return async (event: AbstractMessageEvent): Promise<void> => {
-            if (!(await this._room["~"].whenReady())) return;
-
             const socket = this._sessions.resolve(webSocket);
 
             if (!socket) throw new Error("Could not get session");
@@ -747,7 +781,11 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
             if (!message) return;
 
-            if (this._sessionRouter.eventNames.has(message.type)) {
+            const sessionEvent = this._sessionRouter.eventNames.has(message.type);
+
+            if (!sessionEvent && !(await this._room["~"].whenReady())) return;
+
+            if (sessionEvent) {
                 if (message.type === "$initializeSession") {
                     await this._openSession(socket, message);
 
@@ -940,11 +978,16 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                 });
 
                 if (status === "closed") return;
-                if (status === "dirty" || this._room["~"].storageDirty()) continue;
+
+                // oxlint-disable-next-line eslint/no-await-in-loop
+                const stillDirty = status === "dirty" || (await this._room["~"].storageDirty());
+
+                if (stillDirty) continue;
             } catch (error) {
                 console.error(error);
 
-                if (this._room["~"].storageDirty()) continue;
+                // oxlint-disable-next-line eslint/no-await-in-loop
+                if (await this._room["~"].storageDirty()) continue;
 
                 return;
             }
@@ -952,7 +995,8 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
             // A write queued during the flush runs before the next macrotask.
             // oxlint-disable-next-line eslint/no-await-in-loop
             await Promise.resolve();
-            if (this._room["~"].storageDirty()) continue;
+            // oxlint-disable-next-line eslint/no-await-in-loop
+            if (await this._room["~"].storageDirty()) continue;
 
             return;
         }
@@ -1090,8 +1134,6 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         frames: readonly RoomEffectFrame<T>[],
         mode: "broadcast" | "self",
     ): Promise<void> {
-        if (!(await this._room["~"].whenReady())) return;
-
         if (mode === "self") {
             await Promise.all(
                 frames.map(async (frame) => {

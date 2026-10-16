@@ -38,6 +38,19 @@ export type AbstractListener<TType extends keyof AbstractEventMap> = (
     event: AbstractEventMap[TType],
 ) => MaybePromise<void>;
 
+const errorMessage = (error: unknown): string => {
+    if (
+        typeof error === "object" &&
+        error !== null &&
+        "message" in error &&
+        typeof error.message === "string"
+    ) {
+        return error.message;
+    }
+
+    return "Unexpected error";
+};
+
 export type InferWebSocketSource<TAbstractWebSocket extends AbstractWebSocket> =
     TAbstractWebSocket extends AbstractWebSocket<infer IWebSocket> ? IWebSocket : never;
 
@@ -108,7 +121,7 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
     public handleError(params: AbstractWebSocketHandleErrorParams): void {
         const { error, message: _message, room, session } = params;
 
-        const message = error instanceof Error ? error.message : "Unexpected error";
+        const message = errorMessage(error);
         const stack: string | null = error instanceof Error ? (error.stack ?? null) : null;
         const connectionId = (session?.id ?? null) as string;
 
