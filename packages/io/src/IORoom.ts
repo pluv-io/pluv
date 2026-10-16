@@ -20,7 +20,6 @@ import type { PluvRouter } from "./PluvRouter";
 import { RoomStorage } from "./RoomStorage";
 import { StorageCheckpoint } from "./StorageCheckpoint";
 import { authorize } from "./authorize";
-import { PING_TIMEOUT_MS } from "./constants";
 import type {
     EventResolverContext,
     GetInitialStorageFn,
@@ -58,15 +57,6 @@ import {
     parsePluvSchema,
     resolveIOSecret,
 } from "./utils";
-
-const snapshotIsLive = (
-    session: { lastPing: number; quit: boolean },
-    now = Date.now(),
-): boolean => {
-    if (session.quit) return false;
-
-    return now - session.lastPing <= PING_TIMEOUT_MS;
-};
 
 /**
  * @experimental
@@ -287,7 +277,7 @@ export class IORoom<T extends IODefs = IODefs>
             destroy: this._destroyRoom.bind(this),
             flushCheckpoint: async () => {
                 const status = await this._checkpoint.flush();
-                const updates = this._checkpoint.takeUpdates();
+                const updates = this._checkpoint.pendingUpdates();
 
                 return {
                     broadcast: updates.map((update): RoomEffectFrame<T> => ({
@@ -300,12 +290,12 @@ export class IORoom<T extends IODefs = IODefs>
                     status,
                 };
             },
-            garbageCollect: this._garbageCollect.bind(this),
             initializeStorage: this._initializeStorage.bind(this),
             logDebug: this._logDebug.bind(this),
             message: this._message.bind(this),
             register: this._register.bind(this),
-            storageDirty: () => this._checkpoint.dirty,
+            dropStorageUpdates: this._dropStorageUpdates.bind(this),
+            storageDirty: () => this._checkpoint.dirty || this._checkpoint.hasPending,
             userConnected: this._userConnected.bind(this),
             whenReady: () => this._initialized,
         };
@@ -454,44 +444,6 @@ export class IORoom<T extends IODefs = IODefs>
         } catch (error) {
             console.error(error);
         }
-    }
-
-    private async _garbageCollect(
-        sessions: readonly RoomSessionSnapshot<T>[],
-    ): Promise<RoomEffects<T>> {
-        const now = Date.now();
-        const quitters = sessions.filter((session) => !snapshotIsLive(session, now));
-        const live = sessions.length - quitters.length;
-        const broadcast: RoomEffectFrame<T>[] = [];
-        const closes: string[] = [];
-
-        for (const session of quitters) {
-            // onUserDisconnected is user code and may touch storage, so run one
-            // disconnect at a time. Overlapping storage calls fail on a Durable Object.
-            // oxlint-disable-next-line eslint/no-await-in-loop
-            await this._emitDisconnected(session);
-            broadcast.push(
-                ...this._releaseStorage(emptyRoomEffects<T>(), session).broadcast,
-                effectFrame(
-                    "$exit",
-                    {
-                        operator: session.operator,
-                        sessionId: session.id,
-                        user: session.user,
-                    },
-                    session,
-                ),
-            );
-            closes.push(session.id);
-        }
-
-        return {
-            ...emptyRoomEffects<T>(),
-            broadcast,
-            closes,
-            destroy: quitters.length > 0 && live === 0,
-            storageDirty: this._checkpoint.dirty,
-        };
     }
 
     private async _getAuthorizedUser(
@@ -985,11 +937,28 @@ export class IORoom<T extends IODefs = IODefs>
         } as unknown as StorageEventContext<T> & SessionEventContext<T> & { context: T["context"] };
     }
 
+    private async _dropStorageUpdates(frames: readonly RoomEffectFrame<T>[]): Promise<void> {
+        const updates: string[] = [];
+
+        for (const frame of frames) {
+            if (frame.type !== "$storageUpdated") continue;
+
+            const data = frame.data as { state?: unknown } | null;
+            const state = data?.state;
+
+            if (typeof state !== "string" || state.length === 0) continue;
+
+            updates.push(state);
+        }
+
+        this._checkpoint.dropUpdates(updates);
+    }
+
     private _releaseStorage(
         effects: RoomEffects<T>,
         session: Pick<RoomSessionSnapshot<T>, "id" | "operator" | "user">,
     ): RoomEffects<T> {
-        const updates = this._checkpoint.takeUpdates();
+        const updates = this._checkpoint.pendingUpdates();
         const broadcast = updates.length
             ? [
                   ...effects.broadcast,

@@ -1,4 +1,5 @@
 import type { BaseUser, IOEventMessage, JsonObject, MaybePromise } from "@pluv/types";
+import { isErrorMessage } from "./roomEffects";
 import type { AbstractPersistence } from "./AbstractPersistence";
 import type { AbstractPlatform } from "./AbstractPlatform";
 import type { WebSocketSerializedState, WebSocketSession } from "./types";
@@ -39,14 +40,7 @@ export type AbstractListener<TType extends keyof AbstractEventMap> = (
 ) => MaybePromise<void>;
 
 const errorMessage = (error: unknown): string => {
-    if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error &&
-        typeof error.message === "string"
-    ) {
-        return error.message;
-    }
+    if (isErrorMessage(error)) return error.message;
 
     return "Unexpected error";
 };

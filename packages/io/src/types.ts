@@ -358,7 +358,6 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
         broadcast: RoomEffectFrame<T>[];
         status: CheckpointFlush;
     }>;
-    garbageCollect(sessions: readonly RoomSessionSnapshot<T>[]): Promise<RoomEffects<T>>;
     initializeStorage(params: {
         input: { stateVector?: string | null; update?: string | null };
         actor: RoomJoinActor<T>;
@@ -377,6 +376,7 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
             ? [{ token?: string }?]
             : [WebSocketRegisterConfig<T["platform"]>]
     ): Promise<RoomRegisterResult<T>>;
+    dropStorageUpdates(frames: readonly RoomEffectFrame<T>[]): Promise<void>;
     storageDirty(): boolean | Promise<boolean>;
     userConnected(params: {
         id: string;

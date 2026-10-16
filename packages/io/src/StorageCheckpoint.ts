@@ -61,6 +61,11 @@ export class StorageCheckpoint<TContext> {
         return this._dirty && !this._closed;
     }
 
+    /** Updates still need a `$storageUpdated` frame. A closed room does not retry them. */
+    public get hasPending(): boolean {
+        return !this._closed && this._pending.length > 0;
+    }
+
     public get epoch(): number {
         return this._epoch;
     }
@@ -148,13 +153,31 @@ export class StorageCheckpoint<TContext> {
         }
     }
 
-    /** Updates that still need their own `$storageUpdated` frame. */
-    public takeUpdates(): string[] {
-        const updates = this._pending;
+    /** Drop updates whose `$storageUpdated` frames were delivered. */
+    public dropUpdates(updates: readonly string[]): void {
+        if (updates.length === 0 || this._pending.length === 0) return;
 
-        this._pending = [];
+        const remaining = new Map<string, number>();
 
-        return updates;
+        for (const update of updates) {
+            remaining.set(update, (remaining.get(update) ?? 0) + 1);
+        }
+
+        this._pending = this._pending.filter((update) => {
+            const count = remaining.get(update);
+
+            if (!count) return true;
+
+            if (count === 1) remaining.delete(update);
+            else remaining.set(update, count - 1);
+
+            return false;
+        });
+    }
+
+    /** A copy of the updates that still need a `$storageUpdated` frame. */
+    public pendingUpdates(): string[] {
+        return [...this._pending];
     }
 
     public reopen(): void {

@@ -69,6 +69,7 @@ export { PluvRouter } from "./PluvRouter";
 export type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 export { PluvServer } from "./PluvServer";
 export type { CreateRoomOptions, InferIORoom, PluvServerConfig } from "./PluvServer";
+export { isErrorMessage, isSuspended, isUserTurn, userTurnPromise } from "./roomEffects";
 export type {
     GetInitialStorageFn,
     HandleMode,
@@ -85,8 +86,14 @@ export type {
     PluvIOLimits,
     PluvIOListeners,
     PluvIOSecret,
+    RoomEffects,
+    RoomJoinActor,
+    RoomPresenceSession,
+    RoomRegisterResult,
+    RoomStorageActor,
     SessionRoom,
     Suspended,
+    UserTurn,
     WebSocketSerializedState,
     WebSocketSession,
     WebSocketSessionSeq,

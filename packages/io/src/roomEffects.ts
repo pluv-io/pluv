@@ -27,6 +27,15 @@ export const isSuspended = (value: unknown): value is Suspended =>
     "suspended" in value &&
     (value as { suspended?: unknown }).suspended === true;
 
+export const isErrorMessage = (value: unknown): value is { message: string } => {
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        "message" in value &&
+        typeof value.message === "string"
+    );
+};
+
 export const emptyRoomEffects = <T extends IODefs = IODefs>(): RoomEffects<T> => ({
     attachments: [],
     broadcast: [],

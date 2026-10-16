@@ -24,7 +24,7 @@ import type {
     SessionRoom,
     WebSocketRegisterConfig,
 } from "./types";
-import { isSuspended, isUserTurn, userTurnPromise } from "./roomEffects";
+import { isErrorMessage, isSuspended, isUserTurn, userTurnPromise } from "./roomEffects";
 import { ExclusiveUntil } from "./ExclusiveUntil";
 import { JoinQueue } from "./JoinQueue";
 import { RoomSessions } from "./RoomSessions";
@@ -81,7 +81,11 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     private _connecting = 0;
     private _registering = 0;
     private _checkpoint: Promise<void> | null = null;
+    private _retry: Promise<void> | null = null;
     private _lastGarbageCollectMs = -1 * (GARBAGE_COLLECT_INTERVAL_MS + 1);
+    /** Procedure frames whose delivery failed. This isolate outlives the facet. */
+    private _unsent: { effects: RoomEffects<T>; id: number }[] = [];
+    private _unsentId = 0;
 
     constructor(
         private readonly _room: SessionRoom<T>,
@@ -294,10 +298,15 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     }
 
     public applyFrames(effects: RoomEffects<T>, senderId: string): Promise<void> {
-        const socket = this._sessions.get(senderId) ?? null;
-
         return this._queue.join(async () => {
-            await this._applyEffects(effects, socket);
+            await this._applyEffects(effects, this._socket(senderId));
+        });
+    }
+
+    /** Writes sockets only. The facet drops storage after `deliverFrames` returns. */
+    public writeFrames(effects: RoomEffects<T>, senderId: string): Promise<void> {
+        return this._queue.join(async () => {
+            await this._applyEffects(effects, this._socket(senderId), false);
         });
     }
 
@@ -407,15 +416,47 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         return this._sessions.getSize();
     }
 
+    public noteStorageDirty(): void {
+        if (this._checkpoint) return;
+
+        const run = this._saveUntilClean();
+
+        this._checkpoint = run;
+        this._platform.keepAlive(run);
+        void run.finally(() => {
+            if (this._checkpoint === run) this._checkpoint = null;
+        });
+    }
+
+    public retryUnsent(effects: RoomEffects<T>): void {
+        this._unsentId += 1;
+        this._unsent.push({ effects, id: this._unsentId });
+
+        if (this._retry) return;
+
+        const run = this._deliverUnsent();
+
+        this._retry = run;
+        this._platform.keepAlive(run);
+        void run.finally(() => {
+            if (this._retry === run) this._retry = null;
+        });
+    }
+
     public listUsers(options: ListUsersOptions = {}): ListUsersResult<IORoom<T>> {
         return pageLiveUsers(this._sessions.getLiveSessions(), options) as ListUsersResult<
             IORoom<T>
         >;
     }
 
+    private _socket(senderId: string): AbstractWebSocket | null {
+        return this._sessions.get(senderId) ?? null;
+    }
+
     private async _applyEffects(
         effects: RoomEffects<T>,
         sender: AbstractWebSocket | null,
+        dropStorage = true,
     ): Promise<void> {
         this._noteStorage(effects);
 
@@ -428,7 +469,11 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                 (frame) => frame.type === "$storageUpdated",
             );
 
-            if (storageFrames.length) await this._writeFrames(storageFrames, "broadcast");
+            if (storageFrames.length) {
+                await this._writeFrames(storageFrames, "broadcast");
+
+                if (dropStorage) await this._room["~"].dropStorageUpdates(storageFrames);
+            }
 
             sender?.handleError({
                 error: effects.error,
@@ -440,6 +485,15 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         }
 
         await this._writeFrames(effects.broadcast, "broadcast");
+
+        if (dropStorage) {
+            const storageFrames = effects.broadcast.filter(
+                (frame) => frame.type === "$storageUpdated",
+            );
+
+            if (storageFrames.length) await this._room["~"].dropStorageUpdates(storageFrames);
+        }
+
         await this._writeFrames(effects.self, "self");
     }
 
@@ -501,7 +555,17 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
                     if (isUserTurn(patch)) return { pending: userTurnPromise(patch) };
 
-                    if (isSuspended(patch)) return { suspended: true as const };
+                    if (isSuspended(patch)) {
+                        if ("error" in patch && isErrorMessage(patch.error)) {
+                            socket.handleError({
+                                error: patch.error,
+                                room: this._room.id,
+                                session: this._sessions.toSession(socket),
+                            });
+                        }
+
+                        return { suspended: true as const };
+                    }
 
                     return { value: patch };
                 },
@@ -550,6 +614,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
                 this._noteStorage(effects);
                 await this._writeFrames(effects.broadcast, "broadcast");
+                await this._room["~"].dropStorageUpdates(effects.broadcast);
             });
         };
 
@@ -705,7 +770,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     private _noteStorage(effects: { storageDirty: boolean }): void {
         if (!effects.storageDirty) return;
 
-        this._scheduleCheckpoint();
+        this.noteStorageDirty();
     }
 
     private async _onPublished(payload: IOPubSubEventMessage<any>): Promise<void> {
@@ -806,7 +871,17 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
                     if (isUserTurn(effects)) return { pending: userTurnPromise(effects) };
 
-                    if (isSuspended(effects)) return { suspended: true as const };
+                    if (isSuspended(effects)) {
+                        if ("error" in effects && isErrorMessage(effects.error)) {
+                            socket.handleError({
+                                error: new Error(effects.error.message),
+                                room: this._room.id,
+                                session: this._sessions.toSession(socket),
+                            });
+                        }
+
+                        return { suspended: true as const };
+                    }
 
                     return { value: effects };
                 },
@@ -834,7 +909,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                 });
                 const { storageDirty, ...received } = storage;
 
-                if (storageDirty) this._scheduleCheckpoint();
+                if (storageDirty) this.noteStorageDirty();
 
                 await this._deliverRecord(
                     broadcast as Record<string, unknown> | null,
@@ -957,6 +1032,35 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         }
     }
 
+    /** Sends procedure frames that `deliverFrames` did not. A failed send stays in this promise and retries after the checkpoint interval. */
+    private async _deliverUnsent(): Promise<void> {
+        while (this._unsent.length) {
+            try {
+                // oxlint-disable-next-line eslint/no-await-in-loop
+                await this._queue.join(async () => {
+                    const pending = this._unsent.slice();
+
+                    for (const item of pending) {
+                        const sender = item.effects.connectionId
+                            ? (this._sessions.get(item.effects.connectionId) ?? null)
+                            : null;
+
+                        // oxlint-disable-next-line eslint/no-await-in-loop
+                        await this._applyEffects(item.effects, sender);
+                        this._unsent = this._unsent.filter((held) => held.id !== item.id);
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+
+                // oxlint-disable-next-line eslint/no-await-in-loop
+                await new Promise<void>((resolve) => {
+                    setTimeout(resolve, STORAGE_CHECKPOINT_INTERVAL_MS);
+                });
+            }
+        }
+    }
+
     /** One promise. Wait, ask the room to copy, and repeat until the copy is clean. */
     private async _saveUntilClean(): Promise<void> {
         for (;;) {
@@ -972,6 +1076,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
                     if (flushed.broadcast.length) {
                         await this._writeFrames(flushed.broadcast, "broadcast");
+                        await this._room["~"].dropStorageUpdates(flushed.broadcast);
                     }
 
                     return flushed.status;
@@ -1000,18 +1105,6 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
             return;
         }
-    }
-
-    private _scheduleCheckpoint(): void {
-        if (this._checkpoint) return;
-
-        const run = this._saveUntilClean();
-
-        this._checkpoint = run;
-        this._platform.keepAlive(run);
-        void run.finally(() => {
-            if (this._checkpoint === run) this._checkpoint = null;
-        });
     }
 
     private _sessionContext(socket: AbstractWebSocket): SessionEventContext<T> {
@@ -1112,6 +1205,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                 // oxlint-disable-next-line eslint/no-await-in-loop
                 await this._queue.join(async () => {
                     await this._writeFrames(produced.broadcast, "broadcast");
+                    await this._room["~"].dropStorageUpdates(produced.broadcast);
                     this._room["~"].logDebug(
                         `${colors.blue(`Unregistered connection for room ${this._room.id}:`)} ${snapshot.id}`,
                     );
