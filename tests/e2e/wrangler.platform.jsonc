@@ -1,0 +1,12 @@
+{
+    "name": "pluv-e2e-platform",
+    "main": "src/server/yjs/platform/index.ts",
+    "compatibility_date": "2026-10-08",
+    "tsconfig": "src/server/yjs/platform/tsconfig.json",
+    "durable_objects": {
+        "bindings": [{ "name": "rooms", "class_name": "RoomSupervisor" }],
+    },
+    "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RoomSupervisor"] }],
+    "worker_loaders": [{ "binding": "LOADER" }],
+    "rules": [{ "type": "Text", "globs": ["**/*.bundle.txt"], "fallthrough": true }],
+}

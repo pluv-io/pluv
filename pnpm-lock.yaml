@@ -730,6 +730,9 @@ importers:
       '@pluv/persistence-redis':
         specifier: workspace:^
         version: link:../../packages/persistence-redis
+      '@pluv/platform':
+        specifier: workspace:^
+        version: link:../../packages/platform
       '@pluv/platform-cloudflare':
         specifier: workspace:^
         version: link:../../packages/platform-cloudflare
@@ -851,6 +854,9 @@ importers:
       drizzle-kit:
         specifier: ^0.31.11
         version: 0.31.11
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
       miniflare:
         specifier: ^4.20260730.0
         version: 4.20260730.0

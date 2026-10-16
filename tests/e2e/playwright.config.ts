@@ -89,6 +89,11 @@ const config: PlaywrightTestConfig = {
             port: 3103,
             timeout: 60 * 1_000,
         },
+        {
+            command: "pnpm dev:yjs:server:platform",
+            port: 3104,
+            timeout: 60 * 1_000,
+        },
     ],
 };
 
