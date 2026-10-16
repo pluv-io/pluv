@@ -1,3 +1,4 @@
+import { manageSessions } from "@pluv/io";
 import { PersistenceCloudflareTransactionalStorage } from "@pluv/persistence-cloudflare-transactional-storage";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { yjs } from "@pluv/crdt-yjs";
@@ -93,7 +94,7 @@ describe("CloudflarePlatform persistence", () => {
                 return webhook.promise;
             },
         });
-        const room = server.createRoom(roomId, { env: {}, state } as never);
+        const room = manageSessions(server.createRoom(roomId, { env: {}, state } as never));
         const socket = new TestSocket("session-1");
 
         await registerAuthorized(room, socket, { io });

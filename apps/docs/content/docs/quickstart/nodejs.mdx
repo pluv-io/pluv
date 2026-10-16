@@ -95,7 +95,7 @@ Integrate with [ws](https://www.npmjs.com/package/ws) on your Node.js server.
 ```ts
 // backend/server.ts
 
-import type { InferIORoom } from "@pluv/io";
+import { manageSessions, type InferIORoom, type RoomSessionManager } from "@pluv/io";
 import { serve, type HttpBindings } from "@hono/node-server";
 import Http from "http";
 import { Hono } from "hono";
@@ -124,21 +124,22 @@ const app = new Hono<{ Bindings: HttpBindings }>()
 const server = serve({ fetch: app.fetch, port: PORT }) as Http.Server;
 const wsServer = new Ws.WebSocketServer({ server });
 
-// Manage rooms in-memory
-const rooms = new Map<string, InferIORoom<typeof ioServer>>();
+// createRoom returns the room. manageSessions attaches the sockets.
+const rooms = new Map<string, RoomSessionManager>();
 
 // Note: All event listeners are configured at the server level via io.server(),
 // not when creating individual rooms. See the ioServer configuration above.
 
-const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
+const getSessions = (roomId: string): RoomSessionManager => {
   const existing = rooms.get(roomId);
   if (existing) return existing;
 
-  // Rooms are created without listener options - all listeners are server-level
-  const newRoom = ioServer.createRoom(roomId);
-  rooms.set(roomId, newRoom);
+  const room: InferIORoom<typeof ioServer> = ioServer.createRoom(roomId);
+  const sessions = manageSessions(room);
 
-  return newRoom;
+  rooms.set(roomId, sessions);
+
+  return sessions;
 };
 
 // Handle room cleanup in the server-level onRoomDestroyed listener
@@ -149,22 +150,22 @@ const getRoom = (roomId: string): InferIORoom<typeof ioServer> => {
 // that arrive with no listener, and register waits on authorization.
 wsServer.on("connection", async (ws, req) => {
   const roomId = parseRoomId(req.url);
-  const room = getRoom(roomId);
+  const sessions = getSessions(roomId);
 
   // Token is only needed if you have configured authorization
   const token = new URL(req.url).searchParams.get("token");
 
   ws.on("message", async (data) => {
-    await room.onMessage(ws)({ data });
+    await sessions.onMessage(ws)({ data });
   });
   ws.on("close", async (code, reason) => {
-    await room.onClose(ws)({ code, reason: reason.toString() });
+    await sessions.onClose(ws)({ code, reason: reason.toString() });
   });
   ws.on("error", async (error) => {
-    await room.onError(ws)({ error, message: error.message });
+    await sessions.onError(ws)({ error, message: error.message });
   });
 
-  await room.register(ws, { request: req, token });
+  await sessions.register(ws, { request: req, token });
 });
 ```
 

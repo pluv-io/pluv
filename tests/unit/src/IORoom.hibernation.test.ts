@@ -1,3 +1,4 @@
+import { manageSessions } from "@pluv/io";
 import { applyUpdate, Doc as YDoc, encodeStateAsUpdate, encodeStateVector } from "yjs";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -7,6 +8,7 @@ import {
     TestPersistence,
     TestPlatform,
     TestSocket,
+    waitForStorageCheckpoint,
     testYjsTreaty,
 } from "./__utils__";
 
@@ -58,7 +60,7 @@ describe("IORoom hibernation", () => {
             getInitialStorage: () => Promise.resolve(null),
             onStorageDestroyed,
         });
-        const room = server.createRoom(roomId);
+        const room = manageSessions(server.createRoom(roomId));
 
         expect(room.getSize()).toBe(1);
 
@@ -88,6 +90,7 @@ describe("IORoom hibernation", () => {
                 },
             }),
         });
+        await waitForStorageCheckpoint();
 
         const updated = new YDoc();
         const updatedState = await persistence.getStorageState(roomId);
@@ -125,7 +128,7 @@ describe("IORoom hibernation", () => {
                     ]),
                 }),
         });
-        const room = io.server().createRoom(roomId);
+        const room = manageSessions(io.server().createRoom(roomId));
         const observer = new TestSocket("session-2");
 
         expect(room.getSize()).toBe(1);
@@ -201,7 +204,7 @@ describe("IORoom hibernation", () => {
                     ]),
                 }),
         });
-        const room = io.server().createRoom(roomId);
+        const room = manageSessions(io.server().createRoom(roomId));
         const observer = new TestSocket("session-bob");
 
         expect(room.getSize()).toBe(1);

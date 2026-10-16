@@ -1,4 +1,4 @@
-import { __internal, DEFAULT_MAX_CONNECTIONS } from "@pluv/io";
+import { manageSessions, __internal, DEFAULT_MAX_CONNECTIONS } from "@pluv/io";
 import { describe, expect, it } from "vitest";
 import { createAuthorizedIO, registerAuthorized, TestSocket } from "./__utils__";
 
@@ -44,7 +44,7 @@ describe("presence fan-out seatbelt", () => {
         const io = createAuthorizedIO({
             limits: { maxConnections: 2 },
         });
-        const room = io.server().createRoom("max-connections");
+        const room = manageSessions(io.server().createRoom("max-connections"));
         const first = new TestSocket("session-1");
         const second = new TestSocket("session-2");
         const third = new TestSocket("session-3");
@@ -60,11 +60,54 @@ describe("presence fan-out seatbelt", () => {
         );
     });
 
+    it("does not count a connect listener toward maxConnections twice", async () => {
+        let releaseConnect: () => void = () => undefined;
+        const connectGate = new Promise<void>((resolve) => {
+            releaseConnect = resolve;
+        });
+        let markStarted: () => void = () => undefined;
+        const connectStarted = new Promise<void>((resolve) => {
+            markStarted = resolve;
+        });
+        let connects = 0;
+        const io = createAuthorizedIO({
+            limits: { maxConnections: 2 },
+        });
+        const server = io.server({
+            onUserConnected: async () => {
+                connects += 1;
+
+                if (connects > 1) return;
+
+                markStarted();
+                await connectGate;
+            },
+        });
+        const room = manageSessions(server.createRoom("max-connections-listener"));
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+        const third = new TestSocket("session-3");
+        const pending = registerAuthorized(room, first, { io });
+
+        await connectStarted;
+        await registerAuthorized(room, second, { io });
+
+        expect(room.getSize()).toBe(2);
+
+        await registerAuthorized(room, third, { io });
+
+        expect(room.getSize()).toBe(2);
+        expect(third.readyState).toBe(3);
+
+        releaseConnect();
+        await pending;
+    });
+
     it("rejects a concurrent extra socket at maxConnections", async () => {
         const io = createAuthorizedIO({
             limits: { maxConnections: 1 },
         });
-        const room = io.server().createRoom("max-connections-race");
+        const room = manageSessions(io.server().createRoom("max-connections-race"));
         const first = new TestSocket("session-1");
         const second = new TestSocket("session-2");
 

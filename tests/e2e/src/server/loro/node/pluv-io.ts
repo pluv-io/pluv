@@ -1,4 +1,4 @@
-import { createIO, InferIORoom } from "@pluv/io";
+import { createIO, type RoomSessionManager } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
 import { treaty } from "../../../pluv-io/loro/treaty";
@@ -17,7 +17,7 @@ const router = io.router({
         .broadcast(({ message }) => ({ RECEIVE_MESSAGE: { message } })),
 });
 
-export const rooms = new Map<string, InferIORoom<typeof ioServer>>();
+export const rooms = new Map<string, RoomSessionManager>();
 export const ioServer = io.server({
     getInitialStorage: () => null,
     router,

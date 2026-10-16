@@ -4,6 +4,7 @@ import type { IOLike, Id, InferTreatyUser, NonNilProps, OnGetOperator } from "@p
 import colors from "kleur";
 import type { InferRoomContextType } from "./AbstractPlatform";
 import { createBaseRouter } from "./createBaseRouter";
+import { createStorageRouter } from "./createStorageRouter";
 import type { IODefs, IOLikeFromDefs, SetKey } from "./IODefs";
 import { IORoom } from "./IORoom";
 import type { PluvIO } from "./PluvIO";
@@ -20,7 +21,7 @@ import type {
 import { __PLUV_VERSION } from "./version";
 
 export type InferIORoom<TServer extends PluvServer<any>> =
-    TServer extends PluvServer<infer IDefs extends IODefs> ? IORoom<IDefs> : never;
+    TServer extends PluvServer<infer IDefs extends IODefs> ? Omit<IORoom<IDefs>, "~"> : never;
 
 export type PluvServerConfig<T extends IODefs = IODefs> = Partial<PluvIOListeners<T>> & {
     context?: PluvContext<T["platform"], T["context"]>;
@@ -91,6 +92,11 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
         } as unknown as T;
     }
 
+    /**
+     * `_router` fills `_defs` with the session slice, the storage slice, and the
+     * user's router. `createRoom` receives `_docRouter`: storage events plus the
+     * user's router. `manageSessions` dispatches session events.
+     */
     private get _baseRouter(): PluvRouter<SetKey<T, "events", {}>> {
         return createBaseRouter<T>({
             limits: this._config.limits,
@@ -104,6 +110,18 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             this._config.router
                 ? PluvRouter.merge(this._baseRouter, this._config.router)
                 : this._baseRouter
+        ) as PluvRouter<T>;
+    }
+
+    private get _docRouter(): PluvRouter<T> {
+        const storage = createStorageRouter<T>({
+            limits: this._config.limits,
+            logDebug: (...data) => this._logDebug(...data),
+            onStorageUpdated: (event) => this._listeners.onStorageUpdated(event),
+        });
+
+        return (
+            this._config.router ? PluvRouter.merge(storage, this._config.router) : storage
         ) as PluvRouter<T>;
     }
 
@@ -138,7 +156,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
         };
     }
 
-    public createRoom(room: string, ...options: CreateRoomOptions<T>): IORoom<T> {
+    public createRoom(room: string, ...options: CreateRoomOptions<T>): Omit<IORoom<T>, "~"> {
         const { _meta, debug, ...platformRoomContext } = (options[0] ??
             {}) as CreateRoomOptions<T>[0] & {
             _meta?: any;
@@ -176,12 +194,9 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             async onStorageDestroyed(event) {
                 logDebug(`${colors.blue("Destroying storage for room:")} ${room}`);
 
-                // Always fire server-level onStorageDestroyed
+                // Always fire server-level onStorageDestroyed. The room deletes its
+                // initialized store after this returns.
                 await Promise.resolve(listeners.onStorageDestroyed(event));
-
-                await event.platform.persistence.deleteStorageState(room);
-
-                logDebug(`${colors.blue("Destroyed storage for room:")} ${room}`);
             },
             onStorageUpdated(event) {
                 return listeners.onStorageUpdated(event);
@@ -199,7 +214,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             treaty: this._config.treaty,
             platform,
             roomContext,
-            router: this._router,
+            router: this._docRouter,
         });
 
         this._logDebug(`${colors.blue("Created room:")} ${room}`);

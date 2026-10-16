@@ -1,3 +1,4 @@
+import { manageSessions } from "@pluv/io";
 import { describe, expect, it } from "vitest";
 import { createAuthorizedIO, registerAuthorized, TestSocket } from "./__utils__";
 
@@ -49,7 +50,7 @@ const listUsers = async (
 describe("IORoom listUsers", () => {
     const createRoom = (roomId: string) => {
         const io = createAuthorizedIO({});
-        const room = io.server().createRoom(roomId);
+        const room = manageSessions(io.server().createRoom(roomId));
 
         return { io, room };
     };
@@ -250,7 +251,7 @@ describe("IORoom listUsers", () => {
         const server = io.server({
             onGetOperator: () => ({ id: "ada" }),
         });
-        const room = server.createRoom("list-users-kinds");
+        const room = manageSessions(server.createRoom("list-users-kinds"));
         const occupant = new TestSocket("session-ada");
         const operator = new TestSocket("session-staff");
         const bob = new TestSocket("session-bob");

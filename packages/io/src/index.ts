@@ -59,6 +59,8 @@ export type {
 export { __internal } from "./internal";
 export type { IODefs, IOLikeFromDefs, PatchDefs } from "./IODefs";
 export type { IORoom } from "./IORoom";
+export { manageSessions } from "./manageSessions";
+export type { RoomSessionManager } from "./RoomSessionManager";
 export { PluvIO } from "./PluvIO";
 export type { PluvIOConfig, ServerConfig } from "./PluvIO";
 export { PluvProcedure } from "./PluvProcedure";
@@ -67,10 +69,12 @@ export { PluvRouter } from "./PluvRouter";
 export type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 export { PluvServer } from "./PluvServer";
 export type { CreateRoomOptions, InferIORoom, PluvServerConfig } from "./PluvServer";
+export { isSuspended, isUserTurn, userTurnPromise } from "./roomEffects";
 export type {
     GetInitialStorageFn,
     HandleMode,
     IORoomDestroyedEvent,
+    IORoomInternal,
     IORoomListenerEvent,
     IORoomMessageEvent,
     IOStorageUpdatedEvent,
@@ -82,6 +86,14 @@ export type {
     PluvIOLimits,
     PluvIOListeners,
     PluvIOSecret,
+    RoomEffects,
+    RoomJoinActor,
+    RoomPresenceSession,
+    RoomRegisterResult,
+    RoomStorageActor,
+    SessionRoom,
+    Suspended,
+    UserTurn,
     WebSocketSerializedState,
     WebSocketSession,
     WebSocketSessionSeq,

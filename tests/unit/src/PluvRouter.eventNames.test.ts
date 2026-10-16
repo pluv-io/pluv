@@ -55,15 +55,20 @@ describe("PluvRouter event names and merge", () => {
         const server = io.server();
         const room = server.createRoom("router-builtins");
 
-        expect(Object.keys(room._defs.events)).toEqual(
+        expect(Object.keys(server._defs.events)).toEqual(
             expect.arrayContaining([
                 "$getOthers",
                 "$initializeSession",
+                "$listUsers",
                 "$ping",
                 "$syncStorage",
                 "$updatePresence",
                 "$updateStorage",
             ]),
         );
+        expect(Object.keys(room._defs.events)).toEqual(
+            expect.arrayContaining(["$syncStorage", "$updateStorage"]),
+        );
+        expect(Object.keys(room._defs.events)).not.toContain("$ping");
     });
 });

@@ -1,4 +1,4 @@
-import { createIO, InferIORoom } from "@pluv/io";
+import { createIO, type RoomSessionManager } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -23,7 +23,7 @@ const router = io.router({
         .self(({ value }) => ({ doubledNumber: { value: value * 2 } })),
 });
 
-export const ioRooms = new Map<string, InferIORoom<typeof ioServer>>();
+export const ioRooms = new Map<string, RoomSessionManager>();
 export const ioServer = io.server({
     router,
     getInitialStorage: async ({ room: name }) => {

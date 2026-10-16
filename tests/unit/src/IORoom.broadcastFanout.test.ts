@@ -1,3 +1,4 @@
+import { manageSessions } from "@pluv/io";
 import { describe, expect, it } from "vitest";
 import { createAuthorizedIO, registerAuthorized, TestSocket, tick } from "./__utils__";
 
@@ -24,7 +25,7 @@ describe("IORoom broadcast fan-out", () => {
     it("still delivers to healthy sockets when another send throws", async () => {
         const io = createAuthorizedIO({});
         const server = io.server();
-        const room = server.createRoom("fanout");
+        const room = manageSessions(server.createRoom("fanout"));
         const healthy = new TestSocket("session-healthy");
         const broken = new TestSocket("session-broken");
 

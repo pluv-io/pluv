@@ -1,48 +1,26 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type {
-    BaseIOEventRecord,
     CrdtDocLike,
-    EventMessage,
     InferTreatyProcedureInput,
-    IOEventMessage,
     IOLike,
-    Id,
     InferEventMessage,
-    InferEventsInput,
     InferEventsOutput,
-    InferIOInput,
     InferTreatyUser,
     JsonObject,
-    ListUsersOptions,
-    ListUsersResult,
     Maybe,
+    MaybePromise,
     OperatorUser,
+    ParticipantKind,
 } from "@pluv/types";
 import colors from "kleur";
-import type {
-    AbstractPlatform,
-    InferInitContextType,
-    InferPlatformWebSocketSource,
-    InferRoomContextType,
-} from "./AbstractPlatform";
-import type { IOPubSubEventMessage } from "./AbstractPubSub";
-import type {
-    AbstractCloseEvent,
-    AbstractErrorEvent,
-    AbstractMessageEvent,
-} from "./AbstractWebSocket";
-import { AbstractWebSocket } from "./AbstractWebSocket";
+import type { InferInitContextType, InferRoomContextType } from "./AbstractPlatform";
 import type { IODefs, IOLikeFromDefs } from "./IODefs";
 import type { PluvRouter } from "./PluvRouter";
-import { RoomSessions } from "./RoomSessions";
 import { RoomStorage } from "./RoomStorage";
+import { StorageCheckpoint } from "./StorageCheckpoint";
 import { authorize } from "./authorize";
-import {
-    GARBAGE_COLLECT_INTERVAL_MS,
-    ROOM_STATS_THROTTLE_MS,
-    isServerOriginEvent,
-} from "./constants";
+import { PING_TIMEOUT_MS } from "./constants";
 import type {
     EventResolverContext,
     GetInitialStorageFn,
@@ -55,61 +33,39 @@ import type {
     PluvContext,
     PluvIOLimits,
     PluvIOSecret,
-    SendMessageOptions,
+    IORoomInternal,
+    RoomAttachment,
+    RoomEffectFrame,
+    RoomEffects,
+    RoomJoinActor,
+    RoomPresenceSession,
+    RoomRegisterResult,
+    RoomSessionSnapshot,
+    RoomStorageActor,
+    SessionEventContext,
+    SessionRoom,
+    StorageEventContext,
+    UserTurn,
+    WebSocketRegisterConfig,
     WebSocketSession,
-    WebSocketType,
 } from "./types";
+import { emptyRoomEffects, userTurn } from "./roomEffects";
 import {
     assertExhaustive,
-    getRoomStatsFromSessions,
-    getSessionKind,
-    getSessionOperator,
-    oneLine,
-    pageLiveUsers,
+    invokeProcedureResolvers,
+    isThenable,
     parseOperatorUser,
     parsePluvSchema,
     resolveIOSecret,
-    resolveMaxConnections,
-    throttle,
 } from "./utils";
-import type { Throttle } from "./utils";
 
-type BroadcastMessage<T extends IODefs> =
-    | InferEventMessage<InferEventsInput<T["events"]>>
-    | InferEventMessage<BaseIOEventRecord<{ user: T["treaty"]["user"] }>>;
+const snapshotIsLive = (
+    session: { lastPing: number; quit: boolean },
+    now = Date.now(),
+): boolean => {
+    if (session.quit) return false;
 
-interface BroadcastParams<T extends IODefs> {
-    message: BroadcastMessage<T>;
-    senderId?: string;
-    /**
-     * Envelope user when the sender session is already gone (e.g. `$exit`).
-     */
-    senderUser?: InferTreatyUser<T["treaty"]> | null;
-    senderOperator?: OperatorUser | null;
-}
-
-export interface IORoomListeners<T extends IODefs = IODefs> {
-    onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;
-    onStorageDestroyed: (event: IORoomListenerEvent<T>) => void;
-    onMessage: (event: IORoomMessageEvent<T>) => void;
-    onStorageUpdated: (event: IOStorageUpdatedEvent<T>) => void;
-    onUserConnected: (event: IOUserConnectedEvent<T>) => void;
-    onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
-}
-
-type IORoomThrottles = {
-    roomStats: Throttle;
-};
-
-export type BroadcastProxy<TIO extends IORoom<any>> = (<TEvent extends keyof InferIOInput<TIO>>(
-    event: TEvent,
-    data: Id<InferIOInput<TIO>[TEvent]>,
-    senderId: string,
-) => Promise<void>) & {
-    [event in keyof InferIOInput<TIO>]: (
-        data: Id<InferIOInput<TIO>>[event],
-        senderId: string,
-    ) => Promise<void>;
+    return now - session.lastPing <= PING_TIMEOUT_MS;
 };
 
 /**
@@ -156,6 +112,15 @@ export type StorageProcedureProxy<TIO extends IORoom<any>> = (<
     ) => Promise<void>;
 };
 
+export interface IORoomListeners<T extends IODefs = IODefs> {
+    onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;
+    onStorageDestroyed: (event: IORoomListenerEvent<T>) => void;
+    onMessage: (event: IORoomMessageEvent<T>) => void;
+    onStorageUpdated: (event: IOStorageUpdatedEvent<T>) => MaybePromise<void>;
+    onUserConnected: (event: IOUserConnectedEvent<T>) => void;
+    onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
+}
+
 export type IORoomConfig<T extends IODefs = IODefs> = Partial<IORoomListeners<T>> & {
     context: PluvContext<T["platform"], T["context"]>;
     debug: boolean;
@@ -172,37 +137,49 @@ type AuthorizedIdentity<TUser> =
     | { kind: "operator"; operator: OperatorUser; user: TUser }
     | { kind: "user"; operator: null; user: TUser };
 
-interface SendMessageSender {
-    operator: OperatorUser | null;
-    sessionId: string | null;
-    user: JsonObject | null;
-}
+/** Clients ignore `$storageUpdated` when `connectionId` is missing. A listener write has no session. */
+const SERVER_STORAGE_CONNECTION_ID = "$server";
 
-export type WebSocketRegisterConfig<
-    TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
-> = {
-    token?: string | null;
-} & InferInitContextType<TPlatform>;
+const effectFrame = <T extends IODefs>(
+    type: string,
+    data: unknown,
+    session: Pick<RoomSessionSnapshot<T>, "id" | "operator" | "user">,
+): RoomEffectFrame<T> => ({
+    connectionId: session.id,
+    data,
+    operator: session.operator,
+    type,
+    user: session.user,
+});
 
-export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<T>> {
+const framesFromRecord = <T extends IODefs>(
+    record: Record<string, unknown> | null | undefined,
+    session: Pick<RoomSessionSnapshot<T>, "id" | "operator" | "user">,
+): RoomEffectFrame<T>[] => {
+    if (!record) return [];
+
+    return Object.entries(record).map(([type, data]) => effectFrame<T>(type, data, session));
+};
+
+export class IORoom<T extends IODefs = IODefs>
+    implements IOLike<IOLikeFromDefs<T>>, SessionRoom<T>
+{
     public readonly id: string;
+    public readonly limits: PluvIOLimits;
+    public readonly "~": IORoomInternal<T>;
 
-    private _lastGarbageCollectMs: number = -1 * (GARBAGE_COLLECT_INTERVAL_MS + 1);
-    private _registering = 0;
     private _teardown: Promise<void> | null = null;
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
+    private readonly _checkpoint: StorageCheckpoint<T["context"]>;
     private readonly _context: PluvContext<T["platform"], T["context"]>;
     private readonly _debug: boolean;
-    private readonly _limits: PluvIOLimits;
     private readonly _listeners: IORoomListeners<T>;
     private readonly _platform: T["platform"];
     private readonly _roomContext: InferRoomContextType<T["platform"]>;
     private readonly _router: PluvRouter<T>;
     private readonly _secret?: PluvIOSecret<T["platform"]>;
-    private readonly _sessions: RoomSessions<T>;
     private readonly _storage: RoomStorage<T>;
-    private readonly _throttles: IORoomThrottles;
     private readonly _treaty: T["treaty"];
 
     /**
@@ -222,62 +199,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             platform: T["platform"];
             treaty: T["treaty"];
         };
-    }
-
-    /**
-     * @experimental
-     * @description Invoke a treaty presence procedure as a live session. Requires a live
-     * `senderId`. Breaking changes may ship without a major version bump.
-     */
-    public get __experimental_presence(): PresenceProcedureProxy<this> {
-        const invoke = (name: string, data: unknown, senderId: string): Promise<void> => {
-            return this._runPresenceProcedure(name, data, senderId);
-        };
-
-        return new Proxy(invoke, {
-            get(fn, prop) {
-                return (data: unknown, senderId: string) => fn(prop as string, data, senderId);
-            },
-        }) as PresenceProcedureProxy<this>;
-    }
-
-    /**
-     * @experimental
-     * @description Invoke a treaty storage procedure as a live session. Requires a live
-     * `senderId`. Breaking changes may ship without a major version bump.
-     */
-    public get __experimental_storage(): StorageProcedureProxy<this> {
-        const invoke = (name: string, data: unknown, senderId: string): Promise<void> => {
-            return this._runStorageProcedure(name, data, senderId);
-        };
-
-        return new Proxy(invoke, {
-            get(fn, prop) {
-                return (data: unknown, senderId: string) => fn(prop as string, data, senderId);
-            },
-        }) as StorageProcedureProxy<this>;
-    }
-
-    public get broadcast(): BroadcastProxy<this> {
-        const _broadcast = <TEvent extends keyof InferIOInput<this>>(
-            event: TEvent,
-            data: Id<InferIOInput<this>[TEvent]>,
-            senderId: string,
-        ): Promise<void> => {
-            if (typeof senderId !== "string") {
-                throw new Error("room.broadcast of a user event requires a senderId");
-            }
-
-            const message = { type: event, data } as BroadcastMessage<T>;
-
-            return Promise.resolve(this._broadcast({ message, senderId }));
-        };
-
-        return new Proxy(_broadcast, {
-            get(fn, prop) {
-                return (data: any, senderId: string) => fn(prop as any, data, senderId);
-            },
-        }) as BroadcastProxy<this>;
     }
 
     constructor(id: string, config: IORoomConfig<T>) {
@@ -301,16 +222,15 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         } = config as IORoomConfig<T> & { _meta?: any };
 
         this.id = id;
+        this.limits = limits;
 
         this._context = context;
         this._debug = debug;
-        this._limits = limits;
         this._roomContext = roomContext;
         this._router = router;
         this._secret = secret;
         this._treaty = treaty;
         this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), roomContext });
-        this._sessions = new RoomSessions({ platform: this._platform });
         this._storage = new RoomStorage({
             docFactory:
                 (treaty.storage as AbstractCrdtDocFactory<any, any> | undefined) ?? noop.doc(),
@@ -320,389 +240,191 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
             room: this.id,
         });
 
-        // Listeners are provided from server-level configuration via createRoom
+        this._checkpoint = new StorageCheckpoint({
+            getContext: () => this._getContext(),
+            getDoc: () => this._doc,
+            limits: this.limits,
+            onStored: (event) => {
+                void this._listeners.onStorageUpdated(event);
+            },
+            room: this.id,
+            setStorageState: (encodedState) =>
+                this._platform.persistence.setStorageState(this.id, encodedState),
+        });
+
         this._listeners = {
             onRoomDestroyed: (event) => onRoomDestroyed?.(event),
             onStorageDestroyed: (event) => onStorageDestroyed?.(event),
-            onStorageUpdated: (event) => onStorageUpdated?.(event),
-            onMessage: (event) => onMessage?.(event),
+            onStorageUpdated: (event) => {
+                // Already settled when the listener returns nothing. A returned promise
+                // is kept until it settles. The checkpoint does not wait for it.
+                this._platform.keepAlive(
+                    Promise.resolve(onStorageUpdated?.(event)).catch((error: unknown) => {
+                        console.error(error);
+                    }),
+                );
+            },
+            onMessage: (event) => {
+                // Already settled when the listener returns nothing. A returned promise
+                // is kept until it settles. The message handler does not wait for it.
+                this._platform.keepAlive(
+                    Promise.resolve(onMessage?.(event)).catch((error: unknown) => {
+                        console.error(error);
+                    }),
+                );
+            },
             onUserConnected: (event) => onUserConnected?.(event),
             onUserDisconnected: (event) => onUserDisconnected?.(event),
         };
-        this._throttles = {
-            roomStats: throttle(() => this._emitRoomStats(), {
-                wait: ROOM_STATS_THROTTLE_MS,
-            }),
+
+        this["~"] = {
+            applyPresencePatch: this._applyPresencePatch.bind(this),
+            applyStorageProcedure: this._applyStorageProcedure.bind(this),
+            close: this._close.bind(this),
+            destroy: this._destroyRoom.bind(this),
+            flushCheckpoint: async () => {
+                const status = await this._checkpoint.flush();
+                const updates = this._checkpoint.takeUpdates();
+
+                return {
+                    broadcast: updates.map((update): RoomEffectFrame<T> => ({
+                        connectionId: SERVER_STORAGE_CONNECTION_ID,
+                        data: { state: update },
+                        operator: null,
+                        type: "$storageUpdated",
+                        user: null,
+                    })),
+                    status,
+                };
+            },
+            garbageCollect: this._garbageCollect.bind(this),
+            initializeStorage: this._initializeStorage.bind(this),
+            logDebug: this._logDebug.bind(this),
+            message: this._message.bind(this),
+            register: this._register.bind(this),
+            storageDirty: () => this._checkpoint.dirty,
+            userConnected: this._userConnected.bind(this),
+            whenReady: () => this._initialized,
         };
-
-        /**
-         * @description Everything below this line relates to waking up from hibernation.
-         * @see https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-hibernation-api
-         * @date April 17, 2025
-         */
-        const webSockets = this._platform.getWebSockets() as readonly InferPlatformWebSocketSource<
-            T["platform"]
-        >[];
-
-        webSockets.forEach((webSocket) => {
-            const deserialized = this._platform.getSerializedState(webSocket);
-            const sessionId = this._platform.getSessionId(webSocket);
-
-            if (!deserialized) return;
-            if (typeof sessionId !== "string") return;
-
-            const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
-
-            this._sessions.set(sessionId, pluvWs);
-
-            const session = pluvWs.user ? pluvWs.session : null;
-
-            if (!session) return;
-
-            const kind = getSessionKind(session);
-            const participantId = pluvWs.user?.id ?? null;
-
-            if (participantId) {
-                this._sessions.addParticipantSession({ id: participantId, kind, sessionId });
-            }
-        });
 
         this._initialize();
     }
 
     /**
-     * @description Closes a connection with the specified sessionId
-     * @param sessionId The session id of the connection to close
+     * @internal Opens the stored document and applies a treaty presence procedure.
      */
-    public async evict(sessionId: string): Promise<void> {
-        const session = this._sessions.get(sessionId);
+    private async _applyPresencePatch(params: {
+        name: string;
+        data: unknown;
+        session: RoomPresenceSession<T>;
+    }): Promise<JsonObject | null | UserTurn<JsonObject | null>> {
+        const { name, data, session } = params;
+        const procedures = this._treaty._defs.procedures.presence;
 
-        if (session) session.state.quit = true;
-
-        await this._emitQuitters();
-    }
-
-    /**
-     * @description Closes all connections to this room, effectively destroying
-     * the room
-     */
-    public async evictAll(): Promise<void> {
-        const sessions = Array.from(this._sessions.values());
-
-        sessions.forEach((session) => {
-            session.state.quit = true;
-        });
-
-        await this._emitQuitters();
-    }
-
-    /**
-     * @description The IORoom will garbage collect occasionally as connections ping/pong the
-     * server
-     */
-    public async garbageCollect(): Promise<void> {
-        this._lastGarbageCollectMs = Date.now();
-
-        await Promise.all([this._emitQuitters(), this._emitSyncState()]);
-    }
-
-    public getSize(): number {
-        return this._sessions.getSize();
-    }
-
-    public listUsers(options: ListUsersOptions = {}): ListUsersResult<this> {
-        return pageLiveUsers(this._sessions.getLiveSessions(), options) as ListUsersResult<this>;
-    }
-
-    public onClose(
-        webSocket: WebSocketType<T["platform"]>,
-    ): (event: AbstractCloseEvent) => Promise<void> {
-        const wsSession = this._sessions.resolve(webSocket);
-
-        if (!wsSession) return async () => undefined;
-
-        return this._onClose(wsSession);
-    }
-
-    public onError(
-        webSocket: WebSocketType<T["platform"]>,
-    ): (event: AbstractErrorEvent) => Promise<void> {
-        const wsSession = this._sessions.resolve(webSocket);
-
-        if (!wsSession) return async () => undefined;
-
-        return this._onClose(wsSession);
-    }
-
-    public onMessage(
-        webSocket: WebSocketType<T["platform"]>,
-    ): (event: AbstractMessageEvent) => Promise<void> {
-        const wsSession = this._sessions.resolve(webSocket);
-
-        if (!wsSession) return async () => undefined;
-
-        return this._onMessage(wsSession);
-    }
-
-    public async register(
-        webSocket: InferPlatformWebSocketSource<T["platform"]>,
-        ...options: keyof InferInitContextType<T["platform"]> extends never
-            ? [{ token?: string }?]
-            : [WebSocketRegisterConfig<T["platform"]>]
-    ): Promise<void> {
-        const _options = (options[0] ?? {}) as WebSocketRegisterConfig<T["platform"]>;
-        const { token: tokenOption, ...initRest } = _options as WebSocketRegisterConfig<
-            T["platform"]
-        > & { token?: string | null };
-        const token = tokenOption ?? null;
-        const registerConfig = {
-            ...this._platform.normalizeInitContext(initRest as InferInitContextType<T["platform"]>),
-            token,
-        } as WebSocketRegisterConfig<T["platform"]>;
-
-        /**
-         * TODO
-         * @description Update the sessionId strategy so that the userId can be used to retrieve
-         * the session in O(1) time if authorized.
-         * @date April 15, 2025
-         */
-        const sessionId = this._platform.getSessionId(webSocket);
-        const sessionExists = typeof sessionId === "string" && this._sessions.has(sessionId);
-
-        if (sessionExists) return;
-
-        const maxConnections = resolveMaxConnections(this._limits);
-        const rejectMaxConnections = (): void => {
-            const rejected = this._platform.convertWebSocket(webSocket, { room: this.id });
-
-            rejected.handleError({
-                error: new Error(`Room is at maxConnections (${maxConnections.toLocaleString()}).`),
-                room: this.id,
-            });
-            rejected.close(4000, "Room is at maxConnections");
-        };
-
-        if (this.getSize() + this._registering >= maxConnections) {
-            rejectMaxConnections();
-
-            return;
+        if (!procedures || !Object.hasOwn(procedures, name)) {
+            throw new Error(`Unknown presence procedure "${name}"`);
         }
 
-        this._registering += 1;
+        const procedure = procedures[name];
+        const doc = await this._doc;
+        const applied = procedure.apply(data, {
+            user: session.user,
+            operator: session.operator,
+            presence: session.presence,
+            doc,
+        }) as JsonObject | null | PromiseLike<JsonObject | null>;
 
-        let reserved = true;
-        const releaseReservation = (): void => {
-            if (!reserved) return;
+        if (isThenable(applied)) return userTurn(Promise.resolve(applied));
 
-            reserved = false;
-            this._registering -= 1;
-        };
+        return applied;
+    }
 
-        try {
-            // Joining an in-flight teardown lets the room re-initialize from storage below, rather
-            // than binding this connection to the doc that teardown discards.
-            if (this._teardown) await this._teardown;
-
-            if (!(await this._initialized)) {
-                this._initialize();
-                await this._initialized;
-            }
-
-            const identity = await this._getAuthorizedUser(token, registerConfig);
-            const pluvWs = this._platform.convertWebSocket(webSocket, { room: this.id });
-
-            if (!identity) {
-                this._logDebug(colors.blue("Authorization failed for connection"));
-                pluvWs.handleError({ error: new Error("Not authorized"), room: this.id });
-                pluvWs.close(3000, "WebSocket unauthorized.");
-
-                return;
-            }
-
-            const { kind, operator, user } = identity;
-            const participantId = user.id;
-            const latest = this._sessions.getLatestPresence(participantId, kind);
-            const prevState = pluvWs.state;
-
-            pluvWs.user = user;
-
-            this._platform.setSerializedState(pluvWs, {
-                ...prevState,
-                kind,
-                operator,
-                presence: latest.presence,
-                seq: { ...prevState.seq, presence: latest.seq },
-            });
-            this._sessions.addParticipantSession({
-                id: participantId,
-                kind,
-                sessionId: pluvWs.sessionId,
-            });
-
-            this._logDebug(
-                `${colors.blue(`Registering connection for room ${this.id}:`)} ${pluvWs.sessionId}`,
-            );
-
-            await this._platform.acceptWebSocket(pluvWs);
-            this._sessions.set(pluvWs.sessionId, pluvWs);
-            releaseReservation();
-            await this._platform.persistence.addUser(this.id, pluvWs.sessionId, user);
-
-            await this._emitRegistered(pluvWs);
-            this._throttles.roomStats.schedule();
-
-            const size = this.getSize();
-
-            this._logDebug(oneLine`
-                ${colors.blue(`Registered connection for room ${this.id}:`)}
-                ${pluvWs.sessionId}
-            `);
-            this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
-        } finally {
-            releaseReservation();
+    private async _applyStorageProcedure(params: {
+        name: string;
+        data: unknown;
+        actor: RoomStorageActor<T>;
+    }): Promise<RoomEffects<T>> {
+        if (!(await this._initialized) || this._checkpoint.closed) {
+            return this._releaseStorage(emptyRoomEffects<T>(), params.actor);
         }
-    }
 
-    private async _broadcast(params: BroadcastParams<T>): Promise<void> {
-        const { message, senderId, senderUser, senderOperator } = params;
-        const type = (message as { type: string }).type;
+        const { name, data, actor } = params;
+        const procedures = this._treaty._defs.procedures.storage;
 
-        if (typeof senderId !== "string" && !isServerOriginEvent(type)) return;
+        if (!procedures || !Object.hasOwn(procedures, name)) {
+            throw new Error(`Unknown storage procedure "${name}"`);
+        }
 
-        const sender = senderId ? (this._sessions.get(senderId) ?? null) : null;
-        const session = sender?.session ?? null;
-        const user = senderUser ?? session?.user ?? null;
-        const operator = (() => {
-            if (senderOperator !== undefined) return senderOperator;
-            if (session) return getSessionOperator(session);
+        const procedure = procedures[name];
+        const doc = await this._doc;
 
-            return null;
-        })();
-
-        await this._platform.pubSub.publish(this.id, {
-            ...message,
-            connectionId: senderId ?? null,
-            operator,
-            room: this.id,
-            user,
-        } as IOPubSubEventMessage<any>);
-    }
-
-    private async _closeWebSockets(webSockets: readonly AbstractWebSocket[]): Promise<void> {
-        const closeWebSocket = async (webSocket: AbstractWebSocket): Promise<void> => {
-            const sessionId = webSocket.sessionId;
-            const deleted = this._sessions.deleteConnection(sessionId);
-
-            if (!deleted) return;
-
-            const session = this._sessions.toSession(deleted);
-            const user = session.user;
-            const kind = getSessionKind(session);
-            const operator = getSessionOperator(session);
-            const participantId = user.id;
-
-            this._logDebug(
-                `${colors.blue(`Unregistering connection for room ${this.id}:`)} ${sessionId}`,
-            );
-
-            await this._platform.persistence.deleteUser(this.id, sessionId).catch(() => null);
-            await this._broadcast({
-                message: {
-                    type: "$exit",
-                    data: {
-                        sessionId,
-                        user,
-                        operator,
-                    },
-                } as BroadcastMessage<T>,
-                senderId: sessionId,
-                senderUser: user,
-                senderOperator: operator,
+        const apply = (): void => {
+            procedure.apply(data, {
+                user: actor.user,
+                operator: actor.operator,
+                presence: actor.presence,
+                doc,
             });
-            this._throttles.roomStats.schedule();
-
-            if (!!participantId) {
-                this._sessions.removeParticipantSession({ id: participantId, kind, sessionId });
-            }
-
-            try {
-                const [doc, context] = await Promise.all([this._doc, this._getContext()]);
-                const encodedState = doc.getEncodedState();
-
-                await Promise.resolve(
-                    this._listeners.onUserDisconnected({
-                        context,
-                        encodedState,
-                        kind,
-                        operator,
-                        platform: this._platform,
-                        room: this.id,
-                        user,
-                    }),
-                );
-            } catch (error) {
-                console.error(error);
-            }
-
-            this._logDebug(
-                `${colors.blue(`Unregistered connection for room ${this.id}:`)} ${deleted.sessionId}`,
-            );
         };
 
-        const promises = webSockets.map(async (webSocket) => {
-            await closeWebSocket(webSocket).catch(() => null);
-        });
+        const update = this._checkpoint.hold(() =>
+            doc.captureUpdate(() => {
+                if (procedure.config.transact === false) {
+                    apply();
 
-        await Promise.all(promises).catch(() => null);
+                    return;
+                }
 
-        const size = this.getSize();
+                doc.transact(apply, actor.id);
+            }),
+        );
 
-        this._logDebug(`${colors.blue(`Room ${this.id} size:`)} ${size}`);
+        if (!update) return this._releaseStorage(emptyRoomEffects<T>(), actor);
 
-        if (!!size) return;
+        this._checkpoint.assertSize(doc.getEncodedState());
+
+        return this._releaseStorage(
+            {
+                ...emptyRoomEffects<T>(),
+                broadcast: [effectFrame("$storageUpdated", { state: update }, actor)],
+            },
+            actor,
+        );
+    }
+
+    private async _close(session: RoomSessionSnapshot<T>): Promise<RoomEffects<T>> {
+        if (!(await this._initialized)) {
+            return { ...emptyRoomEffects<T>(), connectionId: session.id };
+        }
+
+        await this._emitDisconnected(session);
+
+        return this._releaseStorage(
+            {
+                ...emptyRoomEffects<T>(),
+                broadcast: [
+                    effectFrame(
+                        "$exit",
+                        {
+                            operator: session.operator,
+                            sessionId: session.id,
+                            user: session.user,
+                        },
+                        session,
+                    ),
+                ],
+                closes: [session.id],
+            },
+            session,
+        );
+    }
+
+    private async _destroyRoom(): Promise<void> {
         if (!this._uninitialize) return;
 
         const uninitialize = (await this._uninitialize).bind(this);
+
         await uninitialize();
-    }
-
-    private _createEventResolverContext(params: {
-        context: T["context"];
-        doc: CrdtDocLike<any, any>;
-        session: WebSocketSession<T>;
-        sessions: readonly WebSocketSession<T>[];
-    }): EventResolverContext<T> {
-        const { context, doc, session, sessions } = params;
-        const roomSessions = this._sessions;
-        const storage = this._storage;
-        const time = new Date().getTime();
-
-        return {
-            context,
-            doc,
-            garbageCollect: async () => {
-                await this.garbageCollect();
-            },
-            platform: this._platform,
-            get presence() {
-                return (session.webSocket.state.presence ??
-                    session.presence ??
-                    null) as JsonObject | null;
-            },
-            set presence(presence: JsonObject | null) {
-                roomSessions.setPresence({ presence, sessionId: session.id });
-            },
-            room: this.id,
-            session,
-            sessions,
-            get storageSeeded() {
-                return storage.storageSeeded;
-            },
-            set storageSeeded(value: boolean) {
-                storage.storageSeeded = value;
-            },
-            time,
-        } as EventResolverContext<T>;
     }
 
     private get _doc(): Promise<CrdtDocLike<any, any>> {
@@ -711,84 +433,64 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         return this._uninitialize.then(() => this._storage.doc);
     }
 
-    private async _emitQuitters(): Promise<void> {
-        await this._closeWebSockets(this._sessions.getQuitters());
-    }
-
-    private async _emitRegistered(pluvWs: AbstractWebSocket): Promise<void> {
-        const session = this._sessions.toSession(pluvWs);
-        const sessionId = session.id;
-        const presence = session.presence;
-        const user = session.user;
-        const kind = getSessionKind(session);
-        const operator = getSessionOperator(session);
-
-        const [doc, context] = await Promise.all([this._doc, this._getContext()]);
-        const encodedState = doc.isEmpty() ? null : doc.getEncodedState();
-        const stats = getRoomStatsFromSessions(this._sessions.getLiveSessions());
-
-        await this._sendSelfMessage(
-            {
-                type: "$registered",
-                data: {
-                    sessionId,
-                    state: encodedState,
-                    stats,
-                    session: {
-                        presence,
-                        seq: { presence: session.seq.presence },
-                        kind,
-                        operator,
-                    },
-                },
-            },
-            { sessionId, user, operator },
-        );
-
+    private async _emitDisconnected(session: RoomSessionSnapshot<T>): Promise<void> {
         try {
+            const [doc, context] = await Promise.all([this._doc, this._getContext()]);
+            const encodedState = doc.getEncodedState();
+
             await Promise.resolve(
-                this._listeners.onUserConnected({
+                this._listeners.onUserDisconnected({
                     context,
                     encodedState,
-                    kind,
-                    operator,
-                    platform: this._platform,
+                    kind: session.kind,
+                    operator: session.operator,
                     room: this.id,
-                    user,
-                    webSocket: pluvWs.webSocket,
+                    user: session.user,
                 }),
             );
-        } catch (err) {
-            console.error(err);
+        } catch (error) {
+            console.error(error);
         }
     }
 
-    private async _emitRoomStats(): Promise<void> {
-        const stats = getRoomStatsFromSessions(this._sessions.getLiveSessions());
+    private async _garbageCollect(
+        sessions: readonly RoomSessionSnapshot<T>[],
+    ): Promise<RoomEffects<T>> {
+        const now = Date.now();
+        const quitters = sessions.filter((session) => !snapshotIsLive(session, now));
+        const live = sessions.length - quitters.length;
+        const broadcast: RoomEffectFrame<T>[] = [];
+        const closes: string[] = [];
 
-        await this._broadcast({
-            message: { type: "$roomStats", data: stats },
-        });
+        for (const session of quitters) {
+            // onUserDisconnected is user code and may touch storage, so run one
+            // disconnect at a time. Overlapping storage calls fail on a Durable Object.
+            // oxlint-disable-next-line eslint/no-await-in-loop
+            await this._emitDisconnected(session);
+            broadcast.push(
+                ...this._releaseStorage(emptyRoomEffects<T>(), session).broadcast,
+                effectFrame(
+                    "$exit",
+                    {
+                        operator: session.operator,
+                        sessionId: session.id,
+                        user: session.user,
+                    },
+                    session,
+                ),
+            );
+            closes.push(session.id);
+        }
+
+        return {
+            ...emptyRoomEffects<T>(),
+            broadcast,
+            closes,
+            destroy: quitters.length > 0 && live === 0,
+            storageDirty: this._checkpoint.dirty,
+        };
     }
 
-    private async _emitSyncState(): Promise<void> {
-        const connectionIds = await this._platform.persistence
-            .getUsers(this.id)
-            .then((map: Map<string, JsonObject | null>) => Object.keys(map));
-
-        await this._broadcast({
-            message: {
-                type: "$syncStateReceived",
-                data: { connectionIds },
-            },
-        });
-    }
-
-    /**
-     * TODO
-     * @description Revisit any cast types
-     * @date July 17, 2025
-     */
     private async _getAuthorizedUser(
         token: Maybe<string>,
         options: WebSocketRegisterConfig<T["platform"]>,
@@ -849,6 +551,7 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         }
     }
 
+    /** User context for session procedures. `.config({ context })` runs here. */
     private async _getContext(): Promise<T["context"]> {
         const context = this._context as PluvContext<T["platform"], T["context"]>;
 
@@ -859,9 +562,9 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
         return await Promise.resolve(context);
     }
 
-    private _getProcedure(
-        message: EventMessage<string, any>,
-    ):
+    private _getProcedure(message: {
+        type: string;
+    }):
         | (typeof this._router)["_defs"]["events"][keyof (typeof this._router)["_defs"]["events"]]
         | null {
         return (
@@ -869,18 +572,6 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 message.type as keyof (typeof this._router)["_defs"]["events"]
             ] ?? null
         );
-    }
-
-    private _getProcedureInputs(
-        message: EventMessage<string, any>,
-    ): InferIOInput<this>[keyof T["events"]] {
-        const procedure = this._getProcedure(message);
-
-        if (!procedure) return message.data;
-
-        return procedure.config.input
-            ? parsePluvSchema(procedure.config.input, message.data)
-            : message.data;
     }
 
     private _initialize() {
@@ -894,45 +585,16 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                 this._uninitialize = null;
             }
 
-            const pubSubId = await this._platform.pubSub.subscribe(
-                this.id,
-                async ({ options = {} as SendMessageOptions, ...message }): Promise<void> => {
-                    await promise;
-
-                    const sender: SendMessageSender = {
-                        operator: message.operator,
-                        sessionId: message.connectionId,
-                        user: message.user,
-                    };
-
-                    switch (options.type) {
-                        case "self": {
-                            await this._sendSelfMessage(message, sender);
-                            return;
-                        }
-                        case "broadcast":
-                        default: {
-                            const sessionIds = options.sessionIds;
-
-                            await this._sendBroadcastMessage(message, sender, sessionIds);
-                        }
-                    }
-                },
-            );
-
             await this._storage.initialize();
+            this._checkpoint.reopen();
+            this._checkpoint.attach(await this._storage.doc);
 
             const uninitialize = async (): Promise<void> => {
-                // Teardown clears the doc partway through, so re-entering would persist that
-                // cleared doc over the room's real content.
                 if (this._teardown) return this._teardown;
 
                 this._teardown = (async () => {
-                    Object.values(this._throttles).forEach((item) => {
-                        item.cancel();
-                    });
-
-                    this._platform.pubSub.unsubscribe(pubSubId);
+                    await this._checkpoint.seal();
+                    this._checkpoint.detach();
 
                     const context = await this._getContext();
                     const { encodedState, refusedEmptyPersist, shouldDestroyStorage } =
@@ -946,14 +608,12 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                         );
                     }
 
-                    // Always emit onRoomDestroyed
                     await Promise.resolve(
                         this._listeners.onRoomDestroyed({
                             ...("_meta" in this._platform && !!this._platform._meta
                                 ? { _meta: this._platform._meta }
                                 : {}),
                             context,
-                            platform: this._platform,
                             room: this.id,
                         }),
                     );
@@ -966,10 +626,10 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
                                     : {}),
                                 context,
                                 encodedState,
-                                platform: this._platform,
                                 room: this.id,
                             }),
                         );
+                        await this._platform.persistence.deleteStorageState(this.id);
                     }
 
                     this._uninitialize = null;
@@ -990,390 +650,408 @@ export class IORoom<T extends IODefs = IODefs> implements IOLike<IOLikeFromDefs<
 
     private get _initialized(): Promise<boolean> {
         if (!this._uninitialize) return Promise.resolve(false);
+
         return this._uninitialize.then(() => true);
     }
 
-    private _logDebug(...data: any[]): void {
+    private async _initializeStorage(params: {
+        input: { stateVector?: string | null; update?: string | null };
+        actor: RoomJoinActor<T>;
+    }): Promise<{
+        changeKind: "unchanged" | "initialized" | "empty";
+        state: string | null;
+        storageDirty: boolean;
+    }> {
+        if (!(await this._initialized))
+            return { changeKind: "empty", state: null, storageDirty: false };
+
+        const { input } = params;
+        const doc = await this._doc;
+        const context = await this._getContext();
+        const update = input.update ?? null;
+        const stateVector = input.stateVector ?? null;
+        const stateForClient = (encodedState: string): string => {
+            if (!stateVector) return encodedState;
+
+            return doc.encodeDiff(stateVector);
+        };
+
+        if (this._storage.storageSeeded) {
+            return {
+                changeKind: "unchanged",
+                state: stateVector ? doc.encodeDiff(stateVector) : doc.getEncodedState(),
+                storageDirty: this._checkpoint.dirty,
+            };
+        }
+
+        if (update) {
+            const encodedState = this._checkpoint.hold(() =>
+                doc.applyEncodedState({ update }).getEncodedState(),
+            );
+            const storageSize = new TextEncoder().encode(encodedState).length;
+
+            if (!!this.limits.storageMaxSize && storageSize > this.limits.storageMaxSize) {
+                throw new Error("Storage has exceeded the size limit");
+            }
+
+            this._storage.storageSeeded = true;
+
+            const epoch = this._checkpoint.epoch;
+            const saved = await this._platform.persistence
+                .setStorageState(this.id, encodedState)
+                .then(() => true)
+                .catch((error: unknown) => {
+                    this._logDebug(error);
+
+                    return false;
+                });
+
+            if (saved) {
+                this._checkpoint.acknowledge(epoch);
+                void this._listeners.onStorageUpdated({
+                    context,
+                    encodedState,
+                    room: this.id,
+                });
+            }
+
+            return {
+                changeKind: "initialized",
+                state: stateForClient(encodedState),
+                storageDirty: this._checkpoint.dirty,
+            };
+        }
+
+        const encodedState = doc.getEncodedState();
+
+        return {
+            changeKind: "empty",
+            state: stateForClient(encodedState),
+            storageDirty: this._checkpoint.dirty,
+        };
+    }
+
+    private _logDebug(...data: unknown[]): void {
         if (this._debug) console.log(...data);
     }
 
-    private _onClose(webSocket: AbstractWebSocket): () => Promise<void> {
-        return async (): Promise<void> => {
-            if (!(await this._initialized)) return;
-            await this._closeWebSockets([webSocket]);
-        };
-    }
+    private async _message(
+        session: RoomSessionSnapshot<T>,
+        event: { data: unknown; type: string },
+    ): Promise<RoomEffects<T> | UserTurn<RoomEffects<T>>> {
+        if (!(await this._initialized)) return this._releaseStorage(emptyRoomEffects<T>(), session);
 
-    private _onMessage(
-        webSocket: AbstractWebSocket,
-    ): (event: AbstractMessageEvent) => Promise<void> {
-        return async (event: AbstractMessageEvent): Promise<void> => {
-            if (!(await this._initialized)) return;
+        const context = await this._getContext();
 
-            const pluvWs = this._sessions.resolve(webSocket as WebSocketType<T["platform"]>);
-
-            if (!pluvWs) throw new Error("Could not get session");
-
-            const session = this._sessions.getSession(pluvWs as WebSocketType<T["platform"]>);
-            const sessions = this._sessions.getLiveSessions();
-            const [doc, context] = await Promise.all([this._doc, this._getContext()]);
-            const eventContext = this._createEventResolverContext({
-                context,
-                doc,
-                session,
-                sessions,
-            });
-
-            if (pluvWs.state.quit) {
-                await this._closeWebSockets([pluvWs]).catch(() => null);
-                pluvWs.close(1011, "WebSocket broken.");
-
-                return;
-            }
-
-            const message = this._parseMessage(event);
-
-            if (!message) return;
-
-            const procedure = this._getProcedure(message);
-
-            this._listeners.onMessage({
-                ...("_meta" in this._platform && !!this._platform._meta
-                    ? { _meta: this._platform._meta }
-                    : {}),
-                context,
-                encodedState: doc.getEncodedState(),
-                message: message as InferEventMessage<
-                    InferEventsOutput<T["events"]>,
-                    keyof InferEventsOutput<T["events"]>
-                >,
-                kind: session.kind,
-                operator: session.operator,
-                platform: this._platform,
-                room: this.id,
-                user: session.user,
-                webSocket: session.webSocket.webSocket,
-            });
-
-            const sessionId = session.id;
-            const user = session.user;
-
-            if (!procedure) {
-                if (message.type.startsWith("$")) return;
-
-                // Unknown event types are broadcast on purpose so client-only
-                // MergeEvents procedures can still relay through the room.
-                await this._broadcast({
-                    message: message as any,
-                    senderId: sessionId,
-                });
-
-                return;
-            }
-
-            let inputs: InferIOInput<this>[keyof T["events"]];
-
-            try {
-                inputs = this._getProcedureInputs(message);
-            } catch (error) {
-                pluvWs.handleError({
-                    error,
-                    message: "Invalid input",
-                    room: this.id,
-                    session,
-                });
-
-                return;
-            }
-
-            try {
-                // broadcast and self resolvers run concurrently and may
-                // race on shared doc / presence state — do not assume ordering.
-                const [broadcast, self] = await Promise.all([
-                    procedure.config.broadcast?.(inputs, eventContext),
-                    procedure.config.self?.(inputs, eventContext),
-                ]);
-
-                const handleBroadcast = async () => {
-                    if (!broadcast) return;
-
-                    const messages = Object.entries(broadcast).map(async ([type, data]: any) => {
-                        await this._broadcast({
-                            message: { data, type },
-                            senderId: sessionId,
-                        });
-                    });
-
-                    await Promise.all(messages);
-                };
-
-                const handleSelf = async () => {
-                    if (!self) return;
-
-                    const messages = Object.entries(self).map(async ([type, data]) => {
-                        await this._sendSelfMessage(
-                            { data, type },
-                            { sessionId, user, operator: getSessionOperator(session) },
-                        );
-                    });
-
-                    await Promise.all(messages);
-                };
-
-                await Promise.all([handleBroadcast(), handleSelf()]);
-            } catch (error) {
-                pluvWs.handleError({
-                    error,
-                    room: this.id,
-                    session,
-                });
-            }
-        };
-    }
-
-    private _parseMessage(message: {
-        data: string | ArrayBuffer;
-    }): EventMessage<string, any> | null {
-        try {
-            const parsed = this._platform.parseData(message.data);
-
-            if (typeof parsed !== "object") return null;
-            if (typeof parsed.type !== "string") return null;
-            if (typeof parsed.data !== "object") return null;
-
-            return parsed as EventMessage<string, any>;
-        } catch {
-            return null;
-        }
-    }
-
-    private async _runPresenceProcedure(
-        name: string,
-        data: unknown,
-        senderId: string,
-    ): Promise<void> {
-        if (typeof senderId !== "string") {
-            throw new Error("room.__experimental_presence of a user procedure requires a senderId");
-        }
-
-        const sender = this._sessions.get(senderId);
-
-        if (!sender) {
-            throw new Error(`Unknown senderId: ${senderId}`);
-        }
-
-        const procedures = this._treaty._defs.procedures.presence;
-
-        if (!procedures || !Object.hasOwn(procedures, name)) {
-            throw new Error(`Unknown presence procedure "${name}"`);
-        }
-
-        const procedure = procedures[name];
-        const session = this._sessions.toSession(sender);
-        const [doc, context] = await Promise.all([this._doc, this._getContext()]);
-        const patch = procedure.apply(data, {
-            user: session.user,
+        void this._listeners.onMessage({
+            ...("_meta" in this._platform && !!this._platform._meta
+                ? { _meta: this._platform._meta }
+                : {}),
+            context,
+            message: event as InferEventMessage<
+                InferEventsOutput<T["events"]>,
+                keyof InferEventsOutput<T["events"]>
+            >,
+            kind: session.kind,
             operator: session.operator,
-            presence: session.presence,
-            doc,
+            room: this.id,
+            user: session.user,
         });
 
-        const eventContext = this._createEventResolverContext({
+        const procedure = this._getProcedure(event);
+
+        if (!procedure) {
+            if (event.type.startsWith("$")) {
+                return this._releaseStorage(emptyRoomEffects<T>(), session);
+            }
+
+            return this._releaseStorage(
+                {
+                    ...emptyRoomEffects<T>(),
+                    broadcast: [effectFrame(event.type, event.data, session)],
+                },
+                session,
+            );
+        }
+
+        let inputs: unknown;
+
+        try {
+            inputs = procedure.config.input
+                ? parsePluvSchema(procedure.config.input, event.data)
+                : event.data;
+        } catch (error) {
+            return this._releaseStorage({ ...emptyRoomEffects<T>(), error }, session);
+        }
+
+        const attachments: RoomAttachment[] = [];
+        let presence = session.presence;
+        const doc = await this._doc;
+        const storageEvent = event.type === "$syncStorage" || event.type === "$updateStorage";
+
+        if (storageEvent && this._checkpoint.closed) {
+            return this._releaseStorage(emptyRoomEffects<T>(), session);
+        }
+
+        const wide = this._resolverContext({
+            attachments,
             context,
             doc,
+            getPresence: () => presence,
             session,
-            sessions: this._sessions.getLiveSessions(),
+            setPresence: (value) => {
+                presence = value;
+            },
         });
-        const broadcast = await this._router._defs.events.$updatePresence.config.broadcast?.(
-            { presence: patch, procedure: name },
-            eventContext,
-        );
+        const resolverContext = storageEvent ? wide : this._userContext(wide);
+        const finish = (
+            broadcast: Record<string, unknown> | null | undefined,
+            self: Record<string, unknown> | null | undefined,
+        ): RoomEffects<T> =>
+            this._releaseStorage(
+                {
+                    ...emptyRoomEffects<T>(),
+                    attachments,
+                    broadcast: framesFromRecord(broadcast, session),
+                    self: framesFromRecord(self, session),
+                },
+                session,
+            );
+        const invoked = invokeProcedureResolvers({
+            broadcast: () =>
+                storageEvent
+                    ? this._checkpoint.hold(() =>
+                          procedure.config.broadcast?.(inputs, resolverContext),
+                      )
+                    : procedure.config.broadcast?.(inputs, resolverContext),
+            self: () => procedure.config.self?.(inputs, resolverContext),
+        });
 
-        if (!broadcast) return;
-
-        await Promise.all(
-            Object.entries(broadcast).map(([eventType, payload]) => {
-                return this._broadcast({
-                    message: { type: eventType, data: payload } as BroadcastMessage<T>,
-                    senderId,
-                });
-            }),
-        );
-    }
-
-    private async _runStorageProcedure(
-        name: string,
-        data: unknown,
-        senderId: string,
-    ): Promise<void> {
-        if (typeof senderId !== "string") {
-            throw new Error("room.__experimental_storage of a user procedure requires a senderId");
-        }
-
-        const sender = this._sessions.get(senderId);
-
-        if (!sender) {
-            throw new Error(`Unknown senderId: ${senderId}`);
-        }
-
-        const procedures = this._treaty._defs.procedures.storage;
-
-        if (!procedures || !Object.hasOwn(procedures, name)) {
-            throw new Error(`Unknown storage procedure "${name}"`);
-        }
-
-        const procedure = procedures[name];
-        const session = this._sessions.toSession(sender);
-        const doc = await this._doc;
-
-        const apply = (): void => {
-            procedure.apply(data, {
-                user: session.user,
-                operator: session.operator,
-                presence: session.presence,
-                doc,
-            });
-        };
-
-        const update = doc.captureUpdate(() => {
-            if (procedure.config.transact === false) {
-                apply();
-
-                return;
+        try {
+            if (!invoked.ok) {
+                return this._releaseStorage(
+                    { ...emptyRoomEffects<T>(), attachments, error: invoked.error },
+                    session,
+                );
             }
 
-            doc.transact(apply, senderId);
-        });
+            const { broadcast: broadcastResult, self: selfResult } = invoked;
 
-        if (!update) return;
+            // The storage broadcast stays on this join. Other resolvers can await the
+            // session manager, so this join must finish before those promises do.
+            if (!storageEvent && (isThenable(broadcastResult) || isThenable(selfResult))) {
+                return userTurn(
+                    Promise.all([broadcastResult, selfResult])
+                        .then(([broadcast, self]) =>
+                            finish(
+                                broadcast as Record<string, unknown> | null,
+                                self as Record<string, unknown> | null,
+                            ),
+                        )
+                        .catch((error: unknown) =>
+                            this._releaseStorage(
+                                {
+                                    ...emptyRoomEffects<T>(),
+                                    attachments,
+                                    error,
+                                },
+                                session,
+                            ),
+                        ),
+                );
+            }
 
-        await this._saveStorageSnapshot({
-            context: await this._getContext(),
+            const [broadcast, self] = await Promise.all([broadcastResult, selfResult]);
+
+            return finish(
+                broadcast as Record<string, unknown> | null,
+                self as Record<string, unknown> | null,
+            );
+        } catch (error) {
+            return this._releaseStorage({ ...emptyRoomEffects<T>(), attachments, error }, session);
+        }
+    }
+
+    private async _register(
+        ...options: keyof InferInitContextType<T["platform"]> extends never
+            ? [{ token?: string }?]
+            : [WebSocketRegisterConfig<T["platform"]>]
+    ): Promise<RoomRegisterResult<T>> {
+        const _options = (options[0] ?? {}) as WebSocketRegisterConfig<T["platform"]>;
+        const { token: tokenOption, ...initRest } = _options as WebSocketRegisterConfig<
+            T["platform"]
+        > & { token?: string | null };
+        const token = tokenOption ?? null;
+        const registerConfig = {
+            ...this._platform.normalizeInitContext(initRest as InferInitContextType<T["platform"]>),
+            token,
+        } as WebSocketRegisterConfig<T["platform"]>;
+
+        if (this._teardown) await this._teardown;
+
+        if (!(await this._initialized)) {
+            this._initialize();
+            await this._initialized;
+        }
+
+        const identity = await this._getAuthorizedUser(token, registerConfig);
+
+        if (!identity) {
+            this._logDebug(colors.blue("Authorization failed for connection"));
+
+            return {
+                encodedState: null,
+                error: new Error("Not authorized"),
+                kind: null,
+                operator: null,
+                user: null,
+            };
+        }
+
+        const doc = await this._doc;
+        const encodedState = doc.isEmpty() ? null : doc.getEncodedState();
+
+        return {
+            encodedState,
+            error: null,
+            kind: identity.kind,
+            operator: identity.operator,
+            user: identity.user,
+        };
+    }
+
+    private _resolverContext(params: {
+        attachments: RoomAttachment[];
+        context: T["context"];
+        doc: CrdtDocLike<any, any>;
+        getPresence: () => JsonObject | null;
+        session: RoomSessionSnapshot<T>;
+        setPresence: (presence: JsonObject | null) => void;
+    }): StorageEventContext<T> & SessionEventContext<T> & { context: T["context"] } {
+        const { attachments, context, doc, getPresence, session, setPresence } = params;
+        const storage = this._storage;
+        const time = new Date().getTime();
+
+        return {
+            connectionId: session.id,
+            context,
             doc,
             kind: session.kind,
             operator: session.operator,
-        });
-
-        await this._broadcast({
-            message: {
-                type: "$storageUpdated",
-                data: { state: update },
-            } as BroadcastMessage<T>,
-            senderId,
-        });
-    }
-
-    private async _saveStorageSnapshot(params: {
-        context: T["context"];
-        doc: CrdtDocLike<any, any>;
-        kind: IOStorageUpdatedEvent<T>["kind"];
-        operator: IOStorageUpdatedEvent<T>["operator"];
-    }): Promise<void> {
-        const encodedState = params.doc.getEncodedState();
-        const storageSize = new TextEncoder().encode(encodedState).length;
-
-        if (!!this._limits.storageMaxSize && storageSize > this._limits.storageMaxSize) {
-            throw new Error(oneLine`
-                Large Storage. Storage must be at most
-                ${this._limits.storageMaxSize.toLocaleString()} bytes.
-                Current size: ${storageSize.toLocaleString()} bytes
-            `);
-        }
-
-        await this._platform.persistence.setStorageState(this.id, encodedState);
-
-        this._listeners.onStorageUpdated({
-            context: params.context,
-            encodedState,
-            kind: params.kind,
-            operator: params.operator,
             platform: this._platform,
+            get presence() {
+                return getPresence() as SessionEventContext<T>["presence"];
+            },
+            persistence: this._platform.persistence,
+            set presence(presence) {
+                const next = (presence ?? null) as JsonObject | null;
+
+                setPresence(next);
+
+                const attachment: RoomAttachment = {
+                    presence: next,
+                    seq: session.seq.presence,
+                    sessionId: session.id,
+                };
+                const index = attachments.findIndex((item) => item.sessionId === session.id);
+
+                if (index === -1) attachments.push(attachment);
+                else attachments[index] = attachment;
+            },
             room: this.id,
-        });
+            session: {
+                id: session.id,
+                kind: session.kind,
+                operator: session.operator,
+                presence: session.presence,
+                quit: session.quit,
+                room: this.id,
+                seq: session.seq,
+                timers: { ping: session.lastPing },
+                user: session.user,
+            } as WebSocketSession<T>,
+            sessions: [],
+            get storageSeeded() {
+                return storage.storageSeeded;
+            },
+            set storageSeeded(value: boolean) {
+                storage.storageSeeded = value;
+            },
+            user: session.user,
+            time,
+        } as unknown as StorageEventContext<T> & SessionEventContext<T> & { context: T["context"] };
     }
 
-    private async _sendBroadcastMessage(
-        message: EventMessage<string, any>,
-        sender: SendMessageSender | null,
-        sessionIds?: readonly string[],
-    ): Promise<void> {
-        const { data, type } = message;
-        const connectionId = sender?.sessionId ?? null;
-        const room = this.id;
+    private _releaseStorage(
+        effects: RoomEffects<T>,
+        session: Pick<RoomSessionSnapshot<T>, "id" | "operator" | "user">,
+    ): RoomEffects<T> {
+        const updates = this._checkpoint.takeUpdates();
+        const broadcast = updates.length
+            ? [
+                  ...effects.broadcast,
+                  ...updates.map((update) =>
+                      effectFrame("$storageUpdated", { state: update }, session),
+                  ),
+              ]
+            : effects.broadcast;
 
-        if (typeof connectionId !== "string" && !isServerOriginEvent(type)) return;
-
-        const webSockets =
-            sessionIds?.reduce((dict, id) => {
-                const pluvWs = this._sessions.get(id);
-
-                return pluvWs ? dict.set(id, pluvWs) : dict;
-            }, new Map<string, AbstractWebSocket>()) ?? this._sessions.all();
-
-        await Promise.allSettled(
-            Array.from(webSockets.values()).map(async (pluvWs) => {
-                await this._sendMessage(pluvWs, {
-                    connectionId,
-                    data,
-                    operator: sender?.operator ?? null,
-                    room,
-                    type,
-                    user: sender?.user ?? null,
-                } as IOEventMessage<any>);
-            }),
-        );
+        return {
+            ...effects,
+            broadcast,
+            connectionId: session.id,
+            storageDirty:
+                this._checkpoint.dirty ||
+                broadcast.some((frame) => frame.type === "$storageUpdated"),
+        };
     }
 
-    private async _sendMessage(
-        pluvWs: AbstractWebSocket,
-        message: IOEventMessage<any>,
-    ): Promise<void> {
-        if (!(await this._initialized)) return;
+    private async _userConnected(params: {
+        id: string;
+        encodedState: string | null;
+        kind: ParticipantKind;
+        operator: OperatorUser | null;
+        user: InferTreatyUser<T["treaty"]>;
+    }): Promise<RoomEffects<T>> {
+        const { encodedState, id, kind, operator, user } = params;
+        const context = await this._getContext();
 
-        await Promise.resolve(pluvWs.sendMessage(message));
-    }
-
-    private async _sendSelfMessage(
-        message: EventMessage<string, any>,
-        sender: SendMessageSender | null,
-    ): Promise<void> {
-        const senderId = sender?.sessionId ?? null;
-
-        if (typeof senderId !== "string") return;
-
-        const pluvWs = this._sessions.get(senderId);
-
-        if (!pluvWs) return;
-
-        const session = pluvWs.session;
-        const user = session.user;
-        const operator = sender?.operator ?? getSessionOperator(session);
-
-        await this._sendMessage(pluvWs, {
-            connectionId: senderId,
-            operator,
-            room: this.id,
-            user,
-            ...message,
-        });
-
-        /**
-         * @description Note that this will not fire for Cloudflare's hibernatable websockets
-         * because the server will auto-respond with the $pong event without calling any
-         * functions.
-         * @date April 18, 2025
-         */
-        if (message.type === "$pong") {
-            const elapsedMs = Date.now() - this._lastGarbageCollectMs;
-
-            /**
-             * @description Garbage collection is awaited after responding, since it can close
-             * websockets and flush persistence. Blocking the $pong response on it risks
-             * exceeding the client's pong timeout and triggering a spurious reconnect.
-             */
-            if (elapsedMs > GARBAGE_COLLECT_INTERVAL_MS) {
-                await this.garbageCollect();
-            }
+        try {
+            await Promise.resolve(
+                this._listeners.onUserConnected({
+                    context,
+                    encodedState,
+                    kind,
+                    operator,
+                    room: this.id,
+                    user,
+                }),
+            );
+        } catch (error) {
+            console.error(error);
         }
+
+        return this._releaseStorage(emptyRoomEffects<T>(), { id, operator, user });
+    }
+
+    private _userContext(
+        event: SessionEventContext<T> & Pick<EventResolverContext<T>, "context" | "doc">,
+    ): EventResolverContext<T> {
+        return {
+            connectionId: event.connectionId,
+            context: event.context,
+            doc: event.doc,
+            kind: event.kind,
+            operator: event.operator,
+            get presence() {
+                return event.presence;
+            },
+            set presence(value) {
+                event.presence = value;
+            },
+            room: event.room,
+            time: event.time,
+            user: event.user,
+        };
     }
 }

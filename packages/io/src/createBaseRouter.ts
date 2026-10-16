@@ -14,8 +14,9 @@ type BaseRouter<T extends IODefs> = PluvRouter<SetKey<T, "events", {}>>;
 
 /**
  * Built-in `$` protocol events. Kept separate from `PluvServer` so the protocol
- * can be constructed/tested without a full server instance. A flat room merges
- * the session slice and the storage slice.
+ * can be constructed/tested without a full server instance. This merge only
+ * fills `_defs`. `manageSessions` dispatches the session slice. The room
+ * dispatches storage events plus the user's router.
  */
 export const createBaseRouter = <T extends IODefs = IODefs>(
     params: CreateBaseRouterParams<T>,

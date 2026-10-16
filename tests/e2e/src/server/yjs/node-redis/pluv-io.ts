@@ -1,4 +1,4 @@
-import { createIO, InferIORoom } from "@pluv/io";
+import { createIO, type RoomSessionManager } from "@pluv/io";
 import { PersistenceRedis } from "@pluv/persistence-redis";
 import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
@@ -25,7 +25,7 @@ const router = io.router({
         .broadcast(({ message }) => ({ RECEIVE_MESSAGE: { message } })),
 });
 
-export const ioRooms = new Map<string, InferIORoom<typeof ioServer>>();
+export const ioRooms = new Map<string, RoomSessionManager>();
 export const ioServer = io.server({
     getInitialStorage: () => null,
     router,

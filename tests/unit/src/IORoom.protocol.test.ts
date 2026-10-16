@@ -1,3 +1,4 @@
+import { manageSessions } from "@pluv/io";
 import { describe, expect, it } from "vitest";
 import { createAuthorizedIO, registerAuthorized, TestSocket } from "./__utils__";
 
@@ -12,7 +13,7 @@ const lastMessage = (socket: TestSocket, type: string): Record<string, any> => {
 describe("IORoom protocol relay", () => {
     it("drops unknown $ events instead of relaying them", async () => {
         const io = createAuthorizedIO({});
-        const room = io.server().createRoom("protocol-relay");
+        const room = manageSessions(io.server().createRoom("protocol-relay"));
         const sender = new TestSocket("session-1");
         const observer = new TestSocket("session-2");
 
@@ -57,7 +58,7 @@ describe("IORoom protocol relay", () => {
 
     it("keeps the server identity when a client event includes operator and user", async () => {
         const io = createAuthorizedIO({});
-        const room = io.server().createRoom("protocol-relay");
+        const room = manageSessions(io.server().createRoom("protocol-relay"));
         const sender = new TestSocket("session-1");
         const observer = new TestSocket("session-2");
 

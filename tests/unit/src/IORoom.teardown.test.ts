@@ -1,3 +1,4 @@
+import { manageSessions } from "@pluv/io";
 import { describe, expect, it } from "vitest";
 import type { Deferred } from "./__utils__";
 import {
@@ -40,7 +41,7 @@ const setupRoom = (roomId: string) => {
         },
     });
 
-    return { destroyed, gate, io, room: server.createRoom(roomId), seeded };
+    return { destroyed, gate, io, room: manageSessions(server.createRoom(roomId)), seeded };
 };
 
 describe("IORoom teardown", () => {
