@@ -30,10 +30,16 @@ const asSession = <T extends IODefs>(event: object): SessionEventContext<T> => {
  * Session `$` events. `$initializeSession` only broadcasts `$userJoined`.
  * `manageSessions` calls `initializeStorage` for the storage half.
  */
-export const createSessionRouter = <T extends IODefs = IODefs>(
-    params: Pick<CreateBaseRouterParams<T>, "limits">,
-): BaseRouter<T> => {
-    const { limits } = params;
+type SessionLimits<T extends IODefs> =
+    | CreateBaseRouterParams<T>["limits"]
+    | null
+    | (() => CreateBaseRouterParams<T>["limits"] | null);
+
+export const createSessionRouter = <T extends IODefs = IODefs>(params: {
+    limits: SessionLimits<T>;
+}): BaseRouter<T> => {
+    const readLimits = (): CreateBaseRouterParams<T>["limits"] | null =>
+        typeof params.limits === "function" ? params.limits() : params.limits;
     const baseProcedure = baseProcedureFactory<T>();
 
     return createInternalPluvRouter({
@@ -167,11 +173,13 @@ export const createSessionRouter = <T extends IODefs = IODefs>(
             const cleanedPatch = pickBy(presence ?? {}, (value) => typeof value !== "undefined");
             const updated = Object.assign(Object.create(null), session.presence, cleanedPatch);
             const bytes = new TextEncoder().encode(JSON.stringify(updated)).length;
+            const limits = readLimits();
+            const presenceMaxSize = limits?.presenceMaxSize;
 
-            if (!!limits.presenceMaxSize && bytes > limits.presenceMaxSize) {
+            if (!!presenceMaxSize && bytes > presenceMaxSize) {
                 throw new Error(oneLine`
                     Large presence. Presence must be at most
-                    ${limits.presenceMaxSize.toLocaleString()} bytes.
+                    ${presenceMaxSize.toLocaleString()} bytes.
                     Current size: ${bytes.toLocaleString()} bytes
                 `);
             }

@@ -25,8 +25,12 @@ import type {
     InferRoomContextType,
 } from "./AbstractPlatform";
 import type { AbstractWebSocket } from "./AbstractWebSocket";
+import type { AbstractPersistence } from "./AbstractPersistence";
 import type { IODefs } from "./IODefs";
 import type { PluvRouter } from "./PluvRouter";
+import type { UserTurn } from "./roomEffects";
+
+export type { UserTurn };
 
 export type PluvContext<TPlatform extends AbstractPlatform, TContext extends Record<string, any>> =
     | MaybePromise<TContext>
@@ -67,10 +71,10 @@ export interface EventResolverContext<T extends IODefs = IODefs> {
     user: InferTreatyUser<T["treaty"]>;
 }
 
-/** @internal Storage `$` procedures still see persistence and the seeded flag. */
-export interface StorageEventContext<T extends IODefs = IODefs> extends EventResolverContext<T> {
-    platform: T["platform"];
-    session: WebSocketSession<T>;
+/** @internal Storage `$` procedures see the document, persistence, and the seeded flag. */
+export interface StorageEventContext<T extends IODefs = IODefs> {
+    doc: EventResolverDoc<T>;
+    persistence: AbstractPersistence;
     storageSeeded: boolean;
 }
 
@@ -277,6 +281,21 @@ export interface RoomSessionSnapshot<T extends IODefs = IODefs> {
     quit: boolean;
 }
 
+export type RoomPresenceSession<T extends IODefs = IODefs> = Pick<
+    RoomSessionSnapshot<T>,
+    "id" | "operator" | "presence" | "user"
+>;
+
+export type RoomStorageActor<T extends IODefs = IODefs> = Pick<
+    RoomSessionSnapshot<T>,
+    "id" | "kind" | "operator" | "presence" | "user"
+>;
+
+export type RoomJoinActor<T extends IODefs = IODefs> = Pick<
+    RoomSessionSnapshot<T>,
+    "id" | "kind" | "operator" | "user"
+>;
+
 export interface RoomEffectFrame<T extends IODefs = IODefs> {
     type: string;
     data: unknown;
@@ -292,12 +311,14 @@ export interface RoomAttachment {
 }
 
 export interface RoomEffects<T extends IODefs = IODefs> {
-    broadcast: RoomEffectFrame<T>[];
-    self: RoomEffectFrame<T>[];
-    closes: string[];
-    destroy: boolean;
     attachments: RoomAttachment[];
+    broadcast: RoomEffectFrame<T>[];
+    closes: string[];
+    /** Connection that produced this turn. Null when the result has no single actor. */
+    connectionId: string | null;
+    destroy: boolean;
     error: unknown;
+    self: RoomEffectFrame<T>[];
     /** The saved copy is stale. A hosted supervisor reads this off the call result. */
     storageDirty: boolean;
 }
@@ -310,38 +331,8 @@ export interface RoomRegisterResult<T extends IODefs = IODefs> {
     error: Error | null;
 }
 
-const userTurnBrand: unique symbol = Symbol("userTurn");
-
-/** User work the queue must not wait on. The session manager settles this on a later join. */
-export type UserTurn<T> = { readonly [userTurnBrand]: Promise<T> };
-
-export const userTurn = <T>(promise: Promise<T>): UserTurn<T> => ({
-    [userTurnBrand]: promise,
-});
-
-export const isUserTurn = <T>(value: T | UserTurn<T>): value is UserTurn<T> =>
-    typeof value === "object" && value !== null && userTurnBrand in value;
-
-export const userTurnPromise = <T>(turn: UserTurn<T>): Promise<T> => turn[userTurnBrand];
-
 /** A hosted call released the queue. The supervisor applies the effects on a later call. */
 export type Suspended = { readonly suspended: true };
-
-export const isSuspended = (value: unknown): value is Suspended =>
-    typeof value === "object" &&
-    value !== null &&
-    "suspended" in value &&
-    (value as { suspended?: unknown }).suspended === true;
-
-export const emptyRoomEffects = <T extends IODefs = IODefs>(): RoomEffects<T> => ({
-    attachments: [],
-    broadcast: [],
-    closes: [],
-    destroy: false,
-    error: null,
-    self: [],
-    storageDirty: false,
-});
 
 export type WebSocketRegisterConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,
@@ -354,12 +345,12 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
     applyPresencePatch(params: {
         name: string;
         data: unknown;
-        session: Pick<RoomSessionSnapshot<T>, "operator" | "presence" | "user">;
+        session: RoomPresenceSession<T>;
     }): Promise<JsonObject | null | UserTurn<JsonObject | null> | Suspended>;
     applyStorageProcedure(params: {
         name: string;
         data: unknown;
-        actor: Pick<RoomSessionSnapshot<T>, "id" | "kind" | "operator" | "presence" | "user">;
+        actor: RoomStorageActor<T>;
     }): Promise<RoomEffects<T>>;
     close(session: RoomSessionSnapshot<T>): Promise<RoomEffects<T>>;
     destroy(): Promise<void>;
@@ -370,7 +361,7 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
     garbageCollect(sessions: readonly RoomSessionSnapshot<T>[]): Promise<RoomEffects<T>>;
     initializeStorage(params: {
         input: { stateVector?: string | null; update?: string | null };
-        actor: Pick<RoomSessionSnapshot<T>, "kind" | "operator" | "user">;
+        actor: RoomJoinActor<T>;
     }): Promise<{
         changeKind: "unchanged" | "initialized" | "empty";
         state: string | null;
@@ -386,7 +377,7 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
             ? [{ token?: string }?]
             : [WebSocketRegisterConfig<T["platform"]>]
     ): Promise<RoomRegisterResult<T>>;
-    storageDirty(): boolean;
+    storageDirty(): boolean | Promise<boolean>;
     userConnected(params: {
         id: string;
         encodedState: string | null;
@@ -403,6 +394,6 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
  */
 export interface SessionRoom<T extends IODefs = IODefs> {
     readonly id: string;
-    readonly limits: PluvIOLimits;
+    readonly limits: PluvIOLimits | null;
     readonly "~": IORoomInternal<T>;
 }
