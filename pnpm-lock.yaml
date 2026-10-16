@@ -485,6 +485,31 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
 
+  packages/platform:
+    dependencies:
+      '@pluv/io':
+        specifier: workspace:^
+        version: link:../io
+      '@pluv/persistence-cloudflare-transactional-storage':
+        specifier: workspace:^
+        version: link:../persistence-cloudflare-transactional-storage
+      '@pluv/types':
+        specifier: workspace:^
+        version: link:../types
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^5.20261006.1
+        version: 5.20261006.1
+      '@pluv/tsconfig':
+        specifier: workspace:^
+        version: link:../tsconfig
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(tsx@4.23.15)(typescript@7.0.2)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+
   packages/platform-cloudflare:
     dependencies:
       '@pluv/crdt':
@@ -705,6 +730,9 @@ importers:
       '@pluv/persistence-redis':
         specifier: workspace:^
         version: link:../../packages/persistence-redis
+      '@pluv/platform':
+        specifier: workspace:^
+        version: link:../../packages/platform
       '@pluv/platform-cloudflare':
         specifier: workspace:^
         version: link:../../packages/platform-cloudflare
@@ -826,6 +854,9 @@ importers:
       drizzle-kit:
         specifier: ^0.31.11
         version: 0.31.11
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
       miniflare:
         specifier: ^4.20260730.0
         version: 4.20260730.0
@@ -950,6 +981,9 @@ importers:
       '@pluv/persistence-cloudflare-transactional-storage':
         specifier: workspace:^
         version: link:../../packages/persistence-cloudflare-transactional-storage
+      '@pluv/platform':
+        specifier: workspace:^
+        version: link:../../packages/platform
       '@pluv/platform-cloudflare':
         specifier: workspace:^
         version: link:../../packages/platform-cloudflare

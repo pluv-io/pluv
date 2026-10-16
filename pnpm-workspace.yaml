@@ -10,6 +10,7 @@ packages:
     - "packages/io"
     - "packages/persistence-cloudflare-transactional-storage"
     - "packages/persistence-redis"
+    - "packages/platform"
     - "packages/platform-cloudflare"
     - "packages/platform-node"
     - "packages/platform-pluv"
