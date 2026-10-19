@@ -114,23 +114,28 @@ Next, create a `RoomDurableObject` and attach our new `PluvServer` to the `RoomD
 ```ts
 // server/RoomDurableObject.ts
 
-import { InferIORoom } from "@pluv/io";
+import { manageSessions, type InferIORoom, type RoomSessionManager } from "@pluv/io";
 import { DurableObject } from "cloudflare:workers";
 import { Env, ioServer } from "./io";
 
 export class RoomDurableObject extends DurableObject<Env> {
-  private _room: InferIORoom<typeof ioServer>;
+  private _sessions: RoomSessionManager;
 
   constructor(state: DurableObjectState, env: Env) {
-    const room = state.id.name;
+    const roomId = state.id.name;
 
-    if (!room) {
+    if (!roomId) {
       throw new Error(
         "Address this Durable Object with idFromName() or getByName()",
       );
     }
 
-    this._room = ioServer.createRoom(room, { env, state });
+    const room: InferIORoom<typeof ioServer> = ioServer.createRoom(roomId, {
+      env,
+      state,
+    });
+
+    this._sessions = manageSessions(room);
   }
 
   public async webSocketClose(
@@ -138,7 +143,7 @@ export class RoomDurableObject extends DurableObject<Env> {
     code: number,
     reason: string
   ): Promise<void> {
-    const handler = this._room.onClose(ws);
+    const handler = this._sessions.onClose(ws);
 
     await handler({ code, reason });
   }
@@ -147,7 +152,7 @@ export class RoomDurableObject extends DurableObject<Env> {
     ws: WebSocket,
     error: unknown
   ): Promise<void> {
-    const handler = this._room.onError(ws);
+    const handler = this._sessions.onError(ws);
     const eventError = error instanceof Error ? error : new Error("Internal Error");
 
     await handler({ error: eventError, message: eventError.message });
@@ -157,7 +162,7 @@ export class RoomDurableObject extends DurableObject<Env> {
     ws: WebSocket,
     message: string | ArrayBuffer
   ): Promise<void> {
-    const handler = this._room.onMessage(ws);
+    const handler = this._sessions.onMessage(ws);
 
     await handler({ data: message });
   }
@@ -174,7 +179,7 @@ export class RoomDurableObject extends DurableObject<Env> {
 
     // Only needed if you have specified authorize
     const token = new URL(request.url).searchParams.get("token");
-    await this._room.register(server, { env: this.env, request, token });
+    await this._sessions.register(server, { env: this.env, request, token });
 
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -182,7 +187,7 @@ export class RoomDurableObject extends DurableObject<Env> {
   // Recommended to run garbage collection periodically due to edge cases around
   // WebSocket hibernation
   public async alarm(alarmInfo?: AlarmInvocationInfo): Promise<void> {
-    await this._room.garbageCollect();
+    await this._sessions.garbageCollect();
     await this.ctx.storage.setAlarm(Date.now() + 60_000);
   }
 }

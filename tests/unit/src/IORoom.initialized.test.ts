@@ -1,3 +1,4 @@
+import { manageSessions } from "@pluv/io";
 import { describe, expect, it } from "vitest";
 import {
     createAuthorizedIO,
@@ -22,7 +23,7 @@ describe("IORoom initialization", () => {
                 return webhook.promise;
             },
         });
-        const room = server.createRoom("init-wait");
+        const room = manageSessions(server.createRoom("init-wait"));
         const socket = new TestSocket("session-1");
 
         const registration = registerAuthorized(room, socket, { io });

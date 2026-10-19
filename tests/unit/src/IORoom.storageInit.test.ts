@@ -1,3 +1,4 @@
+import { manageSessions } from "@pluv/io";
 import { LoroDoc } from "loro-crdt";
 import { applyUpdate, Doc as YDoc, encodeStateAsUpdate, encodeStateVector } from "yjs";
 import { describe, expect, it } from "vitest";
@@ -10,6 +11,7 @@ import {
     TestPersistence,
     TestSocket,
     tick,
+    waitForStorageCheckpoint,
     testLoroTreaty,
     testYjsTreaty,
 } from "./__utils__";
@@ -138,7 +140,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
             platform: { persistence },
         });
         const server = io.server({ getInitialStorage: config.getInitialStorage });
-        const room = server.createRoom(config.roomId ?? "storage-init");
+        const room = manageSessions(server.createRoom(config.roomId ?? "storage-init"));
 
         return { io, persistence, room };
     };
@@ -266,12 +268,11 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
 
         await tick();
 
-        expect(lastMessage(second, "$storageReceived").data.changeKind).toBe("unchanged");
-        expect(decode(lastMessage(second, "$storageReceived").data.state)).toBe("alpha");
-
         persistence.persist.resolve();
         await Promise.all([firstInit, secondInit]);
 
+        expect(lastMessage(second, "$storageReceived").data.changeKind).toBe("unchanged");
+        expect(decode(lastMessage(second, "$storageReceived").data.state)).toBe("alpha");
         expect(lastMessage(first, "$storageReceived").data.changeKind).toBe("initialized");
         expect(decode(lastMessage(first, "$storageReceived").data.state)).toBe("alpha");
         expect(decode((await persistence.getStorageState("storage-init")) ?? "")).toBe("alpha");
@@ -370,6 +371,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
         const base = lastMessage(socket, "$storageReceived").data.state as string;
 
         await updateStorage(room, socket, null, append(base, " live"));
+        await waitForStorageCheckpoint();
 
         expect(decode((await persistence.getStorageState("storage-init")) ?? "")).toBe(
             "server live",
@@ -395,6 +397,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
             updateStorage(room, first, null, append(base, "A")),
             updateStorage(room, second, null, append(base, "B")),
         ]);
+        await waitForStorageCheckpoint();
 
         const stored = decode((await persistence.getStorageState("storage-init")) ?? "");
 
@@ -447,6 +450,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
         const repair = source.encodeDiff(stateVector);
 
         await updateStorage(room, first, null, repair);
+        await waitForStorageCheckpoint();
         source.destroy();
 
         expect(decode((await persistence.getStorageState("storage-init")) ?? "")).toContain(

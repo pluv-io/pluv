@@ -57,7 +57,7 @@ describe("createBaseRouter", () => {
             self: typeof events[name]?.config.self === "function",
         });
 
-        expect(shape("$initializeSession")).toEqual({ broadcast: true, self: true });
+        expect(shape("$initializeSession")).toEqual({ broadcast: true, self: false });
 
         for (const name of ["$updatePresence", "$updateStorage"]) {
             expect(shape(name)).toEqual({ broadcast: true, self: false });

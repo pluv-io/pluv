@@ -1,9 +1,11 @@
+import { manageSessions } from "@pluv/io";
 import { describe, expect, it } from "vitest";
-import { createAuthorizedIO, registerAuthorized, TestSocket } from "./__utils__";
+import { createAuthorizedIO, registerAuthorized, TestSocket, tick, waitUntil } from "./__utils__";
 
 type Room = {
+    id: string;
     onMessage: (socket: TestSocket) => (event: { data: string }) => Promise<void>;
-    register: (socket: TestSocket) => Promise<void>;
+    register: (socket: TestSocket, ...options: any[]) => Promise<void>;
 };
 
 const lastMessage = (socket: TestSocket, type: string): { type: string; data: any } => {
@@ -30,7 +32,7 @@ describe("IORoom procedure errors", () => {
                 }),
             }),
         });
-        const room = server.createRoom("procedure-throw");
+        const room = manageSessions(server.createRoom("procedure-throw"));
         const socket = new TestSocket("session-1");
 
         await registerAuthorized(room, socket, { io });
@@ -39,12 +41,80 @@ describe("IORoom procedure errors", () => {
         expect(lastMessage(socket, "$error").data.message).toBe("procedure exploded");
     });
 
+    it("does not start broadcast when self throws", async () => {
+        const io = createAuthorizedIO({});
+        let room!: Room & {
+            evict: (sessionId: string) => Promise<void>;
+            getSize: () => number;
+        };
+        const server = io.server({
+            router: io.router({
+                kick: io.procedure
+                    .broadcast(async () => {
+                        await room.evict("session-2");
+
+                        return {};
+                    })
+                    .self(() => {
+                        throw new Error("self exploded");
+                    }),
+            }),
+        });
+
+        room = manageSessions(server.createRoom("self-throw-before-broadcast"));
+
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(room, first, { io });
+        await registerAuthorized(room, second, { io });
+        await send(room, first, "kick", {});
+        await tick();
+
+        expect(lastMessage(first, "$error").data.message).toBe("self exploded");
+        expect(room.getSize()).toBe(2);
+    });
+
+    it("still runs a started self promise when broadcast throws", async () => {
+        const io = createAuthorizedIO({});
+        let room!: Room & {
+            evict: (sessionId: string) => Promise<void>;
+            getSize: () => number;
+        };
+        const server = io.server({
+            router: io.router({
+                kick: io.procedure
+                    .self(async () => {
+                        await room.evict("session-2");
+
+                        return {};
+                    })
+                    .broadcast(() => {
+                        throw new Error("broadcast exploded");
+                    }),
+            }),
+        });
+
+        room = manageSessions(server.createRoom("broadcast-throw-after-self"));
+
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(room, first, { io });
+        await registerAuthorized(room, second, { io });
+        await send(room, first, "kick", {});
+        await waitUntil(() => room.getSize() === 1);
+
+        expect(lastMessage(first, "$error").data.message).toBe("broadcast exploded");
+        expect(room.getSize()).toBe(1);
+    });
+
     it("sends $error when presence exceeds the size limit", async () => {
         const io = createAuthorizedIO({
             limits: { presenceMaxSize: 32 },
         });
         const server = io.server();
-        const room = server.createRoom("presence-limit");
+        const room = manageSessions(server.createRoom("presence-limit"));
         const socket = new TestSocket("session-1");
 
         await registerAuthorized(room, socket, { io });
@@ -83,7 +153,7 @@ describe("IORoom procedure errors", () => {
                     .broadcast(({ message }) => ({ echoed: { message } })),
             }),
         });
-        const room = server.createRoom("invalid-input");
+        const room = manageSessions(server.createRoom("invalid-input"));
         const socket = new TestSocket("session-1");
 
         await registerAuthorized(room, socket, { io });

@@ -1,3 +1,4 @@
+import { manageSessions } from "@pluv/io";
 import { describe, expect, it } from "vitest";
 import { createAuthorizedIO, registerAuthorized, TestSocket } from "./__utils__";
 
@@ -20,30 +21,23 @@ const send = async (room: Room, socket: TestSocket, type: string, data: unknown)
 };
 
 describe("IORoom EventResolverContext", () => {
-    it("keeps storageSeeded live and writes presence through setPresence", async () => {
-        let readBack: { presence: unknown; seededAfter: boolean } | null = null;
+    it("writes presence through setPresence", async () => {
+        let readBack: { presence: unknown } | null = null;
 
         const io = createAuthorizedIO({});
         const server = io.server({
             router: io.router({
                 stamp: io.procedure.broadcast((_data, ctx) => {
-                    const seededBefore = ctx.storageSeeded;
-
-                    ctx.storageSeeded = true;
-                    const seededAfter = ctx.storageSeeded;
-                    ctx.storageSeeded = seededBefore;
-
                     ctx.presence = { ...ctx.presence, mark: 1 };
                     readBack = {
                         presence: ctx.presence,
-                        seededAfter,
                     };
 
                     return {};
                 }),
             }),
         });
-        const room = server.createRoom("resolver-context");
+        const room = manageSessions(server.createRoom("resolver-context"));
         const first = new TestSocket("session-1");
         const observer = new TestSocket("session-2");
 
@@ -64,7 +58,6 @@ describe("IORoom EventResolverContext", () => {
 
         expect(readBack).toEqual({
             presence: { name: "ada", mark: 1 },
-            seededAfter: true,
         });
         expect(lastMessage(observer, "$othersReceived").data.others).toEqual([
             {

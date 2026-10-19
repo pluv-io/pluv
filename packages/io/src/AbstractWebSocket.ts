@@ -1,4 +1,5 @@
 import type { BaseUser, IOEventMessage, JsonObject, MaybePromise } from "@pluv/types";
+import { isErrorMessage } from "./roomEffects";
 import type { AbstractPersistence } from "./AbstractPersistence";
 import type { AbstractPlatform } from "./AbstractPlatform";
 import type { WebSocketSerializedState, WebSocketSession } from "./types";
@@ -37,6 +38,12 @@ export interface AbstractWebSocketHandleErrorParams {
 export type AbstractListener<TType extends keyof AbstractEventMap> = (
     event: AbstractEventMap[TType],
 ) => MaybePromise<void>;
+
+const errorMessage = (error: unknown): string => {
+    if (isErrorMessage(error)) return error.message;
+
+    return "Unexpected error";
+};
 
 export type InferWebSocketSource<TAbstractWebSocket extends AbstractWebSocket> =
     TAbstractWebSocket extends AbstractWebSocket<infer IWebSocket> ? IWebSocket : never;
@@ -108,7 +115,7 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
     public handleError(params: AbstractWebSocketHandleErrorParams): void {
         const { error, message: _message, room, session } = params;
 
-        const message = error instanceof Error ? error.message : "Unexpected error";
+        const message = errorMessage(error);
         const stack: string | null = error instanceof Error ? (error.stack ?? null) : null;
         const connectionId = (session?.id ?? null) as string;
 

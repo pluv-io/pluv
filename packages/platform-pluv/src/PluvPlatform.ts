@@ -308,7 +308,6 @@ export class PluvPlatform extends AbstractPlatform<
                         await Promise.resolve(
                             this._listeners?.onRoomDestroyed({
                                 context,
-                                platform: this,
                                 room,
                             }),
                         );
@@ -328,7 +327,6 @@ export class PluvPlatform extends AbstractPlatform<
                             this._listeners?.onStorageDestroyed({
                                 context,
                                 encodedState,
-                                platform: this,
                                 room,
                             }),
                         );
@@ -349,7 +347,6 @@ export class PluvPlatform extends AbstractPlatform<
                             this._listeners?.onUserConnected({
                                 context,
                                 encodedState,
-                                platform: this,
                                 room,
                                 user,
                             }),
@@ -371,7 +368,6 @@ export class PluvPlatform extends AbstractPlatform<
                             this._listeners?.onUserDisconnected({
                                 context,
                                 encodedState,
-                                platform: this,
                                 room,
                                 user,
                             }),

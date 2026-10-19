@@ -1,6 +1,6 @@
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
-import { authorize } from "@pluv/io";
+import { manageSessions, authorize } from "@pluv/io";
 import { createTreaty } from "@pluv/treaty";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
@@ -192,7 +192,7 @@ describe("IORoom operator sessions", () => {
             kind: "operator",
         });
 
-        const missingRoom = io.server().createRoom("leftover");
+        const missingRoom = manageSessions(io.server().createRoom("leftover"));
         const missingSocket = new TestSocket("session-missing");
 
         await missingRoom.register(missingSocket, { token });
@@ -200,11 +200,13 @@ describe("IORoom operator sessions", () => {
         expect(missingRoom.getSize()).toBe(1);
         expect(lastMessage(missingSocket, "$registered").user).toEqual({ id: "owner:staff-1" });
 
-        const deniedRoom = io
-            .server({
-                onGetOperator: () => null,
-            })
-            .createRoom("leftover-denied");
+        const deniedRoom = manageSessions(
+            io
+                .server({
+                    onGetOperator: () => null,
+                })
+                .createRoom("leftover-denied"),
+        );
         const deniedToken = await createAuthorizedToken(mint, {
             room: "leftover-denied",
             kind: "operator",
@@ -222,7 +224,7 @@ describe("IORoom operator sessions", () => {
         const server = io.server({
             onGetOperator: () => ({ id: "ada" }),
         });
-        const room = server.createRoom("operator-join");
+        const room = manageSessions(server.createRoom("operator-join"));
         const occupant = new TestSocket("session-ada");
         const operator = new TestSocket("session-staff");
         const observer = new TestSocket("session-bob");
@@ -307,12 +309,7 @@ describe("IORoom operator sessions", () => {
             imageUrl: testOperatorUser.imageUrl,
         };
         const messages: { kind?: string; operator: unknown }[] = [];
-        const storageUpdates: {
-            kind?: string;
-            operator: unknown;
-            hasUser: boolean;
-            hasWebSocket: boolean;
-        }[] = [];
+        const storageUpdates: string[][] = [];
         const io = createAuthorizedIO({
             treaty: testYjsTreaty,
         });
@@ -326,15 +323,10 @@ describe("IORoom operator sessions", () => {
                 });
             },
             onStorageUpdated: (event) => {
-                storageUpdates.push({
-                    kind: event.kind,
-                    operator: event.operator,
-                    hasUser: "user" in event,
-                    hasWebSocket: "webSocket" in event,
-                });
+                storageUpdates.push(Object.keys(event).toSorted());
             },
         });
-        const room = server.createRoom("operator-listeners");
+        const room = manageSessions(server.createRoom("operator-listeners"));
         const occupant = new TestSocket("session-ada");
         const operator = new TestSocket("session-staff");
 
@@ -367,31 +359,11 @@ describe("IORoom operator sessions", () => {
 
         expect(messages).toEqual([
             { kind: "user", operator: null },
-            { kind: "operator", operator: operatorProfile },
             { kind: "user", operator: null },
             { kind: "operator", operator: operatorProfile },
             { kind: "operator", operator: operatorProfile },
         ]);
-        expect(storageUpdates).toEqual([
-            {
-                kind: "operator",
-                operator: operatorProfile,
-                hasUser: true,
-                hasWebSocket: true,
-            },
-            {
-                kind: "user",
-                operator: null,
-                hasUser: false,
-                hasWebSocket: false,
-            },
-            {
-                kind: "operator",
-                operator: operatorProfile,
-                hasUser: false,
-                hasWebSocket: false,
-            },
-        ]);
+        expect(storageUpdates).toEqual([["context", "encodedState", "room"]]);
     });
 });
 
@@ -424,7 +396,7 @@ describe("IORoom operator treaty context", () => {
             getInitialStorage: () => null,
             onGetOperator: () => ({ id: "owner:staff-1" }),
         });
-        const room = server.createRoom("operator-treaty");
+        const room = manageSessions(server.createRoom("operator-treaty"));
         const occupant = new TestSocket("session-ada");
         const operator = new TestSocket("session-staff");
 

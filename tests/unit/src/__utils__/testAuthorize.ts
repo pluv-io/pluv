@@ -1,6 +1,6 @@
 import { yjs } from "@pluv/crdt-yjs";
 import { loro } from "@pluv/crdt-loro";
-import type { InferIORoom, IOConfigParams, PluvServer } from "@pluv/io";
+import type { IOConfigParams } from "@pluv/io";
 import { createIO } from "@pluv/io";
 import { createTreaty, type Treaty } from "@pluv/treaty";
 import type { BaseUser, OperatorUser, TreatyLike } from "@pluv/types";
@@ -119,8 +119,11 @@ export const createAuthorizedToken = async (
     });
 };
 
-export const registerAuthorized = async <TServer extends PluvServer<any>>(
-    room: InferIORoom<TServer>,
+export const registerAuthorized = async (
+    room: {
+        id: string;
+        register: (webSocket: TestSocket, ...options: any[]) => Promise<void>;
+    },
     socket: TestSocket,
     params: {
         io: CreateTokenSource;

@@ -1,7 +1,7 @@
 import { createClient, type PluvClient } from "@pluv/client";
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO, type IODefs } from "@pluv/io";
-import { platformCloudflare, type CloudflarePlatform } from "@pluv/platform-cloudflare";
+import { platformCloudflare } from "@pluv/platform-cloudflare";
 import { createTreaty } from "@pluv/treaty";
 import type { InferIOInput, InferIOOutput, IOLikeDefs } from "@pluv/types";
 import { expectTypeOf } from "expect-type";
@@ -28,23 +28,21 @@ const io = createIO()
 const messages = io.router({
     sendMessage: io.procedure
         .input(z.object({ message: z.string() }))
-        .broadcast(({ message }, { context, platform, session }) => {
-            expectTypeOf(session).not.toBeNullable();
-            expectTypeOf(session.user).toEqualTypeOf<{ id: string; name: string }>();
+        .broadcast(({ message }, { context, user }) => {
+            expectTypeOf(user).toEqualTypeOf<{ id: string; name: string }>();
             expectTypeOf(context).toEqualTypeOf<{
                 env: {};
                 meta: undefined;
                 state: DurableObjectState;
             }>();
-            expectTypeOf(platform).toEqualTypeOf<CloudflarePlatform>();
 
             return { receiveMessage: { message } };
         }),
 });
 
 const pings = io.router({
-    ping: io.procedure.self((_, { session }) => {
-        expectTypeOf(session).not.toBeNullable();
+    ping: io.procedure.self((_, { user }) => {
+        expectTypeOf(user).not.toBeNullable();
 
         return { pong: {} };
     }),

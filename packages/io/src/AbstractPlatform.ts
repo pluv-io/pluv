@@ -41,6 +41,7 @@ export abstract class AbstractPlatform<
     protected readonly _roomContext: TRoomContext | undefined;
 
     private _initialized: boolean = false;
+    private readonly _keptAlive = new Set<Promise<unknown>>();
 
     public persistence: AbstractPersistence;
     public pubSub: AbstractPubSub;
@@ -92,6 +93,17 @@ export abstract class AbstractPlatform<
         webSocket: AbstractWebSocket,
         state: WebSocketSerializedState,
     ): WebSocketSerializedState;
+
+    /**
+     * Retain `promise` until it settles. Cloudflare uses this to keep the isolate awake.
+     * The default holds the reference and does nothing else.
+     */
+    public keepAlive(promise: Promise<unknown>): void {
+        this._keptAlive.add(promise);
+        void promise.finally(() => {
+            this._keptAlive.delete(promise);
+        });
+    }
 
     /**
      * Normalize register/createToken init context before authorize runs.
