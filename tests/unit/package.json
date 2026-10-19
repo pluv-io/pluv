@@ -15,8 +15,8 @@
         "@pluv/crdt-loro": "workspace:^",
         "@pluv/crdt-yjs": "workspace:^",
         "@pluv/io": "workspace:^",
-        "@pluv/platform": "workspace:^",
         "@pluv/persistence-cloudflare-transactional-storage": "workspace:^",
+        "@pluv/platform": "workspace:^",
         "@pluv/platform-cloudflare": "workspace:^",
         "@pluv/treaty": "workspace:^",
         "@pluv/types": "workspace:^",
@@ -25,9 +25,9 @@
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
-        "@types/node": "^26.6.4",
+        "@types/node": "^26.6.5",
         "typescript": "^7.0.2",
-        "vitest": "^5.0.3",
-        "zod": "^4.6.5"
+        "vitest": "^5.0.5",
+        "zod": "^4.6.7"
     }
 }

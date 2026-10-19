@@ -34,9 +34,9 @@
         "@pluv/types": "workspace:^"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^5.20261006.1",
+        "@cloudflare/workers-types": "^5.20261018.1",
         "@pluv/tsconfig": "workspace:^",
-        "tsdown": "^0.23.0",
+        "tsdown": "^0.23.1",
         "typescript": "^7.0.2"
     },
     "exports": {
