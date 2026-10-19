@@ -47,12 +47,20 @@ jobs:
               run: pnpm drizzle-kit push
               working-directory: tests/e2e
 
+            - name: Setup Neon
+              run: pnpm db:push:neon
+              working-directory: tests/e2e
+              env:
+                  E2E_TEST_DATABASE_URL: ${{ secrets.E2E_TEST_DATABASE_URL }}
+
             - name: Install Playwright
               run: pnpm exec playwright install chromium
               working-directory: tests/e2e
 
             - name: Test
               run: pnpm test:e2e
+              env:
+                  E2E_TEST_DATABASE_URL: ${{ secrets.E2E_TEST_DATABASE_URL }}
 
             - uses: actions/upload-artifact@v7
               if: always()
@@ -60,3 +68,11 @@ jobs:
                   name: playwright-report
                   path: tests/e2e/playwright-report
                   retention-days: 14
+
+            - uses: actions/upload-artifact@v7
+              if: always()
+              with:
+                  name: playwright-test-results
+                  path: tests/e2e/test-results
+                  retention-days: 14
+                  if-no-files-found: warn

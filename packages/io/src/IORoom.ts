@@ -698,7 +698,7 @@ export class IORoom<T extends IODefs = IODefs>
 
         const context = await this._getContext();
 
-        void this._listeners.onMessage({
+        this._listeners.onMessage({
             ...("_meta" in this._platform && !!this._platform._meta
                 ? { _meta: this._platform._meta }
                 : {}),

@@ -3,6 +3,20 @@ import { parseProcedureInput } from "./parseProcedureInput";
 import { toPresenceResolverContext } from "./toPresenceResolverContext";
 import type { PresenceResolverContext, TreatyResolverDoc } from "./types";
 
+type PresenceResolveResult<TPresence extends Record<string, any>> =
+    | Partial<TPresence>
+    | Promise<Partial<TPresence>>;
+
+type PresenceResolver<
+    TInput extends Record<string, any>,
+    TUser extends { id: string },
+    TPresence extends Record<string, any>,
+    TJson extends Record<string, any>,
+> = (
+    data: TInput,
+    context: PresenceResolverContext<TUser, TPresence, TJson>,
+) => PresenceResolveResult<TPresence>;
+
 type PresenceProcedureDefs<
     TInput extends Record<string, any>,
     TUser extends { id: string },
@@ -11,12 +25,7 @@ type PresenceProcedureDefs<
     _TNative extends Record<string, any>,
 > = {
     input: StandardSchemaV1<unknown, TInput> | null;
-    resolve:
-        | ((
-              data: TInput,
-              context: PresenceResolverContext<TUser, TPresence, TJson>,
-          ) => Partial<TPresence>)
-        | null;
+    resolve: PresenceResolver<TInput, TUser, TPresence, TJson> | null;
 };
 
 export class TreatyPresenceProcedure<
@@ -40,10 +49,7 @@ export class TreatyPresenceProcedure<
             input: config.input ?? null,
             resolve:
                 (config.resolve as
-                    | ((
-                          data: TInput,
-                          context: PresenceResolverContext<TUser, TPresence, TJson>,
-                      ) => Partial<TPresence>)
+                    | PresenceResolver<TInput, TUser, TPresence, TJson>
                     | null
                     | undefined) ?? null,
         };
@@ -57,7 +63,7 @@ export class TreatyPresenceProcedure<
             presence?: TPresence | null;
             user: TUser;
         },
-    ): Partial<TPresence> {
+    ): PresenceResolveResult<TPresence> {
         if (!this._defs.resolve) {
             throw new Error("Treaty presence procedure is missing resolve");
         }
@@ -89,10 +95,7 @@ export class TreatyPresenceProcedure<
     }
 
     public resolve(
-        resolver: (
-            data: TInput,
-            context: PresenceResolverContext<TUser, TPresence, TJson>,
-        ) => Partial<TPresence>,
+        resolver: PresenceResolver<TInput, TUser, TPresence, TJson>,
     ): Omit<
         TreatyPresenceProcedure<
             TUser,

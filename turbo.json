@@ -29,7 +29,7 @@
         "test": {
             "dependsOn": ["^build"],
             "outputs": ["playwright-report/**", ".next/**"],
-            "env": ["CI"]
+            "env": ["CI", "E2E_TEST_DATABASE_URL"]
         },
         "typecheck": {
             "dependsOn": ["^build"],

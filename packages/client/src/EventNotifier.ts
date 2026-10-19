@@ -33,7 +33,10 @@ export class EventNotifier<TIO extends IOLike> {
         callback: EventNotifierSubscriptionCallback<TIO, TEvent>,
     ): () => void {
         const subject = this.subject(name);
+        const subscription = subscribe(callback)(subject.source);
 
-        return subscribe(callback)(subject.source).unsubscribe;
+        return () => {
+            subscription.unsubscribe();
+        };
     }
 }

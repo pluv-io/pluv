@@ -287,10 +287,10 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                     } finally {
                         releaseReservation();
 
-                        if (!connected) return;
-
-                        this._connecting -= 1;
-                        await this._destroyEmptyRoom();
+                        if (connected) {
+                            this._connecting -= 1;
+                            await this._destroyEmptyRoom();
+                        }
                     }
                 },
             );

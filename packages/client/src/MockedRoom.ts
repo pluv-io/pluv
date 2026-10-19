@@ -110,6 +110,8 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
     private readonly _usersNotifier = new UsersNotifier<TDefs["io"], InferClientPresence<TDefs>>();
     private readonly _router: PluvRouter<TDefs>;
     private readonly _treaty: TDefs["treaty"];
+    // Local sequences. `presence` drops an older resolver result once a newer call has started.
+    private _seq = { presence: 0 };
     private _state: WebSocketState<TDefs["io"]> = {
         authorization: {
             token: null,
@@ -382,7 +384,7 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
 
     public presence = new Proxy(
         async (name: string, data: unknown): Promise<void> => {
-            this._runPresenceProcedure(name, data);
+            await this._runPresenceProcedure(name, data);
         },
         {
             get(fn, prop) {
@@ -638,7 +640,7 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
         return this._usersNotifier.subscribeOther(userId, callback, options);
     };
 
-    private _runPresenceProcedure(name: string, data: unknown): void {
+    private async _runPresenceProcedure(name: string, data: unknown): Promise<void> {
         const procedures = this._treaty._defs.procedures.presence;
 
         if (!procedures || !Object.hasOwn(procedures, name)) {
@@ -653,12 +655,15 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
         }
 
         const doc = this._crdtManager.doc;
-        const patch = procedure.apply(data, {
+        const seq = ++this._seq.presence;
+        const patch = await procedure.apply(data, {
             user: myself.data,
             operator: myself.operator,
             presence: this.getMyPresence(),
             doc,
         });
+
+        if (seq !== this._seq.presence) return;
 
         this._applyMyPresence(patch as InferClientPresence<TDefs>);
     }

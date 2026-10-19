@@ -5,6 +5,7 @@ import { createTreaty } from "@pluv/treaty";
 import { StorageState } from "@pluv/types";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import { deferred, tick } from "./__utils__";
 
 const user = z.object({ id: z.string() });
 const presence = z.object({ selectionId: z.string().nullable() });
@@ -146,6 +147,96 @@ describe("PluvRoom treaty invoke", () => {
 
         expect(() => room.storage.addMessage({ text: "hello" })).toThrow(/connection id/);
     });
+
+    it("waits for an async presence resolver before applying the patch", async () => {
+        const gate = deferred<void>();
+        const local = createTreaty({ user, presence, storage });
+        const selectPresence = local.procedure.presence
+            .input(z.object({ id: z.string().nullable() }))
+            .resolve(async ({ id }) => {
+                await gate.promise;
+
+                return { selectionId: id };
+            });
+        const asyncTreaty = local.router({ select: selectPresence });
+        const room = new PluvRoom("client-async-presence", {
+            authEndpoint: () => "",
+            limits: {},
+            presence: asyncTreaty.presence,
+            storage: asyncTreaty.storage,
+            treaty: asyncTreaty,
+            initialPresence: { selectionId: null },
+            initialStorage: { messages: [] },
+        });
+
+        (
+            room as unknown as { _usersManager: { setMyself: (params: any) => void } }
+        )._usersManager.setMyself({
+            connectionId: "conn-1",
+            data: { id: "ada" },
+            kind: "user",
+            presence: { selectionId: null },
+        });
+
+        const pending = room.presence.select({ id: "item-1" });
+
+        await tick();
+
+        expect(room.getMyPresence()).toEqual({ selectionId: null });
+
+        gate.resolve();
+        await pending;
+
+        expect(room.getMyPresence()).toEqual({ selectionId: "item-1" });
+    });
+
+    it("drops an older async presence patch when a newer call finishes first", async () => {
+        const firstGate = deferred<void>();
+        const secondGate = deferred<void>();
+        let calls = 0;
+        const local = createTreaty({ user, presence, storage });
+        const selectPresence = local.procedure.presence
+            .input(z.object({ id: z.string().nullable() }))
+            .resolve(async ({ id }) => {
+                calls += 1;
+                await (calls === 1 ? firstGate.promise : secondGate.promise);
+
+                return { selectionId: id };
+            });
+        const asyncTreaty = local.router({ select: selectPresence });
+        const room = new PluvRoom("client-async-presence-order", {
+            authEndpoint: () => "",
+            limits: {},
+            presence: asyncTreaty.presence,
+            storage: asyncTreaty.storage,
+            treaty: asyncTreaty,
+            initialPresence: { selectionId: null },
+            initialStorage: { messages: [] },
+        });
+
+        (
+            room as unknown as { _usersManager: { setMyself: (params: any) => void } }
+        )._usersManager.setMyself({
+            connectionId: "conn-1",
+            data: { id: "ada" },
+            kind: "user",
+            presence: { selectionId: null },
+        });
+
+        const first = room.presence.select({ id: "old" });
+        const second = room.presence.select({ id: "new" });
+
+        await tick();
+        secondGate.resolve();
+        await second;
+
+        expect(room.getMyPresence()).toEqual({ selectionId: "new" });
+
+        firstGate.resolve();
+        await first;
+
+        expect(room.getMyPresence()).toEqual({ selectionId: "new" });
+    });
 });
 
 describe("MockedRoom treaty invoke", () => {
@@ -265,5 +356,94 @@ describe("MockedRoom treaty invoke", () => {
         await room.presence.select({ id: "item" });
 
         expect(room.getMyPresence()).toEqual({ selectionId: "item" });
+    });
+
+    it("waits for an async presence resolver before applying the patch", async () => {
+        const gate = deferred<void>();
+        const local = createTreaty({ user, presence, storage });
+        const selectPresence = local.procedure.presence
+            .input(z.object({ id: z.string().nullable() }))
+            .resolve(async ({ id }) => {
+                await gate.promise;
+
+                return { selectionId: id };
+            });
+        const asyncTreaty = local.router({ select: selectPresence });
+        const room = new MockedRoom("mocked-async-presence", {
+            initialPresence: { selectionId: null },
+            initialStorage: { messages: [] },
+            myself: { data: { id: "ada" } },
+            presence: asyncTreaty.presence,
+            storage: asyncTreaty.storage,
+            treaty: asyncTreaty,
+        });
+        const pending = room.presence.select({ id: "item-1" });
+
+        await tick();
+
+        expect(room.getMyPresence()).toEqual({ selectionId: null });
+
+        gate.resolve();
+        await pending;
+
+        expect(room.getMyPresence()).toEqual({ selectionId: "item-1" });
+    });
+
+    it("drops an older async presence patch when a newer call finishes first", async () => {
+        const firstGate = deferred<void>();
+        const secondGate = deferred<void>();
+        let calls = 0;
+        const local = createTreaty({ user, presence, storage });
+        const selectPresence = local.procedure.presence
+            .input(z.object({ id: z.string().nullable() }))
+            .resolve(async ({ id }) => {
+                calls += 1;
+                await (calls === 1 ? firstGate.promise : secondGate.promise);
+
+                return { selectionId: id };
+            });
+        const asyncTreaty = local.router({ select: selectPresence });
+        const room = new MockedRoom("mocked-async-presence-order", {
+            initialPresence: { selectionId: null },
+            initialStorage: { messages: [] },
+            myself: { data: { id: "ada" } },
+            presence: asyncTreaty.presence,
+            storage: asyncTreaty.storage,
+            treaty: asyncTreaty,
+        });
+        const first = room.presence.select({ id: "old" });
+        const second = room.presence.select({ id: "new" });
+
+        await tick();
+        secondGate.resolve();
+        await second;
+
+        expect(room.getMyPresence()).toEqual({ selectionId: "new" });
+
+        firstGate.resolve();
+        await first;
+
+        expect(room.getMyPresence()).toEqual({ selectionId: "new" });
+    });
+
+    it("rejects when an async presence resolver rejects", async () => {
+        const local = createTreaty({ user, presence, storage });
+        const selectPresence = local.procedure.presence
+            .input(z.object({ id: z.string().nullable() }))
+            .resolve(async () => {
+                throw new Error("presence failed");
+            });
+        const asyncTreaty = local.router({ select: selectPresence });
+        const room = new MockedRoom("mocked-async-presence-fail", {
+            initialPresence: { selectionId: null },
+            initialStorage: { messages: [] },
+            myself: { data: { id: "ada" } },
+            presence: asyncTreaty.presence,
+            storage: asyncTreaty.storage,
+            treaty: asyncTreaty,
+        });
+
+        await expect(room.presence.select({ id: "item-1" })).rejects.toThrow("presence failed");
+        expect(room.getMyPresence()).toEqual({ selectionId: null });
     });
 });

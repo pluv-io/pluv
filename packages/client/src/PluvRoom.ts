@@ -239,6 +239,8 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     private _operatorStats: RoomStats = { connectionCount: 0, userCount: 0 };
 
     private _lastMetadata: InferClientMetadata<TDefs> | null = null;
+    // Local sequences. `presence` drops an older resolver result once a newer call has started.
+    private _seq = { presence: 0 };
     private readonly _storageSync = new StorageSync();
     private _state: WebSocketState<TDefs["io"]> = {
         authorization: {
@@ -1987,12 +1989,15 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         }
 
         const doc = this._crdtManager.doc;
-        const patch = procedure.apply(data, {
+        const seq = ++this._seq.presence;
+        const patch = await procedure.apply(data, {
             user: myself.data,
             operator: myself.operator,
             presence: this.getMyPresence(),
             doc,
         });
+
+        if (seq !== this._seq.presence) return;
 
         await this._applyMyPresence(patch as InferClientPresence<TDefs>, name);
     }
