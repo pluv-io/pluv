@@ -68,3 +68,11 @@ jobs:
                   name: playwright-report
                   path: tests/e2e/playwright-report
                   retention-days: 14
+
+            - uses: actions/upload-artifact@v7
+              if: always()
+              with:
+                  name: playwright-test-results
+                  path: tests/e2e/test-results
+                  retention-days: 14
+                  if-no-files-found: warn

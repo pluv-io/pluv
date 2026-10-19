@@ -29,8 +29,8 @@ const config: PlaywrightTestConfig = {
     retries: process.env.CI ? 2 : 0,
     /* Opt out of parallel tests on CI. */
     workers: 1,
-    /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-    reporter: "list",
+    /* List locally. CI also annotates the check and writes the HTML report. */
+    reporter: process.env.CI ? [["list"], ["github"], ["html", { open: "never" }]] : "list",
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
         headless: !!process.env.CI,
@@ -40,6 +40,7 @@ const config: PlaywrightTestConfig = {
         /* Base URL to use in actions like `await page.goto('/')`. */
         // baseURL: 'http://localhost:3000',
 
+        screenshot: "only-on-failure",
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
         trace: "on-first-retry",
     },
@@ -61,36 +62,43 @@ const config: PlaywrightTestConfig = {
     webServer: [
         {
             command: "pnpm dev:client",
+            name: "client",
             port: 3100,
             timeout: 60 * 1_000,
         },
         {
             command: "pnpm dev:loro:server:node",
+            name: "loro-node",
             port: 3112,
             timeout: 60 * 1_000,
         },
         {
             command: "pnpm dev:noop:server:node",
+            name: "noop-node",
             port: 3122,
             timeout: 60 * 1_000,
         },
         {
             command: "pnpm dev:yjs:server:cloudflare",
+            name: "yjs-cloudflare",
             port: 3101,
             timeout: 60 * 1_000,
         },
         {
             command: "pnpm dev:yjs:server:node",
+            name: "yjs-node",
             port: 3102,
             timeout: 60 * 1_000,
         },
         {
             command: "pnpm dev:yjs:server:node-redis",
+            name: "yjs-node-redis",
             port: 3103,
             timeout: 60 * 1_000,
         },
         {
             command: "pnpm dev:yjs:server:platform",
+            name: "yjs-platform",
             port: 3104,
             timeout: 60 * 1_000,
         },
