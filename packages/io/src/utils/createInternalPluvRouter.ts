@@ -9,10 +9,13 @@ import { assertEventNames } from "./assertEventNames";
 export const createInternalPluvRouter = <T extends IODefs = IODefs>(
     events: T["events"],
 ): PluvRouter<T> => {
-    assertEventNames(Object.keys(events as Record<string, unknown>), { allowDollar: true });
+    const names = Object.keys(events as Record<string, unknown>);
+
+    assertEventNames(names, { allowDollar: true });
 
     const router = Object.create(PluvRouter.prototype) as PluvRouter<T>;
     (router as { _defs: PluvRouter<T>["_defs"] })._defs = { events };
+    (router as { eventNames: PluvRouter<T>["eventNames"] }).eventNames = new Set(names);
 
     return router;
 };
