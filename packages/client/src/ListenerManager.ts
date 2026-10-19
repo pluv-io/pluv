@@ -16,6 +16,10 @@ export class ListenerManager {
 
         if (!source) return () => undefined;
 
-        return subscribe(callback)(source as any).unsubscribe;
+        const subscription = subscribe(callback)(source as any);
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }
 }

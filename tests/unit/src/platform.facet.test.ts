@@ -33,7 +33,7 @@ const decodeText = (encodedState: string): string => {
 
     applyUpdate(doc, Buffer.from(encodedState, "base64"));
 
-    return doc.getText("content").toString();
+    return doc.getText("content").toJSON();
 };
 
 const messageTurn = (promise: Promise<never>) => {
@@ -295,8 +295,8 @@ const host = (options?: {
                     session,
                 });
             },
-            dropStorageUpdates: (frames) => {
-                return open().dropStorageUpdates(frames);
+            dropStorageUpdates: (updates) => {
+                return open().dropStorageUpdates(updates);
             },
             register: async (...args) => {
                 calls.push("register");

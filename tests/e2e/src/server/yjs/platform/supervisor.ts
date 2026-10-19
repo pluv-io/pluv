@@ -100,7 +100,7 @@ export class RoomSupervisor extends DurableObject<PlatformEnv> {
 
         if (!roomId) throw new Error("Room supervisor requires a named id.");
 
-        ctx.blockConcurrencyWhile(async () => {
+        void ctx.blockConcurrencyWhile(async () => {
             this.#limits = (await ctx.storage.get<PluvIOLimits>(LIMITS_KEY)) ?? null;
         });
 
@@ -186,12 +186,12 @@ export class RoomSupervisor extends DurableObject<PlatformEnv> {
     }
 
     #sessionRoom(roomId: string): SessionRoom {
-        const supervisor = this;
+        const readLimits = (): PluvIOLimits | null => this.#limits;
 
         return {
             id: roomId,
             get limits() {
-                return supervisor.#limits;
+                return readLimits();
             },
             "~": {
                 applyPresencePatch: (params) => {

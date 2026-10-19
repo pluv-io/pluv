@@ -16,6 +16,26 @@ import {
 
 const ROOM_ID = "repeated-persistence";
 
+/** Reads `keepAlive` through its descriptor so the reference stays bound to the instance that calls it. */
+const readKeepAlive = (): {
+    invoke: AbstractPlatform["keepAlive"];
+    restore: () => void;
+} => {
+    const descriptor = Object.getOwnPropertyDescriptor(AbstractPlatform.prototype, "keepAlive");
+    const invoke: unknown = descriptor?.value;
+
+    if (!descriptor || typeof invoke !== "function") {
+        throw new Error("keepAlive is missing");
+    }
+
+    return {
+        invoke: invoke as AbstractPlatform["keepAlive"],
+        restore: () => {
+            Object.defineProperty(AbstractPlatform.prototype, "keepAlive", descriptor);
+        },
+    };
+};
+
 const decodeText = (encodedState: string): string => {
     const doc = new YDoc();
 
@@ -759,7 +779,7 @@ describe("IORoom repeated persistence", () => {
             release = resolve;
         });
         const tracked: { settled: boolean }[] = [];
-        const keepAlive = AbstractPlatform.prototype.keepAlive;
+        const keepAlive = readKeepAlive();
 
         persistence.setStorageState = (room, state) => {
             saves += 1;
@@ -774,7 +794,7 @@ describe("IORoom repeated persistence", () => {
                 record.settled = true;
             });
 
-            return keepAlive.call(this, promise);
+            return keepAlive.invoke.call(this, promise);
         };
 
         const io = createAuthorizedIO({
@@ -812,7 +832,7 @@ describe("IORoom repeated persistence", () => {
 
             expect(tracked.filter((record) => !record.settled)).toHaveLength(waiting - 1);
         } finally {
-            AbstractPlatform.prototype.keepAlive = keepAlive;
+            keepAlive.restore();
             release();
         }
     });
@@ -824,7 +844,7 @@ describe("IORoom repeated persistence", () => {
             release = resolve;
         });
         const tracked: { settled: boolean }[] = [];
-        const keepAlive = AbstractPlatform.prototype.keepAlive;
+        const keepAlive = readKeepAlive();
 
         AbstractPlatform.prototype.keepAlive = function (promise) {
             const record = { settled: false };
@@ -834,7 +854,7 @@ describe("IORoom repeated persistence", () => {
                 record.settled = true;
             });
 
-            return keepAlive.call(this, promise);
+            return keepAlive.invoke.call(this, promise);
         };
 
         const io = createAuthorizedIO({
@@ -871,7 +891,7 @@ describe("IORoom repeated persistence", () => {
 
             expect(waiting.every((record) => record.settled)).toBe(true);
         } finally {
-            AbstractPlatform.prototype.keepAlive = keepAlive;
+            keepAlive.restore();
             release();
         }
     });

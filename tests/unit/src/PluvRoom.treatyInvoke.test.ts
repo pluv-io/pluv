@@ -151,14 +151,14 @@ describe("PluvRoom treaty invoke", () => {
     it("waits for an async presence resolver before applying the patch", async () => {
         const gate = deferred<void>();
         const local = createTreaty({ user, presence, storage });
-        const select = local.procedure.presence
+        const selectPresence = local.procedure.presence
             .input(z.object({ id: z.string().nullable() }))
             .resolve(async ({ id }) => {
                 await gate.promise;
 
                 return { selectionId: id };
             });
-        const asyncTreaty = local.router({ select });
+        const asyncTreaty = local.router({ select: selectPresence });
         const room = new PluvRoom("client-async-presence", {
             authEndpoint: () => "",
             limits: {},
@@ -195,7 +195,7 @@ describe("PluvRoom treaty invoke", () => {
         const secondGate = deferred<void>();
         let calls = 0;
         const local = createTreaty({ user, presence, storage });
-        const select = local.procedure.presence
+        const selectPresence = local.procedure.presence
             .input(z.object({ id: z.string().nullable() }))
             .resolve(async ({ id }) => {
                 calls += 1;
@@ -203,7 +203,7 @@ describe("PluvRoom treaty invoke", () => {
 
                 return { selectionId: id };
             });
-        const asyncTreaty = local.router({ select });
+        const asyncTreaty = local.router({ select: selectPresence });
         const room = new PluvRoom("client-async-presence-order", {
             authEndpoint: () => "",
             limits: {},
@@ -361,14 +361,14 @@ describe("MockedRoom treaty invoke", () => {
     it("waits for an async presence resolver before applying the patch", async () => {
         const gate = deferred<void>();
         const local = createTreaty({ user, presence, storage });
-        const select = local.procedure.presence
+        const selectPresence = local.procedure.presence
             .input(z.object({ id: z.string().nullable() }))
             .resolve(async ({ id }) => {
                 await gate.promise;
 
                 return { selectionId: id };
             });
-        const asyncTreaty = local.router({ select });
+        const asyncTreaty = local.router({ select: selectPresence });
         const room = new MockedRoom("mocked-async-presence", {
             initialPresence: { selectionId: null },
             initialStorage: { messages: [] },
@@ -394,7 +394,7 @@ describe("MockedRoom treaty invoke", () => {
         const secondGate = deferred<void>();
         let calls = 0;
         const local = createTreaty({ user, presence, storage });
-        const select = local.procedure.presence
+        const selectPresence = local.procedure.presence
             .input(z.object({ id: z.string().nullable() }))
             .resolve(async ({ id }) => {
                 calls += 1;
@@ -402,7 +402,7 @@ describe("MockedRoom treaty invoke", () => {
 
                 return { selectionId: id };
             });
-        const asyncTreaty = local.router({ select });
+        const asyncTreaty = local.router({ select: selectPresence });
         const room = new MockedRoom("mocked-async-presence-order", {
             initialPresence: { selectionId: null },
             initialStorage: { messages: [] },
@@ -428,12 +428,12 @@ describe("MockedRoom treaty invoke", () => {
 
     it("rejects when an async presence resolver rejects", async () => {
         const local = createTreaty({ user, presence, storage });
-        const select = local.procedure.presence
+        const selectPresence = local.procedure.presence
             .input(z.object({ id: z.string().nullable() }))
             .resolve(async () => {
                 throw new Error("presence failed");
             });
-        const asyncTreaty = local.router({ select });
+        const asyncTreaty = local.router({ select: selectPresence });
         const room = new MockedRoom("mocked-async-presence-fail", {
             initialPresence: { selectionId: null },
             initialStorage: { messages: [] },

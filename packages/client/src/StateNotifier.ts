@@ -27,6 +27,10 @@ export class StateNotifier<TIO extends IOLike, TPresence extends Record<string, 
 
         if (!source) throw new Error(`Could not subscribe to source: ${name}`);
 
-        return subscribe(callback)(source).unsubscribe;
+        const subscription = subscribe(callback)(source);
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }
 }

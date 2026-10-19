@@ -22,7 +22,11 @@ export class CrdtNotifier<TJson extends Record<string, any>> {
     }
 
     public subcribeRoot(callback: (value: TJson) => void): () => void {
-        return subscribe(callback)(this.rootSubject.source).unsubscribe;
+        const subscription = subscribe(callback)(this.rootSubject.source);
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }
 
     public subscribe<TKey extends keyof TJson>(
@@ -30,7 +34,10 @@ export class CrdtNotifier<TJson extends Record<string, any>> {
         callback: StorageSubscriptionCallback<TJson, TKey>,
     ): () => void {
         const subject = this.subject(key);
+        const subscription = subscribe(callback)(subject.source);
 
-        return subscribe(callback)(subject.source).unsubscribe;
+        return () => {
+            subscription.unsubscribe();
+        };
     }
 }

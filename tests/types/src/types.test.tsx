@@ -1,3 +1,4 @@
+// oxlint-disable no-shadow
 import { createClient } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";

@@ -130,9 +130,11 @@ describe("TreatyPresenceProcedure.apply", () => {
 
     it("does not materialize json until it is read", () => {
         let calls = 0;
-        const procedure = new TreatyPresenceProcedure().resolve((_data, { presence }) => presence);
+        const procedure = new TreatyPresenceProcedure().resolve(
+            (_data, resolver) => resolver.presence,
+        );
 
-        procedure.apply(
+        void procedure.apply(
             {},
             {
                 ...context,
@@ -151,14 +153,14 @@ describe("TreatyPresenceProcedure.apply", () => {
 
     it("caches json after the first read", () => {
         let calls = 0;
-        const procedure = new TreatyPresenceProcedure().resolve((_data, context) => {
-            void context.json;
-            void context.json;
+        const procedure = new TreatyPresenceProcedure().resolve((_data, resolver) => {
+            void resolver.json;
+            void resolver.json;
 
             return {};
         });
 
-        procedure.apply(
+        void procedure.apply(
             {},
             {
                 ...context,
@@ -176,7 +178,9 @@ describe("TreatyPresenceProcedure.apply", () => {
     });
 
     it("defaults missing presence to an empty object", () => {
-        const procedure = new TreatyPresenceProcedure().resolve((_data, { presence }) => presence);
+        const procedure = new TreatyPresenceProcedure().resolve(
+            (_data, resolver) => resolver.presence,
+        );
 
         expect(
             procedure.apply(
@@ -192,13 +196,13 @@ describe("TreatyPresenceProcedure.apply", () => {
 
     it("does not call doc.get", () => {
         let getCalls = 0;
-        const procedure = new TreatyPresenceProcedure().resolve((_data, context) => {
-            void context.json;
+        const procedure = new TreatyPresenceProcedure().resolve((_data, resolver) => {
+            void resolver.json;
 
             return {};
         });
 
-        procedure.apply(
+        void procedure.apply(
             {},
             {
                 ...context,
@@ -217,13 +221,13 @@ describe("TreatyPresenceProcedure.apply", () => {
 
     it("snapshots presence so mutations do not affect the source", () => {
         const live = { count: 0 };
-        const procedure = new TreatyPresenceProcedure().resolve((_data, context) => {
-            (context.presence as { count: number }).count = 5;
+        const procedure = new TreatyPresenceProcedure().resolve((_data, resolver) => {
+            (resolver.presence as { count: number }).count = 5;
 
             return {};
         });
 
-        procedure.apply({}, { ...context, presence: live });
+        void procedure.apply({}, { ...context, presence: live });
 
         expect(live).toEqual({ count: 0 });
     });
