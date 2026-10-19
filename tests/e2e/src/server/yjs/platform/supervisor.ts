@@ -12,6 +12,7 @@ const GARBAGE_COLLECT_INTERVAL_MS = 30_000;
 const LIMITS_KEY = "limits";
 
 export interface PlatformEnv {
+    E2E_TEST_DATABASE_URL?: string;
     LOADER: WorkerLoader;
     rooms: DurableObjectNamespace<RoomSupervisor>;
 }
@@ -162,11 +163,15 @@ export class RoomSupervisor extends DurableObject<PlatformEnv> {
                     this.ctx.facets.get(name, getStartupOptions as never),
             },
         };
+        const databaseUrl = this.env.E2E_TEST_DATABASE_URL;
         const facet = loadUserFacet(parent, this.env.LOADER, {
             version: "platform-e2e",
             code: () => ({
                 compatibilityDate: "2026-10-08",
-                globalOutbound: null,
+                // The uploaded module stays off the network unless it has a database to reach.
+                ...(databaseUrl
+                    ? { env: { E2E_TEST_DATABASE_URL: databaseUrl } }
+                    : { globalOutbound: null }),
                 mainModule: "facet.js",
                 modules: {
                     "facet.js": facetSource,

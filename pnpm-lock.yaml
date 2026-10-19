@@ -709,6 +709,9 @@ importers:
       '@lexical/yjs':
         specifier: ^0.52.0
         version: 0.52.0(typescript@7.0.2)(yjs@13.6.33)
+      '@neondatabase/serverless':
+        specifier: ^1.2.0
+        version: 1.2.0
       '@pluv/addon-indexeddb':
         specifier: workspace:^
         version: link:../../packages/addon-indexeddb
@@ -727,6 +730,9 @@ importers:
       '@pluv/io':
         specifier: workspace:^
         version: link:../../packages/io
+      '@pluv/persistence-cloudflare-transactional-storage':
+        specifier: workspace:^
+        version: link:../../packages/persistence-cloudflare-transactional-storage
       '@pluv/persistence-redis':
         specifier: workspace:^
         version: link:../../packages/persistence-redis
@@ -789,7 +795,7 @@ importers:
         version: 1.8.2
       drizzle-orm:
         specifier: ^0.45.3
-        version: 0.45.3(@cloudflare/workers-types@5.20261006.1)(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)
+        version: 0.45.3(@cloudflare/workers-types@5.20261006.1)(@neondatabase/serverless@1.2.0)(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)
       hono:
         specifier: ^4.13.13
         version: 4.13.13
@@ -2847,6 +2853,10 @@ packages:
     peerDependenciesMeta:
       '@cfworker/json-schema':
         optional: true
+
+  '@neondatabase/serverless@1.2.0':
+    resolution: {integrity: sha512-tnaqgixUengZQNd9ZrS3ytQfamJzLKY8QxgqWQTNHHtB+KrFQWk77JTbbpg4RD+J3qE4eO2lVytvGDX5Kj6FdQ==}
+    engines: {node: '>=19.0.0'}
 
   '@next/env@16.3.8':
     resolution: {integrity: sha512-Al9zqHVV7TJv0eFuOU4U7Lvv74PTih4Ch63sk2xCIpSTkE3udFnaOcnzP2lQVymiL7yS9Cj2iClUXlR3EQ5sEw==}
@@ -9690,6 +9700,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@neondatabase/serverless@1.2.0': {}
+
   '@next/env@16.3.8': {}
 
   '@next/swc-darwin-arm64@16.3.8':
@@ -11538,9 +11550,10 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.23.15
 
-  drizzle-orm@0.45.3(@cloudflare/workers-types@5.20261006.1)(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3):
+  drizzle-orm@0.45.3(@cloudflare/workers-types@5.20261006.1)(@neondatabase/serverless@1.2.0)(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3):
     optionalDependencies:
       '@cloudflare/workers-types': 5.20261006.1
+      '@neondatabase/serverless': 1.2.0
       '@types/better-sqlite3': 9.6.0
       better-sqlite3: 13.0.3
 

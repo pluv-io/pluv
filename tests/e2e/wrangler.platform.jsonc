@@ -8,5 +8,6 @@
     },
     "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RoomSupervisor"] }],
     "worker_loaders": [{ "binding": "LOADER" }],
+    "secrets": { "required": ["E2E_TEST_DATABASE_URL"] },
     "rules": [{ "type": "Text", "globs": ["**/*.bundle.txt"], "fallthrough": true }],
 }

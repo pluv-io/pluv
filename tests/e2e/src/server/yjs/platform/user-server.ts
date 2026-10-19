@@ -1,16 +1,20 @@
 import { createIO } from "@pluv/io";
 import { platformPluv } from "@pluv/platform";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { createNeonDb, isPlatformDatabaseRoom, readDatabaseUrl, rooms } from "../../../db/neon";
 import { treaty } from "../../../pluv-io/yjs/platform-treaty";
+import { NeonRoomPersistence } from "./neon-persistence";
 
 const PLUV_AUTH_SECRET = "secret123";
 
 export const io = createIO()
-    .platform(platformPluv())
+    .platform(platformPluv({ persistence: new NeonRoomPersistence() }))
     .config({
         secret: PLUV_AUTH_SECRET,
         treaty,
         limits: { maxConnections: 8 },
+        context: ({ env }) => ({ env }),
     });
 
 const router = io.router({
@@ -29,7 +33,33 @@ const router = io.router({
 });
 
 export const ioServer = io.server({
-    getInitialStorage: () => null,
+    getInitialStorage: async ({ context, room }) => {
+        if (!isPlatformDatabaseRoom(room)) return null;
+
+        const url = readDatabaseUrl(context.env);
+
+        if (!url) return null;
+
+        const row = await createNeonDb(url)
+            .select()
+            .from(rooms)
+            .where(eq(rooms.name, room))
+            .then((rows) => rows[0]);
+
+        return row?.storage ?? null;
+    },
+    onStorageDestroyed: async ({ context, encodedState, room }) => {
+        if (!isPlatformDatabaseRoom(room)) return;
+
+        const url = readDatabaseUrl(context.env);
+
+        if (!url) return;
+
+        await createNeonDb(url)
+            .insert(rooms)
+            .values({ name: room, storage: encodedState })
+            .onConflictDoUpdate({ target: rooms.name, set: { storage: encodedState } });
+    },
     router,
 });
 
