@@ -24,7 +24,12 @@ import type {
     SessionRoom,
     WebSocketRegisterConfig,
 } from "./types";
-import { isErrorMessage, isSuspended, isUserTurn, userTurnPromise } from "./roomEffects";
+import {
+    deferredResultPromise,
+    isDeferredResult,
+    isErrorMessage,
+    isSuspended,
+} from "./roomEffects";
 import { ExclusiveUntil } from "./ExclusiveUntil";
 import { JoinQueue } from "./JoinQueue";
 import { RoomSessions } from "./RoomSessions";
@@ -553,7 +558,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                         session: this._toSnapshot(socket),
                     });
 
-                    if (isUserTurn(patch)) return { pending: userTurnPromise(patch) };
+                    if (isDeferredResult(patch)) return { pending: deferredResultPromise(patch) };
 
                     if (isSuspended(patch)) {
                         if ("error" in patch && isErrorMessage(patch.error)) {
@@ -869,7 +874,8 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                         message,
                     );
 
-                    if (isUserTurn(effects)) return { pending: userTurnPromise(effects) };
+                    if (isDeferredResult(effects))
+                        return { pending: deferredResultPromise(effects) };
 
                     if (isSuspended(effects)) {
                         if ("error" in effects && isErrorMessage(effects.error)) {

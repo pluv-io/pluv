@@ -6,7 +6,7 @@ import type {
     RoomStorageActor,
     SessionRoom,
 } from "@pluv/io";
-import { isSuspended, isUserTurn, userTurnPromise } from "@pluv/io";
+import { deferredResultPromise, isDeferredResult, isSuspended } from "@pluv/io";
 import type { JsonObject } from "@pluv/types";
 import { plain } from "./plain";
 import type { FrameDelivery, PresenceDelivery } from "./types";
@@ -56,7 +56,7 @@ const yieldTurn = (): Promise<void> => {
 // An already-settled turn belongs in this RPC result. Delivering it through the
 // caller joins the queue that is still waiting here.
 const readSettled = async <T>(
-    userTurn: Promise<T>,
+    deferredResult: Promise<T>,
 ): Promise<
     { status: "value"; value: T } | { status: "error"; error: unknown } | { status: "pending" }
 > => {
@@ -65,7 +65,7 @@ const readSettled = async <T>(
         | { status: "error"; error: unknown }
         | { status: "pending" } = { status: "pending" };
 
-    userTurn.then(
+    deferredResult.then(
         (value) => {
             settled = { status: "value", value };
         },
@@ -87,7 +87,7 @@ export type RoomFacetOptions<T extends IODefs = IODefs> = {
 };
 
 /**
- * Forwards one room call and returns plain JSON. A user turn that is still
+ * Forwards one room call and returns plain JSON. A deferred result that is still
  * waiting becomes `{ suspended: true }`. The frames are delivered later on
  * the `RpcTarget` the caller passed in, which this facet retains until that
  * send finishes.
@@ -113,10 +113,10 @@ export class RoomFacet<T extends IODefs = IODefs> {
             session: params.session,
         });
 
-        if (!isUserTurn(settled)) return plain.json(settled);
+        if (!isDeferredResult(settled)) return plain.json(settled);
 
-        const userTurn = userTurnPromise(settled);
-        const ready = await readSettled(userTurn);
+        const deferredResult = deferredResultPromise(settled);
+        const ready = await readSettled(deferredResult);
 
         if (ready.status === "value") return plain.json(ready.value);
 
@@ -142,7 +142,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
                 });
             },
             sink: params.onPresence,
-            userTurn,
+            deferredResult,
         });
 
         return { suspended: true };
@@ -194,9 +194,9 @@ export class RoomFacet<T extends IODefs = IODefs> {
     }): Promise<RoomEffects | { error?: { message: string } | null; suspended: true }> {
         const settled = await this.#room["~"].message(params.session, params.event);
 
-        if (isUserTurn(settled)) {
-            const userTurn = userTurnPromise(settled);
-            const ready = await readSettled(userTurn);
+        if (isDeferredResult(settled)) {
+            const deferredResult = deferredResultPromise(settled);
+            const ready = await readSettled(deferredResult);
 
             if (ready.status === "value") return plain.effects(ready.value);
 
@@ -239,7 +239,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
                     await this.#room["~"].dropStorageUpdates(delivered.broadcast);
                 },
                 sink: params.onFrames,
-                userTurn,
+                deferredResult,
             });
 
             return { suspended: true };
@@ -293,18 +293,18 @@ export class RoomFacet<T extends IODefs = IODefs> {
     }
 
     #deliver<TValue, TSink extends object>(params: {
-        /** Sends `$error` when the user turn rejects. */
+        /** Sends `$error` when the deferred result rejects. */
         onReject?: (kept: TSink, error: unknown) => void | Promise<void>;
         /** Sends the resolved value. A throw is logged and is not a rejected turn. */
         send: (kept: TSink, value: TValue) => void | Promise<void>;
         /** Supervisor stub passed into this RPC. Retained until delivery finishes. */
         sink: TSink;
         /** Resolves to frames or a presence patch. */
-        userTurn: Promise<TValue>;
+        deferredResult: Promise<TValue>;
     }): void {
-        const { onReject, send, sink, userTurn } = params;
+        const { deferredResult, onReject, send, sink } = params;
         const kept = retain(sink);
-        const delivery = userTurn
+        const delivery = deferredResult
             .then(
                 async (value) => {
                     await yieldTurn();

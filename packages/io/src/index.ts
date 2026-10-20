@@ -69,8 +69,14 @@ export { PluvRouter } from "./PluvRouter";
 export type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 export { PluvServer } from "./PluvServer";
 export type { CreateRoomOptions, InferIORoom, PluvServerConfig } from "./PluvServer";
-export { isErrorMessage, isSuspended, isUserTurn, userTurnPromise } from "./roomEffects";
+export {
+    deferredResultPromise,
+    isDeferredResult,
+    isErrorMessage,
+    isSuspended,
+} from "./roomEffects";
 export type {
+    DeferredResult,
     GetInitialStorageFn,
     HandleMode,
     IORoomDestroyedEvent,
@@ -93,7 +99,6 @@ export type {
     RoomStorageActor,
     SessionRoom,
     Suspended,
-    UserTurn,
     WebSocketSerializedState,
     WebSocketSession,
     WebSocketSessionSeq,

@@ -1,17 +1,17 @@
-import { isUserTurn } from "@pluv/io";
+import { isDeferredResult } from "@pluv/io";
 import { describe, expect, it } from "vitest";
 
-describe("isUserTurn", () => {
+describe("isDeferredResult", () => {
     it("reads a non-enumerable thenable", () => {
-        const turn = Object.defineProperty({}, "$u", {
+        const result = Object.defineProperty({}, "$u", {
             value: Promise.resolve(null),
         });
 
-        expect(isUserTurn(turn)).toBe(true);
+        expect(isDeferredResult(result)).toBe(true);
     });
 
     it("leaves a presence patch that contains $u", () => {
-        expect(isUserTurn({ $u: "kept" })).toBe(false);
-        expect(isUserTurn({ $u: Promise.resolve("kept") })).toBe(false);
+        expect(isDeferredResult({ $u: "kept" })).toBe(false);
+        expect(isDeferredResult({ $u: Promise.resolve("kept") })).toBe(false);
     });
 });

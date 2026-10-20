@@ -21,6 +21,7 @@ import { RoomStorage } from "./RoomStorage";
 import { StorageCheckpoint } from "./StorageCheckpoint";
 import { authorize } from "./authorize";
 import type {
+    DeferredResult,
     EventResolverContext,
     GetInitialStorageFn,
     IORoomDestroyedEvent,
@@ -44,11 +45,10 @@ import type {
     SessionEventContext,
     SessionRoom,
     StorageEventContext,
-    UserTurn,
     WebSocketRegisterConfig,
     WebSocketSession,
 } from "./types";
-import { emptyRoomEffects, userTurn } from "./roomEffects";
+import { deferredResult, emptyRoomEffects } from "./roomEffects";
 import {
     assertExhaustive,
     invokeProcedureResolvers,
@@ -310,7 +310,7 @@ export class IORoom<T extends IODefs = IODefs>
         name: string;
         data: unknown;
         session: RoomPresenceSession<T>;
-    }): Promise<JsonObject | null | UserTurn<JsonObject | null>> {
+    }): Promise<JsonObject | null | DeferredResult<JsonObject | null>> {
         const { name, data, session } = params;
         const procedures = this._treaty._defs.procedures.presence;
 
@@ -327,7 +327,7 @@ export class IORoom<T extends IODefs = IODefs>
             doc,
         }) as JsonObject | null | PromiseLike<JsonObject | null>;
 
-        if (isThenable(applied)) return userTurn(Promise.resolve(applied));
+        if (isThenable(applied)) return deferredResult(Promise.resolve(applied));
 
         return applied;
     }
@@ -693,7 +693,7 @@ export class IORoom<T extends IODefs = IODefs>
     private async _message(
         session: RoomSessionSnapshot<T>,
         event: { data: unknown; type: string },
-    ): Promise<RoomEffects<T> | UserTurn<RoomEffects<T>>> {
+    ): Promise<RoomEffects<T> | DeferredResult<RoomEffects<T>>> {
         if (!(await this._initialized)) return this._releaseStorage(emptyRoomEffects<T>(), session);
 
         const context = await this._getContext();
@@ -795,7 +795,7 @@ export class IORoom<T extends IODefs = IODefs>
             // The storage broadcast stays on this join. Other resolvers can await the
             // session manager, so this join must finish before those promises do.
             if (!storageEvent && (isThenable(broadcastResult) || isThenable(selfResult))) {
-                return userTurn(
+                return deferredResult(
                     Promise.all([broadcastResult, selfResult])
                         .then(([broadcast, self]) =>
                             finish(
