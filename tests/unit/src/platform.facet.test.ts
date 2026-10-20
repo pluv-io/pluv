@@ -540,7 +540,9 @@ describe("@pluv/platform", () => {
         await registerAuthorized(hosted.room, second, { io: hosted.io });
         await send(hosted.room, first, "$initializeSession", { presence: {}, update: null });
         await send(hosted.room, second, "$initializeSession", { presence: {}, update: null });
-        await hosted.room.__experimental_storage.addMessage({ text: "hello" }, first.id);
+        await hosted.room
+            .__experimental_storage({ senderId: first.id })
+            .addMessage({ text: "hello" });
 
         expect(lastMessage(second, "$storageUpdated").type).toBe("$storageUpdated");
     });
@@ -644,7 +646,9 @@ describe("@pluv/platform", () => {
             update: null,
         });
 
-        const update = hosted.room.__experimental_presence.select({ id: "item-1" }, first.id);
+        const update = hosted.room.__experimental_presence({ senderId: first.id }).select({
+            id: "item-1",
+        });
 
         await update;
         expect(second.messages.some((message) => message.type === "$presenceUpdated")).toBe(false);
@@ -669,7 +673,7 @@ describe("@pluv/platform", () => {
             update: null,
         });
 
-        await hosted.room.__experimental_presence.select({ id: "item-1" }, first.id);
+        await hosted.room.__experimental_presence({ senderId: first.id }).select({ id: "item-1" });
         await waitUntil(() => first.messages.some((message) => message.type === "$error"));
 
         expect(lastMessage(first, "$error").data).toEqual({
@@ -866,7 +870,9 @@ describe("@pluv/platform", () => {
 
         await registerAuthorized(hosted.room, socket, { io: hosted.io });
         await send(hosted.room, socket, "$initializeSession", { presence: {}, update: null });
-        await hosted.room.__experimental_storage.addMessage({ text: "hello" }, socket.id);
+        await hosted.room.__experimental_storage({ senderId: socket.id }).addMessage({
+            text: "hello",
+        });
 
         expect(hosted.calls).toContain("applyStorageProcedure");
         expect(hosted.calls).not.toContain("flushCheckpoint");
@@ -888,7 +894,9 @@ describe("@pluv/platform", () => {
 
         const beforeWrite = hosted.awake.length;
 
-        await hosted.room.__experimental_storage.addMessage({ text: "hello" }, socket.id);
+        await hosted.room.__experimental_storage({ senderId: socket.id }).addMessage({
+            text: "hello",
+        });
 
         expect(hosted.awake).toHaveLength(beforeWrite + 1);
 

@@ -405,8 +405,8 @@ describe("IORoom operator treaty context", () => {
         await registerAuthorized(room, operator, { io: server, kind: "operator" });
         await initializeSession(room, operator, { selectionId: null, actor: null });
 
-        await room.__experimental_presence.select({ id: "item" }, occupant.id);
-        await room.__experimental_presence.select({ id: "item" }, operator.id);
+        await room.__experimental_presence({ senderId: occupant.id }).select({ id: "item" });
+        await room.__experimental_presence({ senderId: operator.id }).select({ id: "item" });
 
         expect(lastMessage(operator, "$presenceUpdated").data.session.presence).toEqual({
             selectionId: "item",
