@@ -39,12 +39,12 @@ type Room = {
     id: string;
     onMessage: (socket: TestSocket) => (event: { data: string }) => Promise<void>;
     register: (socket: TestSocket, ...options: any[]) => Promise<void>;
-    __experimental_presence: {
-        select: (input: { id: string | null }, senderId: string) => Promise<void>;
+    __experimental_presence: (actor: { senderId: string }) => {
+        select: (input: { id: string | null }) => Promise<void>;
     };
-    __experimental_storage: {
-        addMessage: (input: { text: string }, senderId: string) => Promise<void>;
-        touch: (input: Record<string, never>, senderId: string) => Promise<void>;
+    __experimental_storage: (actor: { senderId: string }) => {
+        addMessage: (input: { text: string }) => Promise<void>;
+        touch: (input: Record<string, never>) => Promise<void>;
     };
 };
 
@@ -82,15 +82,50 @@ describe("IORoom treaty invoke", () => {
         return { io, room };
     };
 
-    it("requires a live senderId for presence and storage", async () => {
+    it("requires a valid actor and live connection for presence and storage", async () => {
         const { room } = createRoom();
 
+        expect(() => room.__experimental_presence(null as never)).toThrow(/senderId: string/);
+        expect(() => room.__experimental_presence({ senderId: undefined as never })).toThrow(
+            /senderId: string/,
+        );
         await expect(
-            room.__experimental_presence.select({ id: "item" }, undefined as never),
-        ).rejects.toThrow(/senderId/);
-        await expect(
-            room.__experimental_storage.addMessage({ text: "hello" }, "missing"),
+            room.__experimental_storage({ senderId: "missing" }).addMessage({ text: "hello" }),
         ).rejects.toThrow(/Unknown senderId/);
+    });
+
+    it("does not treat bound procedure proxies as thenables", async () => {
+        const { io, room } = createRoom("treaty-thenable");
+        const first = new TestSocket("session-1");
+
+        await registerAuthorized(room, first, { io });
+        await initializeSession(room, first, { selectionId: null });
+
+        const presence = room.__experimental_presence({ senderId: first.id });
+
+        await expect(Promise.resolve(presence)).resolves.toBe(presence);
+
+        const storage = room.__experimental_storage({ senderId: first.id });
+
+        await expect((async () => storage)()).resolves.toBe(storage);
+        expect(typeof storage.addMessage).toBe("function");
+    });
+
+    it("keeps the senderId from bind time when the actor object is mutated", async () => {
+        const { io, room } = createRoom("treaty-bind-sender");
+        const first = new TestSocket("session-1");
+
+        await registerAuthorized(room, first, { io });
+        await initializeSession(room, first, { selectionId: null });
+
+        const actor = { senderId: first.id };
+        const storage = room.__experimental_storage(actor);
+
+        actor.senderId = "missing";
+
+        await storage.addMessage({ text: "hello" });
+
+        expect(lastMessage(first, "$storageUpdated").type).toBe("$storageUpdated");
     });
 
     it("applies presence through $updatePresence limits and $presenceUpdated", async () => {
@@ -103,7 +138,7 @@ describe("IORoom treaty invoke", () => {
         await registerAuthorized(room, second, { io });
         await initializeSession(room, second, { selectionId: null });
 
-        await room.__experimental_presence.select({ id: "item-1" }, first.id);
+        await room.__experimental_presence({ senderId: first.id }).select({ id: "item-1" });
 
         expect(lastMessage(second, "$presenceUpdated").data.session.presence).toEqual({
             selectionId: "item-1",
@@ -121,7 +156,7 @@ describe("IORoom treaty invoke", () => {
         await registerAuthorized(room, second, { io });
         await initializeSession(room, second, { selectionId: null });
 
-        await room.__experimental_storage.addMessage({ text: "hello" }, first.id);
+        await room.__experimental_storage({ senderId: first.id }).addMessage({ text: "hello" });
 
         const firstUpdate = lastMessage(second, "$storageUpdated").data.state as string;
         const once = storage.getEmpty().applyEncodedState({ update: firstUpdate });
@@ -129,7 +164,7 @@ describe("IORoom treaty invoke", () => {
         expect(once.toJson()).toEqual({ messages: ["hello"] });
         once.destroy();
 
-        await room.__experimental_storage.addMessage({ text: "again" }, first.id);
+        await room.__experimental_storage({ senderId: first.id }).addMessage({ text: "again" });
 
         const secondUpdate = lastMessage(second, "$storageUpdated").data.state as string;
         const both = storage
@@ -146,7 +181,7 @@ describe("IORoom treaty invoke", () => {
 
         const beforeTouch = second.messages.filter((message) => message.type === "$storageUpdated");
 
-        await room.__experimental_storage.touch({}, first.id);
+        await room.__experimental_storage({ senderId: first.id }).touch({});
 
         expect(second.messages.filter((message) => message.type === "$storageUpdated")).toEqual(
             beforeTouch,
@@ -184,7 +219,7 @@ describe("IORoom treaty invoke", () => {
 
         expect(second.messages.some((message) => message.type === "$storageUpdated")).toBe(false);
 
-        await room.__experimental_storage.addMessage({ text: "kept" }, first.id);
+        await room.__experimental_storage({ senderId: first.id }).addMessage({ text: "kept" });
 
         const echoed = lastMessage(second, "$storageUpdated").data.state as string;
         const doc = storage.getEmpty().applyEncodedState({ update: echoed });
@@ -215,7 +250,7 @@ describe("IORoom treaty invoke", () => {
                 queued = true;
                 const senderId = user?.id === "session-1" ? "session-2" : "session-1";
 
-                late = room.__experimental_storage.addMessage({ text: "after" }, senderId);
+                late = room.__experimental_storage({ senderId }).addMessage({ text: "after" });
             },
         });
 
@@ -228,7 +263,7 @@ describe("IORoom treaty invoke", () => {
         await initializeSession(room, first, { selectionId: null });
         await registerAuthorized(room, second, { io });
         await initializeSession(room, second, { selectionId: null });
-        await room.__experimental_storage.addMessage({ text: "hello" }, first.id);
+        await room.__experimental_storage({ senderId: first.id }).addMessage({ text: "hello" });
 
         await room.evictAll();
         await late;
@@ -256,10 +291,9 @@ describe("IORoom treaty invoke", () => {
             onUserDisconnected: ({ user }) => {
                 if (user?.id !== "session-1") return Promise.resolve();
 
-                return room.__experimental_storage.addMessage(
-                    { text: "from-disconnect" },
-                    "session-2",
-                );
+                return room.__experimental_storage({ senderId: "session-2" }).addMessage({
+                    text: "from-disconnect",
+                });
             },
         });
 

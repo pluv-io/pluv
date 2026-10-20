@@ -12,6 +12,8 @@ import type {
     MaybePromise,
     OperatorUser,
     ParticipantKind,
+    PresenceProcedureProxy,
+    TreatyProcedureLike,
 } from "@pluv/types";
 import colors from "kleur";
 import type { InferInitContextType, InferRoomContextType } from "./AbstractPlatform";
@@ -60,47 +62,47 @@ import {
 
 /**
  * @experimental
- * @description Host invoke for treaty presence procedures. Requires a live `senderId`. Breaking
- * changes may ship without a major version bump.
+ * @description Connection the host treaty procedure invoke runs as. Breaking changes may ship
+ * without a major version bump.
  */
-export type PresenceProcedureProxy<TIO extends IORoom<any>> = (<
-    TName extends Extract<keyof TIO["_defs"]["treaty"]["_defs"]["procedures"]["presence"], string>,
->(
+export type HostTreatyProcedureActor = {
+    senderId: string;
+};
+
+/**
+ * @experimental
+ * @description Bound host invoke for treaty storage procedures (async). Client
+ * `StorageProcedureProxy` methods return `void`; host invokes are async. Breaking changes may ship
+ * without a major version bump.
+ */
+export type HostStorageProcedureProxy<
+    TProcedures extends Record<string, TreatyProcedureLike<"storage">> = {},
+> = (<TName extends Extract<keyof TProcedures, string>>(
     name: TName,
-    data: InferTreatyProcedureInput<
-        TIO["_defs"]["treaty"]["_defs"]["procedures"]["presence"][TName]
-    >,
-    senderId: string,
+    data: InferTreatyProcedureInput<TProcedures[TName]>,
 ) => Promise<void>) & {
-    [TName in Extract<keyof TIO["_defs"]["treaty"]["_defs"]["procedures"]["presence"], string>]: (
-        data: InferTreatyProcedureInput<
-            TIO["_defs"]["treaty"]["_defs"]["procedures"]["presence"][TName]
-        >,
-        senderId: string,
+    [TName in Extract<keyof TProcedures, string>]: (
+        data: InferTreatyProcedureInput<TProcedures[TName]>,
     ) => Promise<void>;
 };
 
 /**
  * @experimental
- * @description Host invoke for treaty storage procedures. Requires a live `senderId`. Breaking
+ * @description Binds a live connection id and returns the client-shaped presence procedure proxy.
+ * Breaking changes may ship without a major version bump.
+ */
+export type HostPresenceInvoke<TIO extends IORoom<any>> = (
+    actor: HostTreatyProcedureActor,
+) => PresenceProcedureProxy<TIO["_defs"]["treaty"]["_defs"]["procedures"]["presence"]>;
+
+/**
+ * @experimental
+ * @description Binds a live connection id and returns {@link HostStorageProcedureProxy}. Breaking
  * changes may ship without a major version bump.
  */
-export type StorageProcedureProxy<TIO extends IORoom<any>> = (<
-    TName extends Extract<keyof TIO["_defs"]["treaty"]["_defs"]["procedures"]["storage"], string>,
->(
-    name: TName,
-    data: InferTreatyProcedureInput<
-        TIO["_defs"]["treaty"]["_defs"]["procedures"]["storage"][TName]
-    >,
-    senderId: string,
-) => Promise<void>) & {
-    [TName in Extract<keyof TIO["_defs"]["treaty"]["_defs"]["procedures"]["storage"], string>]: (
-        data: InferTreatyProcedureInput<
-            TIO["_defs"]["treaty"]["_defs"]["procedures"]["storage"][TName]
-        >,
-        senderId: string,
-    ) => Promise<void>;
-};
+export type HostStorageInvoke<TIO extends IORoom<any>> = (
+    actor: HostTreatyProcedureActor,
+) => HostStorageProcedureProxy<TIO["_defs"]["treaty"]["_defs"]["procedures"]["storage"]>;
 
 export interface IORoomListeners<T extends IODefs = IODefs> {
     onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;

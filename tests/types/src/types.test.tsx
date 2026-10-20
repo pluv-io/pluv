@@ -375,40 +375,35 @@ room.storage.missing({ text: "hello" });
 declare const ioRoom: InferIORoom<typeof ioServer>;
 const sessions = manageSessions(ioRoom);
 
-expectTypeOf(sessions.__experimental_presence.select).toBeCallableWith({ id: "item" }, "sender-id");
-expectTypeOf(sessions.__experimental_presence.select).parameters.toEqualTypeOf<
-    [{ id: string | null }, string]
->();
-expectTypeOf(sessions.__experimental_presence.select).returns.toEqualTypeOf<Promise<void>>();
-expectTypeOf(sessions.__experimental_presence).toBeCallableWith(
-    "select",
-    { id: null },
-    "sender-id",
-);
-expectTypeOf(sessions.__experimental_storage.addMessage).toBeCallableWith(
-    { text: "hello" },
-    "sender-id",
-);
-expectTypeOf(sessions.__experimental_storage.addMessage).parameters.toEqualTypeOf<
-    [{ text: string }, string]
->();
-expectTypeOf(sessions.__experimental_storage).toBeCallableWith(
-    "addMessage",
-    { text: "world" },
-    "sender-id",
-);
+const hostPresence = sessions.__experimental_presence({ senderId: "sender-id" });
+const hostStorage = sessions.__experimental_storage({ senderId: "sender-id" });
 
-void sessions.__experimental_presence.select({ id: "item" }, "sender-id");
-void sessions.__experimental_storage.addMessage({ text: "hello" }, "sender-id");
+expectTypeOf(sessions.__experimental_presence).toBeCallableWith({ senderId: "sender-id" });
+expectTypeOf(sessions.__experimental_storage).toBeCallableWith({ senderId: "sender-id" });
+expectTypeOf(hostPresence.select).toBeCallableWith({ id: "item" });
+expectTypeOf(hostPresence.select).parameters.toEqualTypeOf<[{ id: string | null }]>();
+expectTypeOf(hostPresence.select).returns.toEqualTypeOf<Promise<void>>();
+expectTypeOf(hostPresence).toBeCallableWith("select", { id: null });
+expectTypeOf(hostStorage.addMessage).toBeCallableWith({ text: "hello" });
+expectTypeOf(hostStorage.addMessage).parameters.toEqualTypeOf<[{ text: string }]>();
+expectTypeOf(hostStorage.addMessage).returns.toEqualTypeOf<Promise<void>>();
+expectTypeOf(hostStorage).toBeCallableWith("addMessage", { text: "world" });
 
-// @ts-expect-error presence invoke requires senderId
+void sessions.__experimental_presence({ senderId: "sender-id" }).select({ id: "item" });
+void sessions.__experimental_storage({ senderId: "sender-id" }).addMessage({ text: "hello" });
+
+// @ts-expect-error host invoke requires an actor with senderId
 void sessions.__experimental_presence.select({ id: "item" });
-// @ts-expect-error storage invoke requires senderId
+// @ts-expect-error host invoke requires an actor with senderId
 void sessions.__experimental_storage.addMessage({ text: "hello" });
 // @ts-expect-error presence input must match the procedure schema
-void sessions.__experimental_presence.select({ id: 1 }, "sender-id");
+void sessions.__experimental_presence({ senderId: "sender-id" }).select({ id: 1 });
 // @ts-expect-error unknown presence procedure
-void sessions.__experimental_presence.missing({ id: null }, "sender-id");
+void sessions.__experimental_presence({ senderId: "sender-id" }).missing({ id: null });
+// @ts-expect-error storage input must match the procedure schema
+void sessions.__experimental_storage({ senderId: "sender-id" }).addMessage({ text: 1 });
+// @ts-expect-error unknown storage procedure
+void sessions.__experimental_storage({ senderId: "sender-id" }).missing({ text: "hello" });
 
 const {
     PluvRoomProvider,

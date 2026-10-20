@@ -58,7 +58,13 @@ export type {
 } from "./createIO";
 export { __internal } from "./internal";
 export type { IODefs, IOLikeFromDefs, PatchDefs } from "./IODefs";
-export type { IORoom } from "./IORoom";
+export type {
+    HostPresenceInvoke,
+    HostStorageInvoke,
+    HostStorageProcedureProxy,
+    HostTreatyProcedureActor,
+    IORoom,
+} from "./IORoom";
 export { manageSessions } from "./manageSessions";
 export type { RoomSessionManager } from "./RoomSessionManager";
 export { PluvIO } from "./PluvIO";

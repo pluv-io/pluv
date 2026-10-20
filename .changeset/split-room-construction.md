@@ -40,7 +40,7 @@ ws.on("error", async (error) => {
 
 await sessions.register(ws, { request, token });
 await sessions.broadcast("sendMessage", { message: "hello" }, senderId);
-await sessions.__experimental_storage.addMessage({ text: "hello" }, senderId);
+await sessions.__experimental_storage({ senderId }).addMessage({ text: "hello" });
 ```
 
 Cloudflare still passes `{ env, state }` to `createRoom`. Pass only the room to `manageSessions`.
