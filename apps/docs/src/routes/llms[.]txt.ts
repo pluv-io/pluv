@@ -7,7 +7,7 @@ export const Route = createFileRoute("/llms.txt")({
     server: {
         handlers: {
             async GET({ request }) {
-                const body = `${await llms(source).index()}
+                const body = `${llms(source).index()}
 
 ## Optional
 
