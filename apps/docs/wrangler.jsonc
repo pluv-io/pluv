@@ -13,4 +13,15 @@
             "custom_domain": true,
         },
     ],
+    "env": {
+        "staging": {
+            "name": "pluv-docs-staging",
+            "routes": [
+                {
+                    "pattern": "staging.docs.pluv.io",
+                    "custom_domain": true,
+                },
+            ],
+        },
+    },
 }

@@ -1,4 +1,4 @@
-import { SITE_NAME, SITE_URL } from "@/constants";
+import { IS_DOCS_STAGING, SITE_NAME, SITE_URL } from "@/constants";
 
 const DEFAULT_DESCRIPTION =
     "Type-safe realtime primitives for multiplayer apps. Self-host on Cloudflare Workers or Node.js, or use the pluv.io network.";
@@ -22,6 +22,7 @@ export function createPageHead({
         meta: [
             { title: fullTitle },
             { name: "description", content: metaDescription },
+            ...(IS_DOCS_STAGING ? [{ name: "robots", content: "noindex, nofollow" }] : []),
             { property: "og:title", content: fullTitle },
             { property: "og:description", content: metaDescription },
             { property: "og:site_name", content: SITE_NAME },

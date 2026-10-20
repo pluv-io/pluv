@@ -1,0 +1,89 @@
+name: Docs
+
+on:
+    push:
+        branches:
+            - main
+            - docs-prod
+        paths:
+            - apps/docs/**
+            - pnpm-lock.yaml
+            - .github/workflows/docs.yml
+    workflow_dispatch:
+        inputs:
+            action:
+                description: Action to run
+                type: choice
+                options:
+                    - promote
+                    - redeploy-staging
+                    - redeploy-production
+                default: promote
+            source_ref:
+                description: Ref to fast-forward docs-prod to (promote only)
+                required: false
+                default: main
+                type: string
+
+jobs:
+    promote:
+        name: Promote Docs (Production)
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'promote'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        concurrency: docs-promote
+        steps:
+            - name: Checkout docs-prod
+              uses: actions/checkout@v7
+              with:
+                  ref: docs-prod
+                  fetch-depth: 0
+
+            - name: Fast-forward to source ref
+              run: |
+                  git fetch origin "${{ inputs.source_ref }}"
+                  git merge --ff-only FETCH_HEAD
+                  git push origin docs-prod
+
+    deploy:
+        name: Deploy Docs (${{ (github.ref_name == 'docs-prod' || inputs.action == 'redeploy-production') && 'Production' || 'Staging' }})
+        if: |
+            github.event_name == 'push' ||
+            (github.event_name == 'workflow_dispatch' && inputs.action != 'promote')
+        runs-on: ubuntu-latest
+        concurrency: docs-${{ (github.ref_name == 'docs-prod' || inputs.action == 'redeploy-production') && 'prod' || 'staging' }}
+        env:
+            DEPLOY_TARGET: ${{ (github.ref_name == 'docs-prod' || inputs.action == 'redeploy-production') && 'production' || 'staging' }}
+        steps:
+            - name: Checkout Repo
+              uses: actions/checkout@v7
+              with:
+                  ref: ${{ env.DEPLOY_TARGET == 'production' && 'docs-prod' || (inputs.action == 'redeploy-staging' && 'main' || github.sha) }}
+
+            - name: Setup Node.js 24.x
+              uses: actions/setup-node@v7
+              with:
+                  node-version: 24.x
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v6.1.0
+
+            - name: Install Dependencies
+              run: pnpm install
+
+            - name: Deploy (staging)
+              if: env.DEPLOY_TARGET == 'staging'
+              run: pnpm --filter @repo/docs run deploy:staging
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  VITE_SITE_URL: https://staging.docs.pluv.io
+                  VITE_DOCS_STAGING: "true"
+
+            - name: Deploy (production)
+              if: env.DEPLOY_TARGET == 'production'
+              run: pnpm --filter @repo/docs run deploy:prod
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
