@@ -6,42 +6,50 @@ import type {
     JsonObject,
     ListUsersOptions,
     ListUsersResult,
+    PresenceProcedureProxy,
 } from "@pluv/types";
-import type { InferInitContextType, InferPlatformWebSocketSource } from "./AbstractPlatform";
-import type { IOPubSubEventMessage } from "./AbstractPubSub";
+import type { InferInitContextType, InferPlatformWebSocketSource } from "../AbstractPlatform";
+import type { IOPubSubEventMessage } from "../AbstractPubSub";
 import type {
     AbstractCloseEvent,
     AbstractErrorEvent,
     AbstractMessageEvent,
-} from "./AbstractWebSocket";
-import { AbstractWebSocket } from "./AbstractWebSocket";
-import type { IODefs } from "./IODefs";
-import type { IORoom, PresenceProcedureProxy, StorageProcedureProxy } from "./IORoom";
+} from "../AbstractWebSocket";
+import { AbstractWebSocket } from "../AbstractWebSocket";
+import type { IODefs } from "../IODefs";
+import type {
+    HostPresenceInvoke,
+    HostStorageInvoke,
+    HostTreatyProcedureActor,
+    IORoom,
+} from "../IORoom";
 import type {
     RoomEffectFrame,
     RoomEffects,
     RoomSessionSnapshot,
     SessionRoom,
     WebSocketRegisterConfig,
-} from "./types";
+} from "../types";
 import {
     deferredResultPromise,
     isDeferredResult,
     isErrorMessage,
     isSuspended,
-} from "./roomEffects";
-import { ExclusiveUntil } from "./ExclusiveUntil";
-import { JoinQueue } from "./JoinQueue";
-import { RoomSessions } from "./RoomSessions";
-import { createSessionRouter } from "./createSessionRouter";
+} from "../roomEffects";
+import { ExclusiveUntil } from "../ExclusiveUntil";
+import { JoinQueue } from "../JoinQueue";
+import { RoomSessions } from "../RoomSessions";
+import { createSessionRouter } from "../createSessionRouter";
 import {
     GARBAGE_COLLECT_INTERVAL_MS,
     PING_TIMEOUT_MS,
     ROOM_STATS_THROTTLE_MS,
     STORAGE_CHECKPOINT_INTERVAL_MS,
     isServerOriginEvent,
-} from "./constants";
-import type { SendMessageOptions, SessionEventContext, WebSocketType } from "./types";
+} from "../constants";
+import type { SendMessageOptions, SessionEventContext, WebSocketType } from "../types";
+import { createHostTreatyProcedureProxy } from "./createHostTreatyProcedureProxy";
+import { resolveHostTreatyProcedureSenderId } from "./resolveHostTreatyProcedureSenderId";
 import {
     assertExhaustive,
     getRoomStatsFromSessions,
@@ -53,7 +61,7 @@ import {
     parsePluvSchema,
     resolveMaxConnections,
     throttle,
-} from "./utils";
+} from "../utils";
 import colors from "kleur";
 
 export type BroadcastProxy<TIO extends IORoom<any>> = (<TEvent extends keyof InferIOInput<TIO>>(
@@ -73,8 +81,8 @@ export type BroadcastProxy<TIO extends IORoom<any>> = (<TEvent extends keyof Inf
  */
 export class RoomSessionManager<T extends IODefs = IODefs> {
     public readonly broadcast: BroadcastProxy<IORoom<T>>;
-    public readonly __experimental_presence: PresenceProcedureProxy<IORoom<T>>;
-    public readonly __experimental_storage: StorageProcedureProxy<IORoom<T>>;
+    public readonly __experimental_presence: HostPresenceInvoke<IORoom<T>>;
+    public readonly __experimental_storage: HostStorageInvoke<IORoom<T>>;
 
     private readonly _platform: T["platform"];
     private readonly _sessions: RoomSessions<T>;
@@ -538,96 +546,90 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         }) as BroadcastProxy<IORoom<T>>;
     }
 
-    private _createPresence(): PresenceProcedureProxy<IORoom<T>> {
-        const invoke = async (name: string, data: unknown, senderId: string): Promise<void> => {
-            if (typeof senderId !== "string") {
-                throw new Error(
-                    "room.__experimental_presence of a user procedure requires a senderId",
-                );
-            }
+    private _createPresence(): HostPresenceInvoke<IORoom<T>> {
+        return (actor: HostTreatyProcedureActor) => {
+            const senderId = resolveHostTreatyProcedureSenderId(actor);
 
-            const socket = this._sessions.get(senderId) ?? null;
+            const invoke = async (name: string, data: unknown): Promise<void> => {
+                const socket = this._sessions.get(senderId) ?? null;
 
-            if (!socket) throw new Error(`Unknown senderId: ${senderId}`);
+                if (!socket) throw new Error(`Unknown senderId: ${senderId}`);
 
-            await this._queue.finish(
-                async () => {
-                    const patch = await this._room["~"].applyPresencePatch({
-                        name,
-                        data,
-                        session: this._toSnapshot(socket),
-                    });
+                await this._queue.finish(
+                    async () => {
+                        const patch = await this._room["~"].applyPresencePatch({
+                            name,
+                            data,
+                            session: this._toSnapshot(socket),
+                        });
 
-                    if (isDeferredResult(patch)) return { pending: deferredResultPromise(patch) };
-
-                    if (isSuspended(patch)) {
-                        if ("error" in patch && isErrorMessage(patch.error)) {
-                            socket.handleError({
-                                error: patch.error,
-                                room: this._room.id,
-                                session: this._sessions.toSession(socket),
-                            });
+                        if (isDeferredResult(patch)) {
+                            return { pending: deferredResultPromise(patch) };
                         }
 
-                        return { suspended: true as const };
-                    }
+                        if (isSuspended(patch)) {
+                            if ("error" in patch && isErrorMessage(patch.error)) {
+                                socket.handleError({
+                                    error: patch.error,
+                                    room: this._room.id,
+                                    session: this._sessions.toSession(socket),
+                                });
+                            }
 
-                    return { value: patch };
-                },
-                async (patch) => {
-                    const context = this._sessionContext(socket);
-                    const broadcastResult =
-                        await this._sessionRouter._defs.events.$updatePresence.config.broadcast?.(
-                            { presence: patch, procedure: name },
-                            context,
+                            return { suspended: true as const };
+                        }
+
+                        return { value: patch };
+                    },
+                    async (patch) => {
+                        const context = this._sessionContext(socket);
+                        const broadcastResult =
+                            await this._sessionRouter._defs.events.$updatePresence.config.broadcast?.(
+                                { presence: patch, procedure: name },
+                                context,
+                            );
+
+                        await this._deliverRecord(
+                            broadcastResult as Record<string, unknown> | null,
+                            socket,
+                            "broadcast",
                         );
+                    },
+                );
+            };
 
-                    await this._deliverRecord(
-                        broadcastResult as Record<string, unknown> | null,
-                        socket,
-                        "broadcast",
-                    );
-                },
-            );
+            return createHostTreatyProcedureProxy(invoke) as PresenceProcedureProxy<
+                IORoom<T>["_defs"]["treaty"]["_defs"]["procedures"]["presence"]
+            >;
         };
-
-        return new Proxy(invoke, {
-            get(fn, prop) {
-                return (data: unknown, senderId: string) => fn(prop as string, data, senderId);
-            },
-        }) as PresenceProcedureProxy<IORoom<T>>;
     }
 
-    private _createStorage(): StorageProcedureProxy<IORoom<T>> {
-        const invoke = async (name: string, data: unknown, senderId: string): Promise<void> => {
-            if (typeof senderId !== "string") {
-                throw new Error(
-                    "room.__experimental_storage of a user procedure requires a senderId",
-                );
-            }
+    private _createStorage(): HostStorageInvoke<IORoom<T>> {
+        return (actor: HostTreatyProcedureActor) => {
+            const senderId = resolveHostTreatyProcedureSenderId(actor);
 
-            const socket = this._sessions.get(senderId) ?? null;
+            const invoke = async (name: string, data: unknown): Promise<void> => {
+                const socket = this._sessions.get(senderId) ?? null;
 
-            if (!socket) throw new Error(`Unknown senderId: ${senderId}`);
+                if (!socket) throw new Error(`Unknown senderId: ${senderId}`);
 
-            await this._queue.join(async () => {
-                const effects = await this._room["~"].applyStorageProcedure({
-                    name,
-                    data,
-                    actor: this._toSnapshot(socket),
+                await this._queue.join(async () => {
+                    const effects = await this._room["~"].applyStorageProcedure({
+                        name,
+                        data,
+                        actor: this._toSnapshot(socket),
+                    });
+
+                    this._noteStorage(effects);
+                    await this._writeFrames(effects.broadcast, "broadcast");
+                    await this._room["~"].dropStorageUpdates(effects.broadcast);
                 });
+            };
 
-                this._noteStorage(effects);
-                await this._writeFrames(effects.broadcast, "broadcast");
-                await this._room["~"].dropStorageUpdates(effects.broadcast);
-            });
+            return createHostTreatyProcedureProxy(invoke) as ReturnType<
+                HostStorageInvoke<IORoom<T>>
+            >;
         };
-
-        return new Proxy(invoke, {
-            get(fn, prop) {
-                return (data: unknown, senderId: string) => fn(prop as string, data, senderId);
-            },
-        }) as StorageProcedureProxy<IORoom<T>>;
     }
 
     private async _deliverRecord(
