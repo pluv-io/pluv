@@ -39,7 +39,7 @@ Open:
 **Staging** (from repo root):
 
 ```bash
-VITE_SITE_URL=https://staging.docs.pluv.io VITE_DOCS_STAGING=true \
+CLOUDFLARE_ENV=staging VITE_SITE_URL=https://staging.docs.pluv.io VITE_DOCS_STAGING=true \
   pnpm --filter @repo/docs run deploy:staging
 ```
 
