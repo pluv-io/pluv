@@ -6,13 +6,14 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
+        "build:staging": "CLOUDFLARE_ENV=staging vite build",
         "dev": "vite dev",
         "typecheck": "fumadocs-mdx && pnpm cf:typegen && tsc --noEmit",
         "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf .output && rm -rf dist && rm -rf .source && rm -f cf.d.ts",
         "cf:typegen": "wrangler types ./cf.d.ts",
         "deploy": "pnpm run deploy:prod",
         "deploy:prod": "pnpm build && wrangler deploy",
-        "deploy:staging": "pnpm build && wrangler deploy --env staging",
+        "deploy:staging": "pnpm run build:staging && wrangler deploy --env staging",
         "preview": "vite preview"
     },
     "dependencies": {
