@@ -28,9 +28,9 @@ import type { AbstractWebSocket } from "./AbstractWebSocket";
 import type { AbstractPersistence } from "./AbstractPersistence";
 import type { IODefs } from "./IODefs";
 import type { PluvRouter } from "./PluvRouter";
-import type { UserTurn } from "./roomEffects";
+import type { DeferredResult } from "./roomEffects";
 
-export type { UserTurn };
+export type { DeferredResult };
 
 export type PluvContext<TPlatform extends AbstractPlatform, TContext extends Record<string, any>> =
     | MaybePromise<TContext>
@@ -346,7 +346,7 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
         name: string;
         data: unknown;
         session: RoomPresenceSession<T>;
-    }): Promise<JsonObject | null | UserTurn<JsonObject | null> | Suspended>;
+    }): Promise<JsonObject | null | DeferredResult<JsonObject | null> | Suspended>;
     applyStorageProcedure(params: {
         name: string;
         data: unknown;
@@ -370,7 +370,7 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
     message(
         session: RoomSessionSnapshot<T>,
         event: { data: unknown; type: string },
-    ): Promise<RoomEffects<T> | UserTurn<RoomEffects<T>> | Suspended>;
+    ): Promise<RoomEffects<T> | DeferredResult<RoomEffects<T>> | Suspended>;
     register(
         ...options: keyof InferInitContextType<T["platform"]> extends never
             ? [{ token?: string }?]

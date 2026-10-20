@@ -2,24 +2,25 @@ import type { IODefs } from "./IODefs";
 import type { RoomEffects, Suspended } from "./types";
 import { isThenable } from "./utils/isThenable";
 
-const USER_TURN = "$u" as const;
+const DEFERRED_RESULT = "$u" as const;
 
-/** User work the queue must not wait on. The session manager settles this on a later join. */
-export type UserTurn<T> = { readonly [USER_TURN]: Promise<T> };
+/** A handler promise the queue must not wait on. The session manager settles this on a later join. */
+export type DeferredResult<T> = { readonly [DEFERRED_RESULT]: Promise<T> };
 
-export const userTurn = <T>(promise: Promise<T>): UserTurn<T> => {
-    return Object.defineProperty({} as UserTurn<T>, USER_TURN, { value: promise });
+export const deferredResult = <T>(promise: Promise<T>): DeferredResult<T> => {
+    return Object.defineProperty({} as DeferredResult<T>, DEFERRED_RESULT, { value: promise });
 };
 
-export const isUserTurn = <T>(value: T | UserTurn<T>): value is UserTurn<T> => {
-    if (typeof value !== "object" || value === null || !(USER_TURN in value)) return false;
+export const isDeferredResult = <T>(value: T | DeferredResult<T>): value is DeferredResult<T> => {
+    if (typeof value !== "object" || value === null || !(DEFERRED_RESULT in value)) return false;
 
-    const descriptor = Object.getOwnPropertyDescriptor(value, USER_TURN);
+    const descriptor = Object.getOwnPropertyDescriptor(value, DEFERRED_RESULT);
 
     return descriptor?.enumerable === false && isThenable(descriptor.value);
 };
 
-export const userTurnPromise = <T>(turn: UserTurn<T>): Promise<T> => turn[USER_TURN];
+export const deferredResultPromise = <T>(result: DeferredResult<T>): Promise<T> =>
+    result[DEFERRED_RESULT];
 
 export const isSuspended = (value: unknown): value is Suspended =>
     typeof value === "object" &&
