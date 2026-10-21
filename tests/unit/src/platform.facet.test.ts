@@ -204,6 +204,7 @@ const host = (options?: {
     };
     const stub: SessionRoom = {
         id: roomId,
+        treaty,
         get limits(): PluvIOLimits | null {
             return storedLimits;
         },

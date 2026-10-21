@@ -395,5 +395,6 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
 export interface SessionRoom<T extends IODefs = IODefs> {
     readonly id: string;
     readonly limits: PluvIOLimits | null;
+    readonly treaty: T["treaty"];
     readonly "~": IORoomInternal<T>;
 }

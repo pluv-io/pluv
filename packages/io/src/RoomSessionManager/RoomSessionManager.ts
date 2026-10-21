@@ -49,6 +49,7 @@ import {
 } from "../constants";
 import type { SendMessageOptions, SessionEventContext, WebSocketType } from "../types";
 import { createHostTreatyProcedureProxy } from "./createHostTreatyProcedureProxy";
+import { readTreatySchema, type TreatySchemaJson } from "./readTreatySchema";
 import { resolveHostTreatyProcedureSenderId } from "./resolveHostTreatyProcedureSenderId";
 import {
     assertExhaustive,
@@ -99,6 +100,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     /** Procedure frames whose delivery failed. This isolate outlives the facet. */
     private _unsent: { effects: RoomEffects<T>; id: number }[] = [];
     private _unsentId = 0;
+    private _treatySchema?: TreatySchemaJson;
 
     constructor(
         private readonly _room: SessionRoom<T>,
@@ -127,6 +129,12 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
     public get id(): string {
         return this._room.id;
+    }
+
+    public getTreatySchema(): TreatySchemaJson {
+        this._treatySchema ??= readTreatySchema(this._room.treaty);
+
+        return structuredClone(this._treatySchema);
     }
 
     public async register(
