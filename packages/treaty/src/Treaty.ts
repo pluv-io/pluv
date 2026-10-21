@@ -7,10 +7,8 @@ import type {
     InferTreatyStorageJson,
     InferTreatyStorageNative,
     InferTreatyUserOutput,
-    JsonSchemaProducer,
 } from "./types";
-
-const JSON_SCHEMA_TARGET = "draft-2020-12";
+import { assertResolvedProcedure, assertSerializingSchema, toJsonSchema } from "./utils";
 
 type PartitionPresence<TEvents extends Record<string, TreatyProcedureLike>> = {
     [
@@ -100,46 +98,6 @@ export type CreateTreatyConfig<
     user: TUserSchema;
     presence?: TPresenceSchema;
     storage?: TStorage;
-};
-
-const getJsonSchemaProducer = (schema: unknown): JsonSchemaProducer | null => {
-    const jsonSchema = (schema as { "~standard"?: { jsonSchema?: JsonSchemaProducer } })?.[
-        "~standard"
-    ]?.jsonSchema;
-
-    if (!jsonSchema || typeof jsonSchema.input !== "function") return null;
-
-    return jsonSchema;
-};
-
-const assertResolvedProcedure = (
-    name: string,
-    kind: "presence" | "storage",
-    procedure: TreatyProcedureLike,
-): void => {
-    if (typeof procedure.apply !== "function" || !procedure.config.resolve) {
-        throw new Error(`Treaty ${kind} procedure "${name}" is missing resolve`);
-    }
-};
-
-const assertSerializingSchema = (schema: unknown, label: string): void => {
-    if (!getJsonSchemaProducer(schema)) {
-        throw new Error(
-            `${label} must implement Standard Schema and Standard JSON Schema on the same object (e.g. Zod 4.2+ or ArkType).`,
-        );
-    }
-};
-
-const toJsonSchema = (schema: unknown, label: string): unknown => {
-    const producer = getJsonSchemaProducer(schema);
-
-    if (!producer) {
-        throw new Error(
-            `${label} must implement Standard Schema and Standard JSON Schema on the same object (e.g. Zod 4.2+ or ArkType).`,
-        );
-    }
-
-    return producer.input({ target: JSON_SCHEMA_TARGET });
 };
 
 export class Treaty<
@@ -292,7 +250,7 @@ export class Treaty<
     }
 
     public toUserJson(): unknown {
-        return toJsonSchema(this.user, "Treaty user");
+        return toJsonSchema(assertSerializingSchema(this.user));
     }
 
     public toPresenceJson(): unknown {
@@ -300,7 +258,7 @@ export class Treaty<
             throw new Error("Treaty has no presence schema");
         }
 
-        return toJsonSchema(this.presence, "Treaty presence");
+        return toJsonSchema(assertSerializingSchema(this.presence));
     }
 
     public toStorageJson(): unknown {
@@ -313,19 +271,3 @@ export class Treaty<
         return storage.toJSON();
     }
 }
-
-export const createTreaty = <
-    TUserSchema extends StandardSchemaV1<unknown, BaseUser>,
-    TPresenceSchema extends StandardSchemaV1<any, any> | undefined = undefined,
-    TStorage extends AbstractCrdtDocFactory<any, any, any, any> | undefined = undefined,
->(
-    config: CreateTreatyConfig<TUserSchema, TPresenceSchema, TStorage>,
-): Treaty<TUserSchema, TPresenceSchema, TStorage> => {
-    assertSerializingSchema(config.user, "Treaty user");
-
-    if (config.presence) {
-        assertSerializingSchema(config.presence, "Treaty presence");
-    }
-
-    return new Treaty(config);
-};

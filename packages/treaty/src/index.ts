@@ -1,4 +1,5 @@
-export { createTreaty, Treaty } from "./Treaty";
+export { createTreaty } from "./createTreaty";
+export { Treaty } from "./Treaty";
 export type { CreateTreatyConfig } from "./Treaty";
 export { TreatyPresenceProcedure } from "./TreatyPresenceProcedure";
 export { TreatyStorageProcedure } from "./TreatyStorageProcedure";
