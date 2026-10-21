@@ -29,19 +29,19 @@ A deferred result is a handler that is still waiting. It has no frames yet. The 
 
 ## Effect
 
-An effect is the finished result of a handler. It carries the broadcast frames, the self frames, and whether the saved document changed. The room stops there. The session manager writes the frames. Those broadcast frames carry the document changes. The room keeps a list of changes the clients have not received yet, and takes off that list the changes this broadcast sent, so a later [save](#save) does not send them again. [Messages](/docs/infrastructure/messages#effect) shows why a second send would apply the same change twice.
+An effect is the finished result of a handler. It carries the broadcast frames, the self frames, and whether the in-memory document is ahead of the snapshot. The room stops there. The session manager writes the frames. Those broadcast frames carry the document changes. The room keeps a list of changes the clients have not received yet, and takes off that list the changes this broadcast sent, so a later [snapshot](#snapshot) does not send them again. [Messages](/docs/infrastructure/messages#effect) shows why a second send would apply the same change twice.
 
 When the room and the sockets live in different places, see [Hosted rooms](/docs/infrastructure/hosted).
 
-## Save
+## Snapshot
 
-A save writes the whole document into the server's storage. The document clients are editing stays in memory. The save matters when that memory is gone, because the next start loads the document from the server's storage:
+A snapshot writes the whole document into the server's storage. The document clients are editing stays in memory. The snapshot matters when that memory is gone, because the next start loads the document from the server's storage:
 
 - A Cloudflare Durable Object hibernates. The next time it wakes, it loads the document from the Durable Object's storage.
 - A Node.js server crashes. The restarted process loads the document from the server's storage.
 
 The room calls `getInitialStorage` only when the server's storage has no document.
 
-This is a different write from the one an app configures for its own database. `onStorageUpdated` runs after the document is written to the server's storage. `onStorageDestroyed` runs when the document is about to be destroyed. Those listeners are where the app saves the document for itself. The save does not wait for `onStorageUpdated`. [Loading storage](/docs/guides/storage/loading) shows those listeners.
+This is a different write from the one an app configures for its own database. `onStorageSnapshot` runs after the document is written to the server's storage. `onStorageDestroyed` runs when the document is about to be destroyed. Those listeners are where the app keeps its own copy. The snapshot does not wait for `onStorageSnapshot`. [Loading storage](/docs/guides/storage/loading) shows those listeners.
 
-While clients are still connected, the save also sends a broadcast frame for a change they have not received yet. [Messages](/docs/infrastructure/messages#save) shows when that write waits.
+While clients are still connected, the snapshot also sends a broadcast frame for a change they have not received yet. [Messages](/docs/infrastructure/messages#snapshot) shows when that write waits.

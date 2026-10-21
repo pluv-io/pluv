@@ -44,7 +44,7 @@ import {
     GARBAGE_COLLECT_INTERVAL_MS,
     PING_TIMEOUT_MS,
     ROOM_STATS_THROTTLE_MS,
-    STORAGE_CHECKPOINT_INTERVAL_MS,
+    STORAGE_SNAPSHOT_INTERVAL_MS,
     isServerOriginEvent,
 } from "../constants";
 import type { SendMessageOptions, SessionEventContext, WebSocketType } from "../types";
@@ -94,7 +94,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     private _closing = 0;
     private _connecting = 0;
     private _registering = 0;
-    private _checkpoint: Promise<void> | null = null;
+    private _storageSnapshotRun: Promise<void> | null = null;
     private _retry: Promise<void> | null = null;
     private _lastGarbageCollectMs = -1 * (GARBAGE_COLLECT_INTERVAL_MS + 1);
     /** Procedure frames whose delivery failed. This isolate outlives the facet. */
@@ -438,14 +438,14 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     }
 
     public noteStorageDirty(): void {
-        if (this._checkpoint) return;
+        if (this._storageSnapshotRun) return;
 
-        const run = this._saveUntilClean();
+        const run = this._snapshotUntilClean();
 
-        this._checkpoint = run;
+        this._storageSnapshotRun = run;
         this._platform.keepAlive(run);
         void run.finally(() => {
-            if (this._checkpoint === run) this._checkpoint = null;
+            if (this._storageSnapshotRun === run) this._storageSnapshotRun = null;
         });
     }
 
@@ -1048,7 +1048,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         }
     }
 
-    /** Sends procedure frames that `deliverFrames` did not. A failed send stays in this promise and retries after the checkpoint interval. */
+    /** Sends procedure frames that `deliverFrames` did not. A failed send stays in this promise and retries after the snapshot interval. */
     private async _deliverUnsent(): Promise<void> {
         while (this._unsent.length) {
             try {
@@ -1071,24 +1071,24 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
                 // oxlint-disable-next-line eslint/no-await-in-loop
                 await new Promise<void>((resolve) => {
-                    setTimeout(resolve, STORAGE_CHECKPOINT_INTERVAL_MS);
+                    setTimeout(resolve, STORAGE_SNAPSHOT_INTERVAL_MS);
                 });
             }
         }
     }
 
-    /** One promise. Wait, ask the room to copy, and repeat until the copy is clean. */
-    private async _saveUntilClean(): Promise<void> {
+    /** One promise. Wait, ask the room for a snapshot, and repeat until that snapshot is current. */
+    private async _snapshotUntilClean(): Promise<void> {
         for (;;) {
             // oxlint-disable-next-line eslint/no-await-in-loop
             await new Promise<void>((resolve) => {
-                setTimeout(resolve, STORAGE_CHECKPOINT_INTERVAL_MS);
+                setTimeout(resolve, STORAGE_SNAPSHOT_INTERVAL_MS);
             });
 
             try {
                 // oxlint-disable-next-line eslint/no-await-in-loop
                 const status = await this._queue.join(async () => {
-                    const flushed = await this._room["~"].flushCheckpoint();
+                    const flushed = await this._room["~"].flushSnapshot();
 
                     if (flushed.broadcast.length) {
                         await this._writeFrames(flushed.broadcast, "broadcast");

@@ -1,19 +1,19 @@
 import type { CrdtDocLike } from "@pluv/types";
-import type { CheckpointFlush, PluvIOLimits } from "./types";
+import type { PluvIOLimits, SnapshotFlush } from "./types";
 import { oneLine } from "./utils";
 
-/** A write during the save, a write from `onStorageUpdated`, or a document past the size limit. */
+/** A write during the snapshot, a write from `onStorageSnapshot`, or a document past the size limit. */
 type StoreInfo = {
     duringNotify: boolean;
-    duringSave: boolean;
+    duringSnapshot: boolean;
     oversized: boolean;
 };
 
 /**
- * The room's saved copy. The document stays live. This copies it when asked.
+ * The room's snapshot. The document stays live. This copies it when asked.
  * The session manager owns the clock.
  */
-export class StorageCheckpoint<TContext> {
+export class StorageSnapshot<TContext> {
     private _closed = false;
     private _dirty = false;
     private _epoch = 0;
@@ -70,7 +70,7 @@ export class StorageCheckpoint<TContext> {
         return this._epoch;
     }
 
-    /** The seed save already stored this epoch. A later write still needs a copy. */
+    /** The seed snapshot already stored this epoch. A later write still needs a copy. */
     public acknowledge(epoch: number): void {
         if (this._epoch === epoch) this._markClean();
     }
@@ -107,7 +107,7 @@ export class StorageCheckpoint<TContext> {
         this._unsubscribe = null;
     }
 
-    public async flush(): Promise<CheckpointFlush> {
+    public async flush(): Promise<SnapshotFlush> {
         if (this._closed) return "closed";
         if (!this._dirty) return "clean";
 
@@ -120,18 +120,18 @@ export class StorageCheckpoint<TContext> {
         const stored = await this._store({ context, doc, notify: true });
 
         if (this._closed) return "closed";
-        if (stored.oversized || (!stored.duringNotify && !stored.duringSave)) {
+        if (stored.oversized || (!stored.duringNotify && !stored.duringSnapshot)) {
             this._markClean();
 
             return "clean";
         }
 
-        // The listener's write is stored next. That save does not call the listener
-        // again, so a write on every save cannot keep this clock alive.
+        // The listener's write is stored next. That snapshot does not call the listener
+        // again, so a write on every snapshot cannot keep this clock alive.
         const follow = await this._store({ context, doc, notify: false });
 
         if (this._closed) return "closed";
-        if (follow.oversized || !follow.duringSave) {
+        if (follow.oversized || !follow.duringSnapshot) {
             this._markClean();
 
             return "clean";
@@ -142,7 +142,7 @@ export class StorageCheckpoint<TContext> {
         return "dirty";
     }
 
-    /** Doc updates inside `fn` mark the copy stale and do not broadcast again. */
+    /** Doc updates inside `fn` mark the snapshot stale and do not broadcast again. */
     public hold<TResult>(fn: () => TResult): TResult {
         this._hold += 1;
 
@@ -204,18 +204,18 @@ export class StorageCheckpoint<TContext> {
 
             notify = false;
 
-            if (stored.oversized || (!stored.duringNotify && !stored.duringSave)) {
+            if (stored.oversized || (!stored.duringNotify && !stored.duringSnapshot)) {
                 this._markClean();
 
                 return;
             }
 
-            if (stored.duringSave) continue;
+            if (stored.duringSnapshot) continue;
 
             // oxlint-disable-next-line eslint/no-await-in-loop
             const follow = await this._store({ context, doc, notify: false });
 
-            if (follow.oversized || !follow.duringSave) {
+            if (follow.oversized || !follow.duringSnapshot) {
                 this._markClean();
 
                 return;
@@ -234,14 +234,14 @@ export class StorageCheckpoint<TContext> {
         if (this._exceedsLimit(encodedState)) {
             this._markClean();
 
-            return { duringNotify: false, duringSave: false, oversized: true };
+            return { duringNotify: false, duringSnapshot: false, oversized: true };
         }
 
         const epoch = this._epoch;
 
         await this._setStorageState(encodedState);
 
-        const duringSave = this._epoch !== epoch;
+        const duringSnapshot = this._epoch !== epoch;
         const notifiedAt = this._epoch;
 
         if (notify) {
@@ -254,7 +254,7 @@ export class StorageCheckpoint<TContext> {
 
         return {
             duringNotify: this._epoch !== notifiedAt,
-            duringSave,
+            duringSnapshot,
             oversized: false,
         };
     }

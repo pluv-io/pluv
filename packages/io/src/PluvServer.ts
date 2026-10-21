@@ -101,7 +101,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
         return createBaseRouter<T>({
             limits: this._config.limits,
             logDebug: (...data) => this._logDebug(...data),
-            onStorageUpdated: (event) => this._listeners.onStorageUpdated(event),
+            onStorageSnapshot: (event) => this._listeners.onStorageSnapshot(event),
         }) as PluvRouter<SetKey<T, "events", {}>>;
     }
 
@@ -117,7 +117,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
         const storage = createStorageRouter<T>({
             limits: this._config.limits,
             logDebug: (...data) => this._logDebug(...data),
-            onStorageUpdated: (event) => this._listeners.onStorageUpdated(event),
+            onStorageSnapshot: (event) => this._listeners.onStorageSnapshot(event),
         });
 
         return (
@@ -137,7 +137,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             onRoomDestroyed,
             onRoomMessage,
             onStorageDestroyed,
-            onStorageUpdated,
+            onStorageSnapshot,
             onUserConnected,
             onUserDisconnected,
         } = options as Partial<BasePluvIOListeners<T>>;
@@ -150,7 +150,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             onRoomDestroyed: (event) => onRoomDestroyed?.(event),
             onRoomMessage: (event) => onRoomMessage?.(event),
             onStorageDestroyed: (event) => onStorageDestroyed?.(event),
-            onStorageUpdated: (event) => onStorageUpdated?.(event),
+            onStorageSnapshot: (event) => onStorageSnapshot?.(event),
             onUserConnected: (event) => onUserConnected?.(event),
             onUserDisconnected: (event) => onUserDisconnected?.(event),
         };
@@ -198,8 +198,8 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
                 // initialized store after this returns.
                 await Promise.resolve(listeners.onStorageDestroyed(event));
             },
-            onStorageUpdated(event) {
-                return listeners.onStorageUpdated(event);
+            onStorageSnapshot(event) {
+                return listeners.onStorageSnapshot(event);
             },
             async onMessage(event) {
                 await Promise.resolve(listeners.onRoomMessage(event));

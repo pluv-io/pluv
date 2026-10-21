@@ -16,7 +16,7 @@ describe("createBaseRouter", () => {
     it("registers the built-in $ protocol events", () => {
         const router = __internal.createBaseRouter({
             limits: {},
-            onStorageUpdated: vi.fn(),
+            onStorageSnapshot: vi.fn(),
         });
 
         expect(Object.keys(router._defs.events).toSorted()).toEqual(
@@ -35,7 +35,7 @@ describe("createBaseRouter", () => {
     it("covers every BaseClientEventRecord key", () => {
         const router = __internal.createBaseRouter({
             limits: {},
-            onStorageUpdated: vi.fn(),
+            onStorageSnapshot: vi.fn(),
         });
 
         expect(Object.keys(router._defs.events)).toEqual(
@@ -46,7 +46,7 @@ describe("createBaseRouter", () => {
     it("keeps broadcast and self on the procedures that already had them", () => {
         const router = __internal.createBaseRouter({
             limits: {},
-            onStorageUpdated: vi.fn(),
+            onStorageSnapshot: vi.fn(),
         });
         const events = router._defs.events as Record<
             string,

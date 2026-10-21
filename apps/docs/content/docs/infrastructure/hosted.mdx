@@ -7,11 +7,11 @@ A hosted room puts the session manager and the room in different places. Each ro
 
 ## Session manager
 
-The session manager holds the sessions and the websockets. It orchestrates messages. Sockets deliver messages here, and the session manager decides when each one runs. It asks the room to run procedures. The room returns effects, and the effects carry frames. The session manager sends those frames on the websockets. A save and a connection leaving are orchestrated here too. The session manager does not hold the document, and it does not run the user's procedures.
+The session manager holds the sessions and the websockets. It orchestrates messages. Sockets deliver messages here, and the session manager decides when each one runs. It asks the room to run procedures. The room returns effects, and the effects carry frames. The session manager sends those frames on the websockets. A snapshot and a connection leaving are orchestrated here too. The session manager does not hold the document, and it does not run the user's procedures.
 
 ## Room
 
-The room holds the storage, the procedures the user defines, and the listeners. Storage is the document clients are editing, and the [server's storage](/docs/infrastructure/concepts#save) that document is written into. A procedure is the user's server-side handler for a message. The listeners are the callbacks the user configures, such as `onUserDisconnected` and `onStorageUpdated`. The room does not hold the sockets.
+The room holds the storage, the procedures the user defines, and the listeners. Storage is the document clients are editing, and the [server's storage](/docs/infrastructure/concepts#snapshot) that document is written into. A procedure is the user's server-side handler for a message. The listeners are the callbacks the user configures, such as `onUserDisconnected` and `onStorageSnapshot`. The room does not hold the sockets.
 
 ## How they relate
 
@@ -30,7 +30,7 @@ sequenceDiagram
 
 A procedure is the call in the diagram. The room returns a deferred result or an effect. An effect carries frames, and the session manager sends those frames on the websockets. [Messages](/docs/infrastructure/messages) shows that order, including a handler that is still waiting.
 
-The session manager asks the room to write the document into the server's storage. The room keeps the document. [Save](/docs/infrastructure/messages#save) shows when that write waits.
+The session manager asks the room to write the document into the server's storage. The room keeps the document. [Snapshot](/docs/infrastructure/messages#snapshot) shows when that write waits.
 
 When a connection leaves, the session manager removes the socket first. The room then runs `onUserDisconnected`. The listener receives the room, the user, and the document. The session manager sends the broadcast frames after the listener finishes.
 
