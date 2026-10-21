@@ -201,10 +201,39 @@ export type InferTreatyPresenceProcedures<TTreaty extends TreatyLike | undefined
 export type InferTreatyStorageProcedures<TTreaty extends TreatyLike | undefined> =
     TTreaty extends TreatyLike ? TTreaty["_defs"]["procedures"]["storage"] : {};
 
-export type TreatyLike = {
+export type TreatyProcedureInputJson = {
+    input: unknown | null;
+};
+
+export type TreatyProcedureInputsJson<TProcedures extends Record<string, TreatyProcedureLike>> = {
+    [K in keyof TProcedures]: TreatyProcedureInputJson;
+};
+
+export type TreatyProceduresJson<
+    TPresence extends Record<string, TreatyProcedureLike> = Record<
+        string,
+        TreatyProcedureLike<"presence">
+    >,
+    TStorage extends Record<string, TreatyProcedureLike> = Record<
+        string,
+        TreatyProcedureLike<"storage">
+    >,
+> = {
+    presence: TreatyProcedureInputsJson<TPresence>;
+    storage: TreatyProcedureInputsJson<TStorage>;
+};
+
+export interface TreatyLike {
     user: StandardSchemaV1<unknown, BaseUser>;
     presence?: StandardSchemaV1<any, any> | undefined;
     storage?: CrdtDocFactory<any, any, any, any> | undefined;
+    toUserJson(): unknown;
+    toPresenceJson(): unknown;
+    toStorageJson(): unknown;
+    toProceduresJson(): TreatyProceduresJson<
+        this["_defs"]["procedures"]["presence"],
+        this["_defs"]["procedures"]["storage"]
+    >;
     _defs: {
         user: StandardSchemaV1<unknown, BaseUser>;
         presence: StandardSchemaV1<any, any> | undefined;
@@ -214,7 +243,7 @@ export type TreatyLike = {
             storage: Record<string, TreatyProcedureLike<"storage">>;
         };
     };
-};
+}
 
 export type InferTreatyUser<TTreaty extends TreatyLike | undefined> = TTreaty extends TreatyLike
     ? InferIOAuthorizeUser<{ user: TTreaty["user"] }>

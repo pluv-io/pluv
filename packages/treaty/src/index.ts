@@ -9,6 +9,7 @@ export type {
     InferTreatyStorageJson,
     InferTreatyStorageNative,
     InferTreatyUserOutput,
+    JsonSchemaMethod,
     JsonSchemaProducer,
     PresenceResolverContext,
     StorageResolverContext,

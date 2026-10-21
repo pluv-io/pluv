@@ -1,7 +1,7 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import type { BaseUser, StandardSchemaV1 } from "@pluv/types";
 import { Treaty, type CreateTreatyConfig } from "./Treaty";
-import { assertSerializingSchema } from "./utils";
+import { assertOutputJsonSchema } from "./utils";
 
 export const createTreaty = <
     TUserSchema extends StandardSchemaV1<unknown, BaseUser>,
@@ -10,10 +10,10 @@ export const createTreaty = <
 >(
     config: CreateTreatyConfig<TUserSchema, TPresenceSchema, TStorage>,
 ): Treaty<TUserSchema, TPresenceSchema, TStorage> => {
-    assertSerializingSchema(config.user);
+    assertOutputJsonSchema(config.user);
 
     if (config.presence) {
-        assertSerializingSchema(config.presence);
+        assertOutputJsonSchema(config.presence);
     }
 
     return new Treaty(config);

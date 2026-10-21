@@ -1,5 +1,12 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
-import type { BaseUser, StandardSchemaV1, TreatyLike, TreatyProcedureLike } from "@pluv/types";
+import type {
+    BaseUser,
+    StandardSchemaV1,
+    TreatyLike,
+    TreatyProcedureInputsJson,
+    TreatyProcedureLike,
+    TreatyProceduresJson,
+} from "@pluv/types";
 import { TreatyPresenceProcedure } from "./TreatyPresenceProcedure";
 import { TreatyStorageProcedure } from "./TreatyStorageProcedure";
 import type {
@@ -8,7 +15,13 @@ import type {
     InferTreatyStorageNative,
     InferTreatyUserOutput,
 } from "./types";
-import { assertResolvedProcedure, assertSerializingSchema, toJsonSchema } from "./utils";
+import {
+    assertOutputJsonSchema,
+    assertResolvedProcedure,
+    assertSerializingSchema,
+    toInputJsonSchema,
+    toOutputJsonSchema,
+} from "./utils";
 
 type PartitionPresence<TEvents extends Record<string, TreatyProcedureLike>> = {
     [
@@ -250,7 +263,7 @@ export class Treaty<
     }
 
     public toUserJson(): unknown {
-        return toJsonSchema(assertSerializingSchema(this.user));
+        return toOutputJsonSchema(assertOutputJsonSchema(this.user));
     }
 
     public toPresenceJson(): unknown {
@@ -258,7 +271,7 @@ export class Treaty<
             throw new Error("Treaty has no presence schema");
         }
 
-        return toJsonSchema(assertSerializingSchema(this.presence));
+        return toOutputJsonSchema(assertOutputJsonSchema(this.presence));
     }
 
     public toStorageJson(): unknown {
@@ -269,5 +282,29 @@ export class Treaty<
         }
 
         return storage.toJSON();
+    }
+
+    public toProceduresJson(): TreatyProceduresJson<TPresenceProcedures, TStorageProcedures> {
+        return {
+            presence: this.toProcedureInputs(this._defs.procedures.presence),
+            storage: this.toProcedureInputs(this._defs.procedures.storage),
+        };
+    }
+
+    private toProcedureInputs<TProcedures extends Record<string, TreatyProcedureLike>>(
+        procedures: TProcedures,
+    ): TreatyProcedureInputsJson<TProcedures> {
+        return Object.entries(procedures).reduce<TreatyProcedureInputsJson<TProcedures>>(
+            (acc, [name, procedure]) => {
+                const input = procedure.config.input;
+
+                acc[name as keyof TProcedures] = {
+                    input: input ? toInputJsonSchema(assertSerializingSchema(input)) : null,
+                };
+
+                return acc;
+            },
+            Object.create(null),
+        );
     }
 }

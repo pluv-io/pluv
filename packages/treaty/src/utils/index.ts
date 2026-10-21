@@ -1,5 +1,8 @@
-export { assertResolvedProcedure } from "./assertResolvedProcedure";
-export { assertSerializingSchema } from "./assertSerializingSchema";
+export {
+    assertOutputJsonSchema,
+    assertResolvedProcedure,
+    assertSerializingSchema,
+} from "./assertions";
 export { getJsonSchemaProducer } from "./getJsonSchemaProducer";
 export { JsonSchemaError } from "./JsonSchemaError";
-export { toJsonSchema } from "./toJsonSchema";
+export { toInputJsonSchema, toOutputJsonSchema } from "./toJsonSchema";

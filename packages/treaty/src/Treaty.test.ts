@@ -18,6 +18,24 @@ describe("createTreaty", () => {
         expect(() => createTreaty({ user: fakeUser as never })).toThrow(/Standard JSON Schema/);
     });
 
+    it("throws when user or presence cannot emit an output JSON Schema", () => {
+        const inputOnly = {
+            "~standard": {
+                version: 1,
+                vendor: "test",
+                validate: (value: unknown) => ({ value }),
+                jsonSchema: {
+                    input: () => ({ type: "object" }),
+                },
+            },
+        };
+
+        expect(() => createTreaty({ user: inputOnly as never })).toThrow(/Standard JSON Schema/);
+        expect(() => createTreaty({ user, presence: inputOnly as never })).toThrow(
+            /Standard JSON Schema/,
+        );
+    });
+
     it("throws on duplicate procedure names", () => {
         const treaty = createTreaty({ user, presence });
         const select = treaty.procedure.presence.resolve(() => ({}));
@@ -72,6 +90,22 @@ describe("createTreaty", () => {
         expect(treaty.toPresenceJson()).toMatchObject({ type: "object" });
     });
 
+    it("serializes user and presence as the output schema", () => {
+        const treaty = createTreaty({
+            user: z.object({ id: z.string(), name: z.string().default("anon") }),
+            presence: z.object({ count: z.number().default(0) }),
+        });
+
+        expect(treaty.toUserJson()).toMatchObject({
+            required: ["id", "name"],
+            additionalProperties: false,
+        });
+        expect(treaty.toPresenceJson()).toMatchObject({
+            required: ["count"],
+            additionalProperties: false,
+        });
+    });
+
     it("throws when serializing optional treaty parts that are missing", () => {
         const treaty = createTreaty({ user });
 
@@ -87,6 +121,46 @@ describe("createTreaty", () => {
         const treaty = createTreaty({ user, storage: storage as never });
 
         expect(treaty.toStorageJson()).toEqual({ kind: "y.doc", shape: {} });
+    });
+
+    it("serializes procedure inputs and throws when an input cannot", () => {
+        const treaty = createTreaty({ user, presence });
+        const select = treaty.procedure.presence
+            .input(z.object({ id: z.string() }))
+            .resolve(() => ({}));
+        const touch = treaty.procedure.presence.resolve(() => ({}));
+        const routed = treaty.router({ select, touch });
+
+        expect(routed.toProceduresJson().presence.select.input).toMatchObject({ type: "object" });
+        expect(routed.toProceduresJson().presence.touch.input).toBeNull();
+        expect(routed.toProceduresJson().storage).toEqual({});
+
+        const defaulted = treaty.procedure.presence
+            .input(z.object({ id: z.string().default("x") }))
+            .resolve(() => ({}));
+
+        const defaultedInput = treaty.router({ defaulted }).toProceduresJson().presence.defaulted
+            .input as { properties?: { id?: { default?: string } }; required?: string[] };
+
+        expect(defaultedInput.properties?.id?.default).toBe("x");
+        expect(defaultedInput.required).toBeUndefined();
+
+        const badInput = {
+            "~standard": {
+                version: 1,
+                vendor: "test",
+                validate: (value: unknown) => ({ value }),
+            },
+        };
+        const bad = treaty.procedure.presence.input(badInput as never).resolve(() => ({}));
+        const unrepresentable = treaty.procedure.presence
+            .input(z.set(z.string()) as never)
+            .resolve(() => ({}));
+
+        expect(() => treaty.router({ bad }).toProceduresJson()).toThrow(/Standard JSON Schema/);
+        expect(() => treaty.router({ unrepresentable }).toProceduresJson()).toThrow(
+            "Set cannot be represented in JSON Schema",
+        );
     });
 
     it("throws when merged routers share a procedure name", () => {
