@@ -11,7 +11,7 @@ import {
     TestPersistence,
     TestSocket,
     tick,
-    waitForStorageCheckpoint,
+    waitForStorageSnapshot,
     testLoroTreaty,
     testYjsTreaty,
 } from "./__utils__";
@@ -371,7 +371,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
         const base = lastMessage(socket, "$storageReceived").data.state as string;
 
         await updateStorage(room, socket, null, append(base, " live"));
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         expect(decode((await persistence.getStorageState("storage-init")) ?? "")).toBe(
             "server live",
@@ -397,7 +397,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
             updateStorage(room, first, null, append(base, "A")),
             updateStorage(room, second, null, append(base, "B")),
         ]);
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         const stored = decode((await persistence.getStorageState("storage-init")) ?? "");
 
@@ -450,7 +450,7 @@ describe.each(scenarios)("$name IORoom storage init", ({ append, decode, encode,
         const repair = source.encodeDiff(stateVector);
 
         await updateStorage(room, first, null, repair);
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
         source.destroy();
 
         expect(decode((await persistence.getStorageState("storage-init")) ?? "")).toContain(

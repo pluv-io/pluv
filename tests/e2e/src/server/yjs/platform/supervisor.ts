@@ -209,10 +209,10 @@ export class RoomSupervisor extends DurableObject<PlatformEnv> {
                 destroy: async () => {
                     await this.#open().destroy();
                 },
-                flushCheckpoint: async () => {
-                    const flushed = await this.#open().flushCheckpoint();
+                flushSnapshot: async () => {
+                    const flushed = await this.#open().flushSnapshot();
 
-                    return flushed as Awaited<ReturnType<SessionRoom["~"]["flushCheckpoint"]>>;
+                    return flushed as Awaited<ReturnType<SessionRoom["~"]["flushSnapshot"]>>;
                 },
                 initializeStorage: (params) =>
                     this.#open().initializeStorage(params) as ReturnType<

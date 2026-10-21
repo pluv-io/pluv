@@ -10,7 +10,7 @@ import {
     TestPersistence,
     TestSocket,
     testAuthorizeUser,
-    waitForStorageCheckpoint,
+    waitForStorageSnapshot,
 } from "./__utils__";
 
 const presence = z.object({
@@ -308,7 +308,7 @@ describe("IORoom treaty invoke", () => {
         await initializeSession(room, second, { selectionId: null });
 
         await room.evict("session-1");
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         const doc = storage.getEmpty().applyEncodedState({
             update: (await persistence.getStorageState(roomId)) as string,

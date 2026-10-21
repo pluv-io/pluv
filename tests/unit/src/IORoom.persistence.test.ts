@@ -10,7 +10,7 @@ import {
     TestSocket,
     testYjsTreaty,
     tick,
-    waitForStorageCheckpoint,
+    waitForStorageSnapshot,
     waitUntil,
 } from "./__utils__";
 
@@ -190,7 +190,7 @@ describe("IORoom repeated persistence", () => {
             firstSocket,
             appendUpdate(getRegisteredState(firstSocket), " first"),
         );
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         hibernatedSockets = [firstSocket];
 
@@ -210,7 +210,7 @@ describe("IORoom repeated persistence", () => {
             secondSocket,
             appendUpdate(getRegisteredState(secondSocket), " second"),
         );
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         hibernatedSockets = [secondSocket];
 
@@ -228,8 +228,8 @@ describe("IORoom repeated persistence", () => {
         expect(initialStorageReads).toBe(3);
     });
 
-    it("retries a failed checkpoint on the same clock", async () => {
-        const roomId = "checkpoint-retry";
+    it("retries a failed snapshot on the same clock", async () => {
+        const roomId = "snapshot-retry";
         const persistence = new TestPersistence();
         let attempts = 0;
         const store = persistence.setStorageState.bind(persistence);
@@ -255,18 +255,18 @@ describe("IORoom repeated persistence", () => {
 
         await registerAuthorized(room, socket, { io });
         await updateStorage(room, socket, appendUpdate(getRegisteredState(socket), " edit"));
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         expect(await persistence.getStorageState(roomId)).toBeNull();
 
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         expect(decodeText((await persistence.getStorageState(roomId)) ?? "")).toBe("initial edit");
         expect(attempts).toBe(2);
     });
 
-    it("retries a client seed when the first save fails", async () => {
-        const roomId = "checkpoint-seed-retry";
+    it("retries a client seed when the first snapshot fails", async () => {
+        const roomId = "snapshot-seed-retry";
         const persistence = new TestPersistence();
         let attempts = 0;
         const store = persistence.setStorageState.bind(persistence);
@@ -301,14 +301,14 @@ describe("IORoom repeated persistence", () => {
         ).toBe("initialized");
         expect(await persistence.getStorageState(roomId)).toBeNull();
 
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         expect(decodeText((await persistence.getStorageState(roomId)) ?? "")).toBe("seeded");
         expect(attempts).toBe(2);
     });
 
-    it("notifies onStorageUpdated once when a client seed retries", async () => {
-        const roomId = "checkpoint-seed-retry-listener";
+    it("notifies onStorageSnapshot once when a client seed retries", async () => {
+        const roomId = "snapshot-seed-retry-listener";
         const persistence = new TestPersistence();
         let attempts = 0;
         const store = persistence.setStorageState.bind(persistence);
@@ -330,7 +330,7 @@ describe("IORoom repeated persistence", () => {
             io
                 .server({
                     getInitialStorage: () => null,
-                    onStorageUpdated: (event) => {
+                    onStorageSnapshot: (event) => {
                         if (typeof event.encodedState !== "string") return;
 
                         updates.push(event.encodedState);
@@ -353,20 +353,20 @@ describe("IORoom repeated persistence", () => {
             socket.messages.find((message) => message.type === "$storageReceived")?.data.changeKind,
         ).toBe("initialized");
 
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         expect(updates).toHaveLength(1);
         expect(decodeText(updates[0] ?? "")).toBe("seeded");
     });
 
-    it("saves two edits in one interval as one checkpoint", async () => {
-        const roomId = "checkpoint-coalesce";
+    it("snapshots two edits in one interval as one snapshot", async () => {
+        const roomId = "snapshot-coalesce";
         const persistence = new TestPersistence();
-        let saves = 0;
+        let snapshots = 0;
         const store = persistence.setStorageState.bind(persistence);
 
         persistence.setStorageState = (room, state) => {
-            saves += 1;
+            snapshots += 1;
 
             return store(room, state);
         };
@@ -390,31 +390,31 @@ describe("IORoom repeated persistence", () => {
         await updateStorage(room, socket, first);
         await updateStorage(room, socket, appendUpdate(fullState(base, first), " two"));
 
-        expect(saves).toBe(0);
+        expect(snapshots).toBe(0);
         expect(await persistence.getStorageState(roomId)).toBeNull();
 
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
-        expect(saves).toBe(1);
+        expect(snapshots).toBe(1);
         expect(decodeText((await persistence.getStorageState(roomId)) ?? "")).toBe(
             "initial one two",
         );
 
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
-        expect(saves).toBe(1);
+        expect(snapshots).toBe(1);
     });
 
     it("stores the shutdown copy without waiting out the interval", async () => {
-        const roomId = "checkpoint-shutdown";
+        const roomId = "snapshot-shutdown";
         const persistence = new TestPersistence();
-        let saves = 0;
-        let saved = "";
+        let snapshots = 0;
+        let stored = "";
         const store = persistence.setStorageState.bind(persistence);
 
         persistence.setStorageState = (room, state) => {
-            saves += 1;
-            saved = state;
+            snapshots += 1;
+            stored = state;
 
             return store(room, state);
         };
@@ -438,12 +438,12 @@ describe("IORoom repeated persistence", () => {
         await room.evictAll();
 
         expect(Date.now() - started).toBeLessThan(1_000);
-        expect(saves).toBe(1);
-        expect(decodeText(saved)).toBe("initial now");
+        expect(snapshots).toBe(1);
+        expect(decodeText(stored)).toBe("initial now");
     });
 
     it("deletes the initialized store when shutdown persistence is a new object", async () => {
-        const roomId = "checkpoint-shutdown-fork";
+        const roomId = "snapshot-shutdown-fork";
         const backing = new TestPersistence();
 
         class ForkedPersistence extends TestPersistence {
@@ -489,22 +489,22 @@ describe("IORoom repeated persistence", () => {
         expect(await backing.getStorageState(roomId)).toBeNull();
     });
 
-    it("does not let a queued checkpoint replace the shutdown copy", async () => {
-        const roomId = "checkpoint-after-destroy";
+    it("does not let a queued snapshot replace the shutdown copy", async () => {
+        const roomId = "snapshot-after-destroy";
         const persistence = new TestPersistence();
-        let saves = 0;
-        let saved = "";
-        let releaseSave: (() => void) | undefined;
+        let snapshots = 0;
+        let stored = "";
+        let releaseSnapshot: (() => void) | undefined;
         const store = persistence.setStorageState.bind(persistence);
 
         persistence.setStorageState = (room, state) => {
-            saves += 1;
-            saved = state;
+            snapshots += 1;
+            stored = state;
 
-            if (saves > 1) return store(room, state);
+            if (snapshots > 1) return store(room, state);
 
             return new Promise<void>((resolve) => {
-                releaseSave = resolve;
+                releaseSnapshot = resolve;
             }).then(() => store(room, state));
         };
 
@@ -524,30 +524,30 @@ describe("IORoom repeated persistence", () => {
 
         const evict = room.evictAll();
 
-        await waitUntil(() => saves === 1);
-        await waitForStorageCheckpoint();
+        await waitUntil(() => snapshots === 1);
+        await waitForStorageSnapshot();
 
-        releaseSave?.();
+        releaseSnapshot?.();
         await evict;
         await tick();
 
-        expect(saves).toBe(1);
-        expect(decodeText(saved)).toBe("initial edit");
+        expect(snapshots).toBe(1);
+        expect(decodeText(stored)).toBe("initial edit");
         expect(await persistence.getStorageState(roomId)).toBeNull();
     });
 
     it("includes one listener write and then finishes shutdown", async () => {
-        const roomId = "checkpoint-listener-seal";
+        const roomId = "snapshot-listener-seal";
         const persistence = new TestPersistence();
-        let saves = 0;
-        let saved = "";
+        let snapshots = 0;
+        let stored = "";
         let notices = 0;
         let ydoc: YDoc | undefined;
         const store = persistence.setStorageState.bind(persistence);
 
         persistence.setStorageState = (room, state) => {
-            saves += 1;
-            saved = state;
+            snapshots += 1;
+            stored = state;
 
             return store(room, state);
         };
@@ -558,7 +558,7 @@ describe("IORoom repeated persistence", () => {
         });
         const server = io.server({
             getInitialStorage: () => encodedStateWithContent("initial"),
-            onStorageUpdated: () => {
+            onStorageSnapshot: () => {
                 notices += 1;
 
                 if (!ydoc) return;
@@ -586,19 +586,19 @@ describe("IORoom repeated persistence", () => {
         await room.evictAll();
 
         expect(notices).toBe(1);
-        expect(saves).toBe(2);
-        expect(decodeText(saved)).toBe("initial edit!");
+        expect(snapshots).toBe(2);
+        expect(decodeText(stored)).toBe("initial edit!");
     });
 
-    it("does not keep the checkpoint clock alive when a listener writes on every save", async () => {
-        const roomId = "checkpoint-listener-clock";
+    it("does not keep the snapshot clock alive when a listener writes on every snapshot", async () => {
+        const roomId = "snapshot-listener-clock";
         const persistence = new TestPersistence();
-        let saves = 0;
+        let snapshots = 0;
         let ydoc: YDoc | undefined;
         const store = persistence.setStorageState.bind(persistence);
 
         persistence.setStorageState = (room, state) => {
-            saves += 1;
+            snapshots += 1;
 
             return store(room, state);
         };
@@ -609,7 +609,7 @@ describe("IORoom repeated persistence", () => {
         });
         const server = io.server({
             getInitialStorage: () => encodedStateWithContent("initial"),
-            onStorageUpdated: () => {
+            onStorageSnapshot: () => {
                 if (!ydoc) return;
 
                 const text = ydoc.getText("content");
@@ -632,25 +632,25 @@ describe("IORoom repeated persistence", () => {
             data: JSON.stringify({ type: "grab", data: {} }),
         });
         await updateStorage(room, socket, appendUpdate(getRegisteredState(socket), " edit"));
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
-        expect(saves).toBe(2);
+        expect(snapshots).toBe(2);
         expect(decodeText((await persistence.getStorageState(roomId)) ?? "")).toBe("initial edit!");
 
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
-        expect(saves).toBe(2);
+        expect(snapshots).toBe(2);
     });
 
     it("broadcasts a listener write to connected clients", async () => {
-        const roomId = "checkpoint-listener-broadcast";
+        const roomId = "snapshot-listener-broadcast";
         const persistence = new TestPersistence();
-        let saves = 0;
+        let snapshots = 0;
         const store = persistence.setStorageState.bind(persistence);
         let ydoc: YDoc | undefined;
 
         persistence.setStorageState = (room, state) => {
-            saves += 1;
+            snapshots += 1;
 
             return store(room, state);
         };
@@ -661,7 +661,7 @@ describe("IORoom repeated persistence", () => {
         });
         const server = io.server({
             getInitialStorage: () => encodedStateWithContent("initial"),
-            onStorageUpdated: () => {
+            onStorageSnapshot: () => {
                 if (!ydoc) return;
 
                 const text = ydoc.getText("content");
@@ -701,28 +701,28 @@ describe("IORoom repeated persistence", () => {
         expect(applied(first)).toBe("initial edit");
         expect(applied(second)).toBe("initial edit");
 
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         expect(applied(first)).toBe("initial edit!");
         expect(applied(second)).toBe("initial edit!");
-        expect(saves).toBe(2);
+        expect(snapshots).toBe(2);
 
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         expect(storageUpdates(second)).toHaveLength(2);
-        expect(saves).toBe(2);
+        expect(snapshots).toBe(2);
     });
 
     it("does not retry or block destroy when storage is over the limit", async () => {
-        const roomId = "checkpoint-over-limit";
+        const roomId = "snapshot-over-limit";
         const persistence = new TestPersistence();
-        let saves = 0;
+        let snapshots = 0;
         let destroyed = false;
         const store = persistence.setStorageState.bind(persistence);
         const report = console.error;
 
         persistence.setStorageState = (room, state) => {
-            saves += 1;
+            snapshots += 1;
 
             return store(room, state);
         };
@@ -755,24 +755,24 @@ describe("IORoom repeated persistence", () => {
 
             expect(socket.messages.some((message) => message.type === "$error")).toBe(true);
 
-            await waitForStorageCheckpoint();
-            await waitForStorageCheckpoint();
+            await waitForStorageSnapshot();
+            await waitForStorageSnapshot();
 
-            expect(saves).toBe(0);
+            expect(snapshots).toBe(0);
 
             await room.evictAll();
 
             expect(destroyed).toBe(true);
-            expect(saves).toBe(0);
+            expect(snapshots).toBe(0);
         } finally {
             console.error = report;
         }
     });
 
     it("keeps a listener promise alive without waiting for it", async () => {
-        const roomId = "checkpoint-listener-keepalive";
+        const roomId = "snapshot-listener-keepalive";
         const persistence = new TestPersistence();
-        let saves = 0;
+        let snapshots = 0;
         const store = persistence.setStorageState.bind(persistence);
         let release: () => void = () => undefined;
         const pending = new Promise<void>((resolve) => {
@@ -782,7 +782,7 @@ describe("IORoom repeated persistence", () => {
         const keepAlive = readKeepAlive();
 
         persistence.setStorageState = (room, state) => {
-            saves += 1;
+            snapshots += 1;
 
             return store(room, state);
         };
@@ -805,7 +805,7 @@ describe("IORoom repeated persistence", () => {
             io
                 .server({
                     getInitialStorage: () => encodedStateWithContent("initial"),
-                    onStorageUpdated: () => pending,
+                    onStorageSnapshot: () => pending,
                 })
                 .createRoom(roomId),
         );
@@ -814,17 +814,17 @@ describe("IORoom repeated persistence", () => {
         try {
             await registerAuthorized(room, socket, { io });
             await updateStorage(room, socket, appendUpdate(getRegisteredState(socket), " edit"));
-            await waitForStorageCheckpoint();
+            await waitForStorageSnapshot();
             await Promise.resolve();
 
-            expect(saves).toBe(1);
+            expect(snapshots).toBe(1);
             expect(tracked.some((record) => !record.settled)).toBe(true);
 
             await updateStorage(room, socket, appendUpdate(getRegisteredState(socket), " again"));
 
             const waiting = tracked.filter((record) => !record.settled).length;
 
-            expect(saves).toBe(1);
+            expect(snapshots).toBe(1);
 
             release();
             await pending;
@@ -897,7 +897,7 @@ describe("IORoom repeated persistence", () => {
     });
 
     it("logs a listener promise that rejects", async () => {
-        const roomId = "checkpoint-listener-reject";
+        const roomId = "snapshot-listener-reject";
         const persistence = new TestPersistence();
         const reported: unknown[] = [];
         const report = console.error;
@@ -915,7 +915,7 @@ describe("IORoom repeated persistence", () => {
             io
                 .server({
                     getInitialStorage: () => encodedStateWithContent("initial"),
-                    onStorageUpdated: () => Promise.reject(failure),
+                    onStorageSnapshot: () => Promise.reject(failure),
                 })
                 .createRoom(roomId),
         );
@@ -924,7 +924,7 @@ describe("IORoom repeated persistence", () => {
         try {
             await registerAuthorized(room, socket, { io });
             await updateStorage(room, socket, appendUpdate(getRegisteredState(socket), " edit"));
-            await waitForStorageCheckpoint();
+            await waitForStorageSnapshot();
             await updateStorage(room, socket, appendUpdate(getRegisteredState(socket), " again"));
 
             expect(reported).toContain(failure);

@@ -36,8 +36,8 @@ export class UserRoomFacet
         return (await this.#open()).dropStorageUpdates(frames);
     }
 
-    public async flushCheckpoint(): ReturnType<RoomFacet["flushCheckpoint"]> {
-        return (await this.#open()).flushCheckpoint();
+    public async flushSnapshot(): ReturnType<RoomFacet["flushSnapshot"]> {
+        return (await this.#open()).flushSnapshot();
     }
 
     public async initializeStorage(
