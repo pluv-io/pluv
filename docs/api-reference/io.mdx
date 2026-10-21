@@ -185,10 +185,8 @@ const server = io.server({
   onRoomMessage: async ({ context, room }) => {
     // ...
   },
-  // Optional: Triggered each time the room's storage is updated.
-  // It is advised not to perform any heavy operations in this listener
-  // due to the frequency of invocations
-  onStorageUpdated: ({ context, encodedState, room }) => {
+  // Optional: Triggered after the room writes the document into server storage.
+  onStorageSnapshot: ({ context, encodedState, room }) => {
     // ...
   },
   // Optional: Triggered each time a user connects to a room

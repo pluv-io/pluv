@@ -45,7 +45,7 @@ await sessions.__experimental_storage({ senderId }).addMessage({ text: "hello" }
 
 Cloudflare still passes `{ env, state }` to `createRoom`. Pass only the room to `manageSessions`.
 
-Room listeners no longer receive `platform` or `webSocket`. `onRoomMessage` no longer receives `encodedState`, and it does not run for `$ping`, `$getOthers`, `$listUsers`, `$updatePresence`, or `$initializeSession`. A join is `onUserConnected`. A client loading storage is `onStorageUpdated`. Read the document from `onStorageUpdated` and `onStorageDestroyed`. `onStorageUpdated` no longer receives `kind`, `operator`, or `user`.
+Room listeners no longer receive `platform` or `webSocket`. `onRoomMessage` no longer receives `encodedState`, and it does not run for `$ping`, `$getOthers`, `$listUsers`, `$updatePresence`, or `$initializeSession`. A join is `onUserConnected`. The released `onStorageUpdated` lost `kind`, `operator`, and `user` and is now `onStorageSnapshot`. The exported type is `IOStorageSnapshotEvent`. It runs after the room writes the document into server storage: a client seed that persists, or the debounced snapshot. Loading an already stored document does not run it. Read the document from `onStorageSnapshot` and `onStorageDestroyed`.
 
 ```ts
 // Before
@@ -57,7 +57,7 @@ onStorageDestroyed({ context, encodedState, platform, room }) {}
 // After
 onUserConnected({ context, encodedState, kind, operator, room, user }) {}
 onRoomMessage({ context, kind, message, operator, room, user }) {}
-onStorageUpdated({ context, encodedState, room }) {}
+onStorageSnapshot({ context, encodedState, room }) {}
 onStorageDestroyed({ context, encodedState, room }) {}
 ```
 
