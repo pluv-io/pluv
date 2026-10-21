@@ -115,7 +115,7 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
         this.metadata = metadata;
 
         if (metadata) {
-            assertSerializingSchema(metadata, "Client metadata");
+            assertSerializingSchema(metadata);
         }
 
         this._authEndpoint = authEndpoint;

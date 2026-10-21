@@ -1,4 +1,5 @@
 import type { PluvIOLimits, RoomEffects, SessionRoom } from "@pluv/io";
+import { treaty } from "../../../pluv-io/yjs/platform-treaty";
 import type { JsonObject } from "@pluv/types";
 import { manageSessions, type RoomSessionManager } from "@pluv/io";
 import type { RoomFacet } from "@pluv/platform";
@@ -190,6 +191,7 @@ export class RoomSupervisor extends DurableObject<PlatformEnv> {
 
         return {
             id: roomId,
+            treaty,
             get limits() {
                 return readLimits();
             },

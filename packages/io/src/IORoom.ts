@@ -158,6 +158,7 @@ export class IORoom<T extends IODefs = IODefs>
 {
     public readonly id: string;
     public readonly limits: PluvIOLimits;
+    public readonly treaty: T["treaty"];
     public readonly "~": IORoomInternal<T>;
 
     private _teardown: Promise<void> | null = null;
@@ -172,7 +173,6 @@ export class IORoom<T extends IODefs = IODefs>
     private readonly _router: PluvRouter<T>;
     private readonly _secret?: PluvIOSecret<T["platform"]>;
     private readonly _storage: RoomStorage<T>;
-    private readonly _treaty: T["treaty"];
 
     /**
      * @ignore
@@ -184,7 +184,7 @@ export class IORoom<T extends IODefs = IODefs>
             context: this._context,
             events: this._router._defs.events,
             platform: this._platform,
-            treaty: this._treaty,
+            treaty: this.treaty,
         } as {
             context: T["context"];
             events: T["events"];
@@ -221,7 +221,7 @@ export class IORoom<T extends IODefs = IODefs>
         this._roomContext = roomContext;
         this._router = router;
         this._secret = secret;
-        this._treaty = treaty;
+        this.treaty = treaty;
         this._platform = platform.initialize({ ...(!!_meta ? { _meta } : {}), roomContext });
         this._storage = new RoomStorage({
             docFactory:
@@ -314,7 +314,7 @@ export class IORoom<T extends IODefs = IODefs>
         session: RoomPresenceSession<T>;
     }): Promise<JsonObject | null | DeferredResult<JsonObject | null>> {
         const { name, data, session } = params;
-        const procedures = this._treaty._defs.procedures.presence;
+        const procedures = this.treaty._defs.procedures.presence;
 
         if (!procedures || !Object.hasOwn(procedures, name)) {
             throw new Error(`Unknown presence procedure "${name}"`);
@@ -344,7 +344,7 @@ export class IORoom<T extends IODefs = IODefs>
         }
 
         const { name, data, actor } = params;
-        const procedures = this._treaty._defs.procedures.storage;
+        const procedures = this.treaty._defs.procedures.storage;
 
         if (!procedures || !Object.hasOwn(procedures, name)) {
             throw new Error(`Unknown storage procedure "${name}"`);
@@ -478,7 +478,7 @@ export class IORoom<T extends IODefs = IODefs>
             return null;
         }
 
-        const user = parsePluvSchema(this._treaty.user, payload.user) as InferTreatyUser<
+        const user = parsePluvSchema(this.treaty.user, payload.user) as InferTreatyUser<
             T["treaty"]
         >;
 

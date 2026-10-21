@@ -66,7 +66,11 @@ export type {
     IORoom,
 } from "./IORoom";
 export { manageSessions } from "./manageSessions";
-export type { RoomSessionManager } from "./RoomSessionManager";
+export type {
+    RoomSessionManager,
+    TreatyDomainSchema,
+    TreatySchemaJson,
+} from "./RoomSessionManager";
 export { PluvIO } from "./PluvIO";
 export type { PluvIOConfig, ServerConfig } from "./PluvIO";
 export { PluvProcedure } from "./PluvProcedure";

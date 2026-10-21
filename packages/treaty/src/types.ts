@@ -62,9 +62,11 @@ export type StorageResolverContext<
     storage: TNative;
 };
 
+export type JsonSchemaMethod = (options?: { target?: string }) => unknown;
+
 export type JsonSchemaProducer = {
-    input: (options?: { target?: string }) => unknown;
-    output?: (options?: { target?: string }) => unknown;
+    input: JsonSchemaMethod;
+    output?: JsonSchemaMethod;
 };
 
 export type TreatyStorageResolveOptions = {
