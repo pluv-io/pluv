@@ -10,10 +10,10 @@ const getJsonSchemaProducer = (
     return jsonSchema as { input: (options?: { target?: string }) => unknown };
 };
 
-export const assertSerializingSchema = (schema: unknown, label: string): void => {
+export const assertSerializingSchema = (schema: unknown): void => {
     if (!getJsonSchemaProducer(schema)) {
         throw new Error(
-            `${label} must implement Standard Schema and Standard JSON Schema on the same object (e.g. Zod 4.2+ or ArkType).`,
+            "Schema must implement Standard Schema and Standard JSON Schema on the same object (e.g. Zod 4.2+ or ArkType).",
         );
     }
 };
