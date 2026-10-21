@@ -1,10 +1,10 @@
 ---
 name: validate
 description: >-
-  Run pluv repository validations for format (oxfmt), lint (type-aware oxlint),
-  and typecheck (turbo tsc). Use when the user asks to validate, run
-  validations, run checks, check formatting, lint, or typecheck, or to verify
-  a change before finishing.
+    Run pluv repository validations for format (oxfmt), lint (type-aware oxlint),
+    and typecheck (turbo tsc). Use when the user asks to validate, run
+    validations, run checks, check formatting, lint, or typecheck, or to verify
+    a change before finishing.
 ---
 
 # Validate
@@ -31,11 +31,11 @@ If type-aware lint fails because package declarations are missing, run `pnpm bui
 
 Change files only when the user asks to fix validation failures. Apply the matching fix, then rerun the three checks:
 
-| Failure | Fix |
-|---|---|
-| Format | `pnpm format` |
-| Lint | `pnpm exec oxlint --fix --type-aware` |
-| Typecheck | Edit the code. There is no autofix. |
+| Failure   | Fix                                   |
+| --------- | ------------------------------------- |
+| Format    | `pnpm format`                         |
+| Lint      | `pnpm exec oxlint --fix --type-aware` |
+| Typecheck | Edit the code. There is no autofix.   |
 
 `pnpm lint:fix` does both lint fix and format. Use it only when both format and lint failed.
 
