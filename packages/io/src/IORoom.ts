@@ -20,7 +20,7 @@ import type { InferInitContextType, InferRoomContextType } from "./AbstractPlatf
 import type { IODefs, IOLikeFromDefs } from "./IODefs";
 import type { PluvRouter } from "./PluvRouter";
 import { RoomStorage } from "./RoomStorage";
-import { StorageCheckpoint } from "./StorageCheckpoint";
+import { StorageSnapshot } from "./StorageSnapshot";
 import { authorize } from "./authorize";
 import type {
     DeferredResult,
@@ -29,7 +29,7 @@ import type {
     IORoomDestroyedEvent,
     IORoomListenerEvent,
     IORoomMessageEvent,
-    IOStorageUpdatedEvent,
+    IOStorageSnapshotEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
     PluvContext,
@@ -108,7 +108,7 @@ export interface IORoomListeners<T extends IODefs = IODefs> {
     onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;
     onStorageDestroyed: (event: IORoomListenerEvent<T>) => void;
     onMessage: (event: IORoomMessageEvent<T>) => void;
-    onStorageUpdated: (event: IOStorageUpdatedEvent<T>) => MaybePromise<void>;
+    onStorageSnapshot: (event: IOStorageSnapshotEvent<T>) => MaybePromise<void>;
     onUserConnected: (event: IOUserConnectedEvent<T>) => void;
     onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
 }
@@ -164,7 +164,7 @@ export class IORoom<T extends IODefs = IODefs>
     private _teardown: Promise<void> | null = null;
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
-    private readonly _checkpoint: StorageCheckpoint<T["context"]>;
+    private readonly _snapshot: StorageSnapshot<T["context"]>;
     private readonly _context: PluvContext<T["platform"], T["context"]>;
     private readonly _debug: boolean;
     private readonly _listeners: IORoomListeners<T>;
@@ -202,7 +202,7 @@ export class IORoom<T extends IODefs = IODefs>
             limits,
             onRoomDestroyed,
             onStorageDestroyed,
-            onStorageUpdated,
+            onStorageSnapshot,
             onMessage,
             onUserConnected,
             onUserDisconnected,
@@ -232,7 +232,7 @@ export class IORoom<T extends IODefs = IODefs>
             room: this.id,
         });
 
-        this._checkpoint = new StorageCheckpoint({
+        this._snapshot = new StorageSnapshot({
             getContext: () => this._getContext(),
             getDoc: () => this._doc,
             keepAlive: (promise) => {
@@ -240,7 +240,7 @@ export class IORoom<T extends IODefs = IODefs>
             },
             limits: this.limits,
             onStored: (event) => {
-                void this._listeners.onStorageUpdated(event);
+                void this._listeners.onStorageSnapshot(event);
             },
             room: this.id,
             setStorageState: (encodedState) =>
@@ -250,11 +250,11 @@ export class IORoom<T extends IODefs = IODefs>
         this._listeners = {
             onRoomDestroyed: (event) => onRoomDestroyed?.(event),
             onStorageDestroyed: (event) => onStorageDestroyed?.(event),
-            onStorageUpdated: (event) => {
+            onStorageSnapshot: (event) => {
                 // Already settled when the listener returns nothing. A returned promise
-                // is kept until it settles. The checkpoint does not wait for it.
+                // is kept until it settles. The snapshot does not wait for it.
                 this._platform.keepAlive(
-                    Promise.resolve(onStorageUpdated?.(event)).catch((error: unknown) => {
+                    Promise.resolve(onStorageSnapshot?.(event)).catch((error: unknown) => {
                         console.error(error);
                     }),
                 );
@@ -277,9 +277,9 @@ export class IORoom<T extends IODefs = IODefs>
             applyStorageProcedure: this._applyStorageProcedure.bind(this),
             close: this._close.bind(this),
             destroy: this._destroyRoom.bind(this),
-            flushCheckpoint: async () => {
-                const status = await this._checkpoint.flush();
-                const updates = this._checkpoint.pendingUpdates();
+            flushSnapshot: async () => {
+                const status = await this._snapshot.flush();
+                const updates = this._snapshot.pendingUpdates();
 
                 return {
                     broadcast: updates.map((update): RoomEffectFrame<T> => ({
@@ -297,7 +297,7 @@ export class IORoom<T extends IODefs = IODefs>
             message: this._message.bind(this),
             register: this._register.bind(this),
             dropStorageUpdates: this._dropStorageUpdates.bind(this),
-            storageDirty: () => this._checkpoint.dirty || this._checkpoint.hasPending,
+            storageDirty: () => this._snapshot.dirty || this._snapshot.hasPending,
             userConnected: this._userConnected.bind(this),
             whenReady: () => this._initialized,
         };
@@ -339,7 +339,7 @@ export class IORoom<T extends IODefs = IODefs>
         data: unknown;
         actor: RoomStorageActor<T>;
     }): Promise<RoomEffects<T>> {
-        if (!(await this._initialized) || this._checkpoint.closed) {
+        if (!(await this._initialized) || this._snapshot.closed) {
             return this._releaseStorage(emptyRoomEffects<T>(), params.actor);
         }
 
@@ -362,7 +362,7 @@ export class IORoom<T extends IODefs = IODefs>
             });
         };
 
-        const update = this._checkpoint.hold(() =>
+        const update = this._snapshot.hold(() =>
             doc.captureUpdate(() => {
                 if (procedure.config.transact === false) {
                     apply();
@@ -376,7 +376,7 @@ export class IORoom<T extends IODefs = IODefs>
 
         if (!update) return this._releaseStorage(emptyRoomEffects<T>(), actor);
 
-        this._checkpoint.assertSize(doc.getEncodedState());
+        this._snapshot.assertSize(doc.getEncodedState());
 
         return this._releaseStorage(
             {
@@ -543,15 +543,15 @@ export class IORoom<T extends IODefs = IODefs>
             }
 
             await this._storage.initialize();
-            this._checkpoint.reopen();
-            this._checkpoint.attach(await this._storage.doc);
+            this._snapshot.reopen();
+            this._snapshot.attach(await this._storage.doc);
 
             const uninitialize = async (): Promise<void> => {
                 if (this._teardown) return this._teardown;
 
                 this._teardown = (async () => {
-                    await this._checkpoint.seal();
-                    this._checkpoint.detach();
+                    await this._snapshot.seal();
+                    this._snapshot.detach();
 
                     const context = await this._getContext();
                     const { encodedState, refusedEmptyPersist, shouldDestroyStorage } =
@@ -637,12 +637,12 @@ export class IORoom<T extends IODefs = IODefs>
             return {
                 changeKind: "unchanged",
                 state: stateVector ? doc.encodeDiff(stateVector) : doc.getEncodedState(),
-                storageDirty: this._checkpoint.dirty,
+                storageDirty: this._snapshot.dirty,
             };
         }
 
         if (update) {
-            const encodedState = this._checkpoint.hold(() =>
+            const encodedState = this._snapshot.hold(() =>
                 doc.applyEncodedState({ update }).getEncodedState(),
             );
             const storageSize = new TextEncoder().encode(encodedState).length;
@@ -653,7 +653,7 @@ export class IORoom<T extends IODefs = IODefs>
 
             this._storage.storageSeeded = true;
 
-            const epoch = this._checkpoint.epoch;
+            const epoch = this._snapshot.epoch;
             const saved = await this._platform.persistence
                 .setStorageState(this.id, encodedState)
                 .then(() => true)
@@ -664,8 +664,8 @@ export class IORoom<T extends IODefs = IODefs>
                 });
 
             if (saved) {
-                this._checkpoint.acknowledge(epoch);
-                void this._listeners.onStorageUpdated({
+                this._snapshot.acknowledge(epoch);
+                void this._listeners.onStorageSnapshot({
                     context,
                     encodedState,
                     room: this.id,
@@ -675,7 +675,7 @@ export class IORoom<T extends IODefs = IODefs>
             return {
                 changeKind: "initialized",
                 state: stateForClient(encodedState),
-                storageDirty: this._checkpoint.dirty,
+                storageDirty: this._snapshot.dirty,
             };
         }
 
@@ -684,7 +684,7 @@ export class IORoom<T extends IODefs = IODefs>
         return {
             changeKind: "empty",
             state: stateForClient(encodedState),
-            storageDirty: this._checkpoint.dirty,
+            storageDirty: this._snapshot.dirty,
         };
     }
 
@@ -746,7 +746,7 @@ export class IORoom<T extends IODefs = IODefs>
         const doc = await this._doc;
         const storageEvent = event.type === "$syncStorage" || event.type === "$updateStorage";
 
-        if (storageEvent && this._checkpoint.closed) {
+        if (storageEvent && this._snapshot.closed) {
             return this._releaseStorage(emptyRoomEffects<T>(), session);
         }
 
@@ -777,7 +777,7 @@ export class IORoom<T extends IODefs = IODefs>
         const invoked = invokeProcedureResolvers({
             broadcast: () =>
                 storageEvent
-                    ? this._checkpoint.hold(() =>
+                    ? this._snapshot.hold(() =>
                           procedure.config.broadcast?.(inputs, resolverContext),
                       )
                     : procedure.config.broadcast?.(inputs, resolverContext),
@@ -953,14 +953,14 @@ export class IORoom<T extends IODefs = IODefs>
             updates.push(state);
         }
 
-        this._checkpoint.dropUpdates(updates);
+        this._snapshot.dropUpdates(updates);
     }
 
     private _releaseStorage(
         effects: RoomEffects<T>,
         session: Pick<RoomSessionSnapshot<T>, "id" | "operator" | "user">,
     ): RoomEffects<T> {
-        const updates = this._checkpoint.pendingUpdates();
+        const updates = this._snapshot.pendingUpdates();
         const broadcast = updates.length
             ? [
                   ...effects.broadcast,
@@ -975,7 +975,7 @@ export class IORoom<T extends IODefs = IODefs>
             broadcast,
             connectionId: session.id,
             storageDirty:
-                this._checkpoint.dirty ||
+                this._snapshot.dirty ||
                 broadcast.some((frame) => frame.type === "$storageUpdated"),
         };
     }

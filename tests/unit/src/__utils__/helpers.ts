@@ -35,8 +35,8 @@ export const waitUntil = async (predicate: () => boolean, timeoutMs: number = 5_
     }
 };
 
-/** The session manager copies storage one second after the write. */
-export const waitForStorageCheckpoint = (): Promise<void> =>
+/** The session manager snapshots storage one second after the write. */
+export const waitForStorageSnapshot = (): Promise<void> =>
     new Promise((resolve) => {
         setTimeout(resolve, 1_100);
     });

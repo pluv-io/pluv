@@ -45,7 +45,7 @@ await sessions.__experimental_storage({ senderId }).addMessage({ text: "hello" }
 
 Cloudflare still passes `{ env, state }` to `createRoom`. Pass only the room to `manageSessions`.
 
-Room listeners no longer receive `platform` or `webSocket`. `onRoomMessage` no longer receives `encodedState`, and it does not run for `$ping`, `$getOthers`, `$listUsers`, `$updatePresence`, or `$initializeSession`. A join is `onUserConnected`. A client loading storage is `onStorageUpdated`. Read the document from `onStorageUpdated` and `onStorageDestroyed`. `onStorageUpdated` no longer receives `kind`, `operator`, or `user`.
+Room listeners no longer receive `platform` or `webSocket`. `onRoomMessage` no longer receives `encodedState`, and it does not run for `$ping`, `$getOthers`, `$listUsers`, `$updatePresence`, or `$initializeSession`. A join is `onUserConnected`. A client loading storage is `onStorageSnapshot`. Read the document from `onStorageSnapshot` and `onStorageDestroyed`. `onStorageSnapshot` no longer receives `kind`, `operator`, or `user`.
 
 ```ts
 // Before
@@ -57,7 +57,7 @@ onStorageDestroyed({ context, encodedState, platform, room }) {}
 // After
 onUserConnected({ context, encodedState, kind, operator, room, user }) {}
 onRoomMessage({ context, kind, message, operator, room, user }) {}
-onStorageUpdated({ context, encodedState, room }) {}
+onStorageSnapshot({ context, encodedState, room }) {}
 onStorageDestroyed({ context, encodedState, room }) {}
 ```
 

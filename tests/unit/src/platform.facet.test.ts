@@ -22,7 +22,7 @@ import {
     TestPlatform,
     TestSocket,
     testAuthorizeUser,
-    waitForStorageCheckpoint,
+    waitForStorageSnapshot,
     waitUntil,
 } from "./__utils__";
 
@@ -75,7 +75,7 @@ const host = (options?: {
     holdFirstRegister?: Promise<void>;
     lastPings?: Map<TestSocket, number>;
     maxConnections?: number;
-    onStorageUpdated?: (encodedState: string) => void;
+    onStorageSnapshot?: (encodedState: string) => void;
     persistence?: TestPersistence;
     waitForPresence?: () => Promise<void>;
     waitForSlow?: () => Promise<void>;
@@ -132,10 +132,10 @@ const host = (options?: {
     });
     const server = io.server({
         getInitialStorage: () => null,
-        onStorageUpdated: (event) => {
+        onStorageSnapshot: (event) => {
             if (typeof event.encodedState !== "string") return;
 
-            options?.onStorageUpdated?.(event.encodedState);
+            options?.onStorageSnapshot?.(event.encodedState);
         },
         router: io.router({
             hello: io.procedure
@@ -255,11 +255,11 @@ const host = (options?: {
                 calls.push("destroy");
                 await open().destroy();
             },
-            flushCheckpoint: async () => {
-                calls.push("flushCheckpoint");
+            flushSnapshot: async () => {
+                calls.push("flushSnapshot");
 
-                const flushed = (await open().flushCheckpoint()) as Awaited<
-                    ReturnType<SessionRoom["~"]["flushCheckpoint"]>
+                const flushed = (await open().flushSnapshot()) as Awaited<
+                    ReturnType<SessionRoom["~"]["flushSnapshot"]>
                 >;
 
                 flushAttempts += 1;
@@ -502,7 +502,7 @@ describe("@pluv/platform", () => {
         expect(added).not.toContain("whenReady");
         expect(added).not.toContain("message");
         expect(added).not.toContain("initializeStorage");
-        expect(added).not.toContain("flushCheckpoint");
+        expect(added).not.toContain("flushSnapshot");
         expect(added).not.toContain("storageDirty");
         expect(lastMessage(socket, "$pong").type).toBe("$pong");
     });
@@ -771,7 +771,7 @@ describe("@pluv/platform", () => {
         await registerAuthorized(hosted.room, second, { io: hosted.io });
         await send(hosted.room, first, "$initializeSession", { presence: {}, update: null });
         await send(hosted.room, second, "$initializeSession", { presence: {}, update: null });
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         const before = second.messages.filter(
             (message) => message.type === "$storageUpdated",
@@ -804,7 +804,7 @@ describe("@pluv/platform", () => {
         await registerAuthorized(hosted.room, second, { io: hosted.io });
         await send(hosted.room, first, "$initializeSession", { presence: {}, update: null });
         await send(hosted.room, second, "$initializeSession", { presence: {}, update: null });
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         const before = second.messages.filter(
             (message) => message.type === "$storageUpdated",
@@ -821,7 +821,7 @@ describe("@pluv/platform", () => {
                     before &&
                 second.messages.filter((message) => message.type === "heard").length === 1,
         );
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         expect(
             second.messages.filter((message) => message.type === "$storageUpdated"),
@@ -846,7 +846,7 @@ describe("@pluv/platform", () => {
         await registerAuthorized(hosted.room, second, { io: hosted.io });
         await send(hosted.room, first, "$initializeSession", { presence: {}, update: null });
         await send(hosted.room, second, "$initializeSession", { presence: {}, update: null });
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         const before = second.messages.filter(
             (message) => message.type === "$storageUpdated",
@@ -862,7 +862,7 @@ describe("@pluv/platform", () => {
         );
 
         expect(decodeText(lastMessage(second, "$storageUpdated").data.state)).toBe("saved");
-        expect(hosted.calls.filter((call) => call === "flushCheckpoint").length).toBeGreaterThan(1);
+        expect(hosted.calls.filter((call) => call === "flushSnapshot").length).toBeGreaterThan(1);
     });
 
     it("starts one checkpoint from storageDirty and flushes on a second call", async () => {
@@ -876,12 +876,12 @@ describe("@pluv/platform", () => {
         });
 
         expect(hosted.calls).toContain("applyStorageProcedure");
-        expect(hosted.calls).not.toContain("flushCheckpoint");
+        expect(hosted.calls).not.toContain("flushSnapshot");
 
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
-        expect(hosted.calls.filter((call) => call === "flushCheckpoint")).toEqual([
-            "flushCheckpoint",
+        expect(hosted.calls.filter((call) => call === "flushSnapshot")).toEqual([
+            "flushSnapshot",
         ]);
     });
 
@@ -914,7 +914,7 @@ describe("@pluv/platform", () => {
 
         expect(settled).toBe(false);
 
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
         await pending;
 
         expect(settled).toBe(true);
@@ -948,7 +948,7 @@ describe("@pluv/platform", () => {
         expect(doc.toJson()).toMatchObject({ messages: ["hello"] });
     });
 
-    it("does not notify onStorageUpdated until a failed seed is copied", async () => {
+    it("does not notify onStorageSnapshot until a failed seed is copied", async () => {
         const persistence = new TestPersistence();
         let attempts = 0;
         const store = persistence.setStorageState.bind(persistence);
@@ -963,7 +963,7 @@ describe("@pluv/platform", () => {
         };
 
         const hosted = host({
-            onStorageUpdated: (encodedState) => {
+            onStorageSnapshot: (encodedState) => {
                 updates.push(encodedState);
             },
             persistence,
@@ -979,7 +979,7 @@ describe("@pluv/platform", () => {
         expect(updates).toEqual([]);
         expect(lastMessage(socket, "$storageReceived").data.changeKind).toBe("initialized");
 
-        await waitForStorageCheckpoint();
+        await waitForStorageSnapshot();
 
         expect(updates).toHaveLength(1);
         expect(decodeText(updates[0] ?? "")).toBe("seeded");

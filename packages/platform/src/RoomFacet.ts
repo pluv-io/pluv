@@ -170,8 +170,8 @@ export class RoomFacet<T extends IODefs = IODefs> {
         await this.#room["~"].dropStorageUpdates(frames);
     }
 
-    public async flushCheckpoint(): Promise<{ broadcast: unknown; status: unknown }> {
-        return plain.json(await this.#room["~"].flushCheckpoint());
+    public async flushSnapshot(): Promise<{ broadcast: unknown; status: unknown }> {
+        return plain.json(await this.#room["~"].flushSnapshot());
     }
 
     public async initializeStorage(params: {

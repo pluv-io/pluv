@@ -2,12 +2,12 @@ import type { IODefs, SetKey } from "./IODefs";
 import { PluvRouter } from "./PluvRouter";
 import { createSessionRouter } from "./createSessionRouter";
 import { createStorageRouter } from "./createStorageRouter";
-import type { IOStorageUpdatedEvent, PluvIOLimits } from "./types";
+import type { IOStorageSnapshotEvent, PluvIOLimits } from "./types";
 
 export type CreateBaseRouterParams<T extends IODefs = IODefs> = {
     limits: Pick<PluvIOLimits, "presenceMaxSize" | "storageMaxSize">;
     logDebug?: (...data: any[]) => void;
-    onStorageUpdated: (event: IOStorageUpdatedEvent<T>) => void;
+    onStorageSnapshot: (event: IOStorageSnapshotEvent<T>) => void;
 };
 
 type BaseRouter<T extends IODefs> = PluvRouter<SetKey<T, "events", {}>>;

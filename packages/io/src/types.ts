@@ -198,7 +198,7 @@ export type BasePluvIOListeners<T extends IODefs = IODefs> = {
     onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;
     onRoomMessage: (event: IORoomMessageEvent<T>) => void;
     onStorageDestroyed: (event: IORoomListenerEvent<T>) => void;
-    onStorageUpdated: (event: IOStorageUpdatedEvent<T>) => MaybePromise<void>;
+    onStorageSnapshot: (event: IOStorageSnapshotEvent<T>) => MaybePromise<void>;
     onUserConnected: (event: IOUserConnectedEvent<T>) => void;
     onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
 };
@@ -250,7 +250,7 @@ export type IORoomMessageEvent<T extends IODefs = IODefs> = {
     user?: InferTreatyUser<T["treaty"]>;
 };
 
-export type IOStorageUpdatedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T>;
+export type IOStorageSnapshotEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T>;
 
 export type IOUserConnectedEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T> & {
     kind?: ParticipantKind;
@@ -268,7 +268,7 @@ export type WebSocketType<TPlatform extends AbstractPlatform> =
     | InferPlatformWebSocketType<TPlatform>
     | InferPlatformWebSocketSource<TPlatform>;
 
-export type CheckpointFlush = "clean" | "dirty" | "closed";
+export type SnapshotFlush = "clean" | "dirty" | "closed";
 
 export interface RoomSessionSnapshot<T extends IODefs = IODefs> {
     id: string;
@@ -319,7 +319,7 @@ export interface RoomEffects<T extends IODefs = IODefs> {
     destroy: boolean;
     error: unknown;
     self: RoomEffectFrame<T>[];
-    /** The saved copy is stale. A hosted supervisor reads this off the call result. */
+    /** The in-memory document is ahead of the last snapshot. A hosted supervisor reads this off the call result. */
     storageDirty: boolean;
 }
 
@@ -354,9 +354,9 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
     }): Promise<RoomEffects<T>>;
     close(session: RoomSessionSnapshot<T>): Promise<RoomEffects<T>>;
     destroy(): Promise<void>;
-    flushCheckpoint(): Promise<{
+    flushSnapshot(): Promise<{
         broadcast: RoomEffectFrame<T>[];
-        status: CheckpointFlush;
+        status: SnapshotFlush;
     }>;
     initializeStorage(params: {
         input: { stateVector?: string | null; update?: string | null };

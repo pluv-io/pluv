@@ -50,7 +50,7 @@ If you are using `@pluv/platform-pluv`, listeners are webhooks under-the-hood. S
 
 Beyond this, the `PluvServer` provides several event listeners in which you can hook into and save the room's current storage state. It is recommended that you do not save your room's storage state in a handler that runs too frequently so that your database isn't overly written to.
 
-Our recommendation is to save your room's storage state in `onStorageDestroyed`. This handler only fires when the storage document is about to be destroyed after it has been initialized via `initializeSession`, ensuring you only save storage that was actually used. And if you need more saves beyond that, to throttle writes per room in event listeners such as `onStorageUpdated` or `onRoomMessage`.
+Our recommendation is to save your room's storage state in `onStorageDestroyed`. This handler only fires when the storage document is about to be destroyed after it has been initialized via `initializeSession`, ensuring you only save storage that was actually used. And if you need more saves beyond that, to throttle writes per room in event listeners such as `onStorageSnapshot` or `onRoomMessage`.
 
 > **Note**: Not all event listeners are available when using `@pluv/platform-pluv`. To learn more, please checkout the [quickstart guide](/docs/quickstart/nextjs).
 
@@ -83,10 +83,8 @@ export const ioServer = io.server({
   onRoomMessage: async ({ context, encodedState, room }) => {
     // ...
   },
-  // Optional: Triggered each time the room's storage is updated.
-  // It is advised not to perform any heavy operations in this listener
-  // due to the frequency of invocations
-  onStorageUpdated: ({ context, encodedState, room }) => {
+  // Optional: Triggered after the room writes the document into server storage.
+  onStorageSnapshot: ({ context, encodedState, room }) => {
     // ...
   },
   // Optional: Triggered each time a user connects to a room

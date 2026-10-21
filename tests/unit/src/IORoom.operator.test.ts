@@ -322,7 +322,7 @@ describe("IORoom operator sessions", () => {
                     operator: event.operator,
                 });
             },
-            onStorageUpdated: (event) => {
+            onStorageSnapshot: (event) => {
                 storageUpdates.push(Object.keys(event).toSorted());
             },
         });

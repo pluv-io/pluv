@@ -1,8 +1,8 @@
 import type { CrdtDocLike } from "@pluv/types";
-import type { CheckpointFlush, PluvIOLimits } from "./types";
+import type { PluvIOLimits, SnapshotFlush } from "./types";
 import { oneLine } from "./utils";
 
-/** A write during the save, a write from `onStorageUpdated`, or a document past the size limit. */
+/** A write during the snapshot, a write from `onStorageSnapshot`, or a document past the size limit. */
 type StoreInfo = {
     duringNotify: boolean;
     duringSave: boolean;
@@ -10,10 +10,10 @@ type StoreInfo = {
 };
 
 /**
- * The room's saved copy. The document stays live. This copies it when asked.
+ * The room's snapshot. The document stays live. This copies it when asked.
  * The session manager owns the clock.
  */
-export class StorageCheckpoint<TContext> {
+export class StorageSnapshot<TContext> {
     private _closed = false;
     private _dirty = false;
     private _epoch = 0;
@@ -70,7 +70,7 @@ export class StorageCheckpoint<TContext> {
         return this._epoch;
     }
 
-    /** The seed save already stored this epoch. A later write still needs a copy. */
+    /** The seed snapshot already stored this epoch. A later write still needs a copy. */
     public acknowledge(epoch: number): void {
         if (this._epoch === epoch) this._markClean();
     }
@@ -107,7 +107,7 @@ export class StorageCheckpoint<TContext> {
         this._unsubscribe = null;
     }
 
-    public async flush(): Promise<CheckpointFlush> {
+    public async flush(): Promise<SnapshotFlush> {
         if (this._closed) return "closed";
         if (!this._dirty) return "clean";
 
@@ -126,8 +126,8 @@ export class StorageCheckpoint<TContext> {
             return "clean";
         }
 
-        // The listener's write is stored next. That save does not call the listener
-        // again, so a write on every save cannot keep this clock alive.
+        // The listener's write is stored next. That snapshot does not call the listener
+        // again, so a write on every snapshot cannot keep this clock alive.
         const follow = await this._store({ context, doc, notify: false });
 
         if (this._closed) return "closed";
@@ -142,7 +142,7 @@ export class StorageCheckpoint<TContext> {
         return "dirty";
     }
 
-    /** Doc updates inside `fn` mark the copy stale and do not broadcast again. */
+    /** Doc updates inside `fn` mark the snapshot stale and do not broadcast again. */
     public hold<TResult>(fn: () => TResult): TResult {
         this._hold += 1;
 
