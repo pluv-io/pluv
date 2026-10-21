@@ -198,6 +198,7 @@ export type BasePluvIOListeners<T extends IODefs = IODefs> = {
     onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;
     onRoomMessage: (event: IORoomMessageEvent<T>) => void;
     onStorageDestroyed: (event: IORoomListenerEvent<T>) => void;
+    onStorageEdits: (event: IOStorageEditsEvent<T>) => MaybePromise<void>;
     onStorageSnapshot: (event: IOStorageSnapshotEvent<T>) => MaybePromise<void>;
     onUserConnected: (event: IOUserConnectedEvent<T>) => void;
     onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
@@ -248,6 +249,19 @@ export type IORoomMessageEvent<T extends IODefs = IODefs> = {
     operator?: OperatorUser | null;
     room: string;
     user?: InferTreatyUser<T["treaty"]>;
+};
+
+export type IOStorageEdit<T extends IODefs = IODefs> = {
+    update: string;
+    user: InferTreatyUser<T["treaty"]> | null;
+    operator: OperatorUser | null;
+    procedure: string | null;
+};
+
+export type IOStorageEditsEvent<T extends IODefs = IODefs> = {
+    changes: readonly IOStorageEdit<T>[];
+    context: T["context"];
+    room: string;
 };
 
 export type IOStorageSnapshotEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T>;

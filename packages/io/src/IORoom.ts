@@ -20,7 +20,10 @@ import type { InferInitContextType, InferRoomContextType } from "./AbstractPlatf
 import type { IODefs, IOLikeFromDefs } from "./IODefs";
 import type { PluvRouter } from "./PluvRouter";
 import { RoomStorage } from "./RoomStorage";
+import { StorageChangeLog } from "./StorageChangeLog";
 import { StorageSnapshot } from "./StorageSnapshot";
+import { StorageEditCalls } from "./bindStorageEditDoc";
+import { STORAGE_EDITS_INTERVAL_MS } from "./constants";
 import { authorize } from "./authorize";
 import type {
     DeferredResult,
@@ -29,6 +32,7 @@ import type {
     IORoomDestroyedEvent,
     IORoomListenerEvent,
     IORoomMessageEvent,
+    IOStorageEditsEvent,
     IOStorageSnapshotEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
@@ -108,6 +112,7 @@ export interface IORoomListeners<T extends IODefs = IODefs> {
     onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;
     onStorageDestroyed: (event: IORoomListenerEvent<T>) => void;
     onMessage: (event: IORoomMessageEvent<T>) => void;
+    onStorageEdits?: (event: IOStorageEditsEvent<T>) => MaybePromise<void>;
     onStorageSnapshot: (event: IOStorageSnapshotEvent<T>) => MaybePromise<void>;
     onUserConnected: (event: IOUserConnectedEvent<T>) => void;
     onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
@@ -164,6 +169,8 @@ export class IORoom<T extends IODefs = IODefs>
     private _teardown: Promise<void> | null = null;
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
+    private readonly _editCalls: StorageEditCalls<InferTreatyUser<T["treaty"]>> | null;
+    private readonly _edits: StorageChangeLog<T> | null;
     private readonly _snapshot: StorageSnapshot<T["context"]>;
     private readonly _context: PluvContext<T["platform"], T["context"]>;
     private readonly _debug: boolean;
@@ -202,6 +209,7 @@ export class IORoom<T extends IODefs = IODefs>
             limits,
             onRoomDestroyed,
             onStorageDestroyed,
+            onStorageEdits,
             onStorageSnapshot,
             onMessage,
             onUserConnected,
@@ -232,6 +240,19 @@ export class IORoom<T extends IODefs = IODefs>
             room: this.id,
         });
 
+        this._editCalls = onStorageEdits ? new StorageEditCalls() : null;
+        this._edits = onStorageEdits
+            ? new StorageChangeLog({
+                  caller: (origin) => this._editCalls?.caller(origin) ?? null,
+                  getContext: () => this._getContext(),
+                  intervalMs: STORAGE_EDITS_INTERVAL_MS,
+                  keepAlive: (promise) => {
+                      this._platform.keepAlive(promise);
+                  },
+                  onEdits: (event) => onStorageEdits(event),
+                  room: this.id,
+              })
+            : null;
         this._snapshot = new StorageSnapshot({
             getContext: () => this._getContext(),
             getDoc: () => this._doc,
@@ -352,39 +373,49 @@ export class IORoom<T extends IODefs = IODefs>
 
         const procedure = procedures[name];
         const doc = await this._doc;
+        const edit = this._editCalls?.open(doc, {
+            operator: actor.operator,
+            procedure: name,
+            user: actor.user,
+        });
+        const bound = edit?.doc ?? doc;
 
-        const apply = (): void => {
-            procedure.apply(data, {
-                user: actor.user,
-                operator: actor.operator,
-                presence: actor.presence,
-                doc,
-            });
-        };
+        try {
+            const apply = (): void => {
+                procedure.apply(data, {
+                    user: actor.user,
+                    operator: actor.operator,
+                    presence: actor.presence,
+                    doc: bound,
+                });
+            };
 
-        const update = this._snapshot.hold(() =>
-            doc.captureUpdate(() => {
-                if (procedure.config.transact === false) {
-                    apply();
+            const update = this._snapshot.hold(() =>
+                doc.captureUpdate(() => {
+                    if (procedure.config.transact === false) {
+                        apply();
 
-                    return;
-                }
+                        return;
+                    }
 
-                doc.transact(apply, actor.id);
-            }),
-        );
+                    bound.transact(apply);
+                }),
+            );
 
-        if (!update) return this._releaseStorage(emptyRoomEffects<T>(), actor);
+            if (!update) return this._releaseStorage(emptyRoomEffects<T>(), actor);
 
-        this._snapshot.assertSize(doc.getEncodedState());
+            this._snapshot.assertSize(doc.getEncodedState());
 
-        return this._releaseStorage(
-            {
-                ...emptyRoomEffects<T>(),
-                broadcast: [effectFrame("$storageUpdated", { state: update }, actor)],
-            },
-            actor,
-        );
+            return this._releaseStorage(
+                {
+                    ...emptyRoomEffects<T>(),
+                    broadcast: [effectFrame("$storageUpdated", { state: update }, actor)],
+                },
+                actor,
+            );
+        } finally {
+            edit?.close();
+        }
     }
 
     private async _close(session: RoomSessionSnapshot<T>): Promise<RoomEffects<T>> {
@@ -543,15 +574,22 @@ export class IORoom<T extends IODefs = IODefs>
             }
 
             await this._storage.initialize();
+            const doc = await this._storage.doc;
+
             this._snapshot.reopen();
-            this._snapshot.attach(await this._storage.doc);
+            this._snapshot.attach(doc);
+            this._edits?.reopen();
+            this._edits?.attach(doc);
 
             const uninitialize = async (): Promise<void> => {
                 if (this._teardown) return this._teardown;
 
                 this._teardown = (async () => {
+                    await this._edits?.flush();
                     await this._snapshot.seal();
+                    await this._edits?.flush();
                     this._snapshot.detach();
+                    this._edits?.detach();
 
                     const context = await this._getContext();
                     const { encodedState, refusedEmptyPersist, shouldDestroyStorage } =
@@ -642,41 +680,52 @@ export class IORoom<T extends IODefs = IODefs>
         }
 
         if (update) {
-            const encodedState = this._snapshot.hold(() =>
-                doc.applyEncodedState({ update }).getEncodedState(),
-            );
-            const storageSize = new TextEncoder().encode(encodedState).length;
+            const edit = this._editCalls?.open(doc, {
+                operator: params.actor.operator,
+                procedure: null,
+                user: params.actor.user,
+            });
+            const bound = edit?.doc ?? doc;
 
-            if (!!this.limits.storageMaxSize && storageSize > this.limits.storageMaxSize) {
-                throw new Error("Storage has exceeded the size limit");
+            try {
+                const encodedState = this._snapshot.hold(() =>
+                    bound.applyEncodedState({ update }).getEncodedState(),
+                );
+                const storageSize = new TextEncoder().encode(encodedState).length;
+
+                if (!!this.limits.storageMaxSize && storageSize > this.limits.storageMaxSize) {
+                    throw new Error("Storage has exceeded the size limit");
+                }
+
+                this._storage.storageSeeded = true;
+
+                const epoch = this._snapshot.epoch;
+                const saved = await this._platform.persistence
+                    .setStorageState(this.id, encodedState)
+                    .then(() => true)
+                    .catch((error: unknown) => {
+                        this._logDebug(error);
+
+                        return false;
+                    });
+
+                if (saved) {
+                    this._snapshot.acknowledge(epoch);
+                    void this._listeners.onStorageSnapshot({
+                        context,
+                        encodedState,
+                        room: this.id,
+                    });
+                }
+
+                return {
+                    changeKind: "initialized",
+                    state: stateForClient(encodedState),
+                    storageDirty: this._snapshot.dirty,
+                };
+            } finally {
+                edit?.close();
             }
-
-            this._storage.storageSeeded = true;
-
-            const epoch = this._snapshot.epoch;
-            const saved = await this._platform.persistence
-                .setStorageState(this.id, encodedState)
-                .then(() => true)
-                .catch((error: unknown) => {
-                    this._logDebug(error);
-
-                    return false;
-                });
-
-            if (saved) {
-                this._snapshot.acknowledge(epoch);
-                void this._listeners.onStorageSnapshot({
-                    context,
-                    encodedState,
-                    room: this.id,
-                });
-            }
-
-            return {
-                changeKind: "initialized",
-                state: stateForClient(encodedState),
-                storageDirty: this._snapshot.dirty,
-            };
         }
 
         const encodedState = doc.getEncodedState();
@@ -750,41 +799,52 @@ export class IORoom<T extends IODefs = IODefs>
             return this._releaseStorage(emptyRoomEffects<T>(), session);
         }
 
-        const wide = this._resolverContext({
-            attachments,
-            context,
-            doc,
-            getPresence: () => presence,
-            session,
-            setPresence: (value) => {
-                presence = value;
-            },
+        const edit = this._editCalls?.open(doc, {
+            operator: session.operator,
+            procedure: null,
+            user: session.user,
         });
-        const resolverContext = storageEvent ? wide : this._userContext(wide);
-        const finish = (
-            broadcast: Record<string, unknown> | null | undefined,
-            self: Record<string, unknown> | null | undefined,
-        ): RoomEffects<T> =>
-            this._releaseStorage(
-                {
-                    ...emptyRoomEffects<T>(),
-                    attachments,
-                    broadcast: framesFromRecord(broadcast, session),
-                    self: framesFromRecord(self, session),
-                },
-                session,
-            );
-        const invoked = invokeProcedureResolvers({
-            broadcast: () =>
-                storageEvent
-                    ? this._snapshot.hold(() =>
-                          procedure.config.broadcast?.(inputs, resolverContext),
-                      )
-                    : procedure.config.broadcast?.(inputs, resolverContext),
-            self: () => procedure.config.self?.(inputs, resolverContext),
-        });
+        const bound = edit?.doc ?? doc;
+        let deferred = false;
+        const closeEdit = (): void => {
+            edit?.close();
+        };
 
         try {
+            const wide = this._resolverContext({
+                attachments,
+                context,
+                doc: bound,
+                getPresence: () => presence,
+                session,
+                setPresence: (value) => {
+                    presence = value;
+                },
+            });
+            const resolverContext = storageEvent ? wide : this._userContext(wide);
+            const finish = (
+                broadcast: Record<string, unknown> | null | undefined,
+                self: Record<string, unknown> | null | undefined,
+            ): RoomEffects<T> =>
+                this._releaseStorage(
+                    {
+                        ...emptyRoomEffects<T>(),
+                        attachments,
+                        broadcast: framesFromRecord(broadcast, session),
+                        self: framesFromRecord(self, session),
+                    },
+                    session,
+                );
+            const invoked = invokeProcedureResolvers({
+                broadcast: () =>
+                    storageEvent
+                        ? this._snapshot.hold(() =>
+                              procedure.config.broadcast?.(inputs, resolverContext),
+                          )
+                        : procedure.config.broadcast?.(inputs, resolverContext),
+                self: () => procedure.config.self?.(inputs, resolverContext),
+            });
+
             if (!invoked.ok) {
                 return this._releaseStorage(
                     { ...emptyRoomEffects<T>(), attachments, error: invoked.error },
@@ -797,6 +857,8 @@ export class IORoom<T extends IODefs = IODefs>
             // The storage broadcast stays on this join. Other resolvers can await the
             // session manager, so this join must finish before those promises do.
             if (!storageEvent && (isThenable(broadcastResult) || isThenable(selfResult))) {
+                deferred = true;
+
                 return deferredResult(
                     Promise.all([broadcastResult, selfResult])
                         .then(([broadcast, self]) =>
@@ -814,7 +876,8 @@ export class IORoom<T extends IODefs = IODefs>
                                 },
                                 session,
                             ),
-                        ),
+                        )
+                        .finally(closeEdit),
                 );
             }
 
@@ -826,6 +889,8 @@ export class IORoom<T extends IODefs = IODefs>
             );
         } catch (error) {
             return this._releaseStorage({ ...emptyRoomEffects<T>(), attachments, error }, session);
+        } finally {
+            if (!deferred) closeEdit();
         }
     }
 
@@ -975,8 +1040,7 @@ export class IORoom<T extends IODefs = IODefs>
             broadcast,
             connectionId: session.id,
             storageDirty:
-                this._snapshot.dirty ||
-                broadcast.some((frame) => frame.type === "$storageUpdated"),
+                this._snapshot.dirty || broadcast.some((frame) => frame.type === "$storageUpdated"),
         };
     }
 

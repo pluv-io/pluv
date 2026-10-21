@@ -189,6 +189,10 @@ const server = io.server({
   onStorageSnapshot: ({ context, encodedState, room }) => {
     // ...
   },
+  // Optional: Triggered about once a second with the document edits from that second.
+  onStorageEdits: ({ context, room, changes }) => {
+    // changes: { update, user, operator, procedure }[]
+  },
   // Optional: Triggered each time a user connects to a room
   onUserConnected: ({ context, encodedState, room, user }) => {
     // ...

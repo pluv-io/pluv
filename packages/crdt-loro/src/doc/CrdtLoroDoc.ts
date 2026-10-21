@@ -299,10 +299,9 @@ export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements Crd
      * @description Unlike Yjs, this method is required to be called after each loro operation.
      * @date January 12, 2025
      */
-    public transact(fn: () => void): this {
+    public transact(fn: () => void, origin?: string): this {
         fn();
-
-        this.value.commit();
+        this.value.commit(origin ? { origin } : undefined);
 
         return this;
     }

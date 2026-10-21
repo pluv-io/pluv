@@ -259,8 +259,10 @@ export class CrdtYjsDoc<TSchema extends YjsSchema = YjsSchema> implements CrdtDo
         return this;
     }
 
-    public transact(fn: () => void): this {
-        this.value.transact(fn);
+    public transact(fn: () => void, origin?: string): this {
+        if (origin) this.#_undoManager?.trackedOrigins.add(origin);
+
+        this.value.transact(fn, origin);
 
         return this;
     }
