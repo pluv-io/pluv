@@ -1,6 +1,6 @@
 {
     "name": "@pluv/platform",
-    "version": "5.2.3",
+    "version": "6.0.0",
     "description": "Hosted room facet for @pluv/io",
     "author": {
         "email": "david@pluv.io",
