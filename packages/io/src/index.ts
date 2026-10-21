@@ -93,7 +93,7 @@ export type {
     IORoomInternal,
     IORoomListenerEvent,
     IORoomMessageEvent,
-    IOStorageUpdatedEvent,
+    IOStorageSnapshotEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
     ListenerMode,

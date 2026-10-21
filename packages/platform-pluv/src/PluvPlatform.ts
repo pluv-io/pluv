@@ -205,9 +205,9 @@ export class PluvPlatform extends AbstractPlatform<
             this._logDebug("Config `onRoomMessage` is not supported on `platformPluv`");
             throw new Error("Config `onRoomMessage` is not supported on `platformPluv`");
         }
-        if (!!config.onStorageUpdated) {
-            this._logDebug("Config `onStorageUpdated` is not supported on `platformPluv`");
-            throw new Error("Config `onStorageUpdated` is not supported on `platformPluv`");
+        if (!!config.onStorageSnapshot) {
+            this._logDebug("Config `onStorageSnapshot` is not supported on `platformPluv`");
+            throw new Error("Config `onStorageSnapshot` is not supported on `platformPluv`");
         }
 
         this._getInitialStorage = config.getInitialStorage;
