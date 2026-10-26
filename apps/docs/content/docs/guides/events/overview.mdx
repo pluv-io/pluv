@@ -1,127 +1,17 @@
 ---
-title: "Client vs Server Events"
-description: "Compare client and server custom events in pluv.io and choose where event procedures should run."
+title: "Custom Events"
+description: "Define type-safe custom events on the server and broadcast them from connected clients."
 ---
 
-In pluv.io, you can define type-safe custom events both on the client and server. Event procedures transform sent messages before emitting to connected peers. If a procedure does not exist to capture a received message, that message will be forwarded as-is to the next receiver of the message. i.e. if a client procedure does not exist, the message is forwarded to the server procedure. If that does not exist, then the message is forwarded to connected peers.
-
-The full broadcasted message flow is like so:
+Custom events are defined on the server with `io.procedure` and registered with `io.router`. A client calls `room.broadcast` with that event name. The server procedure validates the input and decides what connected peers receive.
 
 ```
-┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│                  │    │ Optional:        │    │ Optional:        │    │                 │
-│ User broadcasts  ├───►│ Client procedure ├───►│ Server Procedure ├───►│ Broadcasted to  │
-│ message          │    │ receives message │    │ receives message │    │ connected peers │
-│                  │    │                  │    │                  │    │                 │
-└──────────────────┘    └──────────────────┘    └──────────────────┘    └─────────────────┘
+┌──────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ User broadcasts  ├───►│ Server procedure ├───►│ Broadcast to    │
+│ an event         │    │                  │    │ connected peers │
+└──────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
-# Server Procedures
+If a message has no server procedure, it is forwarded as sent. Define the procedure when the event should be validated or rewritten.
 
-Server procedures are created from the `PluvIO` instance created from `createIO`. Below is an example of their usage:
-
-```ts
-import { createIO } from "@pluv/io";
-import { platformNode } from "@pluv/platform-node";
-import { db } from "./db";
-
-const io = createIO()
-  .platform(platformNode())
-  .config({
-    treaty,
-    secret: process.env.PLUV_AUTH_SECRET!,
-    context: { db },
-  });
-
-// You can define events as procedures that can exist in separate or the same file.
-const sendHelloWorld = io.procedure
-  .broadcast(() => ({ receiveHelloWorld: "hello world!" }));
-
-const sendGreeting = io.procedure
-  // Optional: You can specify inputs for the procedure if needed
-  .input(z.object({ name: z.string() }))
-  .broadcast(({ name }) => ({ receiveGreeting: `Hi my name is ${name}!` }));
-
-const doubleNumber = io.procedure
-  .input(z.object({ value: z.number() }))
-  .broadcast(({ value }) => ({ numberDoubled: value * 2 }));
-
-const serverExample = io.procedure
-  .input(z.object({ data: z.any() }))
-  .broadcast((
-    { data },
-    {
-      // The room's context from `createIO`. Also may contain platform-specific values like
-      // Cloudflare Worker's env and state
-      context,
-      // The room's copy of the CRDT state
-      doc,
-      // The id (string) of the room
-      room,
-      // The session of the connection that is invoking this procedure
-      session,
-      // A list of all sessions connected to this room on this server
-      // This includes the emitter's session as well
-      sessions,
-    }
-  ) => ({ finishExample: data }));
-
-export const ioServer = io.server({
-  // Register your procedures to the PluvServer via `router`
-  router: io.router({
-    sendHelloWorld,
-    sendGreeting,
-    doubleNumber,
-  }),
-});
-```
-
-# Client Procedures
-
-Client procedures are created from the `PluvClient` instance created from `createClient`. Below is an example of their usage:
-
-```ts
-import { createClient } from "@pluv/client";
-import type { ioServer } from "./backend/pluv-io";
-import { treaty } from "./shared/treaty";
-
-const io = createClient<typeof ioServer>().config({
-  treaty,
-});
-
-// Basic example of a procedure, that works like a server procedure
-const add5 = io.procedure
-  // Optional: Input is optional like in the server example
-  .input(z.object({ value: z.number() }))
-  .broadcast(({ value }) => ({ numberIncreased: value + 5 }));
-
-const subtract5 = io.procedure
-  .input(z.object({ value: z.number() }))
-  // This procedure returns an event that is caught by the above
-  // server's router. This will first subtract 5, then double the
-  // result on the server
-  .broadcast(({ value }) => ({ doubleNumber: value - 5 }));
-
-const clientExample = io.procedure
-  .input(z.object({ data: z.any() }))
-  .broadcast((
-    { data },
-    {
-      // The room's copy of the CRDT state
-      doc,
-      // A list of all other connected peers
-      others,
-      // The id (string) of the room
-      room,
-      // The current connected user
-      user,
-    }
-  ) => ({ finishExample: data }))
-
-const room = io.createRoom("my-custom-room", {
-  router: io.router({
-    add5,
-    subtract5,
-  }),
-});
-```
+See [Server events](/docs/guides/events/server) for the procedure API. Clients subscribe with `room.subscribe.event` or `useEvent`.

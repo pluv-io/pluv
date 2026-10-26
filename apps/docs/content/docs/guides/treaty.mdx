@@ -121,8 +121,7 @@ const client = createClient<typeof ioServer>().config({
 
 Keep `createClient<typeof ioServer>()` for **events**. Presence, storage, and user types come from that server treaty. Always pass the runtime `treaty` too; a type-only import of `ioServer` cannot recover schemas.
 
-- Node and Cloudflare: `secret` is required (`string` or `(initContext) => string`).
-- Hosted `platformPluv`: omit `secret` (`secretKey` stays on `platformPluv(...)`).
+- `secret` is required (`string` or `(initContext) => string`).
 - `getInitialStorage` is required when `treaty.storage` is a real CRDT.
 - `initialPresence` / `initialStorage` remain JSON seeds.
 

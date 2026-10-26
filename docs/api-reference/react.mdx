@@ -76,16 +76,16 @@ This is the bundle returned from `createBundle`.
 React provider component to mock `PluvRoomProvider`. Enables hooks from `CreateBundle` while completely offline. This can be useful in [Storybook](https://storybook.js.org/) within a storybook decorator when mocking `PluvRoomProvider`.
 
 ```tsx
-import { yjs } from "@pluv/crdt-yjs";
 import { MockedRoomProvider } from "./io";
 
 const MyComponent: FC = () => {
   return (
     <MockedRoomProvider
-      // Mock events sent and received for hooks in child components
+      // Stand in for the server router. Broadcasting sendMessage
+      // delivers receiveMessage to useEvent and subscribe.
       events={{
-        EMIT_EMOJI: ({ emojiCode }) => ({
-          EMOJI_RECEIVED: { emojiCode },
+        sendMessage: ({ message }) => ({
+          receiveMessage: { message },
         }),
       }}
       // Define your initial presence

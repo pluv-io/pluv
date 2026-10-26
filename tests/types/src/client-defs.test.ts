@@ -1,11 +1,5 @@
 import { addonIndexedDB } from "@pluv/addon-indexeddb";
-import {
-    createClient,
-    PluvRouter,
-    type PluvClient,
-    type PluvRoom,
-    type PluvRoomAddon,
-} from "@pluv/client";
+import { createClient, type PluvClient, type PluvRoom, type PluvRoomAddon } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
@@ -88,56 +82,11 @@ room.subscribe.event.receiveMessage((event) => {
     expectTypeOf(event.data).toEqualTypeOf<{ message: string }>();
 });
 
-const clientEventRoom = client.createRoom("client-events", {
-    router: client.router({
-        shout: client.procedure
-            .input(z.object({ text: z.string() }))
-            .broadcast(({ text }, { user, doc }) => {
-                expectTypeOf(user.data).toEqualTypeOf<{ id: string; name: string }>();
-                expectTypeOf(user.presence).toEqualTypeOf<{
-                    cursor: { x: number; y: number };
-                }>();
-                expectTypeOf(doc.value).not.toBeNever();
-
-                return { shouted: { text } };
-            }),
-    }),
-});
-
-clientEventRoom.subscribe.event.shouted((event) => {
-    expectTypeOf(event.data).toEqualTypeOf<{ text: string }>();
-});
-clientEventRoom.subscribe.event.receiveMessage((event) => {
-    expectTypeOf(event.data).toEqualTypeOf<{ message: string }>();
-});
-
-expectTypeOf(clientEventRoom.getMyPresence()).toEqualTypeOf<{
-    cursor: { x: number; y: number };
-}>();
-
 type ClientBagAfterRoom = typeof client extends PluvClient<infer TDefs> ? TDefs : never;
-type RoomBag = typeof clientEventRoom extends PluvRoom<infer TDefs> ? TDefs : never;
+type RoomBag = typeof room extends PluvRoom<infer TDefs> ? TDefs : never;
 expectTypeOf<RoomBag["presence"]>().toEqualTypeOf<ClientBagAfterRoom["presence"]>();
 expectTypeOf<RoomBag["storage"]>().toEqualTypeOf<ClientBagAfterRoom["storage"]>();
 expectTypeOf<RoomBag["io"]>().toEqualTypeOf<ClientBagAfterRoom["io"]>();
-expectTypeOf<RoomBag["events"]>().toHaveProperty("shout");
-
-const noRouterRoom = client.createRoom("no-router");
-noRouterRoom.subscribe.event.receiveMessage((event) => {
-    expectTypeOf(event.data).toEqualTypeOf<{ message: string }>();
-});
-
-const shouts = client.router({
-    shout: client.procedure
-        .input(z.object({ text: z.string() }))
-        .broadcast(({ text }) => ({ shouted: { text } })),
-});
-const waves = client.router({
-    wave: client.procedure.broadcast(() => ({ waved: {} })),
-});
-const merged = PluvRouter.merge(shouts, waves);
-expectTypeOf(merged._defs.events).toHaveProperty("shout");
-expectTypeOf(merged._defs.events).toHaveProperty("wave");
 
 client.createRoom("with-addon", {
     addons: [addonIndexedDB()],
@@ -150,18 +99,12 @@ looseRoom.subscribe.connection((event) => {
 declare const looseAddon: PluvRoomAddon;
 looseAddon({ room: looseRoom });
 
-const { event, useBroadcast } = createBundle(client, {
-    router: client.router({
-        ping: client.procedure.broadcast(() => ({ pong: {} })),
-    }),
-});
+const { event, useBroadcast } = createBundle(client);
 
-expectTypeOf(event.pong.useEvent).toBeFunction();
 expectTypeOf(event.receiveMessage.useEvent).toBeFunction();
 // @ts-expect-error protocol events are not public
 event.$error.useEvent(() => {});
 const broadcast = useBroadcast();
-expectTypeOf(broadcast.ping).toBeFunction();
 expectTypeOf(broadcast.sendMessage).toBeFunction();
 
 const untypedClient = createClient().config({

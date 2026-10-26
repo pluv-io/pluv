@@ -13,7 +13,6 @@ packages:
     - "packages/platform"
     - "packages/platform-cloudflare"
     - "packages/platform-node"
-    - "packages/platform-pluv"
     - "packages/react"
     - "packages/treaty"
     - "packages/tsconfig"

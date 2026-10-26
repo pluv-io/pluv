@@ -47,7 +47,6 @@
         "@pluv/platform": "workspace:^",
         "@pluv/platform-cloudflare": "workspace:^",
         "@pluv/platform-node": "workspace:^",
-        "@pluv/platform-pluv": "workspace:^",
         "@pluv/react": "workspace:^",
         "@pluv/treaty": "workspace:^",
         "@pluv/types": "workspace:^",

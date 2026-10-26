@@ -1,10 +1,9 @@
 import type { AbstractCrdtDocFactory, HasStorage, InferSeed, NoopCrdtDocFactory } from "@pluv/crdt";
 import { noop } from "@pluv/crdt";
 import type { IOLike, InferIOTreaty, StandardSchemaV1, TreatyLike } from "@pluv/types";
-import type { ClientDefs, SetKey } from "./ClientDefs";
+import type { ClientDefs } from "./ClientDefs";
 import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import type { InferIOLike } from "./infer";
-import { PluvProcedure } from "./PluvProcedure";
 import { assertSerializingSchema } from "./utils/assertSerializingSchema";
 import type {
     AuthEndpoint,
@@ -16,14 +15,11 @@ import type {
     WsEndpoint,
 } from "./PluvRoom";
 import { PluvRoom } from "./PluvRoom";
-import type { PluvRouterEventConfig } from "./PluvRouter";
-import { PluvRouter } from "./PluvRouter";
 import type {
     InferClientMetadata,
     InferSchemaInput,
     InferSchemaOutput,
     PluvClientLimits,
-    PublicKey,
     WithMetadata,
 } from "./types";
 
@@ -40,7 +36,6 @@ export type PluvClientOptions<TDefs extends ClientDefs> = RoomEndpoints<
      */
     limits?: PluvClientLimits;
     metadata?: TDefs["metadata"];
-    publicKey?: PublicKey<InferClientMetadata<TDefs>>;
     treaty: TDefs["treaty"];
 } & (HasStorage<TDefs["treaty"]["storage"]> extends true
         ? { initialStorage?: InferSeed<TDefs["storage"]> }
@@ -53,7 +48,6 @@ export type CreateRoomOptions<TDefs extends ClientDefs = ClientDefs> = {
     initialStorage?: InferSeed<TDefs["storage"]>;
     onAuthorizationFail?: (error: Error) => void;
     reconnectTimeoutMs?: ReconnectTimeoutMs;
-    router?: PluvRouter<TDefs>;
 };
 
 export type EnterRoomParams<TMetadata extends Record<string, any> = {}> =
@@ -71,7 +65,6 @@ export type ConfiguredClientDefs<
     storage: TTreaty["storage"] extends AbstractCrdtDocFactory<any, any, any, any>
         ? TTreaty["storage"]
         : NoopCrdtDocFactory;
-    events: {};
 };
 
 export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
@@ -81,8 +74,7 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
     private readonly _debug: boolean;
     private readonly _initialStorage?: InferSeed<TDefs["storage"]>;
     private readonly _limits: PluvClientLimits;
-    private readonly _publicKey: PublicKey<InferClientMetadata<TDefs>> | null = null;
-    private readonly _rooms = new Map<string, PluvRoom<SetKey<TDefs, "events", any>>>();
+    private readonly _rooms = new Map<string, PluvRoom<TDefs>>();
     private readonly _treaty: TDefs["treaty"];
     private readonly _wsEndpoint: WsEndpoint<InferClientMetadata<TDefs>> | undefined;
 
@@ -94,10 +86,6 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
         };
     }
 
-    public get procedure(): PluvProcedure<TDefs, {}, {}, ""> {
-        return new PluvProcedure<TDefs, {}, {}, "">();
-    }
-
     constructor(options: PluvClientOptions<TDefs>) {
         const {
             authEndpoint,
@@ -105,7 +93,6 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
             initialStorage,
             limits,
             metadata,
-            publicKey,
             treaty,
             wsEndpoint,
         } = options as PluvClientOptions<TDefs> & {
@@ -127,19 +114,14 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
         };
         this._treaty = treaty;
         this._wsEndpoint = wsEndpoint;
-
-        if (!!publicKey) this._publicKey = publicKey;
     }
 
-    public createRoom = <TEvents extends PluvRouterEventConfig<TDefs> = {}>(
-        room: string,
-        options: CreateRoomOptions<SetKey<TDefs, "events", TEvents>> = {},
-    ): PluvRoom<SetKey<TDefs, "events", TEvents>> => {
+    public createRoom = (room: string, options: CreateRoomOptions<TDefs> = {}): PluvRoom<TDefs> => {
         const oldRoom = this.getRoom(room);
 
-        if (oldRoom) return oldRoom as PluvRoom<SetKey<TDefs, "events", TEvents>>;
+        if (oldRoom) return oldRoom;
 
-        const newRoom = new PluvRoom<SetKey<TDefs, "events", TEvents>>(room, {
+        const newRoom = new PluvRoom<TDefs>(room, {
             addons: options.addons,
             authEndpoint: this._authEndpoint,
             debug: options.debug,
@@ -149,15 +131,13 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
             metadata: this.metadata,
             onAuthorizationFail: options.onAuthorizationFail,
             presence: this._treaty.presence,
-            publicKey: this._publicKey ?? undefined,
             reconnectTimeoutMs: options.reconnectTimeoutMs,
-            router: options.router,
             storage:
                 (this._treaty.storage as TDefs["storage"] | undefined) ??
                 (noop.doc() as TDefs["storage"]),
             treaty: this._treaty,
             wsEndpoint: this._wsEndpoint,
-        } as RoomConfig<SetKey<TDefs, "events", TEvents>>);
+        } as RoomConfig<TDefs>);
 
         this._rooms.set(room, newRoom);
 
@@ -167,9 +147,9 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
     };
 
     public enter = async (
-        room: string | PluvRoom<SetKey<TDefs, "events", any>>,
+        room: string | PluvRoom<TDefs>,
         ...args: EnterRoomParams<InferSchemaInput<TDefs["metadata"]>>
-    ): Promise<PluvRoom<SetKey<TDefs, "events", any>>> => {
+    ): Promise<PluvRoom<TDefs>> => {
         const toEnter = typeof room === "string" ? this.getRoom(room) : room;
         const roomId = typeof room === "string" ? room : room.id;
 
@@ -183,11 +163,11 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
         return toEnter;
     };
 
-    public getRoom = (room: string): PluvRoom<SetKey<TDefs, "events", any>> | null => {
+    public getRoom = (room: string): PluvRoom<TDefs> | null => {
         return this._rooms.get(room) ?? null;
     };
 
-    public getRooms = (): readonly PluvRoom<SetKey<TDefs, "events", any>>[] => {
+    public getRooms = (): readonly PluvRoom<TDefs>[] => {
         return Array.from(this._rooms.values());
     };
 
@@ -202,18 +182,6 @@ export class PluvClient<TDefs extends ClientDefs = ClientDefs> {
 
         this._logDebug(`Left and deleted room: ${toLeave.id}`);
     };
-
-    public router<TEvents extends PluvRouterEventConfig<TDefs> = {}>(
-        events: TEvents,
-    ): PluvRouter<SetKey<TDefs, "events", TEvents>> {
-        const invalidName = Object.keys(events).find((name) => name.includes("$"));
-
-        if (typeof invalidName === "string") {
-            throw new Error(`Invalid event name. Event names must not contain $: "${invalidName}"`);
-        }
-
-        return new PluvRouter<SetKey<TDefs, "events", TEvents>>(events);
-    }
 
     private _logDebug(...data: any[]): void {
         if (typeof process === "undefined") return;

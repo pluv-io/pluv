@@ -9,7 +9,6 @@
 "@pluv/crdt-loro": major
 "@pluv/platform-node": major
 "@pluv/platform-cloudflare": major
-"@pluv/platform-pluv": major
 "@pluv/addon-indexeddb": major
 ---
 
@@ -72,7 +71,7 @@ const client = createClient<typeof ioServer>().config({
 });
 ```
 
-`yjs.schema` / `loro.schema` are the storage factories (`yjs.storage` / `loro.storage` are removed). Node and Cloudflare still pass `secret` on `.config()`. Hosted `platformPluv` omits `secret` (`secretKey` stays on `platformPluv(...)`).
+`yjs.schema` / `loro.schema` are the storage factories (`yjs.storage` / `loro.storage` are removed). Pass `secret` on `.config()`.
 
 Use `createClient<typeof ioServer>()` when you need server event types. `createClient().config({ treaty, ... })` still works without a server type; pass the runtime treaty so presence and storage infer correctly.
 

@@ -31,7 +31,7 @@ export type PluvServerConfig<T extends IODefs = IODefs> = Partial<PluvIOListener
     onGetOperator?: OnGetOperator<InferTreatyUser<T["treaty"]>>;
     platform: () => T["platform"];
     router?: PluvRouter<T>;
-    secret?: PluvIOSecret<T["platform"]>;
+    secret: PluvIOSecret<T["platform"]>;
     treaty: T["treaty"];
 } & (HasStorage<T["treaty"]["storage"]> extends true
         ? { getInitialStorage: GetInitialStorageFn<T["context"]> }
@@ -64,19 +64,6 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
      */
     public get io(): PluvIO<SetKey<T, "events", {}>> {
         return this._config.io;
-    }
-
-    public get fetch(): (...args: any[]) => Promise<any> {
-        return (...args: any[]): Promise<any> => {
-            const platform = this._config.platform();
-            platform.validateConfig(this._config);
-
-            if (!platform._fetch) {
-                throw new Error(`\`${platform._name}\` does not support \`fetch\``);
-            }
-
-            return platform._fetch(...args);
-        };
     }
 
     /**
@@ -169,10 +156,6 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
         const platform = this._config.platform();
 
         platform.validateConfig(this._config);
-
-        if (platform._config.handleMode !== "io") {
-            throw new Error(`\`createRoom\` is unsupported for \`${platform._name}\``);
-        }
 
         if (!/^[a-z0-9](?:[a-z0-9-_]*[a-z0-9])?$/i.test(room))
             throw new Error("Unsupported room name");

@@ -21,6 +21,10 @@ const router = io.router({
     doubleNumber: io.procedure
         .input(z.object({ value: z.number() }))
         .self(({ value }) => ({ doubledNumber: { value: value * 2 } })),
+    subtract5: io.procedure
+        .input(z.object({ value: z.number() }))
+        .broadcast(({ value }) => ({ subtractedNumber: { value: value - 5 } }))
+        .self(({ value }) => ({ doubledNumber: { value: (value - 5) * 2 } })),
 });
 
 export const ioRooms = new Map<string, RoomSessionManager>();

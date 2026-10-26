@@ -21,19 +21,8 @@ export type TestPlatformConfig = {
     serializedStates?: ReadonlyMap<TestSocket, WebSocketSerializedState>;
 };
 
-export class TestPlatform extends AbstractPlatform<
-    TestWebSocket,
-    {},
-    {},
-    {
-        authorize: { secret: true };
-        handleMode: "io";
-        listeners: "all";
-        router: true;
-    }
-> {
+export class TestPlatform extends AbstractPlatform<TestWebSocket, {}, {}> {
     public readonly id = crypto.randomUUID();
-    public readonly _config;
     public readonly _name = "platformTest";
 
     private readonly _hibernatedWebSockets: readonly TestSocket[];
@@ -59,13 +48,6 @@ export class TestPlatform extends AbstractPlatform<
         this._hibernatedUsers = hibernatedUsers;
         this._lastPings = lastPings;
         this._serializedStates = serializedStates;
-
-        this._config = {
-            authorize: { secret: true as const },
-            handleMode: "io" as const,
-            listeners: "all" as const,
-            router: true as const,
-        };
     }
 
     public acceptWebSocket(): Promise<void> {

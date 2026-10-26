@@ -4,7 +4,7 @@ import type { AbstractWebSocket, InferWebSocketSource } from "./AbstractWebSocke
 import type { JWTEncodeParams } from "./authorize";
 import { Persistence } from "./Persistence";
 import { PubSub } from "./PubSub";
-import type { PlatformConfig, ResolvedPluvIOAuthorize, WebSocketSerializedState } from "./types";
+import type { ResolvedPluvIOAuthorize, WebSocketSerializedState } from "./types";
 import { oneLine } from "./utils";
 
 export type InferPlatformWebSocketType<TPlatform extends AbstractPlatform> =
@@ -35,7 +35,6 @@ export abstract class AbstractPlatform<
     TWebSocket extends AbstractWebSocket<any> = AbstractWebSocket<any>,
     TInitContext extends Record<string, any> = {},
     TRoomContext extends Record<string, any> = {},
-    TConfig extends PlatformConfig = PlatformConfig,
 > {
     protected readonly _initContext: TInitContext | undefined;
     protected readonly _roomContext: TRoomContext | undefined;
@@ -49,11 +48,9 @@ export abstract class AbstractPlatform<
     public abstract readonly id: string;
     public readonly _createToken?: (
         params: JWTEncodeParams<any, any> & {
-            authorize: ResolvedPluvIOAuthorize<any, any>;
+            authorize: ResolvedPluvIOAuthorize;
         },
     ) => Promise<string>;
-    public _fetch?: (...args: any[]) => Promise<any>;
-    public abstract readonly _config: TConfig;
     public abstract readonly _name: string;
 
     constructor(config: AbstractPlatformConfig<TRoomContext> = {}) {

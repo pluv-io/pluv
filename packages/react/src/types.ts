@@ -6,7 +6,6 @@ import type {
     MockedRoomEvents,
     PluvClient,
     PluvRoomDebug,
-    SetKey,
     UserInfo,
     WebSocketConnection,
 } from "@pluv/client";
@@ -18,7 +17,6 @@ import type {
     Id,
     IOEventMessage,
     MaybePromise,
-    MergeEvents,
     ParticipantKindOptions,
     ParticipantKindsOptions,
     PresenceProcedureProxy,
@@ -63,11 +61,7 @@ export type MockedRoomProviderProps<TDefs extends ClientDefs = ClientDefs> =
  */
 export type EventProxy<TDefs extends ClientDefs = ClientDefs> = {
     [event in PublicEventKey<InferClientOutput<TDefs>>]: {
-        useEvent: (
-            callback: (
-                data: Id<IOEventMessage<MergeEvents<TDefs["events"], TDefs["io"]>, event>>,
-            ) => void,
-        ) => void;
+        useEvent: (callback: (data: Id<IOEventMessage<TDefs["io"], event>>) => void) => void;
     };
 };
 
@@ -101,10 +95,10 @@ export interface CreateBundle<
     event: EventProxy<TDefs>;
 
     // hooks
-    useBroadcast: () => BroadcastProxy<TDefs["io"], TDefs["events"]>;
+    useBroadcast: () => BroadcastProxy<TDefs["io"]>;
     useCanRedo: () => boolean;
     useCanUndo: () => boolean;
-    useClient: () => PluvClient<SetKey<TDefs, "events", {}>>;
+    useClient: () => PluvClient<TDefs>;
     useConnection: <TValue extends unknown = WebSocketConnection>(
         selector?: (connection: WebSocketConnection) => TValue,
         options?: SubscriptionHookOptions<Id<TValue>>,
@@ -149,7 +143,6 @@ export interface CreateBundle<
         InferDoc<TDefs["storage"]>,
         InferClientPresence<TDefs>,
         InferStorage<TDefs["storage"]>,
-        TDefs["events"],
         InferJson<TDefs["storage"]>,
         TDefs["treaty"]
     >;
@@ -183,7 +176,6 @@ export type InferBundleRoom<TBundle extends CreateBundle<any, any>> =
               InferDoc<TDefs["storage"]>,
               InferClientPresence<TDefs>,
               InferStorage<TDefs["storage"]>,
-              TDefs["events"],
               InferJson<TDefs["storage"]>,
               TDefs["treaty"]
           >

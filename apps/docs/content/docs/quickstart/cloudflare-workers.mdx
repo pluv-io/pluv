@@ -258,8 +258,6 @@ import { createBundle } from "@pluv/react";
 // Use a type-import, since this will be used on the frontend
 import type { ioServer } from "./server/pluv";
 
-// Note that the `wsEndpoint` param is omitted when using
-// `@pluv/platform-pluv`
 export const client = createClient<typeof ioServer>().config({
   // Wherever your auth endpoint was
   authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,

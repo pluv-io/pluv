@@ -90,7 +90,6 @@ export {
 export type {
     DeferredResult,
     GetInitialStorageFn,
-    HandleMode,
     IORoomDestroyedEvent,
     IORoomInternal,
     IORoomListenerEvent,
@@ -100,8 +99,6 @@ export type {
     IOStorageSnapshotEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
-    ListenerMode,
-    PlatformConfig,
     PluvContext,
     PluvIOLimits,
     PluvIOListeners,

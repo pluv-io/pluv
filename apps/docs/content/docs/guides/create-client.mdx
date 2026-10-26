@@ -61,20 +61,13 @@ export const client = createClient<typeof ioServer>().config({
   },
 
   // Optional: Provide additional data at the point of connecting to
-  // to the room for use in `publicKey`, `wsEndpoint` or `authEndpoint`.
+  // the room for use in `wsEndpoint` or `authEndpoint`.
   // This is particularly useful for Cloudflare Pages where accessing
   // environment variables can be difficult
   metadata: z.object({
     secret: z.string(),
   }),
 
-  // Required if you are using `@pluv/platform-pluv`: This is the
-  // publishable-key that was created for your project on pluv.io
-  publicKey: ({ metadata }) => "pk_...",
-
-  // Optional: If a `publicKey` is provided, the `PluvRoom` will
-  // automatically point to the pluv.io network. However, this
-  // can be provided manually if you are self-hosting pluv.io
   wsEndpoint: ({ metadata, room }): string => {
     // Specify the ws endpoint to connect to
     return `ws://localhost:3000/api/room?room=${room}`;

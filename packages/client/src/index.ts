@@ -5,7 +5,6 @@ export type {
     EventNotifierSubscriptionCallback,
     EventRecord,
     IOEventMessage,
-    MergeEvents,
     RoomLike,
     UserInfo,
     WebSocketConnection,
@@ -26,7 +25,6 @@ export type {
     InferMetadata,
     PluvClientOptions,
 } from "./PluvClient";
-export type { PluvProcedureConfig } from "./PluvProcedure";
 export { PluvRoom } from "./PluvRoom";
 export type {
     PluvRoomAddon,
@@ -36,10 +34,6 @@ export type {
     RoomConnectParams,
     RoomEndpoints,
 } from "./PluvRoom";
-export { PluvRouter } from "./PluvRouter";
-export type { PluvRouterEventConfig } from "./PluvRouter";
-export { register } from "./register";
-export type { RegisterParams } from "./register";
 export type {
     InferClientInput,
     InferClientMetadata,
@@ -47,6 +41,4 @@ export type {
     InferClientPresence,
     InferSchemaInput,
     InferSchemaOutput,
-    PublicKey,
-    PublicKeyParams,
 } from "./types";

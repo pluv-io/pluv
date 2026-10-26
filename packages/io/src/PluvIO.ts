@@ -49,7 +49,7 @@ export type PluvIOConfig<T extends IODefs = IODefs> = {
     debug?: boolean;
     limits?: PluvIOLimits;
     platform: () => T["platform"];
-    secret?: PluvIOSecret<T["platform"]>;
+    secret: PluvIOSecret<T["platform"]>;
     treaty: T["treaty"];
 };
 
@@ -91,7 +91,7 @@ export class PluvIO<T extends IODefs = IODefs> {
     private readonly _debug: boolean;
     private readonly _limits: PluvIOLimits;
     private readonly _platform: () => T["platform"];
-    private readonly _secret?: PluvIOSecret<T["platform"]>;
+    private readonly _secret: PluvIOSecret<T["platform"]>;
     private readonly _treaty: T["treaty"];
 
     public get procedure(): PluvProcedure<T, {}, {}> {

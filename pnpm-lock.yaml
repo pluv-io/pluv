@@ -578,40 +578,6 @@ importers:
         specifier: ^8.22.0
         version: 8.22.0
 
-  packages/platform-pluv:
-    dependencies:
-      '@pluv/crdt':
-        specifier: workspace:^
-        version: link:../crdt
-      '@pluv/io':
-        specifier: workspace:^
-        version: link:../io
-      '@pluv/types':
-        specifier: workspace:^
-        version: link:../types
-      '@types/node':
-        specifier: ^26.6.5
-        version: 26.6.5
-      fast-json-stable-stringify:
-        specifier: ^2.1.0
-        version: 2.1.0
-      hono:
-        specifier: ^4.13.14
-        version: 4.13.14
-      zod:
-        specifier: ^4.6.7
-        version: 4.6.7
-    devDependencies:
-      '@pluv/tsconfig':
-        specifier: workspace:^
-        version: link:../tsconfig
-      tsdown:
-        specifier: ^0.23.2
-        version: 0.23.2(tsx@4.23.15)(typescript@7.1.0-beta)
-      typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
-
   packages/react:
     dependencies:
       '@pluv/client':
@@ -748,9 +714,6 @@ importers:
       '@pluv/platform-node':
         specifier: workspace:^
         version: link:../../packages/platform-node
-      '@pluv/platform-pluv':
-        specifier: workspace:^
-        version: link:../../packages/platform-pluv
       '@pluv/react':
         specifier: workspace:^
         version: link:../../packages/react
@@ -911,9 +874,6 @@ importers:
       '@pluv/platform-node':
         specifier: workspace:^
         version: link:../../packages/platform-node
-      '@pluv/platform-pluv':
-        specifier: workspace:^
-        version: link:../../packages/platform-pluv
       '@pluv/react':
         specifier: workspace:^
         version: link:../../packages/react

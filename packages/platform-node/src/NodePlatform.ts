@@ -26,18 +26,9 @@ export type NodePlatformConfig<TMeta extends Record<string, Json>> = {
 export class NodePlatform<TMeta extends Record<string, Json> = {}> extends AbstractPlatform<
     NodeWebSocket,
     NodeRegisterInput,
-    NodePlatformRoomContext<TMeta>,
-    {
-        authorize: {
-            secret: true;
-        };
-        handleMode: "io";
-        listeners: "all";
-        router: true;
-    }
+    NodePlatformRoomContext<TMeta>
 > {
     public readonly id = crypto.randomUUID();
-    public readonly _config;
     public readonly _name = "platformNode";
     public readonly origin: string | undefined;
 
@@ -50,15 +41,6 @@ export class NodePlatform<TMeta extends Record<string, Json> = {}> extends Abstr
         });
 
         this.origin = origin;
-
-        this._config = {
-            authorize: {
-                secret: true as const,
-            },
-            handleMode: "io" as const,
-            listeners: "all" as const,
-            router: true as const,
-        };
     }
 
     public acceptWebSocket(webSocket: NodeWebSocket): Promise<void> {

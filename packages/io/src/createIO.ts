@@ -11,10 +11,9 @@ export type IOConfigParams<
     context?: PluvContext<TPlatform, TContext>;
     debug?: boolean;
     limits?: PluvIOLimits;
+    secret: PluvIOSecret<TPlatform>;
     treaty: TTreaty;
-} & (TPlatform["_config"]["authorize"]["secret"] extends true
-    ? { secret: PluvIOSecret<TPlatform> }
-    : { secret?: PluvIOSecret<TPlatform> });
+};
 
 export type IOPlatformFactory<TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>> =
     () => TPlatform;

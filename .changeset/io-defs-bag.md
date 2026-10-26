@@ -5,7 +5,6 @@
 "@pluv/react": major
 "@pluv/platform-node": major
 "@pluv/platform-cloudflare": major
-"@pluv/platform-pluv": major
 "@pluv/addon-indexeddb": major
 "@pluv/crdt-yjs": major
 ---
@@ -35,33 +34,3 @@ const io = createIO()
 ```
 
 `platformCloudflare` follows the same split. `secret` stays on `.config()`.
-
-Hosted pluv is the exception on secrets: `secretKey` / `publicKey` / `basePath` stay on `platformPluv`. Omit `secret` on `.config()`. User lives on the treaty.
-
-```ts
-// Before
-const io = createIO(
-    platformPluv({
-        authorize: { user: schema },
-        context: () => ({ db }),
-        crdt: yjs,
-        publicKey,
-        secretKey,
-        basePath: "/api/pluv",
-    }),
-);
-
-// After
-const io = createIO()
-    .platform(
-        platformPluv({
-            publicKey,
-            secretKey,
-            basePath: "/api/pluv",
-        }),
-    )
-    .config({
-        treaty,
-        context: () => ({ db }),
-    });
-```

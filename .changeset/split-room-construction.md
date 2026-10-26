@@ -1,6 +1,5 @@
 ---
 "@pluv/io": major
-"@pluv/platform-pluv": major
 ---
 
 `createRoom` returns the room. Register, broadcast, and socket events go through `manageSessions`.

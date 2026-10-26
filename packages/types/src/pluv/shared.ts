@@ -385,26 +385,3 @@ export type IOEventMessage<
               }
             : IOAuthorizeEventMessage<TIO>)
 >;
-
-export type PluvRouterEventConfig = { [P: string]: Pick<ProcedureLike<any, any>, "config"> };
-
-export type MergeEvents<TClientEvents extends PluvRouterEventConfig, TServerIO extends IOLike> =
-    TServerIO extends IOLike<infer D>
-        ? IsAny<D> extends true
-            ? TServerIO
-            : IOLike<{
-                  treaty: D["treaty"];
-                  events: {
-                      [P in keyof TClientEvents]: TClientEvents[P] extends ProcedureLike<
-                          infer IClientInput,
-                          infer IClientOutput
-                      >
-                          ? {
-                                [K in keyof IClientOutput]: K extends keyof D["events"]
-                                    ? D["events"][K]
-                                    : ProcedureLike<IClientInput, Id<Pick<IClientOutput, K>>>;
-                            }[keyof IClientOutput]
-                          : never;
-                  } & D["events"];
-              }>
-        : never;

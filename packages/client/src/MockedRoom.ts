@@ -1,11 +1,11 @@
-import type { InferDoc, InferDocLike, InferJson, InferStorage } from "@pluv/crdt";
+import type { InferDoc, InferJson, InferStorage } from "@pluv/crdt";
 import type {
     BroadcastProxy,
     CrdtDocLike,
     EventNotifierSubscriptionCallback,
     EventProxy,
     Id,
-    MergeEvents,
+    IOEventMessage,
     ListUsersOptions,
     ListUsersResult,
     OtherSubscriptionCallback,
@@ -39,23 +39,19 @@ import type { CrdtManagerOptions } from "./CrdtManager";
 import { CrdtManager } from "./CrdtManager";
 import { CrdtNotifier } from "./CrdtNotifier";
 import { EventNotifier } from "./EventNotifier";
-import { PluvProcedure } from "./PluvProcedure";
-import { PluvRouter } from "./PluvRouter";
 import { StateNotifier } from "./StateNotifier";
 import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
 import { UsersNotifier } from "./UsersNotifier";
 import { MAX_PRESENCE_SIZE_BYTES } from "./constants";
 import type {
-    EventResolver,
-    EventResolverContext,
     InferClientInput,
     InferClientOutput,
     InferClientPresence,
     InternalSubscriptions,
     PluvClientLimits,
 } from "./types";
-import { assertExhaustive, parsePluvSchema, sequenceCommit } from "./utils";
+import { assertExhaustive, sequenceCommit } from "./utils";
 
 export type MockedRoomEvents<TDefs extends ClientDefs = ClientDefs> = Partial<{
     [P in keyof InferClientInput<TDefs>]: (
@@ -72,7 +68,6 @@ export type MockedRoomConfig<TDefs extends ClientDefs = ClientDefs> = {
         kind?: ParticipantKind;
         operator?: OperatorUser | null;
     };
-    router?: PluvRouter<TDefs>;
     treaty: TDefs["treaty"];
 } & Pick<CrdtManagerOptions<TDefs["storage"]>, "initialStorage" | "storage"> &
     Omit<UsersManagerConfig<InferClientPresence<TDefs>>, "limits">;
@@ -93,7 +88,6 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
     InferDoc<TDefs["storage"]>,
     InferClientPresence<TDefs>,
     InferStorage<TDefs["storage"]>,
-    TDefs["events"],
     InferJson<TDefs["storage"]>,
     TDefs["treaty"]
 > {
@@ -101,14 +95,11 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
 
     private readonly _crdtManager: CrdtManager<TDefs["storage"]>;
     private readonly _crdtNotifier = new CrdtNotifier<InferJson<TDefs["storage"]>>();
-    private readonly _eventNotifier = new EventNotifier<
-        MergeEvents<TDefs["events"], TDefs["io"]>
-    >();
+    private readonly _eventNotifier = new EventNotifier<TDefs["io"]>();
     private readonly _errorSubject = makeSubject<RoomError>();
     private readonly _events?: MockedRoomEvents<TDefs>;
     private readonly _limits: PluvClientLimits;
     private readonly _usersNotifier = new UsersNotifier<TDefs["io"], InferClientPresence<TDefs>>();
-    private readonly _router: PluvRouter<TDefs>;
     private readonly _treaty: TDefs["treaty"];
     // Local sequences. `presence` drops an older resolver result once a newer call has started.
     private _seq = { presence: 0 };
@@ -145,7 +136,6 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
             limits,
             myself,
             presence,
-            router,
             storage,
             treaty,
         } = options;
@@ -157,7 +147,6 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
             presenceMaxSize: MAX_PRESENCE_SIZE_BYTES,
             ...limits,
         };
-        this._router = router ?? (new PluvRouter({}) as PluvRouter<TDefs>);
         this._treaty = treaty;
         this._usersManager = new UsersManager<TDefs["io"], InferClientPresence<TDefs>>({
             initialPresence,
@@ -205,50 +194,7 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
             event: TEvent,
             data: Id<InferClientInput<TDefs>[TEvent]>,
         ): Promise<void> => {
-            if (!this._state.webSocket) return;
-            if (this._state.connection.state !== ConnectionState.Open) return;
-
-            const type = event.toString();
-
-            const procedure = this._router._defs.events[type] as PluvProcedure<TDefs> | null;
-
-            if (!procedure?.config.broadcast) {
-                this._simulateEvent(type as TEvent, data);
-
-                return;
-            }
-
-            const myself = this._usersManager.myself;
-
-            if (!myself) return;
-
-            const parsed = procedure.config.input
-                ? parsePluvSchema(procedure.config.input, data)
-                : data;
-            const context: EventResolverContext<
-                TDefs["io"],
-                InferClientPresence<TDefs>,
-                InferDocLike<TDefs["storage"]>
-            > = {
-                doc: this._crdtManager.doc,
-                others: this._usersManager.getOthers(),
-                room: this.id,
-                user: myself,
-            };
-
-            const output = await (
-                procedure.config.broadcast as EventResolver<
-                    TDefs["io"],
-                    any,
-                    any,
-                    InferClientPresence<TDefs>,
-                    InferDocLike<TDefs["storage"]>
-                >
-            )(parsed, context);
-
-            Object.entries(output).forEach(([_type, _data]) => {
-                this._simulateEvent(_type as TEvent, _data as any);
-            });
+            this._simulateEvent(event, data);
         },
         {
             get(fn, prop) {
@@ -257,7 +203,7 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
                 };
             },
         },
-    ) as BroadcastProxy<TDefs["io"], TDefs["events"]>;
+    ) as BroadcastProxy<TDefs["io"]>;
 
     public canRedo = (): boolean => {
         return this._crdtManager.doc.canRedo();
@@ -521,12 +467,7 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
                 throw new Error(`Unknown subscription: ${String(prop)}`);
             },
         },
-    ) as SubscribeProxy<
-        TDefs["io"],
-        InferClientPresence<TDefs>,
-        InferJson<TDefs["storage"]>,
-        TDefs["events"]
-    >;
+    ) as SubscribeProxy<TDefs["io"], InferClientPresence<TDefs>, InferJson<TDefs["storage"]>>;
 
     public transact = (
         fn: (storage: InferStorage<TDefs["storage"]>) => void,
@@ -579,22 +520,16 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
         // oxlint-disable-next-line typescript/no-unnecessary-type-parameters
         <TEvent extends keyof InferClientOutput<TDefs>>(
             event: TEvent,
-            callback: EventNotifierSubscriptionCallback<
-                MergeEvents<TDefs["events"], TDefs["io"]>,
-                any
-            >,
+            callback: EventNotifierSubscriptionCallback<TDefs["io"], any>,
         ): (() => void) => this._eventNotifier.subscribe(event, callback),
         {
             get(fn, prop) {
                 return (
-                    callback: EventNotifierSubscriptionCallback<
-                        MergeEvents<TDefs["events"], TDefs["io"]>,
-                        any
-                    >,
+                    callback: EventNotifierSubscriptionCallback<TDefs["io"], any>,
                 ): (() => void) => fn(prop as any, callback);
             },
         },
-    ) as EventProxy<TDefs["io"], TDefs["events"]>;
+    ) as EventProxy<TDefs["io"]>;
 
     private _observeCrdt(): void {
         this._subscriptions.observeCrdt?.();
@@ -753,7 +688,14 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
 
             if (!outputData) return;
 
-            this._eventNotifier.subject(_type).next(outputData);
+            this._eventNotifier.subject(_type).next({
+                connectionId: this._state.connection.id,
+                data: outputData,
+                operator: this._state.authorization.operator,
+                room: this.id,
+                type: _type,
+                user: this._state.authorization.user,
+            } as Id<IOEventMessage<TDefs["io"], typeof _type>>);
         });
     }
 

@@ -1,10 +1,4 @@
-import type {
-    IOLike,
-    OthersSubscriptionEvent,
-    PluvRouterEventConfig,
-    RoomLike,
-    UserInfo,
-} from "@pluv/types";
+import type { IOLike, OthersSubscriptionEvent, RoomLike, UserInfo } from "@pluv/types";
 import { ObservableV2 } from "lib0/observable";
 import type { Doc as YDoc } from "yjs";
 import { PLUV_PRESENCE_META_KEY, PLUV_PRESENCE_Y_ID_KEY } from "../constants";
@@ -14,29 +8,27 @@ export interface PluvYjsAwarenessParams<
     TIO extends IOLike,
     TPresence extends Record<string, any>,
     TStorage extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig,
     TField extends keyof TPresence | null = null,
 > {
     presenceField?: TField;
-    room: RoomLike<TIO, YDoc, TPresence, TStorage, TEvents>;
+    room: RoomLike<TIO, YDoc, TPresence, TStorage>;
 }
 
 export class PluvYjsAwareness<
     TIO extends IOLike,
     TPresence extends Record<string, any>,
     TStorage extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig,
     TField extends keyof TPresence | null = null,
 > extends ObservableV2<{
     change: (updates: YjsAwarenessUpdate, kind: "presence") => void;
-    destroy: (awareness: PluvYjsAwareness<TIO, TPresence, TStorage, TEvents, TField>) => void;
+    destroy: (awareness: PluvYjsAwareness<TIO, TPresence, TStorage, TField>) => void;
     update: (updates: YjsAwarenessUpdate, kind: "local" | "presence") => void;
 }> {
     public readonly doc: YDoc;
 
     private readonly _field: TField = null as TField;
     private readonly _idMap = new Map<[userId: string][0], [clientID: number][0]>();
-    private readonly _room: RoomLike<TIO, YDoc, TPresence, TStorage, TEvents>;
+    private readonly _room: RoomLike<TIO, YDoc, TPresence, TStorage>;
     private readonly _unsubscribe: () => void;
 
     public get clientID(): number {
@@ -47,7 +39,7 @@ export class PluvYjsAwareness<
         return this.getStates();
     }
 
-    constructor(params: PluvYjsAwarenessParams<TIO, TPresence, TStorage, TEvents, TField>) {
+    constructor(params: PluvYjsAwarenessParams<TIO, TPresence, TStorage, TField>) {
         super();
 
         const { presenceField, room } = params;
