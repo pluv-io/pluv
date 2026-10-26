@@ -43,13 +43,13 @@
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
         "tsdown": "^0.23.2",
-        "typescript": "^7.0.2",
+        "typescript": "7.1.0-beta",
         "vitest": "^5.0.5",
         "yjs": "^13.6.33"
     },
     "exports": {
         ".": "./dist/index.mjs",
-        "./rolldown-runtime-D7D4PA-g": "./dist/rolldown-runtime-D7D4PA-g.mjs",
+        "./rolldown-runtime-D8jQpDG7": "./dist/rolldown-runtime-D8jQpDG7.mjs",
         "./*": "./*"
     }
 }
