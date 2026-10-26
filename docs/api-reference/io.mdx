@@ -189,6 +189,17 @@ const server = io.server({
   onStorageSnapshot: ({ context, encodedState, room }) => {
     // ...
   },
+  // Optional: Reports document changes about once a second. This is not every
+  // update in the document. Use the snapshot for the full document, and handle
+  // gaps yourself. Storage already saved when the room opens is not reported.
+  // An update that arrives before the changes it depends on is reported only
+  // after those changes arrive. The part that already applied is saved with the
+  // room, and if the room closes first it never appears here. Updates past the
+  // document size limit can land in the document and still be left out. If this
+  // listener throws, that batch is not sent again.
+  onStorageEdits: ({ context, room, changes }) => {
+    // changes: { update, user, operator, procedure }[]
+  },
   // Optional: Triggered each time a user connects to a room
   onUserConnected: ({ context, encodedState, room, user }) => {
     // ...

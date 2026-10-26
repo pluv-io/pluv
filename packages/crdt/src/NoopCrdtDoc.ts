@@ -52,6 +52,18 @@ export class NoopCrdtDoc implements CrdtDocLike<any, {}, {}> {
         return "";
     }
 
+    public readStateVersion(_encoded: string): readonly (readonly [string, number])[] {
+        return [];
+    }
+
+    public readUpdateVersion(_update: string): readonly (readonly [string, number])[] {
+        return [];
+    }
+
+    public containsUpdate(_update: string): boolean {
+        return true;
+    }
+
     public hasPending(): boolean {
         return false;
     }

@@ -76,6 +76,13 @@ const host = (options?: {
     holdFirstRegister?: Promise<void>;
     lastPings?: Map<TestSocket, number>;
     maxConnections?: number;
+    onStorageEdits?: (event: {
+        changes: readonly {
+            procedure: string | null;
+            update: string;
+            user: { id: string } | null;
+        }[];
+    }) => void;
     onStorageSnapshot?: (encodedState: string) => void;
     persistence?: TestPersistence;
     waitForPresence?: () => Promise<void>;
@@ -151,6 +158,7 @@ const host = (options?: {
     });
     const server = io.server({
         getInitialStorage: () => null,
+        ...(options?.onStorageEdits ? { onStorageEdits: options.onStorageEdits } : {}),
         onStorageSnapshot: (event) => {
             if (typeof event.encodedState !== "string") return;
 
@@ -1392,5 +1400,33 @@ describe("@pluv/platform", () => {
 
         expect(hosted.calls.filter((call) => call === "register")).toEqual(["register"]);
         expect(lastMessage(second, "$error").data.message).toContain("maxConnections");
+    });
+
+    it("reports storage edits from the room inside the facet", async () => {
+        const batches: { procedure: string | null; user: { id: string } | null }[][] = [];
+        const hosted = host({
+            onStorageEdits: (event) => {
+                batches.push(
+                    event.changes.map((change) => ({
+                        procedure: change.procedure,
+                        user: change.user,
+                    })),
+                );
+            },
+        });
+        const socket = new TestSocket("session-1");
+
+        await registerAuthorized(hosted.room, socket, { io: hosted.io });
+        await send(hosted.room, socket, "$initializeSession", {
+            presence: { selectionId: null },
+            update: null,
+        });
+        await hosted.room.__experimental_storage({ senderId: socket.id }).addMessage({
+            text: "facet",
+        });
+        await waitForStorageSnapshot();
+
+        expect(batches).toHaveLength(1);
+        expect(batches[0]).toEqual([{ procedure: "addMessage", user: { id: "session-1" } }]);
     });
 });

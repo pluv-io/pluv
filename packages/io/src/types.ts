@@ -198,6 +198,18 @@ export type BasePluvIOListeners<T extends IODefs = IODefs> = {
     onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;
     onRoomMessage: (event: IORoomMessageEvent<T>) => void;
     onStorageDestroyed: (event: IORoomListenerEvent<T>) => void;
+    /**
+     * Document changes, about once a second. This is not every update in the
+     * document. Use the snapshot for the full document, and handle gaps yourself.
+     *
+     * Storage already saved when the room opens is not reported. An update that
+     * arrives before the changes it depends on is reported only after those
+     * changes arrive. The part that already applied is saved with the room, and
+     * if the room closes first it never appears here. Updates past the document
+     * size limit can land in the document and still be left out. If this
+     * listener throws, that batch is not sent again.
+     */
+    onStorageEdits: (event: IOStorageEditsEvent<T>) => MaybePromise<void>;
     onStorageSnapshot: (event: IOStorageSnapshotEvent<T>) => MaybePromise<void>;
     onUserConnected: (event: IOUserConnectedEvent<T>) => void;
     onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
@@ -248,6 +260,24 @@ export type IORoomMessageEvent<T extends IODefs = IODefs> = {
     operator?: OperatorUser | null;
     room: string;
     user?: InferTreatyUser<T["treaty"]>;
+};
+
+/**
+ * `user` and `operator` come from the session. `$updateStorage` supplies
+ * `procedure` from the sender. `_commitLoadedStorage` names the procedure
+ * the server ran. A write that was never reserved has all three null.
+ */
+export type IOStorageEdit<T extends IODefs = IODefs> = {
+    update: string;
+    user: InferTreatyUser<T["treaty"]> | null;
+    operator: OperatorUser | null;
+    procedure: string | null;
+};
+
+export type IOStorageEditsEvent<T extends IODefs = IODefs> = {
+    changes: readonly IOStorageEdit<T>[];
+    context: T["context"];
+    room: string;
 };
 
 export type IOStorageSnapshotEvent<T extends IODefs = IODefs> = IORoomListenerEvent<T>;

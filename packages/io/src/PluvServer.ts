@@ -57,6 +57,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
     private readonly _docFactory: AbstractCrdtDocFactory<any, any>;
     private readonly _listeners: BasePluvIOListeners<T>;
     private readonly _onGetOperator: OnGetOperator<InferTreatyUser<T["treaty"]>> | null;
+    private readonly _onStorageEdits: BasePluvIOListeners<T>["onStorageEdits"] | null;
 
     /**
      * @description The `createIO()` instance this server was built from.
@@ -137,12 +138,14 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             onRoomDestroyed,
             onRoomMessage,
             onStorageDestroyed,
+            onStorageEdits,
             onStorageSnapshot,
             onUserConnected,
             onUserDisconnected,
         } = options as Partial<BasePluvIOListeners<T>>;
 
         this._onGetOperator = onGetOperator ?? null;
+        this._onStorageEdits = onStorageEdits ?? null;
         this._docFactory =
             (this._config.treaty.storage as AbstractCrdtDocFactory<any, any> | undefined) ??
             noop.doc();
@@ -150,6 +153,7 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             onRoomDestroyed: (event) => onRoomDestroyed?.(event),
             onRoomMessage: (event) => onRoomMessage?.(event),
             onStorageDestroyed: (event) => onStorageDestroyed?.(event),
+            onStorageEdits: (event) => onStorageEdits?.(event),
             onStorageSnapshot: (event) => onStorageSnapshot?.(event),
             onUserConnected: (event) => onUserConnected?.(event),
             onUserDisconnected: (event) => onUserDisconnected?.(event),
@@ -201,6 +205,10 @@ export class PluvServer<T extends IODefs = IODefs> implements IOLike<IOLikeFromD
             onStorageSnapshot(event) {
                 return listeners.onStorageSnapshot(event);
             },
+            // Absent when nobody subscribed, so the room does not queue edits.
+            onStorageEdits: this._onStorageEdits
+                ? (event) => listeners.onStorageEdits(event)
+                : undefined,
             async onMessage(event) {
                 await Promise.resolve(listeners.onRoomMessage(event));
             },

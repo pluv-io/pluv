@@ -19,9 +19,13 @@ import {
     XmlFragment as YXmlFragment,
     XmlText as YXmlText,
     applyUpdate,
+    decodeStateVector,
     encodeStateAsUpdate,
     encodeStateVector,
     mergeUpdates,
+    parseUpdateMeta,
+    snapshot,
+    snapshotContainsUpdate,
 } from "yjs";
 import { getYjsShare, hydrateTopLevel } from "../schema/hydrate";
 import type { InferYjsJson, InferYjsStorage } from "../schema/schema";
@@ -29,6 +33,14 @@ import type { YjsSchema } from "./YjsSchema";
 
 const MERGE_INTERVAL_MS = 1_000;
 const PLUV_ID_FIELD = "__$pluv";
+
+const clocksFromVector = (
+    clocks: Iterable<readonly [unknown, number]>,
+): readonly (readonly [string, number])[] =>
+    [...clocks]
+        .map(([id, clock]) => [String(id), clock] as const)
+        // oxlint-disable-next-line unicorn/no-array-sort -- the map already returned a new array
+        .sort((left, right) => (left[0] < right[0] ? -1 : left[0] > right[0] ? 1 : 0));
 
 export class CrdtYjsDoc<TSchema extends YjsSchema = YjsSchema> implements CrdtDocLike<
     YDoc,
@@ -153,6 +165,26 @@ export class CrdtYjsDoc<TSchema extends YjsSchema = YjsSchema> implements CrdtDo
 
     public getStateVector(): string {
         return fromUint8Array(encodeStateVector(this.value));
+    }
+
+    public readStateVersion(encoded: string): readonly (readonly [string, number])[] {
+        return clocksFromVector(encoded ? decodeStateVector(toUint8Array(encoded)) : new Map());
+    }
+
+    public readUpdateVersion(update: string): readonly (readonly [string, number])[] {
+        if (!update) return [];
+
+        // `to` is the clock after these bytes. The state vector of an update drops
+        // that clock when the bytes depend on an earlier change from the same client.
+        return clocksFromVector(parseUpdateMeta(toUint8Array(update)).to);
+    }
+
+    public containsUpdate(update: string): boolean {
+        if (!update) return true;
+
+        // Deletes live in the snapshot, not the state vector. The update is contained
+        // when merging its deletes leaves that snapshot unchanged.
+        return snapshotContainsUpdate(snapshot(this.value), toUint8Array(update));
     }
 
     public hasPending(): boolean {

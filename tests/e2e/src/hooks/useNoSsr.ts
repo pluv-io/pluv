@@ -8,6 +8,7 @@ export type NoSsrFunction = <TValue, TFallback = null>(
 export const useNoSsr = (): NoSsrFunction => {
     const [didMount, setDidMount] = useState<boolean>(false);
 
+    // oxlint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => setDidMount(typeof window !== "undefined"), []);
 
     const noSsr = useCallback(

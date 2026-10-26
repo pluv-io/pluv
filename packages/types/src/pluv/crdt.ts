@@ -94,6 +94,20 @@ export interface CrdtDocLike<
      */
     getStateVector(): string;
     /**
+     * @description Clocks in a `getStateVector()` value. Each clock is the next
+     * change that client would write.
+     */
+    readStateVersion(encoded: string): readonly (readonly [string, number])[];
+    /**
+     * @description Clocks carried by an update. Computed once, when those bytes arrive.
+     */
+    readUpdateVersion(update: string): readonly (readonly [string, number])[];
+    /**
+     * @description Whether this document already contains `update`, including deletes.
+     * The clocks already say it is covered.
+     */
+    containsUpdate(update: string): boolean;
+    /**
      * @description Whether a received change is waiting because an earlier change has not
      * arrived yet.
      */

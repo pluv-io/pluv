@@ -398,7 +398,7 @@ void room.presence.missing({ id: null });
 // @ts-expect-error storage procedure name is not a presence procedure
 void room.presence("addMessage", { text: "hello" });
 // @ts-expect-error presence procedure name is not a storage procedure
-void room.storage("select", { id: null });
+room.storage("select", { id: null });
 // @ts-expect-error storage input must match the procedure schema
 room.storage.addMessage({ text: 1 });
 // @ts-expect-error storage input does not accept presence fields

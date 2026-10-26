@@ -95,6 +95,8 @@ export type {
     IORoomInternal,
     IORoomListenerEvent,
     IORoomMessageEvent,
+    IOStorageEdit,
+    IOStorageEditsEvent,
     IOStorageSnapshotEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
