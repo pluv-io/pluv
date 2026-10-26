@@ -20,13 +20,13 @@
         "@pluv/platform-cloudflare": "workspace:^",
         "@pluv/treaty": "workspace:^",
         "@pluv/types": "workspace:^",
-        "loro-crdt": "^1.16.4",
+        "loro-crdt": "^1.17.1",
         "yjs": "^13.6.33"
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
         "@types/node": "^26.6.5",
-        "typescript": "^7.0.2",
+        "typescript": "7.1.0-beta",
         "vitest": "^5.0.5",
         "zod": "^4.6.7"
     }

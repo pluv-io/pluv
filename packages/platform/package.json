@@ -34,10 +34,10 @@
         "@pluv/types": "workspace:^"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^5.20261018.1",
+        "@cloudflare/workers-types": "^5.20261025.1",
         "@pluv/tsconfig": "workspace:^",
-        "tsdown": "^0.23.1",
-        "typescript": "^7.0.2"
+        "tsdown": "^0.23.2",
+        "typescript": "7.1.0-beta"
     },
     "exports": {
         ".": "./dist/index.mjs",

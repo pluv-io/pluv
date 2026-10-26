@@ -29,7 +29,10 @@ export const testYjsTreaty: TestYjsTreaty = createTreaty({
     storage: yjs.schema({}),
 });
 
-export const testLoroTreaty = createTreaty({
+type TestLoroStorage = ReturnType<typeof loro.schema<{}>>;
+type TestLoroTreaty = Treaty<typeof testAuthorizeUser, undefined, TestLoroStorage>;
+
+export const testLoroTreaty: TestLoroTreaty = createTreaty({
     user: testAuthorizeUser,
     storage: loro.schema({}),
 });

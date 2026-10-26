@@ -25,7 +25,7 @@
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
         "@types/ws": "^8.18.2",
-        "loro-crdt": "^1.16.4",
+        "loro-crdt": "^1.17.1",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
         "ws": "^8.22.0",
@@ -33,10 +33,10 @@
         "zod": "^4.6.7"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^5.20261018.1",
+        "@cloudflare/workers-types": "^5.20261025.1",
         "@pluv/tsconfig": "workspace:^",
         "expect-type": "^1.4.0",
-        "typescript": "^7.0.2",
-        "wrangler": "^4.151.1"
+        "typescript": "7.1.0-beta",
+        "wrangler": "^4.152.0"
     }
 }
