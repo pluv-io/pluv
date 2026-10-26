@@ -4,19 +4,20 @@ import { fileURLToPath } from "node:url";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import type { PluvIOLimits, RoomEffects, SessionRoom } from "@pluv/io";
-import { createIO, manageSessions } from "@pluv/io";
+import { createIO, deferredResult, isSuspended, manageSessions } from "@pluv/io";
 import { loadUserFacet } from "@pluv/platform/load-user-facet";
 import { platformPluv, type PluvSocket, RoomFacet } from "@pluv/platform";
 import { createTreaty } from "@pluv/treaty";
 import type { TreatyLike } from "@pluv/types";
 import { applyUpdate, Doc as YDoc } from "yjs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import {
     createAuthorizedToken,
     TEST_AUTH_SECRET,
     deferred,
     encodedStateWithContent,
+    tick,
     registerAuthorized,
     TestPersistence,
     TestPlatform,
@@ -79,9 +80,13 @@ const host = (options?: {
     persistence?: TestPersistence;
     waitForPresence?: () => Promise<void>;
     waitForSlow?: () => Promise<void>;
+    waitForStorage?: () => Promise<void>;
     failFrames?: boolean;
+    failStoragePrepare?: boolean;
+    holdDelivery?: () => Promise<void>;
     failFlushOnce?: boolean;
     failPresence?: boolean;
+    failStorageResolve?: boolean;
     messageError?: string;
 }) => {
     const calls: string[] = [];
@@ -124,7 +129,21 @@ const host = (options?: {
         .resolve(({ text }, { storage: docStorage }) => {
             docStorage.messages.push([text]);
         });
-    const treaty = treatyBuilder.router({ addMessage, select });
+    const loadMessage = treatyBuilder.procedure.storage
+        .input(z.object({ text: z.string() }))
+        .prepare(async ({ text }) => {
+            if (options?.failStoragePrepare) throw new Error("load failed");
+
+            await options?.waitForStorage?.();
+
+            return text;
+        })
+        .resolve((_input, { storage: docStorage }, loaded) => {
+            if (options?.failStorageResolve) throw new Error("storage resolve failed");
+
+            docStorage.messages.push([loaded]);
+        });
+    const treaty = treatyBuilder.router({ addMessage, loadMessage, select });
     const io = createHostIO({
         maxConnections: options?.maxConnections,
         persistence: options?.persistence,
@@ -177,8 +196,12 @@ const host = (options?: {
 
         return facet;
     };
-    const deliverFrames = (effects: RoomEffects): Promise<void> => {
+    const deliverFrames = async (effects: RoomEffects): Promise<void> => {
         if (options?.failFrames) return Promise.reject(new Error("delivery failed"));
+
+        if (effects.broadcast.some((frame) => frame.type === "$storageUpdated")) {
+            await options?.holdDelivery?.();
+        }
 
         if (!hostedRoom || !effects.connectionId) return Promise.resolve();
 
@@ -244,7 +267,45 @@ const host = (options?: {
             applyStorageProcedure: async (params) => {
                 calls.push("applyStorageProcedure");
 
-                return open().applyStorageProcedure(params);
+                let resolveDelivery: (effects: RoomEffects) => void = () => undefined;
+                let rejectDelivery: (error: Error) => void = () => undefined;
+                const delivery = new Promise<RoomEffects>((resolve, reject) => {
+                    resolveDelivery = resolve;
+                    rejectDelivery = reject;
+                });
+                const result = await open().applyStorageProcedure({
+                    ...params,
+                    onFrames: {
+                        deliverFrames: (effects) => frames.deliverFrames(effects),
+                        finish: (error) => {
+                            if (error) {
+                                rejectDelivery(new Error(error.message));
+
+                                return;
+                            }
+
+                            resolveDelivery({
+                                attachments: [],
+                                broadcast: [],
+                                closes: [],
+                                connectionId: null,
+                                destroy: false,
+                                error: null,
+                                self: [],
+                                storageDirty: false,
+                            });
+                        },
+                        noteStorageDirty,
+                        retryUnsent,
+                    },
+                });
+
+                if (isSuspended(result)) return deferredResult(delivery);
+
+                return result;
+            },
+            commitLoadedStorage: () => {
+                throw new Error("Prepared storage commits in the room");
             },
             close: async (session) => {
                 calls.push("close");
@@ -298,6 +359,9 @@ const host = (options?: {
             },
             dropStorageUpdates: (updates) => {
                 return open().dropStorageUpdates(updates);
+            },
+            queueStorageFrames: (updates) => {
+                open().queueStorageFrames(updates);
             },
             register: async (...args) => {
                 calls.push("register");
@@ -546,6 +610,314 @@ describe("@pluv/platform", () => {
             .addMessage({ text: "hello" });
 
         expect(lastMessage(second, "$storageUpdated").type).toBe("$storageUpdated");
+    });
+
+    it("broadcasts a prepared storage write after the hosted load", async () => {
+        const gate = deferred<void>();
+        const hosted = host({ waitForStorage: () => gate.promise });
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+        const viewed = yjs
+            .schema({ content: yjs.yText(), messages: yjs.yArray(s.string()) })
+            .getEmpty();
+
+        try {
+            await registerAuthorized(hosted.room, first, { io: hosted.io });
+            await registerAuthorized(hosted.room, second, { io: hosted.io });
+            await send(hosted.room, first, "$initializeSession", { presence: {}, update: null });
+            await send(hosted.room, second, "$initializeSession", { presence: {}, update: null });
+
+            const pending = hosted.room
+                .__experimental_storage({ senderId: first.id })
+                .loadMessage({ text: "hello" });
+
+            await tick(5);
+
+            expect(
+                second.messages.filter((message) => message.type === "$storageUpdated"),
+            ).toHaveLength(0);
+
+            const settled = await Promise.race([
+                pending.then(() => "resolved" as const),
+                tick().then(() => "waiting" as const),
+            ]);
+
+            expect(settled).toBe("waiting");
+
+            gate.resolve();
+            await pending;
+
+            expect(
+                second.messages.filter((message) => message.type === "$storageUpdated"),
+            ).toHaveLength(1);
+            viewed.applyEncodedState({
+                update: lastMessage(second, "$storageUpdated").data.state as string,
+            });
+            expect(viewed.toJson()).toEqual({ messages: ["hello"] });
+        } finally {
+            viewed.destroy();
+        }
+    });
+
+    it("rejects a hosted call when prepare fails", async () => {
+        const hosted = host({ failStoragePrepare: true });
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(hosted.room, first, { io: hosted.io });
+        await registerAuthorized(hosted.room, second, { io: hosted.io });
+        await send(hosted.room, first, "$initializeSession", { presence: {}, update: null });
+        await send(hosted.room, second, "$initializeSession", { presence: {}, update: null });
+
+        await expect(
+            hosted.room
+                .__experimental_storage({ senderId: first.id })
+                .loadMessage({ text: "hello" }),
+        ).rejects.toThrow("load failed");
+
+        expect(second.messages.filter((message) => message.type === "$storageUpdated")).toEqual([]);
+    });
+
+    it("lets another storage write run while a hosted prepare waits", async () => {
+        const gate = deferred<void>();
+        const hosted = host({ waitForStorage: () => gate.promise });
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(hosted.room, first, { io: hosted.io });
+        await registerAuthorized(hosted.room, second, { io: hosted.io });
+        await send(hosted.room, first, "$initializeSession", { presence: {}, update: null });
+        await send(hosted.room, second, "$initializeSession", { presence: {}, update: null });
+
+        const pending = hosted.room
+            .__experimental_storage({ senderId: first.id })
+            .loadMessage({ text: "hello" });
+
+        await tick();
+
+        const wroteDuring = hosted.room
+            .__experimental_storage({ senderId: first.id })
+            .addMessage({ text: "during" });
+        const outcome = await Promise.race([
+            wroteDuring.then(() => "wrote" as const),
+            tick(5).then(() => "blocked" as const),
+        ]);
+
+        expect(outcome).toBe("wrote");
+        await wroteDuring;
+        expect(
+            second.messages.filter((message) => message.type === "$storageUpdated"),
+        ).toHaveLength(1);
+
+        gate.resolve();
+        await pending;
+        expect(
+            second.messages.filter((message) => message.type === "$storageUpdated"),
+        ).toHaveLength(2);
+    });
+
+    it("commits hosted prepares in call order", async () => {
+        const firstGate = deferred<void>();
+        const secondGate = deferred<void>();
+        let started = 0;
+        const hosted = host({
+            waitForStorage: () => {
+                started += 1;
+
+                return started === 1 ? firstGate.promise : secondGate.promise;
+            },
+        });
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+        const viewed = yjs
+            .schema({ content: yjs.yText(), messages: yjs.yArray(s.string()) })
+            .getEmpty();
+
+        try {
+            await registerAuthorized(hosted.room, first, { io: hosted.io });
+            await registerAuthorized(hosted.room, second, { io: hosted.io });
+            await send(hosted.room, first, "$initializeSession", { presence: {}, update: null });
+            await send(hosted.room, second, "$initializeSession", { presence: {}, update: null });
+
+            const earlier = hosted.room
+                .__experimental_storage({ senderId: first.id })
+                .loadMessage({ text: "first" });
+
+            await tick();
+
+            const later = hosted.room
+                .__experimental_storage({ senderId: first.id })
+                .loadMessage({ text: "second" });
+
+            await tick();
+            expect(started).toBe(2);
+
+            secondGate.resolve();
+            await tick(5);
+
+            expect(second.messages.filter((message) => message.type === "$storageUpdated")).toEqual(
+                [],
+            );
+
+            firstGate.resolve();
+            await earlier;
+            await later;
+
+            for (const message of second.messages.filter(
+                (entry) => entry.type === "$storageUpdated",
+            )) {
+                viewed.applyEncodedState({ update: message.data.state as string });
+            }
+
+            expect(viewed.toJson()).toEqual({ messages: ["first", "second"] });
+        } finally {
+            viewed.destroy();
+        }
+    });
+
+    it("rejects a hosted storage call when the commit throws", async () => {
+        const gate = deferred<void>();
+        const hosted = host({
+            failStorageResolve: true,
+            waitForStorage: () => gate.promise,
+        });
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+        const spy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+        try {
+            await registerAuthorized(hosted.room, first, { io: hosted.io });
+            await registerAuthorized(hosted.room, second, { io: hosted.io });
+            await send(hosted.room, first, "$initializeSession", { presence: {}, update: null });
+            await send(hosted.room, second, "$initializeSession", { presence: {}, update: null });
+
+            const pending = hosted.room
+                .__experimental_storage({ senderId: first.id })
+                .loadMessage({ text: "hello" });
+
+            await tick(5);
+            gate.resolve();
+
+            await expect(pending).rejects.toThrow("storage resolve failed");
+            expect(spy).toHaveBeenCalledTimes(1);
+            await hosted.room
+                .__experimental_storage({ senderId: first.id })
+                .addMessage({ text: "after" });
+            expect(
+                second.messages.filter((message) => message.type === "$storageUpdated"),
+            ).toHaveLength(1);
+        } finally {
+            spy.mockRestore();
+        }
+    });
+
+    it("broadcasts a hosted write when frame delivery fails", async () => {
+        const gate = deferred<void>();
+        const hosted = host({
+            failFrames: true,
+            waitForStorage: () => gate.promise,
+        });
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+        const spy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+        const viewed = yjs
+            .schema({ content: yjs.yText(), messages: yjs.yArray(s.string()) })
+            .getEmpty();
+
+        try {
+            await registerAuthorized(hosted.room, first, { io: hosted.io });
+            await registerAuthorized(hosted.room, second, { io: hosted.io });
+            await send(hosted.room, first, "$initializeSession", { presence: {}, update: null });
+            await send(hosted.room, second, "$initializeSession", { presence: {}, update: null });
+
+            const pending = hosted.room
+                .__experimental_storage({ senderId: first.id })
+                .loadMessage({ text: "hello" });
+
+            await tick(5);
+            gate.resolve();
+
+            await expect(pending).rejects.toThrow("delivery failed");
+            await waitUntil(
+                () =>
+                    second.messages.filter((message) => message.type === "$storageUpdated")
+                        .length === 1,
+            );
+
+            viewed.applyEncodedState({
+                update: lastMessage(second, "$storageUpdated").data.state as string,
+            });
+            expect(viewed.toJson()).toEqual({ messages: ["hello"] });
+        } finally {
+            viewed.destroy();
+            spy.mockRestore();
+        }
+    });
+
+    it("keeps a hosted prepare off another turn's storage release", async () => {
+        const prepare = deferred<void>();
+        const delivery = deferred<void>();
+        let delivering = false;
+        const hosted = host({
+            holdDelivery: () => {
+                delivering = true;
+
+                return delivery.promise;
+            },
+            waitForStorage: () => prepare.promise,
+        });
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+        const viewed = yjs
+            .schema({ content: yjs.yText(), messages: yjs.yArray(s.string()) })
+            .getEmpty();
+
+        try {
+            await registerAuthorized(hosted.room, first, { io: hosted.io });
+            await registerAuthorized(hosted.room, second, { io: hosted.io });
+            await send(hosted.room, first, "$initializeSession", { presence: {}, update: null });
+            await send(hosted.room, second, "$initializeSession", { presence: {}, update: null });
+
+            const pending = hosted.room
+                .__experimental_storage({ senderId: first.id })
+                .loadMessage({ text: "owned" });
+
+            await tick(5);
+            prepare.resolve();
+            await waitUntil(() => delivering);
+
+            await hosted.room
+                .__experimental_storage({ senderId: first.id })
+                .addMessage({ text: "other" });
+
+            const during = second.messages.filter((message) => message.type === "$storageUpdated");
+
+            expect(during).toHaveLength(1);
+            viewed.applyEncodedState({ update: during[0]?.data.state as string });
+            expect(viewed.toJson().messages ?? []).not.toContain("owned");
+
+            delivery.resolve();
+            await pending;
+
+            const merged = yjs
+                .schema({ content: yjs.yText(), messages: yjs.yArray(s.string()) })
+                .getEmpty();
+
+            try {
+                for (const message of second.messages.filter(
+                    (entry) => entry.type === "$storageUpdated",
+                )) {
+                    merged.applyEncodedState({ update: message.data.state as string });
+                }
+
+                expect(merged.toJson().messages).toEqual(["owned", "other"]);
+            } finally {
+                merged.destroy();
+            }
+        } finally {
+            delivery.resolve();
+            viewed.destroy();
+        }
     });
 
     it("flushes $userJoined and $storageReceived together", async () => {

@@ -36,6 +36,12 @@ export class UserRoomFacet
         return (await this.#open()).dropStorageUpdates(frames);
     }
 
+    public queueStorageFrames(frames: Parameters<RoomFacet["queueStorageFrames"]>[0]): void {
+        if (!this.#facet) return;
+
+        this.#facet.queueStorageFrames(frames);
+    }
+
     public async flushSnapshot(): ReturnType<RoomFacet["flushSnapshot"]> {
         return (await this.#open()).flushSnapshot();
     }

@@ -6,10 +6,10 @@ import type {
     RoomStorageActor,
     SessionRoom,
 } from "@pluv/io";
-import { deferredResultPromise, isDeferredResult, isSuspended } from "@pluv/io";
+import { CommitGate, deferredResultPromise, isDeferredResult, isSuspended } from "@pluv/io";
 import type { JsonObject } from "@pluv/types";
 import { plain } from "./plain";
-import type { FrameDelivery, PresenceDelivery } from "./types";
+import type { FrameDelivery, PresenceDelivery, StorageFrameDelivery } from "./types";
 
 type Room = SessionRoom<any>;
 type Snapshot = Parameters<Room["~"]["close"]>[0];
@@ -95,6 +95,7 @@ export type RoomFacetOptions<T extends IODefs = IODefs> = {
 export class RoomFacet<T extends IODefs = IODefs> {
     readonly #keepAlive: (promise: Promise<unknown>) => void;
     readonly #room: Room;
+    readonly #storageTurn = new CommitGate();
 
     constructor(options: RoomFacetOptions<T>) {
         this.#keepAlive = options.keepAlive;
@@ -152,8 +153,132 @@ export class RoomFacet<T extends IODefs = IODefs> {
         actor: RoomStorageActor;
         data: unknown;
         name: string;
-    }): Promise<RoomEffects> {
-        return plain.effects(await this.#room["~"].applyStorageProcedure(params));
+        onFrames: StorageFrameDelivery;
+    }): Promise<RoomEffects | { error?: { message: string } | null; suspended: true }> {
+        const settled = await this.#room["~"].applyStorageProcedure({
+            actor: params.actor,
+            data: params.data,
+            name: params.name,
+        });
+
+        if (!isDeferredResult(settled)) return plain.effects(settled);
+
+        const pending = deferredResultPromise(settled);
+        const ready = await readSettled(pending);
+
+        // Already settled, so this RPC can reject the host call. `{ suspended: true }`
+        // would wait for a `finish` that never runs.
+        if (ready.status === "error") throw ready.error;
+
+        // These frames are already the commit. A loaded procedure is the other value.
+        if (ready.status === "value") {
+            const value = ready.value;
+
+            if ("broadcast" in value) return plain.effects(value);
+
+            // The earlier commit has finished, and this load has too. Commit while
+            // the caller's queue is still held.
+            if (this.#storageTurn.idle) {
+                const turn = this.#storageTurn.reserve();
+
+                try {
+                    return plain.effects(await this.#room["~"].commitLoadedStorage(value));
+                } finally {
+                    turn.finish();
+                }
+            }
+        }
+
+        const turn = this.#storageTurn.reserve();
+        const loaded = ready.status === "value" ? Promise.resolve(ready.value) : pending;
+
+        // `{ suspended: true }` leaves the host call open until `finish`.
+        // Waiting for the previous commit here would hold the caller's queue.
+        // `send` writes after that turn, off this RPC.
+        this.#deliver({
+            onReject: async (sink, error) => {
+                // The host call rejects with this error. The caller logs it.
+                try {
+                    await sink.deliverFrames({
+                        attachments: [],
+                        broadcast: [],
+                        closes: [],
+                        connectionId: params.actor.id,
+                        destroy: false,
+                        error: null,
+                        self: [],
+                        storageDirty: false,
+                    });
+                } finally {
+                    turn.finish();
+                    await sink.finish(plain.error(error));
+                }
+            },
+            send: async (sink, value) => {
+                try {
+                    let finished = false;
+
+                    // `null` resolves the host call with empty effects. The frames
+                    // were already sent. An error rejects the call.
+                    const finish = async (error: unknown): Promise<void> => {
+                        if (finished) return;
+
+                        finished = true;
+                        await sink.finish(error ? plain.error(error) : null);
+                    };
+
+                    try {
+                        // `false` runs off the queue, so this write does not pull
+                        // updates another turn is writing.
+                        const effects =
+                            "broadcast" in value
+                                ? value
+                                : await this.#room["~"].commitLoadedStorage(value, false);
+                        const delivered = plain.effects(effects);
+
+                        try {
+                            await sink.deliverFrames(delivered);
+                        } catch (error) {
+                            try {
+                                const replay = procedureReplay(delivered);
+
+                                if (replay) await sink.retryUnsent(replay);
+                            } finally {
+                                // The successful send never queued this frame. A failed one
+                                // still needs the snapshot loop to broadcast it.
+                                this.#room["~"].queueStorageFrames(delivered.broadcast);
+
+                                if (delivered.storageDirty) await sink.noteStorageDirty();
+                            }
+
+                            // The write has already landed, and the snapshot loop still broadcasts it.
+                            // The host call rejects anyway. Falling through would `finish(null)`.
+                            throw error;
+                        }
+
+                        await this.#room["~"].dropStorageUpdates(delivered.broadcast);
+                        await finish(null);
+                    } catch (error) {
+                        console.error(error);
+
+                        try {
+                            if (await this.#room["~"].storageDirty()) await sink.noteStorageDirty();
+                        } finally {
+                            await finish(error);
+                        }
+                    }
+                } finally {
+                    turn.finish();
+                }
+            },
+            sink: params.onFrames,
+            deferredResult: turn.previous.then(
+                () => loaded,
+                () => loaded,
+            ),
+        });
+
+        return { suspended: true };
     }
 
     public async close(session: Snapshot): Promise<RoomEffects> {
@@ -168,6 +293,10 @@ export class RoomFacet<T extends IODefs = IODefs> {
 
     public async dropStorageUpdates(frames: Readonly<RoomEffects["broadcast"]>): Promise<void> {
         await this.#room["~"].dropStorageUpdates(frames);
+    }
+
+    public queueStorageFrames(frames: Readonly<RoomEffects["broadcast"]>): void {
+        this.#room["~"].queueStorageFrames(frames);
     }
 
     public async flushSnapshot(): Promise<{ broadcast: unknown; status: unknown }> {
@@ -295,7 +424,10 @@ export class RoomFacet<T extends IODefs = IODefs> {
     #deliver<TValue, TSink extends object>(params: {
         /** Sends `$error` when the deferred result rejects. */
         onReject?: (kept: TSink, error: unknown) => void | Promise<void>;
-        /** Sends the resolved value. A throw is logged and is not a rejected turn. */
+        /**
+         * Sends the resolved value. A throw is logged here. Storage finishes
+         * the host call in `send` and does not rethrow.
+         */
         send: (kept: TSink, value: TValue) => void | Promise<void>;
         /** Supervisor stub passed into this RPC. Retained until delivery finishes. */
         sink: TSink;

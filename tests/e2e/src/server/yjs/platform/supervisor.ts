@@ -1,7 +1,14 @@
-import type { PluvIOLimits, RoomEffects, SessionRoom } from "@pluv/io";
+import {
+    deferredResult,
+    isSuspended,
+    manageSessions,
+    type PluvIOLimits,
+    type RoomEffects,
+    type RoomSessionManager,
+    type SessionRoom,
+} from "@pluv/io";
 import { treaty } from "../../../pluv-io/yjs/platform-treaty";
 import type { JsonObject } from "@pluv/types";
-import { manageSessions, type RoomSessionManager } from "@pluv/io";
 import type { RoomFacet } from "@pluv/platform";
 import { loadUserFacet, type FacetParent } from "@pluv/platform/load-user-facet";
 import { infer, platformCloudflare } from "@pluv/platform-cloudflare";
@@ -30,6 +37,44 @@ const emptyEffects = (): RoomEffects => {
         storageDirty: false,
     };
 };
+
+/**
+ * Per-call callback for a prepared storage write. The facet retains `dup` after
+ * the RPC returns.
+ */
+class StorageProcedureDelivery extends RpcTarget {
+    #delivery: RoomDelivery;
+    #done: (effects: RoomEffects) => void;
+    #fail: (error: Error) => void;
+
+    constructor(
+        delivery: RoomDelivery,
+        done: (effects: RoomEffects) => void,
+        fail: (error: Error) => void,
+    ) {
+        super();
+        this.#delivery = delivery;
+        this.#done = done;
+        this.#fail = fail;
+    }
+
+    public async deliverFrames(effects: RoomEffects): Promise<void> {
+        await this.#delivery.deliverFrames(effects);
+    }
+
+    public finish(error: { message: string } | null): void {
+        if (error) this.#fail(new Error(error.message));
+        else this.#done(emptyEffects());
+    }
+
+    public noteStorageDirty(): void {
+        this.#delivery.noteStorageDirty();
+    }
+
+    public retryUnsent(effects: RoomEffects): void {
+        this.#delivery.retryUnsent(effects);
+    }
+}
 
 /**
  * Callback the facet retains after its RPC returns. A Durable Object stub's
@@ -204,7 +249,29 @@ export class RoomSupervisor extends DurableObject<PlatformEnv> {
                         session: params.session,
                     });
                 },
-                applyStorageProcedure: (params) => this.#open().applyStorageProcedure(params),
+                applyStorageProcedure: async (params) => {
+                    let resolveDelivery: (effects: RoomEffects) => void = () => undefined;
+                    let rejectDelivery: (error: Error) => void = () => undefined;
+                    const delivery = new Promise<RoomEffects>((resolve, reject) => {
+                        resolveDelivery = resolve;
+                        rejectDelivery = reject;
+                    });
+                    const result = await this.#open().applyStorageProcedure({
+                        ...params,
+                        onFrames: new StorageProcedureDelivery(
+                            this.#delivery,
+                            resolveDelivery,
+                            rejectDelivery,
+                        ),
+                    });
+
+                    if (isSuspended(result)) return deferredResult(delivery);
+
+                    return result;
+                },
+                commitLoadedStorage: () => {
+                    throw new Error("Prepared storage commits in the room");
+                },
                 close: (session) => this.#open().close(session),
                 destroy: async () => {
                     await this.#open().destroy();
@@ -228,6 +295,9 @@ export class RoomSupervisor extends DurableObject<PlatformEnv> {
                 },
                 dropStorageUpdates: (frames) => {
                     return this.#open().dropStorageUpdates(frames);
+                },
+                queueStorageFrames: (frames) => {
+                    this.#open().queueStorageFrames(frames);
                 },
                 register: async (...args) => {
                     const token = args[0]?.token ?? null;

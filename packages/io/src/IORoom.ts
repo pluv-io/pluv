@@ -36,6 +36,7 @@ import type {
     PluvIOLimits,
     PluvIOSecret,
     IORoomInternal,
+    LoadedStorage,
     RoomAttachment,
     RoomEffectFrame,
     RoomEffects,
@@ -275,6 +276,7 @@ export class IORoom<T extends IODefs = IODefs>
         this["~"] = {
             applyPresencePatch: this._applyPresencePatch.bind(this),
             applyStorageProcedure: this._applyStorageProcedure.bind(this),
+            commitLoadedStorage: this._commitLoadedStorage.bind(this),
             close: this._close.bind(this),
             destroy: this._destroyRoom.bind(this),
             flushSnapshot: async () => {
@@ -297,6 +299,7 @@ export class IORoom<T extends IODefs = IODefs>
             message: this._message.bind(this),
             register: this._register.bind(this),
             dropStorageUpdates: this._dropStorageUpdates.bind(this),
+            queueStorageFrames: this._queueStorageFrames.bind(this),
             storageDirty: () => this._snapshot.dirty || this._snapshot.hasPending,
             userConnected: this._userConnected.bind(this),
             whenReady: () => this._initialized,
@@ -338,11 +341,12 @@ export class IORoom<T extends IODefs = IODefs>
         name: string;
         data: unknown;
         actor: RoomStorageActor<T>;
-    }): Promise<RoomEffects<T>> {
+    }): Promise<RoomEffects<T> | DeferredResult<LoadedStorage<T>>> {
         if (!(await this._initialized) || this._snapshot.closed) {
             return this._releaseStorage(emptyRoomEffects<T>(), params.actor);
         }
 
+        const generation = this._snapshot.generation;
         const { name, data, actor } = params;
         const procedures = this.treaty._defs.procedures.storage;
 
@@ -351,40 +355,107 @@ export class IORoom<T extends IODefs = IODefs>
         }
 
         const procedure = procedures[name];
+
+        // The load waits off the queue. The next turn writes and broadcasts.
+        // A rejection rejects the host call. There is no commit on that turn.
+        if (procedure.prepared && procedure.load) {
+            const loaded = procedure
+                .load(data, {
+                    user: actor.user,
+                    operator: actor.operator,
+                    presence: actor.presence,
+                })
+                .then((result): LoadedStorage<T> => ({
+                    actor,
+                    data: result.input,
+                    generation,
+                    name,
+                    prepared: result.prepared,
+                }));
+
+            // The caller observes `loaded`. This copy only keeps the load alive.
+            this._platform.keepAlive(
+                loaded.then(
+                    () => undefined,
+                    () => undefined,
+                ),
+            );
+
+            return deferredResult(loaded);
+        }
+
+        return this._commitLoadedStorage({
+            actor,
+            data,
+            generation,
+            name,
+            prepared: undefined,
+        });
+    }
+
+    private async _commitLoadedStorage(
+        loaded: LoadedStorage<T>,
+        releasePending = true,
+    ): Promise<RoomEffects<T>> {
+        const { actor, data, name, prepared } = loaded;
+        const procedures = this.treaty._defs.procedures.storage;
+        const procedure = procedures?.[name];
+
+        if (!procedure) throw new Error(`Unknown storage procedure "${name}"`);
+
         const doc = await this._doc;
 
-        const apply = (): void => {
-            procedure.apply(data, {
-                user: actor.user,
-                operator: actor.operator,
-                presence: actor.presence,
-                doc,
-            });
-        };
+        // The load can outlive this room. The next register opens another one.
+        if (loaded.generation !== this._snapshot.generation) {
+            throw new Error("The room closed before this storage write");
+        }
 
         const update = this._snapshot.hold(() =>
             doc.captureUpdate(() => {
-                if (procedure.config.transact === false) {
-                    apply();
-
-                    return;
-                }
-
-                doc.transact(apply, actor.id);
+                doc.transact(() => {
+                    procedure.apply(
+                        data,
+                        {
+                            user: actor.user,
+                            operator: actor.operator,
+                            presence: actor.presence,
+                            doc,
+                        },
+                        prepared,
+                    );
+                }, actor.id);
             }),
         );
 
-        if (!update) return this._releaseStorage(emptyRoomEffects<T>(), actor);
-
+        // A throw refuses the broadcast and does not revert the write. While the room
+        // is open, a full sync and `onUserDisconnected` read this document, and the
+        // snapshot store is what refuses to save it.
         this._snapshot.assertSize(doc.getEncodedState());
 
-        return this._releaseStorage(
-            {
-                ...emptyRoomEffects<T>(),
-                broadcast: [effectFrame("$storageUpdated", { state: update }, actor)],
-            },
-            actor,
-        );
+        // Releasing sends this update with the others already waiting. A slow hosted
+        // send carries its own frame and stays off that list, so another turn cannot
+        // release these bytes under a different actor.
+        if (releasePending && update) this._snapshot.queueUpdate(update);
+
+        if (!update) {
+            return releasePending
+                ? this._releaseStorage(emptyRoomEffects<T>(), actor)
+                : {
+                      ...emptyRoomEffects<T>(),
+                      connectionId: actor.id,
+                      storageDirty: this._snapshot.dirty,
+                  };
+        }
+
+        // Pending already carries this update. Releasing it here sends that copy once.
+        if (releasePending) return this._releaseStorage(emptyRoomEffects<T>(), actor);
+
+        return {
+            ...emptyRoomEffects<T>(),
+            broadcast: [effectFrame("$storageUpdated", { state: update }, actor)],
+            connectionId: actor.id,
+            storageDirty: true,
+        };
     }
 
     private async _close(session: RoomSessionSnapshot<T>): Promise<RoomEffects<T>> {
@@ -954,6 +1025,23 @@ export class IORoom<T extends IODefs = IODefs>
         }
 
         this._snapshot.dropUpdates(updates);
+    }
+
+    /** Keeps frames from a failed send on the pending list. Ones already queued stay once. */
+    private _queueStorageFrames(frames: readonly RoomEffectFrame<T>[]): void {
+        const pending = new Set(this._snapshot.pendingUpdates());
+
+        for (const frame of frames) {
+            if (frame.type !== "$storageUpdated") continue;
+
+            const data = frame.data as { state?: unknown } | null;
+            const state = data?.state;
+
+            if (typeof state !== "string" || state.length === 0 || pending.has(state)) continue;
+
+            this._snapshot.queueUpdate(state);
+            pending.add(state);
+        }
     }
 
     private _releaseStorage(
