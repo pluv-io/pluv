@@ -58,7 +58,7 @@ room.storage.addMessage({ text: "hello" });
 
 Storage procedures throw until CRDT storage is loaded. Presence procedures throw until the local user is available.
 
-Storage resolvers run inside `room.transact` by default. Pass `{ transact: false }` when the resolver should own commit (for example Loro):
+On the client, storage resolvers run inside `room.transact` by default. Pass `{ transact: false }` when that client resolver should own the commit (for example Loro). The server always wraps `resolve` in a transaction.
 
 ```ts
 const addMessage = t.procedure.storage
@@ -69,6 +69,23 @@ const addMessage = t.procedure.storage
 ```
 
 If `transact: false` and you commit **after** `resolve` returns, `$updateStorage` will not include the procedure name.
+
+`prepare` runs in the runtime that invoked the procedure. A client call loads in the browser and syncs the update. The server applies those bytes and does not run `prepare` again. A host call loads on the server. It may be async. It receives the parsed input, `user`, `operator`, and the presence snapshot. It does not receive the document. `resolve` stays synchronous and receives the loaded value as its third argument. A client call returns before that write. A host call resolves after the write is broadcast. A failed `prepare` rejects the host call and does not write.
+
+```ts
+const addMessage = t.procedure.storage
+  .input(z.object({ text: z.string() }))
+  .prepare(async ({ text }) => {
+    const id = await loadId(text);
+
+    return { id };
+  })
+  .resolve(({ text }, { storage }, loaded) => {
+    storage.messages.push([`${loaded.id}:${text}`]);
+  });
+
+room.storage.addMessage({ text: "hello" });
+```
 
 Do not destructure `room.presence` / `room.storage` (or `usePresence()` / `useStorage()`). Each property access allocates a new function, same as `room.broadcast`. Hold the proxy.
 

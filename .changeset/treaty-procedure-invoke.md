@@ -44,7 +44,7 @@ const { PluvRoomProvider, useStorageField } = createBundle(client, { suspense: t
 const [messages, sharedType] = useStorageField("messages");
 ```
 
-Treaty authors: define procedures as before; resolvers receive `user`, a read-only presence snapshot (mutating it does not update the room), and for storage either writable `storage` or lazy `json` on presence procedures. Storage resolvers run inside `room.transact` by default; pass `{ transact: false }` when the resolver owns its own commit (for example Loro).
+Treaty authors: define procedures as before; resolvers receive `user`, a read-only presence snapshot (mutating it does not update the room), and for storage either writable `storage` or lazy `json` on presence procedures. Storage resolvers run inside `room.transact` by default; pass `{ transact: false }` when the client resolver owns its own commit (for example Loro). The server always wraps `resolve` in a transaction.
 
 ```ts
 const select = t.procedure.presence
@@ -70,3 +70,20 @@ const addMessage = t.procedure.storage.input(z.object({ text: z.string() })).res
 ```
 
 If you use `{ transact: false }` and commit after `resolve` returns, outbound storage updates may not include the procedure name on the wire.
+
+`prepare` runs in the runtime that invoked the procedure. A client call loads in the browser and syncs the update. The server applies those bytes and does not run `prepare` again. A host call loads on the server. It may be async. It receives the parsed input, the user, the operator, and the presence snapshot. It does not receive the document. `resolve` stays synchronous and receives the loaded value. A client call returns before that write. A host call resolves after the write is broadcast. A failed `prepare` rejects the host call and does not write. `resolve` cannot return a promise.
+
+```ts
+const addMessage = t.procedure.storage
+    .input(z.object({ text: z.string() }))
+    .prepare(async ({ text }) => {
+        const id = await loadId(text);
+
+        return { id };
+    })
+    .resolve(({ text }, { storage }, loaded) => {
+        storage.messages.push([`${loaded.id}:${text}`]);
+    });
+
+room.storage.addMessage({ text: "hello" });
+```
