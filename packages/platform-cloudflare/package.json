@@ -33,12 +33,12 @@
         "@pluv/io": "workspace:^",
         "@pluv/persistence-cloudflare-transactional-storage": "workspace:^",
         "@pluv/types": "workspace:^",
-        "path-to-regexp": "^8.4.2"
+        "path-to-regexp": "^9.0.0"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^5.20261018.1",
+        "@cloudflare/workers-types": "^5.20261025.1",
         "@pluv/tsconfig": "workspace:^",
-        "tsdown": "^0.23.1",
+        "tsdown": "^0.23.2",
         "typescript": "^7.0.2"
     },
     "exports": {

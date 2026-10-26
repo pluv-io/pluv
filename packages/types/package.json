@@ -30,7 +30,7 @@
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
-        "tsdown": "^0.23.1",
+        "tsdown": "^0.23.2",
         "typescript": "^7.0.2"
     },
     "dependencies": {

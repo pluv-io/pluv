@@ -34,11 +34,11 @@
         "@pluv/types": "workspace:^",
         "@types/node": "^26.6.5",
         "@types/ws": "^8.18.2",
-        "path-to-regexp": "^8.4.2"
+        "path-to-regexp": "^9.0.0"
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
-        "tsdown": "^0.23.1",
+        "tsdown": "^0.23.2",
         "typescript": "^7.0.2",
         "ws": "^8.22.0"
     },
