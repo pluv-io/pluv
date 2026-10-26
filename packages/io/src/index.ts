@@ -35,6 +35,7 @@ export type {
     AbstractWebSocketConfig,
     AbstractWebSocketHandleErrorParams,
 } from "./AbstractWebSocket";
+export { CommitGate } from "./CommitGate";
 export { authorize } from "./authorize";
 export type {
     AuthorizeModule,
@@ -80,6 +81,7 @@ export type { MergedRouter, PluvRouterEventConfig } from "./PluvRouter";
 export { PluvServer } from "./PluvServer";
 export type { CreateRoomOptions, InferIORoom, PluvServerConfig } from "./PluvServer";
 export {
+    deferredResult,
     deferredResultPromise,
     isDeferredResult,
     isErrorMessage,
@@ -103,6 +105,7 @@ export type {
     PluvIOListeners,
     PluvIOSecret,
     RoomEffects,
+    LoadedStorage,
     RoomJoinActor,
     RoomPresenceSession,
     RoomRegisterResult,

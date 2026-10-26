@@ -24,6 +24,7 @@ import type {
     IORoom,
 } from "../IORoom";
 import type {
+    LoadedStorage,
     RoomEffectFrame,
     RoomEffects,
     RoomSessionSnapshot,
@@ -37,7 +38,12 @@ import {
     isSuspended,
 } from "../roomEffects";
 import { ExclusiveUntil } from "../ExclusiveUntil";
+import { CommitGate } from "../CommitGate";
 import { JoinQueue } from "../JoinQueue";
+
+const isLoadedStorage = <T extends IODefs>(
+    value: RoomEffects<T> | LoadedStorage<T>,
+): value is LoadedStorage<T> => !("broadcast" in value);
 import { RoomSessions } from "../RoomSessions";
 import { createSessionRouter } from "../createSessionRouter";
 import {
@@ -95,6 +101,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     private _connecting = 0;
     private _registering = 0;
     private _storageSnapshotRun: Promise<void> | null = null;
+    private readonly _commitGate = new CommitGate();
     private _retry: Promise<void> | null = null;
     private _lastGarbageCollectMs = -1 * (GARBAGE_COLLECT_INTERVAL_MS + 1);
     /** Procedure frames whose delivery failed. This isolate outlives the facet. */
@@ -621,17 +628,68 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
                 if (!socket) throw new Error(`Unknown senderId: ${senderId}`);
 
-                await this._queue.join(async () => {
-                    const effects = await this._room["~"].applyStorageProcedure({
-                        name,
-                        data,
-                        actor: this._toSnapshot(socket),
-                    });
+                let finishCommit: () => void = () => undefined;
 
-                    this._noteStorage(effects);
-                    await this._writeFrames(effects.broadcast, "broadcast");
-                    await this._room["~"].dropStorageUpdates(effects.broadcast);
-                });
+                await this._queue.finish(
+                    async () => {
+                        try {
+                            const effects = await this._room["~"].applyStorageProcedure({
+                                name,
+                                data,
+                                actor: this._toSnapshot(socket),
+                            });
+
+                            if (!isDeferredResult(effects)) return { value: effects };
+
+                            const loaded = deferredResultPromise(effects);
+                            const turn = this._commitGate.reserve();
+
+                            finishCommit = turn.finish;
+
+                            // This runs only for a prepared load. The commit waits here, off the
+                            // queue, until the previous prepared commit finishes. An unprepared
+                            // write can still commit during that wait.
+                            const pending: Promise<LoadedStorage<T> | RoomEffects<T>> =
+                                turn.previous
+                                    .then(
+                                        () => loaded,
+                                        () => loaded,
+                                    )
+                                    .then(
+                                        (value) => value,
+                                        (error: unknown) => {
+                                            turn.finish();
+
+                                            throw error;
+                                        },
+                                    );
+
+                            return { pending };
+                        } catch (error) {
+                            finishCommit();
+                            await this._retainStorage();
+
+                            throw error;
+                        }
+                    },
+                    async (loaded: LoadedStorage<T> | RoomEffects<T>) => {
+                        try {
+                            const effects = isLoadedStorage(loaded)
+                                ? await this._room["~"].commitLoadedStorage(loaded)
+                                : loaded;
+
+                            this._noteStorage(effects);
+                            await this._writeFrames(effects.broadcast, "broadcast");
+                            await this._room["~"].dropStorageUpdates(effects.broadcast);
+                        } catch (error) {
+                            await this._retainStorage();
+
+                            throw error;
+                        } finally {
+                            finishCommit();
+                        }
+                    },
+                );
             };
 
             return createHostTreatyProcedureProxy(invoke) as ReturnType<
@@ -786,6 +844,11 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         if (!effects.storageDirty) return;
 
         this.noteStorageDirty();
+    }
+
+    /** A failed send leaves the queued update for the snapshot loop. */
+    private async _retainStorage(): Promise<void> {
+        if (await this._room["~"].storageDirty()) this.noteStorageDirty();
     }
 
     private async _onPublished(payload: IOPubSubEventMessage<any>): Promise<void> {

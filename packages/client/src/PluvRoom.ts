@@ -73,7 +73,7 @@ import type { UsersManagerConfig } from "./UsersManager";
 import { UsersManager } from "./UsersManager";
 import type { OtherSubjectParams } from "./UsersNotifier";
 import { UsersNotifier } from "./UsersNotifier";
-import { debounce, inRange, parsePluvSchema } from "./utils";
+import { debounce, inRange, parsePluvSchema, sequenceCommit } from "./utils";
 
 const ADD_TO_STORAGE_STATE_DEBOUNCE_MS = 1_000;
 const HEARTBEAT_INTERVAL_MS = 10_000;
@@ -262,6 +262,8 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     private _windowListeners: WindowListeners | null = null;
     private _wsListeners: WebSocketListeners | null = null;
     private _storageProcedureNames: string[] = [];
+    /** Prepared commits wait here so an earlier call writes before a later one. */
+    private _storageCommits: Promise<void> = Promise.resolve();
 
     constructor(room: string, options: RoomConfig<TDefs>) {
         const {
@@ -2026,30 +2028,58 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             throw new Error("Cannot run a treaty procedure before the local user is available");
         }
 
-        const doc = this._crdtManager.doc;
+        const presence = this.getMyPresence();
+        const commit = (loaded?: { input: unknown; prepared: unknown }): void => {
+            // Silent. This storage is not synced yet, so the write would not land.
+            if (!this.getStorageLoaded()) return;
 
-        const apply = (): void => {
+            const doc = this._crdtManager.doc;
+            const apply = (): void => {
+                procedure.apply(
+                    loaded ? loaded.input : data,
+                    {
+                        user: myself.data,
+                        operator: myself.operator,
+                        presence,
+                        doc,
+                    },
+                    loaded?.prepared,
+                );
+            };
+
             this._storageProcedureNames.push(name);
 
             try {
-                procedure.apply(data, {
-                    user: myself.data,
-                    operator: myself.operator,
-                    presence: this.getMyPresence(),
-                    doc,
+                if (procedure.config.transact === false) {
+                    apply();
+
+                    return;
+                }
+
+                this.transact(() => {
+                    apply();
                 });
             } finally {
                 this._storageProcedureNames.pop();
             }
         };
 
-        if (procedure.config.transact === false) {
-            apply();
+        if (!procedure.prepared || !procedure.load) {
+            commit(undefined);
+
             return;
         }
 
-        this.transact(() => {
-            apply();
+        const loading = procedure.load(data, {
+            user: myself.data,
+            operator: myself.operator,
+            presence,
+        });
+
+        this._storageCommits = sequenceCommit({
+            tail: this._storageCommits,
+            ready: loading,
+            commit,
         });
     }
 

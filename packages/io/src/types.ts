@@ -291,6 +291,16 @@ export type RoomStorageActor<T extends IODefs = IODefs> = Pick<
     "id" | "kind" | "operator" | "presence" | "user"
 >;
 
+/** A storage `prepare` finished off the queue. The next turn writes this. */
+export type LoadedStorage<T extends IODefs = IODefs> = {
+    actor: RoomStorageActor<T>;
+    data: unknown;
+    /** `StorageSnapshot.generation` when this write started. A commit after `seal` is dropped. */
+    generation: number;
+    name: string;
+    prepared: unknown;
+};
+
 export type RoomJoinActor<T extends IODefs = IODefs> = Pick<
     RoomSessionSnapshot<T>,
     "id" | "kind" | "operator" | "user"
@@ -351,11 +361,20 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
         data: unknown;
         session: RoomPresenceSession<T>;
     }): Promise<JsonObject | null | DeferredResult<JsonObject | null> | Suspended>;
+    /**
+     * The deferred value stays `LoadedStorage | RoomEffects`. A hosted delivery
+     * resolves with empty effects after the frames were sent.
+     */
     applyStorageProcedure(params: {
         name: string;
         data: unknown;
         actor: RoomStorageActor<T>;
-    }): Promise<RoomEffects<T>>;
+    }): Promise<RoomEffects<T> | DeferredResult<LoadedStorage<T> | RoomEffects<T>>>;
+    /** Writes a loaded storage procedure. `releasePending` attaches updates already waiting. */
+    commitLoadedStorage(
+        loaded: LoadedStorage<T>,
+        releasePending?: boolean,
+    ): Promise<RoomEffects<T>>;
     close(session: RoomSessionSnapshot<T>): Promise<RoomEffects<T>>;
     destroy(): Promise<void>;
     flushSnapshot(): Promise<{
@@ -381,6 +400,7 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
             : [WebSocketRegisterConfig<T["platform"]>]
     ): Promise<RoomRegisterResult<T>>;
     dropStorageUpdates(frames: readonly RoomEffectFrame<T>[]): Promise<void>;
+    queueStorageFrames(frames: readonly RoomEffectFrame<T>[]): void;
     storageDirty(): boolean | Promise<boolean>;
     userConnected(params: {
         id: string;

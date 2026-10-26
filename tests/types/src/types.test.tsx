@@ -48,6 +48,12 @@ const select = treaty.procedure.presence
         return { cursor: id ? { x: 0, y: 0 } : null };
     });
 
+// @ts-expect-error resolve must stay synchronous
+treaty.procedure.storage.resolve(async () => undefined);
+
+// @ts-expect-error input must come before prepare
+treaty.procedure.storage.prepare(async () => ({})).input(z.object({ text: z.string() }));
+
 const addMessage = treaty.procedure.storage
     .input(z.object({ text: z.string() }))
     .resolve(({ text }, { user: sessionUser, json, presence, operator, storage: docStorage }) => {
@@ -65,9 +71,34 @@ const addMessage = treaty.procedure.storage
         docStorage.messages.push([text]);
     });
 
+const loadMessage = treaty.procedure.storage
+    .input(z.object({ text: z.string() }))
+    .prepare(async ({ text }, context) => {
+        expectTypeOf(context.user).toEqualTypeOf<{ id: string }>();
+        expectTypeOf(context.operator).toEqualTypeOf<{
+            id: string;
+            name: string;
+            imageUrl: string | null;
+        } | null>();
+        expectTypeOf(context.presence).toEqualTypeOf<{
+            readonly cursor: { readonly x: number; readonly y: number } | null;
+        }>();
+        // @ts-expect-error prepare does not receive the document
+        void context.storage;
+        // @ts-expect-error prepare does not receive document json
+        void context.json;
+
+        return { text };
+    })
+    .resolve((_input, { storage: docStorage }, loaded) => {
+        expectTypeOf(loaded).toEqualTypeOf<{ text: string }>();
+        docStorage.messages.push([loaded.text]);
+    });
+
 const routedTreaty = treaty.router({
     select,
     addMessage,
+    loadMessage,
 });
 
 expectTypeOf(routedTreaty._defs.procedures.presence).toHaveProperty("select");
@@ -346,6 +377,9 @@ expectTypeOf(room.presence).toBeCallableWith("select", { id: null });
 expectTypeOf(room.storage.addMessage).toBeCallableWith({ text: "hello" });
 expectTypeOf(room.storage.addMessage).parameters.toEqualTypeOf<[{ text: string }]>();
 expectTypeOf(room.storage.addMessage).returns.toBeVoid();
+expectTypeOf(room.storage.loadMessage).returns.toBeVoid();
+expectTypeOf(room.storage("addMessage", { text: "hello" })).toEqualTypeOf<void>();
+expectTypeOf(room.storage("loadMessage", { text: "hello" })).toEqualTypeOf<void>();
 expectTypeOf(room.storage).toBeCallableWith("addMessage", { text: "world" });
 
 void room.presence.select({ id: "item" });
@@ -364,7 +398,7 @@ void room.presence.missing({ id: null });
 // @ts-expect-error storage procedure name is not a presence procedure
 void room.presence("addMessage", { text: "hello" });
 // @ts-expect-error presence procedure name is not a storage procedure
-room.storage("select", { id: null });
+void room.storage("select", { id: null });
 // @ts-expect-error storage input must match the procedure schema
 room.storage.addMessage({ text: 1 });
 // @ts-expect-error storage input does not accept presence fields

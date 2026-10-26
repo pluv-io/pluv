@@ -342,4 +342,116 @@ describe("TreatyStorageProcedure.resolve", () => {
 
         expect(live).toEqual({ count: 0 });
     });
+
+    it("passes an awaited prepare value into resolve", async () => {
+        let seen: unknown;
+        const procedure = new TreatyStorageProcedure()
+            .input(z.object({ text: z.string() }))
+            .prepare(async ({ text }) => {
+                await Promise.resolve();
+
+                return text.toUpperCase();
+            })
+            .resolve((_data, _context, loaded) => {
+                seen = loaded;
+            });
+        const doc = {
+            get: () => ({}),
+            toJson: () => ({}),
+        };
+        const loaded = await procedure.load({ text: "hello" }, { user: { id: "1" } });
+
+        procedure.apply(loaded.input, { user: { id: "1" }, doc }, loaded.prepared);
+
+        expect(procedure.prepared).toBe(true);
+        expect(seen).toBe("HELLO");
+    });
+
+    it("parses storage input once", async () => {
+        let parsed = 0;
+        let preparedText = "";
+        let resolvedText = "";
+        const procedure = new TreatyStorageProcedure()
+            .input(
+                z.object({
+                    text: z.string().transform((value) => {
+                        parsed += 1;
+
+                        return value.toUpperCase();
+                    }),
+                }),
+            )
+            .prepare(({ text }) => {
+                preparedText = text;
+
+                return text;
+            })
+            .resolve(({ text }) => {
+                resolvedText = text;
+            });
+        const doc = {
+            get: () => ({}),
+            toJson: () => ({}),
+        };
+        const loaded = await procedure.load({ text: "hello" }, { user: { id: "1" } });
+
+        procedure.apply(loaded.input, { user: { id: "1" }, doc }, loaded.prepared);
+
+        expect(parsed).toBe(1);
+        expect(preparedText).toBe("HELLO");
+        expect(resolvedText).toBe("HELLO");
+    });
+
+    it("snapshots presence passed to prepare", async () => {
+        const live = { count: 0 };
+        let seen = -1;
+        const procedure = new TreatyStorageProcedure()
+            .prepare((_data, context) => {
+                (context.presence as { count: number }).count = 5;
+                seen = (context.presence as { count: number }).count;
+
+                return null;
+            })
+            .resolve(() => undefined);
+        const doc = {
+            get: () => ({}),
+            toJson: () => ({}),
+        };
+        const loaded = await procedure.load({}, { user: { id: "1" }, presence: live });
+
+        procedure.apply(loaded.input, { user: { id: "1" }, presence: live, doc }, loaded.prepared);
+
+        expect(seen).toBe(5);
+        expect(live).toEqual({ count: 0 });
+    });
+
+    it("throws before an async resolve runs", () => {
+        let started = false;
+        const resolve = async (): Promise<void> => {
+            started = true;
+            await Promise.resolve();
+        };
+        const procedure = new TreatyStorageProcedure().resolve(
+            resolve as unknown as () => undefined,
+        );
+        const doc = {
+            get: () => ({}),
+            toJson: () => ({}),
+        };
+
+        expect(procedure.prepared).toBe(false);
+        expect(() => procedure.apply({}, { user: { id: "1" }, doc })).toThrow(/synchronous/);
+        expect(started).toBe(false);
+    });
+
+    it("throws when resolve returns a promise", () => {
+        const procedure = new TreatyStorageProcedure().resolve((() =>
+            Promise.resolve()) as unknown as () => undefined);
+        const doc = {
+            get: () => ({}),
+            toJson: () => ({}),
+        };
+
+        expect(() => procedure.apply({}, { user: { id: "1" }, doc })).toThrow(/synchronous/);
+    });
 });

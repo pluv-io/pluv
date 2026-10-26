@@ -32,6 +32,11 @@ export type FrameDelivery = {
     retryUnsent(effects: RoomEffects): void | Promise<void>;
 };
 
+/** Frame delivery for a prepared storage write. `finish` settles the host call. */
+export type StorageFrameDelivery = FrameDelivery & {
+    finish(error: PlainError): void | Promise<void>;
+};
+
 /** Supervisor method the facet calls when a slow presence patch resolves. */
 export type PresenceDelivery = {
     deliverPresence(delivery: {

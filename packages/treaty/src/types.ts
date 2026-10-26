@@ -53,6 +53,15 @@ export type PresenceResolverContext<
     TJson extends Record<string, any> = {},
 > = TreatyResolverContext<TUser, TPresence, TJson>;
 
+export type StoragePrepareContext<
+    TUser extends BaseUser,
+    TPresence extends Record<string, any> = {},
+> = {
+    operator: OperatorUser | null;
+    presence: DeepReadonly<TPresence>;
+    user: TUser;
+};
+
 export type StorageResolverContext<
     TUser extends BaseUser,
     TJson extends Record<string, any>,

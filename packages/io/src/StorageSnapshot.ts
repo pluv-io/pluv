@@ -17,6 +17,7 @@ export class StorageSnapshot<TContext> {
     private _closed = false;
     private _dirty = false;
     private _epoch = 0;
+    private _generation = 0;
     private _hold = 0;
     private _pending: string[] = [];
     private _release: (() => void) | null = null;
@@ -68,6 +69,11 @@ export class StorageSnapshot<TContext> {
 
     public get epoch(): number {
         return this._epoch;
+    }
+
+    /** Increments in `seal`. Stays put across `reopen`. */
+    public get generation(): number {
+        return this._generation;
     }
 
     /** The seed snapshot already stored this epoch. A later write still needs a copy. */
@@ -153,6 +159,13 @@ export class StorageSnapshot<TContext> {
         }
     }
 
+    /** An update made inside `hold` still needs a `$storageUpdated` frame. */
+    public queueUpdate(update: string): void {
+        if (this._closed || update.length === 0) return;
+
+        this._pending.push(update);
+    }
+
     /** Drop updates whose `$storageUpdated` frames were delivered. */
     public dropUpdates(updates: readonly string[]): void {
         if (updates.length === 0 || this._pending.length === 0) return;
@@ -190,6 +203,7 @@ export class StorageSnapshot<TContext> {
 
     public async seal(): Promise<void> {
         this._closed = true;
+        this._generation += 1;
 
         if (!this._dirty) return;
 

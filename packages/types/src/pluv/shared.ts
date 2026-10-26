@@ -184,12 +184,15 @@ export type TreatyProcedureLike<
     TInput extends Record<string, any> = Record<string, any>,
 > = {
     kind: TKind;
+    readonly prepared?: boolean;
     config: {
         input?: StandardSchemaV1<unknown, TInput> | null;
+        prepare?: ((data: never, ...args: any[]) => unknown) | null;
         resolve?: ((data: never, ...args: any[]) => unknown) | null;
         transact?: boolean | null;
     };
-    apply: (data: unknown, context: any) => unknown;
+    apply: (data: unknown, context: any, prepared?: unknown) => unknown;
+    load?: (data: unknown, context: any) => Promise<{ input: unknown; prepared: unknown }>;
 };
 
 export type InferTreatyProcedureInput<TProcedure extends TreatyProcedureLike<any, any>> =
@@ -202,7 +205,7 @@ export type InferTreatyStorageProcedures<TTreaty extends TreatyLike | undefined>
     TTreaty extends TreatyLike ? TTreaty["_defs"]["procedures"]["storage"] : {};
 
 export type TreatyProcedureInputJson = {
-    input: unknown | null;
+    input: unknown;
 };
 
 export type TreatyProcedureInputsJson<TProcedures extends Record<string, TreatyProcedureLike>> = {
