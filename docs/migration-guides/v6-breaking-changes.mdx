@@ -231,3 +231,15 @@ Default `maxConnections` is 256. Raising it for a large room requires `dangerous
 `@pluv/pubsub-redis` is removed. `io.procedure.sync()` is removed. A live room (occupancy, presence, `listUsers`) is not split across Node processes.
 
 `@pluv/persistence-redis` still persists CRDT storage. `platformNode({ persistence })` no longer takes a `pubSub`. If you used `.sync()` on a procedure, move that work to `.self()` or `.broadcast()`.
+
+## Hosted rooms and client event routers are gone
+
+`@pluv/platform-pluv` is removed. pluv.io no longer hosts your websocket, and there is no webhook listener or publishable key. Run the room with `@pluv/platform-node` or `@pluv/platform-cloudflare`. `@pluv/platform` describes the room. It does not accept connections.
+
+Pass `secret` to `createIO().config()`. On the client, pass `authEndpoint`. Pass `wsEndpoint` when the room is on another origin. If you leave it unset, the client connects to `/api/pluv/room/${room}`. A client that used `rooms.pluv.io` has to set `wsEndpoint`.
+
+Define events on the server with `io.procedure` and `io.router`. These client APIs are removed: `createClient().procedure`, `createClient().router`, `createRoom({ router })`, and `createBundle({ router })`. `room.broadcast` sends the object you pass it. Subscriptions follow the server router.
+
+`HandleMode`, `ListenerMode`, and `PlatformConfig` are removed.
+
+If you passed an events type to `RoomLike`, remove it. After the storage type, the next arguments are the storage JSON shape and the server treaty.

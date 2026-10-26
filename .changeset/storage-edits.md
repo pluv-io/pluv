@@ -16,5 +16,3 @@ Do not rebuild the document from this listener. It does not report every update 
 - An update that arrives before the earlier changes it depends on is reported only after those changes arrive. The part that applied immediately stays in the document and is saved with the room. If the room closes first, that part never appears here.
 - Waiting updates are discarded once they pass the document size limit. They can still end up in the document and will not be listed.
 - If the listener throws, that batch is not sent again.
-
-The hosted webhook platform does not receive `onStorageEdits`.
