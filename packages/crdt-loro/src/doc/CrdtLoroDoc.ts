@@ -6,7 +6,14 @@ import type {
 import type { CrdtDocLike } from "@pluv/types";
 import { fromUint8Array, toUint8Array } from "js-base64";
 import type { Container } from "loro-crdt";
-import { LoroCounter, LoroDoc, LoroText, UndoManager, VersionVector } from "loro-crdt";
+import {
+    decodeImportBlobMeta,
+    LoroCounter,
+    LoroDoc,
+    LoroText,
+    UndoManager,
+    VersionVector,
+} from "loro-crdt";
 import { getLoroShare, hydrateTopLevel } from "../schema/hydrate";
 import type { InferLoroJson, InferLoroStorage } from "../schema/schema";
 import type { LoroSchema } from "./LoroSchema";
@@ -15,6 +22,13 @@ import { PendingSpans } from "./PendingSpans";
 const MAX_UNDO_STEPS = 100;
 const MERGE_INTERVAL_MS = 1_000;
 const PLUV_ID_FIELD = "__$pluv";
+
+const clocksFromVector = (
+    clocks: Iterable<readonly [unknown, number]>,
+): readonly (readonly [string, number])[] =>
+    [...clocks]
+        .map(([id, clock]) => [String(id), clock] as const)
+        .sort((left, right) => (left[0] < right[0] ? -1 : left[0] > right[0] ? 1 : 0));
 
 export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements CrdtDocLike<
     LoroDoc,
@@ -168,6 +182,36 @@ export class CrdtLoroDoc<TSchema extends LoroSchema = LoroSchema> implements Crd
         } finally {
             version.free();
         }
+    }
+
+    public readStateVersion(encoded: string): readonly (readonly [string, number])[] {
+        if (!encoded) return [];
+
+        const version = VersionVector.decode(toUint8Array(encoded));
+
+        try {
+            return clocksFromVector(version.toJSON());
+        } finally {
+            version.free();
+        }
+    }
+
+    public readUpdateVersion(update: string): readonly (readonly [string, number])[] {
+        if (!update) return [];
+
+        const meta = decodeImportBlobMeta(toUint8Array(update), false);
+
+        try {
+            return clocksFromVector(meta.partialEndVersionVector.toJSON());
+        } finally {
+            meta.partialStartVersionVector.free();
+            meta.partialEndVersionVector.free();
+        }
+    }
+
+    public containsUpdate(_update: string): boolean {
+        // Loro deletes are operations, so the version compare is enough.
+        return true;
     }
 
     public hasPending(): boolean {
