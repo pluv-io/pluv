@@ -20,7 +20,9 @@ import type { InferInitContextType, InferRoomContextType } from "./AbstractPlatf
 import type { IODefs, IOLikeFromDefs } from "./IODefs";
 import type { PluvRouter } from "./PluvRouter";
 import { RoomStorage } from "./RoomStorage";
+import { StorageEdits } from "./StorageEdits";
 import { StorageSnapshot } from "./StorageSnapshot";
+import { STORAGE_EDITS_INTERVAL_MS } from "./constants";
 import { authorize } from "./authorize";
 import type {
     DeferredResult,
@@ -29,6 +31,7 @@ import type {
     IORoomDestroyedEvent,
     IORoomListenerEvent,
     IORoomMessageEvent,
+    IOStorageEditsEvent,
     IOStorageSnapshotEvent,
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
@@ -109,6 +112,7 @@ export interface IORoomListeners<T extends IODefs = IODefs> {
     onRoomDestroyed: (event: IORoomDestroyedEvent<T>) => void;
     onStorageDestroyed: (event: IORoomListenerEvent<T>) => void;
     onMessage: (event: IORoomMessageEvent<T>) => void;
+    onStorageEdits?: (event: IOStorageEditsEvent<T>) => MaybePromise<void>;
     onStorageSnapshot: (event: IOStorageSnapshotEvent<T>) => MaybePromise<void>;
     onUserConnected: (event: IOUserConnectedEvent<T>) => void;
     onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
@@ -165,6 +169,8 @@ export class IORoom<T extends IODefs = IODefs>
     private _teardown: Promise<void> | null = null;
     private _uninitialize: Promise<() => Promise<void>> | null = null;
 
+    private readonly _edits: StorageEdits<T> | null;
+
     private readonly _snapshot: StorageSnapshot<T["context"]>;
     private readonly _context: PluvContext<T["platform"], T["context"]>;
     private readonly _debug: boolean;
@@ -203,6 +209,7 @@ export class IORoom<T extends IODefs = IODefs>
             limits,
             onRoomDestroyed,
             onStorageDestroyed,
+            onStorageEdits,
             onStorageSnapshot,
             onMessage,
             onUserConnected,
@@ -233,6 +240,18 @@ export class IORoom<T extends IODefs = IODefs>
             room: this.id,
         });
 
+        this._edits = onStorageEdits
+            ? new StorageEdits({
+                  getContext: () => this._getContext(),
+                  intervalMs: STORAGE_EDITS_INTERVAL_MS,
+                  keepAlive: (promise) => {
+                      this._platform.keepAlive(promise);
+                  },
+                  maxBytes: this.limits.storageMaxSize ?? 0,
+                  onEdits: (event) => onStorageEdits(event),
+                  room: this.id,
+              })
+            : null;
         this._snapshot = new StorageSnapshot({
             getContext: () => this._getContext(),
             getDoc: () => this._doc,
@@ -410,22 +429,40 @@ export class IORoom<T extends IODefs = IODefs>
             throw new Error("The room closed before this storage write");
         }
 
-        const update = this._snapshot.hold(() =>
-            doc.captureUpdate(() => {
-                doc.transact(() => {
-                    procedure.apply(
-                        data,
-                        {
-                            user: actor.user,
-                            operator: actor.operator,
-                            presence: actor.presence,
-                            doc,
-                        },
-                        prepared,
-                    );
-                }, actor.id);
-            }),
-        );
+        this._edits?.pause(true);
+
+        let update: string | null;
+
+        try {
+            update = this._snapshot.hold(() =>
+                doc.captureUpdate(() => {
+                    doc.transact(() => {
+                        procedure.apply(
+                            data,
+                            {
+                                user: actor.user,
+                                operator: actor.operator,
+                                presence: actor.presence,
+                                doc,
+                            },
+                            prepared,
+                        );
+                    }, actor.id);
+                }),
+            );
+        } finally {
+            this._edits?.pause(false);
+        }
+
+        if (update) {
+            this._edits?.reserve(doc, {
+                operator: actor.operator,
+                procedure: name,
+                update,
+                user: actor.user,
+            });
+            this._edits?.note(doc);
+        }
 
         // A throw refuses the broadcast and does not revert the write. While the room
         // is open, a full sync and `onUserDisconnected` read this document, and the
@@ -614,15 +651,24 @@ export class IORoom<T extends IODefs = IODefs>
             }
 
             await this._storage.initialize();
+
+            const doc = await this._storage.doc;
+
             this._snapshot.reopen();
-            this._snapshot.attach(await this._storage.doc);
+            this._snapshot.attach(doc);
+            this._edits?.reopen();
+            this._edits?.attach(doc);
 
             const uninitialize = async (): Promise<void> => {
                 if (this._teardown) return this._teardown;
 
                 this._teardown = (async () => {
+                    await this._edits?.flush();
+                    this._edits?.clearReservations();
                     await this._snapshot.seal();
+                    await this._edits?.flush();
                     this._snapshot.detach();
+                    this._edits?.detach();
 
                     const context = await this._getContext();
                     const { encodedState, refusedEmptyPersist, shouldDestroyStorage } =
@@ -713,9 +759,29 @@ export class IORoom<T extends IODefs = IODefs>
         }
 
         if (update) {
-            const encodedState = this._snapshot.hold(() =>
-                doc.applyEncodedState({ update }).getEncodedState(),
-            );
+            // A gap integrates part of these bytes. Pausing keeps that fragment off the log.
+            this._edits?.pause(true);
+
+            let encodedState: string;
+
+            try {
+                this._edits?.reserve(doc, {
+                    operator: params.actor.operator,
+                    procedure: null,
+                    update,
+                    user: params.actor.user,
+                });
+
+                encodedState = this._snapshot.hold(() =>
+                    doc.applyEncodedState({ update }).getEncodedState(),
+                );
+            } finally {
+                this._edits?.pause(false);
+            }
+
+            // Admit the reserved bytes now that the apply has finished.
+            this._edits?.note(doc);
+
             const storageSize = new TextEncoder().encode(encodedState).length;
 
             if (!!this.limits.storageMaxSize && storageSize > this.limits.storageMaxSize) {
@@ -821,6 +887,8 @@ export class IORoom<T extends IODefs = IODefs>
             return this._releaseStorage(emptyRoomEffects<T>(), session);
         }
 
+        let releaseNotice = false;
+
         const wide = this._resolverContext({
             attachments,
             context,
@@ -845,17 +913,42 @@ export class IORoom<T extends IODefs = IODefs>
                 },
                 session,
             );
-        const invoked = invokeProcedureResolvers({
-            broadcast: () =>
-                storageEvent
-                    ? this._snapshot.hold(() =>
-                          procedure.config.broadcast?.(inputs, resolverContext),
-                      )
-                    : procedure.config.broadcast?.(inputs, resolverContext),
-            self: () => procedure.config.self?.(inputs, resolverContext),
-        });
 
         try {
+            if (this._edits && event.type === "$updateStorage") {
+                const data = inputs as {
+                    origin?: string | null;
+                    procedure?: string | null;
+                    update?: string | null;
+                };
+                const incoming = data.update ?? null;
+
+                if (incoming && data.origin !== "$initialized") {
+                    // Reading the version throws when the bytes are not an update.
+                    // This catch reports that to the sender.
+                    this._edits.reserve(doc, {
+                        operator: session.operator,
+                        procedure: typeof data.procedure === "string" ? data.procedure : null,
+                        update: incoming,
+                        user: session.user,
+                    });
+                    // A gap integrates part of these bytes. That notice is shorter than
+                    // the reservation, so recording it would report the edit twice.
+                    this._edits.pause(true);
+                    releaseNotice = true;
+                }
+            }
+
+            const invoked = invokeProcedureResolvers({
+                broadcast: () =>
+                    storageEvent
+                        ? this._snapshot.hold(() =>
+                              procedure.config.broadcast?.(inputs, resolverContext),
+                          )
+                        : procedure.config.broadcast?.(inputs, resolverContext),
+                self: () => procedure.config.self?.(inputs, resolverContext),
+            });
+
             if (!invoked.ok) {
                 return this._releaseStorage(
                     { ...emptyRoomEffects<T>(), attachments, error: invoked.error },
@@ -897,6 +990,13 @@ export class IORoom<T extends IODefs = IODefs>
             );
         } catch (error) {
             return this._releaseStorage({ ...emptyRoomEffects<T>(), attachments, error }, session);
+        } finally {
+            if (releaseNotice) {
+                this._edits?.pause(false);
+                // The subscription was paused, and a repeated update does not notify.
+                // Admit the reserved bytes here. Other messages do not read them.
+                this._edits?.note(doc);
+            }
         }
     }
 

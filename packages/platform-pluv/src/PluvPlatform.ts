@@ -209,6 +209,10 @@ export class PluvPlatform extends AbstractPlatform<
             this._logDebug("Config `onStorageSnapshot` is not supported on `platformPluv`");
             throw new Error("Config `onStorageSnapshot` is not supported on `platformPluv`");
         }
+        if (!!config.onStorageEdits) {
+            this._logDebug("Config `onStorageEdits` is not supported on `platformPluv`");
+            throw new Error("Config `onStorageEdits` is not supported on `platformPluv`");
+        }
 
         this._getInitialStorage = config.getInitialStorage;
         this._context = config.context ?? {};

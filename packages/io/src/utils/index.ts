@@ -1,3 +1,4 @@
+export { ArmedWait } from "./ArmedWait";
 export { assertExhaustive } from "./assertExhaustive";
 export { assertPresenceFanoutBudget, resolveMaxConnections } from "./assertPresenceFanoutBudget";
 export { createInternalPluvRouter } from "./createInternalPluvRouter";
