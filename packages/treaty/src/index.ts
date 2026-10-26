@@ -12,6 +12,7 @@ export type {
     JsonSchemaMethod,
     JsonSchemaProducer,
     PresenceResolverContext,
+    StoragePrepareContext,
     StorageResolverContext,
     TreatyPresenceSchema,
     TreatyResolverContext,
