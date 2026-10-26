@@ -1,4 +1,4 @@
-import type { IOLike, PluvRouterEventConfig, RoomLike } from "@pluv/types";
+import type { IOLike, RoomLike } from "@pluv/types";
 import { StorageState } from "@pluv/types";
 import { ObservableV2 } from "lib0/observable";
 import type { Doc as YDoc } from "yjs";
@@ -10,11 +10,10 @@ export interface PluvYjsProviderParams<
     TIO extends IOLike,
     TPresence extends Record<string, any>,
     TStorage extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig,
     TField extends keyof TPresence | null = null,
 > {
     presenceField?: TField;
-    room: RoomLike<TIO, YDoc, TPresence, TStorage, TEvents>;
+    room: RoomLike<TIO, YDoc, TPresence, TStorage>;
 }
 
 /**
@@ -27,24 +26,23 @@ export class PluvYjsProvider<
     TIO extends IOLike,
     TPresence extends Record<string, any>,
     TStorage extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig,
     TField extends keyof TPresence | null = null,
 > extends ObservableV2<{
     "connection-close": (
         event: CloseEvent | null,
-        provider: PluvYjsProvider<TIO, TPresence, TStorage, TEvents, TField>,
+        provider: PluvYjsProvider<TIO, TPresence, TStorage, TField>,
     ) => void;
     "connection-error": (
         event: Event,
-        provider: PluvYjsProvider<TIO, TPresence, TStorage, TEvents, TField>,
+        provider: PluvYjsProvider<TIO, TPresence, TStorage, TField>,
     ) => void;
     status: (event: { status: YjsProviderStatus }) => void;
     sync: (state: boolean) => void;
     synced: (state: boolean) => void;
 }> {
-    public readonly awareness: PluvYjsAwareness<TIO, TPresence, TStorage, TEvents, TField>;
+    public readonly awareness: PluvYjsAwareness<TIO, TPresence, TStorage, TField>;
 
-    private readonly _room: RoomLike<TIO, YDoc, TPresence, TStorage, TEvents>;
+    private readonly _room: RoomLike<TIO, YDoc, TPresence, TStorage>;
     private readonly _unsubscribe: () => void;
 
     private _synced: boolean = false;
@@ -54,7 +52,7 @@ export class PluvYjsProvider<
         return this._room.getDoc().value;
     }
 
-    constructor(params: PluvYjsProviderParams<TIO, TPresence, TStorage, TEvents, TField>) {
+    constructor(params: PluvYjsProviderParams<TIO, TPresence, TStorage, TField>) {
         super();
 
         const { presenceField, room } = params;

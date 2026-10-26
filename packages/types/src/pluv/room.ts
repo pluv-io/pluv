@@ -18,9 +18,7 @@ import type {
     IOLike,
     KindStats,
     ListUsersCursor,
-    MergeEvents,
     ParticipantRecord,
-    PluvRouterEventConfig,
     RoomError,
     TreatyLike,
     TreatyProcedureLike,
@@ -168,15 +166,11 @@ export interface WebSocketState<TIO extends IOLike> {
     webSocket: WebSocket | null;
 }
 
-export type BroadcastProxy<TIO extends IOLike, TEvents extends PluvRouterEventConfig> = (<
-    TEvent extends keyof InferIOInput<MergeEvents<TEvents, TIO>>,
->(
+export type BroadcastProxy<TIO extends IOLike> = (<TEvent extends keyof InferIOInput<TIO>>(
     event: TEvent,
-    data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[TEvent]>,
+    data: Id<InferIOInput<TIO>[TEvent]>,
 ) => Promise<void>) & {
-    [PEvent in keyof InferIOInput<MergeEvents<TEvents, TIO>>]: (
-        data: Id<InferIOInput<MergeEvents<TEvents, TIO>>[PEvent]>,
-    ) => Promise<void>;
+    [PEvent in keyof InferIOInput<TIO>]: (data: Id<InferIOInput<TIO>[PEvent]>) => Promise<void>;
 };
 
 export type PresenceProcedureProxy<
@@ -208,19 +202,16 @@ export type EventNotifierSubscriptionCallback<
     TEvent extends keyof InferIOOutput<TIO>,
 > = (value: Id<IOEventMessage<TIO, TEvent>>) => void;
 
-export type EventSubscriptionFn<TIO extends IOLike, TEvents extends PluvRouterEventConfig> = <
-    TEvent extends PublicEventKey<InferIOOutput<MergeEvents<TEvents, TIO>>>,
+export type EventSubscriptionFn<TIO extends IOLike> = <
+    TEvent extends PublicEventKey<InferIOOutput<TIO>>,
 >(
     event: TEvent,
-    callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, TEvent>,
+    callback: EventNotifierSubscriptionCallback<TIO, TEvent>,
 ) => () => void;
 
-export type EventProxy<
-    TIO extends IOLike,
-    TEvents extends PluvRouterEventConfig,
-> = EventSubscriptionFn<TIO, TEvents> & {
-    [PEvent in PublicEventKey<InferIOOutput<MergeEvents<TEvents, TIO>>>]: (
-        callback: EventNotifierSubscriptionCallback<MergeEvents<TEvents, TIO>, PEvent>,
+export type EventProxy<TIO extends IOLike> = EventSubscriptionFn<TIO> & {
+    [PEvent in PublicEventKey<InferIOOutput<TIO>>]: (
+        callback: EventNotifierSubscriptionCallback<TIO, PEvent>,
     ) => () => void;
 };
 
@@ -253,14 +244,13 @@ export type SubscribeProxy<
     TIO extends IOLike,
     TPresence extends Record<string, any>,
     TJson extends Record<string, any>,
-    TEvents extends PluvRouterEventConfig,
 > = (<TSubject extends keyof StateNotifierSubjects<TIO, TPresence>>(
     name: TSubject,
     callback: SubscriptionCallback<TIO, TPresence, TSubject>,
 ) => () => void) & {
     connection: SubscribeFn<Id<WebSocketState<TIO>>>;
     error: RoomErrorSubscriptionFn;
-    event: EventProxy<TIO, TEvents>;
+    event: EventProxy<TIO>;
     myPresence: SubscribeFn<TPresence | null>;
     myself: SubscribeFn<Id<UserInfo<TIO>> | null>;
     other: OtherSubscriptionFn<TIO, TPresence>;
@@ -282,12 +272,11 @@ export interface RoomLike<
     TDoc extends any,
     TPresence extends Record<string, any> = {},
     TStorage extends Record<string, any> = {},
-    TEvents extends PluvRouterEventConfig = {},
     TJson extends Record<string, any> = any,
     TTreaty extends TreatyLike = TreatyLike,
 > {
     id: string;
-    broadcast: BroadcastProxy<TIO, TEvents>;
+    broadcast: BroadcastProxy<TIO>;
     presence: PresenceProcedureProxy<TTreaty["_defs"]["procedures"]["presence"]>;
     storage: StorageProcedureProxy<TTreaty["_defs"]["procedures"]["storage"]>;
 
@@ -330,7 +319,7 @@ export interface RoomLike<
 
     redo(): void;
 
-    subscribe: SubscribeProxy<TIO, TPresence, TJson, TEvents>;
+    subscribe: SubscribeProxy<TIO, TPresence, TJson>;
 
     transact(fn: (storage: TStorage) => void, origin?: string): void;
 

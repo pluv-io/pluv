@@ -1,7 +1,6 @@
 import { addonIndexedDB } from "@pluv/addon-indexeddb";
 import { createClient } from "@pluv/client";
 import { createBundle } from "@pluv/react";
-import { z } from "zod";
 import type { ioServer } from "../../server/yjs/node";
 import { treaty } from "./treaty";
 
@@ -30,18 +29,6 @@ export const bundle = createBundle(io, {
             enabled: (room) => room.id === "e2e-node-storage-addon-indexeddb",
         }),
     ],
-    router: io.router({
-        subtract5: io.procedure
-            .input(
-                z.object({
-                    value: z.number(),
-                }),
-            )
-            .broadcast(({ value }) => ({
-                doubleNumber: { value: value - 5 },
-                subtractedNumber: { value: value - 5 },
-            })),
-    }),
 });
 
 export const {

@@ -1,5 +1,5 @@
 import type { AbstractCrdtDocFactory } from "@pluv/crdt";
-import type { IOLike, ProcedureLike, SetKey, StandardSchemaV1, TreatyLike } from "@pluv/types";
+import type { IOLike, SetKey, StandardSchemaV1, TreatyLike } from "@pluv/types";
 
 export type { SetKey };
 
@@ -13,7 +13,6 @@ export type ClientDefs = {
     presence: StandardSchemaV1<any, any> | undefined;
     metadata: StandardSchemaV1<any, any> | undefined;
     storage: AbstractCrdtDocFactory<any, any>;
-    events: Record<string, ProcedureLike<any, any>>;
 };
 
 export type PatchDefs<TDefs extends ClientDefs, P extends Partial<ClientDefs>> = Omit<

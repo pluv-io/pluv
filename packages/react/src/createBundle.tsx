@@ -9,9 +9,6 @@ import type {
     PluvClient,
     PluvRoom,
     PluvRoomAddon,
-    PluvRouter,
-    PluvRouterEventConfig,
-    SetKey,
     UserInfo,
     WebSocketConnection,
 } from "@pluv/client";
@@ -62,27 +59,16 @@ import type {
     UseStorageResult,
 } from "./types";
 
-export type CreateBundleOptions<
-    TDefs extends ClientDefs = ClientDefs,
-    TSuspense extends boolean = false,
-> = {
+export type CreateBundleOptions<TSuspense extends boolean = false> = {
     addons?: readonly PluvRoomAddon<any>[];
-    router?: PluvRouter<TDefs>;
     suspense?: TSuspense;
 };
 
-export const createBundle = <
-    TDefs extends ClientDefs,
-    TEvents extends PluvRouterEventConfig<TDefs> = {},
-    const TSuspense extends boolean = false,
->(
+export const createBundle = <TDefs extends ClientDefs, const TSuspense extends boolean = false>(
     client: PluvClient<TDefs>,
-    options: CreateBundleOptions<
-        SetKey<TDefs, "events", TEvents>,
-        TSuspense
-    > = {} as CreateBundleOptions<SetKey<TDefs, "events", TEvents>, TSuspense>,
-): CreateBundle<SetKey<TDefs, "events", TEvents>, TSuspense> => {
-    type TRoom = SetKey<TDefs, "events", TEvents>;
+    options: CreateBundleOptions<TSuspense> = {} as CreateBundleOptions<TSuspense>,
+): CreateBundle<TDefs, TSuspense> => {
+    type TRoom = TDefs;
     type TPresence = InferClientPresence<TRoom>;
     type TMetadata = InferClientMetadata<TRoom>;
     /**
@@ -105,7 +91,6 @@ export const createBundle = <
             InferDoc<TDefs["storage"]>,
             TPresence,
             InferStorage<TDefs["storage"]>,
-            TEvents,
             InferJson<TDefs["storage"]>,
             TDefs["treaty"]
         >
@@ -116,7 +101,6 @@ export const createBundle = <
         InferDoc<TDefs["storage"]>,
         TPresence,
         InferStorage<TDefs["storage"]>,
-        TEvents,
         InferJson<TDefs["storage"]>,
         TDefs["treaty"]
     > | null>(null);
@@ -168,7 +152,6 @@ export const createBundle = <
                 initialStorage,
                 metadata,
                 onAuthorizationFail,
-                router: options.router,
             } as CreateRoomOptions<TRoom>);
         }, [_room, debug, initialPresence, initialStorage, metadata, onAuthorizationFail]);
 
@@ -276,7 +259,6 @@ export const createBundle = <
             InferDoc<TDefs["storage"]>,
             TPresence,
             InferStorage<TDefs["storage"]>,
-            TEvents,
             InferJson<TDefs["storage"]>,
             TDefs["treaty"]
         >,
@@ -287,7 +269,7 @@ export const createBundle = <
         throw getStorageReady(room);
     };
 
-    const useBroadcast = (): BroadcastProxy<TDefs["io"], TEvents> => {
+    const useBroadcast = (): BroadcastProxy<TDefs["io"]> => {
         const room = useRoom();
 
         return room.broadcast;

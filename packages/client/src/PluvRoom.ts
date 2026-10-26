@@ -1,4 +1,4 @@
-import type { InferDoc, InferDocLike, InferJson, InferStorage } from "@pluv/crdt";
+import type { InferDoc, InferJson, InferStorage } from "@pluv/crdt";
 import type {
     BaseIOEventRecord,
     BroadcastProxy,
@@ -16,7 +16,6 @@ import type {
     JsonObject,
     ListUsersOptions,
     ListUsersResult,
-    MergeEvents,
     OtherSubscriptionCallback,
     OthersSubscriptionCallback,
     PresenceProcedureProxy,
@@ -51,22 +50,17 @@ import { CrdtNotifier } from "./CrdtNotifier";
 import { EventNotifier } from "./EventNotifier";
 import { ListenerManager } from "./ListenerManager";
 import { PendingRequestManager } from "./PendingRequestManager";
-import { PluvProcedure } from "./PluvProcedure";
-import { PluvRouter } from "./PluvRouter";
 import { StateNotifier } from "./StateNotifier";
 import { StorageStore } from "./StorageStore";
 import { StorageSync } from "./StorageSync";
 import type {
     AuthorizationState,
-    EventResolver,
-    EventResolverContext,
     InferClientInput,
     InferClientMetadata,
     InferClientOutput,
     InferClientPresence,
     InternalSubscriptions,
     PluvClientLimits,
-    PublicKey,
     WithMetadata,
 } from "./types";
 import type { UsersManagerConfig } from "./UsersManager";
@@ -163,7 +157,6 @@ export type PluvRoomDebug<TIO extends IOLike> = Id<{
     input: readonly (keyof InferIOInput<TIO>)[];
 }>;
 
-type GetPublickKeyParams<TMetadata extends JsonObject = {}> = WithMetadata<TMetadata>;
 type GetAuthEndpointParams<TMetadata extends JsonObject = {}> = WithMetadata<TMetadata>;
 type GetWsEndpointParams<TMetadata extends JsonObject = {}> = WithMetadata<TMetadata>;
 
@@ -183,9 +176,7 @@ export type RoomConfig<TDefs extends ClientDefs = ClientDefs> = Id<
         limits: PluvClientLimits;
         onAuthorizationFail?: (error: Error) => void;
         metadata?: TDefs["metadata"];
-        publicKey?: PublicKey<InferClientMetadata<TDefs>>;
         reconnectTimeoutMs?: ReconnectTimeoutMs;
-        router?: PluvRouter<TDefs>;
         treaty: TDefs["treaty"];
     } & RoomEndpoints<InferClientMetadata<TDefs>> &
         Pick<CrdtManagerOptions<TDefs["storage"]>, "initialStorage" | "storage"> &
@@ -197,7 +188,6 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     InferDoc<TDefs["storage"]>,
     InferClientPresence<TDefs>,
     InferStorage<TDefs["storage"]>,
-    TDefs["events"],
     InferJson<TDefs["storage"]>,
     TDefs["treaty"]
 > {
@@ -209,9 +199,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     private readonly _crdtManager: CrdtManager<TDefs["storage"]>;
     private readonly _crdtNotifier = new CrdtNotifier<InferJson<TDefs["storage"]>>();
     private readonly _debug: boolean | PluvRoomDebug<TDefs["io"]>;
-    private readonly _eventNotifier = new EventNotifier<
-        MergeEvents<TDefs["events"], TDefs["io"]>
-    >();
+    private readonly _eventNotifier = new EventNotifier<TDefs["io"]>();
     private readonly _errorSubject = makeSubject<RoomError>();
     private readonly _intervals: IntervalIds = {
         heartbeat: null,
@@ -219,10 +207,8 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     private readonly _limits: PluvClientLimits;
     private readonly _listenerManager = new ListenerManager();
     private readonly _listeners: InternalListeners;
-    private readonly _publicKey: PublicKey<InferClientMetadata<TDefs>> | null = null;
     private readonly _reconnectTimeoutMs: ReconnectTimeoutMs;
     private readonly _requests = new PendingRequestManager();
-    private readonly _router: PluvRouter<TDefs>;
     private readonly _stateNotifier = new StateNotifier<TDefs["io"], InferClientPresence<TDefs>>();
     private readonly _storageStore: AbstractStorageStore;
     private readonly _subscriptions: InternalSubscriptions = {
@@ -276,9 +262,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             metadata,
             onAuthorizationFail,
             presence,
-            publicKey,
             reconnectTimeoutMs = RECONNECT_TIMEOUT_MS,
-            router,
             storage: crdtStorage,
             treaty,
             wsEndpoint,
@@ -299,15 +283,12 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         this._limits = limits;
         this._reconnectTimeoutMs = reconnectTimeoutMs;
 
-        if (publicKey) this._publicKey = publicKey;
-
         this._listeners = {
             onAuthorizationFail: (error) => {
                 onAuthorizationFail?.(error);
             },
         };
 
-        this._router = router ?? (new PluvRouter({}) as PluvRouter<TDefs>);
         this._treaty = treaty;
         this._usersManager = new UsersManager<TDefs["io"], InferClientPresence<TDefs>>({
             initialPresence,
@@ -339,47 +320,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
             if (!this._state.webSocket) return;
             if (this._state.connection.state !== ConnectionState.Open) return;
 
-            const type = event.toString();
-
-            const procedure = this._router._defs.events[type] as PluvProcedure<TDefs> | null;
-
-            if (!procedure?.config.broadcast) {
-                this._sendMessage({ data, type });
-
-                return;
-            }
-
-            const myself = this._usersManager.myself;
-
-            if (!myself) return;
-
-            const parsed = procedure.config.input
-                ? parsePluvSchema(procedure.config.input, data)
-                : data;
-            const context: EventResolverContext<
-                TDefs["io"],
-                InferClientPresence<TDefs>,
-                InferDocLike<TDefs["storage"]>
-            > = {
-                doc: this._crdtManager.doc,
-                others: this._usersManager.getOthers(),
-                room: this.id,
-                user: myself,
-            };
-
-            const output = await (
-                procedure.config.broadcast as EventResolver<
-                    TDefs["io"],
-                    any,
-                    any,
-                    InferClientPresence<TDefs>,
-                    InferDocLike<TDefs["storage"]>
-                >
-            )(parsed, context);
-
-            Object.entries(output).forEach(([_type, _data]) => {
-                this._sendMessage({ data: _data, type: _type });
-            });
+            this._sendMessage({ data, type: event.toString() });
         },
         {
             get(fn, prop) {
@@ -388,7 +329,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
                 };
             },
         },
-    ) as BroadcastProxy<TDefs["io"], TDefs["events"]>;
+    ) as BroadcastProxy<TDefs["io"]>;
 
     public canRedo = (): boolean => {
         return this._crdtManager.doc.canRedo();
@@ -428,12 +369,9 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         let webSocket: WebSocket;
 
         try {
-            const publicKey = this._getPublicKey(params);
-
             authToken = await this._getAuthorization(this.id, params);
 
             if (authToken) url.searchParams.set("token", encodeURIComponent(authToken));
-            if (publicKey) url.searchParams.set("public_key", encodeURIComponent(publicKey));
 
             webSocket = new WebSocket(url.toString());
         } catch (err) {
@@ -765,12 +703,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
                 throw new Error(`Unknown subject: ${prop.toString()}`);
             },
         },
-    ) as SubscribeProxy<
-        TDefs["io"],
-        InferClientPresence<TDefs>,
-        InferJson<TDefs["storage"]>,
-        TDefs["events"]
-    >;
+    ) as SubscribeProxy<TDefs["io"], InferClientPresence<TDefs>, InferJson<TDefs["storage"]>>;
 
     public transact = (
         fn: (storage: InferStorage<TDefs["storage"]>) => void,
@@ -953,22 +886,16 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         // oxlint-disable-next-line typescript/no-unnecessary-type-parameters -- callers pass a specific event
         <TEvent extends keyof InferClientOutput<TDefs>>(
             event: TEvent,
-            callback: EventNotifierSubscriptionCallback<
-                MergeEvents<TDefs["events"], TDefs["io"]>,
-                any
-            >,
+            callback: EventNotifierSubscriptionCallback<TDefs["io"], any>,
         ): (() => void) => this._eventNotifier.subscribe(event, callback),
         {
             get(fn, prop) {
                 return (
-                    callback: EventNotifierSubscriptionCallback<
-                        MergeEvents<TDefs["events"], TDefs["io"]>,
-                        any
-                    >,
+                    callback: EventNotifierSubscriptionCallback<TDefs["io"], any>,
                 ): (() => void) => fn(prop as any, callback);
             },
         },
-    ) as EventProxy<TDefs["io"], TDefs["events"]>;
+    ) as EventProxy<TDefs["io"]>;
 
     private _flattenStorageStore = debounce(
         async (): Promise<void> => {
@@ -1046,15 +973,6 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
         }
     }
 
-    private _getPublicKey(params: GetPublickKeyParams<InferClientMetadata<TDefs>>): string | null {
-        const metadata = params.metadata as InferClientMetadata<TDefs>;
-
-        if (!this._publicKey) return null;
-        if (typeof this._publicKey === "string") return this._publicKey;
-
-        return this._publicKey({ metadata });
-    }
-
     private _getWsEndpoint(
         room: string,
         params: GetWsEndpointParams<InferClientMetadata<TDefs>>,
@@ -1063,9 +981,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
 
         switch (typeof this._endpoints.wsEndpoint) {
             case "undefined":
-                return this._getPublicKey(params)
-                    ? `wss://rooms.pluv.io/api/room/${room}`
-                    : `/api/pluv/room/${room}`;
+                return `/api/pluv/room/${room}`;
             case "string":
                 return this._endpoints.wsEndpoint;
             default:

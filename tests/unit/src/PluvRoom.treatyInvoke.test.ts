@@ -36,7 +36,6 @@ type TestDefs = {
     presence: typeof treaty.presence;
     metadata: undefined;
     storage: typeof treaty.storage;
-    events: {};
 };
 
 const seedMyself = (room: MockedRoom<TestDefs>): void => {
@@ -259,7 +258,6 @@ describe("PluvRoom treaty invoke", () => {
             presence: typeof preparedTreaty.presence;
             metadata: undefined;
             storage: typeof preparedTreaty.storage;
-            events: {};
         }>("client-prepare", {
             authEndpoint: () => "",
             limits: {},
@@ -336,7 +334,6 @@ describe("PluvRoom treaty invoke", () => {
             presence: typeof preparedTreaty.presence;
             metadata: undefined;
             storage: typeof preparedTreaty.storage;
-            events: {};
         }>("client-prepare-order", {
             authEndpoint: () => "",
             limits: {},
@@ -405,7 +402,6 @@ describe("PluvRoom treaty invoke", () => {
             presence: typeof preparedTreaty.presence;
             metadata: undefined;
             storage: typeof preparedTreaty.storage;
-            events: {};
         }>("client-prepare-unload", {
             authEndpoint: () => "",
             limits: {},
@@ -483,7 +479,6 @@ describe("PluvRoom treaty invoke", () => {
             presence: typeof preparedTreaty.presence;
             metadata: undefined;
             storage: typeof preparedTreaty.storage;
-            events: {};
         }>("client-prepare-presence", {
             authEndpoint: () => "",
             limits: {},
@@ -604,7 +599,6 @@ describe("MockedRoom treaty invoke", () => {
             presence: typeof preparedTreaty.presence;
             metadata: undefined;
             storage: typeof preparedTreaty.storage;
-            events: {};
         }>("mocked-prepare-unload", {
             initialPresence: { selectionId: null },
             initialStorage: { messages: [] },
@@ -648,7 +642,6 @@ describe("MockedRoom treaty invoke", () => {
             presence: typeof preparedTreaty.presence;
             metadata: undefined;
             storage: typeof preparedTreaty.storage;
-            events: {};
         }>("mocked-prepare-order", {
             initialPresence: { selectionId: null },
             initialStorage: { messages: [] },
@@ -695,7 +688,6 @@ describe("MockedRoom treaty invoke", () => {
             presence: typeof preparedTreaty.presence;
             metadata: undefined;
             storage: typeof preparedTreaty.storage;
-            events: {};
         }>("mocked-prepare-presence", {
             initialPresence: { selectionId: null },
             initialStorage: { messages: [] },
