@@ -6,7 +6,6 @@
 "@pluv/client": major
 "@pluv/react": major
 "@pluv/platform-node": major
-"@pluv/platform-pluv": major
 ---
 
 Require Cloudflare WebSocket hibernation and SQLite-backed Durable Object storage.

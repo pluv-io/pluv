@@ -27,18 +27,9 @@ export class CloudflarePlatform<
 > extends AbstractPlatform<
     CloudflareWebSocket,
     { env: TEnv; request: Request },
-    CloudflarePlatformRoomContext<TEnv, TMeta>,
-    {
-        authorize: {
-            secret: true;
-        };
-        handleMode: "io";
-        listeners: "all";
-        router: true;
-    }
+    CloudflarePlatformRoomContext<TEnv, TMeta>
 > {
     public readonly id = crypto.randomUUID();
-    public readonly _config;
     public readonly _name = "platformCloudflare";
 
     private readonly _persistenceProvided: boolean;
@@ -55,15 +46,6 @@ export class CloudflarePlatform<
         });
 
         this._persistenceProvided = !!config.persistence;
-
-        this._config = {
-            authorize: {
-                secret: true as const,
-            },
-            handleMode: "io" as const,
-            listeners: "all" as const,
-            router: true as const,
-        };
 
         const state = this._getDurableObjectState();
 

@@ -5,7 +5,6 @@
 "@pluv/react": major
 "@pluv/platform-node": major
 "@pluv/platform-cloudflare": major
-"@pluv/platform-pluv": major
 ---
 
 User, presence, metadata, and event inputs all take the same validator libraries:

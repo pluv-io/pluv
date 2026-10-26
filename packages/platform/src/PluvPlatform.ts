@@ -15,19 +15,8 @@ export type PluvPlatformConfig = AbstractPlatformConfig<PluvRoomContext> & {
 
 const hasSql = (state: PluvRoomState | undefined): boolean => !!state?.storage?.sql;
 
-export class PluvPlatform extends AbstractPlatform<
-    PluvWebSocket,
-    {},
-    PluvRoomContext,
-    {
-        authorize: { secret: true };
-        handleMode: "io";
-        listeners: "all";
-        router: true;
-    }
-> {
+export class PluvPlatform extends AbstractPlatform<PluvWebSocket, {}, PluvRoomContext> {
     public readonly id = crypto.randomUUID();
-    public readonly _config;
     public readonly _name = "platformPluv";
 
     private readonly _persistenceProvided: boolean;
@@ -36,12 +25,6 @@ export class PluvPlatform extends AbstractPlatform<
         super(config);
 
         this._persistenceProvided = !!config.persistence;
-        this._config = {
-            authorize: { secret: true as const },
-            handleMode: "io" as const,
-            listeners: "all" as const,
-            router: true as const,
-        };
     }
 
     public acceptWebSocket(_webSocket: PluvWebSocket): Promise<void> {

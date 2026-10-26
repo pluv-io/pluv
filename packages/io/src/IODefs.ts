@@ -8,7 +8,7 @@ export type { SetKey };
  * enforced on `createIO().platform().config()`, not inside this object type.
  */
 export type IODefs = IOLikeDefs & {
-    platform: AbstractPlatform<any, any, any, any>;
+    platform: AbstractPlatform<any, any, any>;
     context: Record<string, any>;
 };
 

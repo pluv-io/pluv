@@ -15,7 +15,6 @@ import type {
     PresenceSeq,
     SessionPresence,
     StandardSchemaV1,
-    UndefinedProps,
 } from "@pluv/types";
 import type {
     AbstractPlatform,
@@ -140,24 +139,10 @@ export type GetInitialStorageFn<TContext extends Record<string, any>> = (
     event: GetInitialStorageEvent<TContext>,
 ) => MaybePromise<Maybe<string>>;
 
-export type HandleMode = "io" | "fetch";
-export type ListenerMode = "all" | "webhook";
-
-export interface PlatformConfig {
-    authorize: {
-        secret?: boolean;
-    };
-    handleMode: HandleMode;
-    listeners: ListenerMode;
-    router?: boolean;
-}
-
-export type ResolvedPluvIOAuthorize<
-    TPlatform extends AbstractPlatform<any, any, any, any>,
-    TUser extends BaseUser = any,
-> = TPlatform["_config"]["authorize"]["secret"] extends true
-    ? { user: StandardSchemaV1<unknown, TUser>; secret: string }
-    : { user: StandardSchemaV1<unknown, TUser>; secret?: string };
+export type ResolvedPluvIOAuthorize<TUser extends BaseUser = any> = {
+    user: StandardSchemaV1<unknown, TUser>;
+    secret: string;
+};
 
 export type PluvIOSecret<
     TPlatform extends AbstractPlatform<any, any> = AbstractPlatform<any, any>,
@@ -215,29 +200,11 @@ export type BasePluvIOListeners<T extends IODefs = IODefs> = {
     onUserDisconnected: (event: IOUserDisconnectedEvent<T>) => void;
 };
 
-export type PluvIOListeners<T extends IODefs = IODefs> = UndefinedProps<
-    BasePluvIOListeners<T>,
-    Exclude<keyof BasePluvIOListeners<T>, InferPlatformListeners<T["platform"]>>
->;
+export type PluvIOListeners<T extends IODefs = IODefs> = BasePluvIOListeners<T>;
 
-export type PluvIORouter<T extends IODefs = IODefs> =
-    InferPlatformRouter<T["platform"]> extends true
-        ? { router?: PluvRouter<T> }
-        : { router?: undefined };
-
-export type InferPlatformConfig<TPlatform extends AbstractPlatform<any, any, any, any>> =
-    TPlatform extends AbstractPlatform<any, any, any, infer IConfig> ? IConfig : never;
-
-type AllowedListenersByMode = {
-    all: keyof BasePluvIOListeners;
-    webhook: "onRoomDestroyed" | "onStorageDestroyed" | "onUserConnected" | "onUserDisconnected";
+export type PluvIORouter<T extends IODefs = IODefs> = {
+    router?: PluvRouter<T>;
 };
-
-export type InferPlatformListeners<TPlatform extends AbstractPlatform<any, any, any, any>> =
-    AllowedListenersByMode[InferPlatformConfig<TPlatform>["listeners"]];
-
-export type InferPlatformRouter<TPlatform extends AbstractPlatform<any, any, any, any>> =
-    InferPlatformConfig<TPlatform>["router"];
 
 export type IORoomListenerEvent<T extends IODefs = IODefs> = {
     context: T["context"];

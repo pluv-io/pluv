@@ -2,7 +2,6 @@
 "@pluv/io": major
 "@pluv/platform-cloudflare": major
 "@pluv/platform-node": major
-"@pluv/platform-pluv": major
 ---
 
 Node rooms only accept the socket in `register`. Forward `message`, `close`, and `error` yourself, and attach those listeners before awaiting `register`.

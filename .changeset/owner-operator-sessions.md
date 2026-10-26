@@ -4,7 +4,6 @@
 "@pluv/client": major
 "@pluv/react": major
 "@pluv/treaty": major
-"@pluv/platform-pluv": major
 "@pluv/platform-node": major
 "@pluv/platform-cloudflare": major
 ---
@@ -24,7 +23,7 @@ const operators = room.getOthers({ kinds: ["operator"] });
 const operatorCount = room.getRoomStats({ kinds: ["operator"] }).userCount;
 ```
 
-To let an owner in, set `onGetOperator` on `io.server()` and mint with `ioServer.createToken`. The hook returns the treaty user for that owner, and that user is stored on the token. If the hook is missing, returns `null`, or that user is invalid, the token is refused. Connect reads the sealed user until the token expires. Hosted `@pluv/platform-pluv` cannot mint these tokens.
+To let an owner in, set `onGetOperator` on `io.server()` and mint with `ioServer.createToken`. The hook returns the treaty user for that owner, and that user is stored on the token. If the hook is missing, returns `null`, or that user is invalid, the token is refused. Connect reads the sealed user until the token expires.
 
 ```ts
 export const ioServer = io.server({
