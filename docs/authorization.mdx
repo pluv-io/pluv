@@ -15,7 +15,7 @@ You can view another example of these via your platform's respective quickstart 
 
 ## Enable authorization on io
 
-Put the user schema on a shared [treaty](/docs/guides/treaty). The `user` schema must always include `id`. Node and Cloudflare also take `secret` on `.config()` (`string` or `(initContext) => string`). Hosted `platformPluv` omits `secret`.
+Put the user schema on a shared [treaty](/docs/guides/treaty). The `user` schema must always include `id`. `.config()` takes `secret` (`string` or `(initContext) => string`).
 
 User, presence, and client metadata must be a [Standard Schema](https://standardschema.dev) library that also implements Standard JSON Schema on the same object (Zod 4.2+ or ArkType). The examples below use Zod.
 
@@ -94,8 +94,6 @@ const token = await ioServer.createToken({
 `maxConnections` and room lifetime count every open socket, including operators. Default `connectionCount` and `userCount` stay users. An open operator socket uses a slot and holds the room after the last user leaves.
 
 Default `listUsers`, `getOthers`, `useOthers`, `getRoomStats`, and `useRoomStats` stay users. Pass `{ kinds: ["operator"] }` or `{ kinds: ["user", "operator"] }` on `listUsers`, `getOthers`, `useOthers`, `getRoomStats`, and `useRoomStats`. A single person is `getOther` / `useOther` with that user's id. Pass `{ kind: "operator" }` for the operator. Omit `kind` and a person who is only an operator is null. Treaty resolvers still receive mapped `user`; operators also get `operator`. ACL on `user.id` sees that mapped identity — prefer derived ids that do not collide with live users unless the owner is the same person in two tabs (still two kinds; presence is not shared).
-
-Hosted `@pluv/platform-pluv` cannot mint operator tokens yet.
 
 ## Setup an authorization endpoint
 

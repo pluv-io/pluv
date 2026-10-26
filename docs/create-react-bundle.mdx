@@ -18,13 +18,14 @@ You can view examples of setting up the `PluvIO` instance via your platform's re
 ```ts
 // backend/io.ts
 import { createIO } from "@pluv/io";
-import { platformPluv } from "@pluv/platform-pluv";
+import { platformNode } from "@pluv/platform-node";
 import { treaty } from "../shared/treaty";
 
 export const io = createIO()
-  .platform(platformPluv({ /* ... */}))
+  .platform(platformNode())
   .config({
     treaty,
+    secret: process.env.PLUV_AUTH_SECRET!,
   });
 
 // Export the ioServer, so that this can be type-imported on the frontend
@@ -107,6 +108,6 @@ This applies to `useStorage`, `useStorageField`, `useDoc`, `useTransact`, and th
 
 * [Setup authorization](/docs/guides/authorization)
 * [Create rooms](/docs/guides/rooms/react)
-* [Use custom events](/docs/guides/events/client)
+* [Use custom events](/docs/guides/events/server)
 * [Use yjs storage](/docs/guides/storage/yjs)
 * [Use presence](/docs/guides/presence)

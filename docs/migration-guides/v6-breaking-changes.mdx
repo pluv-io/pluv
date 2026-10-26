@@ -76,7 +76,7 @@ const client = createClient<typeof ioServer>().config({
 });
 ```
 
-Hosted pluv omits `secret` (`secretKey` stays on `platformPluv({ ... })`). Node and Cloudflare still require `secret` (`string` or `(initContext) => string`).
+`secret` is required (`string` or `(initContext) => string`).
 
 User, presence, and client metadata must implement Standard Schema and Standard JSON Schema on the same object (Zod 4.2+ or ArkType). `createTreaty` and `createClient().config({ metadata })` throw if `jsonSchema` is missing.
 

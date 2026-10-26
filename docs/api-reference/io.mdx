@@ -37,12 +37,6 @@ Returns `Promise<string>`.
 Creates a JWT for a user trying to connect to a room. This should be called within a custom authentication endpoint you define. User tokens stay `{ room, user }` on `io.createToken`. Operator tokens are `{ room, kind: "operator", operator }` and require `onGetOperator` on `io.server()`; mint them with `ioServer.createToken`. See [Authorization](/docs/guides/authorization) for more information.
 
 ```ts
-// If using `@pluv/platform-pluv`
-const token = await io.createToken({
-    room: "my-example-room",
-    user: { id: "...", name: "..." },
-});
-
 // If using `@pluv/platform-cloudflare
 const token = await io.createToken({
   env: env as Env,
@@ -59,7 +53,6 @@ const token = await io.createToken({
 });
 
 // Owner operator sessions. Requires onGetOperator on io.server().
-// @pluv/platform-pluv cannot mint these yet.
 const operatorToken = await ioServer.createToken({
   request: request as Request,
   room: "my-example-room",

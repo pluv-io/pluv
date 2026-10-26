@@ -1,6 +1,6 @@
 ---
 title: "@pluv/client"
-description: "API reference for @pluv/client: create clients, rooms, event routers, and interact with presence and storage."
+description: "API reference for @pluv/client: create clients and rooms, and interact with presence and storage."
 ---
 
 ## createClient
@@ -11,7 +11,7 @@ Bind your server type as a type argument, then pass the shared `treaty`, metadat
 
 ### createClient basic example
 
-Bind your server type and pass the shared treaty. Hosted pluv uses `publicKey`; self-hosted uses `authEndpoint`.
+Bind your server type and pass the shared treaty, `authEndpoint`, and `wsEndpoint`.
 
 See the [Create Client](/docs/guides/create-client) docs for more details.
 
@@ -25,10 +25,8 @@ const io = createClient<typeof ioServer>().config({
   initialStorage: {
     messages: [],
   },
-  // Required if you are using `@pluv/platform-pluv`: This is the
-  // publishable-key that was created for your project on pluv.io
-  // This can either be a string or a function returning a string
-  publicKey: "pk_...",
+  authEndpoint: ({ room }) => `/api/pluv/authorize?room=${room}`,
+  wsEndpoint: ({ room }) => `ws://localhost:3000/api/pluv/room/${room}`,
 });
 ```
 
@@ -159,56 +157,6 @@ io.leave("my-example-room");
 
 // Alternatively, you can pass the PluvRoom instance
 io.leave(room);
-```
-
-### PluvClient.procedure
-
-Creates a new type-safe event procedure to be broadcasted from `PluvClient`. See [Define Events](/docs/guides/events/client) for more information.
-
-```ts
-import { createClient } from "@pluv/client";
-import { z } from "zod";
-
-const io = createClient().config({ /* ... */ });
-
-const sendMessage = io.procedure
-  .input(z.object({ message: z.string() }))
-  .broadcast(({ message }) => ({ receiveMessage: { message } }));
-
-const doubleValue = io.procedure
-  .input(z.object({ value: z.number() }))
-  .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
-
-const wave = io.procedure
-  .broadcast(() => ({ receiveMessage: { message: "hello world!" } }));
-```
-
-### PluvClient.router
-
-Creates a new type-safe event procedure router to attach events and connect to a `PluvRoom` via `PluvRoom.createRoom`. See [Define Events](/docs/guides/events/client) for more information.
-
-```ts
-import { createClient } from "@pluv/client";
-import { z } from "zod";
-
-const io = createClient().config({ /* ... */ });
-
-const sendMessage = io.procedure
-  .input(z.object({ message: z.string() }))
-  .broadcast(({ message }) => ({ receiveMessage: { message } }));
-
-const doubleValue = io.procedure
-  .input(z.object({ value: z.number() }))
-  .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
-
-const wave = io.procedure
-  .broadcast(() => ({ receiveMessage: { message: "hello world!" } }));
-
-const router = io.router({
-  sendMessage,
-  doubleValue,
-  wave,
-});
 ```
 
 ## PluvRoom
