@@ -55,7 +55,7 @@ import type {
     InternalSubscriptions,
     PluvClientLimits,
 } from "./types";
-import { assertExhaustive, parsePluvSchema } from "./utils";
+import { assertExhaustive, parsePluvSchema, sequenceCommit } from "./utils";
 
 export type MockedRoomEvents<TDefs extends ClientDefs = ClientDefs> = Partial<{
     [P in keyof InferClientInput<TDefs>]: (
@@ -112,6 +112,8 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
     private readonly _treaty: TDefs["treaty"];
     // Local sequences. `presence` drops an older resolver result once a newer call has started.
     private _seq = { presence: 0 };
+    /** Prepared commits wait here so an earlier call writes before a later one. */
+    private _storageCommits: Promise<void> = Promise.resolve();
     private _state: WebSocketState<TDefs["io"]> = {
         authorization: {
             token: null,
@@ -683,25 +685,53 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
             throw new Error("Cannot run a treaty procedure before the local user is available");
         }
 
-        const doc = this._crdtManager.doc;
+        const presence = this.getMyPresence();
+        const commit = (loaded?: { input: unknown; prepared: unknown }): void => {
+            // Silent. This storage is not synced yet, so the write would not land.
+            if (!this.getStorageLoaded()) return;
 
-        const apply = (): void => {
-            procedure.apply(data, {
-                user: myself.data,
-                operator: myself.operator,
-                presence: this.getMyPresence(),
-                doc,
-            });
+            const doc = this._crdtManager.doc;
+            const apply = (): void => {
+                procedure.apply(
+                    loaded ? loaded.input : data,
+                    {
+                        user: myself.data,
+                        operator: myself.operator,
+                        presence,
+                        doc,
+                    },
+                    loaded?.prepared,
+                );
+            };
+
+            if (procedure.config.transact === false) {
+                apply();
+
+                return;
+            }
+
+            this.transact(() => {
+                apply();
+            }, origin);
         };
 
-        if (procedure.config.transact === false) {
-            apply();
+        if (!procedure.prepared || !procedure.load) {
+            commit(undefined);
+
             return;
         }
 
-        this.transact(() => {
-            apply();
-        }, origin);
+        const loading = procedure.load(data, {
+            user: myself.data,
+            operator: myself.operator,
+            presence,
+        });
+
+        this._storageCommits = sequenceCommit({
+            tail: this._storageCommits,
+            ready: loading,
+            commit,
+        });
     }
 
     private _simulateEvent<TEvent extends keyof InferClientInput<TDefs>>(

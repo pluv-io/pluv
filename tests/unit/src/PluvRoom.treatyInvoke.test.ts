@@ -2,7 +2,7 @@ import { MockedRoom, PluvRoom } from "@pluv/client";
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
 import { createTreaty } from "@pluv/treaty";
-import { StorageState } from "@pluv/types";
+import { ConnectionState, StorageState } from "@pluv/types";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { deferred, tick } from "./__utils__";
@@ -237,6 +237,298 @@ describe("PluvRoom treaty invoke", () => {
 
         expect(room.getMyPresence()).toEqual({ selectionId: "new" });
     });
+
+    it("sends the named storage update after prepare", async () => {
+        const gate = deferred<void>();
+        const local = createTreaty({ user, presence, storage });
+        const addPrepared = local.procedure.storage
+            .input(z.object({ text: z.string() }))
+            .prepare(async ({ text }) => {
+                await gate.promise;
+
+                return text.toUpperCase();
+            })
+            .resolve((_input, { storage: docStorage }, loaded) => {
+                docStorage.messages.push([loaded]);
+            });
+        const preparedTreaty = local.router({ addPrepared });
+        const sent: { type: string; data: { procedure?: string } }[] = [];
+        const room = new PluvRoom<{
+            io: any;
+            treaty: typeof preparedTreaty;
+            presence: typeof preparedTreaty.presence;
+            metadata: undefined;
+            storage: typeof preparedTreaty.storage;
+            events: {};
+        }>("client-prepare", {
+            authEndpoint: () => "",
+            limits: {},
+            presence: preparedTreaty.presence,
+            storage: preparedTreaty.storage,
+            treaty: preparedTreaty,
+            initialPresence: { selectionId: null },
+            initialStorage: { messages: [] },
+        });
+        const internal = room as unknown as {
+            _observeCrdt: () => void;
+            _state: {
+                connection: { id: string | null };
+                storage: { state: string };
+                webSocket: { readyState: number; send: (data: string) => void } | null;
+            };
+            _usersManager: { setMyself: (params: any) => void };
+        };
+
+        internal._state.connection.id = "conn-1";
+        internal._state.storage.state = StorageState.Synced;
+        internal._state.webSocket = {
+            readyState: WebSocket.OPEN,
+            send(data: string) {
+                sent.push(JSON.parse(data) as { type: string; data: { procedure?: string } });
+            },
+        };
+        internal._usersManager.setMyself({
+            connectionId: "conn-1",
+            data: { id: "ada" },
+            kind: "user",
+            presence: { selectionId: null },
+        });
+        room.getDoc().rebuildStorage();
+        internal._observeCrdt();
+
+        room.storage.addPrepared({ text: "hello" });
+
+        await tick();
+
+        expect(sent.filter((message) => message.type === "$updateStorage")).toEqual([]);
+        expect(room.getDoc().toJson().messages).toEqual([]);
+
+        gate.resolve();
+        await tick();
+
+        expect(room.getDoc().toJson().messages).toEqual(["HELLO"]);
+        expect(sent.filter((message) => message.type === "$updateStorage")).toEqual([
+            expect.objectContaining({
+                type: "$updateStorage",
+                data: expect.objectContaining({ procedure: "addPrepared" }),
+            }),
+        ]);
+    });
+
+    it("commits prepared writes in call order", async () => {
+        const firstGate = deferred<void>();
+        const secondGate = deferred<void>();
+        const local = createTreaty({ user, presence, storage });
+        const addPrepared = local.procedure.storage
+            .input(z.object({ text: z.string() }))
+            .prepare(async ({ text }) => {
+                await (text === "first" ? firstGate.promise : secondGate.promise);
+
+                return text;
+            })
+            .resolve((_input, { storage: docStorage }, loaded) => {
+                docStorage.messages.push([loaded]);
+            });
+        const preparedTreaty = local.router({ addPrepared });
+        const room = new PluvRoom<{
+            io: any;
+            treaty: typeof preparedTreaty;
+            presence: typeof preparedTreaty.presence;
+            metadata: undefined;
+            storage: typeof preparedTreaty.storage;
+            events: {};
+        }>("client-prepare-order", {
+            authEndpoint: () => "",
+            limits: {},
+            presence: preparedTreaty.presence,
+            storage: preparedTreaty.storage,
+            treaty: preparedTreaty,
+            initialPresence: { selectionId: null },
+            initialStorage: { messages: [] },
+        });
+        const internal = room as unknown as {
+            _observeCrdt: () => void;
+            _state: {
+                connection: { id: string | null };
+                storage: { state: string };
+                webSocket: { readyState: number; send: (data: string) => void } | null;
+            };
+            _usersManager: { setMyself: (params: any) => void };
+        };
+
+        internal._state.connection.id = "conn-1";
+        internal._state.storage.state = StorageState.Synced;
+        internal._state.webSocket = {
+            readyState: WebSocket.OPEN,
+            send() {},
+        };
+        internal._usersManager.setMyself({
+            connectionId: "conn-1",
+            data: { id: "ada" },
+            kind: "user",
+            presence: { selectionId: null },
+        });
+        room.getDoc().rebuildStorage();
+        internal._observeCrdt();
+
+        room.storage.addPrepared({ text: "first" });
+        room.storage.addPrepared({ text: "second" });
+        secondGate.resolve();
+        await tick();
+
+        expect(room.getDoc().toJson().messages).toEqual([]);
+
+        firstGate.resolve();
+        await tick();
+
+        expect(room.getDoc().toJson().messages).toEqual(["first", "second"]);
+    });
+
+    it("skips a prepared write after storage unloads", async () => {
+        const gate = deferred<void>();
+        const local = createTreaty({ user, presence, storage });
+        const addPrepared = local.procedure.storage
+            .input(z.object({ text: z.string() }))
+            .prepare(async ({ text }) => {
+                await gate.promise;
+
+                return text.toUpperCase();
+            })
+            .resolve((_input, { storage: docStorage }, loaded) => {
+                docStorage.messages.push([loaded]);
+            });
+        const preparedTreaty = local.router({ addPrepared });
+        const sent: { type: string }[] = [];
+        const room = new PluvRoom<{
+            io: any;
+            treaty: typeof preparedTreaty;
+            presence: typeof preparedTreaty.presence;
+            metadata: undefined;
+            storage: typeof preparedTreaty.storage;
+            events: {};
+        }>("client-prepare-unload", {
+            authEndpoint: () => "",
+            limits: {},
+            presence: preparedTreaty.presence,
+            storage: preparedTreaty.storage,
+            treaty: preparedTreaty,
+            initialPresence: { selectionId: null },
+            initialStorage: { messages: [] },
+        });
+        const internal = room as unknown as {
+            _observeCrdt: () => void;
+            _state: {
+                connection: { id: string | null; state: string };
+                storage: { state: string };
+                webSocket: {
+                    close: () => void;
+                    readyState: number;
+                    send: (data: string) => void;
+                } | null;
+            };
+            _usersManager: { setMyself: (params: any) => void };
+        };
+
+        internal._state.connection.id = "conn-1";
+        internal._state.connection.state = ConnectionState.Open;
+        internal._state.storage.state = StorageState.Synced;
+        internal._state.webSocket = {
+            readyState: WebSocket.OPEN,
+            close() {},
+            send(data: string) {
+                sent.push(JSON.parse(data) as { type: string });
+            },
+        };
+        internal._usersManager.setMyself({
+            connectionId: "conn-1",
+            data: { id: "ada" },
+            kind: "user",
+            presence: { selectionId: null },
+        });
+        room.getDoc().rebuildStorage();
+        internal._observeCrdt();
+
+        room.storage.addPrepared({ text: "hello" });
+        await tick();
+        await room.disconnect();
+
+        expect(room.getStorageLoaded()).toBe(false);
+
+        gate.resolve();
+        await tick();
+
+        expect(sent.filter((message) => message.type === "$updateStorage")).toEqual([]);
+        expect(room.getDoc().toJson()).not.toEqual({ messages: ["HELLO"] });
+    });
+
+    it("gives resolve the presence from the call", async () => {
+        const gate = deferred<void>();
+        let seen: string | null | undefined;
+        const local = createTreaty({ user, presence, storage });
+        const addPrepared = local.procedure.storage
+            .input(z.object({ text: z.string() }))
+            .prepare(async ({ text }) => {
+                await gate.promise;
+
+                return text;
+            })
+            .resolve((_input, { presence: current, storage: docStorage }, loaded) => {
+                seen = current.selectionId;
+                docStorage.messages.push([loaded]);
+            });
+        const preparedTreaty = local.router({ addPrepared });
+        const room = new PluvRoom<{
+            io: any;
+            treaty: typeof preparedTreaty;
+            presence: typeof preparedTreaty.presence;
+            metadata: undefined;
+            storage: typeof preparedTreaty.storage;
+            events: {};
+        }>("client-prepare-presence", {
+            authEndpoint: () => "",
+            limits: {},
+            presence: preparedTreaty.presence,
+            storage: preparedTreaty.storage,
+            treaty: preparedTreaty,
+            initialPresence: { selectionId: null },
+            initialStorage: { messages: [] },
+        });
+        const internal = room as unknown as {
+            _observeCrdt: () => void;
+            _state: {
+                connection: { id: string | null };
+                storage: { state: string };
+                webSocket: { readyState: number; send: (data: string) => void } | null;
+            };
+            _usersManager: { setMyself: (params: any) => void };
+        };
+
+        internal._state.connection.id = "conn-1";
+        internal._state.storage.state = StorageState.Synced;
+        internal._state.webSocket = {
+            readyState: WebSocket.OPEN,
+            send() {},
+        };
+        internal._usersManager.setMyself({
+            connectionId: "conn-1",
+            data: { id: "ada" },
+            kind: "user",
+            presence: { selectionId: null },
+        });
+        room.getDoc().rebuildStorage();
+        internal._observeCrdt();
+
+        room.storage.addPrepared({ text: "hello" });
+        await tick();
+        await room.updateMyPresence({ selectionId: "item-9" });
+
+        expect(room.getMyPresence()).toEqual({ selectionId: "item-9" });
+
+        gate.resolve();
+        await tick();
+
+        expect(seen).toBeNull();
+    });
 });
 
 describe("MockedRoom treaty invoke", () => {
@@ -290,6 +582,141 @@ describe("MockedRoom treaty invoke", () => {
 
         expect(transact).not.toHaveBeenCalled();
         expect(room.getDoc().toJson().messages).toEqual(["raw"]);
+    });
+
+    it("skips a prepared write when storage is no longer loaded", async () => {
+        const gate = deferred<void>();
+        const local = createTreaty({ user, presence, storage });
+        const addPrepared = local.procedure.storage
+            .input(z.object({ text: z.string() }))
+            .prepare(async ({ text }) => {
+                await gate.promise;
+
+                return text.toUpperCase();
+            })
+            .resolve((_input, { storage: docStorage }, loaded) => {
+                docStorage.messages.push([loaded]);
+            });
+        const preparedTreaty = local.router({ addPrepared });
+        const room = new MockedRoom<{
+            io: any;
+            treaty: typeof preparedTreaty;
+            presence: typeof preparedTreaty.presence;
+            metadata: undefined;
+            storage: typeof preparedTreaty.storage;
+            events: {};
+        }>("mocked-prepare-unload", {
+            initialPresence: { selectionId: null },
+            initialStorage: { messages: [] },
+            presence: preparedTreaty.presence,
+            storage: preparedTreaty.storage,
+            treaty: preparedTreaty,
+        });
+
+        room.getDoc().rebuildStorage();
+        seedMyself(room as unknown as MockedRoom<TestDefs>);
+
+        const loaded = vi.spyOn(room, "getStorageLoaded").mockReturnValue(true);
+
+        room.storage.addPrepared({ text: "hello" });
+        await tick();
+        loaded.mockReturnValue(false);
+        gate.resolve();
+        await tick();
+
+        expect(room.getDoc().toJson().messages).toEqual([]);
+    });
+
+    it("commits prepared writes in call order", async () => {
+        const firstGate = deferred<void>();
+        const secondGate = deferred<void>();
+        const local = createTreaty({ user, presence, storage });
+        const addPrepared = local.procedure.storage
+            .input(z.object({ text: z.string() }))
+            .prepare(async ({ text }) => {
+                await (text === "first" ? firstGate.promise : secondGate.promise);
+
+                return text;
+            })
+            .resolve((_input, { storage: docStorage }, loaded) => {
+                docStorage.messages.push([loaded]);
+            });
+        const preparedTreaty = local.router({ addPrepared });
+        const room = new MockedRoom<{
+            io: any;
+            treaty: typeof preparedTreaty;
+            presence: typeof preparedTreaty.presence;
+            metadata: undefined;
+            storage: typeof preparedTreaty.storage;
+            events: {};
+        }>("mocked-prepare-order", {
+            initialPresence: { selectionId: null },
+            initialStorage: { messages: [] },
+            presence: preparedTreaty.presence,
+            storage: preparedTreaty.storage,
+            treaty: preparedTreaty,
+        });
+
+        room.getDoc().rebuildStorage();
+        seedMyself(room as unknown as MockedRoom<TestDefs>);
+
+        room.storage.addPrepared({ text: "first" });
+        room.storage.addPrepared({ text: "second" });
+        secondGate.resolve();
+        await tick();
+
+        expect(room.getDoc().toJson().messages).toEqual([]);
+
+        firstGate.resolve();
+        await tick();
+
+        expect(room.getDoc().toJson().messages).toEqual(["first", "second"]);
+    });
+
+    it("gives resolve the presence from the call", async () => {
+        const gate = deferred<void>();
+        let seen: string | null | undefined;
+        const local = createTreaty({ user, presence, storage });
+        const addPrepared = local.procedure.storage
+            .input(z.object({ text: z.string() }))
+            .prepare(async ({ text }) => {
+                await gate.promise;
+
+                return text;
+            })
+            .resolve((_input, { presence: current, storage: docStorage }, loaded) => {
+                seen = current.selectionId;
+                docStorage.messages.push([loaded]);
+            });
+        const preparedTreaty = local.router({ addPrepared });
+        const room = new MockedRoom<{
+            io: any;
+            treaty: typeof preparedTreaty;
+            presence: typeof preparedTreaty.presence;
+            metadata: undefined;
+            storage: typeof preparedTreaty.storage;
+            events: {};
+        }>("mocked-prepare-presence", {
+            initialPresence: { selectionId: null },
+            initialStorage: { messages: [] },
+            presence: preparedTreaty.presence,
+            storage: preparedTreaty.storage,
+            treaty: preparedTreaty,
+        });
+
+        room.getDoc().rebuildStorage();
+        seedMyself(room as unknown as MockedRoom<TestDefs>);
+
+        room.storage.addPrepared({ text: "hello" });
+        await tick();
+        room.updateMyPresence({ selectionId: "item-9" });
+
+        expect(room.getMyPresence()).toEqual({ selectionId: "item-9" });
+
+        gate.resolve();
+        await tick();
+
+        expect(seen).toBeNull();
     });
 
     it("throws on unknown storage procedure names", () => {
