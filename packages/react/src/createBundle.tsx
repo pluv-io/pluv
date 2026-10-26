@@ -174,11 +174,7 @@ export const createBundle = <
 
         const [room, setRoom] = useState(() => createRoom());
 
-        useEffect(() => {
-            if (room.id === _room) return;
-
-            setRoom(createRoom());
-        }, [_room, createRoom, room]);
+        if (room.id !== _room) setRoom(createRoom());
 
         const resolvedMeta = useDeepAsyncMemo(async () => {
             const resolved = await Promise.resolve(

@@ -950,6 +950,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     }
 
     private _event = new Proxy(
+        // oxlint-disable-next-line typescript/no-unnecessary-type-parameters -- callers pass a specific event
         <TEvent extends keyof InferClientOutput<TDefs>>(
             event: TEvent,
             callback: EventNotifierSubscriptionCallback<
@@ -2084,6 +2085,7 @@ export class PluvRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLike
     }
 
     private _sendMessage(data: string): void;
+    // oxlint-disable-next-line typescript/no-unnecessary-type-parameters -- callers pass a specific message
     private _sendMessage<TMessage extends EventMessage<string, any> = EventMessage<string, any>>(
         data: TMessage,
     ): void;

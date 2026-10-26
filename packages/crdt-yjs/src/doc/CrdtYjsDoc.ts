@@ -39,6 +39,7 @@ const clocksFromVector = (
 ): readonly (readonly [string, number])[] =>
     [...clocks]
         .map(([id, clock]) => [String(id), clock] as const)
+        // oxlint-disable-next-line unicorn/no-array-sort -- the map already returned a new array
         .sort((left, right) => (left[0] < right[0] ? -1 : left[0] > right[0] ? 1 : 0));
 
 export class CrdtYjsDoc<TSchema extends YjsSchema = YjsSchema> implements CrdtDocLike<

@@ -129,6 +129,7 @@ export abstract class AbstractWebSocket<TWebSocket = any> {
         });
     }
 
+    // oxlint-disable-next-line typescript/no-unnecessary-type-parameters -- callers pass a specific message
     public sendMessage<TMessage extends IOEventMessage<any> = IOEventMessage<any>>(
         data: TMessage,
     ): void {

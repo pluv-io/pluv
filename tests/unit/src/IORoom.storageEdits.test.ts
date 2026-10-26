@@ -271,7 +271,7 @@ describe("IORoom storage edits", () => {
             { id: "session-1" },
             { id: "session-1" },
         ]);
-        expect(messagesFrom(changes.map((change) => change.update)).sort()).toEqual([
+        expect(messagesFrom(changes.map((change) => change.update)).toSorted()).toEqual([
             "first",
             "peer",
             "second",
@@ -559,7 +559,7 @@ describe("IORoom storage edits", () => {
             { id: "session-1" },
             { id: "session-1" },
         ]);
-        expect(doc.getText("content").toString()).toBe("i");
+        expect(doc.getText("content").toJSON()).toBe("i");
         doc.destroy();
     });
 
