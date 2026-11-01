@@ -4,7 +4,7 @@ import { isThenable } from "./utils/isThenable";
 
 const DEFERRED_RESULT = "$u" as const;
 
-/** A handler promise the queue must not wait on. The session manager settles this on a later join. */
+/** A handler promise the queue must not wait on. The session manager settles this on a later run. */
 export type DeferredResult<T> = { readonly [DEFERRED_RESULT]: Promise<T> };
 
 export const deferredResult = <T>(promise: Promise<T>): DeferredResult<T> => {

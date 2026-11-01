@@ -39,7 +39,7 @@ import {
 } from "../roomEffects";
 import { ExclusiveUntil } from "../ExclusiveUntil";
 import { CommitGate } from "../CommitGate";
-import { JoinQueue } from "../JoinQueue";
+import { SerialQueue } from "../SerialQueue";
 
 const isLoadedStorage = <T extends IODefs>(
     value: RoomEffects<T> | LoadedStorage<T>,
@@ -95,7 +95,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     private readonly _sessions: RoomSessions<T>;
     private readonly _sessionRouter: ReturnType<typeof createSessionRouter<T>>;
     private readonly _roomStats: ReturnType<typeof throttle>;
-    private readonly _queue = new JoinQueue();
+    private readonly _queue = new SerialQueue();
     private readonly _limits = new ExclusiveUntil(() => this._room.limits !== null);
     private _closing = 0;
     private _connecting = 0;
@@ -326,14 +326,14 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     }
 
     public applyFrames(effects: RoomEffects<T>, senderId: string): Promise<void> {
-        return this._queue.join(async () => {
+        return this._queue.run(async () => {
             await this._applyEffects(effects, this._socket(senderId));
         });
     }
 
     /** Writes sockets only. The facet drops storage after `deliverFrames` returns. */
     public writeFrames(effects: RoomEffects<T>, senderId: string): Promise<void> {
-        return this._queue.join(async () => {
+        return this._queue.run(async () => {
             await this._applyEffects(effects, this._socket(senderId), false);
         });
     }
@@ -347,7 +347,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
         if (!socket) return Promise.resolve();
 
-        return this._queue.join(async () => {
+        return this._queue.run(async () => {
             const context = this._sessionContext(socket);
             const broadcastResult =
                 await this._sessionRouter._defs.events.$updatePresence.config.broadcast?.(
@@ -402,7 +402,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     public async garbageCollect(): Promise<void> {
         this._lastGarbageCollectMs = Date.now();
 
-        const quitting = await this._queue.join(async () =>
+        const quitting = await this._queue.run(async () =>
             Array.from(this._sessions.values()).filter((socket) => !this._isLiveSocket(socket)),
         );
 
@@ -721,7 +721,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         if (this._sessions.all().size !== 0) return;
 
         if (this._connecting !== 0 || this._registering !== 0) {
-            void this._queue.join(() => this._destroyIdleRoom());
+            void this._queue.run(() => this._destroyIdleRoom());
 
             return;
         }
@@ -981,7 +981,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
             const context = this._sessionContext(socket);
             const broadcast = await procedure.config.broadcast?.(inputs, context);
 
-            await this._queue.join(async () => {
+            await this._queue.run(async () => {
                 const storage = await this._room["~"].initializeStorage({
                     input: inputs ?? {},
                     actor: this._toSnapshot(socket),
@@ -1116,7 +1116,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         while (this._unsent.length) {
             try {
                 // oxlint-disable-next-line eslint/no-await-in-loop
-                await this._queue.join(async () => {
+                await this._queue.run(async () => {
                     const pending = this._unsent.slice();
 
                     for (const item of pending) {
@@ -1150,7 +1150,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
             try {
                 // oxlint-disable-next-line eslint/no-await-in-loop
-                const status = await this._queue.join(async () => {
+                const status = await this._queue.run(async () => {
                     const flushed = await this._room["~"].flushSnapshot();
 
                     if (flushed.broadcast.length) {
@@ -1232,8 +1232,8 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
     /**
      * Removes each socket on the queue, then runs `onUserDisconnected` after that
-     * join so the listener can await the session manager. `$exit` is written on
-     * a later join. Destroy waits until every unregister in progress has sent `$exit`.
+     * run so the listener can await the session manager. `$exit` is written on
+     * a later run. Destroy waits until every unregister in progress has sent `$exit`.
      */
     private async _unregisterSockets(params: {
         code: number;
@@ -1251,7 +1251,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         try {
             for (const socket of sockets) {
                 // oxlint-disable-next-line eslint/no-await-in-loop
-                const snapshot = await this._queue.join(async () => {
+                const snapshot = await this._queue.run(async () => {
                     if (!this._sessions.has(socket.sessionId)) return null;
 
                     const next = this._toSnapshot(socket);
@@ -1282,7 +1282,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                 this._noteStorage(produced);
 
                 // oxlint-disable-next-line eslint/no-await-in-loop
-                await this._queue.join(async () => {
+                await this._queue.run(async () => {
                     await this._writeFrames(produced.broadcast, "broadcast");
                     await this._room["~"].dropStorageUpdates(produced.broadcast);
                     this._room["~"].logDebug(
@@ -1292,7 +1292,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
             }
         } finally {
             this._closing -= 1;
-            await this._queue.join(async () => {
+            await this._queue.run(async () => {
                 if (sync) await this._emitSyncState();
 
                 await this._destroyEmptyRoom();

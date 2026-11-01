@@ -375,8 +375,8 @@ export class IORoom<T extends IODefs = IODefs>
 
         const procedure = procedures[name];
 
-        // The load waits off the queue. The next turn writes and broadcasts.
-        // A rejection rejects the host call. There is no commit on that turn.
+        // The load waits off the queue. The next run writes and broadcasts.
+        // A rejection rejects the host call. There is no commit on that run.
         if (procedure.prepared && procedure.load) {
             const loaded = procedure
                 .load(data, {
@@ -470,7 +470,7 @@ export class IORoom<T extends IODefs = IODefs>
         this._snapshot.assertSize(doc.getEncodedState());
 
         // Releasing sends this update with the others already waiting. A slow hosted
-        // send carries its own frame and stays off that list, so another turn cannot
+        // send carries its own frame and stays off that list, so another run cannot
         // release these bytes under a different actor.
         if (releasePending && update) this._snapshot.queueUpdate(update);
 
@@ -958,8 +958,8 @@ export class IORoom<T extends IODefs = IODefs>
 
             const { broadcast: broadcastResult, self: selfResult } = invoked;
 
-            // The storage broadcast stays on this join. Other resolvers can await the
-            // session manager, so this join must finish before those promises do.
+            // The storage broadcast stays on this run. Other resolvers can await the
+            // session manager, so this run must finish before those promises do.
             if (!storageEvent && (isThenable(broadcastResult) || isThenable(selfResult))) {
                 return deferredResult(
                     Promise.all([broadcastResult, selfResult])

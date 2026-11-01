@@ -54,7 +54,7 @@ const yieldTurn = (): Promise<void> => {
 };
 
 // An already-settled turn belongs in this RPC result. Delivering it through the
-// caller joins the queue that is still waiting here.
+// caller runs on the queue that is still waiting here.
 const readSettled = async <T>(
     deferredResult: Promise<T>,
 ): Promise<

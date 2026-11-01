@@ -1,24 +1,24 @@
 /**
  * Runs async tasks one at a time.
- * A task already running here cannot wait on `join`; that waits for itself.
+ * A task already running here cannot wait on `run`; that waits for itself.
  * `finish` is how a task waits for a promise and then comes back.
  */
-export class JoinQueue {
+export class SerialQueue {
     private _tail: Promise<void> = Promise.resolve();
 
     /**
-     * Runs `task` on this queue. `{ value }` is passed to `finish` before the
-     * task releases. `{ pending }` is awaited after it releases, and `finish`
-     * runs on the next join. `{ suspended: true }` releases the queue and does
-     * not run `finish`.
+     * Runs `task` on this queue. `{ value }` is passed to `commit` before the
+     * task releases. `{ pending }` is awaited after it releases, and `commit`
+     * runs on the next `run`. `{ suspended: true }` releases the queue and does
+     * not run `commit`.
      */
     public async finish<TValue>(
         task: () => Promise<{ pending: Promise<TValue> } | { value: TValue } | { suspended: true }>,
-        finish: (value: TValue) => Promise<void>,
+        commit: (value: TValue) => Promise<void>,
     ): Promise<void> {
         const deferred: { pending: Promise<TValue> | null } = { pending: null };
 
-        await this.join(async () => {
+        await this.run(async () => {
             const result = await task();
 
             if ("suspended" in result) return;
@@ -29,24 +29,24 @@ export class JoinQueue {
                 return;
             }
 
-            await finish(result.value);
+            await commit(result.value);
         });
 
         if (!deferred.pending) return;
 
         const value = await deferred.pending;
 
-        await this.join(() => finish(value));
+        await this.run(() => commit(value));
     }
 
-    public join<TResult>(task: () => Promise<TResult>): Promise<TResult> {
-        const run = this._tail.then(task, task);
+    public run<TResult>(task: () => Promise<TResult>): Promise<TResult> {
+        const started = this._tail.then(task, task);
 
-        this._tail = run.then(
+        this._tail = started.then(
             () => undefined,
             () => undefined,
         );
 
-        return run;
+        return started;
     }
 }
