@@ -642,15 +642,15 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                             if (!isDeferredResult(effects)) return { value: effects };
 
                             const loaded = deferredResultPromise(effects);
-                            const turn = this._commitGate.reserve();
+                            const commit = this._commitGate.reserve();
 
-                            finishCommit = turn.finish;
+                            finishCommit = commit.finish;
 
                             // This runs only for a prepared load. The commit waits here, off the
                             // queue, until the previous prepared commit finishes. An unprepared
                             // write can still commit during that wait.
                             const pending: Promise<LoadedStorage<T> | RoomEffects<T>> =
-                                turn.previous
+                                commit.previous
                                     .then(
                                         () => loaded,
                                         () => loaded,
@@ -658,7 +658,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                                     .then(
                                         (value) => value,
                                         (error: unknown) => {
-                                            turn.finish();
+                                            commit.finish();
 
                                             throw error;
                                         },

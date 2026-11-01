@@ -862,7 +862,7 @@ describe("@pluv/platform", () => {
         }
     });
 
-    it("keeps a hosted prepare off another turn's storage release", async () => {
+    it("keeps a hosted prepare off another commit's storage release", async () => {
         const prepare = deferred<void>();
         const delivery = deferred<void>();
         let delivering = false;

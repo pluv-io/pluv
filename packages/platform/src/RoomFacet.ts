@@ -95,7 +95,7 @@ export type RoomFacetOptions<T extends IODefs = IODefs> = {
 export class RoomFacet<T extends IODefs = IODefs> {
     readonly #keepAlive: (promise: Promise<unknown>) => void;
     readonly #room: Room;
-    readonly #storageTurn = new CommitGate();
+    readonly #commitGate = new CommitGate();
 
     constructor(options: RoomFacetOptions<T>) {
         this.#keepAlive = options.keepAlive;
@@ -178,23 +178,23 @@ export class RoomFacet<T extends IODefs = IODefs> {
 
             // The earlier commit has finished, and this load has too. Commit while
             // the caller's queue is still held.
-            if (this.#storageTurn.idle) {
-                const turn = this.#storageTurn.reserve();
+            if (this.#commitGate.idle) {
+                const commit = this.#commitGate.reserve();
 
                 try {
                     return plain.effects(await this.#room["~"].commitLoadedStorage(value));
                 } finally {
-                    turn.finish();
+                    commit.finish();
                 }
             }
         }
 
-        const turn = this.#storageTurn.reserve();
+        const commit = this.#commitGate.reserve();
         const loaded = ready.status === "value" ? Promise.resolve(ready.value) : pending;
 
         // `{ suspended: true }` leaves the host call open until `finish`.
         // Waiting for the previous commit here would hold the caller's queue.
-        // `send` writes after that turn, off this RPC.
+        // `send` writes after that commit, off this RPC.
         this.#deliver({
             onReject: async (sink, error) => {
                 // The host call rejects with this error. The caller logs it.
@@ -210,7 +210,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
                         storageDirty: false,
                     });
                 } finally {
-                    turn.finish();
+                    commit.finish();
                     await sink.finish(plain.error(error));
                 }
             },
@@ -229,7 +229,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
 
                     try {
                         // `false` runs off the queue, so this write does not pull
-                        // updates another turn is writing.
+                        // updates another commit is writing.
                         const effects =
                             "broadcast" in value
                                 ? value
@@ -268,11 +268,11 @@ export class RoomFacet<T extends IODefs = IODefs> {
                         }
                     }
                 } finally {
-                    turn.finish();
+                    commit.finish();
                 }
             },
             sink: params.onFrames,
-            deferredResult: turn.previous.then(
+            deferredResult: commit.previous.then(
                 () => loaded,
                 () => loaded,
             ),
