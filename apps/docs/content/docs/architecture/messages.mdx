@@ -3,11 +3,11 @@ title: "Messages"
 description: "How a room returns a deferred result or an effect, and how the session manager writes the frames"
 ---
 
-A message follows a fixed order once a room and a session manager exist. [Concepts](/docs/infrastructure/concepts) defines those objects, along with a frame, a deferred result, an effect, and a snapshot.
+A message follows a fixed order once a room and a session manager exist. [Concepts](/docs/architecture/concepts) defines those objects, along with a frame, a deferred result, an effect, and a snapshot.
 
 A socket delivers the message to the session manager. The session manager asks the room to apply it, and the room answers with one of two results.
 
-If the handler is still waiting, that result is a deferred result and the next message can run. If the handler has finished, that result is an effect and the session manager writes its frames. The first two cases are the effect and the deferred result. A [snapshot](/docs/infrastructure/concepts#snapshot) and a connection leaving also write frames, and those frames do not come from a handler. When the room and the sockets live in different places, see [Hosted rooms](/docs/infrastructure/hosted).
+If the handler is still waiting, that result is a deferred result and the next message can run. If the handler has finished, that result is an effect and the session manager writes its frames. The first two cases are the effect and the deferred result. A [snapshot](/docs/architecture/concepts#snapshot) and a connection leaving also write frames, and those frames do not come from a handler. When the room and the sockets live in different places, see [Hosted rooms](/docs/architecture/hosted).
 
 ## Effect
 
@@ -34,7 +34,7 @@ The room remembers document changes the clients have not received yet, and it ke
 
 ## Deferred result
 
-The room returns a deferred result when the handler is still waiting. It has no frames yet. A message from a separate handler can arrive while the first handler's deferred result is still pending, and that message is applied and its frames are written before the first handler finishes. A message that arrives after the first handler finishes waits until that handler's frames are written.
+The room returns a deferred result when the handler is still waiting, so there are no frames to send yet. The session manager sets that handler aside and lets the next task run. [Task sequencing](/docs/architecture/task-sequencing#off-the-line) explains why, and what happens when the wait finishes or fails.
 
 ```mermaid
 sequenceDiagram
@@ -58,7 +58,7 @@ When the handler finishes and its broadcast frames are written, the room takes t
 
 ## Snapshot
 
-A [snapshot](/docs/infrastructure/concepts#snapshot) writes the document into the server's storage. The room loads the document from that storage when the one in memory is gone. This write is separate from `onStorageSnapshot` and `onStorageDestroyed`, which write an app's own database. The session manager waits one second after the document changes, then writes. A change during that second is included in the same write. The write still waits until the current message is done. If the document changes during the write, the session manager waits another second and writes again.
+A [snapshot](/docs/architecture/concepts#snapshot) writes the document into the server's storage. The room loads the document from that storage when the one in memory is gone. This write is separate from `onStorageSnapshot` and `onStorageDestroyed`, which write an app's own database. The session manager waits one second after the document changes, then writes. A change during that second is included in the same write. The write still waits until the current message is done. If the document changes during the write, the session manager waits another second and writes again.
 
 ```mermaid
 sequenceDiagram
