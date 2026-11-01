@@ -1,36 +1,36 @@
 /**
  * Orders one commit after another.
- * `idle` means the latest reserved turn has already finished.
- * `reserve` takes the next turn. `previous` settles when the earlier turn
- * finishes. `finish` runs once, when this turn's commit has ended.
+ * `idle` means the latest reserved commit has already finished.
+ * `reserve` takes the next commit. `previous` settles when the earlier commit
+ * finishes. `finish` runs once, when this commit has ended.
  */
 export class CommitGate {
-    #turn: { done: boolean; promise: Promise<void> } = {
+    #commit: { done: boolean; promise: Promise<void> } = {
         done: true,
         promise: Promise.resolve(),
     };
 
     public get idle(): boolean {
-        return this.#turn.done;
+        return this.#commit.done;
     }
 
     public reserve(): { previous: Promise<void>; finish: () => void } {
-        const previous = this.#turn.promise;
+        const previous = this.#commit.promise;
         let settled = false;
-        let resolveTurn: () => void = () => undefined;
+        let resolveCommit: () => void = () => undefined;
         const promise = new Promise<void>((resolve) => {
-            resolveTurn = resolve;
+            resolveCommit = resolve;
         });
-        const turn = { done: false, promise };
+        const commit = { done: false, promise };
         const finish = (): void => {
             if (settled) return;
 
             settled = true;
-            turn.done = true;
-            resolveTurn();
+            commit.done = true;
+            resolveCommit();
         };
 
-        this.#turn = turn;
+        this.#commit = commit;
 
         return { previous, finish };
     }

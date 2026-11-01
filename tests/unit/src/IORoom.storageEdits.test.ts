@@ -341,7 +341,7 @@ describe("IORoom storage edits", () => {
         const updates = batches.flat().map((change) => change.update);
 
         // `third` is still waiting when `first` arrives, and that apply covers it.
-        // `second` was dropped on the earlier turn, while it was still waiting.
+        // `second` was dropped on the earlier run, while it was still waiting.
         expect(updates).toContain(first);
         expect(updates).toContain(third);
         expect(updates).not.toContain(second);

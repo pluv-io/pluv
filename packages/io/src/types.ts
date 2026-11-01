@@ -288,7 +288,7 @@ export type RoomStorageActor<T extends IODefs = IODefs> = Pick<
     "id" | "kind" | "operator" | "presence" | "user"
 >;
 
-/** A storage `prepare` finished off the queue. The next turn writes this. */
+/** A storage `prepare` finished off the queue. The next run writes this. */
 export type LoadedStorage<T extends IODefs = IODefs> = {
     actor: RoomStorageActor<T>;
     data: unknown;
@@ -321,7 +321,7 @@ export interface RoomEffects<T extends IODefs = IODefs> {
     attachments: RoomAttachment[];
     broadcast: RoomEffectFrame<T>[];
     closes: string[];
-    /** Connection that produced this turn. Null when the result has no single actor. */
+    /** Connection that produced this run. Null when the result has no single actor. */
     connectionId: string | null;
     destroy: boolean;
     error: unknown;

@@ -37,7 +37,7 @@ const decodeText = (encodedState: string): string => {
     return doc.getText("content").toJSON();
 };
 
-const messageTurn = (promise: Promise<never>) => {
+const pendingMessage = (promise: Promise<never>) => {
     return Object.defineProperty({}, "$u", { value: promise });
 };
 
@@ -862,7 +862,7 @@ describe("@pluv/platform", () => {
         }
     });
 
-    it("keeps a hosted prepare off another turn's storage release", async () => {
+    it("keeps a hosted prepare off another commit's storage release", async () => {
         const prepare = deferred<void>();
         const delivery = deferred<void>();
         let delivering = false;
@@ -1063,13 +1063,13 @@ describe("@pluv/platform", () => {
         });
     });
 
-    it("returns $error when a message turn rejects before the call returns", async () => {
+    it("returns $error when a message run rejects before the call returns", async () => {
         const room = {
             id: "room-1",
             limits: null,
             "~": {
                 message: () =>
-                    messageTurn(
+                    pendingMessage(
                         new Promise<never>((_resolve, reject) => {
                             setTimeout(() => reject(new Error("message failed")), 0);
                         }),
@@ -1093,7 +1093,7 @@ describe("@pluv/platform", () => {
         expect(result).toEqual({ error: { message: "message failed" }, suspended: true });
     });
 
-    it("sends $error when a message turn is already rejected", async () => {
+    it("sends $error when a message run is already rejected", async () => {
         const hosted = host({ messageError: "message failed" });
         const socket = new TestSocket("session-1");
 
@@ -1103,17 +1103,17 @@ describe("@pluv/platform", () => {
         expect(lastMessage(socket, "$error").data.message).toBe("message failed");
     });
 
-    it("sends $error when a pending message turn rejects", async () => {
-        let rejectTurn: (error: Error) => void = () => undefined;
+    it("sends $error when a pending message run rejects", async () => {
+        let rejectPending: (error: Error) => void = () => undefined;
         const pending = new Promise<never>((_resolve, reject) => {
-            rejectTurn = reject;
+            rejectPending = reject;
         });
         const delivered: RoomEffects[] = [];
         const room = {
             id: "room-1",
             limits: null,
             "~": {
-                message: () => messageTurn(pending),
+                message: () => pendingMessage(pending),
             },
         } as unknown as SessionRoom;
         const facet = new RoomFacet({
@@ -1134,7 +1134,7 @@ describe("@pluv/platform", () => {
 
         expect(result).toEqual({ suspended: true });
 
-        rejectTurn(new Error("message failed"));
+        rejectPending(new Error("message failed"));
         await waitUntil(() => delivered.length === 1);
 
         expect(delivered[0]?.connectionId).toBe("session-1");
