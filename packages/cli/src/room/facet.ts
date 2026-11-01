@@ -111,7 +111,7 @@ export class UserRoomFacet
     }
 
     async #load(): Promise<RoomFacet> {
-        const ioServer = (await import("user-server.js")).default;
+        const ioServer = (await import("server.js")).default;
         const roomId = this.ctx.id.name;
 
         if (!roomId) throw new Error("Room facet requires the parent id.");

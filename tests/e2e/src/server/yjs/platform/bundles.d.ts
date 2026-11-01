@@ -4,7 +4,7 @@ declare module "*.bundle.txt" {
     export default source;
 }
 
-declare module "user-server.js" {
+declare module "server.js" {
     import type { IORoom } from "@pluv/io";
     import type { PluvRoomContext } from "@pluv/platform";
 

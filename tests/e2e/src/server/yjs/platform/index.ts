@@ -1,9 +1,38 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import type { WorkerLoader } from "@pluv/platform/load-user-facet";
+import { COMPATIBILITY_DATE, createRoomSupervisor } from "pluv/supervisor";
 import { ioServer } from "./user-server";
-import type { PlatformEnv } from "./supervisor";
+import facetSource from "./generated/facet.bundle.txt";
+import userServerSource from "./generated/server.bundle.txt";
 
-export { RoomSupervisor } from "./supervisor";
+export interface PlatformEnv {
+    E2E_TEST_DATABASE_URL?: string;
+    LOADER: WorkerLoader;
+    rooms: DurableObjectNamespace;
+}
+
+const PlatformRoom = createRoomSupervisor<PlatformEnv>({
+    version: "platform-e2e",
+    code: (env) => {
+        const databaseUrl = env.E2E_TEST_DATABASE_URL;
+
+        return {
+            compatibilityDate: COMPATIBILITY_DATE,
+            // The uploaded module stays off the network unless it has a database to reach.
+            ...(databaseUrl
+                ? { env: { E2E_TEST_DATABASE_URL: databaseUrl } }
+                : { globalOutbound: null }),
+            mainModule: "facet.js",
+            modules: {
+                "facet.js": facetSource,
+                "server.js": userServerSource,
+            },
+        };
+    },
+});
+
+export class RoomSupervisor extends PlatformRoom {}
 
 const app = new Hono<{ Bindings: PlatformEnv }>()
     .use(cors({ origin: "*" }))

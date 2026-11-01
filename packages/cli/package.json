@@ -1,0 +1,74 @@
+{
+    "name": "pluv",
+    "version": "6.0.0",
+    "description": "CLI for pluv.io",
+    "author": {
+        "email": "david@pluv.io",
+        "name": "i3dly",
+        "url": "https://github.com/i3dly"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/pluv-io/pluv",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/pluv-io/pluv.git",
+        "directory": "packages/cli"
+    },
+    "type": "module",
+    "bin": {
+        "pluv": "./dist/cli.js"
+    },
+    "files": [
+        "dist"
+    ],
+    "engines": {
+        "node": ">=24"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "build": "tsdown",
+        "dev": "tsdown --watch",
+        "link": "pnpm add -g .",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    },
+    "dependencies": {
+        "@pluv/io": "workspace:^",
+        "@pluv/platform": "workspace:^",
+        "@pluv/platform-cloudflare": "workspace:^",
+        "@pluv/types": "workspace:^",
+        "esbuild": "^0.28.2",
+        "ink": "^8.0.0",
+        "pastel": "^4.0.1",
+        "react": "^19.3.1",
+        "wrangler": "^4.152.0",
+        "zod": "^4.6.7"
+    },
+    "devDependencies": {
+        "@cloudflare/workers-types": "^5.20261025.1",
+        "@pluv/tsconfig": "workspace:^",
+        "@types/node": "^26.6.5",
+        "@types/react": "^19.3.0",
+        "tsdown": "^0.23.2",
+        "typescript": "7.1.0-beta",
+        "vitest": "^5.0.5"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/config.d.ts",
+            "default": "./dist/config.js"
+        },
+        "./supervisor": {
+            "types": "./dist/supervisor.d.ts",
+            "default": "./dist/supervisor.js"
+        },
+        "./bundle": {
+            "types": "./dist/bundle.d.ts",
+            "default": "./dist/bundle.js"
+        }
+    }
+}
