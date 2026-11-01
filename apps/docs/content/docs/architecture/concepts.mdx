@@ -25,13 +25,13 @@ A self frame is written only to the sender. It is that message's reply. The othe
 
 ## Deferred result
 
-A deferred result is a handler that is still waiting. It has no frames yet. The session manager lets the next message run. When that handler finishes, the room returns an effect. [Messages](/docs/infrastructure/messages) shows what happens while that handler is still waiting.
+A deferred result is a handler that is still waiting. It has no frames yet. The session manager lets the next task run. When that handler finishes, the room returns an effect. [Task sequencing](/docs/architecture/task-sequencing#off-the-line) explains that wait. [Messages](/docs/architecture/messages) shows where it sits among the other ways a room sends frames.
 
 ## Effect
 
-An effect is the finished result of a handler. It carries the broadcast frames, the self frames, and whether the in-memory document is ahead of the snapshot. The room stops there. The session manager writes the frames. Those broadcast frames carry the document changes. The room keeps a list of changes the clients have not received yet, and takes off that list the changes this broadcast sent, so a later [snapshot](#snapshot) does not send them again. [Messages](/docs/infrastructure/messages#effect) shows why a second send would apply the same change twice.
+An effect is the finished result of a handler. It carries the broadcast frames, the self frames, and whether the in-memory document is ahead of the snapshot. The room stops there. The session manager writes the frames. Those broadcast frames carry the document changes. The room keeps a list of changes the clients have not received yet, and takes off that list the changes this broadcast sent, so a later [snapshot](#snapshot) does not send them again. [Messages](/docs/architecture/messages#effect) shows why a second send would apply the same change twice.
 
-When the room and the sockets live in different places, see [Hosted rooms](/docs/infrastructure/hosted).
+When the room and the sockets live in different places, see [Hosted rooms](/docs/architecture/hosted).
 
 ## Snapshot
 
@@ -44,4 +44,4 @@ The room calls `getInitialStorage` only when the server's storage has no documen
 
 This is a different write from the one an app configures for its own database. `onStorageSnapshot` runs after the document is written to the server's storage. `onStorageDestroyed` runs when the document is about to be destroyed. Those listeners are where the app keeps its own copy. The snapshot does not wait for `onStorageSnapshot`. [Loading storage](/docs/guides/storage/loading) shows those listeners.
 
-While clients are still connected, the snapshot also sends a broadcast frame for a change they have not received yet. [Messages](/docs/infrastructure/messages#snapshot) shows when that write waits.
+While clients are still connected, the snapshot also sends a broadcast frame for a change they have not received yet. [Messages](/docs/architecture/messages#snapshot) shows when that write waits.
