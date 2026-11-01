@@ -525,7 +525,7 @@ describe("@pluv/platform", () => {
                     const code = getCode();
 
                     expect(code.mainModule).toBe("facet.js");
-                    expect(code.modules["user-server.js"]).toContain("export default");
+                    expect(code.modules["server.js"]).toContain("export default");
 
                     return {
                         getDurableObjectClass: (name) => {
@@ -543,7 +543,7 @@ describe("@pluv/platform", () => {
                     mainModule: "facet.js",
                     modules: {
                         "facet.js": "export {}",
-                        "user-server.js": "export default {}",
+                        "server.js": "export default {}",
                     },
                 }),
             },

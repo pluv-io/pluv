@@ -11,6 +11,7 @@
             "@pluv/io": ["../../../../../../packages/io/dist"],
             "@pluv/platform": ["../../../../../../packages/platform/dist"],
             "@pluv/platform-cloudflare": ["../../../../../../packages/platform-cloudflare/dist"],
+            "pluv/supervisor": ["../../../../../../packages/cli/src/room/supervisor.ts"],
             "@pluv/treaty": ["../../../../../../packages/treaty/dist"],
             "@pluv/types": ["../../../../../../packages/types/dist"]
         }

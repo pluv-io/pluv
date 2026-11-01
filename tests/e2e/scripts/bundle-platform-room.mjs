@@ -1,42 +1,18 @@
-import { mkdir } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import * as esbuild from "esbuild";
+import { bundleRoom } from "pluv/bundle";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(here, "..");
-const outdir = resolve(packageRoot, "src/server/yjs/platform/generated");
+const repoRoot = resolve(packageRoot, "../..");
 
-await mkdir(outdir, { recursive: true });
-
-const shared = {
-    bundle: true,
-    format: "esm",
-    platform: "neutral",
-    target: "esnext",
-    external: ["cloudflare:workers"],
-    conditions: ["workerd", "worker", "import"],
-};
-
-const platformEntry = resolve(packageRoot, "../../packages/platform/src/index.ts");
-
-await esbuild.build({
-    ...shared,
+await bundleRoom({
     absWorkingDir: packageRoot,
-    entryPoints: ["src/server/yjs/platform/user-server.ts"],
-    outfile: resolve(outdir, "user-server.bundle.txt"),
+    userEntry: "src/server/yjs/platform/user-server.ts",
+    facetAbsWorkingDir: repoRoot,
+    facetEntry: "packages/cli/src/room/facet.ts",
+    outdir: resolve(packageRoot, "src/server/yjs/platform/generated"),
     alias: {
-        "@pluv/platform": platformEntry,
-    },
-});
-
-await esbuild.build({
-    ...shared,
-    absWorkingDir: resolve(packageRoot, "../.."),
-    entryPoints: ["tests/e2e/src/server/yjs/platform/facet.ts"],
-    outfile: resolve(outdir, "facet.bundle.txt"),
-    external: ["cloudflare:workers", "user-server.js"],
-    alias: {
-        "@pluv/platform": platformEntry,
+        "@pluv/platform": resolve(repoRoot, "packages/platform/src/index.ts"),
     },
 });
