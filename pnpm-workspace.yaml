@@ -1,5 +1,6 @@
 packages:
     - "apps/docs"
+    - "apps/sandbox"
 
     - "packages/addon-indexeddb"
     - "packages/cli"

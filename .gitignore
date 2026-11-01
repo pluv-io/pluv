@@ -10,6 +10,7 @@ node_modules
 coverage
 playwright-report
 tests/e2e/dev.db
+apps/sandbox/dev.db
 
 # next.js
 .next/
