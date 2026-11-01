@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const DEFAULT_ENTRY = "./pluv.ts";
+export const DEFAULT_DIST_DIR = ".pluv";
 export const DEFAULT_PORT = 8787;
 
 const portError = { error: "port must be an integer from 1 to 65535." } as const;
@@ -10,6 +11,10 @@ const ZodPortSchema = z.number(portError).int(portError).min(1, portError).max(6
 const ZodEntrySchema = z
     .string({ error: "entry must be a module path." })
     .min(1, { error: "entry must be a module path." });
+
+const ZodDistDirSchema = z
+    .string({ error: "distDir must be a directory path." })
+    .min(1, { error: "distDir must be a directory path." });
 
 const ZodEnvSchema = z
     .record(
@@ -38,6 +43,8 @@ export const ZodPluvConfigFileSchema = z
     .object({
         /** Server module. Default export is the `io.server()` result. */
         entry: ZodEntrySchema.optional(),
+        /** Directory `pluv build` writes into. The server file is `build/server.js` inside it. Defaults to `.pluv`. */
+        distDir: ZodDistDirSchema.optional(),
         port: ZodPortSchema.optional(),
         /**
          * Copied onto the room's `process.env`.
@@ -59,6 +66,7 @@ export const ZodPluvConfigSchema = z.object({
                     : "entry must be a module path.",
         })
         .min(1, { error: "entry must be a module path." }),
+    distDir: ZodDistDirSchema.default(DEFAULT_DIST_DIR),
     port: ZodPortSchema.default(DEFAULT_PORT),
     env: ZodEnvSchema.default({}),
 });

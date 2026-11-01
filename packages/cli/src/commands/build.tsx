@@ -66,7 +66,11 @@ export default function Build() {
     useEffect(() => {
         let stopped = false;
 
-        void buildServer(process.cwd(), config.entry)
+        void buildServer({
+            cwd: process.cwd(),
+            entry: config.entry,
+            distDir: config.distDir,
+        })
             .then((outfile) => {
                 if (stopped) return;
 

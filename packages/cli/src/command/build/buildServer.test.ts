@@ -24,11 +24,31 @@ describe("buildServer", () => {
 
         await writeFile(join(cwd, "pluv.ts"), `export default { marker: "pluv-build-test" };\n`);
 
-        const outfile = await buildServer(cwd, join(cwd, "pluv.ts"));
+        const outfile = await buildServer({
+            cwd,
+            entry: join(cwd, "pluv.ts"),
+            distDir: join(cwd, ".pluv"),
+        });
         const text = await readFile(outfile, "utf8");
 
         expect(outfile).toBe(join(cwd, ".pluv/build/server.js"));
         expect(text).toContain("pluv-build-test");
         expect(text).not.toContain("RoomSupervisor");
+    });
+
+    it("writes build/server.js inside distDir", async () => {
+        const cwd = await makeDir();
+
+        await writeFile(join(cwd, "pluv.ts"), `export default { marker: "custom-output" };\n`);
+
+        const outfile = await buildServer({
+            cwd,
+            entry: join(cwd, "pluv.ts"),
+            distDir: join(cwd, "dist"),
+        });
+        const text = await readFile(outfile, "utf8");
+
+        expect(outfile).toBe(join(cwd, "dist/build/server.js"));
+        expect(text).toContain("custom-output");
     });
 });

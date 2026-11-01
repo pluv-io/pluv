@@ -27,6 +27,7 @@ describe("resolveDevConfig", () => {
         expect(config).toEqual({
             entry: resolve(cwd, "pluv.ts"),
             env: {},
+            distDir: resolve(cwd, ".pluv"),
             port: 8787,
         });
     });
@@ -49,6 +50,7 @@ describe("resolveDevConfig", () => {
         expect(config).toEqual({
             entry: resolve(cwd, "src/io.ts"),
             env: {},
+            distDir: resolve(cwd, ".pluv"),
             port: 8787,
         });
     });
@@ -71,6 +73,7 @@ describe("resolveDevConfig", () => {
         expect(fromFile).toEqual({
             entry: resolve(cwd, "from-file.ts"),
             env: {},
+            distDir: resolve(cwd, ".pluv"),
             port: 8791,
         });
 
@@ -82,6 +85,7 @@ describe("resolveDevConfig", () => {
         expect(overridden).toEqual({
             entry: resolve(cwd, "from-flag.ts"),
             env: {},
+            distDir: resolve(cwd, ".pluv"),
             port: 8799,
         });
     });
@@ -106,6 +110,31 @@ describe("resolveDevConfig", () => {
         await expect(resolveDevConfig(cwd, {})).rejects.toThrow(filePath);
         await expect(resolveDevConfig(cwd, {})).rejects.toThrow(
             "Invalid input: expected object, received array",
+        );
+    });
+
+    it("uses the distDir from the config file", async () => {
+        const cwd = await makeDir();
+
+        await writeFile(
+            join(cwd, "pluv.config.json"),
+            JSON.stringify({ entry: "./pluv.ts", distDir: "./dist" }),
+        );
+
+        const { config } = await resolveDevConfig(cwd, {});
+
+        expect(config.distDir).toBe(resolve(cwd, "dist"));
+    });
+
+    it("rejects a distDir that is not a directory path", async () => {
+        const cwd = await makeDir();
+        const filePath = join(cwd, "pluv.config.json");
+
+        await writeFile(filePath, JSON.stringify({ entry: "./pluv.ts", distDir: "" }));
+
+        await expect(resolveDevConfig(cwd, {})).rejects.toThrow(filePath);
+        await expect(resolveDevConfig(cwd, {})).rejects.toThrow(
+            "distDir must be a directory path.",
         );
     });
 

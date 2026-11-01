@@ -80,6 +80,7 @@ export const resolveDevConfig = async (
     const parsed = ZodPluvConfigSchema.safeParse({
         entry,
         env: file?.env,
+        distDir: file?.distDir,
         port: flags.port ?? file?.port,
     });
 
@@ -88,6 +89,7 @@ export const resolveDevConfig = async (
     const config = {
         ...parsed.data,
         entry: resolve(cwd, parsed.data.entry),
+        distDir: resolve(cwd, parsed.data.distDir),
     };
 
     return {
