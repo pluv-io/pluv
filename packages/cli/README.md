@@ -50,3 +50,13 @@ export default defineConfig({
 A path argument and flags override the file: `pluv dev ./src/io.ts --port 8787`. `pluv dev --help` lists them.
 
 Saving the server module reloads the room code. The room facet keeps its storage. Connected clients reconnect.
+
+## `pluv build`
+
+Bundles the io server module for upload. The hosted platform runs its own supervisor and facet, and loads this file as `server.js`.
+
+```bash
+pluv build
+```
+
+The artifact is `.pluv/build/server.js`. A path argument overrides the config entry: `pluv build ./src/io.ts`. The room's `env` is supplied by the platform, so this bundle does not copy `process.env`.
