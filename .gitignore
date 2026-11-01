@@ -36,6 +36,9 @@ yarn-error.log*
 # turbo
 .turbo
 
+# local pluv dev server and build output
+.pluv
+
 # build artifacts
 dev.db-journal
 dist

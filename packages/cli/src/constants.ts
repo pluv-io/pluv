@@ -1,0 +1,1 @@
+export const COMPATIBILITY_DATE = "2026-10-08";
