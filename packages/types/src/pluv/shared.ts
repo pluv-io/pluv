@@ -186,6 +186,7 @@ export type TreatyProcedureLike<
     kind: TKind;
     readonly prepared?: boolean;
     config: {
+        description?: string | null;
         input?: StandardSchemaV1<unknown, TInput> | null;
         prepare?: ((data: never, ...args: any[]) => unknown) | null;
         resolve?: ((data: never, ...args: any[]) => unknown) | null;
@@ -205,6 +206,7 @@ export type InferTreatyStorageProcedures<TTreaty extends TreatyLike | undefined>
     TTreaty extends TreatyLike ? TTreaty["_defs"]["procedures"]["storage"] : {};
 
 export type TreatyProcedureInputJson = {
+    description: string | null;
     input: unknown;
 };
 

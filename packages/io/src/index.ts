@@ -61,6 +61,7 @@ export { __internal } from "./internal";
 export type { IODefs, IOLikeFromDefs, PatchDefs } from "./IODefs";
 export type {
     HostPresenceInvoke,
+    HostPresenceProcedureProxy,
     HostStorageInvoke,
     HostStorageProcedureProxy,
     HostTreatyProcedureActor,

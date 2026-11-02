@@ -42,7 +42,7 @@ type Room = {
     onMessage: (socket: TestSocket) => (event: { data: string }) => Promise<void>;
     register: (socket: TestSocket, ...options: any[]) => Promise<void>;
     __experimental_presence: (actor: { senderId: string }) => {
-        select: (input: { id: string | null }) => Promise<void>;
+        select: (input: { id: string | null }) => Promise<{ selectionId: string | null } | null>;
     };
     __experimental_storage: (actor: { senderId: string }) => {
         addMessage: (input: { text: string }) => Promise<void>;
@@ -142,12 +142,37 @@ describe("IORoom treaty invoke", () => {
         await registerAuthorized(room, second, { io });
         await initializeSession(room, second, { selectionId: null });
 
-        await room.__experimental_presence({ senderId: first.id }).select({ id: "item-1" });
+        await expect(
+            room.__experimental_presence({ senderId: first.id }).select({ id: "item-1" }),
+        ).resolves.toEqual({ selectionId: "item-1" });
 
         expect(lastMessage(second, "$presenceUpdated").data.session.presence).toEqual({
             selectionId: "item-1",
         });
         expect(lastMessage(second, "$presenceUpdated").data.user).toEqual({ id: "session-1" });
+    });
+
+    it("returns a copy of the stored presence", async () => {
+        const { io, room } = createRoom("treaty-presence-copy");
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(room, first, { io });
+        await initializeSession(room, first, { selectionId: null });
+        await registerAuthorized(room, second, { io });
+        await initializeSession(room, second, { selectionId: null });
+
+        const presence = await room
+            .__experimental_presence({ senderId: first.id })
+            .select({ id: "item-1" });
+
+        Object.assign(presence ?? {}, { extra: true, selectionId: "mutated" });
+
+        await room.__experimental_presence({ senderId: first.id }).select({ id: "item-2" });
+
+        expect(lastMessage(second, "$presenceUpdated").data.session.presence).toEqual({
+            selectionId: "item-2",
+        });
     });
 
     it("applies storage through persist and $storageUpdated without double-applying", async () => {
@@ -178,6 +203,7 @@ describe("IORoom treaty invoke", () => {
         const onlySecond = storage.getEmpty().applyEncodedState({ update: secondUpdate });
 
         expect(secondUpdate).not.toBe(firstUpdate);
+        expect(await room.getStorageJson()).toEqual({ messages: ["hello", "again"] });
         expect(both.toJson()).toEqual({ messages: ["hello", "again"] });
         expect(onlySecond.toJson()).not.toEqual({ messages: ["hello", "again"] });
         both.destroy();

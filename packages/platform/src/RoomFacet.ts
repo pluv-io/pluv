@@ -379,6 +379,10 @@ export class RoomFacet<T extends IODefs = IODefs> {
         return plain.effects(settled);
     }
 
+    public async readStorageJson(): Promise<unknown> {
+        return plain.json(await this.#room["~"].readStorageJson());
+    }
+
     public async register(...options: Parameters<Room["~"]["register"]>): Promise<{
         limits: Room["limits"];
         result: {

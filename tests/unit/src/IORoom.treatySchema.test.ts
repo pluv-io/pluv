@@ -12,6 +12,7 @@ describe("IORoom treaty schema", () => {
         const storage = yjs.schema({ messages: yjs.yArray(s.string()) });
         const treatyBuilder = createTreaty({ user: testAuthorizeUser, presence, storage });
         const select = treatyBuilder.procedure.presence
+            .describe("Set the selection")
             .input(z.object({ id: z.string().nullable() }))
             .resolve(() => ({ selectionId: null }));
         const bare = treatyBuilder.procedure.presence.resolve(() => ({ selectionId: null }));
@@ -32,18 +33,22 @@ describe("IORoom treaty schema", () => {
         expect(schema.user).toMatchObject({ type: "changed" });
         expect(schema.presence?.schema).toMatchObject({ type: "object" });
         expect(schema.presence?.procedures.select.input).toMatchObject({ type: "object" });
+        expect(schema.presence?.procedures.select.description).toBe("Set the selection");
         expect(schema.presence?.procedures.bare.input).toBeNull();
+        expect(schema.presence?.procedures.bare.description).toBeNull();
         expect(schema.storage?.schema).toMatchObject({ kind: "y.doc" });
         expect(schema.storage?.procedures.addMessage.input).toMatchObject({ type: "object" });
+        expect(schema.storage?.procedures.addMessage.description).toBeNull();
     });
 
-    it("returns null domains when the treaty has only a user", () => {
+    it("returns null domains when the treaty has only a user", async () => {
         const io = createAuthorizedIO();
         const sessions = manageSessions(io.server().createRoom("treaty-user-only"));
 
         expect(sessions.getTreatySchema().presence).toBeNull();
         expect(sessions.getTreatySchema().storage).toBeNull();
         expect(sessions.getTreatySchema().user).toMatchObject({ type: "object" });
+        expect(await sessions.getStorageJson()).toBeNull();
     });
 
     it("fails the whole document when a procedure input cannot emit JSON Schema", () => {

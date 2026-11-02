@@ -1,3 +1,4 @@
+import type { AbstractCrdtDocFactory, InferJson } from "@pluv/crdt";
 import type {
     EventMessage,
     Id,
@@ -6,7 +7,6 @@ import type {
     JsonObject,
     ListUsersOptions,
     ListUsersResult,
-    PresenceProcedureProxy,
 } from "@pluv/types";
 import type { InferInitContextType, InferPlatformWebSocketSource } from "../AbstractPlatform";
 import type { IOPubSubEventMessage } from "../AbstractPubSub";
@@ -19,11 +19,13 @@ import { AbstractWebSocket } from "../AbstractWebSocket";
 import type { IODefs } from "../IODefs";
 import type {
     HostPresenceInvoke,
+    HostPresenceProcedureProxy,
     HostStorageInvoke,
     HostTreatyProcedureActor,
     IORoom,
 } from "../IORoom";
 import type {
+    EventResolverPresence,
     LoadedStorage,
     RoomEffectFrame,
     RoomEffects,
@@ -88,7 +90,7 @@ export type BroadcastProxy<TIO extends IORoom<any>> = (<TEvent extends keyof Inf
  */
 export class RoomSessionManager<T extends IODefs = IODefs> {
     public readonly broadcast: BroadcastProxy<IORoom<T>>;
-    public readonly __experimental_presence: HostPresenceInvoke<IORoom<T>>;
+    public readonly __experimental_presence: HostPresenceInvoke<T>;
     public readonly __experimental_storage: HostStorageInvoke<IORoom<T>>;
 
     private readonly _platform: T["platform"];
@@ -142,6 +144,18 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         this._treatySchema ??= readTreatySchema(this._room.treaty);
 
         return structuredClone(this._treatySchema);
+    }
+
+    public getStorageJson(): Promise<
+        T["treaty"]["storage"] extends AbstractCrdtDocFactory<any, any, any, any>
+            ? InferJson<T["treaty"]["storage"]> | null
+            : null
+    > {
+        return this._room["~"].readStorageJson() as Promise<
+            T["treaty"]["storage"] extends AbstractCrdtDocFactory<any, any, any, any>
+                ? InferJson<T["treaty"]["storage"]> | null
+                : null
+        >;
     }
 
     public async register(
@@ -561,14 +575,20 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         }) as BroadcastProxy<IORoom<T>>;
     }
 
-    private _createPresence(): HostPresenceInvoke<IORoom<T>> {
+    private _createPresence(): HostPresenceInvoke<T> {
         return (actor: HostTreatyProcedureActor) => {
             const senderId = resolveHostTreatyProcedureSenderId(actor);
 
-            const invoke = async (name: string, data: unknown): Promise<void> => {
+            const invoke = async (
+                name: string,
+                data: unknown,
+            ): Promise<EventResolverPresence<T>> => {
                 const socket = this._sessions.get(senderId) ?? null;
 
                 if (!socket) throw new Error(`Unknown senderId: ${senderId}`);
+
+                let stored = null as EventResolverPresence<T>;
+                let suspended = false;
 
                 await this._queue.finish(
                     async () => {
@@ -589,7 +609,10 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                                     room: this._room.id,
                                     session: this._sessions.toSession(socket),
                                 });
+                                throw new Error(patch.error.message);
                             }
+
+                            suspended = true;
 
                             return { suspended: true as const };
                         }
@@ -609,12 +632,19 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                             socket,
                             "broadcast",
                         );
+                        stored = context.presence;
                     },
                 );
+
+                // The procedure is still running. Its broadcast happens later.
+                if (suspended) return null as EventResolverPresence<T>;
+
+                return structuredClone(stored);
             };
 
-            return createHostTreatyProcedureProxy(invoke) as PresenceProcedureProxy<
-                IORoom<T>["_defs"]["treaty"]["_defs"]["procedures"]["presence"]
+            return createHostTreatyProcedureProxy(invoke) as HostPresenceProcedureProxy<
+                IORoom<T>["_defs"]["treaty"]["_defs"]["procedures"]["presence"],
+                EventResolverPresence<T>
             >;
         };
     }

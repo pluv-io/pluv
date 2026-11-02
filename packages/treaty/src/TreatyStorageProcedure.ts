@@ -46,6 +46,7 @@ type StorageProcedureConfig<
     TNative extends Record<string, any>,
     TPrepared,
 > = {
+    description?: string | null;
     input?: StandardSchemaV1<unknown, TInput> | null;
     prepare?: StoragePrepareFn<TInput, TUser, TPresence, TPrepared> | null;
     resolve?: StorageResolveFn<TInput, TUser, TPresence, TJson, TNative, TPrepared> | null;
@@ -60,6 +61,7 @@ type StorageProcedureDefs<
     TNative extends Record<string, any>,
     TPrepared,
 > = {
+    description: string | null;
     input: StandardSchemaV1<unknown, TInput> | null;
     prepare: StoragePrepareFn<TInput, TUser, TPresence, TPrepared> | null;
     resolve: StorageResolveFn<TInput, TUser, TPresence, TJson, TNative, TPrepared> | null;
@@ -121,6 +123,7 @@ export class TreatyStorageProcedure<
             ? false
             : true;
         this._defs = {
+            description: config.description ?? null,
             input: config.input ?? null,
             prepare,
             resolve: config.resolve ?? null,
@@ -188,6 +191,36 @@ export class TreatyStorageProcedure<
         }
     }
 
+    public describe(
+        description: string,
+    ): Omit<
+        TreatyStorageProcedure<TUser, TJson, TNative, TPresence, TInput, TPrepared, TFilled>,
+        TFilled
+    > {
+        if (this._defs.description !== null) {
+            throw new Error("Description was already defined for this procedure");
+        }
+
+        return new TreatyStorageProcedure<
+            TUser,
+            TJson,
+            TNative,
+            TPresence,
+            TInput,
+            TPrepared,
+            TFilled
+        >({
+            description,
+            input: this._defs.input,
+            prepare: this._defs.prepare,
+            resolve: this._defs.resolve,
+            transact: this._defs.transact,
+        }) as Omit<
+            TreatyStorageProcedure<TUser, TJson, TNative, TPresence, TInput, TPrepared, TFilled>,
+            TFilled
+        >;
+    }
+
     public input<TData extends Record<string, any>>(
         input: StandardSchemaV1<unknown, TData>,
     ): Omit<
@@ -211,6 +244,7 @@ export class TreatyStorageProcedure<
             TPrepared,
             TFilled | "input"
         >({
+            description: this._defs.description,
             input,
             prepare: this._defs.prepare as StoragePrepareFn<
                 TData,
@@ -258,6 +292,7 @@ export class TreatyStorageProcedure<
             TResult,
             TFilled | "prepare"
         >({
+            description: this._defs.description,
             input: this._defs.input,
             prepare: loader,
             transact: this._defs.transact,
@@ -305,6 +340,7 @@ export class TreatyStorageProcedure<
             TPrepared,
             TFilled | "input" | "prepare" | "resolve"
         >({
+            description: this._defs.description,
             input: this._defs.input,
             prepare: this._defs.prepare,
             resolve: resolver,

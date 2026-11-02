@@ -62,6 +62,7 @@ export const treaty = t.router({ select, touch, addMessage });
     },
     procedures: {
       select: {
+        description: null,
         input: {
           $schema: "https://json-schema.org/draft/2020-12/schema",
           type: "object",
@@ -71,8 +72,8 @@ export const treaty = t.router({ select, touch, addMessage });
           required: ["id"],
         },
       },
-      // This procedure has no `.input()`.
-      touch: { input: null },
+      // This procedure has no `.input()` and no `.describe()`.
+      touch: { description: null, input: null },
     },
   },
   storage: {
@@ -84,6 +85,7 @@ export const treaty = t.router({ select, touch, addMessage });
     },
     procedures: {
       addMessage: {
+        description: null,
         input: {
           $schema: "https://json-schema.org/draft/2020-12/schema",
           type: "object",

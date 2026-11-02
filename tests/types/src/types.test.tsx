@@ -416,7 +416,9 @@ expectTypeOf(sessions.__experimental_presence).toBeCallableWith({ senderId: "sen
 expectTypeOf(sessions.__experimental_storage).toBeCallableWith({ senderId: "sender-id" });
 expectTypeOf(hostPresence.select).toBeCallableWith({ id: "item" });
 expectTypeOf(hostPresence.select).parameters.toEqualTypeOf<[{ id: string | null }]>();
-expectTypeOf(hostPresence.select).returns.toEqualTypeOf<Promise<void>>();
+expectTypeOf(hostPresence.select).returns.toEqualTypeOf<
+    Promise<{ cursor: { x: number; y: number } | null } | null>
+>();
 expectTypeOf(hostPresence).toBeCallableWith("select", { id: null });
 expectTypeOf(hostStorage.addMessage).toBeCallableWith({ text: "hello" });
 expectTypeOf(hostStorage.addMessage).parameters.toEqualTypeOf<[{ text: string }]>();
