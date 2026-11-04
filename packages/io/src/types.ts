@@ -398,6 +398,7 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
     ): Promise<RoomRegisterResult<T>>;
     dropStorageUpdates(frames: readonly RoomEffectFrame<T>[]): Promise<void>;
     queueStorageFrames(frames: readonly RoomEffectFrame<T>[]): void;
+    readStorageJson(): Promise<unknown>;
     storageDirty(): boolean | Promise<boolean>;
     userConnected(params: {
         id: string;

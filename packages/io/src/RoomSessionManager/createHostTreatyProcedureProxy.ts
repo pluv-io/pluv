@@ -1,7 +1,7 @@
 const PROMISE_TRAP_KEYS = new Set(["then", "catch", "finally"]);
 
 export const createHostTreatyProcedureProxy = <
-    TInvoke extends (name: string, data: unknown) => Promise<void>,
+    TInvoke extends (name: string, data: unknown) => Promise<unknown>,
 >(
     invoke: TInvoke,
 ): TInvoke => {

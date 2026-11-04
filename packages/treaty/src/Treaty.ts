@@ -299,6 +299,7 @@ export class Treaty<
                 const input = procedure.config.input;
 
                 acc[name as keyof TProcedures] = {
+                    description: procedure.config.description ?? null,
                     input: input ? toInputJsonSchema(assertSerializingSchema(input)) : null,
                 };
 

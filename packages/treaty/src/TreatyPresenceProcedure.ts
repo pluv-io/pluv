@@ -24,6 +24,7 @@ type PresenceProcedureDefs<
     TJson extends Record<string, any>,
     _TNative extends Record<string, any>,
 > = {
+    description: string | null;
     input: StandardSchemaV1<unknown, TInput> | null;
     resolve: PresenceResolver<TInput, TUser, TPresence, TJson> | null;
 };
@@ -46,6 +47,7 @@ export class TreatyPresenceProcedure<
 
     constructor(config: TreatyProcedureLike<"presence", TInput>["config"] = {}) {
         this._defs = {
+            description: config.description ?? null,
             input: config.input ?? null,
             resolve:
                 (config.resolve as
@@ -73,6 +75,22 @@ export class TreatyPresenceProcedure<
         return this._defs.resolve(parsed, toPresenceResolverContext(params));
     }
 
+    public describe(
+        description: string,
+    ): Omit<TreatyPresenceProcedure<TUser, TPresence, TJson, TNative, TInput, TFilled>, TFilled> {
+        if (this._defs.description !== null) {
+            throw new Error("Description was already defined for this procedure");
+        }
+
+        return new TreatyPresenceProcedure<TUser, TPresence, TJson, TNative, TInput, TFilled>({
+            ...this._defs,
+            description,
+        }) as Omit<
+            TreatyPresenceProcedure<TUser, TPresence, TJson, TNative, TInput, TFilled>,
+            TFilled
+        >;
+    }
+
     public input<TData extends Record<string, any>>(
         input: StandardSchemaV1<unknown, TData>,
     ): Omit<
@@ -87,6 +105,7 @@ export class TreatyPresenceProcedure<
             TData,
             TFilled | "input"
         >({
+            description: this._defs.description,
             input,
         }) as Omit<
             TreatyPresenceProcedure<TUser, TPresence, TJson, TNative, TData, TFilled | "input">,

@@ -309,6 +309,7 @@ export const createRoomSupervisor = <TEnv extends RoomSupervisorBindings>(
                     queueStorageFrames: (frames) => {
                         this.#open().queueStorageFrames(frames);
                     },
+                    readStorageJson: () => this.#open().readStorageJson(),
                     register: async (...args) => {
                         const token = args[0]?.token ?? null;
                         const registered = await this.#open().register({ token });

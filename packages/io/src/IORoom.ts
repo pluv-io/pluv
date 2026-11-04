@@ -12,7 +12,6 @@ import type {
     MaybePromise,
     OperatorUser,
     ParticipantKind,
-    PresenceProcedureProxy,
     TreatyProcedureLike,
 } from "@pluv/types";
 import colors from "kleur";
@@ -36,6 +35,7 @@ import type {
     IOUserConnectedEvent,
     IOUserDisconnectedEvent,
     PluvContext,
+    EventResolverPresence,
     PluvIOLimits,
     PluvIOSecret,
     IORoomInternal,
@@ -92,12 +92,33 @@ export type HostStorageProcedureProxy<
 
 /**
  * @experimental
- * @description Binds a live connection id and returns the client-shaped presence procedure proxy.
+ * @description Bound host invoke for treaty presence procedures. Resolves to the presence stored
+ * after the patch is applied. A hosted call that is still suspended resolves to `null`. Breaking
+ * changes may ship without a major version bump.
+ */
+export type HostPresenceProcedureProxy<
+    TProcedures extends Record<string, TreatyProcedureLike<"presence">> = {},
+    TPresence = JsonObject | null,
+> = (<TName extends Extract<keyof TProcedures, string>>(
+    name: TName,
+    data: InferTreatyProcedureInput<TProcedures[TName]>,
+) => Promise<TPresence>) & {
+    [TName in Extract<keyof TProcedures, string>]: (
+        data: InferTreatyProcedureInput<TProcedures[TName]>,
+    ) => Promise<TPresence>;
+};
+
+/**
+ * @experimental
+ * @description Binds a live connection id and returns {@link HostPresenceProcedureProxy}.
  * Breaking changes may ship without a major version bump.
  */
-export type HostPresenceInvoke<TIO extends IORoom<any>> = (
+export type HostPresenceInvoke<T extends IODefs> = (
     actor: HostTreatyProcedureActor,
-) => PresenceProcedureProxy<TIO["_defs"]["treaty"]["_defs"]["procedures"]["presence"]>;
+) => HostPresenceProcedureProxy<
+    T["treaty"]["_defs"]["procedures"]["presence"],
+    EventResolverPresence<T>
+>;
 
 /**
  * @experimental
@@ -319,6 +340,7 @@ export class IORoom<T extends IODefs = IODefs>
             register: this._register.bind(this),
             dropStorageUpdates: this._dropStorageUpdates.bind(this),
             queueStorageFrames: this._queueStorageFrames.bind(this),
+            readStorageJson: this._readStorageJson.bind(this),
             storageDirty: () => this._snapshot.dirty || this._snapshot.hasPending,
             userConnected: this._userConnected.bind(this),
             whenReady: () => this._initialized,
@@ -720,6 +742,16 @@ export class IORoom<T extends IODefs = IODefs>
         })();
 
         this._uninitialize = promise.then((result) => result.uninitialize);
+    }
+
+    private async _readStorageJson(): Promise<unknown> {
+        if (!this.treaty.storage) return null;
+
+        if (!(await this._initialized)) return null;
+
+        const doc = await this._doc;
+
+        return doc.toJson();
     }
 
     private get _initialized(): Promise<boolean> {

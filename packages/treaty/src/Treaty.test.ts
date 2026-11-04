@@ -1,3 +1,4 @@
+import type { AbstractCrdtDocFactory } from "@pluv/crdt";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { createTreaty, TreatyPresenceProcedure, TreatyStorageProcedure } from "./index";
@@ -132,7 +133,9 @@ describe("createTreaty", () => {
         const routed = treaty.router({ select, touch });
 
         expect(routed.toProceduresJson().presence.select.input).toMatchObject({ type: "object" });
+        expect(routed.toProceduresJson().presence.select.description).toBeNull();
         expect(routed.toProceduresJson().presence.touch.input).toBeNull();
+        expect(routed.toProceduresJson().presence.touch.description).toBeNull();
         expect(routed.toProceduresJson().storage).toEqual({});
 
         const defaulted = treaty.procedure.presence
@@ -160,6 +163,42 @@ describe("createTreaty", () => {
         expect(() => treaty.router({ bad }).toProceduresJson()).toThrow(/Standard JSON Schema/);
         expect(() => treaty.router({ unrepresentable }).toProceduresJson()).toThrow(
             "Set cannot be represented in JSON Schema",
+        );
+    });
+
+    it("keeps a procedure description through input and resolve", () => {
+        const treaty = createTreaty({ user, presence });
+        const select = treaty.procedure.presence
+            .describe("Choose an item")
+            .input(z.object({ id: z.string() }))
+            .resolve(() => ({}));
+        const routed = treaty.router({ select });
+
+        expect(routed.toProceduresJson().presence.select.description).toBe("Choose an item");
+        expect(routed.toProceduresJson().presence.select.input).toMatchObject({ type: "object" });
+        expect(() => treaty.procedure.presence.describe("once").describe("twice")).toThrow(
+            "Description was already defined for this procedure",
+        );
+
+        const withStorage = createTreaty({
+            user,
+            storage: {
+                toJSON: () => ({ kind: "y.doc", shape: {} }),
+            } as unknown as AbstractCrdtDocFactory<any, any, any, any>,
+        });
+        const addMessage = withStorage.procedure.storage
+            .input(z.object({ text: z.string() }))
+            .describe("Append a message")
+            .resolve(() => undefined);
+
+        expect(
+            withStorage.router({ addMessage }).toProceduresJson().storage.addMessage,
+        ).toMatchObject({
+            description: "Append a message",
+            input: { type: "object" },
+        });
+        expect(() => withStorage.procedure.storage.describe("once").describe("twice")).toThrow(
+            "Description was already defined for this procedure",
         );
     });
 

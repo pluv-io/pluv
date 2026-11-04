@@ -64,6 +64,10 @@ export class UserRoomFacet
         return (await this.#open()).message(params);
     }
 
+    public async readStorageJson(): ReturnType<RoomFacet["readStorageJson"]> {
+        return (await this.#open()).readStorageJson();
+    }
+
     public async register(
         ...options: Parameters<RoomFacet["register"]>
     ): ReturnType<RoomFacet["register"]> {

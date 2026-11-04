@@ -371,6 +371,11 @@ const host = (options?: {
             queueStorageFrames: (updates) => {
                 open().queueStorageFrames(updates);
             },
+            readStorageJson: () => {
+                calls.push("readStorageJson");
+
+                return open().readStorageJson();
+            },
             register: async (...args) => {
                 calls.push("register");
                 activeRegisters += 1;
@@ -1044,7 +1049,7 @@ describe("@pluv/platform", () => {
         });
     });
 
-    it("sends $error when a suspended presence resolver rejects", async () => {
+    it("rejects a presence call that already failed", async () => {
         const hosted = host({ failPresence: true });
         const first = new TestSocket("session-1");
 
@@ -1054,8 +1059,9 @@ describe("@pluv/platform", () => {
             update: null,
         });
 
-        await hosted.room.__experimental_presence({ senderId: first.id }).select({ id: "item-1" });
-        await waitUntil(() => first.messages.some((message) => message.type === "$error"));
+        await expect(
+            hosted.room.__experimental_presence({ senderId: first.id }).select({ id: "item-1" }),
+        ).rejects.toThrow("presence failed");
 
         expect(lastMessage(first, "$error").data).toEqual({
             message: "presence failed",
