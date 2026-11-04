@@ -27,9 +27,7 @@ const addMessage = t.procedure.storage
 ```ts
 const sessions = manageSessions(io.server().createRoom(roomId));
 
-const presence = await sessions
-    .__experimental_presence({ senderId })
-    .select({ id: "item-1" });
+const presence = await sessions.__experimental_presence({ senderId }).select({ id: "item-1" });
 // { selectionId: "item-1" }
 
 const document = await sessions.getStorageJson();
