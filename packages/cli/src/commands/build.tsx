@@ -5,6 +5,7 @@ import { argument } from "pastel";
 import { z } from "zod";
 import * as esbuild from "esbuild";
 import { useConfig } from "../hooks/useConfig";
+import { isObject } from "../utils/isObject";
 import { buildServer } from "../command/build/buildServer";
 
 export const description = "Bundle the io server for a hosted platform";
@@ -41,12 +42,7 @@ const displayOutput = (cwd: string, outfile: string): string => {
 };
 
 const formatBuildError = async (error: unknown): Promise<string> => {
-    if (
-        typeof error === "object" &&
-        error !== null &&
-        "errors" in error &&
-        Array.isArray(error.errors)
-    ) {
+    if (isObject(error) && "errors" in error && Array.isArray(error.errors)) {
         const messages = await esbuild.formatMessages(error.errors as esbuild.Message[], {
             color: false,
             kind: "error",

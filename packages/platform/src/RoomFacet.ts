@@ -88,7 +88,7 @@ export type RoomFacetOptions<T extends IODefs = IODefs> = {
 
 /**
  * Forwards one room call and returns plain JSON. A deferred result that is still
- * waiting becomes `{ suspended: true }`. The frames are delivered later on
+ * waiting becomes `{ $suspended: true }`. The frames are delivered later on
  * the `RpcTarget` the caller passed in, which this facet retains until that
  * send finishes.
  */
@@ -107,7 +107,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
         name: string;
         onPresence: PresenceDelivery;
         session: RoomPresenceSession;
-    }): Promise<JsonObject | null | { error?: { message: string } | null; suspended: true }> {
+    }): Promise<JsonObject | null | { error?: { message: string } | null; $suspended: true }> {
         const settled = await this.#room["~"].applyPresencePatch({
             data: params.data,
             name: params.name,
@@ -122,7 +122,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
         if (ready.status === "value") return plain.json(ready.value);
 
         if (ready.status === "error") {
-            return { error: plain.error(ready.error), suspended: true };
+            return { error: plain.error(ready.error), $suspended: true };
         }
 
         this.#deliver({
@@ -146,7 +146,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
             deferredResult,
         });
 
-        return { suspended: true };
+        return { $suspended: true };
     }
 
     public async applyStorageProcedure(params: {
@@ -154,7 +154,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
         data: unknown;
         name: string;
         onFrames: StorageFrameDelivery;
-    }): Promise<RoomEffects | { error?: { message: string } | null; suspended: true }> {
+    }): Promise<RoomEffects | { error?: { message: string } | null; $suspended: true }> {
         const settled = await this.#room["~"].applyStorageProcedure({
             actor: params.actor,
             data: params.data,
@@ -166,7 +166,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
         const pending = deferredResultPromise(settled);
         const ready = await readSettled(pending);
 
-        // Already settled, so this RPC can reject the host call. `{ suspended: true }`
+        // Already settled, so this RPC can reject the host call. `{ $suspended: true }`
         // would wait for a `finish` that never runs.
         if (ready.status === "error") throw ready.error;
 
@@ -192,7 +192,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
         const commit = this.#commitGate.reserve();
         const loaded = ready.status === "value" ? Promise.resolve(ready.value) : pending;
 
-        // `{ suspended: true }` leaves the host call open until `finish`.
+        // `{ $suspended: true }` leaves the host call open until `finish`.
         // Waiting for the previous commit here would hold the caller's queue.
         // `send` writes after that commit, off this RPC.
         this.#deliver({
@@ -278,7 +278,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
             ),
         });
 
-        return { suspended: true };
+        return { $suspended: true };
     }
 
     public async close(session: Snapshot): Promise<RoomEffects> {
@@ -320,7 +320,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
         event: { data: unknown; type: string };
         onFrames: FrameDelivery;
         session: Snapshot;
-    }): Promise<RoomEffects | { error?: { message: string } | null; suspended: true }> {
+    }): Promise<RoomEffects | { error?: { message: string } | null; $suspended: true }> {
         const settled = await this.#room["~"].message(params.session, params.event);
 
         if (isDeferredResult(settled)) {
@@ -330,7 +330,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
             if (ready.status === "value") return plain.effects(ready.value);
 
             if (ready.status === "error") {
-                return { error: plain.error(ready.error), suspended: true };
+                return { error: plain.error(ready.error), $suspended: true };
             }
 
             this.#deliver({
@@ -371,7 +371,7 @@ export class RoomFacet<T extends IODefs = IODefs> {
                 deferredResult,
             });
 
-            return { suspended: true };
+            return { $suspended: true };
         }
 
         if (isSuspended(settled)) return settled;

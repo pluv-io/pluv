@@ -25,8 +25,8 @@ export const deferredResultPromise = <T>(result: DeferredResult<T>): Promise<T> 
 export const isSuspended = (value: unknown): value is Suspended =>
     typeof value === "object" &&
     value !== null &&
-    "suspended" in value &&
-    (value as { suspended?: unknown }).suspended === true;
+    "$suspended" in value &&
+    (value as { $suspended?: unknown }).$suspended === true;
 
 export const isErrorMessage = (value: unknown): value is { message: string } => {
     return (

@@ -13,6 +13,7 @@ import type { RoomFacet } from "@pluv/platform";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import type { JsonObject } from "@pluv/types";
 import { DurableObject, RpcTarget } from "cloudflare:workers";
+import { isObject } from "../utils/isObject";
 
 export { COMPATIBILITY_DATE } from "../constants";
 
@@ -30,6 +31,16 @@ export type RoomSupervisorConfig<TEnv extends RoomSupervisorBindings> = {
      */
     version: string;
     code: (env: TEnv) => WorkerCode;
+};
+
+const isPresenceWait = (result: object): boolean => {
+    const keys = Object.keys(result);
+
+    return (
+        keys.length === 1 &&
+        keys[0] === "$suspended" &&
+        (result as { $suspended?: unknown }).$suspended === true
+    );
 };
 
 const emptyEffects = (): RoomEffects => {
@@ -92,6 +103,42 @@ class StorageProcedureDelivery extends RpcTarget {
     }
 }
 
+class PresenceProcedureDelivery extends RpcTarget {
+    #delivery: RoomDelivery;
+    #done: (patch: JsonObject | null) => void;
+    #fail: (error: Error) => void;
+
+    constructor(
+        delivery: RoomDelivery,
+        done: (patch: JsonObject | null) => void,
+        fail: (error: Error) => void,
+    ) {
+        super();
+        this.#delivery = delivery;
+        this.#done = done;
+        this.#fail = fail;
+    }
+
+    public async deliverPresence(params: {
+        error: { message: string } | null;
+        name: string;
+        patch: JsonObject | null;
+        senderId: string;
+    }): Promise<void> {
+        if (!params.error) {
+            this.#done(params.patch);
+
+            return;
+        }
+
+        try {
+            await this.#delivery.deliverPresence(params);
+        } finally {
+            this.#fail(new Error(params.error.message));
+        }
+    }
+}
+
 /**
  * Callback the facet retains after its RPC returns. A Durable Object stub's
  * `dup` is an RPC, and that name is reserved.
@@ -124,24 +171,16 @@ class RoomDelivery extends RpcTarget {
         patch: JsonObject | null;
         senderId: string;
     }): Promise<void> {
-        if (params.error) {
-            await this.#sessions.applyFrames(
-                {
-                    ...emptyEffects(),
-                    connectionId: params.senderId,
-                    error: { message: params.error.message },
-                },
-                params.senderId,
-            );
+        if (!params.error) return;
 
-            return;
-        }
-
-        await this.#sessions.applyPresence({
-            name: params.name,
-            patch: params.patch,
-            senderId: params.senderId,
-        });
+        await this.#sessions.applyFrames(
+            {
+                ...emptyEffects(),
+                connectionId: params.senderId,
+                error: { message: params.error.message },
+            },
+            params.senderId,
+        );
     }
 }
 
@@ -251,13 +290,27 @@ export const createRoomSupervisor = <TEnv extends RoomSupervisorBindings>(
                     return readLimits();
                 },
                 "~": {
-                    applyPresencePatch: (params) => {
-                        return this.#open().applyPresencePatch({
-                            data: params.data,
-                            name: params.name,
-                            onPresence: this.#delivery,
-                            session: params.session,
+                    applyPresencePatch: async (params) => {
+                        let resolveDelivery: (patch: JsonObject | null) => void = () => undefined;
+                        let rejectDelivery: (error: Error) => void = () => undefined;
+                        const delivery = new Promise<JsonObject | null>((resolve, reject) => {
+                            resolveDelivery = resolve;
+                            rejectDelivery = reject;
                         });
+                        const result = await this.#open().applyPresencePatch({
+                            ...params,
+                            onPresence: new PresenceProcedureDelivery(
+                                this.#delivery,
+                                resolveDelivery,
+                                rejectDelivery,
+                            ),
+                        });
+
+                        if (isObject(result) && isPresenceWait(result)) {
+                            return deferredResult(delivery);
+                        }
+
+                        return result;
                     },
                     applyStorageProcedure: async (params) => {
                         let resolveDelivery: (effects: RoomEffects) => void = () => undefined;
