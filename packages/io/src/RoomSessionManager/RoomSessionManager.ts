@@ -614,13 +614,19 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
 
                             suspended = true;
 
-                            return { suspended: true as const };
+                            return { $suspended: true as const };
                         }
 
                         return { value: patch };
                     },
                     async (patch) => {
                         const context = this._sessionContext(socket);
+
+                        if (!this._sessions.get(senderId)) {
+                            stored = context.presence;
+                            return;
+                        }
+
                         const broadcastResult =
                             await this._sessionRouter._defs.events.$updatePresence.config.broadcast?.(
                                 { presence: patch, procedure: name },
@@ -636,7 +642,6 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                     },
                 );
 
-                // The procedure is still running. Its broadcast happens later.
                 if (suspended) return null as EventResolverPresence<T>;
 
                 return structuredClone(stored);
@@ -989,7 +994,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                             });
                         }
 
-                        return { suspended: true as const };
+                        return { $suspended: true as const };
                     }
 
                     return { value: effects };

@@ -343,7 +343,7 @@ export interface RoomRegisterResult<T extends IODefs = IODefs> {
 }
 
 /** A hosted call released the queue. The supervisor applies the effects on a later call. */
-export type Suspended = { readonly suspended: true };
+export type Suspended = { readonly $suspended: true };
 
 export type WebSocketRegisterConfig<
     TPlatform extends AbstractPlatform<any> = AbstractPlatform<any>,

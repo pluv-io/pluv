@@ -8,7 +8,7 @@ import { createIO, deferredResult, isSuspended, manageSessions } from "@pluv/io"
 import { loadUserFacet } from "@pluv/platform/load-user-facet";
 import { platformPluv, type PluvSocket, RoomFacet } from "@pluv/platform";
 import { createTreaty } from "@pluv/treaty";
-import type { TreatyLike } from "@pluv/types";
+import type { JsonObject, TreatyLike } from "@pluv/types";
 import { applyUpdate, Doc as YDoc } from "yjs";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
@@ -93,6 +93,7 @@ const host = (options?: {
     holdDelivery?: () => Promise<void>;
     failFlushOnce?: boolean;
     failPresence?: boolean;
+    suspendedField?: boolean;
     failStorageResolve?: boolean;
     messageError?: string;
 }) => {
@@ -128,6 +129,10 @@ const host = (options?: {
             await options?.waitForPresence?.();
 
             if (options?.failPresence) throw new Error("presence failed");
+
+            if (options?.suspendedField) {
+                return { selectionId: id, suspended: true } as { selectionId: string | null };
+            }
 
             return { selectionId: id };
         });
@@ -240,18 +245,29 @@ const host = (options?: {
             return storedLimits;
         },
         "~": {
-            applyPresencePatch: (params) => {
+            applyPresencePatch: async (params) => {
                 calls.push("applyPresencePatch");
 
-                return open().applyPresencePatch({
-                    data: params.data,
-                    name: params.name,
+                let resolveDelivery: (patch: JsonObject | null) => void = () => undefined;
+                let rejectDelivery: (error: Error) => void = () => undefined;
+                const delivery = new Promise<JsonObject | null>((resolve, reject) => {
+                    resolveDelivery = resolve;
+                    rejectDelivery = reject;
+                });
+                const result = await open().applyPresencePatch({
+                    ...params,
                     onPresence: {
-                        deliverPresence: ({ error, name, patch, senderId }) => {
-                            if (!hostedRoom) return Promise.resolve();
+                        deliverPresence: async ({ error, patch, senderId }) => {
+                            if (!error) {
+                                resolveDelivery(patch);
 
-                            if (error) {
-                                return hostedRoom.applyFrames(
+                                return;
+                            }
+
+                            try {
+                                if (!hostedRoom) return;
+
+                                await hostedRoom.applyFrames(
                                     {
                                         attachments: [],
                                         broadcast: [],
@@ -264,13 +280,18 @@ const host = (options?: {
                                     },
                                     senderId,
                                 );
+                            } finally {
+                                rejectDelivery(new Error(error.message));
                             }
-
-                            return hostedRoom.applyPresence({ name, patch, senderId });
                         },
                     },
-                    session: params.session,
                 });
+
+                if (isSuspended(result) && Object.keys(result).length === 1) {
+                    return deferredResult(delivery);
+                }
+
+                return result;
             },
             applyStorageProcedure: async (params) => {
                 calls.push("applyStorageProcedure");
@@ -356,7 +377,7 @@ const host = (options?: {
                 calls.push("message");
 
                 if (options?.messageError) {
-                    return { error: { message: options.messageError }, suspended: true as const };
+                    return { error: { message: options.messageError }, $suspended: true as const };
                 }
 
                 return open().message({
@@ -1035,18 +1056,137 @@ describe("@pluv/platform", () => {
         const update = hosted.room.__experimental_presence({ senderId: first.id }).select({
             id: "item-1",
         });
+        let settled = false;
+        const done = update.then((presence) => {
+            settled = true;
 
-        await update;
+            return presence;
+        });
+
+        await tick(5);
+        expect(settled).toBe(false);
         expect(second.messages.some((message) => message.type === "$presenceUpdated")).toBe(false);
 
         gate.resolve();
-        await waitUntil(() =>
-            second.messages.some((message) => message.type === "$presenceUpdated"),
-        );
 
+        await expect(done).resolves.toEqual({ selectionId: "item-1" });
+        expect(
+            second.messages.filter((message) => message.type === "$presenceUpdated"),
+        ).toHaveLength(1);
         expect(lastMessage(second, "$presenceUpdated").data.session.presence).toEqual({
             selectionId: "item-1",
         });
+    });
+
+    it("returns a presence call that finishes inside the first turn", async () => {
+        const hosted = host();
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(hosted.room, first, { io: hosted.io });
+        await registerAuthorized(hosted.room, second, { io: hosted.io });
+        await send(hosted.room, first, "$initializeSession", {
+            presence: { selectionId: null },
+            update: null,
+        });
+        await send(hosted.room, second, "$initializeSession", {
+            presence: { selectionId: null },
+            update: null,
+        });
+
+        await expect(
+            hosted.room.__experimental_presence({ senderId: first.id }).select({ id: "item-1" }),
+        ).resolves.toEqual({ selectionId: "item-1" });
+        expect(
+            second.messages.filter((message) => message.type === "$presenceUpdated"),
+        ).toHaveLength(1);
+    });
+
+    it("returns the stored presence when the caller leaves during the wait", async () => {
+        const gate = deferred();
+        const hosted = host({ waitForPresence: () => gate.promise });
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(hosted.room, first, { io: hosted.io });
+        await registerAuthorized(hosted.room, second, { io: hosted.io });
+        await send(hosted.room, first, "$initializeSession", {
+            presence: { selectionId: null },
+            update: null,
+        });
+        await send(hosted.room, second, "$initializeSession", {
+            presence: { selectionId: null },
+            update: null,
+        });
+
+        const update = hosted.room.__experimental_presence({ senderId: first.id }).select({
+            id: "item-1",
+        });
+
+        await tick(5);
+        await hosted.room.onClose(first)({ code: 1000, reason: "" });
+        gate.resolve();
+
+        await expect(update).resolves.toEqual({ selectionId: null });
+        expect(second.messages.some((message) => message.type === "$presenceUpdated")).toBe(false);
+    });
+
+    it("stores a presence patch that includes suspended", async () => {
+        const hosted = host({ suspendedField: true });
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(hosted.room, first, { io: hosted.io });
+        await registerAuthorized(hosted.room, second, { io: hosted.io });
+        await send(hosted.room, first, "$initializeSession", {
+            presence: { selectionId: null },
+            update: null,
+        });
+        await send(hosted.room, second, "$initializeSession", {
+            presence: { selectionId: null },
+            update: null,
+        });
+
+        await expect(
+            hosted.room.__experimental_presence({ senderId: first.id }).select({ id: "item-1" }),
+        ).resolves.toEqual({ selectionId: "item-1", suspended: true });
+        expect(lastMessage(second, "$presenceUpdated").data.session.presence).toEqual({
+            selectionId: "item-1",
+            suspended: true,
+        });
+    });
+
+    it("rejects a presence call that fails after it suspends", async () => {
+        const gate = deferred();
+        const hosted = host({
+            failPresence: true,
+            waitForPresence: () => gate.promise,
+        });
+        const first = new TestSocket("session-1");
+        const second = new TestSocket("session-2");
+
+        await registerAuthorized(hosted.room, first, { io: hosted.io });
+        await registerAuthorized(hosted.room, second, { io: hosted.io });
+        await send(hosted.room, first, "$initializeSession", {
+            presence: { selectionId: null },
+            update: null,
+        });
+
+        const update = hosted.room.__experimental_presence({ senderId: first.id }).select({
+            id: "item-1",
+        });
+
+        await tick(5);
+        expect(first.messages.some((message) => message.type === "$error")).toBe(false);
+
+        gate.resolve();
+
+        await expect(update).rejects.toThrow("presence failed");
+        expect(lastMessage(first, "$error").data).toEqual({
+            message: "presence failed",
+            stack: null,
+        });
+        expect(second.messages.some((message) => message.type === "$presenceUpdated")).toBe(false);
     });
 
     it("rejects a presence call that already failed", async () => {
@@ -1096,7 +1236,7 @@ describe("@pluv/platform", () => {
             session: { id: "session-1" } as Parameters<RoomFacet["message"]>[0]["session"],
         });
 
-        expect(result).toEqual({ error: { message: "message failed" }, suspended: true });
+        expect(result).toEqual({ error: { message: "message failed" }, $suspended: true });
     });
 
     it("sends $error when a message run is already rejected", async () => {
@@ -1138,7 +1278,7 @@ describe("@pluv/platform", () => {
             session: { id: "session-1" } as Parameters<RoomFacet["message"]>[0]["session"],
         });
 
-        expect(result).toEqual({ suspended: true });
+        expect(result).toEqual({ $suspended: true });
 
         rejectPending(new Error("message failed"));
         await waitUntil(() => delivered.length === 1);

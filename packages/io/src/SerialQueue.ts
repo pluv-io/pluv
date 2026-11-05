@@ -9,11 +9,13 @@ export class SerialQueue {
     /**
      * Runs `task` on this queue. `{ value }` is passed to `commit` before the
      * task releases. `{ pending }` is awaited after it releases, and `commit`
-     * runs on the next `run`. `{ suspended: true }` releases the queue and does
+     * runs on the next `run`. `{ $suspended: true }` releases the queue and does
      * not run `commit`.
      */
     public async finish<TValue>(
-        task: () => Promise<{ pending: Promise<TValue> } | { value: TValue } | { suspended: true }>,
+        task: () => Promise<
+            { pending: Promise<TValue> } | { value: TValue } | { $suspended: true }
+        >,
         commit: (value: TValue) => Promise<void>,
     ): Promise<void> {
         const deferred: { pending: Promise<TValue> | null } = { pending: null };
@@ -21,7 +23,7 @@ export class SerialQueue {
         await this.run(async () => {
             const result = await task();
 
-            if ("suspended" in result) return;
+            if ("$suspended" in result) return;
 
             if ("pending" in result) {
                 deferred.pending = result.pending;
