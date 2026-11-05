@@ -312,7 +312,7 @@ export const createRoomSupervisor = <TEnv extends RoomSupervisorBindings>(
 
                         return result;
                     },
-                    applyStorageProcedure: async (params) => {
+                    applyStorageProcedure: async ({ getStorageJson: _getStorageJson, ...params }) => {
                         let resolveDelivery: (effects: RoomEffects) => void = () => undefined;
                         let rejectDelivery: (error: Error) => void = () => undefined;
                         const delivery = new Promise<RoomEffects>((resolve, reject) => {

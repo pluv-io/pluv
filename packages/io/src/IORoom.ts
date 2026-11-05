@@ -382,6 +382,7 @@ export class IORoom<T extends IODefs = IODefs>
         name: string;
         data: unknown;
         actor: RoomStorageActor<T>;
+        getStorageJson?: () => Promise<unknown>;
     }): Promise<RoomEffects<T> | DeferredResult<LoadedStorage<T>>> {
         if (!(await this._initialized) || this._snapshot.closed) {
             return this._releaseStorage(emptyRoomEffects<T>(), params.actor);
@@ -405,6 +406,7 @@ export class IORoom<T extends IODefs = IODefs>
                     user: actor.user,
                     operator: actor.operator,
                     presence: actor.presence,
+                    getStorageJson: params.getStorageJson ?? (() => this._readStorageJson()),
                 })
                 .then((result): LoadedStorage<T> => ({
                     actor,

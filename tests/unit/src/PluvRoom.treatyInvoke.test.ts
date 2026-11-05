@@ -316,10 +316,13 @@ describe("PluvRoom treaty invoke", () => {
     it("commits prepared writes in call order", async () => {
         const firstGate = deferred<void>();
         const secondGate = deferred<void>();
+        const seen: { value?: unknown } = {};
         const local = createTreaty({ user, presence, storage });
         const addPrepared = local.procedure.storage
             .input(z.object({ text: z.string() }))
-            .prepare(async ({ text }) => {
+            .prepare(async ({ text }, { getStorageJson }) => {
+                if (text === "second") seen.value = await getStorageJson();
+
                 await (text === "first" ? firstGate.promise : secondGate.promise);
 
                 return text;
@@ -373,11 +376,13 @@ describe("PluvRoom treaty invoke", () => {
         secondGate.resolve();
         await tick();
 
+        expect(seen.value).toBeUndefined();
         expect(room.getDoc().toJson().messages).toEqual([]);
 
         firstGate.resolve();
         await tick();
 
+        expect(seen.value).toEqual({ messages: ["first"] });
         expect(room.getDoc().toJson().messages).toEqual(["first", "second"]);
     });
 
@@ -624,10 +629,13 @@ describe("MockedRoom treaty invoke", () => {
     it("commits prepared writes in call order", async () => {
         const firstGate = deferred<void>();
         const secondGate = deferred<void>();
+        const seen: { value?: unknown } = {};
         const local = createTreaty({ user, presence, storage });
         const addPrepared = local.procedure.storage
             .input(z.object({ text: z.string() }))
-            .prepare(async ({ text }) => {
+            .prepare(async ({ text }, { getStorageJson }) => {
+                if (text === "second") seen.value = await getStorageJson();
+
                 await (text === "first" ? firstGate.promise : secondGate.promise);
 
                 return text;
@@ -652,17 +660,21 @@ describe("MockedRoom treaty invoke", () => {
 
         room.getDoc().rebuildStorage();
         seedMyself(room as unknown as MockedRoom<TestDefs>);
+        (room as unknown as { _state: { connection: { id: string | null } } })._state.connection.id =
+            "mocked";
 
         room.storage.addPrepared({ text: "first" });
         room.storage.addPrepared({ text: "second" });
         secondGate.resolve();
         await tick();
 
+        expect(seen.value).toBeUndefined();
         expect(room.getDoc().toJson().messages).toEqual([]);
 
         firstGate.resolve();
         await tick();
 
+        expect(seen.value).toEqual({ messages: ["first"] });
         expect(room.getDoc().toJson().messages).toEqual(["first", "second"]);
     });
 

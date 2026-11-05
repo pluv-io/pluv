@@ -104,6 +104,8 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     private _registering = 0;
     private _storageSnapshotRun: Promise<void> | null = null;
     private readonly _commitGate = new CommitGate();
+    /** Storage writes started by server code. A read waits until each of these is in the document. */
+    private _storageWrites: Promise<void> = Promise.resolve();
     private _retry: Promise<void> | null = null;
     private _lastGarbageCollectMs = -1 * (GARBAGE_COLLECT_INTERVAL_MS + 1);
     /** Procedure frames whose delivery failed. This isolate outlives the facet. */
@@ -151,11 +153,17 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
             ? InferJson<T["treaty"]["storage"]> | null
             : null
     > {
-        return this._room["~"].readStorageJson() as Promise<
+        return this._readStorageAfter(this._storageWrites) as Promise<
             T["treaty"]["storage"] extends AbstractCrdtDocFactory<any, any, any, any>
                 ? InferJson<T["treaty"]["storage"]> | null
                 : null
         >;
+    }
+
+    private _readStorageAfter(writes: Promise<void>): Promise<unknown> {
+        return this._room["~"].whenReady().then(() =>
+            writes.then(() => this._queue.run(() => this._room["~"].readStorageJson())),
+        );
     }
 
     public async register(
@@ -664,14 +672,17 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                 if (!socket) throw new Error(`Unknown senderId: ${senderId}`);
 
                 let finishCommit: () => void = () => undefined;
+                // Writes that already started, before this one. The read inside prepare waits for these.
+                const earlierWrites = this._storageWrites;
 
-                await this._queue.finish(
+                const done = this._queue.finish(
                     async () => {
                         try {
                             const effects = await this._room["~"].applyStorageProcedure({
                                 name,
                                 data,
                                 actor: this._toSnapshot(socket),
+                                getStorageJson: () => this._readStorageAfter(earlierWrites),
                             });
 
                             if (!isDeferredResult(effects)) return { value: effects };
@@ -725,6 +736,18 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                         }
                     },
                 );
+                // A later read waits for this write. If the write fails, the read still continues.
+                const settled = done.then(
+                    () => undefined,
+                    () => undefined,
+                );
+
+                this._storageWrites = earlierWrites.then(
+                    () => settled,
+                    () => settled,
+                );
+
+                await done;
             };
 
             return createHostTreatyProcedureProxy(invoke) as ReturnType<

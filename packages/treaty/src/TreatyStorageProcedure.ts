@@ -19,10 +19,11 @@ type StoragePrepareFn<
     TInput extends Record<string, any>,
     TUser extends { id: string },
     TPresence extends Record<string, any>,
+    TJson extends Record<string, any>,
     TPrepared,
 > = (
     data: TInput,
-    context: StoragePrepareContext<TUser, TPresence>,
+    context: StoragePrepareContext<TUser, TPresence, TJson>,
 ) => TPrepared | Promise<TPrepared>;
 
 type StorageResolveFn<
@@ -48,7 +49,7 @@ type StorageProcedureConfig<
 > = {
     description?: string | null;
     input?: StandardSchemaV1<unknown, TInput> | null;
-    prepare?: StoragePrepareFn<TInput, TUser, TPresence, TPrepared> | null;
+    prepare?: StoragePrepareFn<TInput, TUser, TPresence, TJson, TPrepared> | null;
     resolve?: StorageResolveFn<TInput, TUser, TPresence, TJson, TNative, TPrepared> | null;
     transact?: boolean | null;
 };
@@ -63,7 +64,7 @@ type StorageProcedureDefs<
 > = {
     description: string | null;
     input: StandardSchemaV1<unknown, TInput> | null;
-    prepare: StoragePrepareFn<TInput, TUser, TPresence, TPrepared> | null;
+    prepare: StoragePrepareFn<TInput, TUser, TPresence, TJson, TPrepared> | null;
     resolve: StorageResolveFn<TInput, TUser, TPresence, TJson, TNative, TPrepared> | null;
     transact: boolean;
 };
@@ -76,15 +77,18 @@ const isThenable = (value: unknown): value is PromiseLike<unknown> =>
 const toStoragePrepareContext = <
     TUser extends { id: string },
     TPresence extends Record<string, any>,
+    TJson extends Record<string, any>,
 >(params: {
     operator?: OperatorUser | null;
     presence?: TPresence | null;
     user: TUser;
-}): StoragePrepareContext<TUser, TPresence> => {
+    getStorageJson?: () => Promise<TJson | null>;
+}): StoragePrepareContext<TUser, TPresence, TJson> => {
     return {
         operator: params.operator ?? null,
         presence: JSON.parse(JSON.stringify(params.presence ?? {})),
         user: params.user,
+        getStorageJson: params.getStorageJson ?? (async () => null),
     };
 };
 
@@ -137,6 +141,7 @@ export class TreatyStorageProcedure<
             operator?: OperatorUser | null;
             presence?: TPresence | null;
             user: TUser;
+            getStorageJson?: () => Promise<TJson | null>;
         },
     ): Promise<{ input: TInput; prepared: StoragePrepared<TPrepared> }> {
         const input = parseProcedureInput(this._defs.input, data);
@@ -250,6 +255,7 @@ export class TreatyStorageProcedure<
                 TData,
                 TUser,
                 TPresence,
+                TJson,
                 TPrepared
             > | null,
             transact: this._defs.transact,
@@ -268,7 +274,7 @@ export class TreatyStorageProcedure<
     }
 
     public prepare<TResult>(
-        loader: StoragePrepareFn<TInput, TUser, TPresence, TResult>,
+        loader: StoragePrepareFn<TInput, TUser, TPresence, TJson, TResult>,
     ): Omit<
         TreatyStorageProcedure<
             TUser,
