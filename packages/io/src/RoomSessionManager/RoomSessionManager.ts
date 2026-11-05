@@ -151,7 +151,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
             ? InferJson<T["treaty"]["storage"]> | null
             : null
     > {
-        return this._room["~"].readStorageJson() as Promise<
+        return this._queue.run(() => this._room["~"].readStorageJson()) as Promise<
             T["treaty"]["storage"] extends AbstractCrdtDocFactory<any, any, any, any>
                 ? InferJson<T["treaty"]["storage"]> | null
                 : null

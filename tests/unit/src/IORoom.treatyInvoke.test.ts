@@ -218,6 +218,21 @@ describe("IORoom treaty invoke", () => {
         );
     });
 
+    it("reads a storage write that has already started", async () => {
+        const { io, room } = createRoom("treaty-storage-read");
+        const first = new TestSocket("session-1");
+
+        await registerAuthorized(room, first, { io });
+        await initializeSession(room, first, { selectionId: null });
+
+        const write = room.__experimental_storage({ senderId: first.id }).addMessage({
+            text: "hello",
+        });
+
+        await expect(room.getStorageJson()).resolves.toEqual({ messages: ["hello"] });
+        await write;
+    });
+
     it("broadcasts a prepared storage write after the load", async () => {
         const gate = deferred<string>();
         let landed: string | null = null;
