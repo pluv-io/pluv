@@ -154,16 +154,39 @@ export class RoomFacet<T extends IODefs = IODefs> {
         data: unknown;
         name: string;
         onFrames: StorageFrameDelivery;
+        /** Waits for storage writes that have already started. The document is read here. */
+        onStorage?: { ready(): Promise<void> };
     }): Promise<RoomEffects | { error?: { message: string } | null; $suspended: true }> {
-        const settled = await this.#room["~"].applyStorageProcedure({
-            actor: params.actor,
-            data: params.data,
-            name: params.name,
-        });
+        const onStorage = params.onStorage ? retain(params.onStorage) : undefined;
+        const releaseStorage = (): void => {
+            onStorage?.[Symbol.dispose]?.();
+        };
+        let settled: Awaited<ReturnType<Room["~"]["applyStorageProcedure"]>>;
 
-        if (!isDeferredResult(settled)) return plain.effects(settled);
+        try {
+            settled = await this.#room["~"].applyStorageProcedure({
+                actor: params.actor,
+                data: params.data,
+                name: params.name,
+                getStorageJson: onStorage
+                    ? () => onStorage.ready().then(() => this.#room["~"].readStorageJson())
+                    : undefined,
+            });
+        } catch (error) {
+            releaseStorage();
+
+            throw error;
+        }
+
+        if (!isDeferredResult(settled)) {
+            releaseStorage();
+
+            return plain.effects(settled);
+        }
 
         const pending = deferredResultPromise(settled);
+
+        void pending.then(releaseStorage, releaseStorage);
         const ready = await readSettled(pending);
 
         // Already settled, so this RPC can reject the host call. `{ $suspended: true }`

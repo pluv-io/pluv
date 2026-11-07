@@ -87,6 +87,9 @@ const host = (options?: {
     persistence?: TestPersistence;
     waitForPresence?: () => Promise<void>;
     waitForSlow?: () => Promise<void>;
+    onStoragePrepare?: (context: {
+        getStorageJson: () => Promise<unknown>;
+    }) => Promise<void> | void;
     waitForStorage?: () => Promise<void>;
     failFrames?: boolean;
     failStoragePrepare?: boolean;
@@ -143,9 +146,10 @@ const host = (options?: {
         });
     const loadMessage = treatyBuilder.procedure.storage
         .input(z.object({ text: z.string() }))
-        .prepare(async ({ text }) => {
+        .prepare(async ({ text }, context) => {
             if (options?.failStoragePrepare) throw new Error("load failed");
 
+            await options?.onStoragePrepare?.(context);
             await options?.waitForStorage?.();
 
             return text;
@@ -293,7 +297,11 @@ const host = (options?: {
 
                 return result;
             },
-            applyStorageProcedure: async (params) => {
+            applyStorageProcedure: async ({
+                getStorageJson: _getStorageJson,
+                waitForStorage,
+                ...params
+            }) => {
                 calls.push("applyStorageProcedure");
 
                 let resolveDelivery: (effects: RoomEffects) => void = () => undefined;
@@ -304,6 +312,7 @@ const host = (options?: {
                 });
                 const result = await open().applyStorageProcedure({
                     ...params,
+                    onStorage: waitForStorage ? { ready: () => waitForStorage() } : undefined,
                     onFrames: {
                         deliverFrames: (effects) => frames.deliverFrames(effects),
                         finish: (error) => {
@@ -748,6 +757,46 @@ describe("@pluv/platform", () => {
         expect(
             second.messages.filter((message) => message.type === "$storageUpdated"),
         ).toHaveLength(2);
+    });
+
+    it("reads an earlier hosted write from inside prepare", async () => {
+        const gate = deferred<void>();
+        let calls = 0;
+        const seen: { value?: unknown } = {};
+        const hosted = host({
+            onStoragePrepare: async ({ getStorageJson }) => {
+                calls += 1;
+
+                if (calls === 1) return;
+
+                seen.value = await getStorageJson();
+            },
+            waitForStorage: () => (calls === 1 ? gate.promise : Promise.resolve()),
+        });
+        const first = new TestSocket("session-1");
+
+        await registerAuthorized(hosted.room, first, { io: hosted.io });
+        await send(hosted.room, first, "$initializeSession", { presence: {}, update: null });
+
+        const earlier = hosted.room
+            .__experimental_storage({ senderId: first.id })
+            .loadMessage({ text: "hello" });
+
+        await tick();
+
+        const later = hosted.room
+            .__experimental_storage({ senderId: first.id })
+            .loadMessage({ text: "again" });
+
+        await waitUntil(() => calls === 2);
+
+        expect(seen.value).toBeUndefined();
+
+        gate.resolve();
+        await earlier;
+        await later;
+
+        expect(seen.value).toEqual({ content: "", messages: ["hello"] });
     });
 
     it("commits hosted prepares in call order", async () => {

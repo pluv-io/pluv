@@ -148,6 +148,11 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         return structuredClone(this._treatySchema);
     }
 
+    /**
+     * The document after storage writes that have already started.
+     * Call this from outside a write. Inside `prepare`, this waits for the write it is in and never finishes.
+     * `prepare` is given its own `getStorageJson`, which stops before that write.
+     */
     public getStorageJson(): Promise<
         T["treaty"]["storage"] extends AbstractCrdtDocFactory<any, any, any, any>
             ? InferJson<T["treaty"]["storage"]> | null
@@ -683,6 +688,7 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
                                 data,
                                 actor: this._toSnapshot(socket),
                                 getStorageJson: () => this._readStorageAfter(earlierWrites),
+                                waitForStorage: () => earlierWrites,
                             });
 
                             if (!isDeferredResult(effects)) return { value: effects };

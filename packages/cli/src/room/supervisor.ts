@@ -66,6 +66,23 @@ const userTreaty = new Proxy(
 ) as SessionRoom["treaty"];
 
 /**
+ * The facet calls this while a storage load is reading.
+ * It waits for writes that have already started. The facet then reads its own document.
+ */
+class StorageWait extends RpcTarget {
+    #ready: () => Promise<void>;
+
+    constructor(ready: () => Promise<void>) {
+        super();
+        this.#ready = ready;
+    }
+
+    public async ready(): Promise<void> {
+        await this.#ready();
+    }
+}
+
+/**
  * Per-call callback for a prepared storage write. The facet retains `dup` after
  * the RPC returns.
  */
@@ -312,7 +329,11 @@ export const createRoomSupervisor = <TEnv extends RoomSupervisorBindings>(
 
                         return result;
                     },
-                    applyStorageProcedure: async ({ getStorageJson: _getStorageJson, ...params }) => {
+                    applyStorageProcedure: async ({
+                        getStorageJson: _getStorageJson,
+                        waitForStorage,
+                        ...params
+                    }) => {
                         let resolveDelivery: (effects: RoomEffects) => void = () => undefined;
                         let rejectDelivery: (error: Error) => void = () => undefined;
                         const delivery = new Promise<RoomEffects>((resolve, reject) => {
@@ -326,6 +347,7 @@ export const createRoomSupervisor = <TEnv extends RoomSupervisorBindings>(
                                 resolveDelivery,
                                 rejectDelivery,
                             ),
+                            onStorage: new StorageWait(waitForStorage ?? (async () => undefined)),
                         });
 
                         if (isSuspended(result)) return deferredResult(delivery);
