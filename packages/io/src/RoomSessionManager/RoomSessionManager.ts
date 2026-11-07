@@ -166,9 +166,11 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     }
 
     private _readStorageAfter(writes: Promise<void>): Promise<unknown> {
-        return this._room["~"].whenReady().then(() =>
-            writes.then(() => this._queue.run(() => this._room["~"].readStorageJson())),
-        );
+        return this._room["~"]
+            .whenReady()
+            .then(() =>
+                writes.then(() => this._queue.run(() => this._room["~"].readStorageJson())),
+            );
     }
 
     public async register(
