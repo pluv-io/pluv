@@ -45,17 +45,17 @@
         "ink": "^8.0.0",
         "pastel": "^4.0.1",
         "react": "^19.3.1",
-        "wrangler": "^4.152.0",
+        "wrangler": "^4.158.0",
         "zod": "^4.6.7"
     },
     "devDependencies": {
-        "@cloudflare/workers-types": "^5.20261025.1",
+        "@cloudflare/workers-types": "^5.20261107.1",
         "@pluv/tsconfig": "workspace:^",
-        "@types/node": "^26.6.5",
+        "@types/node": "^26.6.6",
         "@types/react": "^19.3.0",
-        "tsdown": "^0.23.2",
+        "tsdown": "^0.23.7",
         "typescript": "7.1.0-beta",
-        "vitest": "^5.0.5"
+        "vitest": "^5.1.0"
     },
     "exports": {
         ".": {

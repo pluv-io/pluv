@@ -42,7 +42,7 @@
         "@pluv/tsconfig": "workspace:^",
         "@types/react": "^19.3.0",
         "react": "^19.3.1",
-        "tsdown": "^0.23.2",
+        "tsdown": "^0.23.7",
         "typescript": "7.1.0-beta"
     },
     "exports": {
