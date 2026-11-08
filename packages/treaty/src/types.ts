@@ -56,10 +56,13 @@ export type PresenceResolverContext<
 export type StoragePrepareContext<
     TUser extends BaseUser,
     TPresence extends Record<string, any> = {},
+    TJson extends Record<string, any> = {},
 > = {
     operator: OperatorUser | null;
     presence: DeepReadonly<TPresence>;
     user: TUser;
+    /** The document before this write. Waits for storage writes that have already started. */
+    getStorageJson: () => Promise<TJson | null>;
 };
 
 export type StorageResolverContext<

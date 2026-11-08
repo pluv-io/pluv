@@ -13,6 +13,7 @@ import {
     testAuthorizeUser,
     tick,
     waitForStorageSnapshot,
+    waitUntil,
 } from "./__utils__";
 
 const presence = z.object({
@@ -216,6 +217,162 @@ describe("IORoom treaty invoke", () => {
         expect(second.messages.filter((message) => message.type === "$storageUpdated")).toEqual(
             beforeTouch,
         );
+    });
+
+    it("reads a storage write that has already started", async () => {
+        const { io, room } = createRoom("treaty-storage-read");
+        const first = new TestSocket("session-1");
+
+        await registerAuthorized(room, first, { io });
+        await initializeSession(room, first, { selectionId: null });
+
+        const write = room.__experimental_storage({ senderId: first.id }).addMessage({
+            text: "hello",
+        });
+
+        await expect(room.getStorageJson()).resolves.toEqual({ messages: ["hello"] });
+        await write;
+    });
+
+    it("reads a prepared storage write once its load resolves", async () => {
+        const gate = deferred<string>();
+        const local = createTreaty({
+            user: testAuthorizeUser,
+            presence,
+            storage,
+        });
+        const addPrepared = local.procedure.storage
+            .input(z.object({ text: z.string() }))
+            .prepare(async ({ text }) => {
+                const extra = await gate.promise;
+
+                return `${text}:${extra}`;
+            })
+            .resolve((_data, { storage: docStorage }, loaded) => {
+                docStorage.messages.push([loaded]);
+            });
+        const preparedTreaty = local.router({ addPrepared });
+        const io = createAuthorizedIO({ treaty: preparedTreaty });
+        const server = io.server({
+            getInitialStorage: () => null,
+        });
+        const room = manageSessions(server.createRoom("treaty-prepare-read"));
+        const first = new TestSocket("session-1");
+
+        await registerAuthorized(room, first, { io });
+        await initializeSession(room, first, { selectionId: null });
+
+        const write = room.__experimental_storage({ senderId: first.id }).addPrepared({
+            text: "hello",
+        });
+
+        await tick();
+        gate.resolve("there");
+
+        await expect(room.getStorageJson()).resolves.toEqual({ messages: ["hello:there"] });
+        await write;
+    });
+
+    it("reads the document from inside a prepared write", async () => {
+        const seen: { value?: unknown } = {};
+        const local = createTreaty({
+            user: testAuthorizeUser,
+            presence,
+            storage,
+        });
+        const addPrepared = local.procedure.storage
+            .input(z.object({ text: z.string() }))
+            .prepare(async ({ text }, { getStorageJson }) => {
+                await tick();
+                seen.value = await getStorageJson();
+
+                return text;
+            })
+            .resolve((_data, { storage: docStorage }, loaded) => {
+                docStorage.messages.push([loaded]);
+            });
+        const preparedTreaty = local.router({ addPrepared });
+        const io = createAuthorizedIO({ treaty: preparedTreaty });
+        const server = io.server({
+            getInitialStorage: () => null,
+        });
+        const room = manageSessions(server.createRoom("treaty-prepare-inside-read"));
+        const first = new TestSocket("session-1");
+
+        await registerAuthorized(room, first, { io });
+        await initializeSession(room, first, { selectionId: null });
+
+        await room.__experimental_storage({ senderId: first.id }).addPrepared({ text: "hello" });
+
+        expect(seen.value).toEqual({ messages: [] });
+
+        await room.__experimental_storage({ senderId: first.id }).addPrepared({ text: "again" });
+
+        await expect(room.getStorageJson()).resolves.toEqual({
+            messages: ["hello", "again"],
+        });
+    });
+
+    it("reads an earlier write from inside a prepared write", async () => {
+        const gate = deferred<void>();
+        let calls = 0;
+        let reading = false;
+        const seen: { value?: unknown } = {};
+        const local = createTreaty({
+            user: testAuthorizeUser,
+            presence,
+            storage,
+        });
+        const addPrepared = local.procedure.storage
+            .input(z.object({ text: z.string() }))
+            .prepare(async ({ text }, { getStorageJson }) => {
+                calls += 1;
+
+                if (calls === 1) {
+                    await gate.promise;
+
+                    return text;
+                }
+
+                await tick();
+                reading = true;
+                seen.value = await getStorageJson();
+
+                return text;
+            })
+            .resolve((_data, { storage: docStorage }, loaded) => {
+                docStorage.messages.push([loaded]);
+            });
+        const preparedTreaty = local.router({ addPrepared });
+        const io = createAuthorizedIO({ treaty: preparedTreaty });
+        const server = io.server({
+            getInitialStorage: () => null,
+        });
+        const room = manageSessions(server.createRoom("treaty-prepare-overlap-read"));
+        const first = new TestSocket("session-1");
+
+        await registerAuthorized(room, first, { io });
+        await initializeSession(room, first, { selectionId: null });
+
+        const earlier = room.__experimental_storage({ senderId: first.id }).addPrepared({
+            text: "hello",
+        });
+
+        await tick();
+
+        const later = room.__experimental_storage({ senderId: first.id }).addPrepared({
+            text: "again",
+        });
+
+        await waitUntil(() => reading);
+
+        expect(seen.value).toBeUndefined();
+
+        gate.resolve();
+        await earlier;
+        await later;
+
+        expect(seen.value).toEqual({ messages: ["hello"] });
     });
 
     it("broadcasts a prepared storage write after the load", async () => {

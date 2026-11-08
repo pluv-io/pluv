@@ -273,6 +273,10 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
         return sharedType;
     };
 
+    /**
+     * The document for this connection.
+     * Once the connection is gone, there is no document.
+     */
     public getStorageJson(): InferJson<TDefs["storage"]> | null;
     public getStorageJson<TKey extends keyof InferJson<TDefs["storage"]>>(
         type: TKey,
@@ -656,14 +660,17 @@ export class MockedRoom<TDefs extends ClientDefs = ClientDefs> implements RoomLi
             return;
         }
 
+        // Commits that already started. This read waits for those, then reads the way the room always does.
+        const earlierCommits = this._storageCommits;
         const loading = procedure.load(data, {
             user: myself.data,
             operator: myself.operator,
             presence,
+            getStorageJson: () => earlierCommits.then(() => this.getStorageJson()),
         });
 
         this._storageCommits = sequenceCommit({
-            tail: this._storageCommits,
+            tail: earlierCommits,
             ready: loading,
             commit,
         });

@@ -366,6 +366,10 @@ export interface IORoomInternal<T extends IODefs = IODefs> {
         name: string;
         data: unknown;
         actor: RoomStorageActor<T>;
+        /** Reads the document before this write, after storage writes that have already started. */
+        getStorageJson?: () => Promise<unknown>;
+        /** Settles once storage writes that have already started are in the document. */
+        waitForStorage?: () => Promise<void>;
     }): Promise<RoomEffects<T> | DeferredResult<LoadedStorage<T> | RoomEffects<T>>>;
     /** Writes a loaded storage procedure. `releasePending` attaches updates already waiting. */
     commitLoadedStorage(
