@@ -1,0 +1,26 @@
+---
+description: Maintainer map for @pluv/io, platform packages, and hosted room supervisor
+globs: packages/io/**,packages/platform/**,packages/platform-cloudflare/**,packages/platform-node/**,packages/cli/src/room/**
+alwaysApply: false
+---
+
+# IO and platform (maintainer)
+
+Read **`packages/io/ARCHITECTURE.md`** before changing sequencing, storage delivery, snapshots, or the hosted facet path.
+
+## Topologies
+
+- **In-process:** `IORoom` + `manageSessions(room)` in one isolate (`platform-node`, Cloudflare without facets).
+- **Hosted:** Sockets and `RoomSessionManager` on the supervisor DO (`packages/cli/src/room/supervisor.ts`). Document and treaty on the **user facet** (`RoomFacet`). `SessionRoom["~"]` is the only room entry point from the session manager.
+
+## Three handler outcomes
+
+`RoomEffects` (send now) · `DeferredResult` (in-process, step off `SerialQueue`) · `{ $suspended: true }` (hosted; deliver via retained `RpcTarget`).
+
+## `$storageUpdated`
+
+Pending list on the room. **`writeFrames`** = sockets only (hosted delivery). **`applyFrames`** = write + `dropStorageUpdates`. Retries and `_unsent` omit `$storageUpdated`; snapshot loop sends them.
+
+## Architecture narrative (source of truth)
+
+Read MDX on your checkout: `apps/docs/content/docs/architecture/`. Prefer that over docs.pluv.io when behavior must match the branch you are on.

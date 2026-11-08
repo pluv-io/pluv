@@ -4,6 +4,8 @@
 
 **👉 See full documentation on [docs.pluv.io](https://docs.pluv.io/docs). 👈**
 
+Maintainers changing server internals: see [ARCHITECTURE.md](./ARCHITECTURE.md).
+
 ## Installation
 
 ```bash

@@ -179,12 +179,20 @@ const framesFromRecord = <T extends IODefs>(
     return Object.entries(record).map(([type, data]) => effectFrame<T>(type, data, session));
 };
 
+/**
+ * One room on the server: document, event router, treaty, and listener hooks.
+ * It decides what to send; RoomSessionManager holds the sockets and sends it.
+ *
+ * Also tracks `$storageUpdated` frames that still need a successful broadcast.
+ * See `packages/io/ARCHITECTURE.md` for how that interacts with snapshots and hosting.
+ */
 export class IORoom<T extends IODefs = IODefs>
     implements IOLike<IOLikeFromDefs<T>>, SessionRoom<T>
 {
     public readonly id: string;
     public readonly limits: PluvIOLimits;
     public readonly treaty: T["treaty"];
+    /** Hooks the session manager and hosted facet call. Public methods are for app setup. */
     public readonly "~": IORoomInternal<T>;
 
     private _teardown: Promise<void> | null = null;
