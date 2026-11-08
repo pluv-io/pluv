@@ -35,9 +35,9 @@
     },
     "devDependencies": {
         "@pluv/tsconfig": "workspace:^",
-        "tsdown": "^0.23.2",
+        "tsdown": "^0.23.7",
         "typescript": "7.1.0-beta",
-        "vitest": "^5.0.5"
+        "vitest": "^5.1.0"
     },
     "exports": {
         ".": "./dist/index.mjs",
