@@ -660,8 +660,9 @@ describe("MockedRoom treaty invoke", () => {
 
         room.getDoc().rebuildStorage();
         seedMyself(room as unknown as MockedRoom<TestDefs>);
-        (room as unknown as { _state: { connection: { id: string | null } } })._state.connection.id =
-            "mocked";
+        (
+            room as unknown as { _state: { connection: { id: string | null } } }
+        )._state.connection.id = "mocked";
 
         room.storage.addPrepared({ text: "first" });
         room.storage.addPrepared({ text: "second" });
