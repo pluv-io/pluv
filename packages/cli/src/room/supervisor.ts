@@ -168,6 +168,11 @@ class RoomDelivery extends RpcTarget {
         this.#sessions = sessions;
     }
 
+    /**
+     * The facet calls this when a slow handler finally has frames to send.
+     * We only push to sockets (`writeFrames`). The facet clears pending storage on its
+     * room after this call succeeds.
+     */
     public async deliverFrames(effects: RoomEffects): Promise<void> {
         if (!effects.connectionId) return;
 

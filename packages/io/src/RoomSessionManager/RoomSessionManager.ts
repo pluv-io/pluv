@@ -85,8 +85,12 @@ export type BroadcastProxy<TIO extends IORoom<any>> = (<TEvent extends keyof Inf
 };
 
 /**
- * Session manager for one room. `createRoom` returns the room.
- * `manageSessions` attaches the sockets.
+ * Owns the sockets for one room and runs their work on one queue (`manageSessions` creates
+ * this after `createRoom`).
+ *
+ * The document and procedures live on the room. Use `room["~"]` from here, not the public
+ * methods people call when they configure a Pluv server. How sequencing, storage frames, and
+ * hosted RPC fit together is in `packages/io/ARCHITECTURE.md`.
  */
 export class RoomSessionManager<T extends IODefs = IODefs> {
     public readonly broadcast: BroadcastProxy<IORoom<T>>;
@@ -108,7 +112,13 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
     private _storageWrites: Promise<void> = Promise.resolve();
     private _retry: Promise<void> | null = null;
     private _lastGarbageCollectMs = -1 * (GARBAGE_COLLECT_INTERVAL_MS + 1);
-    /** Procedure frames whose delivery failed. This isolate outlives the facet. */
+    /**
+     * Frames that never made it out after a facet RPC. The supervisor can keep running after
+     * the user facet restarts, so we retry from here.
+     *
+     * We replay broadcast, self, and error. We do not replay `$storageUpdated` from this queue;
+     * those stay on the facet room until the snapshot loop sends them.
+     */
     private _unsent: { effects: RoomEffects<T>; id: number }[] = [];
     private _unsentId = 0;
     private _treatySchema?: TreatySchemaJson;
@@ -354,13 +364,22 @@ export class RoomSessionManager<T extends IODefs = IODefs> {
         });
     }
 
+    /**
+     * Send these frames to clients. When the broadcast worked, drop matching
+     * `$storageUpdated` entries from the room pending list.
+     */
     public applyFrames(effects: RoomEffects<T>, senderId: string): Promise<void> {
         return this._queue.run(async () => {
             await this._applyEffects(effects, this._socket(senderId));
         });
     }
 
-    /** Writes sockets only. The facet drops storage after `deliverFrames` returns. */
+    /**
+     * Send these frames to clients only. Does not update the pending `$storageUpdated` list.
+     *
+     * Hosted `RoomDelivery.deliverFrames` uses this. The facet updates its own room after
+     * the send succeeds.
+     */
     public writeFrames(effects: RoomEffects<T>, senderId: string): Promise<void> {
         return this._queue.run(async () => {
             await this._applyEffects(effects, this._socket(senderId), false);

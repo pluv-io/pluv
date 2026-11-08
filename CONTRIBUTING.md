@@ -81,6 +81,10 @@ After a clean clone, build packages before linting so type-aware rules can resol
 pnpm build:packages && pnpm lint
 ```
 
+### Server internals
+
+If you work on `packages/io`, platform packages, or the CLI room supervisor, read [packages/io/ARCHITECTURE.md](packages/io/ARCHITECTURE.md). User-facing room behavior is in `apps/docs/content/docs/architecture/`.
+
 ### Working on your changes
 
 When making commits, make sure to follow the [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) guidelines by running [commitizen](https://github.com/commitizen/cz-cli):

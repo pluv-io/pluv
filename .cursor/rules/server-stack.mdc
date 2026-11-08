@@ -1,0 +1,10 @@
+---
+description: Point agents at the server stack maintainer guide
+alwaysApply: true
+---
+
+# Server stack
+
+If the task touches realtime rooms, WebSockets, `packages/io`, `packages/platform*`, or the CLI room supervisor, read **`packages/io/ARCHITECTURE.md`** before editing.
+
+User-facing room behavior: read the MDX in **`apps/docs/content/docs/architecture/`** on your checkout (`concepts.mdx`, `messages.mdx`, `task-sequencing.mdx`, `hosted.mdx`). Use that instead of docs.pluv.io when you need behavior that matches the branch you are on.
