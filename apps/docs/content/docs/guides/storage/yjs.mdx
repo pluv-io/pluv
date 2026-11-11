@@ -3,7 +3,7 @@ title: "Using Yjs"
 description: "Learn how to use pluv.io storage with the Yjs CRDT"
 ---
 
-> **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart/nextjs) to see how.
+> **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart) to see how.
 
 [Yjs](https://yjs.dev/) is a high-performance CRDT for building collaborative applications that sync automatically. It is backed by a rich ecosystem of [connection providers](https://docs.yjs.dev/ecosystem/connection-provider), [text editors](https://docs.yjs.dev/ecosystem/editor-bindings) and other tools that make it a popular choice for solving data consistency. As such, pluv.io has built its storage API on top of Yjs to enable modifying shared data between multiple clients with strong eventual consistency via [@pluv/crdt-yjs](https://www.npmjs.com/package/@pluv/crdt-yjs).
 
@@ -11,7 +11,7 @@ description: "Learn how to use pluv.io storage with the Yjs CRDT"
 
 To get started with Yjs storage for pluv.io, the following packages will need to be installed:
 
-```bash
+```npm
 # pluv.io packages
 npm install @pluv/crdt @pluv/crdt-yjs
 

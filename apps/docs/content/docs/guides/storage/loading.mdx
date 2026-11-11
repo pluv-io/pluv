@@ -7,16 +7,14 @@ Listen to when storage is destroyed so that when the same room is re-created, us
 
 ## getInitialStorage
 
-Every time a room is freshly created, the `getInitialStorage` listener will run, and the return value of this function will set the initial value of the room's storage. If this function returns `null`, it is assumed that no storage was found, and a blank storage will be initialized.
-
-The `getInitialStorage` function is required if `crdt` is provided to `createIO` to prevent cases of lost storage data on intermittent client connections.
+`getInitialStorage` runs each time a room is created, and its return value becomes that room's storage. It is required when `treaty.storage` is set. Return the saved bytes, or `null` to start a blank document.
 
 ```ts
 // server/io.ts
-import { yjs } from "@pluv/crdt-yjs";
 import { createIO } from "@pluv/io";
 import { platformNode } from "@pluv/platform-node";
 import { db } from "./db";
+import { treaty } from "../shared/treaty";
 
 export const io = createIO()
   .platform(platformNode())
@@ -27,10 +25,8 @@ export const io = createIO()
   });
 
 export const ioServer = io.server({
-  // Triggered when a room is freshly created. If the room existed
-  // before, you can load the storage state for the room by returning it here
-  // This is required if `treaty.storage` is a real CRDT. This is to
-  // prevent storage data loss on intermittent connections
+  // Required when treaty.storage is set. Return the saved state, or
+  // null to start a blank document.
   getInitialStorage: async ({ context, room }) => {
     const { db } = context;
     const existingRoom = await db.room.findUnique({ where: { room } });

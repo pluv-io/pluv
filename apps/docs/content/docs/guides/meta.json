@@ -1,8 +1,8 @@
 {
     "title": "Guides",
     "pages": [
-        "authorization",
         "treaty",
+        "authorization",
         "create-client",
         "create-react-bundle",
         "rooms",

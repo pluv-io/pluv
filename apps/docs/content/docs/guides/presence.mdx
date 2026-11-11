@@ -85,7 +85,7 @@ const mySelectionId = useMyself(({ presence }) => presence.selectionId);
 
 // Updating the current user's presence
 const selectInput = useCallback((selectionId: string) => {
-  updateMyPresence(selectionId);
+  updateMyPresence({ selectionId });
 }, [updateMyPresence]);
 ```
 

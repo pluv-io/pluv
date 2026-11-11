@@ -9,19 +9,19 @@ Generally, it is recommended to use framework-specific bindings for your particu
 
 To install pluv.io for your framework-agnostic frontend, we will install the following packages from pluv.io:
 
-| Purpose                                                 | Location | Install command                       |
-|---------------------------------------------------------|----------|---------------------------------------|
-| Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client              |
-| Shared user, presence, and storage contract             | Both     | npm install @pluv/treaty              |
-| Storage schema                                          | Both     | npm install @pluv/crdt                |
-| yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs            |
+| Purpose                                                 | Location | Package        |
+|---------------------------------------------------------|----------|----------------|
+| Call and listen to events. Interact with shared storage | Client   | `@pluv/client` |
+| Shared user, presence, and storage contract             | Both     | `@pluv/treaty` |
+| Storage schema                                          | Both     | `@pluv/crdt`   |
+| yjs CRDT                                                | Both     | `@pluv/crdt-yjs` |
 
 
 ### Installation Example
 
-Here is an example installation for [npm](https://www.npmjs.com) for you to copy:
+Copy the install command for your package manager:
 
-```bash
+```npm
 # For the frontend
 npm install @pluv/client @pluv/treaty
 # Client peer dependencies
@@ -37,7 +37,7 @@ npm install yjs
 ## Creating a PluvClient
 
 > **Note**: This example assumes that you've already created a backend pluv.io
-> instance. Refer to the [quickstart](/docs/quickstart/nextjs) to learn more.
+> instance. Refer to the [quickstart](/docs/quickstart) to learn more.
 >
 > Define user, presence, and storage once as a [treaty](/docs/guides/treaty) and pass the same value to `createIO` and `createClient`.
 

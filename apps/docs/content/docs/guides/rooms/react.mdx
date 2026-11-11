@@ -23,7 +23,7 @@ export const MyPage: FC = () => {
       // disconnect of the room.
       // Default: true
       connect={true}
-      // Required if `presence` was set on the client: Define the user's
+      // Required when the treaty defines presence: the user's
       // initial presence value
       initialPresence={{
         selectionId: null,
@@ -32,8 +32,7 @@ export const MyPage: FC = () => {
       initialStorage={{
         messages: [],
       }}
-      // Optional: Emits an error whenever authorization fails (when
-      // `authorize` is set on the PluvIO instance`)
+      // Optional: Called when the room token is rejected
       onAuthorizationFail={(error: Error) => {
         console.error(error);
       }}

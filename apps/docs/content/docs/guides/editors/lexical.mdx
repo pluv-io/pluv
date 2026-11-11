@@ -5,7 +5,7 @@ description: "Learn how to setup Lexical for realtime collaboration with pluv.io
 
 > **Note**: pluv.io integrates with Lexical only via Yjs (i.e. @pluv/crdt-yjs)
 
-> **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart/nextjs) to see how.
+> **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart) to see how.
 
 [Lexical](https://lexical.dev/) is an extensible rich text editor that emphasizes reliability, accessibility and performance. It also has been designed to support realtime collaboration with [Yjs](https://yjs.dev) via [@lexical/yjs](https://lexical.dev/docs/api/modules/lexical_yjs). Because pluv.io's storage API is built around Yjs, we can simply connect a Lexical editor to a `PluvRoom` via pluv.io's [Yjs connection provider](https://docs.yjs.dev/ecosystem/connection-provider) to enable collaboration on Lexical.
 
@@ -13,7 +13,7 @@ description: "Learn how to setup Lexical for realtime collaboration with pluv.io
 
 To setup Lexical for collaborative editing with pluv.io, the following packages will need to be installed:
 
-```bash
+```npm
 # Lexical packages
 npm install lexical @lexical/react @lexical/yjs
 

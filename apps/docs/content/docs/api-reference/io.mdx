@@ -5,9 +5,21 @@ description: "API reference for @pluv/io: create server instances, procedures, r
 
 ## createIO
 
-Returns a `PluvIO` instance.
+`createIO().platform(platform).config(options)` returns a `PluvIO`. `platform` is a factory, as in `platformNode()`. See [Authorization](/docs/guides/authorization), [Cloudflare Workers](/docs/quickstart/cloudflare-workers), and [Node.js](/docs/quickstart/nodejs).
 
-Creates a server-side `PluvIO` client that can be used to create event procedures, routers and servers. Below is an example configuration for `createIO`. To learn more about `createIO`, read [Authorization](/docs/guides/authorization), [Cloudflare Workers](/docs/quickstart/cloudflare-workers) and [Node.js](/docs/quickstart/nodejs).
+`options`:
+
+- `treaty` — the shared treaty
+- `secret` — a string, or `(init) => string`. `init` is `{ request }` on Node and `{ env, request }` on Cloudflare
+- `context` — a value, or a function of the room context (`{ env, state }` on Cloudflare). Listeners on `io.server()` receive it
+- `debug` — `boolean`
+- `limits`
+  - `maxConnections` — live sockets in a room. Default `256`
+  - `presenceMaxSize` — bytes. Default `512`
+  - `storageMaxSize` — bytes. Default `31457280`
+  - `userIdMaxLength` — characters. Default `128`
+  - `userMaxSize` — bytes for one session's stored user objects. Default `512`
+  - `dangerouslyAllowHighPresenceFanout` — allow a `maxConnections` value that would otherwise be rejected
 
 ```ts
 import { createIO } from "@pluv/io";
@@ -34,27 +46,32 @@ This is the client returned by `createIO`.
 
 Returns `Promise<string>`.
 
-Creates a JWT for a user trying to connect to a room. This should be called within a custom authentication endpoint you define. User tokens stay `{ room, user }` on `io.createToken`. Operator tokens are `{ room, kind: "operator", operator }` and require `onGetOperator` on `io.server()`; mint them with `ioServer.createToken`. See [Authorization](/docs/guides/authorization) for more information.
+Mints a room JWT from an auth endpoint. See [Authorization](/docs/guides/authorization).
+
+User token, on `io.createToken`:
+
+- `room` — room id
+- `user` — treaty user. Omit `kind`, or pass `"user"`
+- `maxAge` — milliseconds. Default `60000`
+- `request` — `Request | IncomingMessage` on Node
+- `env` and `request: Request` — both required on Cloudflare
+
+Operator token, on `ioServer.createToken`. Requires `onGetOperator` on `io.server()`:
+
+- `room`
+- `kind: "operator"`
+- `operator` — `{ id, name, email, imageUrl }`
+- `maxAge`, and the same platform fields as a user token
 
 ```ts
-// If using `@pluv/platform-cloudflare
 const token = await io.createToken({
-  env: env as Env,
-  request: request as Request,
+  request,
   room: "my-example-room",
   user: { id: "...", name: "..." },
 });
 
-// If using `@pluv/platform-node`
-const token = await io.createToken({
-  request: request as Request,
-  room: "my-example-room",
-  user: { id: "...", name: "..." },
-});
-
-// Owner operator sessions. Requires onGetOperator on io.server().
 const operatorToken = await ioServer.createToken({
-  request: request as Request,
+  request,
   room: "my-example-room",
   kind: "operator",
   operator: { id: "...", name: "...", email: "...", imageUrl: null },
@@ -66,16 +83,7 @@ const operatorToken = await ioServer.createToken({
 Creates a new type-safe event procedure to be broadcasted from `PluvClient`. See [Define Events](/docs/guides/events/server) for more information.
 
 ```ts
-import { createIO } from "@pluv/io";
-import { platformNode } from "@pluv/platform-node";
 import { z } from "zod";
-
-const io = createIO()
-  .platform(platformNode())
-  .config({
-    treaty,
-    secret: process.env.PLUV_AUTH_SECRET!,
-  });
 
 const sendMessage = io.procedure
   .input(z.object({ message: z.string() }))
@@ -94,33 +102,24 @@ const wave = io.procedure
 Creates a new type-safe event procedure router to attach events and connect to a `PluvServer`.
 
 ```ts
-import { createIO } from "@pluv/io";
-import { platformNode } from "@pluv/platform-node";
-import { z } from "zod";
-
-const io = createIO()
-  .platform(platformNode())
-  .config({
-    treaty,
-    secret: process.env.PLUV_AUTH_SECRET!,
-  });
-
-const sendMessage = io.procedure
-  .input(z.object({ message: z.string() }))
-  .broadcast(({ message }) => ({ receiveMessage: { message } }));
-
-const doubleValue = io.procedure
-  .input(z.object({ value: z.number() }))
-  .broadcast(({ value }) => ({ receiveValue: { value: value * 2 } }));
-
-const wave = io.procedure
-  .broadcast(() => ({ receiveMessage: { message: "Hello world!" } }));
-
 const router = io.router({
   sendMessage,
   doubleValue,
   wave,
 });
+```
+
+### mergeRouters
+
+Returns one router. Event names must be unique across the routers you pass. A repeated name throws.
+
+```ts
+const messaging = io.router({ sendMessage });
+const presence = io.router({ wave });
+
+const router = io.mergeRouters(messaging, presence);
+
+const server = io.server({ router });
 ```
 
 ### server
@@ -130,16 +129,6 @@ Creates a `PluvServer` that will create rooms to register your websockets to.
 In the example below, not all event listeners are available for all platforms. Refer to the TypeScript intellisense for your selected platform when defining your server to know which you can use.
 
 ```ts
-import { createIO } from "@pluv/io";
-import { platformNode } from "@pluv/platform-node";
-import { z } from "zod";
-
-const io = createIO()
-  .platform(platformNode())
-  .config({
-    treaty,
-    secret: process.env.PLUV_AUTH_SECRET!,
-  });
 const router = io.router({ /* ... */ });
 
 const server = io.server({
@@ -230,7 +219,7 @@ ioServer.io;
 
 Returns the room. Attach sockets with `manageSessions`.
 
-Creates a room with the specified id. For platforms that require room context (e.g., Cloudflare requires `env` and `state`), these must be provided as the second argument. `manageSessions` hydrates hibernated sockets. `register`, `onMessage`, `onClose`, `onError`, `broadcast`, `evict`, and `garbageCollect` are called on that return value. `__experimental_presence` and `__experimental_storage` are on that return value.
+Creates a room with the specified id. For platforms that require room context (e.g., Cloudflare requires `env` and `state`), these must be provided as the second argument. `manageSessions` hydrates hibernated sockets. `register`, `onMessage`, `onClose`, `onError`, `broadcast`, `evict`, and `garbageCollect` are called on that return value. Host procedure calls are on the [experimental](/docs/api-reference/experimental) page.
 
 ```ts
 // For platforms without required room context (e.g., Node.js)
@@ -251,7 +240,7 @@ const room = server.createRoom("my-example-room");
 const sessions = manageSessions(room);
 ```
 
-`sessions` is the socket list. The methods below are called on it, including `__experimental_presence` and `__experimental_storage`.
+`sessions` is the socket list. The methods below are called on it. Host procedure calls are on the [experimental](/docs/api-reference/experimental) page.
 
 ## IORoom
 
@@ -314,7 +303,15 @@ sessions.getSize();
 
 Returns `ListUsersResult`
 
-On-demand identity page (no presence). Forward-only cursor paging. Defaults to users. Pass `{ kinds: ["operator"] }` or `{ kinds: ["user", "operator"] }` to include operators. Grouped by `kind` and `data.id`. Each row is `{ data, kind, operator }`. `endCursor` is `{ kind, id }` for the last row. `limit` defaults to 50 and must be an integer from 1 to 100. Wrap this in your own HTTP handler if you need it off-socket.
+`listUsers(options?)` returns `ListUsersResult`. Synchronous identity page, with no presence. Forward-only. Defaults to users. Rows are grouped by `kind` and `data.id`, and each row is `{ data, kind, operator }`.
+
+`options`:
+
+- `cursor` — `{ kind: "user" | "operator", id: string } | null`. `endCursor` from the previous page
+- `kinds` — `readonly ("user" | "operator")[]`. Omit for users
+- `limit` — integer from 1 to 100. Default `50`
+
+A bad `limit` returns `{ success: false, error: { code: "INVALID_LIMIT" } }`. The client method is a promise and also returns `FAILED` and `NOT_CONNECTED`. See [`room.listUsers`](/docs/api-reference/client#pluvroomlistusers). Wrap this in your own HTTP handler to expose it off-socket.
 
 ```ts
 const result = sessions.listUsers({ cursor: null, limit: 50 });
@@ -342,20 +339,48 @@ const roomId = sessions.id;
 
 Returns `Promise<void>`.
 
-Registers a websocket to the room. Accepts a secondary options parameter to pass-in a token for authorizing the room. The host forwards `message`, `close`, and `error` to `onMessage`, `onClose`, and `onError`. On Node, attach those listeners before awaiting `register`, because `ws` drops frames that arrive with no listener. Read [Cloudflare Workers](/docs/quickstart/cloudflare-workers), [Node.js](/docs/quickstart/nodejs) and [Authorization](/docs/guides/authorization) to learn more.
+`register(webSocket, options)` attaches a socket. On Node, `options` is `{ request: Request | IncomingMessage, token?: string }`. On Cloudflare, `options` is `{ env, request: Request, token?: string }`. The host forwards `message`, `close`, and `error` to `onMessage`, `onClose`, and `onError`. On Node, attach those listeners before awaiting `register`, because `ws` drops frames that arrive with no listener. See [Cloudflare Workers](/docs/quickstart/cloudflare-workers), [Node.js](/docs/quickstart/nodejs), and [Authorization](/docs/guides/authorization).
 
 ```ts
-// const token: string = ...
+// Node
+await sessions.register(webSocket, { request, token });
 
-// For @pluv/platform-cloudflare
-sessions.register(webSocket, {
-  env: env as Env,
-  request: request as Request,
-  token,
+// Cloudflare
+await sessions.register(webSocket, { env, request, token });
+```
+
+### onMessage
+
+Returns `(event) => Promise<void>`
+
+Handles one WebSocket `message` for a socket that has already been registered. Pass the socket, then call the returned function with `{ data }`.
+
+```ts
+ws.on("message", async (data) => {
+  await sessions.onMessage(ws)({ data });
 });
-// For @pluv/platform-node
-sessions.register(webSocket, {
-  request: req as Http.IncomingMessage,
-  token,
+```
+
+### onClose
+
+Returns `(event) => Promise<void>`
+
+Handles one WebSocket `close`. `event` is `{ code, reason }`.
+
+```ts
+ws.on("close", async (code, reason) => {
+  await sessions.onClose(ws)({ code, reason: reason.toString() });
+});
+```
+
+### onError
+
+Returns `(event) => Promise<void>`
+
+Handles one WebSocket `error` and disconnects that socket.
+
+```ts
+ws.on("error", async (error) => {
+  await sessions.onError(ws)({ error, message: error.message });
 });
 ```

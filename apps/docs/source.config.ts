@@ -18,5 +18,10 @@ export const docs = defineDocs({
 export default defineConfig({
     mdxOptions: {
         remarkPlugins: [remarkMermaid],
+        remarkNpmOptions: {
+            persist: {
+                id: "package-manager",
+            },
+        },
     },
 });

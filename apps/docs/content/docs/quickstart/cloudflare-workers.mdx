@@ -11,20 +11,20 @@ This documentation walks through setting up `@pluv/io` with [WebSocket hibernati
 
 To install pluv.io for Cloudflare Workers (self-hosted), we will install the following packages from pluv.io:
 
-| Purpose                                                 | Location | Install command                       |
-|---------------------------------------------------------|----------|---------------------------------------|
-| Register websockets and custom events                   | Server   | npm install @pluv/io                  |
-| Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client              |
-| React-bindings for @pluv/client                         | Client   | npm install @pluv/react               |
-| Adapter for Cloudflare runtime                          | Server   | npm install @pluv/platform-cloudflare |
-| Shared user, presence, and storage contract             | Both     | npm install @pluv/treaty              |
-| yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs            |
+| Purpose                                                 | Location | Package                       |
+|---------------------------------------------------------|----------|-------------------------------|
+| Register websockets and custom events                   | Server   | `@pluv/io`                    |
+| Call and listen to events. Interact with shared storage | Client   | `@pluv/client`                |
+| React-bindings for @pluv/client                         | Client   | `@pluv/react`                 |
+| Adapter for Cloudflare runtime                          | Server   | `@pluv/platform-cloudflare`   |
+| Shared user, presence, and storage contract             | Both     | `@pluv/treaty`                |
+| yjs CRDT                                                | Both     | `@pluv/crdt-yjs`              |
 
 ### Installation Example
 
-Here is an example installation for [npm](https://www.npmjs.com) for you to copy:
+Copy the install command for your package manager:
 
-```bash
+```npm
 # For the server
 npm install @pluv/io @pluv/platform-cloudflare
 # Server peer dependencies
@@ -114,7 +114,7 @@ Next, create a `RoomDurableObject` and attach our new `PluvServer` to the `RoomD
 ```ts
 // server/RoomDurableObject.ts
 
-import { manageSessions, type InferIORoom, type RoomSessionManager } from "@pluv/io";
+import { manageSessions, type RoomSessionManager } from "@pluv/io";
 import { DurableObject } from "cloudflare:workers";
 import { Env, ioServer } from "./io";
 
@@ -130,10 +130,7 @@ export class RoomDurableObject extends DurableObject<Env> {
       );
     }
 
-    const room: InferIORoom<typeof ioServer> = ioServer.createRoom(roomId, {
-      env,
-      state,
-    });
+    const room = ioServer.createRoom(roomId, { env, state });
 
     this._sessions = manageSessions(room);
   }
@@ -177,7 +174,7 @@ export class RoomDurableObject extends DurableObject<Env> {
 
     const { 0: client, 1: server } = new WebSocketPair();
 
-    // Only needed if you have specified authorize
+    // Only needed when the server requires a room token
     const token = new URL(request.url).searchParams.get("token");
     await this._sessions.register(server, { env: this.env, request, token });
 
@@ -205,13 +202,8 @@ import { ioServer } from "./io";
 // Bind this in your wrangler.jsonc file
 export { RoomDurableObject } from "./RoomDurableObject";
 
-// Stub example to get roomId from url
-const parseRoomId = (url: string): string => {
-  /* get room from req.url */
-};
-
 const app = new Hono<{ Bindings: Env }>()
-  // Only if you specified `authorize` on @pluv/io
+  // When the server requires a room token
   .get("/api/pluv/auth", async (c) => {
     const room = c.req.query("room") as string;
 
@@ -228,8 +220,7 @@ const app = new Hono<{ Bindings: Env }>()
     return c.text(token, 200);
   })
   // Setup your websocket request handler
-  .get("/api/pluv/room". async (c) => {
-    const env = c.env;
+  .get("/api/pluv/room", async (c) => {
     const roomId = c.req.query("room") as string;
 
     // Assuming wrangler.toml:
@@ -238,7 +229,7 @@ const app = new Hono<{ Bindings: Env }>()
     const durableObjectId = c.env.rooms.idFromName(roomId);
     const room = c.env.rooms.get(durableObjectId);
 
-    return room.fetch(request);
+    return room.fetch(c.req.raw);
   });
 
 export default { fetch: app.fetch };

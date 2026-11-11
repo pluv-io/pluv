@@ -5,7 +5,7 @@ description: "Learn how to setup BlockNote for realtime collaboration with pluv.
 
 > **Note**: pluv.io integrates with BlockNote only via Yjs (i.e. @pluv/crdt-yjs)
 
-> **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart/nextjs) to see how.
+> **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart) to see how.
 
 [BlockNote](https://www.blocknotejs.org/) is a rich text editor focused on providing a great out-of-the-box experience with minimal setup. It also has been designed to support realtime collaboration with [Yjs](https://yjs.dev) via a `collaboration` config on the editor's initialization. Because pluv.io's storage API is built around Yjs, we can simply connect a BlockNote editor to a `PluvRoom` via pluv.io's [Yjs connection provider](https://docs.yjs.dev/ecosystem/connection-provider) to enable collaboration on BlockNote.
 
@@ -13,7 +13,7 @@ description: "Learn how to setup BlockNote for realtime collaboration with pluv.
 
 To setup BlockNote for collaborative editing with pluv.io, the following packages will need to be installed:
 
-```bash
+```npm
 # Blocknote packages
 npm install @blocknote/core @blocknote/mantine @blocknote/react
 

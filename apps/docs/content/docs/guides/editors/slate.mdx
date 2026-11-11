@@ -5,7 +5,7 @@ description: "Learn how to setup Slate for realtime collaboration with pluv.io"
 
 > **Note**: pluv.io integrates with Slate only via Yjs (i.e. @pluv/crdt-yjs)
 
-> **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart/nextjs) to see how.
+> **Note**: This documentation assumes that a basic pluv.io installation has already been completed. Please follow the [quickstart](/docs/quickstart) to see how.
 
 [Slate](https://docs.slatejs.org) is a highly customizable framework for building rich text editors. It also has been designed to support realtime collaboration with [Yjs](https://yjs.dev) via [@slate-yjs/core](https://github.com/BitPhinix/slate-yjs). Because pluv.io's storage API is built around Yjs, we can simply connect a Slate editor to a `PluvRoom` by providing the necessary Yjs [shared-type](https://docs.yjs.dev/getting-started/working-with-shared-types) during the editor's initialization.
 
@@ -13,7 +13,7 @@ description: "Learn how to setup Slate for realtime collaboration with pluv.io"
 
 To setup Slate for collaborative editing with pluv.io, the following packages will need to be installed:
 
-```bash
+```npm
 # Slate packages
 npm install slate slate-dom slate-react @slate-yjs/core
 

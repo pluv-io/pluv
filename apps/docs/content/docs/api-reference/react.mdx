@@ -10,13 +10,15 @@ Returns a `CreateBundle` instance
 Creates a bundle to be able to access the `PluvClient` and `PluvRoom` from various react hooks.
 
 ```ts
-import { createBundle createClient } from "@pluv/react";
-import { s } from "@pluv/crdt";
-import { yjs } from "@pluv/crdt-yjs";
+import { createClient } from "@pluv/client";
+import { createBundle } from "@pluv/react";
+import type { ioServer } from "./server/pluv";
+import { treaty } from "./shared/treaty";
 
-const io = createClient().config({/* ... */});
+const client = createClient<typeof ioServer>().config({
+  treaty,
+});
 
-// Destructured room bundle
 export const {
   // components
   MockedRoomProvider,
@@ -47,14 +49,7 @@ export const {
   useStorageField,
   useTransact,
   useUndo,
-} = createBundle(io);
-
-// If you defined a client-side custom events router, you can pass
-// that into createBundle as a 2nd argument
-
-const router = io.router({ /* ... */ });
-
-const { /* ... */} = createBundle(io, { router });
+} = createBundle(client);
 ```
 
 ### suspense
@@ -64,7 +59,7 @@ By default, storage hooks return `null` until CRDT storage is loaded. Pass `{ su
 Wrap the components that use those hooks in `<Suspense>`. This applies to `useStorage`, `useStorageField`, `useDoc`, `useTransact`, and the undo/redo hooks. Presence and connection hooks do not wait. If the room closes or storage becomes unavailable while a hook is waiting, the nearest error boundary handles the rejection.
 
 ```ts
-const { useStorageField } = createBundle(io, { suspense: true });
+const { useStorageField } = createBundle(client, { suspense: true });
 ```
 
 ## CreateBundle
@@ -128,7 +123,7 @@ const MyComponent: FC = () => {
       // disconnect of the room.
       // Default: true
       connect={true}
-      // Required if `presence` was set on the client: Define the user's
+      // Required when the treaty defines presence: the user's
       // initial presence value
       initialPresence={{
         selectionId: null,
@@ -137,8 +132,7 @@ const MyComponent: FC = () => {
       initialStorage={{
         messages: [],
       }}
-      // Optional: Emits an error whenever authorization fails (when
-      // `authorize` is set on the PluvIO instance`)
+      // Optional: Called when the room token is rejected
       onAuthorizationFail={(error: Error) => {
         console.error(error);
       }}
@@ -155,7 +149,7 @@ const MyComponent: FC = () => {
 
 typeof `EventProxy`
 
-Defines an event listener client for events broadcasted by connected clients. See [useEvent](/docs/api-reference/react#useEvent) for more details.
+`event.receiveMessage.useEvent(callback)` is [`useEvent`](/docs/api-reference/react#useevent)`("receiveMessage", callback)`. [`useBroadcast`](/docs/api-reference/react#usebroadcast) sends the event.
 
 ```tsx
 // The below 2 statements are equivalent
@@ -172,7 +166,7 @@ event.receiveMessage.useEvent(({ data }) => {
 
 Returns `BroadcastProxy`
 
-Returns a broadcast function to emit an event and its data to all connected clients. This is type-safe. The first parameter `event` will be the name of the event procedure specified when creating your `PluvProcedure` instance, and the second parameter `data` will be the associated input type. See [Define Events](/docs/guides/events/server) for more details.
+Sends an event defined on the server router. `broadcast(name, input)` and `broadcast.name(input)` are the same call. [`useEvent`](/docs/api-reference/react#useevent) receives one. On the client, [`room.broadcast`](/docs/api-reference/client#pluvroombroadcast). See [Define Events](/docs/guides/events/server).
 
 ```tsx
 const broadcast = useBroadcast();
@@ -187,7 +181,7 @@ broadcast.sendMessage({ message: "Hello world~!" });
 
 Returns `boolean`
 
-Checks whether calling [PluvRoom.redo](/docs/api-reference/react#useRedo) will mutate storage.
+Checks whether calling [PluvRoom.redo](/docs/api-reference/react#useredo) will mutate storage.
 
 ```ts
 const canRedo: boolean = useCanRedo();
@@ -197,7 +191,7 @@ const canRedo: boolean = useCanRedo();
 
 Returns `boolean`
 
-Checks whether calling [PluvRoom.undo](/docs/api-reference/react#useUndo) will mutate storage.
+Checks whether calling [PluvRoom.undo](/docs/api-reference/react#useundo) will mutate storage.
 
 ```ts
 const canUndo: boolean = useCanUndo();
@@ -241,7 +235,7 @@ const ydoc: YDoc = doc.value;
 
 Returns `void`
 
-Defines a listener for events broadcasted by connected clients. This is type-safe. The first parameter `event` is the name of the event to listen to from your backend `PluvIO` instance. The second parameter is a callback containing the data emitted from the broadcasted event.
+Receives an event. `useEvent(name, callback)` and [`event`](/docs/api-reference/react#event)`.name.useEvent(callback)` are the same listener. [`useBroadcast`](/docs/api-reference/react#usebroadcast) sends one. On the client, [`room.subscribe.event`](/docs/api-reference/client#pluvroomsubscribeevent).
 
 ```tsx
 useEvent("messageReceived", ({ message }) => {
@@ -249,11 +243,23 @@ useEvent("messageReceived", ({ message }) => {
 });
 ```
 
+### useRoom
+
+Returns the `PluvRoom` for the surrounding `PluvRoomProvider`.
+
+Throws if the component is not under a `PluvRoomProvider`. The other hooks in this bundle call this internally.
+
+```tsx
+const room = useRoom();
+
+room.broadcast.sendMessage({ message: "hello" });
+```
+
 ### useRoomError
 
 Returns `void`
 
-Fires a callback whenever the room reports a failure (procedure throw, size limit, rejected register). Not a stored last-error value.
+A room failure: a procedure throw, a size limit, or a rejected register. Same errors as [`room.subscribe.error`](/docs/api-reference/client#pluvroomsubscribeerror). The WebSocket `error` event is [`room.addEventListener("error")`](/docs/api-reference/client#pluvroomaddeventlistener).
 
 ```tsx
 useRoomError((error) => {
@@ -265,20 +271,11 @@ useRoomError((error) => {
 
 Returns `[myPresence: TPresence | null, updatePresence: Function]`
 
-Returns the current user's presence, and a function to update the user's presence. Using this hook rerenders the component based on a deep-equality check on the user's presence value. This hook accepts a selector to return a modified presence to reduce rerenders.
+The current presence value and [`updateMyPresence`](/docs/api-reference/client#pluvroomupdatemypresence). Call this to read or patch fields. [`usePresence`](/docs/api-reference/react#usepresence) runs a treaty presence procedure. A selector narrows the value and skips rerenders when that result is unchanged.
 
 ```tsx
-const io = createClient().config({
-  presence: z.object({
-    selectionId: z.string().nullable(),
-    selectionColor: z.string(),
-  }),
-  // ...
-});
-
-// ...
-
-const { useMyPresence } = createBundle(io);
+// Presence shape comes from the shared treaty, not from client config.
+const { useMyPresence } = createBundle(client);
 
 const [
   // the user's presence
@@ -336,7 +333,7 @@ const operator = useOther(userId, (other) => other, { kind: "operator" });
 
 Returns `readonly UserInfo[]`
 
-Returns other people currently in the room. Defaults to users. This may trigger a lot of re-renders if presence updates frequently.
+`useOthers(selector?, { kinds?, isEqual? })`. `kinds` is `readonly ("user" | "operator")[]` and is the second argument, after the selector. Omit it for users. `"operator"` is operators. Both values together include both. Same bag as [`room.getOthers`](/docs/api-reference/client#pluvroomgetothers). Presence updates rerender this list.
 
 > **Note**
 > Consider using this hook only for deriving others' `data.id` values to pass into `useOther`.
@@ -355,7 +352,7 @@ const operators = useOthers((others) => others, { kinds: ["operator"] });
 
 Returns `void`
 
-Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/api-reference/react#useUndo).
+Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/api-reference/react#useundo).
 
 For more information see: [History](/docs/guides/history)
 
@@ -369,7 +366,7 @@ redo();
 
 Returns `RoomStats`
 
-Live socket count (`connectionCount`) and unique-user count (`userCount`). Defaults to users. Pass `kinds` on the options bag to scope the same two fields.
+`useRoomStats(selector?, { kinds?, isEqual? })`. `connectionCount` and `userCount`. `kinds` is `readonly ("user" | "operator")[]` on the second argument and scopes both fields. Omit it for users. Same bag as [`room.getRoomStats`](/docs/api-reference/client#pluvroomgetroomstats).
 
 ```ts
 const { connectionCount, userCount } = useRoomStats();
@@ -379,7 +376,7 @@ const operators = useRoomStats((stats) => stats.userCount, { kinds: ["operator"]
 
 ### usePresence
 
-Returns the room presence procedure proxy (`room.presence`). Do not destructure it.
+The treaty presence procedure proxy ([`room.presence`](/docs/api-reference/client#pluvroompresence)). Call this to run a procedure. [`useMyPresence`](/docs/api-reference/react#usemypresence) reads and patches the current value. Do not destructure the proxy.
 
 ```ts
 const presence = usePresence();
@@ -389,7 +386,7 @@ presence.select({ id: "item-1" });
 
 ### useStorage
 
-Returns the room storage procedure proxy (`room.storage`). Do not destructure it. Procedures throw until CRDT storage is loaded.
+The treaty storage procedure proxy ([`room.storage`](/docs/api-reference/client#pluvroomstorage)). Call this to run a procedure. Procedures throw until storage is loaded. [`useStorageField`](/docs/api-reference/react#usestoragefield) reads one field. Do not destructure the proxy.
 
 ```ts
 const storage = useStorage();
@@ -401,25 +398,9 @@ storage.addMessage({ text: "hello" });
 
 Returns `[TData | null, SharedType | null]`
 
-Returns a base-level property of our CRDT storage as a serialized JSON value and the native shared type (for example `Y.Array`). The component is re-rendered whenever the shared type is updated. The returned values are null while the room is still connecting or
-initializing its storage. With `createBundle(io, { suspense: true })`, this hook waits until storage is loaded and returns `[TData, SharedType]` instead.
+`useStorageField(key)` returns `[json, sharedType]` for one top-level field. Call this to read a field. Both values are `null` until storage is loaded. With `createBundle(client, { suspense: true })`, the hook waits and both are defined. [`useStorage`](/docs/api-reference/react#usestorage) runs a procedure. [`room.getStorage`](/docs/api-reference/client#pluvroomgetstorage) is the native type. [`room.getStorageJson`](/docs/api-reference/client#pluvroomgetstoragejson) is the snapshot.
 
 ```tsx
-import { s } from "@pluv/crdt";
-import { yjs } from "@pluv/crdt-yjs";
-
-const io = createClient().config({
-  treaty,
-  initialStorage: {
-    messages: ["hello"],
-  },
-  // ...
-});
-
-// ...
-
-const { useStorageField } = createBundle(io);
-
 const [messages, sharedType] = useStorageField("messages");
 
 sharedType?.push(["world~!"]);
@@ -458,7 +439,7 @@ transact(() => {
 
 Returns `void`
 
-Undoes the last mutation that was applied via [PluvRoom.transact](/docs/api-reference/react#useTransact).
+Undoes the last mutation that was applied via [PluvRoom.transact](/docs/api-reference/react#usetransact).
 
 For more information see: [History](/docs/guides/history)
 

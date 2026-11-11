@@ -9,20 +9,20 @@ description: "Self-host pluv.io on Node.js and build a type-safe realtime WebSoc
 
 To install pluv.io for Node.js (self-hosted), we will install the following packages from pluv.io:
 
-| Purpose                                                 | Location | Install command                       |
-|---------------------------------------------------------|----------|---------------------------------------|
-| Register websockets and custom events                   | Server   | npm install @pluv/io                  |
-| Call and listen to events. Interact with shared storage | Client   | npm install @pluv/client              |
-| React-bindings for @pluv/client                         | Client   | npm install @pluv/react               |
-| Adapter for Node.js runtime                             | Server   | npm install @pluv/platform-node       |
-| Shared user, presence, and storage contract             | Both     | npm install @pluv/treaty              |
-| yjs CRDT                                                | Both     | npm install @pluv/crdt-yjs            |
+| Purpose                                                 | Location | Package                  |
+|---------------------------------------------------------|----------|--------------------------|
+| Register websockets and custom events                   | Server   | `@pluv/io`               |
+| Call and listen to events. Interact with shared storage | Client   | `@pluv/client`           |
+| React-bindings for @pluv/client                         | Client   | `@pluv/react`            |
+| Adapter for Node.js runtime                             | Server   | `@pluv/platform-node`    |
+| Shared user, presence, and storage contract             | Both     | `@pluv/treaty`           |
+| yjs CRDT                                                | Both     | `@pluv/crdt-yjs`         |
 
 ### Installation Example
 
-Here is an example installation for [npm](https://www.npmjs.com) for you to copy:
+Copy the install command for your package manager:
 
-```bash
+```npm
 # Shared contract
 npm install @pluv/treaty
 
@@ -95,46 +95,18 @@ Integrate with [ws](https://www.npmjs.com/package/ws) on your Node.js server.
 ```ts
 // backend/server.ts
 
-import { manageSessions, type InferIORoom, type RoomSessionManager } from "@pluv/io";
-import { serve, type HttpBindings } from "@hono/node-server";
-import Http from "http";
-import { Hono } from "hono";
+import { createServer } from "node:http";
+import { manageSessions, type RoomSessionManager } from "@pluv/io";
 import Ws from "ws";
 import { ioServer } from "./io";
 
-const PORT = 3000;
-
-// Stub example to get roomId from url
-const parseRoomId = (url: string): string => {
-  /* get room from req.url */
-};
-
-const app = new Hono<{ Bindings: HttpBindings }>()
-  // Only if you specified `authorize` on @pluv/io
-  .get("/api/pluv/auth", async (c) => {
-    const room = c.req.query("room") as string;
-
-    // Example stub. However you get the authed user here
-    const user = await getUser(c.req.raw);
-    const token = await ioServer.createToken({ request: c.req.raw, room, user });
-
-    return c.text(token, 200);
-  });
-
-const server = serve({ fetch: app.fetch, port: PORT }) as Http.Server;
-const wsServer = new Ws.WebSocketServer({ server });
-
-// createRoom returns the room. manageSessions attaches the sockets.
 const rooms = new Map<string, RoomSessionManager>();
-
-// Note: All event listeners are configured at the server level via io.server(),
-// not when creating individual rooms. See the ioServer configuration above.
 
 const getSessions = (roomId: string): RoomSessionManager => {
   const existing = rooms.get(roomId);
   if (existing) return existing;
 
-  const room: InferIORoom<typeof ioServer> = ioServer.createRoom(roomId);
+  const room = ioServer.createRoom(roomId);
   const sessions = manageSessions(room);
 
   rooms.set(roomId, sessions);
@@ -142,18 +114,40 @@ const getSessions = (roomId: string): RoomSessionManager => {
   return sessions;
 };
 
-// Handle room cleanup in the server-level onRoomDestroyed listener
-// (configured in io.server() above)
+const server = createServer(async (req, res) => {
+  const url = new URL(req.url ?? "/", "http://localhost");
 
-// Setup your websocket request handler.
+  if (req.method !== "GET" || url.pathname !== "/api/pluv/auth") {
+    res.writeHead(404).end();
+    return;
+  }
+
+  const room = url.searchParams.get("room");
+  if (!room) {
+    res.writeHead(400).end("Missing room");
+    return;
+  }
+
+  const user = await getUser(req);
+  const token = await ioServer.createToken({ request: req, room, user });
+
+  res.writeHead(200, { "content-type": "text/plain" }).end(token);
+});
+
+const wsServer = new Ws.WebSocketServer({ server });
+
 // Attach message, close, and error before register. ws drops frames
 // that arrive with no listener, and register waits on authorization.
 wsServer.on("connection", async (ws, req) => {
-  const roomId = parseRoomId(req.url);
-  const sessions = getSessions(roomId);
+  const url = new URL(req.url ?? "/", "http://localhost");
+  const roomId = url.searchParams.get("room");
+  if (!roomId) {
+    ws.close();
+    return;
+  }
 
-  // Token is only needed if you have configured authorization
-  const token = new URL(req.url).searchParams.get("token");
+  const sessions = getSessions(roomId);
+  const token = url.searchParams.get("token");
 
   ws.on("message", async (data) => {
     await sessions.onMessage(ws)({ data });
@@ -167,6 +161,8 @@ wsServer.on("connection", async (ws, req) => {
 
   await sessions.register(ws, { request: req, token });
 });
+
+server.listen(3000);
 ```
 
 ### Create the client bundle

@@ -32,7 +32,7 @@ Existing open-source tools for building real-time APIs come with several trade-o
 
 ## Bring your own runtime, framework and CRDT
 
-While pluv.io offers a fully managed service, pluv.io was built to self-host on either [Node.js](https://nodejs.org/) or [Cloudflare Workers](https://workers.cloudflare.com/). Support for multiple frameworks is also planned, with [React](https://react.dev/) already available with [@pluv/react](https://www.npmjs.com/package/@pluv/react). If you're building for other frameworks, [@pluv/client](https://www.npmjs.com/package/@pluv/client) is framework agnostic and can meet your needs for now.
+Run pluv.io on [Node.js](https://nodejs.org/) or [Cloudflare Workers](https://workers.cloudflare.com/). [React](https://react.dev/) bindings ship as [@pluv/react](https://www.npmjs.com/package/@pluv/react). Other UI frameworks can use [@pluv/client](https://www.npmjs.com/package/@pluv/client), which has no framework dependency.
 
 pluv.io's shared data-storage (Storage) is built on top of [Yjs](https://docs.yjs.dev/) and [Loro](https://loro.dev/), allowing you to pick whichever better fits your application.
 

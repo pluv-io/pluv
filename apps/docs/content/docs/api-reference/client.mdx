@@ -5,15 +5,19 @@ description: "API reference for @pluv/client: create clients and rooms, and inte
 
 ## createClient
 
-Returns a builder whose `.config()` method creates a `PluvClient`
+`createClient<typeof ioServer>().config(options)` returns a `PluvClient`.
 
-Bind your server type as a type argument, then pass the shared `treaty`, metadata, and endpoints to `.config()`. Do not pass options to `createClient` itself. That would freeze inference.
+Pass `options` to `.config()`. The type argument is your server. See [Create Client](/docs/guides/create-client).
 
-### createClient basic example
+`options`:
 
-Bind your server type and pass the shared treaty, `authEndpoint`, and `wsEndpoint`.
-
-See the [Create Client](/docs/guides/create-client) docs for more details.
+- `treaty` — the shared treaty
+- `authEndpoint` — where the client fetches a room token. `true` fetches `GET /api/pluv/authorize?room=`. A string is fetched as a URL. `({ room, metadata }) => string` returns the URL. `({ room, metadata }) => { url, options }` also passes `fetch` init (`RequestInit`), for a `POST` body or extra headers
+- `wsEndpoint` — a string, or `({ room, metadata }) => string`. Omitted, the client connects to `/api/pluv/room/${room}`
+- `initialStorage` — JSON seed. Allowed when the treaty defines storage. `createRoom` can override it
+- `metadata` — a schema for values passed to `enter` and the endpoint functions
+- `debug` — `boolean`
+- `limits.presenceMaxSize` — bytes. Default `512`. Set this when the server limit was changed
 
 ```ts
 import { createClient } from "@pluv/client";
@@ -22,49 +26,22 @@ import { treaty } from "./shared/treaty";
 
 const io = createClient<typeof ioServer>().config({
   treaty,
-  initialStorage: {
-    messages: [],
-  },
+  initialStorage: { messages: [] },
   authEndpoint: ({ room }) => `/api/pluv/authorize?room=${room}`,
   wsEndpoint: ({ room }) => `ws://localhost:3000/api/pluv/room/${room}`,
 });
 ```
 
-### createClient with auth endpoint
-
-If your `PluvIO` implements auth, you will need to specify an `authEndpoint` on your frontend client.
+`authEndpoint` with `fetch` init:
 
 ```ts
-import { createClient } from "@pluv/client";
-import { treaty } from "./shared/treaty";
-
-const io = createClient().config({
-  treaty,
-  authEndpoint: ({ room }) => `/api/room/auth?room=${room}`,
-});
-```
-
-### createClient with fetch options
-
-If you need to use a POST request or specify additional headers, you can return an object containing options for `fetch` (for `authEndpoint` only).
-
-```ts
-// frontend/io.ts
-
-import { createClient } from "@pluv/client";
-import { treaty } from "./shared/treaty";
-
-const io = createClient().config({
-  treaty,
-  authEndpoint: ({ room }) => ({
-    url: "/api/room/auth",
-    // specify fetch options here
-    options: {
-      method: "post",
-      body: JSON.stringify({ room }),
-    },
-  }),
-});
+authEndpoint: ({ room }) => ({
+  url: "/api/room/auth",
+  options: {
+    method: "post",
+    body: JSON.stringify({ room }),
+  },
+}),
 ```
 
 ## PluvClient
@@ -80,22 +57,11 @@ Create a `PluvRoom` that websockets can join and leave.
 See the [Create Rooms](/docs/guides/rooms/client) docs for more details.
 
 ```ts
-export const io = createClient().config({
-  treaty,
-  initialStorage: {
-    messages: [],
-  },
-});
-
 const room = io.createRoom("my-example-room", {
-  // Required if presence is defined on the treaty
-  initialPresence: {
-    selectionId: null,
-  },
-  // Optional: Overwrite initial storage from client
-  initialStorage: {
-    messages: ["hello world!"],
-  },
+  // Required when the treaty defines presence
+  initialPresence: { selectionId: null },
+  // Overrides initialStorage from createClient
+  initialStorage: { messages: ["hello world!"] },
 });
 ```
 
@@ -169,11 +135,25 @@ Type of `WebSocket | null`
 
 This is the WebSocket that is created and attached to the room when connected to.
 
+### PluvRoom.addEventListener
+
+Returns `() => void`
+
+`addEventListener(kind, handler)` for a WebSocket `open`, `message`, `error`, or `close`. The returned function removes the listener. A room failure (procedure throw, size limit, rejected register) goes to [`subscribe.error`](/docs/api-reference/client#pluvroomsubscribeerror). In React, that failure is [`useRoomError`](/docs/api-reference/react#useroomerror).
+
+```ts
+const unsubscribe = room.addEventListener("close", (event) => {
+  console.log(event?.code);
+});
+
+unsubscribe();
+```
+
 ### PluvRoom.broadcast
 
 Returns `void`
 
-Broadcasts an event to all websockets connected to the room.
+Sends an event defined on the server router. [`subscribe.event`](/docs/api-reference/client#pluvroomsubscribeevent) receives one. In React, [`useBroadcast`](/docs/api-reference/react#usebroadcast).
 
 ```ts
 // frontend/room.ts
@@ -188,7 +168,7 @@ room.broadcast.sendMessage({ message: "hello world!" });
 
 Returns `boolean`
 
-Checks whether calling [PluvRoom.redo](/docs/api-reference/client#PluvRoom.redo) will mutate storage.
+Checks whether calling [PluvRoom.redo](/docs/api-reference/client#pluvroomredo) will mutate storage.
 
 ```ts
 // frontend/room.ts
@@ -199,7 +179,7 @@ const canRedo: boolean = room.canRedo();
 
 Returns `boolean`
 
-Checks whether calling [PluvRoom.undo](/docs/api-reference/client#PluvRoom.undo) will mutate storage.
+Checks whether calling [PluvRoom.undo](/docs/api-reference/client#pluvroomundo) will mutate storage.
 
 ```ts
 // frontend/room.ts
@@ -294,7 +274,7 @@ const other = room.getOtherByConnectionId(connectionId);
 
 Returns `UserInfo[]`
 
-Returns other people currently in the room. Defaults to users. Pass `{ kinds: ["operator"] }` or `{ kinds: ["user", "operator"] }` to include operators.
+`getOthers({ kinds?: readonly ("user" | "operator")[] })`. Defaults to users. `"operator"` is operators. `"user"` and `"operator"` together is both. In React, [`useOthers`](/docs/api-reference/react#useothers) takes the same `kinds` as its second argument.
 
 ```ts
 const others = room.getOthers();
@@ -305,7 +285,7 @@ const operators = room.getOthers({ kinds: ["operator"] });
 
 Returns `RoomStats`
 
-Live socket count and unique-user count. Defaults to users. The same `kinds` filter scopes both fields.
+`getRoomStats({ kinds?: readonly ("user" | "operator")[] })`. `connectionCount` and `userCount` for the selected kinds. Defaults to users. In React, [`useRoomStats`](/docs/api-reference/react#useroomstats).
 
 ```ts
 const { connectionCount, userCount } = room.getRoomStats();
@@ -314,9 +294,15 @@ const operators = room.getRoomStats({ kinds: ["operator"] });
 
 ### PluvRoom.listUsers
 
-Returns `Promise<ListUsersResult>`
+`listUsers(options?)` returns `Promise<ListUsersResult>`. Identity page, with no presence. Forward-only. Defaults to users, including yourself. Rows are grouped by `kind` and `data.id`, and each row is `{ data, kind, operator }`. The promise always settles.
 
-On-demand identity page (no presence). Forward-only cursor paging. Defaults to users, including yourself. Pass `{ kinds: ["operator"] }` or `{ kinds: ["user", "operator"] }` to include operators. Grouped by `kind` and `data.id`. Each row is `{ data, kind, operator }`. `endCursor` is `{ kind, id }` for the last row. `limit` defaults to 50 and must be an integer from 1 to 100. The promise always settles: check `success` before reading `users`. `FAILED` is a timeout (or a dropped request while the socket is open). `NOT_CONNECTED` is returned immediately when the room is not connected.
+`options`:
+
+- `cursor` — `{ kind: "user" | "operator", id: string } | null`
+- `kinds` — `readonly ("user" | "operator")[]`. Omit for users
+- `limit` — integer from 1 to 100. Default `50`
+
+`FAILED` is a timeout. `NOT_CONNECTED` is returned immediately when the socket is not open. The server method is synchronous: [`sessions.listUsers`](/docs/api-reference/io#listusers).
 
 ```ts
 const result = await room.listUsers({ cursor: null, limit: 50 });
@@ -333,32 +319,56 @@ if (!result.success) {
 
 ### PluvRoom.getStorage
 
-Returns the native CRDT shared type, or `null` while storage is unavailable. For `@pluv/crdt-yjs`, this is a Yjs type such as `Y.Array`.
+`getStorage(key)` returns the native shared type, such as `Y.Array` with `@pluv/crdt-yjs`. Call this to mutate that type. Returns `null` until storage is loaded, and when `key` is missing. A JSON snapshot is [`getStorageJson`](/docs/api-reference/client#pluvroomgetstoragejson). A listener is [`subscribe.storage`](/docs/api-reference/client#pluvroomsubscribestorage).
 
 ```ts
-// frontend/room.ts
 import { Array as YArray } from "yjs";
 
-// const io = ...
-
-const room = io.createRoom("my-example-room", {
-  initialPresence: {
-    selectionId: null,
-  },
-  // Override the JSON seed defined in createClient
-  initialStorage: {
-    messages: ["hello world!"],
-  },
-});
-
 const messages: YArray<string> | null = room.getStorage("messages");
+```
+
+### PluvRoom.getStorageJson
+
+`getStorageJson()` returns the document as JSON. `getStorageJson(key)` returns that top-level field. Call this to read a snapshot. Returns `null` when this connection has no document, and when `key` is missing. The native type is [`getStorage`](/docs/api-reference/client#pluvroomgetstorage).
+
+```ts
+const storage = room.getStorageJson();
+const messages = room.getStorageJson("messages");
+```
+
+### PluvRoom.getStorageLoaded
+
+Returns `boolean`
+
+Call this before [`room.storage`](/docs/api-reference/client#pluvroomstorage). `true` when storage is synced, or when the room is offline and using its local document. [`subscribe.storageLoaded`](/docs/api-reference/client#pluvroomsubscribestorageloaded) fires when this becomes true.
+
+```ts
+if (room.getStorageLoaded()) {
+  room.storage.addMessage({ text: "hello" });
+}
+```
+
+### PluvRoom.presence
+
+Call a treaty presence procedure through this proxy. Each call returns a promise and throws when the procedure is missing, or when the local user is not available yet. [`updateMyPresence`](/docs/api-reference/client#pluvroomupdatemypresence) writes fields directly. Do not destructure the proxy. In React, [`usePresence`](/docs/api-reference/react#usepresence).
+
+```ts
+await room.presence.select({ id: "item-1" });
+```
+
+### PluvRoom.storage
+
+Call a treaty storage procedure through this proxy. Calls return `void` and throw until [`getStorageLoaded`](/docs/api-reference/client#pluvroomgetstorageloaded) is true, without a connection id, or when the procedure is missing. Do not destructure the proxy. In React, [`useStorage`](/docs/api-reference/react#usestorage) is this proxy. [`useStorageField`](/docs/api-reference/react#usestoragefield) reads one field.
+
+```ts
+room.storage.addMessage({ text: "hello" });
 ```
 
 ### PluvRoom.redo
 
 Returns `void`
 
-Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/api-reference/client#PluvRoom.undo).
+Re-applies the last mutation that was undone via [PluvRoom.undo](/docs/api-reference/client#pluvroomundo).
 
 ```ts
 // frontend/room.ts
@@ -393,7 +403,7 @@ unsubscribe();
 
 Returns `() => void`
 
-Subscribes to an event. These events are defined by `PluvIO.procedure` and are emitted when other websockets emit events via `PluvRoom.broadcast`. Returns a function to unsubscribe from the event.
+Receives an event defined by `PluvIO.procedure`. [`broadcast`](/docs/api-reference/client#pluvroombroadcast) sends one. In React, [`useEvent`](/docs/api-reference/react#useevent).
 
 ```ts
 // Subscribe to receiveMessage messages
@@ -417,7 +427,7 @@ unsubscribe();
 
 Returns `() => void`
 
-Fires when the room reports a failure (procedure throw, size limit, rejected register). This is not the WebSocket `error` event from `room.addEventListener("error")`.
+A room failure: a procedure throw, a size limit, or a rejected register. The WebSocket `error` event is [`addEventListener("error")`](/docs/api-reference/client#pluvroomaddeventlistener). In React, [`useRoomError`](/docs/api-reference/react#useroomerror).
 
 ```ts
 const unsubscribe = room.subscribe.error((error) => {
@@ -482,7 +492,7 @@ unsubscribe();
 
 Returns `() => void`
 
-Subscribes to the list of user info objects of the other connections that aren't the user's. Returns a function to unsubscribe.
+Other people in the room. The second argument is `{ kinds?: readonly ("user" | "operator")[] }`, the same bag as [`getOthers`](/docs/api-reference/client#pluvroomgetothers).
 
 ```ts
 const unsubscribe = room.subscribe.others((others) => {
@@ -499,7 +509,7 @@ unsubscribe();
 
 Returns `() => void`
 
-Subscribes to live room connection/user counts.
+`connectionCount` and `userCount`. Pass `{ kinds }` the same way as [`getRoomStats`](/docs/api-reference/client#pluvroomgetroomstats).
 
 ```ts
 const unsubscribe = room.subscribe.roomStats((stats) => {
@@ -511,32 +521,13 @@ const unsubscribe = room.subscribe.roomStats((stats) => {
 
 Returns `() => void`
 
-Subscribes to a room's CRDT storage. The data in the callback will be a serialized value rather than the CRDT's instance. Returns a function to unsubscribe.
+Runs the callback when a field, or the whole document, changes. The callback receives JSON. [`getStorage`](/docs/api-reference/client#pluvroomgetstorage) reads the native type once.
 
 ```ts
-// frontend/room.ts
-import { yjs } from "@pluv/crdt-yjs";
-import { z } from "zod";
-
-// const io = ...
-
-const room = io.createRoom("my-example-room", {
-  // Define the user's initial presence
-  initialPresence: {
-    selectionId: null,
-  },
-  // Override initialStorage defined in createClient
-  initialStorage: {
-    messages: ["hello world!"],
-  },
-});
-
-// The following functions are equivalent
 room.subscribe.storage("messages", (messages: string[]) => {});
 
 const unsubscribe = room.subscribe.storage.messages((messages: string[]) => {
   console.log(messages);
-  // If the native shared type is needed, call getStorage here.
   const sharedType = room.getStorage("messages");
 });
 
@@ -546,7 +537,7 @@ const unsubscribe = room.subscribe.storage.messages((messages: string[]) => {
 unsubscribe();
 ```
 
-If you wish to subscribe to the full storage value, do not provide the string accessor nor use the property accessor. Instead provide only the callback function.
+Pass only the callback to receive the whole document.
 
 ```ts
 // Access a top-level property (serialized)
@@ -558,11 +549,11 @@ room.subscribe.storage((storage) => {
 });
 ```
 
-### PluvRoom.storage.storageLoaded
+### PluvRoom.subscribe.storageLoaded
 
 Returns `() => void`
 
-Subscribes to when storage is loaded for a room. Storage is loaded after the user connects, so it is recommended to use this if you need to identify when the storage was initialized for the current user.
+Runs the callback when storage finishes loading. [`getStorageLoaded`](/docs/api-reference/client#pluvroomgetstorageloaded) reads that flag once.
 
 ```ts
 room.subscribe.storageLoaded(() => {
@@ -580,11 +571,12 @@ When called without an origin, the origin will default to the user's connection 
 You can specify a 2nd parameter to transact with a different transaction origin.
 
 ```ts
-// frontend/transact
-room.transact((tx) => {
-  room.get("messages").push(["hello world!"]);
+const messages = room.getStorage("messages");
 
-  // Alternatively, access your storage from here
+room.transact((tx) => {
+  messages?.push(["hello world!"]);
+
+  // `tx` is the storage root for this transaction
   tx.messages.push(["hello world!"]);
 });
 
@@ -598,7 +590,7 @@ room.transact(() => {
 
 Returns `void`
 
-Undoes the last mutation that was applied via [PluvRoom.transact](/docs/api-reference/client#PluvRoom.transact).
+Undoes the last mutation that was applied via [PluvRoom.transact](/docs/api-reference/client#pluvroomtransact).
 
 ```ts
 // frontend/room.ts
@@ -607,23 +599,14 @@ room.undo();
 
 ### PluvRoom.updateMyPresence
 
-Returns `void`
+Returns `Promise<void>`
 
-Updates the user's own presence and broadcasts the update to all connected participants
+`updateMyPresence(patch)` writes presence fields directly and broadcasts them. `patch` is a partial presence object, or `(current) => partial`. A treaty presence procedure is [`room.presence`](/docs/api-reference/client#pluvroompresence). In React, the setter from [`useMyPresence`](/docs/api-reference/react#usemypresence) is this method.
 
 ```ts
-// frontend/room.ts
-const client = createClient().config({
-  // ...
-  presence: z.object({
-    selectionId: z.string().nullable(),
-  }),
-});
+await room.updateMyPresence({ selectionId: "id_..." });
 
-const room = client.createRoom("my-example-room", {
-  // ...
-  initialPresence: { selectionId: null },
-});
-
-room.updateMyPresence({ selectionId: "id_..." });
+await room.updateMyPresence((current) => ({
+  selectionId: current?.selectionId ?? null,
+}));
 ```

@@ -9,9 +9,8 @@ The examples below will use [hono](https://hono.dev), but so long as you can cre
 
 You can view another example of these via your platform's respective quickstart guides:
 
-1. [Next.js](/docs/quickstart/nextjs)
-2. [Cloudflare Workers](/docs/quickstart/cloudflare-workers)
-3. [Node.js](/docs/quickstart/nodejs)
+1. [Cloudflare Workers](/docs/quickstart/cloudflare-workers)
+2. [Node.js](/docs/quickstart/nodejs)
 
 ## Enable authorization on io
 
@@ -127,17 +126,15 @@ Now that we have your endpoint defined, connect your frontend client to your aut
 
 ```ts
 // frontend/io.ts
-import { createClient } from "@pluv/react";
-import type { ioServer } from "server/io";
+import { createClient } from "@pluv/client";
+import type { ioServer } from "./server/io";
+import { treaty } from "../shared/treaty";
 
 const client = createClient<typeof ioServer>().config({
   treaty,
-  // Specify your auth endpoint here
-  // Set to `true` if you have authorization on your io instance, and you
-  // want to use the default of (room) => `/api/pluv/authorize?room=${room}`
-  // This is the default from `createPluvHandler`
+  // `true` uses `/api/pluv/authorize?room=${room}`.
+  // Return a URL when the route lives somewhere else.
   authEndpoint: ({ room }) => `/api/pluv/auth?room=${room}`,
-  // ...
 });
 ```
 
@@ -145,8 +142,9 @@ const client = createClient<typeof ioServer>().config({
 
 ```ts
 // frontend/io.ts
-import { createClient } from "@pluv/react";
-import type { ioServer } from "server/io";
+import { createClient } from "@pluv/client";
+import type { ioServer } from "./server/io";
+import { treaty } from "../shared/treaty";
 
 const client = createClient<typeof ioServer>().config({
   treaty,
@@ -164,48 +162,45 @@ const client = createClient<typeof ioServer>().config({
 
 ## Add token to room registration
 
-When the frontend receives a JWT from your authorization endpoint, it will add that token as a `token` query parameter to your websocket connection request. To use this token, pass the token into `IORoom.register` on your server.
+The client appends the JWT as a `token` query parameter on the websocket URL. Read that token and pass it to `manageSessions`. Attach `message`, `close`, and `error` before `register`. `ws` drops frames that arrive with no listener, and `register` waits on authorization.
 
 ```ts
-import { serve, type HttpBindings } from "@hono/node-server";
-import Http from "http";
-import { Hono } from "hono";
+import { manageSessions, type RoomSessionManager } from "@pluv/io";
 import { ioServer } from "./io";
 
-const PORT = 3000;
-
-const app = new Hono<{ Bindings: HttpBindings }>()
-  .get("/api/pluv/auth", async (c) => {
-    // ...
-    return c.text(token, 200);
-  });
+const rooms = new Map<string, RoomSessionManager>();
 
 const parseRoomId = (url: string): string => {
   /* get room from req.url */
 };
 
-const parseToken = (url: string): string => {
-  /* get token from query parameters of req.url */
-};
+const getSessions = (roomId: string): RoomSessionManager => {
+  const existing = rooms.get(roomId);
+  if (existing) return existing;
 
-const getRoom = (roomId: string): InferIORoom<typeof ioServer> => { /* ... */};
+  const room = ioServer.createRoom(roomId);
+  const sessions = manageSessions(room);
+
+  rooms.set(roomId, sessions);
+
+  return sessions;
+};
 
 wsServer.on("connection", async (ws, req) => {
   const roomId = parseRoomId(req.url);
-  const token = parseToken(req.url);
-  const room = getRoom(roomId);
+  const token = new URL(req.url).searchParams.get("token");
+  const sessions = getSessions(roomId);
 
   ws.on("message", async (data) => {
-    await room.onMessage(ws)({ data });
+    await sessions.onMessage(ws)({ data });
   });
   ws.on("close", async (code, reason) => {
-    await room.onClose(ws)({ code, reason: reason.toString() });
+    await sessions.onClose(ws)({ code, reason: reason.toString() });
   });
   ws.on("error", async (error) => {
-    await room.onError(ws)({ error, message: error.message });
+    await sessions.onError(ws)({ error, message: error.message });
   });
 
-  // Pass in the token from query params
-  await room.register(ws, { request: req, token });
+  await sessions.register(ws, { request: req, token });
 });
 ```

@@ -1,5 +1,5 @@
 "📚 documentation / examples":
-    - any: [docs/**]
+    - any: [apps/docs/**]
 
 "pluv":
     - any: ["packages/cli/**", "!packages/cli/package.json"]

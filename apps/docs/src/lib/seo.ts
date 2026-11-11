@@ -1,7 +1,7 @@
 import { IS_DOCS_STAGING, SITE_NAME, SITE_URL } from "@/constants";
 
 const DEFAULT_DESCRIPTION =
-    "Type-safe realtime primitives for multiplayer apps. Self-host on Cloudflare Workers or Node.js, or use the pluv.io network.";
+    "Type-safe realtime primitives for multiplayer apps. Run on Cloudflare Workers or Node.js.";
 
 export function createPageHead({
     title,

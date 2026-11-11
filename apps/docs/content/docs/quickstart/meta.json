@@ -1,4 +1,4 @@
 {
     "title": "Quickstart",
-    "pages": ["index", "nextjs", "cloudflare-workers", "nodejs"]
+    "pages": ["index", "cloudflare-workers", "nodejs"]
 }

@@ -1,0 +1,30 @@
+---
+title: "Experimental"
+description: "Host APIs that can change without a major version bump."
+---
+
+These methods are on the value returned by [`manageSessions`](/docs/api-reference/io#managesessions). They can change without a major version bump.
+
+## __experimental_presence
+
+Returns the presence procedure proxy for one live connection.
+
+Pass `{ senderId }` with that connection's id. The returned object has the treaty's presence procedures. Each call returns a promise of the presence value. Do not destructure the proxy.
+
+```ts
+const presence = sessions.__experimental_presence({ senderId });
+
+await presence.select({ id: "item-1" });
+```
+
+## __experimental_storage
+
+Returns the storage procedure proxy for one live connection.
+
+Pass `{ senderId }` with that connection's id. The returned object has the treaty's storage procedures. Each call returns a promise. Client `room.storage` calls return `void`. These host calls do not. Do not destructure the proxy.
+
+```ts
+const storage = sessions.__experimental_storage({ senderId });
+
+await storage.addMessage({ text: "hello" });
+```

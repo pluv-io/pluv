@@ -11,7 +11,7 @@ Use IndexedDB to persist room storage so that when the page is reloaded, the roo
 
 **Installation**
 
-```bash
+```npm
 npm install @pluv/addon-indexeddb
 ```
 
@@ -40,7 +40,8 @@ const room = client.createRoom("my-room", {
 // Using @pluv/react
 
 import { addonIndexedDB } from "@pluv/addon-indexeddb";
-import { createBundle, createClient } from "@pluv/react";
+import { createClient } from "@pluv/client";
+import { createBundle } from "@pluv/react";
 import { treaty } from "../shared/treaty";
 
 const client = createClient<typeof io>().config({
@@ -64,7 +65,7 @@ Persist CRDT storage in Redis so a Node process can recover room documents after
 
 **Installation**
 
-```bash
+```npm
 # For the server
 npm install @pluv/persistence-redis
 # Peer-dependencies

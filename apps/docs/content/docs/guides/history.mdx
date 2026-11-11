@@ -12,11 +12,11 @@ This will allow users to apply undos and redos to Pluv storage mutations.
 
 ## Relevant Hooks
 
-* [useCanRedo](/docs/api-reference/react#useCanRedo)
-* [useCanUndo](/docs/api-reference/react#useCanUndo)
-* [useRedo](/docs/api-reference/react#useRedo)
-* [useStorageField](/docs/api-reference/react#useStorageField)
-* [useUndo](/docs/api-reference/react#useUndo)
+* [useCanRedo](/docs/api-reference/react#usecanredo)
+* [useCanUndo](/docs/api-reference/react#usecanundo)
+* [useRedo](/docs/api-reference/react#useredo)
+* [useStorageField](/docs/api-reference/react#usestoragefield)
+* [useUndo](/docs/api-reference/react#useundo)
 
 ## Undoing a storage mutation
 
@@ -25,7 +25,8 @@ Assume you have storage defined like so:
 ```ts
 import { s } from "@pluv/crdt";
 import { yjs } from "@pluv/crdt-yjs";
-import { createBundle, createClient } from "@pluv/react";
+import { createClient } from "@pluv/client";
+import { createBundle } from "@pluv/react";
 
 const client = createClient().config({
   treaty,
