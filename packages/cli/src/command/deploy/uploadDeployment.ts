@@ -1,7 +1,6 @@
 import { z } from "zod";
-import { apiBase, type ServiceUrls } from "../session/endpoints";
-import { exchangeSessionJwt } from "../session/exchangeSessionJwt";
-import { requestJson } from "../session/request";
+import { api } from "../session/api";
+import type { ServiceUrls } from "../session/endpoints";
 
 const ZodApiError = z.object({
     message: z.string().min(1),
@@ -33,22 +32,18 @@ export const uploadDeployment = async (params: {
     module: Uint8Array;
     organization: string;
     project: string;
-    token: string;
+    cwd: string;
     urls?: ServiceUrls;
 }): Promise<{ id: string; status: string }> => {
-    const createJwt = await exchangeSessionJwt(params.token, params.urls);
-    const createUrl = new URL(
-        `/api/organizations/${encodeURIComponent(params.organization)}/projects/${encodeURIComponent(params.project)}/deployments/upload`,
-        apiBase(params.urls),
-    );
-    const created = await requestJson({
-        url: createUrl,
-        method: "POST",
-        token: createJwt,
-        schema: ZodCreatedUpload,
-        error: (status, body) => failureMessage(status, body, "Could not start the deployment."),
-        invalid: "Could not start the deployment.",
-    });
+    const created = await api
+        .client({ cwd: params.cwd, urls: params.urls })
+        .post(
+            `/api/organizations/${encodeURIComponent(params.organization)}/projects/${encodeURIComponent(params.project)}/deployments/upload`,
+        )
+        .output(ZodCreatedUpload)
+        .error((status, body) => failureMessage(status, body, "Could not start the deployment."))
+        .invalid("Could not start the deployment.")
+        .send();
 
     const bytes = new ArrayBuffer(params.module.byteLength);
 
@@ -62,17 +57,13 @@ export const uploadDeployment = async (params: {
 
     if (!uploaded.ok) throw new Error("The module upload failed.");
 
-    const completeJwt = await exchangeSessionJwt(params.token, params.urls);
-
-    return await requestJson({
-        url: new URL(
+    return await api
+        .client({ cwd: params.cwd, urls: params.urls })
+        .post(
             `/api/organizations/${encodeURIComponent(params.organization)}/projects/${encodeURIComponent(params.project)}/deployments/upload/${encodeURIComponent(created.deployment.id)}`,
-            apiBase(params.urls),
-        ),
-        method: "POST",
-        token: completeJwt,
-        schema: ZodCompletedUpload,
-        error: (status, body) => failureMessage(status, body, "Could not finish the deployment."),
-        invalid: "Could not finish the deployment.",
-    });
+        )
+        .output(ZodCompletedUpload)
+        .error((status, body) => failureMessage(status, body, "Could not finish the deployment."))
+        .invalid("Could not finish the deployment.")
+        .send();
 };

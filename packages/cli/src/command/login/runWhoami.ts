@@ -1,8 +1,6 @@
 import { z } from "zod";
-import { deploySessionToken } from "../deploy/deploySessionToken";
-import { authBase, type ServiceUrls } from "../session/endpoints";
-import { exchangeSessionJwt } from "../session/exchangeSessionJwt";
-import { requestJson } from "../session/request";
+import { api } from "../session/api";
+import type { ServiceUrls } from "../session/endpoints";
 
 const ZodWhoami = z.object({
     user: z
@@ -22,14 +20,12 @@ export type WhoamiAccount = {
 
 /** The account for the saved CLI session. */
 export const runWhoami = async (cwd: string, urls?: ServiceUrls): Promise<WhoamiAccount> => {
-    const token = await deploySessionToken(cwd);
-    const jwt = await exchangeSessionJwt(token, urls);
-    const body = await requestJson({
-        url: new URL("/api/auth/verify", authBase(urls)),
-        token: jwt,
-        schema: ZodWhoami,
-        error: "The saved login expired. Run pluv login.",
-    });
+    const body = await api
+        .client({ cwd, urls })
+        .get("/api/auth/verify")
+        .output(ZodWhoami)
+        .error("The saved login expired. Run pluv login.")
+        .send();
 
     if (!body.user) throw new Error("The saved login expired. Run pluv login.");
 

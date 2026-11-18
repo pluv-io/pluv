@@ -1,12 +1,17 @@
 import { z } from "zod";
-import { authBase, appBase, type ServiceUrls } from "../session/endpoints";
-import { requestJson } from "../session/request";
+import { appBase, type ServiceUrls } from "../session/endpoints";
+import { api } from "../session/api";
 import { sessionFilePath, writeCliSession } from "../session/sessionFile";
 import { createCliPkce } from "./createCliPkce";
 import { listenForCliCode } from "./listenForCliCode";
 import { openBrowser } from "./openBrowser";
 
 const LOGIN_TIMEOUT_MS = 5 * 60 * 1000;
+
+const ZodCliCode = z.object({
+    code: z.string().min(1),
+    verifier: z.string().min(1),
+});
 
 const ZodCliToken = z.object({
     expiresAt: z.string().min(1),
@@ -66,13 +71,13 @@ export const runLogin = async (
             throw new Error("Login state did not match. Run pluv login again.");
         }
 
-        const session = await requestJson({
-            url: new URL("/api/auth/cli/token", authBase(urls)),
-            method: "POST",
-            json: { code: redirected.code, verifier },
-            schema: ZodCliToken,
-            error: "Login could not be completed. Run pluv login again.",
-        });
+        const session = await api
+            .client({ cwd, urls })
+            .post("/api/auth/cli/token")
+            .body(ZodCliCode, { code: redirected.code, verifier })
+            .output(ZodCliToken)
+            .error("Login could not be completed. Run pluv login again.")
+            .send();
 
         await writeCliSession(filePath, session);
         finish(true);
