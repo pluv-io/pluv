@@ -199,6 +199,25 @@ describe("resolveDevConfig", () => {
         }
     });
 
+    it("keeps internal service urls from the config file", async () => {
+        const cwd = await makeDir();
+
+        await writeFile(
+            join(cwd, "pluv.config.json"),
+            JSON.stringify({
+                entry: "./pluv.ts",
+                "~": { apiUrl: "http://localhost:8880", appUrl: "http://localhost:3000" },
+            }),
+        );
+
+        const { config } = await resolveDevConfig(cwd, {});
+
+        expect(config["~"]).toEqual({
+            apiUrl: "http://localhost:8880",
+            appUrl: "http://localhost:3000",
+        });
+    });
+
     it("rejects a reserved env key and a non-string value", async () => {
         const cwd = await makeDir();
         const filePath = join(cwd, "pluv.config.json");

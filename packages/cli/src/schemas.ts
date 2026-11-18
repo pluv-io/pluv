@@ -16,6 +16,16 @@ const ZodDistDirSchema = z
     .string({ error: "distDir must be a directory path." })
     .min(1, { error: "distDir must be a directory path." });
 
+const ZodServiceUrl = z.url({ error: "Service URLs must be absolute URLs." });
+
+const ZodServiceUrls = z
+    .object({
+        apiUrl: ZodServiceUrl.optional(),
+        appUrl: ZodServiceUrl.optional(),
+        authUrl: ZodServiceUrl.optional(),
+    })
+    .strict();
+
 const ZodEnvSchema = z
     .record(
         z.string().min(1, { error: "env keys must not be empty." }),
@@ -45,16 +55,33 @@ export const ZodPluvConfigFileSchema = z
         entry: ZodEntrySchema.optional(),
         /** Directory `pluv build` writes into. The server file is `build/server.js` inside it. Defaults to `.pluv`. */
         distDir: ZodDistDirSchema.optional(),
+        /** Organization slug used by `pluv deploy`. */
+        organization: z.string().min(1).optional(),
         port: ZodPortSchema.optional(),
+        /** Project slug used by `pluv deploy`. */
+        project: z.string().min(1).optional(),
         /**
          * Copied onto the room's `process.env`.
          * Map values from `process.env` after `.env` is loaded. Keys starting with `PLUV_` are reserved.
          */
         env: ZodEnvSchema.optional(),
+        /**
+         * @internal
+         * Local service URLs for login and deploy. An environment variable still wins.
+         */
+        "~": ZodServiceUrls.optional(),
     })
     .strict();
 
-export type PluvConfigFile = z.infer<typeof ZodPluvConfigFileSchema>;
+type PluvConfigFileOutput = z.infer<typeof ZodPluvConfigFileSchema>;
+
+export interface PluvConfigFile extends PluvConfigFileOutput {
+    /**
+     * @internal
+     * Local service URLs for login and deploy. An environment variable still wins.
+     */
+    "~"?: NonNullable<PluvConfigFileOutput["~"]>;
+}
 
 /** Config after flags and defaults. */
 export const ZodPluvConfigSchema = z.object({
@@ -67,8 +94,11 @@ export const ZodPluvConfigSchema = z.object({
         })
         .min(1, { error: "entry must be a module path." }),
     distDir: ZodDistDirSchema.default(DEFAULT_DIST_DIR),
-    port: ZodPortSchema.default(DEFAULT_PORT),
     env: ZodEnvSchema.default({}),
+    organization: z.string().min(1).optional(),
+    port: ZodPortSchema.default(DEFAULT_PORT),
+    project: z.string().min(1).optional(),
+    "~": ZodServiceUrls.optional(),
 });
 
 export type PluvConfig = z.infer<typeof ZodPluvConfigSchema>;
