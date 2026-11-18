@@ -7,9 +7,7 @@ export default defineConfig({
     entry: {
         config: "src/defineConfig.ts",
         cli: "src/cli.tsx",
-        "commands/_app": "src/commands/_app.tsx",
-        "commands/build": "src/commands/build.tsx",
-        "commands/dev": "src/commands/dev.tsx",
+        "commands/*": "src/commands/*.tsx",
         supervisor: "src/room/supervisor.ts",
         facet: "src/room/facet.ts",
         bundle: "src/bundle.ts",

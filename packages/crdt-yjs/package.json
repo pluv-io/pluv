@@ -49,7 +49,7 @@
     },
     "exports": {
         ".": "./dist/index.mjs",
-        "./rolldown-runtime-D8jQpDG7": "./dist/rolldown-runtime-D8jQpDG7.mjs",
+        "./rolldown-runtime-D3KUYPsf": "./dist/rolldown-runtime-D3KUYPsf.mjs",
         "./*": "./*"
     }
 }

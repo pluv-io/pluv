@@ -43,6 +43,7 @@
         "@pluv/types": "workspace:^",
         "esbuild": "^0.28.2",
         "ink": "^8.0.0",
+        "ink-spinner": "^5.0.0",
         "pastel": "^4.0.1",
         "react": "^19.3.1",
         "wrangler": "^4.158.0",

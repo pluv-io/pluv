@@ -85,6 +85,16 @@ pnpm build:packages && pnpm lint
 
 If you work on `packages/io`, platform packages, or the CLI room supervisor, read [packages/io/ARCHITECTURE.md](packages/io/ARCHITECTURE.md). User-facing room behavior is in `apps/docs/content/docs/architecture/`.
 
+### CLI
+
+`pnpm install` and `pnpm build` do not put `pluv` on your `PATH`. To use the local binary while working on `packages/cli`, link it from that directory:
+
+```bash
+pnpm run link
+```
+
+If pnpm reports that its global bin directory is not on `PATH`, run `pnpm setup` and open a new terminal, then run the link command again.
+
 ### Working on your changes
 
 When making commits, make sure to follow the [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) guidelines by running [commitizen](https://github.com/commitizen/cz-cli):

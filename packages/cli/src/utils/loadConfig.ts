@@ -34,13 +34,18 @@ const parseConfigFile = (value: unknown, filePath: string): PluvConfigFile => {
     return parsed.data;
 };
 
-const loadConfigFile = async (cwd: string): Promise<PluvConfigFile | null> => {
+export const findConfigFile = (cwd: string): string | null => {
     const name = CONFIG_NAMES.find((candidate) => existsSync(resolve(cwd, candidate)));
 
-    if (!name) return null;
+    return name ? resolve(cwd, name) : null;
+};
 
-    const filePath = resolve(cwd, name);
-    const loaded: unknown = name.endsWith(".json")
+const loadConfigFile = async (cwd: string): Promise<PluvConfigFile | null> => {
+    const filePath = findConfigFile(cwd);
+
+    if (!filePath) return null;
+
+    const loaded: unknown = filePath.endsWith(".json")
         ? parseJsonConfig(filePath, await readFile(filePath, "utf8"))
         : ((await import(pathToFileURL(filePath).href)) as { default?: unknown }).default;
 
@@ -78,10 +83,13 @@ export const resolveDevConfig = async (
     const file = await loadConfigFile(cwd);
     const entry = flags.entry ?? file?.entry ?? (file ? undefined : DEFAULT_ENTRY);
     const parsed = ZodPluvConfigSchema.safeParse({
+        distDir: file?.distDir,
         entry,
         env: file?.env,
-        distDir: file?.distDir,
+        organization: file?.organization,
         port: flags.port ?? file?.port,
+        project: file?.project,
+        "~": file?.["~"],
     });
 
     if (!parsed.success) throw schemaError(parsed.error);
