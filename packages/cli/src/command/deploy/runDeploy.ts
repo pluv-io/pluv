@@ -1,5 +1,4 @@
 import type { PluvConfig } from "../../schemas";
-import { deploySessionToken } from "./deploySessionToken";
 import { readBuiltModule } from "./readBuiltModule";
 import { uploadDeployment } from "./uploadDeployment";
 import { writeProjectTarget } from "./writeProjectTarget";
@@ -88,12 +87,11 @@ export const runDeploy = async (params: {
         }
     }
 
-    const token = await deploySessionToken(params.cwd);
     const deployment = await uploadDeployment({
         module,
         organization,
         project,
-        token,
+        cwd: params.cwd,
         urls: params.config["~"],
     });
 
