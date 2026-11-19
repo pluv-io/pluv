@@ -1,3 +1,4 @@
+import { gzipSync } from "node:zlib";
 import { z } from "zod";
 import { api } from "../session/api";
 import type { ServiceUrls } from "../session/endpoints";
@@ -45,13 +46,17 @@ export const uploadDeployment = async (params: {
         .invalid("Could not start the deployment.")
         .send();
 
-    const bytes = new ArrayBuffer(params.module.byteLength);
+    const compressed = gzipSync(params.module);
+    const bytes = new ArrayBuffer(compressed.byteLength);
 
-    new Uint8Array(bytes).set(params.module);
+    new Uint8Array(bytes).set(compressed);
 
     const uploaded = await fetch(created.uploadUrl, {
         method: "PUT",
-        headers: { "content-type": "text/javascript" },
+        headers: {
+            "content-encoding": "gzip",
+            "content-type": "text/javascript",
+        },
         body: bytes,
     });
 
