@@ -1,0 +1,1 @@
+export { logout } from "./command";

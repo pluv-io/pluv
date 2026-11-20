@@ -7,18 +7,24 @@ export default defineConfig({
     entry: {
         config: "src/defineConfig.ts",
         cli: "src/cli.tsx",
-        "commands/*": "src/commands/*.tsx",
+        program: "src/program.tsx",
         supervisor: "src/room/supervisor.ts",
         facet: "src/room/facet.ts",
         bundle: "src/bundle.ts",
     },
-    // Pastel loads commands from dist/commands and only accepts .js, .jsx, .ts, and .tsx.
     outExtensions: () => ({ js: ".js", dts: ".d.ts" }),
     target: "esnext",
-    copy: [{ from: "src/command/dev/worker.ts", to: "dist/dev" }],
+    copy: [{ from: "src/commands/dev/worker.ts", to: "dist/dev" }],
     sourcemap: true,
     clean: true,
     deps: {
-        neverBundle: ["cloudflare:workers", "server.js"],
+        neverBundle: [
+            "@effect/platform-node",
+            "@opentui/core",
+            "@opentui/react",
+            "cloudflare:workers",
+            "effect",
+            "server.js",
+        ],
     },
 });

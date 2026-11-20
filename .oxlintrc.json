@@ -41,6 +41,7 @@
         "no-extra-boolean-cast": "off",
         "turbo/no-undeclared-env-vars": "warn",
         "eslint/no-underscore-dangle": "off",
+        "react/capitalized-calls": "off",
         "react/react-in-jsx-scope": "off",
         "react/no-array-index-key": "off",
         "unicorn/consistent-function-scoping": "off"

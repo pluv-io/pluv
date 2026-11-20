@@ -1,0 +1,1 @@
+export { whoami } from "./command";

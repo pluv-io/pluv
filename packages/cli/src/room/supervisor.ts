@@ -13,7 +13,7 @@ import type { RoomFacet } from "@pluv/platform";
 import { platformCloudflare } from "@pluv/platform-cloudflare";
 import type { JsonObject } from "@pluv/types";
 import { DurableObject, RpcTarget } from "cloudflare:workers";
-import { isObject } from "../utils/isObject";
+import { isObject } from "../lib/isObject";
 
 export { COMPATIBILITY_DATE } from "../constants";
 
