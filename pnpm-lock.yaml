@@ -430,6 +430,12 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.108.0
         version: 5.108.0(@types/react@19.3.0)(react@19.3.1)
+      '@types/common-tags':
+        specifier: ^1.8.4
+        version: 1.8.4
+      common-tags:
+        specifier: ^1.8.2
+        version: 1.8.2
       effect:
         specifier: 4.1.4
         version: 4.1.4
