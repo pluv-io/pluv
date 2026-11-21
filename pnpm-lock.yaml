@@ -407,14 +407,14 @@ importers:
   packages/cli:
     dependencies:
       '@effect/platform-node':
-        specifier: 4.1.4
-        version: 4.1.4(effect@4.1.4)(redis@6.3.1)
+        specifier: 4.1.5
+        version: 4.1.5(effect@4.1.4)(redis@6.3.1)
       '@opentui/core':
         specifier: 0.9.3
         version: 0.9.3(typescript@7.1.0-beta)(web-tree-sitter@0.25.10)
       '@opentui/react':
         specifier: 0.9.3
-        version: 0.9.3(react-devtools-core@7.0.1)(react@19.3.1)(typescript@7.1.0-beta)(web-tree-sitter@0.25.10)(ws@8.22.1)
+        version: 0.9.3(react-devtools-core@7.0.1)(react@19.3.1)(typescript@7.1.0-beta)(web-tree-sitter@0.25.10)(ws@8.23.0)
       '@pluv/io':
         specifier: workspace:^
         version: link:../io
@@ -1544,17 +1544,17 @@ packages:
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
 
-  '@effect/platform-node-shared@4.1.4':
-    resolution: {integrity: sha512-DWdfphHGOFJNj/mYadgpT3jIm8aRXDcPrQiGXFBH4p2H4XmA7iYMrPsI8NxVgZ7kNX0q1+FGJZJama0tINHRAg==}
+  '@effect/platform-node-shared@4.1.5':
+    resolution: {integrity: sha512-JzlrYe4uKaBFTWihBRXo2pDjkUVB39kQpKdGfXdbp7Co5sKT8hbcjOmdB5pg/WOYESdGTddd3fxD4lwlZELbZQ==}
     engines: {node: '>=22.19.0'}
     peerDependencies:
-      effect: ^4.1.4
+      effect: ^4.1.5
 
-  '@effect/platform-node@4.1.4':
-    resolution: {integrity: sha512-h7QExTPq/RfYtHP/8tMlgfBvqYsuJKhxfkU6w0+NaF/ihqQ8Y3GH9t28ltupQjoqMM7P6W5gy8rOji7F0qVrmg==}
+  '@effect/platform-node@4.1.5':
+    resolution: {integrity: sha512-tFnRvxF9EKc3oU17sDHj1JeLP+TL/IkaOEl3IUk2EjgMS0x7AWs0ioUXjdNKLb3Z1LdjVfMf/DxsNh9PW5FFAg==}
     engines: {node: '>=22.19.0'}
     peerDependencies:
-      effect: ^4.1.4
+      effect: ^4.1.5
       redis: '>=5.1.0 <7.0.0'
 
   '@emnapi/core@2.0.0-beta.2':
@@ -8012,6 +8012,18 @@ packages:
       utf-8-validate:
         optional: true
 
+  ws@8.23.0:
+    resolution: {integrity: sha512-wCkmX8QMOrKjgO8HW2WyDbTSGeqkocxgDzS9iR79rEAexty6/2qzilx3Ag8Tqf9ykop3irLKle0MtVn5qjVnoQ==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   wsl-utils@1.0.1:
     resolution: {integrity: sha512-c16PKLIRxBYpR3jSWsdS7SFp0COm5SOQdiFjY818dYFHJbMGuLBszpF07LBWmOS1uzrHa9VGdynsEgoeKy0oOQ==}
     engines: {node: '>=20'}
@@ -8654,18 +8666,18 @@ snapshots:
 
   '@drizzle-team/brocli@0.10.2': {}
 
-  '@effect/platform-node-shared@4.1.4(effect@4.1.4)':
+  '@effect/platform-node-shared@4.1.5(effect@4.1.4)':
     dependencies:
       '@types/ws': 8.18.2
       effect: 4.1.4
-      ws: 8.22.1
+      ws: 8.23.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node@4.1.4(effect@4.1.4)(redis@6.3.1)':
+  '@effect/platform-node@4.1.5(effect@4.1.4)(redis@6.3.1)':
     dependencies:
-      '@effect/platform-node-shared': 4.1.4(effect@4.1.4)
+      '@effect/platform-node-shared': 4.1.5(effect@4.1.4)
       effect: 4.1.4
       redis: 6.3.1
       undici: 8.12.4
@@ -9689,13 +9701,13 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@opentui/react@0.9.3(react-devtools-core@7.0.1)(react@19.3.1)(typescript@7.1.0-beta)(web-tree-sitter@0.25.10)(ws@8.22.1)':
+  '@opentui/react@0.9.3(react-devtools-core@7.0.1)(react@19.3.1)(typescript@7.1.0-beta)(web-tree-sitter@0.25.10)(ws@8.23.0)':
     dependencies:
       '@opentui/core': 0.9.3(typescript@7.1.0-beta)(web-tree-sitter@0.25.10)
       react: 19.3.1
       react-devtools-core: 7.0.1
       react-reconciler: 0.33.0(react@19.3.1)
-      ws: 8.22.1
+      ws: 8.23.0
     transitivePeerDependencies:
       - typescript
       - web-tree-sitter
@@ -14865,6 +14877,8 @@ snapshots:
   ws@8.22.0: {}
 
   ws@8.22.1: {}
+
+  ws@8.23.0: {}
 
   wsl-utils@1.0.1:
     dependencies:
