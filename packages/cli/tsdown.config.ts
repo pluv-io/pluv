@@ -25,6 +25,7 @@ export default defineConfig({
             "cloudflare:workers",
             "effect",
             "server.js",
+            "typescript",
         ],
     },
 });

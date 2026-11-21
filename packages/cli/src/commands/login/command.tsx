@@ -1,5 +1,6 @@
 import { Command } from "effect/cli";
 import { exitWith } from "../../lib/exit";
+import { writeLogEvent } from "../../log/event";
 import { runLoginCommand, LoginScreen } from "./LoginScreen";
 import { runWhoamiCommand } from "../whoami/WhoamiScreen";
 import { done } from "../shared/done";
@@ -11,9 +12,7 @@ export const login = Command.make("login", {}, () => {
         return launch({
             mode: "alternate-screen",
             headless: async (config) => {
-                await runLoginCommand(config, (url) => {
-                    process.stderr.write(`Open ${url} if the browser does not.\n`);
-                });
+                await runLoginCommand(config, writeLogEvent);
                 exitWith(await runWhoamiCommand(), 0);
             },
             screen: ({ config, warning }) => {

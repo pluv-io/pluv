@@ -8,6 +8,8 @@ import { openScreen } from "../../terminal";
 /** Load config, then draw a screen or run without a terminal. */
 export const launch = async (params: {
     entry?: string;
+    /** Skip the `pluv build` typecheck for this run. */
+    noTypecheck?: boolean;
     port?: number;
     mode: ScreenMode;
     screen: (props: { config: PluvConfig; warning: string | null }) => ReactNode;
@@ -15,6 +17,7 @@ export const launch = async (params: {
 }): Promise<void> => {
     const resolved = await resolveDevConfig(process.cwd(), {
         entry: params.entry,
+        noTypecheck: params.noTypecheck,
         port: params.port,
     });
 

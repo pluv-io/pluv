@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAnimationTick } from "@opentui/react";
+import { palette } from "../log/palette";
 
 const FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
@@ -13,7 +14,7 @@ export const Status = ({ label }: { label: string }) => {
 
     return (
         <text>
-            <span fg="#6366f1">{FRAMES[frame] ?? "⠋"}</span>
+            <span fg={palette.accent}>{FRAMES[frame] ?? "⠋"}</span>
             {` ${label}`}
         </text>
     );

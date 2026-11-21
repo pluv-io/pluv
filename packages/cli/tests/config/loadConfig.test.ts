@@ -30,6 +30,7 @@ describe("resolveDevConfig", () => {
             env: {},
             distDir: resolve(cwd, ".pluv"),
             port: 8787,
+            typescript: { ignoreBuildErrors: false },
             "~": defaultPluvConfigInternal,
         });
     });
@@ -54,6 +55,7 @@ describe("resolveDevConfig", () => {
             env: {},
             distDir: resolve(cwd, ".pluv"),
             port: 8787,
+            typescript: { ignoreBuildErrors: false },
             "~": defaultPluvConfigInternal,
         });
     });
@@ -78,6 +80,7 @@ describe("resolveDevConfig", () => {
             env: {},
             distDir: resolve(cwd, ".pluv"),
             port: 8791,
+            typescript: { ignoreBuildErrors: false },
             "~": defaultPluvConfigInternal,
         });
 
@@ -91,6 +94,7 @@ describe("resolveDevConfig", () => {
             env: {},
             distDir: resolve(cwd, ".pluv"),
             port: 8799,
+            typescript: { ignoreBuildErrors: false },
             "~": defaultPluvConfigInternal,
         });
     });
@@ -151,6 +155,47 @@ describe("resolveDevConfig", () => {
 
         await expect(resolveDevConfig(cwd, {})).rejects.toThrow(filePath);
         await expect(resolveDevConfig(cwd, {})).rejects.toThrow("entry must be a module path.");
+    });
+
+    it("rejects a JavaScript server entry from the config file", async () => {
+        const cwd = await makeDir();
+
+        await writeFile(join(cwd, "pluv.config.json"), JSON.stringify({ entry: "./io.js" }));
+
+        await expect(resolveDevConfig(cwd, {})).rejects.toThrow(
+            /pluv requires a TypeScript server entry\.[\s\S]*JavaScript entrypoints are not supported[\s\S]*rename io\.js to io\.ts/,
+        );
+    });
+
+    it("rejects a JavaScript server entry passed as a flag", async () => {
+        const cwd = await makeDir();
+
+        await expect(resolveDevConfig(cwd, { entry: "./src/server.mjs" })).rejects.toThrow(
+            /pluv requires a TypeScript server entry\.[\s\S]*JavaScript entrypoints are not supported[\s\S]*rename server\.mjs to server\.ts/,
+        );
+    });
+
+    it("skips the build typecheck when the config or the flag says so", async () => {
+        const cwd = await makeDir();
+
+        await writeFile(
+            join(cwd, "pluv.config.json"),
+            JSON.stringify({ entry: "./pluv.ts", typescript: { ignoreBuildErrors: true } }),
+        );
+
+        const { config: fromFile } = await resolveDevConfig(cwd, {});
+
+        expect(fromFile.typescript).toEqual({ ignoreBuildErrors: true });
+
+        const { config: fromFlag } = await resolveDevConfig(cwd, { noTypecheck: true });
+
+        expect(fromFlag.typescript.ignoreBuildErrors).toBe(true);
+
+        await writeFile(join(cwd, "pluv.config.json"), JSON.stringify({ entry: "./pluv.ts" }));
+
+        const { config: flagged } = await resolveDevConfig(cwd, { noTypecheck: true });
+
+        expect(flagged.typescript.ignoreBuildErrors).toBe(true);
     });
 
     it("prints each invalid field", async () => {

@@ -3,6 +3,7 @@ import { useKeyboard } from "@opentui/react";
 import { runWhoami, type WhoamiAccount } from "./runWhoami";
 import { errorText } from "../../lib/exit";
 import { AccountTable } from "../../components/AccountTable";
+import { palette } from "../../log/palette";
 import { Status } from "../../components/Status";
 import type { ScreenProps } from "../shared/types";
 
@@ -49,7 +50,7 @@ export const WhoamiScreen = ({ done, warning }: ScreenProps) => {
     if (!account) {
         return (
             <box style={{ padding: 1 }}>
-                {warning ? <text fg="#888888">{warning}</text> : null}
+                {warning ? <text fg={palette.muted}>{warning}</text> : null}
                 <Status label="Retrieving user details" />
             </box>
         );
@@ -57,14 +58,14 @@ export const WhoamiScreen = ({ done, warning }: ScreenProps) => {
 
     return (
         <box style={{ flexDirection: "column", padding: 1 }}>
-            {warning ? <text fg="#888888">{warning}</text> : null}
+            {warning ? <text fg={palette.muted}>{warning}</text> : null}
             <text>
                 {"You are logged in with an OAuth Token, associated with "}
-                <span fg="#6366f1">{account.email}</span>
+                <span fg={palette.accent}>{account.email}</span>
                 {"."}
             </text>
             <AccountTable id={account.id} name={account.name} />
-            <text fg="#888888">enter to close</text>
+            <text fg={palette.muted}>enter to close</text>
         </box>
     );
 };

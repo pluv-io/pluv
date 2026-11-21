@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { runLogout } from "./runLogout";
 import { errorText } from "../../lib/exit";
+import { palette } from "../../log/palette";
 import { Status } from "../../components/Status";
 import type { ScreenProps } from "../shared/types";
 
@@ -31,7 +32,7 @@ export const LogoutScreen = ({ done, warning }: ScreenProps) => {
 
     return (
         <box style={{ flexDirection: "column", padding: 1 }}>
-            {warning ? <text fg="#888888">{warning}</text> : null}
+            {warning ? <text fg={palette.muted}>{warning}</text> : null}
             <Status label="Logging out" />
         </box>
     );

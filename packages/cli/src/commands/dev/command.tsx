@@ -1,5 +1,6 @@
 import { Option } from "effect";
 import { Command, Flag } from "effect/cli";
+import { writeLogEvent } from "../../log/event";
 import { startDev, DevScreen } from "./DevScreen";
 import { done } from "../shared/done";
 import { entryArgument } from "../shared/entryArgument";
@@ -31,11 +32,7 @@ export const dev = Command.make(
                             onExit: (code) => {
                                 process.exit(code);
                             },
-                            onLog: (text) => {
-                                process.stderr.write(text);
-                            },
-                            onStatus: () => {},
-                            pipe: false,
+                            onEvent: writeLogEvent,
                         });
                     });
                 },

@@ -13,6 +13,7 @@ import {
 import { errorText } from "../../lib/exit";
 import type { PluvConfig } from "../../schemas";
 import { ChoiceList } from "../../components/ChoiceList";
+import { palette } from "../../log/palette";
 import { Status } from "../../components/Status";
 import type { ScreenProps } from "../shared/types";
 
@@ -143,7 +144,7 @@ const DeployFlow = ({ config, done, flags, warning }: ScreenProps & { flags: Dep
     if (!organization) {
         return (
             <box style={{ flexDirection: "column", padding: 1 }}>
-                {warning ? <text fg="#888888">{warning}</text> : null}
+                {warning ? <text fg={palette.muted}>{warning}</text> : null}
                 <ChoiceList
                     description={(item) => item.slug}
                     list={organizations}
@@ -160,7 +161,7 @@ const DeployFlow = ({ config, done, flags, warning }: ScreenProps & { flags: Dep
     if (!project) {
         return (
             <box style={{ flexDirection: "column", padding: 1 }}>
-                {warning ? <text fg="#888888">{warning}</text> : null}
+                {warning ? <text fg={palette.muted}>{warning}</text> : null}
                 <ChoiceList
                     description={(item) => item.urlSlug}
                     list={projects}

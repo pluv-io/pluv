@@ -13,6 +13,7 @@ export { ZodProject, type Project } from "./ZodProject";
 export { ZodPageInfo } from "./ZodPageInfo";
 export { ZodPluvConfig, type PluvConfig } from "./ZodPluvConfig";
 export { ZodPluvConfigFile, type PluvConfigFile } from "./ZodPluvConfigFile";
+export { ZodPluvConfigTypescript } from "./ZodPluvConfigTypescript";
 export { DEFAULT_PORT, ZodPort } from "./ZodPort";
 export { ZodSessionJwt } from "./ZodSessionJwt";
 export { ZodWhoami, type WhoamiResponse } from "./ZodWhoami";

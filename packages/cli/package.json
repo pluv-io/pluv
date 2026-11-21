@@ -51,6 +51,9 @@
         "wrangler": "^4.158.0",
         "zod": "^4.6.7"
     },
+    "peerDependencies": {
+        "typescript": ">=5.4"
+    },
     "devDependencies": {
         "@cloudflare/workers-types": "^5.20261107.1",
         "@pluv/tsconfig": "workspace:^",
