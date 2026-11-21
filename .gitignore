@@ -16,8 +16,8 @@ apps/sandbox/dev.db
 .next/
 out/
 build
-!packages/cli/src/command/build/
-!packages/cli/src/command/build/**
+!packages/cli/src/commands/build/
+!packages/cli/src/commands/build/**
 
 # misc
 .DS_Store

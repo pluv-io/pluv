@@ -30,7 +30,7 @@
         "test": {
             "dependsOn": ["^build"],
             "outputs": ["playwright-report/**", ".next/**"],
-            "env": ["CI", "E2E_TEST_DATABASE_URL"]
+            "env": ["CI", "E2E_TEST_DATABASE_URL", "PLUV_SESSION_TOKEN"]
         },
         "typecheck": {
             "dependsOn": ["^build"],

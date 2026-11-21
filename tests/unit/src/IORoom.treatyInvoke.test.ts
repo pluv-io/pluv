@@ -163,11 +163,11 @@ describe("IORoom treaty invoke", () => {
         await registerAuthorized(room, second, { io });
         await initializeSession(room, second, { selectionId: null });
 
-        const presence = await room
+        const presenceHandle = await room
             .__experimental_presence({ senderId: first.id })
             .select({ id: "item-1" });
 
-        Object.assign(presence ?? {}, { extra: true, selectionId: "mutated" });
+        Object.assign(presenceHandle ?? {}, { extra: true, selectionId: "mutated" });
 
         await room.__experimental_presence({ senderId: first.id }).select({ id: "item-2" });
 
