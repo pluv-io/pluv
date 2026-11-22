@@ -31,7 +31,11 @@ export const LoginScreen = ({ config, warning }: ScreenProps) => {
                 if (!stopped) setSignedIn(true);
             },
             (caught: unknown) => {
-                if (!stopped) done({ code: 1, stderr: caught instanceof Error ? caught.message : "Login failed." });
+                if (!stopped)
+                    done({
+                        code: 1,
+                        stderr: caught instanceof Error ? caught.message : "Login failed.",
+                    });
             },
         );
 

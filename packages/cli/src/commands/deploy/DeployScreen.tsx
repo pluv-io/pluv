@@ -83,7 +83,8 @@ const DeployFlow = ({ config, flags, warning }: ScreenProps & { flags: DeployFla
 
         done({
             code: 1,
-            stderr: moduleQuery.error instanceof Error ? moduleQuery.error.message : "Deploy failed.",
+            stderr:
+                moduleQuery.error instanceof Error ? moduleQuery.error.message : "Deploy failed.",
         });
     }, [moduleQuery.error, moduleQuery.isError]);
 

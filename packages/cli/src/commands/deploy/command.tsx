@@ -35,9 +35,7 @@ export const deploy = Command.make(
                     exit({ code: 0, stderr: await runDeployCommand(config, flags) });
                 },
                 screen: ({ config, warning }) => {
-                    return (
-                        <DeployScreen config={config} flags={flags} warning={warning} />
-                    );
+                    return <DeployScreen config={config} flags={flags} warning={warning} />;
                 },
             });
         });

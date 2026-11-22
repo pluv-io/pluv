@@ -34,7 +34,10 @@ export const WhoamiScreen = ({ warning }: ScreenProps) => {
                 if (!stopped)
                     done({
                         code: 1,
-                        stderr: caught instanceof Error ? caught.message : "Could not read the account.",
+                        stderr:
+                            caught instanceof Error
+                                ? caught.message
+                                : "Could not read the account.",
                     });
             },
         );

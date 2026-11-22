@@ -21,7 +21,11 @@ export const LogoutScreen = ({ warning }: ScreenProps) => {
                 if (!stopped) done({ code: 0, stderr: text });
             },
             (caught: unknown) => {
-                if (!stopped) done({ code: 1, stderr: caught instanceof Error ? caught.message : "Logout failed." });
+                if (!stopped)
+                    done({
+                        code: 1,
+                        stderr: caught instanceof Error ? caught.message : "Logout failed.",
+                    });
             },
         );
 

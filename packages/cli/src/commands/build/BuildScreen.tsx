@@ -124,7 +124,8 @@ export const BuildScreen = ({ config, warning }: ScreenProps) => {
         },
         onError: (caught: unknown) => {
             const transcript = transcriptFromEvents(logEventsRef.current);
-            const message = caught instanceof Error ? caught.message : "Failed to build the io server.";
+            const message =
+                caught instanceof Error ? caught.message : "Failed to build the io server.";
 
             done({
                 code: 1,
