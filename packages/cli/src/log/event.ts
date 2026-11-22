@@ -41,17 +41,32 @@ export const formatLogEvent = (event: LogEvent): string | null => {
     }
 };
 
+const formatLogLine = (event: LogEvent, text: string): string => {
+    if (event.type === "output") return text;
+
+    return text.endsWith("\n") ? text : `${text}\n`;
+};
+
+/** Headless transcript for one or more events. Status lines are omitted. */
+export const transcriptFromEvents = (events: readonly LogEvent[]): string => {
+    let text = "";
+
+    for (const event of events) {
+        const line = formatLogEvent(event);
+
+        if (line === null || line.length === 0) continue;
+
+        text += formatLogLine(event, line);
+    }
+
+    return text;
+};
+
 /** Write one event to stderr. Output keeps its own newlines so streamed chunks stay intact. */
 export const writeLogEvent = (event: LogEvent): void => {
     const text = formatLogEvent(event);
 
     if (text === null || text.length === 0) return;
 
-    if (event.type === "output") {
-        process.stderr.write(text);
-
-        return;
-    }
-
-    process.stderr.write(text.endsWith("\n") ? text : `${text}\n`);
+    process.stderr.write(formatLogLine(event, text));
 };

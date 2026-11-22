@@ -22,16 +22,18 @@ export const build = Command.make(
             return launch({
                 entry: Option.getOrUndefined(entry),
                 noTypecheck,
-                mode: "alternate-screen",
+                mode: "main-screen",
                 headless: async (config) => {
                     const result = await runBuildCommand(config, writeLogEvent);
 
-                    process.stderr.write(`${result.timings}\n`);
-                    process.stdout.write(`${result.artifact}\n`);
-                    process.exit(0);
+                    done({
+                        code: 0,
+                        stderr: result.timings,
+                        stdout: result.artifact,
+                    });
                 },
                 screen: ({ config, warning }) => {
-                    return <BuildScreen config={config} done={done} warning={warning} />;
+                    return <BuildScreen config={config} warning={warning} />;
                 },
             });
         });

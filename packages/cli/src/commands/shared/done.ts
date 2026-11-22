@@ -1,5 +1,9 @@
-import { closeApp } from "../../terminal";
+import { exit, type ExitOutput } from "../../lib/exit";
+import { closeRenderer } from "../../terminal";
 
-export const done = (text: string, code: number): void => {
-    void closeApp(text, code);
+export type DoneResult = ExitOutput;
+
+/** Tear down the OpenTUI screen when needed, then exit. */
+export const done = (result: DoneResult): void => {
+    void closeRenderer().then(() => exit(result));
 };

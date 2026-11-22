@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { runLogin } from "./runLogin";
 import { palette } from "../../log/palette";
 import { Status } from "../../components/Status";
-import { errorText } from "../../lib/exit";
 import type { LogEvent, LogListener } from "../../log/event";
+import { done } from "../shared/done";
 import type { ScreenProps } from "../shared/types";
 import { WhoamiScreen } from "../whoami/WhoamiScreen";
 
@@ -17,7 +17,7 @@ export const runLoginCommand = async (
     });
 };
 
-export const LoginScreen = ({ config, done, warning }: ScreenProps) => {
+export const LoginScreen = ({ config, warning }: ScreenProps) => {
     const [events, setEvents] = useState<LogEvent[]>([]);
     const [signedIn, setSignedIn] = useState(false);
 
@@ -31,16 +31,16 @@ export const LoginScreen = ({ config, done, warning }: ScreenProps) => {
                 if (!stopped) setSignedIn(true);
             },
             (caught: unknown) => {
-                if (!stopped) done(errorText(caught, "Login failed."), 1);
+                if (!stopped) done({ code: 1, stderr: caught instanceof Error ? caught.message : "Login failed." });
             },
         );
 
         return () => {
             stopped = true;
         };
-    }, [config, done]);
+    }, [config]);
 
-    if (signedIn) return <WhoamiScreen config={config} done={done} warning={warning} />;
+    if (signedIn) return <WhoamiScreen config={config} warning={warning} />;
 
     return (
         <box style={{ flexDirection: "column", padding: 1 }}>

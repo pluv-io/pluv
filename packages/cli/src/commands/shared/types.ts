@@ -5,6 +5,5 @@ export type ServiceUrls = PluvConfig["~"];
 
 export type ScreenProps = {
     config: PluvConfig;
-    done: (text: string, code: number) => void;
     warning: string | null;
 };

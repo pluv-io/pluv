@@ -9,6 +9,7 @@ import { LogLine } from "../../components/LogLine";
 import { palette } from "../../log/palette";
 import { Status } from "../../components/Status";
 import type { PluvConfig } from "../../schemas";
+import { done } from "../shared/done";
 import type { ScreenProps } from "../shared/types";
 
 type DevHandlers = {
@@ -123,13 +124,13 @@ const latestStatus = (events: readonly LogEvent[]): string => {
     return "Starting";
 };
 
-export const DevScreen = ({ config, done, warning }: ScreenProps) => {
+export const DevScreen = ({ config, warning }: ScreenProps) => {
     const [events, setEvents] = useState<LogEvent[]>([]);
 
     useEffect(() => {
         const session = startDev(config, {
             onExit: (code) => {
-                done("", code);
+                done({ code });
             },
             onEvent: (event) => {
                 setEvents((current) => [...current, event]);
@@ -139,7 +140,7 @@ export const DevScreen = ({ config, done, warning }: ScreenProps) => {
         return () => {
             session.stop();
         };
-    }, [config, done]);
+    }, [config]);
 
     const lines = events.filter((event) => event.type === "output" || event.type === "error");
 

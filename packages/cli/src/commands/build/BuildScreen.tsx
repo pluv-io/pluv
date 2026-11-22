@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import * as esbuild from "esbuild";
 import { buildServer } from "./buildServer";
@@ -6,12 +6,11 @@ import { formatTimingsTable, TYPECHECK_START } from "./formatBuildTimings";
 import { typecheckServerEntry } from "./typecheckServerEntry";
 import { displayPath } from "../../lib/displayPath";
 import { isObject } from "../../lib/isObject";
-import { errorText } from "../../lib/exit";
 import type { LogEvent, LogListener, PhaseLogEvent } from "../../log/event";
-import { LogLine } from "../../components/LogLine";
+import { transcriptFromEvents } from "../../log/event";
 import { palette } from "../../log/palette";
 import { Status } from "../../components/Status";
-import { TimingsTable } from "../../components/TimingsTable";
+import { done } from "../shared/done";
 import type { ScreenProps } from "../shared/types";
 
 const formatBuildError = async (error: unknown): Promise<string> => {
@@ -108,30 +107,50 @@ const statusLabel = (events: readonly LogEvent[], fallback: string, finished: bo
     return fallback;
 };
 
-export const BuildScreen = ({ config, done, warning }: ScreenProps) => {
-    const [events, setEvents] = useState<LogEvent[]>([]);
-    const { isSuccess, mutate } = useMutation({
-        mutationFn: (current: ScreenProps["config"]) => {
-            return runBuildCommand(current, (event) => {
-                setEvents((currentEvents) => [...currentEvents, event]);
+export const BuildScreen = ({ config, warning }: ScreenProps) => {
+    const logEventsRef = useRef<LogEvent[]>([]);
+    const [statusEvents, setStatusEvents] = useState<LogEvent[]>([]);
+    const { data, isSuccess, mutate } = useMutation({
+        mutationFn: (buildConfig: ScreenProps["config"]) => {
+            logEventsRef.current = [];
+
+            return runBuildCommand(buildConfig, (event) => {
+                logEventsRef.current.push(event);
+
+                if (event.type === "status") {
+                    setStatusEvents((previous) => [...previous, event]);
+                }
             });
         },
         onError: (caught: unknown) => {
-            done(errorText(caught, "Failed to build the io server."), 1);
-        },
-        onSuccess: (result) => {
-            done(`${result.artifact}\n\n${result.timings}`, 0);
+            const transcript = transcriptFromEvents(logEventsRef.current);
+            const message = caught instanceof Error ? caught.message : "Failed to build the io server.";
+
+            done({
+                code: 1,
+                stderr: transcript.length > 0 ? `${transcript}${message}` : message,
+            });
         },
     });
+
+    useEffect(() => {
+        if (!isSuccess || !data) return;
+
+        const transcript = transcriptFromEvents(logEventsRef.current);
+
+        done({
+            code: 0,
+            stderr: transcript.length > 0 ? `${transcript}${data.timings}` : data.timings,
+            stdout: data.artifact,
+        });
+    }, [data, isSuccess]);
 
     useEffect(() => {
         mutate(config);
     }, [config, mutate]);
 
-    const phases = events.filter((event): event is PhaseLogEvent => event.type === "phase");
-    const lines = events.filter((event) => event.type === "output" || event.type === "error");
     const status = statusLabel(
-        events,
+        statusEvents,
         config.typescript.ignoreBuildErrors ? "Building" : "Checking types",
         isSuccess,
     );
@@ -143,11 +162,7 @@ export const BuildScreen = ({ config, done, warning }: ScreenProps) => {
                 <span fg={palette.muted}>pluv build · </span>
                 {displayPath(process.cwd(), config.entry, true)}
             </text>
-            <Status label={status} />
-            {lines.map((event, index) => (
-                <LogLine key={index} event={event} />
-            ))}
-            {phases.length > 0 ? <TimingsTable phases={phases} /> : null}
+            <Status active={!isSuccess} label={status} />
         </box>
     );
 };

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useKeyboard } from "@opentui/react";
 import { runWhoami, type WhoamiAccount } from "./runWhoami";
-import { errorText } from "../../lib/exit";
 import { AccountTable } from "../../components/AccountTable";
 import { palette } from "../../log/palette";
 import { Status } from "../../components/Status";
+import { done } from "../shared/done";
 import type { ScreenProps } from "../shared/types";
 
 /** Lines left on the terminal after the table closes. */
@@ -20,7 +20,7 @@ export const runWhoamiCommand = async (): Promise<string> => {
     return whoamiText(await runWhoami());
 };
 
-export const WhoamiScreen = ({ done, warning }: ScreenProps) => {
+export const WhoamiScreen = ({ warning }: ScreenProps) => {
     const [account, setAccount] = useState<WhoamiAccount | null>(null);
 
     useEffect(() => {
@@ -31,20 +31,24 @@ export const WhoamiScreen = ({ done, warning }: ScreenProps) => {
                 if (!stopped) setAccount(next);
             },
             (caught: unknown) => {
-                if (!stopped) done(errorText(caught, "Could not read the account."), 1);
+                if (!stopped)
+                    done({
+                        code: 1,
+                        stderr: caught instanceof Error ? caught.message : "Could not read the account.",
+                    });
             },
         );
 
         return () => {
             stopped = true;
         };
-    }, [done]);
+    }, []);
 
     useKeyboard((key) => {
         if (!account) return;
         if (key.name !== "return" && key.name !== "escape" && key.name !== "q") return;
 
-        done(whoamiText(account), 0);
+        done({ code: 0, stderr: whoamiText(account) });
     });
 
     if (!account) {
