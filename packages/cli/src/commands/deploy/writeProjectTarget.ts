@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
+import { stripIndent } from "common-tags";
 import { z } from "zod";
 import { findConfigFile } from "../../config/loadConfig";
 import { DEFAULT_ENTRY } from "../../schemas";
@@ -18,25 +19,28 @@ export type WriteProjectTargetResult = {
 };
 
 const projectTargetSaveHint = (configFileName: string, target: ProjectTarget): string => {
-    return [
-        `${configFileName} was not updated. Add to defineConfig:`,
-        "",
-        `    organization: ${JSON.stringify(target.organization)},`,
-        `    project: ${JSON.stringify(target.project)},`,
-        "",
-        "Or use pluv.config.json, or set PLUV_ORGANIZATION and PLUV_PROJECT.",
-    ].join("\n");
+    return stripIndent`
+        ${configFileName} was not updated. Add to defineConfig:
+
+            organization: ${JSON.stringify(target.organization)},
+            project: ${JSON.stringify(target.project)},
+
+        Or use pluv.config.json, or set PLUV_ORGANIZATION and PLUV_PROJECT.
+    `;
 };
 
 const newConfig = (target: ProjectTarget): string => {
-    return `import { defineConfig } from "pluv";
+    const text = stripIndent`
+        import { defineConfig } from "pluv";
 
-export default defineConfig({
-    entry: ${JSON.stringify(DEFAULT_ENTRY)},
-    organization: ${JSON.stringify(target.organization)},
-    project: ${JSON.stringify(target.project)},
-});
-`;
+        export default defineConfig({
+            entry: ${JSON.stringify(DEFAULT_ENTRY)},
+            organization: ${JSON.stringify(target.organization)},
+            project: ${JSON.stringify(target.project)},
+        });
+    `;
+
+    return `${text}\n`;
 };
 
 /**

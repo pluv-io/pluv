@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { readSessionToken } from "../session/sessionToken";
+import { ZodSessionJwt } from "../schemas";
 import type { ServiceUrls } from "../commands/shared/types";
+import { apiRequestError } from "./apiRequestError";
 
 declare const unsetOutput: unique symbol;
 
@@ -57,20 +59,14 @@ const encodePathname = (pathname: string): string =>
         })
         .join("/");
 
-import { authProcedures } from "./router/auth";
-
 /** Exchange the saved session token for a 60-second JWT. Does not renew the session. */
 const exchangeSessionJwt = async (token: string, urls: ServiceUrls): Promise<string> => {
-    const jwt = authProcedures.sessionJwt.output;
-
-    if (!jwt) throw new Error("sessionJwt output schema missing.");
-
     const body = await api
         .base(urls.apiUrl)
         .bearer(token)
         .post("/api/auth/session/jwt")
-        .output(jwt)
-        .error(authProcedures.sessionJwt.error)
+        .output(ZodSessionJwt)
+        .error(apiRequestError("The saved login expired. Run pluv login."))
         .send();
 
     return body.jwt;

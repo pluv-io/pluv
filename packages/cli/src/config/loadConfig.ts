@@ -10,6 +10,8 @@ import {
     type PluvConfig,
     type PluvConfigFile,
 } from "../schemas";
+import { isObject } from "../lib/isObject";
+import { assertTypeScriptEntry } from "../lib/typescriptEntry";
 import { loadDotenv } from "./loadDotenv";
 import { resolvePluvConfigInternal } from "./resolvePluvConfigInternal";
 
@@ -50,6 +52,12 @@ const loadConfigFile = async (cwd: string): Promise<PluvConfigFile | null> => {
         ? parseJsonConfig(filePath, await readFile(filePath, "utf8"))
         : ((await import(pathToFileURL(filePath).href)) as { default?: unknown }).default;
 
+    if (isObject(loaded) && "entry" in loaded) {
+        const entry = (loaded as { entry?: unknown }).entry;
+
+        if (typeof entry === "string") assertTypeScriptEntry(cwd, entry);
+    }
+
     return parseConfigFile(loaded, filePath);
 };
 
@@ -63,6 +71,8 @@ const parseJsonConfig = (filePath: string, text: string): unknown => {
 
 export type DevFlags = {
     entry?: string;
+    /** Skip the `pluv build` typecheck for this run. */
+    noTypecheck?: boolean;
     port?: number;
 };
 
@@ -83,6 +93,9 @@ export const resolveDevConfig = async (
 
     const file = await loadConfigFile(cwd);
     const entry = flags.entry ?? file?.entry ?? (file ? undefined : DEFAULT_ENTRY);
+
+    if (typeof entry === "string") assertTypeScriptEntry(cwd, entry);
+
     const parsed = ZodPluvConfig.safeParse({
         distDir: file?.distDir,
         entry,
@@ -90,6 +103,10 @@ export const resolveDevConfig = async (
         organization: file?.organization,
         port: flags.port ?? file?.port,
         project: file?.project,
+        typescript: {
+            ignoreBuildErrors:
+                flags.noTypecheck === true || file?.typescript?.ignoreBuildErrors === true,
+        },
         "~": resolvePluvConfigInternal(file?.["~"]),
     });
 

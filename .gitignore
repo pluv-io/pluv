@@ -18,6 +18,8 @@ out/
 build
 !packages/cli/src/commands/build/
 !packages/cli/src/commands/build/**
+!packages/cli/tests/build/
+!packages/cli/tests/build/**
 
 # misc
 .DS_Store

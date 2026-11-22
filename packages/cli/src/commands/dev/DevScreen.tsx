@@ -4,23 +4,17 @@ import { devDir } from "./devDir";
 import { watchDevProject } from "./watchDevProject";
 import { wranglerBin } from "./wranglerBin";
 import { displayPath } from "../../lib/displayPath";
+import type { LogEvent, LogListener } from "../../log/event";
+import { LogLine } from "../../components/LogLine";
+import { palette } from "../../log/palette";
 import { Status } from "../../components/Status";
 import type { PluvConfig } from "../../schemas";
+import { done } from "../shared/done";
 import type { ScreenProps } from "../shared/types";
-
-const readyLog = (cwd: string, entry: string, port: number): string => {
-    return [
-        `entry    ${displayPath(cwd, entry, true)}`,
-        `ready    ws://127.0.0.1:${port}/api/pluv/room/<room>`,
-    ].join("\n");
-};
 
 type DevHandlers = {
     onExit: (code: number) => void;
-    onLog: (text: string) => void;
-    onStatus: (text: string) => void;
-    /** Pipe wrangler output through stdout so a split footer can keep it. */
-    pipe: boolean;
+    onEvent: LogListener;
 };
 
 /** Watch the room and run wrangler. `stop` ends both. */
@@ -30,8 +24,8 @@ export const startDev = (config: PluvConfig, handlers: DevHandlers): { stop: () 
     let stopWatch: (() => Promise<void>) | undefined;
 
     const report = (text: string): void => {
-        handlers.onStatus(text);
-        handlers.onLog(`${text}\n`);
+        handlers.onEvent({ type: "status", label: text });
+        handlers.onEvent({ type: "error", message: text });
     };
 
     void watchDevProject(process.cwd(), config, {
@@ -39,8 +33,17 @@ export const startDev = (config: PluvConfig, handlers: DevHandlers): { stop: () 
         onReady: () => {
             if (stopped || child) return;
 
-            handlers.onStatus("Ready");
-            handlers.onLog(`${readyLog(process.cwd(), config.entry, config.port)}\n`);
+            handlers.onEvent({ type: "status", label: "Ready" });
+            handlers.onEvent({
+                type: "output",
+                text: `entry    ${displayPath(process.cwd(), config.entry, true)}\n`,
+                tone: "muted",
+            });
+            handlers.onEvent({
+                type: "output",
+                text: `ready    ws://127.0.0.1:${config.port}/api/pluv/room/<room>\n`,
+                tone: "success",
+            });
             child = spawn(
                 process.execPath,
                 [
@@ -55,18 +58,16 @@ export const startDev = (config: PluvConfig, handlers: DevHandlers): { stop: () 
                 ],
                 {
                     cwd: devDir(process.cwd()),
-                    stdio: handlers.pipe ? ["inherit", "pipe", "pipe"] : "inherit",
+                    stdio: ["inherit", "pipe", "pipe"],
                 },
             );
 
-            if (handlers.pipe) {
-                child.stdout?.on("data", (chunk: Buffer) => {
-                    process.stdout.write(chunk);
-                });
-                child.stderr?.on("data", (chunk: Buffer) => {
-                    process.stdout.write(chunk);
-                });
-            }
+            child.stdout?.on("data", (chunk: Buffer) => {
+                handlers.onEvent({ type: "output", text: chunk.toString() });
+            });
+            child.stderr?.on("data", (chunk: Buffer) => {
+                handlers.onEvent({ type: "output", text: chunk.toString() });
+            });
 
             child.on("exit", (code) => {
                 if (!stopped) handlers.onExit(code ?? 0);
@@ -75,8 +76,12 @@ export const startDev = (config: PluvConfig, handlers: DevHandlers): { stop: () 
         onReload: () => {
             if (stopped) return;
 
-            handlers.onStatus("Reloaded the room module.");
-            handlers.onLog("Reloaded the room module.\n");
+            handlers.onEvent({ type: "status", label: "Reloaded the room module." });
+            handlers.onEvent({
+                type: "output",
+                text: "Reloaded the room module.\n",
+                tone: "muted",
+            });
         },
     })
         .then((stop) => {
@@ -109,31 +114,49 @@ export const startDev = (config: PluvConfig, handlers: DevHandlers): { stop: () 
     };
 };
 
-export const DevScreen = ({ config, done, warning }: ScreenProps) => {
-    const [status, setStatus] = useState("Starting");
+const latestStatus = (events: readonly LogEvent[]): string => {
+    for (let index = events.length - 1; index >= 0; index -= 1) {
+        const event = events[index];
+
+        if (event?.type === "status") return event.label;
+    }
+
+    return "Starting";
+};
+
+export const DevScreen = ({ config, warning }: ScreenProps) => {
+    const [events, setEvents] = useState<LogEvent[]>([]);
 
     useEffect(() => {
         const session = startDev(config, {
             onExit: (code) => {
-                done("", code);
+                done({ code });
             },
-            onLog: (text) => {
-                process.stdout.write(text);
+            onEvent: (event) => {
+                setEvents((current) => [...current, event]);
             },
-            onStatus: setStatus,
-            pipe: true,
         });
 
         return () => {
             session.stop();
         };
-    }, [config, done]);
+    }, [config]);
+
+    const lines = events.filter((event) => event.type === "output" || event.type === "error");
 
     return (
-        <box style={{ flexDirection: "column", paddingLeft: 1, paddingRight: 1 }}>
-            {warning ? <text fg="#888888">{warning}</text> : null}
-            <text>{`pluv dev · ws://127.0.0.1:${config.port}/api/pluv/room/<room>`}</text>
-            <Status label={status} />
+        <box style={{ flexDirection: "column", flexGrow: 1, paddingLeft: 1, paddingRight: 1 }}>
+            {warning ? <text fg={palette.muted}>{warning}</text> : null}
+            <text>
+                <span fg={palette.muted}>pluv dev · </span>
+                {`ws://127.0.0.1:${config.port}/api/pluv/room/<room>`}
+            </text>
+            <Status label={latestStatus(events)} />
+            <scrollbox style={{ flexGrow: 1 }}>
+                {lines.map((event, index) => (
+                    <LogLine key={index} event={event} />
+                ))}
+            </scrollbox>
         </box>
     );
 };

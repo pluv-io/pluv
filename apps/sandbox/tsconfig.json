@@ -10,7 +10,7 @@
         "module": "ESNext",
         "moduleResolution": "Bundler",
         "target": "ES2022",
-        "types": ["vite/client"],
+        "types": ["vite/client", "node"],
         "paths": {
             "@/*": ["./src/*"]
         }

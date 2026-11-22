@@ -1,11 +1,17 @@
-/** Text from a thrown value. */
-export const errorText = (error: unknown, fallback: string): string => {
-    return error instanceof Error ? error.message : fallback;
+const writeLine = (stream: NodeJS.WriteStream, text: string): void => {
+    stream.write(text.endsWith("\n") ? text : `${text}\n`);
 };
 
-/** Write a message and stop the process. */
-export const exitWith = (text: string, code: number): never => {
-    process.stderr.write(`${text}\n`);
-    process.exit(code);
-    throw new Error(text);
+export type ExitOutput = {
+    code: number;
+    stderr?: string;
+    stdout?: string;
+};
+
+/** Write optional streams and stop the process. */
+export const exit = (output: ExitOutput): never => {
+    if (output.stderr) writeLine(process.stderr, output.stderr);
+    if (output.stdout) writeLine(process.stdout, output.stdout);
+
+    return process.exit(output.code);
 };

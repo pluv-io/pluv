@@ -10,10 +10,11 @@ import {
     missingDeployTargetMessage,
     type DeployFlags,
 } from "./runDeploy";
-import { errorText } from "../../lib/exit";
 import type { PluvConfig } from "../../schemas";
 import { ChoiceList } from "../../components/ChoiceList";
+import { palette } from "../../log/palette";
 import { Status } from "../../components/Status";
+import { done } from "../shared/done";
 import type { ScreenProps } from "../shared/types";
 
 /** Upload when the organization and project are already known. */
@@ -35,7 +36,7 @@ export const runDeployCommand = async (config: PluvConfig, flags: DeployFlags): 
     });
 };
 
-const DeployFlow = ({ config, done, flags, warning }: ScreenProps & { flags: DeployFlags }) => {
+const DeployFlow = ({ config, flags, warning }: ScreenProps & { flags: DeployFlags }) => {
     const initial = deployTarget({ config, flags });
     const needsPrompt = !initial.organization || !initial.project;
     const [organization, setOrganization] = useState(initial.organization);
@@ -70,38 +71,42 @@ const DeployFlow = ({ config, done, flags, warning }: ScreenProps & { flags: Dep
     const deploy = useMutation({
         mutationFn: completeDeploy,
         onError: (caught: unknown) => {
-            done(errorText(caught, "Deploy failed."), 1);
+            done({ code: 1, stderr: caught instanceof Error ? caught.message : "Deploy failed." });
         },
         onSuccess: (text) => {
-            done(text, 0);
+            done({ code: 0, stderr: text });
         },
     });
 
     useEffect(() => {
         if (!moduleQuery.isError) return;
 
-        done(errorText(moduleQuery.error, "Deploy failed."), 1);
-    }, [done, moduleQuery.error, moduleQuery.isError]);
+        done({
+            code: 1,
+            stderr:
+                moduleQuery.error instanceof Error ? moduleQuery.error.message : "Deploy failed.",
+        });
+    }, [moduleQuery.error, moduleQuery.isError]);
 
     useEffect(() => {
-        if (organizations.error) done(organizations.error.message, 1);
-    }, [done, organizations.error]);
+        if (organizations.error) done({ code: 1, stderr: organizations.error.message });
+    }, [organizations.error]);
 
     useEffect(() => {
-        if (projects.error) done(projects.error.message, 1);
-    }, [done, projects.error]);
+        if (projects.error) done({ code: 1, stderr: projects.error.message });
+    }, [projects.error]);
 
     useEffect(() => {
         if (!askOrganizations || !organizations.empty) return;
 
-        done("No organizations were found for this login.", 1);
-    }, [askOrganizations, done, organizations.empty]);
+        done({ code: 1, stderr: "No organizations were found for this login." });
+    }, [askOrganizations, organizations.empty]);
 
     useEffect(() => {
         if (!askProjects || !projects.empty || !organization) return;
 
-        done(`No projects were found in ${organization}.`, 1);
-    }, [askProjects, done, organization, projects.empty]);
+        done({ code: 1, stderr: `No projects were found in ${organization}.` });
+    }, [askProjects, organization, projects.empty]);
 
     useEffect(() => {
         if (!askOrganizations || !organizationsHasNextPage || organizationsFetchingMore) return;
@@ -143,7 +148,7 @@ const DeployFlow = ({ config, done, flags, warning }: ScreenProps & { flags: Dep
     if (!organization) {
         return (
             <box style={{ flexDirection: "column", padding: 1 }}>
-                {warning ? <text fg="#888888">{warning}</text> : null}
+                {warning ? <text fg={palette.muted}>{warning}</text> : null}
                 <ChoiceList
                     description={(item) => item.slug}
                     list={organizations}
@@ -160,7 +165,7 @@ const DeployFlow = ({ config, done, flags, warning }: ScreenProps & { flags: Dep
     if (!project) {
         return (
             <box style={{ flexDirection: "column", padding: 1 }}>
-                {warning ? <text fg="#888888">{warning}</text> : null}
+                {warning ? <text fg={palette.muted}>{warning}</text> : null}
                 <ChoiceList
                     description={(item) => item.urlSlug}
                     list={projects}

@@ -4,6 +4,7 @@ import { ZodEntry } from "./ZodEntry";
 import { ZodEnv } from "./ZodEnv";
 import { ZodPort } from "./ZodPort";
 import { ZodPluvConfigInternal } from "./ZodPluvConfigInternal";
+import { ZodPluvConfigTypescript } from "./ZodPluvConfigTypescript";
 
 /** Shape of `pluv.config.ts`. Every field is optional until flags are applied. */
 export const ZodPluvConfigFile = z
@@ -22,6 +23,11 @@ export const ZodPluvConfigFile = z
          * Map values from `process.env` after `.env` is loaded. Keys starting with `PLUV_` are reserved.
          */
         env: ZodEnv.optional(),
+        /**
+         * TypeScript check for `pluv build`.
+         * Set `ignoreBuildErrors` to bundle even when the entry graph has type errors.
+         */
+        typescript: ZodPluvConfigTypescript.optional(),
         /**
          * @internal
          * Local service URLs for login and deploy. An environment variable still wins.

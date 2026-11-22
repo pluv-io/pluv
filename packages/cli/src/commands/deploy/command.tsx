@@ -1,8 +1,7 @@
 import { Option } from "effect";
 import { Command, Flag } from "effect/cli";
-import { exitWith } from "../../lib/exit";
+import { exit } from "../../lib/exit";
 import { runDeployCommand, DeployScreen } from "./DeployScreen";
-import { done } from "../shared/done";
 import { launch } from "../shared/launch";
 import { run } from "../shared/run";
 
@@ -31,14 +30,12 @@ export const deploy = Command.make(
 
         return run(() => {
             return launch({
-                mode: "alternate-screen",
+                mode: "main-screen",
                 headless: async (config) => {
-                    exitWith(await runDeployCommand(config, flags), 0);
+                    exit({ code: 0, stderr: await runDeployCommand(config, flags) });
                 },
                 screen: ({ config, warning }) => {
-                    return (
-                        <DeployScreen config={config} done={done} flags={flags} warning={warning} />
-                    );
+                    return <DeployScreen config={config} flags={flags} warning={warning} />;
                 },
             });
         });

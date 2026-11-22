@@ -1,7 +1,7 @@
 import { Option } from "effect";
 import { Command, Flag } from "effect/cli";
+import { writeLogEvent } from "../../log/event";
 import { startDev, DevScreen } from "./DevScreen";
-import { done } from "../shared/done";
 import { entryArgument } from "../shared/entryArgument";
 import { launch } from "../shared/launch";
 import { run } from "../shared/run";
@@ -31,16 +31,12 @@ export const dev = Command.make(
                             onExit: (code) => {
                                 process.exit(code);
                             },
-                            onLog: (text) => {
-                                process.stderr.write(text);
-                            },
-                            onStatus: () => {},
-                            pipe: false,
+                            onEvent: writeLogEvent,
                         });
                     });
                 },
                 screen: ({ config, warning }) => {
-                    return <DevScreen config={config} done={done} warning={warning} />;
+                    return <DevScreen config={config} warning={warning} />;
                 },
             });
         });
