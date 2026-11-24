@@ -6,6 +6,9 @@ const readEnv = (name: string): string | undefined => {
     return value && value.length > 0 ? value : undefined;
 };
 
+/** `PLUV_API_TOKEN` when set; used instead of the saved CLI session for API calls. */
+export const readApiToken = (): string | undefined => readEnv("PLUV_API_TOKEN");
+
 /** The session token from PLUV_SESSION_TOKEN, or from the cache file when that env var is unset. */
 export const readSessionToken = async (cwd: string): Promise<string | undefined> => {
     const fromEnv = readEnv("PLUV_SESSION_TOKEN");

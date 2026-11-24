@@ -1,8 +1,14 @@
 import { Effect } from "effect";
 import { CliError } from "effect/cli";
+import { loadDotenv } from "../../config/loadDotenv";
+
 export const run = (action: () => Promise<void>) => {
     return Effect.tryPromise({
-        try: action,
+        try: () => {
+            loadDotenv(process.cwd());
+
+            return action();
+        },
         catch: (cause) => {
             return new CliError.UserError({
                 cause,
