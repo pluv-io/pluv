@@ -1,6 +1,6 @@
 import type { z } from "zod";
 import { resolveServiceUrls } from "../config/serviceUrls";
-import { readSessionToken } from "../session/sessionToken";
+import { readApiToken, readSessionToken } from "../session/sessionToken";
 import { api, type ApiRequest, type OutputOptions } from "./api";
 
 export type RequestError = string | ((status: number, body: unknown) => string);
@@ -8,7 +8,7 @@ export type RequestError = string | ((status: number, body: unknown) => string);
 export type SearchValue = string | number | boolean | null | undefined;
 
 /** How the transport attaches credentials. */
-export type ProcedureAuth = "none" | "bearer" | "session";
+export type ProcedureAuth = "bearer" | "none" | "session";
 
 export type InvokeOptions = {
     searchParams?: Record<string, SearchValue>;
@@ -44,6 +44,7 @@ const resolveClient = async (auth: ProcedureAuth) => {
 
     if (auth === "none") return api.base(urls.apiUrl);
 
+    /** Raw CLI session token for `/api/auth/session/jwt` only — not the account API token. */
     if (auth === "bearer") {
         const token = await readSessionToken(process.cwd());
 
@@ -51,6 +52,10 @@ const resolveClient = async (auth: ProcedureAuth) => {
 
         return api.base(urls.apiUrl).bearer(token);
     }
+
+    const apiToken = readApiToken();
+
+    if (apiToken) return api.base(urls.apiUrl).bearer(apiToken);
 
     return api.client({ cwd: process.cwd(), urls });
 };

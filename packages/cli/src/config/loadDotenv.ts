@@ -1,19 +1,27 @@
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import dotenv from "dotenv";
 
-const isMissingFile = (error: unknown): boolean => {
-    return error instanceof Error && "code" in error && error.code === "ENOENT";
+const readEnvFile = (filePath: string): Record<string, string> => {
+    if (!existsSync(filePath)) return {};
+
+    return dotenv.parse(readFileSync(filePath));
 };
 
 /**
- * Load `.env` into this process before `pluv.config.ts` reads `process.env`.
- * A variable already set in the shell is kept. A missing file is ignored.
+ * Load project env files into this process before config or hosted API calls.
+ * Order matches common frontend tooling: `.env`, then `.env.local` (local wins on duplicate keys).
+ * Variables already set in the shell are never overwritten.
  */
 export const loadDotenv = (cwd: string): void => {
-    try {
-        process.loadEnvFile(resolve(cwd, ".env"));
-    } catch (error) {
-        if (isMissingFile(error)) return;
+    const merged = {
+        ...readEnvFile(resolve(cwd, ".env")),
+        ...readEnvFile(resolve(cwd, ".env.local")),
+    };
 
-        throw error;
+    for (const [key, value] of Object.entries(merged)) {
+        if (process.env[key] !== undefined) continue;
+
+        process.env[key] = value;
     }
 };

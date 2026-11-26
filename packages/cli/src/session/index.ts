@@ -4,4 +4,4 @@ export {
     sessionFilePath,
     writeCliSession,
 } from "./sessionFile";
-export { readSessionToken } from "./sessionToken";
+export { readApiToken, readSessionToken } from "./sessionToken";

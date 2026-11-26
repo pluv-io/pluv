@@ -52,7 +52,11 @@ export default defineConfig({
 });
 ```
 
-`.env` is loaded into the `pluv dev` process before the config runs. A variable already set in the shell is kept. `env` is the only map copied onto the room's `process.env`, so the room can reach a database without seeing the rest of the shell. Keys starting with `PLUV_` are reserved. Issue room tokens from your own app. Point the client `authEndpoint` at that route.
+Each command loads `.env` and `.env.local` from the project root before anything else runs. A variable already set in the shell is kept; `.env.local` overrides `.env` for the same key. That is how you set `PLUV_API_TOKEN` or `PLUV_SESSION_TOKEN` for hosted commands without exporting them in the shell.
+
+For `pluv dev`, only the `env` map in config is copied onto the room's `process.env`, so the room can reach a database without seeing the rest of the shell. Keys starting with `PLUV_` in that map are reserved. Issue room tokens from your own app. Point the client `authEndpoint` at that route.
+
+For CI deploys, create an account API token in the pluv dashboard (your organization’s **Settings → API tokens**) with policies that grant the org or project access you need (for example **Deployments**), then set the secret as `PLUV_API_TOKEN` in `.env.local` (gitignored) or in your CI secrets. The token belongs to your user account; org access comes from those policies, not from the organization owning the token.
 
 A path argument and flags override the file: `pluv dev ./src/io.ts --port 8787`. `pluv dev --help` lists them.
 
