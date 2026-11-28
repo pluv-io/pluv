@@ -408,7 +408,7 @@ importers:
     dependencies:
       '@effect/platform-node':
         specifier: 4.1.4
-        version: 4.1.4(effect@4.1.4)(redis@6.3.1)
+        version: 4.1.4(effect@4.1.7)(redis@6.3.1)
       '@opentui/core':
         specifier: 0.9.3
         version: 0.9.3(typescript@7.1.0-beta)(web-tree-sitter@0.25.10)
@@ -440,8 +440,8 @@ importers:
         specifier: ^18.0.10
         version: 18.0.10
       effect:
-        specifier: 4.1.4
-        version: 4.1.4
+        specifier: 4.1.7
+        version: 4.1.7
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
@@ -5460,8 +5460,8 @@ packages:
       oxc-resolver:
         optional: true
 
-  effect@4.1.4:
-    resolution: {integrity: sha512-Tgrv/9FN+TZYyOn8XSli+fVqAfwDrDAkiX5Uu9vztINb675VTQdhD0gWI5Kzvhlh9QqzjZvw72iugqw5pwoghQ==}
+  effect@4.1.7:
+    resolution: {integrity: sha512-8QUe2XO3auHF5r7+bfIDWxyXlLA0sso4Sia1QYP+vrYA7qb3sq1u2eJmhyXGmKc8yZ+TY2SNxPozeMdyKmWing==}
 
   ejs@3.1.10:
     resolution: {integrity: sha512-UeJmFfOrAQS8OJWPZ4qtgHyWExa088/MtK5UEyoJGFH67cDEXkZSviOiKRCZ4Xij0zxI3JECgYs3oKx+AizQBA==}
@@ -8668,19 +8668,19 @@ snapshots:
 
   '@drizzle-team/brocli@0.10.2': {}
 
-  '@effect/platform-node-shared@4.1.4(effect@4.1.4)':
+  '@effect/platform-node-shared@4.1.4(effect@4.1.7)':
     dependencies:
       '@types/ws': 8.18.2
-      effect: 4.1.4
+      effect: 4.1.7
       ws: 8.22.1
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node@4.1.4(effect@4.1.4)(redis@6.3.1)':
+  '@effect/platform-node@4.1.4(effect@4.1.7)(redis@6.3.1)':
     dependencies:
-      '@effect/platform-node-shared': 4.1.4(effect@4.1.4)
-      effect: 4.1.4
+      '@effect/platform-node-shared': 4.1.4(effect@4.1.7)
+      effect: 4.1.7
       redis: 6.3.1
       undici: 8.12.4
     transitivePeerDependencies:
@@ -11896,7 +11896,7 @@ snapshots:
 
   dts-resolver@3.0.0: {}
 
-  effect@4.1.4: {}
+  effect@4.1.7: {}
 
   ejs@3.1.10:
     dependencies:
