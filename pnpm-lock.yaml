@@ -267,8 +267,8 @@ importers:
         specifier: ^4.3.5
         version: 4.3.5
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
       vite:
         specifier: ^8.3.6
         version: 8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
@@ -373,8 +373,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
       vite:
         specifier: ^8.3.6
         version: 8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
@@ -399,10 +399,10 @@ importers:
         version: link:../types
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
 
   packages/cli:
     dependencies:
@@ -411,10 +411,10 @@ importers:
         version: 4.1.4(effect@4.1.4)(redis@6.3.1)
       '@opentui/core':
         specifier: 0.9.3
-        version: 0.9.3(typescript@7.1.0-beta)(web-tree-sitter@0.25.10)
+        version: 0.9.3(typescript@7.1.0-dev.20261127.1)(web-tree-sitter@0.25.10)
       '@opentui/react':
         specifier: 0.9.3
-        version: 0.9.3(react-devtools-core@7.0.1)(react@19.3.1)(typescript@7.1.0-beta)(web-tree-sitter@0.25.10)(ws@8.22.1)
+        version: 0.9.3(react-devtools-core@7.0.1)(react@19.3.1)(typescript@7.1.0-dev.20261127.1)(web-tree-sitter@0.25.10)(ws@8.22.1)
       '@pluv/io':
         specifier: workspace:^
         version: link:../io
@@ -469,10 +469,10 @@ importers:
         version: 19.3.0
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
       vitest:
         specifier: ^5.1.0
         version: 5.1.0(@types/node@26.6.6)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
@@ -494,10 +494,10 @@ importers:
         version: link:../tsconfig
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
 
   packages/crdt:
     dependencies:
@@ -510,10 +510,10 @@ importers:
         version: link:../tsconfig
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
       vitest:
         specifier: ^5.1.0
         version: 5.1.0(@types/node@26.6.6)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
@@ -541,10 +541,10 @@ importers:
         version: 1.17.1
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
       vitest:
         specifier: ^5.1.0
         version: 5.1.0(@types/node@26.6.6)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
@@ -572,10 +572,10 @@ importers:
         version: link:../tsconfig
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
       vitest:
         specifier: ^5.1.0
         version: 5.1.0(@types/node@26.6.6)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
@@ -612,10 +612,10 @@ importers:
         version: 3.2.0
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
 
   packages/persistence-cloudflare-transactional-storage:
     dependencies:
@@ -634,10 +634,10 @@ importers:
         version: link:../tsconfig
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
 
   packages/persistence-redis:
     dependencies:
@@ -659,10 +659,10 @@ importers:
         version: 6.0.0(supports-color@10.2.2)
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
 
   packages/platform:
     dependencies:
@@ -684,10 +684,10 @@ importers:
         version: link:../tsconfig
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
 
   packages/platform-cloudflare:
     dependencies:
@@ -715,10 +715,10 @@ importers:
         version: link:../tsconfig
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
 
   packages/platform-node:
     dependencies:
@@ -746,10 +746,10 @@ importers:
         version: link:../tsconfig
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
       ws:
         specifier: ^8.22.1
         version: 8.22.1
@@ -780,10 +780,10 @@ importers:
         version: 19.3.1
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
 
   packages/treaty:
     dependencies:
@@ -799,10 +799,10 @@ importers:
         version: link:../tsconfig
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
       vitest:
         specifier: ^5.1.0
         version: 5.1.0(@types/node@26.6.6)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
@@ -826,10 +826,10 @@ importers:
         version: link:../tsconfig
       tsdown:
         specifier: ^0.23.7
-        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-beta)
+        version: 0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1)
       typescript:
-        specifier: 7.1.0-beta
-        version: 7.1.0-beta
+        specifier: 7.1.0-dev.20261127.1
+        version: 7.1.0-dev.20261127.1
 
   tests/e2e:
     dependencies:
@@ -4630,8 +4630,20 @@ packages:
     cpu: [arm64]
     os: [darwin]
 
+  '@typescript/typescript-darwin-arm64@7.1.0-dev.20261127.1':
+    resolution: {integrity: sha512-6ftgF201D1NdUOnWUlxUmI43p8IcthK08NqH5z3/qY/F58LgJANI7deZR/IRleU5A1PWXXwFCj8FG58Q1iFMwg==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm64]
+    os: [darwin]
+
   '@typescript/typescript-darwin-x64@7.1.0-beta':
     resolution: {integrity: sha512-D5EYqG5Wm/guw9+0j8+Mn1Jbr/gfS/VtFTuoH8PJtFbcqeDaQGMulc7SW8q51QG6Y3wGOGX3nbsTOw6fIKWWAA==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@typescript/typescript-darwin-x64@7.1.0-dev.20261127.1':
+    resolution: {integrity: sha512-fyKt2+/4o0VOZ77QkvEy25KVOoxX06fjlYVwrivNXdYknv/5bbB30Ov85pESt8G4OjMZDKmzPjS5LExIlWuKPQ==}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [darwin]
@@ -4654,8 +4666,20 @@ packages:
     cpu: [arm64]
     os: [linux]
 
+  '@typescript/typescript-linux-arm64@7.1.0-dev.20261127.1':
+    resolution: {integrity: sha512-DkR7Sw4flsXikLRoR5k73ocZ+1WBcpLHIUW27IFOn0igk23xgeYQt1uT6iKworB7bx6TTXI0SZcnhEvIsUMO0Q==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm64]
+    os: [linux]
+
   '@typescript/typescript-linux-arm@7.1.0-beta':
     resolution: {integrity: sha512-AvN9HmzOQh46G4312ooSgMHhbB7DtnLwg8D9mo324X49B7weMwtJrBG1MxT9IyI8kzDd7YRtW+1hWGun7WG7Qw==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm]
+    os: [linux]
+
+  '@typescript/typescript-linux-arm@7.1.0-dev.20261127.1':
+    resolution: {integrity: sha512-rep/IsaMTZbBnWyHX2yl7b+m3QLIQhsAVcLRzHvTm/4DDIv1deCDXwqtKrTkZEgLrgc4aIINn3O0vZFLTOWjIg==}
     engines: {node: '>=16.20.0'}
     cpu: [arm]
     os: [linux]
@@ -4696,6 +4720,12 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@typescript/typescript-linux-x64@7.1.0-dev.20261127.1':
+    resolution: {integrity: sha512-HK+/NhOor/httPTSZmp2Jf/bBiwRn1Mu6CpFRs3fNTymrWre+OxlgSTJviS/B21Nam5vWKHWGtbNB85V2GKxxQ==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [linux]
+
   '@typescript/typescript-netbsd-arm64@7.1.0-beta':
     resolution: {integrity: sha512-8W85YyoGK+rgGoSU9jJQUpELbrKcZcbdJk2jPNQ6UKDKI7ryPlPFTrV2jCE5RQuv4Tt96hMDTc33s4YfRrLFBA==}
     engines: {node: '>=16.20.0'}
@@ -4732,8 +4762,20 @@ packages:
     cpu: [arm64]
     os: [win32]
 
+  '@typescript/typescript-win32-arm64@7.1.0-dev.20261127.1':
+    resolution: {integrity: sha512-zEBYzt+lxYTfAhne2iiXsuS3tPaOr5c8a5KE7V8RgxCM6iZe9XnBA/CvaZ92IG1/JbgEVW9KG2AdRenjkZJVsw==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm64]
+    os: [win32]
+
   '@typescript/typescript-win32-x64@7.1.0-beta':
     resolution: {integrity: sha512-UKcHvbybY2tDTvFW2b1vwiAvDlIRooo69lh8CXWVhOQejcvpM5+IgbiFW9EIwR5Wi5X/v+BdN7gdWbigBuJ3rw==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [win32]
+
+  '@typescript/typescript-win32-x64@7.1.0-dev.20261127.1':
+    resolution: {integrity: sha512-M8epmR5iVyLz19ydBECvC6TCxrMBDQGQLi9E5Jj5R5W0FAC3oTyQ6YD+SfodFXmNiFE+YfkdhRx0M0itMX+W1g==}
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [win32]
@@ -7647,6 +7689,11 @@ packages:
     engines: {node: '>=16.20.0'}
     hasBin: true
 
+  typescript@7.1.0-dev.20261127.1:
+    resolution: {integrity: sha512-juWSybCv0hk/FUNAIu7DMLWSeoba2JkNp+ICdhOrXtjoQCiAk7lKu6cVrd8DRTlRbZCgLfzYhwXIIjTWSbKKfA==}
+    engines: {node: '>=16.20.0'}
+    hasBin: true
+
   ufo@1.6.4:
     resolution: {integrity: sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==}
 
@@ -9685,9 +9732,9 @@ snapshots:
   '@opentui/core-win32-x64@0.9.3':
     optional: true
 
-  '@opentui/core@0.9.3(typescript@7.1.0-beta)(web-tree-sitter@0.25.10)':
+  '@opentui/core@0.9.3(typescript@7.1.0-dev.20261127.1)(web-tree-sitter@0.25.10)':
     dependencies:
-      bun-ffi-structs: 0.3.1(typescript@7.1.0-beta)
+      bun-ffi-structs: 0.3.1(typescript@7.1.0-dev.20261127.1)
       diff: 9.0.0
       string-width: 7.2.0
       web-tree-sitter: 0.25.10
@@ -9703,9 +9750,9 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@opentui/react@0.9.3(react-devtools-core@7.0.1)(react@19.3.1)(typescript@7.1.0-beta)(web-tree-sitter@0.25.10)(ws@8.22.1)':
+  '@opentui/react@0.9.3(react-devtools-core@7.0.1)(react@19.3.1)(typescript@7.1.0-dev.20261127.1)(web-tree-sitter@0.25.10)(ws@8.22.1)':
     dependencies:
-      '@opentui/core': 0.9.3(typescript@7.1.0-beta)(web-tree-sitter@0.25.10)
+      '@opentui/core': 0.9.3(typescript@7.1.0-dev.20261127.1)(web-tree-sitter@0.25.10)
       react: 19.3.1
       react-devtools-core: 7.0.1
       react-reconciler: 0.33.0(react@19.3.1)
@@ -11331,7 +11378,13 @@ snapshots:
   '@typescript/typescript-darwin-arm64@7.1.0-beta':
     optional: true
 
+  '@typescript/typescript-darwin-arm64@7.1.0-dev.20261127.1':
+    optional: true
+
   '@typescript/typescript-darwin-x64@7.1.0-beta':
+    optional: true
+
+  '@typescript/typescript-darwin-x64@7.1.0-dev.20261127.1':
     optional: true
 
   '@typescript/typescript-freebsd-arm64@7.1.0-beta':
@@ -11343,7 +11396,13 @@ snapshots:
   '@typescript/typescript-linux-arm64@7.1.0-beta':
     optional: true
 
+  '@typescript/typescript-linux-arm64@7.1.0-dev.20261127.1':
+    optional: true
+
   '@typescript/typescript-linux-arm@7.1.0-beta':
+    optional: true
+
+  '@typescript/typescript-linux-arm@7.1.0-dev.20261127.1':
     optional: true
 
   '@typescript/typescript-linux-loong64@7.1.0-beta':
@@ -11364,6 +11423,9 @@ snapshots:
   '@typescript/typescript-linux-x64@7.1.0-beta':
     optional: true
 
+  '@typescript/typescript-linux-x64@7.1.0-dev.20261127.1':
+    optional: true
+
   '@typescript/typescript-netbsd-arm64@7.1.0-beta':
     optional: true
 
@@ -11382,7 +11444,13 @@ snapshots:
   '@typescript/typescript-win32-arm64@7.1.0-beta':
     optional: true
 
+  '@typescript/typescript-win32-arm64@7.1.0-dev.20261127.1':
+    optional: true
+
   '@typescript/typescript-win32-x64@7.1.0-beta':
+    optional: true
+
+  '@typescript/typescript-win32-x64@7.1.0-dev.20261127.1':
     optional: true
 
   '@ungap/structured-clone@1.4.0': {}
@@ -11596,9 +11664,9 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
-  bun-ffi-structs@0.3.1(typescript@7.1.0-beta):
+  bun-ffi-structs@0.3.1(typescript@7.1.0-dev.20261127.1):
     dependencies:
-      typescript: 7.1.0-beta
+      typescript: 7.1.0-dev.20261127.1
 
   bundle-name@4.1.1:
     dependencies:
@@ -14117,7 +14185,7 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rolldown-plugin-dts@0.30.0(rolldown@1.3.0)(typescript@7.1.0-beta):
+  rolldown-plugin-dts@0.30.0(rolldown@1.3.0)(typescript@7.1.0-dev.20261127.1):
     dependencies:
       dts-resolver: 3.0.0
       get-tsconfig: 5.0.0-beta.6
@@ -14125,7 +14193,7 @@ snapshots:
       rolldown: 1.3.0
       yuku: 0.27.0
     optionalDependencies:
-      typescript: 7.1.0-beta
+      typescript: 7.1.0-dev.20261127.1
     transitivePeerDependencies:
       - '@yuku-toolchain/wasm'
       - oxc-resolver
@@ -14517,7 +14585,7 @@ snapshots:
       minimist: 1.2.8
       strip-bom: 3.0.0
 
-  tsdown@0.23.7(tsx@4.23.15)(typescript@7.1.0-beta):
+  tsdown@0.23.7(tsx@4.23.15)(typescript@7.1.0-dev.20261127.1):
     dependencies:
       cac: 7.1.0
       defu: 6.1.7
@@ -14527,7 +14595,7 @@ snapshots:
       obug: 3.0.0
       picomatch: 4.0.7
       rolldown: 1.3.0
-      rolldown-plugin-dts: 0.30.0(rolldown@1.3.0)(typescript@7.1.0-beta)
+      rolldown-plugin-dts: 0.30.0(rolldown@1.3.0)(typescript@7.1.0-dev.20261127.1)
       tinyexec: 1.3.1
       tinyglobby: 0.2.17
       tinyps: 0.5.2
@@ -14535,7 +14603,7 @@ snapshots:
       verkit: 0.5.0
     optionalDependencies:
       tsx: 4.23.15
-      typescript: 7.1.0-beta
+      typescript: 7.1.0-dev.20261127.1
     transitivePeerDependencies:
       - '@volar/typescript'
       - '@vue/language-core'
@@ -14598,6 +14666,16 @@ snapshots:
       '@typescript/typescript-sunos-x64': 7.1.0-beta
       '@typescript/typescript-win32-arm64': 7.1.0-beta
       '@typescript/typescript-win32-x64': 7.1.0-beta
+
+  typescript@7.1.0-dev.20261127.1:
+    optionalDependencies:
+      '@typescript/typescript-darwin-arm64': 7.1.0-dev.20261127.1
+      '@typescript/typescript-darwin-x64': 7.1.0-dev.20261127.1
+      '@typescript/typescript-linux-arm': 7.1.0-dev.20261127.1
+      '@typescript/typescript-linux-arm64': 7.1.0-dev.20261127.1
+      '@typescript/typescript-linux-x64': 7.1.0-dev.20261127.1
+      '@typescript/typescript-win32-arm64': 7.1.0-dev.20261127.1
+      '@typescript/typescript-win32-x64': 7.1.0-dev.20261127.1
 
   ufo@1.6.4: {}
 
