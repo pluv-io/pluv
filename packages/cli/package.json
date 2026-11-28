@@ -37,7 +37,7 @@
         "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
     },
     "dependencies": {
-        "@effect/platform-node": "4.1.4",
+        "@effect/platform-node": "4.1.7",
         "@opentui/core": "0.9.3",
         "@opentui/react": "0.9.3",
         "@pluv/io": "workspace:^",
